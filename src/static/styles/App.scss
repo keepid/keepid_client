@@ -1,0 +1,175 @@
+
+$theme-colors: (
+"primary-theme": #7B81FF,
+"secondary-theme": rgba(123, 130, 255, 0.12),
+"secondary-dark-theme": #262867
+);
+
+
+// import bootstrap
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+
+// import roboto
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+// @import '../../node_modules/react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+
+$primary-theme: #7B81FF;
+$secondary-theme: rgba(123, 130, 255, 0.12);
+$secondary-dark-theme: #262867;
+$text-red: #F24D4D;
+
+.background {
+	background: $secondary-theme;
+};
+
+.rectangle {
+	width: 21.25rem;
+	height: 15rem;
+	background: $secondary-theme;
+}
+
+// Landing
+
+.textLanding {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 1.5rem;
+	text-align: center;
+	color: #000000;
+};
+
+.uploadImg {
+	display: block;
+	position: relative;
+	left: 25%;
+	width: 50%;
+};
+
+.normalImage {
+	display: block;
+	position: relative;
+	left: 35%;
+	top: 10%;
+	width: 30%;
+};
+
+// Login classes
+.textLoginLeftHeader {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 900;
+	font-size: 2.0625rem;
+	line-height: 2.4375rem;
+}
+
+.textLoginLeftSubHeader {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 1.875rem;
+	line-height: 2.1875rem;
+	color: #000000;
+}
+
+.textLoginRightHeader {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 2.25rem;
+	line-height: 2.625rem;
+	text-align: center;
+
+	color: #000000;
+}
+
+.textLoginRightPara {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 1.375rem;
+	line-height: 1.625rem;
+}
+
+// Print page classes
+.textPrintHeader {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 1.5rem;
+	line-height: 1.75rem;
+	text-align: left;
+}
+
+.textPrintDesc {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 1.125rem;
+	line-height: 1.3125rem;
+	text-align: left;
+}
+
+td, th{
+	text-align: center;
+	vertical-align: middle;
+}
+
+thead {
+	position: sticky;
+}
+
+
+#printTable {
+	height: 18.75rem;
+	overflow: auto;
+}
+
+.red-star {
+	color: $text-red
+}
+
+.form-purple {
+	border: 0.0625rem solid $primary-theme;
+	border-radius: 0;
+}
+
+.seeTable {
+	display: flex;
+	flex-flow: column;
+	width: 100%;
+}
+
+.seeTable thead {
+	flex: 0 0 auto;
+	background: #7B81FF;
+}
+
+.seeTable tbody {
+	flex: 1 1 auto;
+	height: 50rem;
+	display: block;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.seeTable tr {
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+}
+
+.seeTable a {
+	text-decoration: none;
+	color: black;
+}
+
+.btn-assist {
+	width: 21.25rem;
+	height: 15rem;
+	border-radius: 0;
+	padding: 0;
+	margin: 0;
+}
+

@@ -1,0 +1,5 @@
+Should the org be run by one person or countless admins
+This one person when org signup?
+Login Logic
+
+What is this file doing?
