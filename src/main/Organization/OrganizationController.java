@@ -1,33 +1,27 @@
 package Organization;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import User.UserMessage;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-import Config.MongoConfig;
 import io.javalin.http.Handler;
-import org.bson.Document;
-import org.eclipse.jetty.client.HttpRequest;
-import org.json.JSONObject;
-
 import javax.servlet.http.HttpServletRequest;
-
-import static com.mongodb.client.model.Filters.*;
+import org.bson.Document;
 
 public class OrganizationController {
+
     MongoDatabase db;
-    public OrganizationController(MongoDatabase db){
+
+    public OrganizationController(MongoDatabase db) {
         this.db = db;
     }
 
     public Handler enrollOrganization = ctx -> {
         HttpServletRequest req = ctx.req;
-        // @validate stuff here @jalbi
-        if(!OrganizationValidation.isValidOrg(req, ctx)){
+        if (!OrganizationValidation.isValidOrg(req, ctx)) {
             return;
         }
         String orgName = req.getParameter("orgName");
@@ -52,41 +46,38 @@ public class OrganizationController {
 
         if (existingOrg != null) {
             ctx.result(OrgEnrollmentStatus.ORG_EXISTS.toString());
-        }
-        else if (existingUser != null) {
+        } else if (existingUser != null) {
             ctx.result(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
-        }
-        else {
+        } else {
             Argon2 argon2 = Argon2Factory.create();
             char[] passwordArr = password.toCharArray();
             String passwordHash;
             try {
                 passwordHash = argon2.hash(10, 65536, 1, passwordArr);
                 argon2.wipeArray(passwordArr);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 argon2.wipeArray(passwordArr);
                 ctx.result(OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
                 return;
             }
 
             Document newAdmin = new Document("username", username)
-                    .append("password", passwordHash)
-                    .append("organization", orgName)
-                    .append("email", email)
-                    .append("name", adminName)
-                    .append("privilegeLevel", "admin");
+                .append("password", passwordHash)
+                .append("organization", orgName)
+                .append("email", email)
+                .append("name", adminName)
+                .append("privilegeLevel", "admin");
             userCollection.insertOne(newAdmin);
 
             Document newOrg = new Document("orgName", orgName)
-                    .append("website", orgWebsite)
-                    .append("contact number", orgContactPhoneNumber)
-                    .append("street address", address)
-                    .append("city", city)
-                    .append("state", state)
-                    .append("zipcode", zipcode)
-                    .append("taxCode", taxCode)
-                    .append("expectedNumUsers", numUsers);
+                .append("website", orgWebsite)
+                .append("contact number", orgContactPhoneNumber)
+                .append("street address", address)
+                .append("city", city)
+                .append("state", state)
+                .append("zipcode", zipcode)
+                .append("taxCode", taxCode)
+                .append("expectedNumUsers", numUsers);
             orgCollection.insertOne(newOrg);
 
             /*

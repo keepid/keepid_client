@@ -35,11 +35,11 @@ public class MongoConfig {
         return testClient;
     }
 
-    public static void closeConnection(){
+    public static void closeConnection() {
         client.close();
     }
 
-    public static void cleanTestDatabase(){
+    public static void cleanTestDatabase() {
         testClient.getDatabase(getDatabaseName()).drop();
     }
 
