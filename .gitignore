@@ -34,3 +34,5 @@ node_modules/
 .idea
 target
 lib
+keepid.iml
+log.txt

@@ -1,74 +1,58 @@
 package Organization;
 import java.io.IOException;
+import java.util.Map;
 import java.util.regex.Pattern;
 
-import Regex.ValRegex;
+import Security.ValRegex;
 import Logger.Log;
+import io.javalin.http.Context;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class OrganizationValidation {
-	protected static OrgEnrollmentStatus valOrg(String fn, String ln, String email, String password, String org) throws SecurityException, IOException{
-		Log l = new Log();
-        //First Name
-        if (fn == null || fn.strip().length() == 0) {
-        	l.logger.warning("First Name Empty");
-        	return OrgEnrollmentStatus.FIELD_EMPTY;
-        }       
-        if (fn.length() > 31) {
-        	l.logger.warning("First Name Inappropriate Length " + fn.length());
-        	return OrgEnrollmentStatus.NAME_LEN_OVER_30;
-        }
-        if (!Pattern.matches(ValRegex.name, fn)) {
-        	l.logger.warning("Invalid Characters used In First Name"); //Should I include
-        	return OrgEnrollmentStatus.INVALID_CHARACTERS_FN;
+	protected static boolean isValidOrg(HttpServletRequest req, Context ctx) throws SecurityException, IOException{
+	    String orgName = req.getParameter("orgName");
+        String orgWebsite = req.getParameter("orgWebsite");
+        String adminName = req.getParameter("name");
+        String orgContactPhoneNumber = req.getParameter("phone");
+        String email = req.getParameter("email");
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String address = req.getParameter("address").toLowerCase();
+        String city = req.getParameter("city").toLowerCase();
+        String state = req.getParameter("state").toUpperCase();
+        String zipcode = req.getParameter("zipcode");
+        String taxCode = req.getParameter("taxCode");
+        String numUsers = req.getParameter("numUsers");
+	    Map<String, String[]> paramMap = req.getParameterMap();
+//        Log l = new Log();
+
+        // Empty or Null Check here
+        for(Map.Entry<String, String[]> entry : paramMap.entrySet()){
+            String value = entry.getValue()[0];
+            if (value == null || value.strip().length() == 0) {
+//                l.logger.warning(entry.getKey() + " field empty or null");
+                ctx.result(OrgEnrollmentStatus.FIELD_EMPTY.toString());
+                return false;
+            }
         }
 
-        //Last Name
-        if (ln == null || ln.strip().length() == 0) {
-        	l.logger.warning("Last Name Empty");	
-        	return OrgEnrollmentStatus.FIELD_EMPTY;
-        }
-        if (ln.length() > 31) {
-        	l.logger.warning("Last Name Inappropriate Length " + fn.length());
-        	return OrgEnrollmentStatus.NAME_LEN_OVER_30;
-        }
-        if (!Pattern.matches(ValRegex.name, ln)) {
-        	l.logger.warning("Invalid Characters Used In Last Name"); //Should I include
-        	return OrgEnrollmentStatus.INVALID_CHARACTERS_LN;
-        }
-        
-        //Email
-        if (email == null || email.strip().length() == 0) {
-        	l.logger.warning("Email Empty");
-            return OrgEnrollmentStatus.FIELD_EMPTY;
-        }
         if (email.length() > 40) {
-        	l.logger.warning("Email Is Too Long " + email.length());
-        	return OrgEnrollmentStatus.EMAIL_LEN_OVER_40;
+//        	l.logger.warning("Email Is Too Long " + email.length());
+        	ctx.result(OrgEnrollmentStatus.EMAIL_LEN_OVER_40.toString());
+        	return false;
         }
-        if (!Pattern.matches(ValRegex.email, email)) {
-        	l.logger.warning("Email Uses Invalid Characters");  
-        	return OrgEnrollmentStatus.INVALID_CHARACTERS_E;
-        }
-        
-        //Password
-        if (password == null || password.strip().length() == 0) {
-        	l.logger.warning("Password Empty");
-        	return OrgEnrollmentStatus.FIELD_EMPTY;
-        }
-        if (password.length() < 8) {
-        	l.logger.warning("Password is less than 7 characters");
-        	return OrgEnrollmentStatus.PASS_UNDER_8;
-        }
-        
-        //Organization Name
-        if (org == null || org.strip().length() == 0) {
-        	l.logger.warning("Organization is Empty");
-        	return OrgEnrollmentStatus.FIELD_EMPTY;
-        }
-        if (!Pattern.matches(ValRegex.org, org)) {
-            l.logger.warning("Organization Name Contains Invalid Characters");
-            return OrgEnrollmentStatus.INVALID_CHARACTERS_ORG;
-        }
-        return OrgEnrollmentStatus.VALID;
+//        if (!Pattern.matches(ValRegex.email, email)) {
+////        	l.logger.warning("Email Uses Invalid Characters");
+//        	ctx.result(OrgEnrollmentStatus.INVALID_CHARACTERS.toString());
+//        	return false;
+//        }
+//
+//        if (!Pattern.matches(ValRegex.org, orgName)) {
+////            l.logger.warning("Organization Name Contains Invalid Characters");
+//            ctx.result(OrgEnrollmentStatus.INVALID_CHARACTERS.toString());
+//            return false;
+//        }
+        return true;
     }
 }

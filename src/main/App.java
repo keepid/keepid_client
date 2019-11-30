@@ -2,6 +2,8 @@ import Config.Env;
 import Config.MongoConfig;
 import Organization.OrganizationController;
 import User.UserController;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
@@ -12,7 +14,8 @@ public class App {
     public static void main(String[] args) {
 
         Dotenv dotenv = Env.getInstance();
-        MongoConfig.startConnection();
+        MongoClient client = MongoConfig.getMongoClient();
+        MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 
         Javalin app = Javalin.create(config -> {
             config.asyncRequestTimeout = ASYNC_TIME_OUT;        // timeout for async requests (default is 0, no timeout)
@@ -30,6 +33,8 @@ public class App {
 //            config.sessionHandler();                   // set a SessionHandler
         }).start(Integer.parseInt(dotenv.get("PORT_NUMBER")));
 
+        // we need to instantiate the controllers with the database
+        OrganizationController orgController = new OrganizationController(db);
         /*
          * Server API:
          *
@@ -71,7 +76,7 @@ public class App {
 
         app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
         app.post("/login", UserController.loginUser);
-        app.post("/organization-signup", OrganizationController.enrollOrganization);
+        app.post("/organization-signup", orgController.enrollOrganization);
         // app.post("/create-user", UserController.createUser);
     }
 }

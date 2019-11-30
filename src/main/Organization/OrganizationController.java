@@ -3,6 +3,7 @@ package Organization;
 import User.UserMessage;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
@@ -10,43 +11,50 @@ import de.mkammerer.argon2.Argon2Factory;
 import Config.MongoConfig;
 import io.javalin.http.Handler;
 import org.bson.Document;
+import org.eclipse.jetty.client.HttpRequest;
 import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static com.mongodb.client.model.Filters.*;
 
 public class OrganizationController {
-    public static Handler enrollOrganization = ctx -> {
+    MongoDatabase db;
+    public OrganizationController(MongoDatabase db){
+        this.db = db;
+    }
 
-        JSONObject obj = new JSONObject(ctx.body());
+    public Handler enrollOrganization = ctx -> {
+        HttpServletRequest req = ctx.req;
+        // @validate stuff here @jalbi
+        if(!OrganizationValidation.isValidOrg(req, ctx)){
+            return;
+        }
+        String orgName = req.getParameter("orgName");
+        String orgWebsite = req.getParameter("orgWebsite").toLowerCase();
+        String adminName = req.getParameter("name").toLowerCase();
+        String orgContactPhoneNumber = req.getParameter("phone").toLowerCase();
+        String email = req.getParameter("email").toLowerCase();
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String address = req.getParameter("address").toLowerCase();
+        String city = req.getParameter("city").toLowerCase();
+        String state = req.getParameter("state").toUpperCase();
+        String zipcode = req.getParameter("zipcode");
+        String taxCode = req.getParameter("taxCode");
+        Integer numUsers = Integer.parseInt(req.getParameter("numUsers"));
 
-        String orgName = obj.getString("orgName");
-        String orgWebsite = obj.getString("orgWebsite").toLowerCase();
-        String adminName = obj.getString("name").toLowerCase();
-        String orgContactPhoneNumber = obj.getString("phone").toLowerCase();
-        String email = obj.getString("email").toLowerCase();
-        String username = obj.getString("username");
-        String password = obj.getString("password");
-        String address = obj.getString("address").toLowerCase();
-        String city = obj.getString("city").toLowerCase();
-        String state = obj.getString("state").toUpperCase();
-        String zipcode = obj.getString("zipcode");
-        String taxCode = obj.getString("taxCode");
-        Integer numUsers = Integer.parseInt(obj.getString("numUsers"));
-
-        MongoDatabase database = MongoConfig.getMongoClient()
-                .getDatabase(MongoConfig.getDatabaseName());
-
-        MongoCollection<Document> orgCollection = database.getCollection("organization");
+        MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", orgName)).first();
 
-        MongoCollection<Document> userCollection = database.getCollection("user");
+        MongoCollection<Document> userCollection = db.getCollection("user");
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingOrg != null) {
-            ctx.json(OrgEnrollmentStatus.ORG_EXISTS);
+            ctx.result(OrgEnrollmentStatus.ORG_EXISTS.toString());
         }
         else if (existingUser != null) {
-            ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+            ctx.result(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
         }
         else {
             Argon2 argon2 = Argon2Factory.create();
@@ -58,7 +66,7 @@ public class OrganizationController {
             }
             catch (Exception e) {
                 argon2.wipeArray(passwordArr);
-                ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE);
+                ctx.result(OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
                 return;
             }
 
@@ -89,7 +97,7 @@ public class OrganizationController {
                     .sign(algo);
             ctx.cookieStore("token", token);
              */
-            ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT);
+            ctx.result(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
         }
     };
 }
