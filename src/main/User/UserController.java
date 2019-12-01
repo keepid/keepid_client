@@ -1,25 +1,23 @@
 package User;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import static com.mongodb.client.model.Filters.eq;
+
+import Config.MongoConfig;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import static com.mongodb.client.model.Filters.*;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-import Config.MongoConfig;
 import io.javalin.http.Handler;
+import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
-import org.json.JSONObject;
 
 public class UserController {
-    public static Handler loginUser = ctx -> {
 
-        JSONObject obj = new JSONObject(ctx.body());
-        String username = obj.getString("username");
-        String password = obj.getString("password");
+    public static Handler loginUser = ctx -> {
+        HttpServletRequest req = ctx.req;
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
 
         Argon2 argon2 = Argon2Factory.create();
         // @validate make sure that username and password are not null
@@ -56,7 +54,7 @@ public class UserController {
                 // Hash doesn't match password
                 ctx.json(UserMessage.AUTH_FAILURE.getErrorName());
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             ctx.json(UserMessage.HASH_FAILURE.getErrorName());
         } finally {
             // Wipe confidential data from cache

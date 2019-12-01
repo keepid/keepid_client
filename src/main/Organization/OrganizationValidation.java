@@ -1,13 +1,14 @@
 package Organization;
 
+import Security.GeneralValidator;
 import io.javalin.http.Context;
 import java.io.IOException;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
-public class OrganizationValidation {
+public class OrganizationValidation implements GeneralValidator {
 
-    protected static boolean isValidOrg(HttpServletRequest req, Context ctx)
+    protected static boolean isValid(HttpServletRequest req, Context ctx)
         throws SecurityException, IOException {
         String orgName = req.getParameter("orgName");
         String orgWebsite = req.getParameter("orgWebsite");

@@ -21,7 +21,7 @@ public class OrganizationController {
 
     public Handler enrollOrganization = ctx -> {
         HttpServletRequest req = ctx.req;
-        if (!OrganizationValidation.isValidOrg(req, ctx)) {
+        if (!OrganizationValidation.isValid(req, ctx)) {
             return;
         }
         String orgName = req.getParameter("orgName");
