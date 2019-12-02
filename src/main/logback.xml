@@ -5,7 +5,7 @@
   <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${HOME_LOG}</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+      <fileNamePattern>app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <!-- each archived file, size max 10MB -->
       <maxFileSize>10MB</maxFileSize>
       <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
@@ -29,8 +29,6 @@
 
   <logger name="org.mongodb.driver.cluster" level="ERROR"/>
   <logger name="org.mongodb.driver.connection" level="ERROR"/>
-
-  <!--  <logger name="ch.qos.logback.classic.LoggerContext" level="OFF"/>-->
 
   <root level="trace">
     <appender-ref ref="FILE-ROLLING"/>
