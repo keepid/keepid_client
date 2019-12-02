@@ -1,5 +1,6 @@
 import Config.Env;
 import Config.MongoConfig;
+import Logger.LogFactory;
 import Organization.OrganizationController;
 import User.UserController;
 import com.mongodb.MongoClient;
@@ -8,6 +9,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
+import org.slf4j.Logger;
 
 public class App {
 
@@ -36,6 +38,11 @@ public class App {
 //            config.requestLogger();                    // set a request logger
 //            config.sessionHandler();                   // set a SessionHandler
         }).start(Integer.parseInt(dotenv.get("PORT_NUMBER")));
+        LogFactory l = new LogFactory();
+        Logger logger = l.createLogger();
+        logger.warn("PRINT LOGGER HERE WARN");
+        logger.error("PRINT LOGGER HERE ERROR");
+        logger.debug("PRINT LOGGER HERE DEBUG");
 
         // we need to instantiate the controllers with the database
         OrganizationController orgController = new OrganizationController(db);

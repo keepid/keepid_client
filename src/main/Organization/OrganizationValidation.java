@@ -1,10 +1,12 @@
 package Organization;
 
+import Logger.LogFactory;
 import Security.GeneralValidator;
+import Security.ValidationUtils;
 import io.javalin.http.Context;
 import java.io.IOException;
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
 
 public class OrganizationValidation implements GeneralValidator {
 
@@ -23,36 +25,66 @@ public class OrganizationValidation implements GeneralValidator {
         String zipcode = req.getParameter("zipcode");
         String taxCode = req.getParameter("taxCode");
         String numUsers = req.getParameter("numUsers");
-        Map<String, String[]> paramMap = req.getParameterMap();
-        // @jalbi debug log errors
-//        Log l = new Log();
 
-        // Empty or Null Check here
-        for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-            String value = entry.getValue()[0];
-            if (value == null || value.strip().length() == 0) {
-//                l.logger.warning(entry.getKey() + " field empty or null");
-                ctx.result(OrgEnrollmentStatus.FIELD_EMPTY.toString());
-                return false;
-            }
-        }
+        // declare logger here
+        LogFactory l = new LogFactory();
+        Logger logger = l.createLogger();
 
-        if (email.length() > 40) {
-//        	l.logger.warning("Email Is Too Long " + email.length());
-            ctx.result(OrgEnrollmentStatus.EMAIL_LEN_OVER_40.toString());
+        if (!ValidationUtils.isValidOrgName(orgName)) {
+            logger.error("Invalid or null orgname: " + orgName);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
             return false;
         }
-//        if (!Pattern.matches(ValRegex.email, email)) {
-////        	l.logger.warning("Email Uses Invalid Characters");
-//        	ctx.result(OrgEnrollmentStatus.INVALID_CHARACTERS.toString());
-//        	return false;
-//        }
-//
-//        if (!Pattern.matches(ValRegex.org, orgName)) {
-////            l.logger.warning("Organization Name Contains Invalid Characters");
-//            ctx.result(OrgEnrollmentStatus.INVALID_CHARACTERS.toString());
-//            return false;
-//        }
+        if (!ValidationUtils.isValidOrgWebsite(orgWebsite)) {
+            logger.error("Invalid or null website: " + orgWebsite);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidFirstName(adminName)) {
+            logger.error("Invalid or null adminName: " + adminName);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidPhoneNumber(orgContactPhoneNumber)) {
+            logger.error("Invalid or null orgContactPhoneNumber: " + orgContactPhoneNumber);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidEmail(email)) {
+            logger.error("Invalid or null email: " + email);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidAddress(address)) {
+            logger.error("Invalid or null address: " + address);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidCity(city)) {
+            logger.error("Invalid or null city: " + city);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidUSState(state)) {
+            logger.error("Invalid or null state: " + state);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidZipCode(zipcode)) {
+            logger.error("Invalid or null zipcode: " + zipcode);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidTaxCode(taxCode)) {
+            logger.error("Invalid or null taxCode: " + taxCode);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
+        if (!ValidationUtils.isValidNumUsers(numUsers)) {
+            logger.error("Invalid or null numUsers: " + numUsers);
+            ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+            return false;
+        }
         return true;
     }
 }

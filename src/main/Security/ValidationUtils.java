@@ -40,4 +40,25 @@ public class ValidationUtils {
     public static boolean isValidUSState(String input) {
         return !input.strip().isBlank() && ValRegex.usStatePattern.matcher(input).matches();
     }
+
+    public static boolean isValidTaxCode(String input) {
+        return !input.strip().isBlank();
+    }
+
+    public static boolean isValidNumUsers(String input) {
+        try {
+            Integer.parseInt(input);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean isValidPhoneNumber(String input) {
+        return !input.strip().isBlank() && ValRegex.phoneNumberPattern.matcher(input).matches();
+    }
+
+    public static boolean isValidAddress(String input) {
+        return !input.strip().isBlank();
+    }
 }

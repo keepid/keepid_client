@@ -9,5 +9,6 @@ public enum OrgEnrollmentStatus {
     VALID,
     EMAIL_LEN_OVER_40,
     INVALID_CHARACTERS,
-    PASS_UNDER_8
+    PASS_UNDER_8,
+    INVALID_PARAMETER
 }
