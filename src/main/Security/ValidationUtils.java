@@ -12,14 +12,10 @@ public class ValidationUtils {
 
   public static boolean isValidOrgWebsite(String input) {
     try {
-      if (!input.startsWith("http")) {
-        input = "http://" + input;
-      }
       URL url = new URL(input);
       url.toURI();
       return true;
     } catch (Exception e) {
-      System.out.println(e);
       return false;
     }
   }
