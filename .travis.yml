@@ -1,5 +1,6 @@
 language: java
 jdk: oraclejdk13
+dist: trusty
 install: true
 script:
   - mvn test -B
