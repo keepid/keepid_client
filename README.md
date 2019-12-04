@@ -1,6 +1,8 @@
 <h1>Client Side Application</h1> 
 <h3>Connor Chong, Steffen Cornwell, Gregory Kofman, Alexander Do, James Bigbee</h3>
 
+[![Build Status](https://travis-ci.com/crchong1/keepid_client.svg?token=ZfxxuGjvV4UyCBCswM7B&branch=master)](https://travis-ci.com/crchong1/keepid_client)
+
 ## How to Install the Client
 After cloning, `cd client` and then do npm install
 
