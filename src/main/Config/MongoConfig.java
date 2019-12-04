@@ -3,7 +3,6 @@ package Config;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.github.cdimascio.dotenv.Dotenv;
-
 import java.util.Objects;
 
 public class MongoConfig {

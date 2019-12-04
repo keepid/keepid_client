@@ -106,7 +106,7 @@
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
-      <version>	1.10.4</version>
+      <version>1.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -123,10 +123,10 @@
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.slf4j</groupId>-->
-<!--      <artifactId>slf4j-simple</artifactId>-->
-<!--      <version>1.7.28</version>-->
-<!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>org.slf4j</groupId>-->
+    <!--      <artifactId>slf4j-simple</artifactId>-->
+    <!--      <version>1.7.28</version>-->
+    <!--    </dependency>-->
   </dependencies>
 </project>
