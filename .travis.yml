@@ -4,7 +4,8 @@ dist: trusty
 install: true
 script:
   - mvn test -B
-  - bash <(curl -s https://codecov.io/bash)
+  - mvn cobertura:cobertura
+  - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
 cache:
   directories:
     - $HOME/.m2
