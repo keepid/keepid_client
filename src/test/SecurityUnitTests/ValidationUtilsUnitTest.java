@@ -1,12 +1,12 @@
 package SecurityUnitTests;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import Security.ValidationUtils;
 import org.junit.Test;
 
-public class ValidationUtilsUnitTests {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ValidationUtilsUnitTest {
 
   @Test
   public void nameTest() {
