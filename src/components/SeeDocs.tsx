@@ -44,7 +44,7 @@ class SeeDocs extends Component<{}, State, {}> {
                 </tr>
               </thead>
               <tbody>
-                <a href="/docviewer">
+                <a href="/document-viewer">
                   <tr>
                     <td colSpan={2}>
                     Document name

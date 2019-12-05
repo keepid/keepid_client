@@ -54,7 +54,7 @@ class AdminLanding extends Component<{}, State, {}> {
 
   render() {
     const {
-      workers
+      workers,
     } = this.state;
     return (
       <div>
@@ -87,24 +87,32 @@ class AdminLanding extends Component<{}, State, {}> {
               <ul className="list-group list-group-flush">
                 <li className="list-group-item">
                   <div className="form-group form-check">
-                    <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-                    <label className="form-check-label">Can View Client Documents</label>
+                    <label htmlFor="viewCheckbox" className="form-check-label">
+                      <input type="checkbox" className="form-check-input" id="viewCheckbox" />
+                      Can View Client Documents
+                    </label>
                   </div>
                   <div className="form-group form-check">
-                    <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-                    <label className="form-check-label">Can Edit Client Documents</label>
+                    <label className="form-check-label">
+                      <input type="checkbox" className="form-check-input" id="exampleCheck1" />
+                      Can Edit Client Documents
+                    </label>
                   </div>
                   <div className="form-group form-check">
-                    <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-                    <label className="form-check-label">Can Register New Clients</label>
+                    <label className="form-check-label">
+                      <input type="checkbox" className="form-check-input" id="exampleCheck1" />
+                      Can Register New Clients
+                    </label>
                   </div>
                   <div className="form-group">
-                    <label>Set Worker Permission Level</label>
-                    <select className="form-control" id="exampleFormControlSelect1">
-                      <option>Worker</option>
-                      <option>Admin</option>
-                      <option>Volunteer</option>
-                    </select>
+                    <label>
+                      Set Worker Permission Level
+                      <select className="form-control" id="exampleFormControlSelect1">
+                        <option>Worker</option>
+                        <option>Admin</option>
+                        <option>Volunteer</option>
+                      </select>
+                    </label>
                   </div>
                   <div className="form-group">
                     <button type="submit" className="btn btn-danger">Delete User</button>

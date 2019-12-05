@@ -44,16 +44,16 @@ class Header extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON === "AUTH_SUCCESS") {
+        if (responseJSON === 'AUTH_SUCCESS') {
           this.props.logIn();
-        } else if (responseJSON === "AUTH_FAILURE") {
-          alert("Incorrect Password");
+        } else if (responseJSON === 'AUTH_FAILURE') {
+          alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
-        } else if (responseJSON === "USER_NOT_FOUND") {
-          alert("Incorrect Username");
+        } else if (responseJSON === 'USER_NOT_FOUND') {
+          alert('Incorrect Username');
           this.setState({ incorrectCredentials: true });
         } else {
-          alert("Server Failure: Please Try Again");
+          alert('Server Failure: Please Try Again');
         }
         console.log(responseJSON);
       });

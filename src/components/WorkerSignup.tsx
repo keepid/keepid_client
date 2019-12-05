@@ -7,7 +7,7 @@ import {
 import querystring from 'querystring';
 import https from 'https';
 
-import NumClientOptions from '../static/data/num_client_options.json';
+import NumWorkerOptions from '../static/data/num_worker_options.json';
 import SignaturePad from '../react-typescript-signature-pad';
  */
 
@@ -15,161 +15,115 @@ import SignaturePad from '../react-typescript-signature-pad';
 // Google API for address checking
 
 interface State {
-  /*
-  organizationName: string,
-  organizationStatus: string,
-  organizationWebsite: string,
-  organizationNumClients: string,
-  organizationEmail: string,
-  organizationPhoneNumber: string,
-  organizationAddressLine1: string,
-  organizationAddressLine2: string,
-  organizationAddressCity: string,
-  organizationAddressState: string,
-  organizationAddressZipcode: string,
-  acceptEULA: boolean,
-  reaffirmStage: boolean
-   */
+  submitSuccessful: boolean,
+  workerFirstName: string,
+  workerLastName: string,
+  workerEmail: string,
+  workerPhoneNumber: string,
+  workerAddressLine1: string,
+  workerAddressCity: string,
+  workerAddressState: string,
+  workerAddressZipcode: string,
+  workerPassword1: string,
+  workerPassword2: string
 }
 
 class WorkerSignup extends Component<{}, State, {}> {
   constructor(props: Readonly<{}>) {
     super(props);
-    console.log(USStates);
-    this.state = {/*
-      organizationName: '',
-      organizationStatus: '', // 501c3, etc.
-      organizationWebsite: '',
-      organizationNumClients: `${NumClientOptions[0][0]}-${NumClientOptions[0][1]}`,
-      organizationEmail: '',
-      organizationPhoneNumber: '',
-      organizationAddressLine1: '',
-      organizationAddressLine2: '',
-      organizationAddressCity: '',
-      organizationAddressState: USStates[0].name,
-      organizationAddressZipcode: '',
-      acceptEULA: false,
-      reaffirmStage: false,
-      */
+    this.state = {
+      submitSuccessful: false,
+      workerFirstName: '',
+      workerLastName: '',
+      workerEmail: '',
+      workerPhoneNumber: '',
+      workerAddressLine1: '',
+      workerAddressCity: '',
+      workerAddressState: USStates[0].name,
+      workerAddressZipcode: '',
+      workerPassword1: '',
+      workerPassword2: '',
     };
 
-    /*
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
-    this.handleChangeOrganizationStatus = this.handleChangeOrganizationStatus.bind(this);
-    this.handleChangeOrganizationWebsite = this.handleChangeOrganizationWebsite.bind(this);
-    this.handleChangeOrganizationNumClients = this.handleChangeOrganizationNumClients.bind(this);
-    this.handleChangeOrganizationEmail = this.handleChangeOrganizationEmail.bind(this);
-    this.handleChangeOrganizationPhoneNumber = this.handleChangeOrganizationPhoneNumber.bind(this);
-    this.handleChangeOrganizationAddressLine1 = this.handleChangeOrganizationAddressLine1.bind(this);
-    this.handleChangeOrganizationAddressLine2 = this.handleChangeOrganizationAddressLine2.bind(this);
-    this.handleChangeOrganizationAddressCity = this.handleChangeOrganizationAddressCity.bind(this);
-    this.handleChangeOrganizationAddressState = this.handleChangeOrganizationAddressState.bind(this);
-    this.handleChangeOrganizationAddressZipcode = this.handleChangeOrganizationAddressZipcode.bind(this);
-    this.handleChangeReaffirmStage = this.handleChangeReaffirmStage.bind(this);
-    this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
-     */
+    this.handleChangeWorkerFirstName = this.handleChangeWorkerFirstName.bind(this);
+    this.handleChangeWorkerLastName = this.handleChangeWorkerLastName.bind(this);
+    this.handleChangeWorkerEmail = this.handleChangeWorkerEmail.bind(this);
+    this.handleChangeWorkerPhoneNumber = this.handleChangeWorkerPhoneNumber.bind(this);
+    this.handleChangeWorkerAddressLine1 = this.handleChangeWorkerAddressLine1.bind(this);
+    this.handleChangeWorkerAddressCity = this.handleChangeWorkerAddressCity.bind(this);
+    this.handleChangeWorkerAddressState = this.handleChangeWorkerAddressState.bind(this);
+    this.handleChangeWorkerAddressZipcode = this.handleChangeWorkerAddressZipcode.bind(this);
+    this.handleChangeWorkerPassword1 = this.handleChangeWorkerPassword1.bind(this);
+    this.handleChangeWorkerPassword2 = this.handleChangeWorkerPassword2.bind(this);
   }
-  /*
+
   handleSubmit(event: any) {
-    if (!this.state.acceptEULA) {
-      alert('Please accept EULA before completing application');
+    event.preventDefault();
+    if (this.state.workerPassword1 !== this.state.workerPassword2) {
+      alert('Your passwords are not identical');
     } else {
-      alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
-      event.preventDefault();
-
-      const postData = querystring.stringify({ test: 'hi' });
-      //   this.state
-      // );
-      const options = {
-        hostname: 'www.google.com',
-        port: 80,
-        path: '/upload',
+      fetch('http://localhost:7000/worker-signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Content-Length': Buffer.byteLength(postData),
-        },
-      };
-
-      const req = https.request(options, (res) => {
-        console.log('submit form');
-
-
-        res.setEncoding('utf8');
-
-        res.on('data', (chunk) => {
-          console.log(chunk);
+        body: JSON.stringify({
+          firstname: this.state.workerFirstName,
+          lastname: this.state.workerLastName,
+          email: this.state.workerEmail,
+          phonenumber: this.state.workerPhoneNumber,
+          address: this.state.workerAddressLine1,
+          city: this.state.workerAddressCity,
+          state: this.state.workerAddressState,
+          zipcode: this.state.workerAddressZipcode,
+          password: this.state.workerPassword1,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          alert('Submitted request for new guest');
+          this.setState({ submitSuccessful: true });
         });
-
-        res.on('end', () => {
-          console.log('No more data');
-        });
-      });
-
-      req.on('error', (error) => {
-        console.log(error.message);
-      });
-
-      req.write(postData);
-      req.end();
     }
   }
 
-  handleChangeOrganizationName(event: any) {
+  handleChangeWorkerFirstName(event: any) {
     console.log(event);
-    this.setState({ organizationName: event.target.value });
+    this.setState({ workerFirstName: event.target.value });
   }
 
-  handleChangeOrganizationStatus(event: any) {
-    this.setState({ organizationStatus: event.target.value });
+  handleChangeWorkerLastName(event: any) {
+    this.setState({ workerLastName: event.target.value });
   }
 
-  handleChangeOrganizationWebsite(event: any) {
-    this.setState({ organizationWebsite: event.target.value });
+  handleChangeWorkerEmail(event: any) {
+    this.setState({ workerEmail: event.target.value });
   }
 
-  handleChangeOrganizationNumClients(event: any) {
-    this.setState({ organizationNumClients: event.target.value });
+  handleChangeWorkerPhoneNumber(event: any) {
+    this.setState({ workerPhoneNumber: event.target.value });
   }
 
-  handleChangeOrganizationEmail(event: any) {
-    this.setState({ organizationEmail: event.target.value });
+  handleChangeWorkerAddressLine1(event: any) {
+    this.setState({ workerAddressLine1: event.target.value });
   }
 
-  handleChangeOrganizationPhoneNumber(event: any) {
-    this.setState({ organizationPhoneNumber: event.target.value });
+  handleChangeWorkerAddressCity(event: any) {
+    this.setState({ workerAddressCity: event.target.value });
   }
 
-  handleChangeOrganizationAddressLine1(event: any) {
-    this.setState({ organizationAddressLine1: event.target.value });
+  handleChangeWorkerAddressState(event: any) {
+    this.setState({ workerAddressState: event.target.value });
   }
 
-  handleChangeOrganizationAddressLine2(event: any) {
-    this.setState({ organizationAddressLine2: event.target.value });
+  handleChangeWorkerAddressZipcode(event: any) {
+    this.setState({ workerAddressZipcode: event.target.value });
   }
 
-  handleChangeOrganizationAddressCity(event: any) {
-    this.setState({ organizationAddressCity: event.target.value });
+  handleChangeWorkerPassword1(event: any) {
+    this.setState({ workerPassword1: event.target.value });
   }
 
-  handleChangeOrganizationAddressState(event: any) {
-    this.setState({ organizationAddressState: event.target.value });
+  handleChangeWorkerPassword2(event: any) {
+    this.setState({ workerPassword2: event.target.value });
   }
-
-  handleChangeOrganizationAddressZipcode(event: any) {
-    this.setState({ organizationAddressZipcode: event.target.value });
-  }
-
-  handleChangeAcceptEULA(event: any) {
-    this.setState({ acceptEULA: !this.state.acceptEULA });
-  }
-
-  handleChangeReaffirmStage(event: any) {
-    event.preventDefault();
-    this.setState({ reaffirmStage: !this.state.reaffirmStage });
-  }
-*/
 
   render() {
     // if (this.state.reaffirmStage) {
@@ -183,7 +137,7 @@ class WorkerSignup extends Component<{}, State, {}> {
             <p className="textPrintDesc pl-3">
               <span>Thank you for using Keep.id to store your personal documents. Please fill out the following form to proceed with setting up your Keep.id account.</span>
             </p>
-            <form>
+            <form onSubmit={this.handleSubmit}>
               <div className="col-md-12">
                 <div className="form-row">
                   <div className="col-md-6 form-group">
@@ -191,14 +145,30 @@ class WorkerSignup extends Component<{}, State, {}> {
 First Name
                       <text className="red-star">*</text>
                     </label>
-                    <input type="text" className="form-control form-purple" id="firstName" placeholder="John" required />
+                    <input
+                      type="text"
+                      className="form-control form-purple"
+                      id="firstName"
+                      onChange={this.handleChangeWorkerFirstName}
+                      value={this.state.workerFirstName}
+                      placeholder="John"
+                      required
+                    />
                   </div>
                   <div className="col-md-6 form-group">
                     <label htmlFor="inputLastName">
 Last Name
                       <text className="red-star">*</text>
                     </label>
-                    <input type="text" className="form-control form-purple" id="lastName" placeholder="Doe" required />
+                    <input
+                      type="text"
+                      className="form-control form-purple"
+                      id="lastName"
+                      onChange={this.handleChangeWorkerLastName}
+                      value={this.state.workerLastName}
+                      placeholder="Doe"
+                      required
+                    />
                   </div>
                 </div>
                 <div className="form-row">
@@ -207,44 +177,92 @@ Last Name
 Contact Phone Number
                       <text className="red-star">*</text>
                     </label>
-                    <input type="tel" className="form-control form-purple" id="phoneNumber" placeholder="1-(234)-567-8901" required />
+                    <input
+                      type="tel"
+                      className="form-control form-purple"
+                      id="phoneNumber"
+                      onChange={this.handleChangeWorkerPhoneNumber}
+                      value={this.state.workerPhoneNumber}
+                      placeholder="1-(234)-567-8901"
+                      required
+                    />
                   </div>
                   <div className="col-md-7 form-group">
                     <label htmlFor="inputEmail">
 Contact Email Address
                       <text className="red-star">*</text>
                     </label>
-                    <input type="email" className="form-control form-purple" id="email" placeholder="contact@example.com" required />
+                    <input
+                      type="email"
+                      className="form-control form-purple"
+                      id="email"
+                      onChange={this.handleChangeWorkerEmail}
+                      value={this.state.workerEmail}
+                      placeholder="contact@example.com"
+                      required
+                    />
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputMailingAddress">
-Client Mailing Address
+Worker Mailing Address
                       <text className="red-star">*</text>
                     </label>
-                    <input type="text" className="form-control form-purple" id="mailingAddress" placeholder="311 Broad St" required />
+                    <input
+                      type="text"
+                      className="form-control form-purple"
+                      id="mailingAddress"
+                      onChange={this.handleChangeWorkerAddressLine1}
+                      value={this.state.workerAddressLine1}
+                      placeholder="311 Broad St"
+                      required
+                    />
                   </div>
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputCity">
 City
                       <text className="red-star">*</text>
                     </label>
-                    <input type="text" className="form-control form-purple" id="city" placeholder="Philadelphia" required />
+                    <input
+                      type="text"
+                      className="form-control form-purple"
+                      id="city"
+                      onChange={this.handleChangeWorkerAddressCity}
+                      value={this.state.workerAddressCity}
+                      placeholder="Philadelphia"
+                      required
+                    />
                   </div>
                   <div className="col-md-2 form-group">
                     <label htmlFor="inputState">
 State
                       <text className="red-star">*</text>
                     </label>
-                    <input type="text" className="form-control form-purple" id="state" placeholder="PA" required />
+                    <select
+                      className="form-control form-purple"
+                      id="state"
+                      value={this.state.workerAddressState}
+                      onChange={this.handleChangeWorkerAddressState}
+                      required
+                    >
+                      {USStates.map((USState) => (<option>{USState.name}</option>))}
+                    </select>
                   </div>
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputZipCode">
 Zip Code
                       <text className="red-star">*</text>
                     </label>
-                    <input type="number" className="form-control form-purple" id="zipCode" placeholder="19104" required />
+                    <input
+                      type="text"
+                      className="form-control form-purple"
+                      id="zipCode"
+                      onChange={this.handleChangeWorkerAddressZipcode}
+                      value={this.state.workerAddressZipcode}
+                      placeholder="19104"
+                      required
+                    />
                   </div>
                 </div>
                 <div className="form-row">
@@ -253,14 +271,30 @@ Zip Code
 Password
                       <text className="red-star">*</text>
                     </label>
-                    <input type="password" className="form-control form-purple" id="password" placeholder="Password" required />
+                    <input
+                      type="password"
+                      className="form-control form-purple"
+                      id="password"
+                      onChange={this.handleChangeWorkerPassword1}
+                      value={this.state.workerPassword1}
+                      placeholder="Password"
+                      required
+                    />
                   </div>
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputConfirmPassword">
 Confirm Password
                       <text className="red-star">*</text>
                     </label>
-                    <input type="password" className="form-control form-purple" id="confirmPassword" placeholder="Confirm password" required />
+                    <input
+                      type="password"
+                      className="form-control form-purple"
+                      id="confirmPassword"
+                      onChange={this.handleChangeWorkerPassword2}
+                      value={this.state.workerPassword2}
+                      placeholder="Confirm password"
+                      required
+                    />
                   </div>
                   <div className="col-auto mt-4 pt-2">
                     <button type="submit" className="btn btn-primary">Submit</button>

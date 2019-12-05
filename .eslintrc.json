@@ -24,6 +24,7 @@
     ],
     "rules": {
         "react/jsx-filename-extension": "off",
+        "no-unused-vars": "off",
         "import/no-duplicates": "off",
         "import/no-unresolved": "off",
         "max-len": "off",
