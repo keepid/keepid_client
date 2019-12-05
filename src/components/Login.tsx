@@ -36,7 +36,7 @@ class Login extends Component<{}, State, {}> {
                 <p>
                   <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>
                 </p>
-                <button type="button" className="btn btn-primary btn-lg">
+                <button type="button" className="btn btn-primary btn-lg loginButtonBackground">
                     Get Started
                 </button>
                 <h2 className="textLoginLeftSubHeader mt-3">
@@ -45,12 +45,12 @@ class Login extends Component<{}, State, {}> {
                 <p>
                   <span>Are you an aid organization fighting to end homelessness?</span>
                 </p>
-                <a href="/organization-signup" role="button" className="btn btn-lg btn-primary">Join Our Cause</a>
+                <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground">Join Our Cause</a>
               </div>
               <div className="col-md-1" />
               <div className="col-md-5">
                 <h3 className="text-center textLoginRightHeader">
-                    How Cache Works
+                    How Keep.id Works
                 </h3>
                 <div className="row">
                   <div className="col-md-4">
@@ -61,7 +61,7 @@ class Login extends Component<{}, State, {}> {
                       <span>
 1. Local organizations become
                         <b> hubs </b>
-for Cache services
+for Keep.id services
                       </span>
                     </p>
                   </div>
@@ -73,7 +73,7 @@ for Cache services
                   <div className="col-md-8">
                     <p className="textLoginRightPara">
                       <span>
-2. Cache
+2. Keep.id
                         <b> securely stores </b>
 documents and records for those experiencing homelessness
                       </span>
@@ -87,7 +87,7 @@ documents and records for those experiencing homelessness
                   <div className="col-md-8">
                     <p className="textLoginRightPara">
                       <span>
-3. Cache becomes an
+3. Keep.id becomes an
                         <b> aid platform </b>
 to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
