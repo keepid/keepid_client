@@ -3,7 +3,7 @@ import Config.MongoConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
@@ -34,7 +34,6 @@ public class App {
                   config.defaultContentType =
                       "text/plain"; // content type to use if no content type is set (default is
                   // "text/plain")
-                  config.dynamicGzip = true; // dynamically gzip http responses (default is true)
                   config.enableCorsForAllOrigins(); // enable cors for all origins
                   config.enableDevLogging(); // enable extensive development logging for http and
                   // websocket
@@ -50,7 +49,7 @@ public class App {
                   //            config.requestLogger();                    // set a request logger
                   //            config.sessionHandler();                   // set a SessionHandler
                 })
-            .start(Integer.parseInt(dotenv.get("PORT_NUMBER")));
+            .start(Integer.parseInt(dotenv.get("PORT")));
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger();
     logger.warn("PRINT LOGGER HERE WARN");
