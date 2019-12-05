@@ -3,28 +3,27 @@ package UserIntTests;
 import OrganizationIntTests.OrgEnrollmentStatus;
 import Security.GeneralValidator;
 import io.javalin.http.Context;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 public class UserValidation implements GeneralValidator {
 
   protected static boolean isValid(HttpServletRequest req, Context ctx)
       throws SecurityException, IOException {
-    String firstName = req.getParameter("firstName");
-    String lastName = req.getParameter("firstName");
+    String firstName = req.getString("firstName");
+    String lastName = req.getString("firstName");
 
-    String email = req.getParameter("email");
-    String username = req.getParameter("username");
-    String password = req.getParameter("password");
-    String address = req.getParameter("address").toLowerCase();
-    String city = req.getParameter("city").toLowerCase();
-    String state = req.getParameter("state").toUpperCase();
-    String zipcode = req.getParameter("zipcode");
-    String taxCode = req.getParameter("taxCode");
-    String numUsers = req.getParameter("numUsers");
-    Map<String, String[]> paramMap = req.getParameterMap();
+    String email = req.getString("email");
+    String username = req.getString("username");
+    String password = req.getString("password");
+    String address = req.getString("address").toLowerCase();
+    String city = req.getString("city").toLowerCase();
+    String state = req.getString("state").toUpperCase();
+    String zipcode = req.getString("zipcode");
+    String taxCode = req.getString("taxCode");
+    String numUsers = req.getString("numUsers");
+    Map<String, String[]> paramMap = req.getStringMap();
     // @jalbi debug log errors
     //        Log l = new Log();
 

@@ -1,5 +1,7 @@
 package OrganizationIntTests;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import UserIntTests.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -7,10 +9,7 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.Document;
-
-import javax.servlet.http.HttpServletRequest;
-
-import static com.mongodb.client.model.Filters.eq;
+import org.json.JSONObject;
 
 public class OrganizationController {
 
@@ -22,23 +21,23 @@ public class OrganizationController {
 
   public Handler enrollOrganization =
       ctx -> {
-        HttpServletRequest req = ctx.req;
+        JSONObject req = new JSONObject(ctx.body());
         if (!OrganizationValidation.isValid(req, ctx)) {
           return;
         }
-        String orgName = req.getParameter("orgName");
-        String orgWebsite = req.getParameter("orgWebsite").toLowerCase();
-        String adminName = req.getParameter("name").toLowerCase();
-        String orgContactPhoneNumber = req.getParameter("phone").toLowerCase();
-        String email = req.getParameter("email").toLowerCase();
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
-        String address = req.getParameter("address").toLowerCase();
-        String city = req.getParameter("city").toLowerCase();
-        String state = req.getParameter("state").toUpperCase();
-        String zipcode = req.getParameter("zipcode");
-        String taxCode = req.getParameter("taxCode");
-        Integer numUsers = Integer.parseInt(req.getParameter("numUsers"));
+        String orgName = req.getString("orgName");
+        String orgWebsite = req.getString("orgWebsite").toLowerCase();
+        String adminName = req.getString("name").toLowerCase();
+        String orgContactPhoneNumber = req.getString("phone").toLowerCase();
+        String email = req.getString("email").toLowerCase();
+        String username = req.getString("username");
+        String password = req.getString("password");
+        String address = req.getString("address").toLowerCase();
+        String city = req.getString("city").toLowerCase();
+        String state = req.getString("state").toUpperCase();
+        String zipcode = req.getString("zipcode");
+        String taxCode = req.getString("taxCode");
+        Integer numUsers = Integer.parseInt(req.getString("numUsers"));
 
         MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", orgName)).first();

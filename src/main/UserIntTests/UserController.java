@@ -1,5 +1,7 @@
 package UserIntTests;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import Config.MongoConfig;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -7,20 +9,20 @@ import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import org.bson.Document;
-
 import javax.servlet.http.HttpServletRequest;
-
-import static com.mongodb.client.model.Filters.eq;
+import org.bson.Document;
+import org.json.JSONObject;
 
 public class UserController {
 
   public static Handler loginUser =
       ctx -> {
-        HttpServletRequest req = ctx.req;
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
+        JSONObject obj = new JSONObject(ctx.body());
 
+        HttpServletRequest req = ctx.req;
+        String username = req.getString("username");
+        String password = req.getString("password");
+        System.out.println(username + " " + password);
         Argon2 argon2 = Argon2Factory.create();
         // @validate make sure that username and password are not null
         char[] passwordArr = password.toCharArray();
