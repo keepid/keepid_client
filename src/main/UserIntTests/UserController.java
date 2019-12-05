@@ -9,7 +9,6 @@ import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
 import org.json.JSONObject;
 
@@ -17,12 +16,9 @@ public class UserController {
 
   public static Handler loginUser =
       ctx -> {
-        JSONObject obj = new JSONObject(ctx.body());
-
-        HttpServletRequest req = ctx.req;
+        JSONObject req = new JSONObject(ctx.body());
         String username = req.getString("username");
         String password = req.getString("password");
-        System.out.println(username + " " + password);
         Argon2 argon2 = Argon2Factory.create();
         // @validate make sure that username and password are not null
         char[] passwordArr = password.toCharArray();

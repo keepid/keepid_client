@@ -4,12 +4,11 @@ import OrganizationIntTests.OrgEnrollmentStatus;
 import Security.GeneralValidator;
 import io.javalin.http.Context;
 import java.io.IOException;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import org.json.JSONObject;
 
 public class UserValidation implements GeneralValidator {
 
-  protected static boolean isValid(HttpServletRequest req, Context ctx)
+  protected static boolean isValid(JSONObject req, Context ctx)
       throws SecurityException, IOException {
     String firstName = req.getString("firstName");
     String lastName = req.getString("firstName");
@@ -23,19 +22,8 @@ public class UserValidation implements GeneralValidator {
     String zipcode = req.getString("zipcode");
     String taxCode = req.getString("taxCode");
     String numUsers = req.getString("numUsers");
-    Map<String, String[]> paramMap = req.getStringMap();
     // @jalbi debug log errors
     //        Log l = new Log();
-
-    // Empty or Null Check here
-    for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-      String value = entry.getValue()[0];
-      if (value == null || value.strip().length() == 0) {
-        //                l.logger.warning(entry.getKey() + " field empty or null");
-        ctx.result(OrgEnrollmentStatus.FIELD_EMPTY.toString());
-        return false;
-      }
-    }
 
     if (email.length() > 40) {
       //        	l.logger.warning("Email Is Too Long " + email.length());
