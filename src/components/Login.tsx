@@ -31,7 +31,7 @@ class Login extends Component<{}, State, {}> {
                   </h1>
                 </div>
                 <h2 className="textLoginLeftSubHeader mt-5">
-                  <span>Be Empowered</span>
+                  <span>For Those Experiencing Homelessness: Become Empowered</span>
                 </h2>
                 <p>
                   <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>
@@ -40,7 +40,7 @@ class Login extends Component<{}, State, {}> {
                     Get Started
                 </button>
                 <h2 className="textLoginLeftSubHeader mt-3">
-                  <span>Partner with Us</span>
+                  <span>For Organizations: Partner with Us</span>
                 </h2>
                 <p>
                   <span>Are you an aid organization fighting to end homelessness?</span>
