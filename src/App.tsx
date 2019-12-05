@@ -10,6 +10,7 @@ import ClientSignup from './components/ClientSignup';
 import WorkerSignup from './components/WorkerSignup';
 import OrganizationSignup from './components/OrganizationSignup';
 import Header from './components/Header';
+import UploadDocs from './components/UploadDocs';
 import ClientLanding from './components/ClientLanding';
 import Login from './components/Login';
 import Print from './components/Print';
@@ -21,10 +22,10 @@ import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
 
 interface State {
-  userType: userTypeLevel
+  userType: UserTypeLevel
 }
 
-enum userTypeLevel {
+enum UserTypeLevel {
   headAdmin, // can delete admin and create admin
   admin,
   worker,
@@ -37,27 +38,27 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      userType: userTypeLevel.loggedOut,
+      userType: UserTypeLevel.admin, // Change this to access pages
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
   }
 
   logIn() {
-    this.setState({ userType: userTypeLevel.client });
+    this.setState({ userType: UserTypeLevel.client });
   }
 
   logOut() {
-    this.setState({ userType: userTypeLevel.loggedOut });
+    this.setState({ userType: UserTypeLevel.loggedOut });
   }
 
   render() {
     const {
-      userType
+      userType,
     } = this.state;
     return (
       <div className="App">
-        <Header isLoggedIn={userType !== userTypeLevel.loggedOut} logIn={this.logIn} logOut={this.logOut} />
+        <Header isLoggedIn={userType !== UserTypeLevel.loggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
           <Switch>
             // Home/Login Components
@@ -65,7 +66,7 @@ class App extends React.Component<{}, State, {}> {
               exact
               path="/"
               render={() => (
-                userType !== userTypeLevel.loggedOut
+                userType !== UserTypeLevel.loggedOut
                   ? <Redirect to="/home" />
                   : <Redirect to="/login" />
               )}
@@ -73,9 +74,9 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/home"
               render={() => {
-                if (userType === userTypeLevel.admin || userType === userTypeLevel.headAdmin) {
+                if (userType === UserTypeLevel.admin || userType === UserTypeLevel.headAdmin) {
                   return (<AdminLanding />);
-                } if (userType === userTypeLevel.client) {
+                } if (userType === UserTypeLevel.client) {
                   return (<ClientLanding />);
                 }
                 return (<Redirect to="/login" />);
@@ -84,11 +85,12 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/login"
               render={() => (
-                userType !== userTypeLevel.loggedOut
+                userType !== UserTypeLevel.loggedOut
                   ? <Redirect to="/home" />
                   : <Login />
               )}
             />
+            // Admin Components
             // Signup Components
             <Route path="/organization-signup">
               <OrganizationSignup />
@@ -96,7 +98,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/client-signup"
               render={() => (
-                (userType === userTypeLevel.headAdmin || userType === userTypeLevel.admin || userType === userTypeLevel.worker)
+                (userType === UserTypeLevel.headAdmin || userType === UserTypeLevel.admin || userType === UserTypeLevel.worker)
                   ? <ClientSignup />
                   : <Redirect to="/" />
               )}
@@ -105,12 +107,15 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/worker-signup"
               render={() => (
-                (userType === userTypeLevel.headAdmin || userType === userTypeLevel.admin)
+                (userType === UserTypeLevel.headAdmin || userType === UserTypeLevel.admin)
                   ? <WorkerSignup />
                   : <Redirect to="/" />
               )}
             />
             // Client Components
+            <Route path="/upload-docs">
+              <UploadDocs />
+            </Route>
             <Route path="/see-my-docs">
               <SeeDocs />
             </Route>
@@ -126,8 +131,8 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/email">
               <Email />
             </Route>
-            <Route path="/doc-viewer">
-              <DocViewer />
+            <Route path="/document-viewer">
+              Document Viewer Here
             </Route>
             // Component
             <Route>
