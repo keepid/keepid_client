@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a40657c6-c3d8-44f9-a2e6-62295174348d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/DocViewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DocViewer.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/UploadDocs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/UploadDocs.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/static/styles/App.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/static/styles/App.scss" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,6 +18,7 @@
   </component>
   <component name="ProjectId" id="1UShVaRbiJK3D0CDwOnRdFKAVVw" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.stylelint" value="true" />
@@ -48,7 +50,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1575590878625</updated>
-      <workItem from="1575590881458" duration="1383000" />
+      <workItem from="1575590881458" duration="2982000" />
     </task>
     <servers />
   </component>
