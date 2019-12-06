@@ -31,6 +31,7 @@ class UploadDocs extends React.Component<{}, State> {
 
   handleChangeFileUpload(event: any) {
     event.preventDefault();
+    console.log(event.target.files);
     const file : File = event.target.files[0];
     const reader = new FileReader();
     reader.onloadend = (() => {
