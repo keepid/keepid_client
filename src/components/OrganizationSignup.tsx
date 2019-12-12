@@ -32,7 +32,6 @@ interface State {
 class OrganizationSignup extends Component<{}, State, {}> {
   constructor(props: Readonly<{}>) {
     super(props);
-    console.log(USStates);
     this.state = {
       submitSuccessful: false,
       organizationName: '',
@@ -95,15 +94,17 @@ class OrganizationSignup extends Component<{}, State, {}> {
           state: this.state.organizationAddressState,
           zipcode: this.state.organizationAddressZipcode,
           taxCode: this.state.organizationEIN,
-          numUsers: this.state.organizationNumClients,
-        }),
-      }).then((response) => response.json())
+          numUsers: this.state.organizationNumClients
+        })
+      }).then((response) => {
+        return response.json();
+      })
         .then((responseJSON) => {
           if (responseJSON === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });
           } else if (responseJSON === 'USER_ALREADY_EXISTS') {
             alert('User already exists');
-          } else if (responseJSON === 'ORG_ALREADY_EXISTS') {
+          } else if (responseJSON === 'ORG_EXISTS') {
             alert('Organization already exists');
           } else {
             alert('Server Failure: Please Try Again');
