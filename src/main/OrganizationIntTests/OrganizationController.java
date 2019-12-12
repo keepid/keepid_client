@@ -46,9 +46,9 @@ public class OrganizationController {
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingOrg != null) {
-          ctx.result(OrgEnrollmentStatus.ORG_EXISTS.toString());
+          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toString());
         } else if (existingUser != null) {
-          ctx.result(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
         } else {
           Argon2 argon2 = Argon2Factory.create();
           char[] passwordArr = password.toCharArray();
@@ -58,7 +58,7 @@ public class OrganizationController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.result(OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
+            ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
             return;
           }
 
@@ -91,7 +91,7 @@ public class OrganizationController {
                   .sign(algo);
           ctx.cookieStore("token", token);
            */
-          ctx.result(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
+          ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
         }
       };
 }
