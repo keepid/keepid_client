@@ -14,7 +14,7 @@ public class OrganizationValidation implements GeneralValidator {
       throws SecurityException, IOException {
     String orgName = req.getString("orgName");
     String orgWebsite = req.getString("orgWebsite");
-    String adminName = req.getString("name");
+    String adminName = req.getString("firstName") + " " + req.getString("lastName");
     String orgContactPhoneNumber = req.getString("phone");
     String email = req.getString("email");
     String username = req.getString("username");

@@ -1,5 +1,6 @@
 import Config.Env;
 import Config.MongoConfig;
+import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
@@ -9,7 +10,14 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
+import io.javalin.http.UnauthorizedResponse;
+import org.eclipse.jetty.server.session.DefaultSessionCache;
+import org.eclipse.jetty.server.session.FileSessionDataStore;
+import org.eclipse.jetty.server.session.SessionCache;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.slf4j.Logger;
+
+import java.io.File;
 
 public class App {
 
@@ -47,8 +55,10 @@ public class App {
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
                   //            config.requestLogger();                    // set a request logger
-                  //            config.sessionHandler();                   // set a SessionHandler
+                  config.sessionHandler(() -> SessionConfig.fileSessionHandler());
+
                 })
+                .accessManager(UserController::accessManager)
             .start(Integer.parseInt(dotenv.get("PORT")));
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger();
@@ -99,6 +109,6 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", UserController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
-    // app.post("/create-user", UserController.createUser);
+    app.post("/create-user", UserController.createNewUser);
   }
 }

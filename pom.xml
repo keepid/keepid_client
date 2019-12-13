@@ -128,5 +128,10 @@
     <!--      <artifactId>slf4j-simple</artifactId>-->
     <!--      <version>1.7.28</version>-->
     <!--    </dependency>-->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-nosql</artifactId>
+      <version>9.4.10.v20180503</version>
+    </dependency>
   </dependencies>
 </project>

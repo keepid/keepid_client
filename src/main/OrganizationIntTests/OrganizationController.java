@@ -21,13 +21,17 @@ public class OrganizationController {
 
   public Handler enrollOrganization =
       ctx -> {
+
+        //ctx.req.getSession().invalidate();
+
         JSONObject req = new JSONObject(ctx.body());
         if (!OrganizationValidation.isValid(req, ctx)) {
           return;
         }
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
-        String adminName = req.getString("name").toLowerCase();
+        String firstName = req.getString("firstName").toLowerCase();
+        String lastName = req.getString("lastName").toLowerCase();
         String orgContactPhoneNumber = req.getString("phone").toLowerCase();
         String email = req.getString("email").toLowerCase();
         String username = req.getString("username");
@@ -67,7 +71,13 @@ public class OrganizationController {
                   .append("password", passwordHash)
                   .append("organization", orgName)
                   .append("email", email)
-                  .append("name", adminName)
+                  .append("phone", orgContactPhoneNumber)
+                  .append("firstName", firstName)
+                  .append("lastName", lastName)
+                  .append("address", address)
+                  .append("city", city)
+                  .append("state", state)
+                  .append("zipcode", zipcode)
                   .append("privilegeLevel", "admin");
           userCollection.insertOne(newAdmin);
 
@@ -83,14 +93,9 @@ public class OrganizationController {
                   .append("expectedNumUsers", numUsers);
           orgCollection.insertOne(newOrg);
 
-          /*
-          Algorithm algo = Algorithm.HMAC256("secret");
-          String token = JWT.create()
-                  .withClaim("privilegeLevel", "admin")
-                  .withClaim("orgName", orgName)
-                  .sign(algo);
-          ctx.cookieStore("token", token);
-           */
+          ctx.sessionAttribute("privilegeLevel", "admin");
+          ctx.sessionAttribute("orgName", orgName);
+
           ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
         }
       };
