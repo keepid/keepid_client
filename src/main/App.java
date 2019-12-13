@@ -52,9 +52,9 @@ public class App {
             .start(Integer.parseInt(dotenv.get("PORT")));
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger();
-    logger.warn("PRINT LOGGER HERE WARN");
-    logger.error("PRINT LOGGER HERE ERROR");
-    logger.debug("PRINT LOGGER HERE DEBUG");
+    logger.warn("EXAMPLE OF WARN");
+    logger.error("EXAMPLE OF ERROR");
+    logger.debug("EXAMPLE OF DEBUG");
 
     // we need to instantiate the controllers with the database
     OrganizationController orgController = new OrganizationController(db);

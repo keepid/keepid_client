@@ -4,9 +4,10 @@ import Logger.LogFactory;
 import Security.GeneralValidator;
 import Security.ValidationUtils;
 import io.javalin.http.Context;
-import java.io.IOException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.io.IOException;
 
 public class OrganizationValidation implements GeneralValidator {
 
@@ -28,7 +29,7 @@ public class OrganizationValidation implements GeneralValidator {
 
     // declare logger here
     LogFactory l = new LogFactory();
-    Logger logger = l.createLogger();
+    Logger logger = l.createLogger("OrganizationValidation");
 
     if (!ValidationUtils.isValidOrgName(orgName)) {
       logger.error("Invalid or null orgname: " + orgName);

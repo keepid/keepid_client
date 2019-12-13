@@ -15,6 +15,11 @@
   <build>
     <sourceDirectory>${project.basedir}/src/main/</sourceDirectory>
     <testSourceDirectory>${project.basedir}/src/test/</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/Logger/Resources</directory>
+      </resource>
+    </resources>
     <testResources>
       <testResource>
         <directory>${project.basedir}/src/test/resources</directory>
@@ -123,10 +128,5 @@
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
     </dependency>
-    <!--    <dependency>-->
-    <!--      <groupId>org.slf4j</groupId>-->
-    <!--      <artifactId>slf4j-simple</artifactId>-->
-    <!--      <version>1.7.28</version>-->
-    <!--    </dependency>-->
   </dependencies>
 </project>
