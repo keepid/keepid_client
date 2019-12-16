@@ -16,6 +16,8 @@ class UploadDocs extends React.Component<{}, State> {
       pdfFile: undefined,
       pdfFileSource: null,
     };
+    this.submitForm = this.submitForm.bind(this);
+    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
   }
 
   submitForm(event: any) {

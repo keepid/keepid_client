@@ -22,34 +22,40 @@ import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
 
 interface State {
-  userType: UserTypeLevel
+  userType: UserTypeLevel,
+  username: string,
+  name: string,
+  organization: string
 }
 
 enum UserTypeLevel {
-  headAdmin, // can delete admin and create admin
-  admin,
-  worker,
-  volunteer,
-  client,
-  loggedOut
+  HeadAdmin, // can delete admin and create admin
+  Admin,
+  Worker,
+  Volunteer,
+  Client,
+  LoggedOut
 }
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      userType: UserTypeLevel.admin, // Change this to access pages
+      userType: UserTypeLevel.Admin, // Change this to access pages
+      username: "Test",
+      name: "Test Name",
+      organization: "Test Organization",
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
   }
 
   logIn() {
-    this.setState({ userType: UserTypeLevel.client });
+    this.setState({ userType: UserTypeLevel.Client });
   }
 
   logOut() {
-    this.setState({ userType: UserTypeLevel.loggedOut });
+    this.setState({ userType: UserTypeLevel.LoggedOut });
   }
 
   render() {
@@ -58,7 +64,7 @@ class App extends React.Component<{}, State, {}> {
     } = this.state;
     return (
       <div className="App">
-        <Header isLoggedIn={userType !== UserTypeLevel.loggedOut} logIn={this.logIn} logOut={this.logOut} />
+        <Header isLoggedIn={userType !== UserTypeLevel.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
           <Switch>
             // Home/Login Components
@@ -66,7 +72,7 @@ class App extends React.Component<{}, State, {}> {
               exact
               path="/"
               render={() => (
-                userType !== UserTypeLevel.loggedOut
+                userType !== UserTypeLevel.LoggedOut
                   ? <Redirect to="/home" />
                   : <Redirect to="/login" />
               )}
@@ -74,9 +80,9 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/home"
               render={() => {
-                if (userType === UserTypeLevel.admin || userType === UserTypeLevel.headAdmin) {
-                  return (<AdminLanding />);
-                } if (userType === UserTypeLevel.client) {
+                if (userType === UserTypeLevel.Admin || userType === UserTypeLevel.HeadAdmin) {
+                  return (<AdminLanding name={this.state.name} organization={this.state.organization} username={this.state.username}  />);
+                } if (userType === UserTypeLevel.Client) {
                   return (<ClientLanding />);
                 }
                 return (<Redirect to="/login" />);
@@ -85,7 +91,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/login"
               render={() => (
-                userType !== UserTypeLevel.loggedOut
+                userType !== UserTypeLevel.LoggedOut
                   ? <Redirect to="/home" />
                   : <Login />
               )}
@@ -98,7 +104,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/client-signup"
               render={() => (
-                (userType === UserTypeLevel.headAdmin || userType === UserTypeLevel.admin || userType === UserTypeLevel.worker)
+                (userType === UserTypeLevel.HeadAdmin || userType === UserTypeLevel.Admin || userType === UserTypeLevel.Worker)
                   ? <ClientSignup />
                   : <Redirect to="/" />
               )}
@@ -107,7 +113,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/worker-signup"
               render={() => (
-                (userType === UserTypeLevel.headAdmin || userType === UserTypeLevel.admin)
+                (userType === UserTypeLevel.HeadAdmin || userType === UserTypeLevel.Admin)
                   ? <WorkerSignup />
                   : <Redirect to="/" />
               )}
