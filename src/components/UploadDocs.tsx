@@ -22,13 +22,13 @@ class UploadDocs extends React.Component<{}, State> {
 
   submitForm(event: any) {
     event.preventDefault();
-    fetch("https://localhost:7000/put-documents", {
-      method: "POST",
-      body: this.state.pdfFile
+    fetch('https://localhost:7000/put-documents', {
+      method: 'POST',
+      body: this.state.pdfFile,
     }).then((response) => response.json())
-    .then((responseJSON) => {
+      .then((responseJSON) => {
 
-    });
+      });
   }
 
   handleChangeFileUpload(event: any) {
@@ -38,7 +38,7 @@ class UploadDocs extends React.Component<{}, State> {
     reader.onloadend = (() => {
       console.log(reader.result);
       this.setState({ pdfFile: file });
-      this.setState({ pdfFileSource: reader.result});
+      this.setState({ pdfFileSource: reader.result });
     });
     reader.readAsDataURL(file);
   }
@@ -54,16 +54,15 @@ class UploadDocs extends React.Component<{}, State> {
           </form>
         </div>
       );
-    } else {
-      return (
-        <div>
-          <form onSubmit={this.submitForm}>
-            <input type="file" accept="application/pdf" onChange={this.handleChangeFileUpload} />
-            <button type="submit">Upload</button>
-          </form>
-        </div>
-      );
     }
+    return (
+      <div>
+        <form onSubmit={this.submitForm}>
+          <input type="file" accept="application/pdf" onChange={this.handleChangeFileUpload} />
+          <button type="submit">Upload</button>
+        </form>
+      </div>
+    );
   }
 }
 

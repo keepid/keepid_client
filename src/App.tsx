@@ -42,9 +42,9 @@ class App extends React.Component<{}, State, {}> {
     super(props);
     this.state = {
       userType: UserTypeLevel.Admin, // Change this to access pages
-      username: "Test",
-      name: "Test Name",
-      organization: "Test Organization",
+      username: 'Test',
+      name: 'Test Name',
+      organization: 'Test Organization',
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
@@ -81,7 +81,7 @@ class App extends React.Component<{}, State, {}> {
               path="/home"
               render={() => {
                 if (userType === UserTypeLevel.Admin || userType === UserTypeLevel.HeadAdmin) {
-                  return (<AdminLanding name={this.state.name} organization={this.state.organization} username={this.state.username}  />);
+                  return (<AdminLanding name={this.state.name} organization={this.state.organization} username={this.state.username} />);
                 } if (userType === UserTypeLevel.Client) {
                   return (<ClientLanding />);
                 }

@@ -55,13 +55,13 @@ class AdminLanding extends Component<Props, State> {
 
   onClickWorker(event: any) {
     console.log(event);
-    this.setState({currentWorker: event});
+    this.setState({ currentWorker: event });
   }
 
   onChangeViewPermission(event: any) {
-    var currentWorker = this.state.currentWorker;
-    currentWorker.viewPermission = event.target.ischecked
-    this.setState({currentWorker: this.state})
+    const { currentWorker } = this.state;
+    currentWorker.viewPermission = event.target.ischecked;
+    this.setState({ currentWorker: this.state });
   }
 
   onChangeEditPermission(event: any) {
@@ -73,8 +73,10 @@ class AdminLanding extends Component<Props, State> {
   }
 
   getAdminWorkers() {
-    var workers = [{"username": "conchong1", "name": "Connor Chong", "role": "Admin", "viewPermission": true, "editPermission": true, "registerPermission": true}];
-    this.setState({workers: workers});
+    const workers = [{
+      username: 'conchong1', name: 'Connor Chong', role: 'Admin', viewPermission: true, editPermission: true, registerPermission: true,
+    }];
+    this.setState({ workers });
     // fetch("http://localhost:7000/get-admin-workers", {
     //   method: "POST",
     //   body: JSON.stringify({
@@ -95,7 +97,11 @@ class AdminLanding extends Component<Props, State> {
         <div className="jumbotron jumbotron-fluid">
           <div className="container">
             <h1 className="display-7">{this.state.organization}</h1>
-            <p className="lead">Welcome {this.state.adminName}.</p>
+            <p className="lead">
+Welcome
+              {this.state.adminName}
+.
+            </p>
           </div>
         </div>
         <div className="container">
@@ -110,20 +116,24 @@ class AdminLanding extends Component<Props, State> {
                 keyField="id"
                 data={this.state.workers}
                 columns={this.tableCols}
-                selectRow={{mode: "radio", onSelect: this.onClickWorker}}
+                selectRow={{ mode: 'radio', onSelect: this.onClickWorker }}
                 pagination={paginationFactory()}
               />
             </div>
             <div className="card ml-5">
               <div className="card-body">
-                <h5 className="card-title"> {this.state.currentWorker.name}: Worker Permissions</h5>
+                <h5 className="card-title">
+                  {' '}
+                  {this.state.currentWorker.name}
+: Worker Permissions
+                </h5>
                 <p className="card-text">Set and Modify Permissions here</p>
               </div>
               <ul className="list-group list-group-flush">
                 <li className="list-group-item">
                   <div className="form-group form-check">
                     <label htmlFor="viewCheckbox" className="form-check-label">
-                      <input type="checkbox" checked={this.state.currentWorker.viewPermission} onChange={this.onChangeViewPermission} className="form-check-input" id="viewCheckbox"  />
+                      <input type="checkbox" checked={this.state.currentWorker.viewPermission} onChange={this.onChangeViewPermission} className="form-check-input" id="viewCheckbox" />
                       Can View Client Documents
                     </label>
                   </div>
