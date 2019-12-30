@@ -1,3 +1,6 @@
+// Idea: worker only access to client which permitted him, we can change who a client can edit
+// Superadmin can only do set admin
+
 import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
@@ -35,7 +38,7 @@ class AdminLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      currentWorker: {},
+      currentWorker: undefined,
       username: props.username,
       adminName: props.name,
       organization: props.organization,
@@ -54,27 +57,39 @@ class AdminLanding extends Component<Props, State> {
   }
 
   onClickWorker(event: any) {
-    console.log(event);
     this.setState({ currentWorker: event });
   }
 
   onChangeViewPermission(event: any) {
-    const { currentWorker } = this.state;
+    const {
+      currentWorker,
+      username,
+      adminName,
+      organization,
+      workers,
+    } = this.state;
     currentWorker.viewPermission = event.target.ischecked;
-    this.setState({ currentWorker: this.state });
+    this.setState({ currentWorker });
   }
 
   onChangeEditPermission(event: any) {
-    console.log(event);
+    const thisCopy = this;
+    // console.log(event);
   }
 
   onChangeRegisterPermission(event: any) {
-    console.log(event);
+    const thisCopy = this;
+    // console.log(event);
   }
 
   getAdminWorkers() {
     const workers = [{
-      username: 'conchong1', name: 'Connor Chong', role: 'Admin', viewPermission: true, editPermission: true, registerPermission: true,
+      username: 'conchong1',
+      name: 'Connor Chong',
+      role: 'Admin',
+      viewPermission: true,
+      editPermission: true,
+      registerPermission: true,
     }];
     this.setState({ workers });
     // fetch("http://localhost:7000/get-admin-workers", {
@@ -90,17 +105,119 @@ class AdminLanding extends Component<Props, State> {
 
   render() {
     const {
+      currentWorker,
+      username,
+      adminName,
+      organization,
       workers,
     } = this.state;
+    const workerPanel = (currentWorker === undefined)
+      ? (
+        <div className="card ml-5">
+          <div className="card-body">
+            <h5 className="card-title">
+              No Worker Selected
+            </h5>
+            <p className="card-text">Set and Modify Permissions here</p>
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <div className="form-group form-check">
+                <label htmlFor="viewCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="viewCheckbox" />
+                  Can View Client Documents
+                </label>
+              </div>
+              <div className="form-group form-check">
+                <label htmlFor="editCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="editCheckbox" />
+                  Can Edit Client Documents
+                </label>
+              </div>
+              <div className="form-group form-check">
+                <label htmlFor="registerCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="registerCheckbox" />
+                  Can Register New Clients
+                </label>
+              </div>
+              <div className="form-group">
+                <label htmlFor="permissionSelector">
+                  Set Worker Permission Level
+                  <select className="form-control" id="permissionSelector">
+                    <option>Worker</option>
+                    <option>Admin</option>
+                    <option>Volunteer</option>
+                  </select>
+                </label>
+              </div>
+              <div className="form-group">
+                <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+              </div>
+            </li>
+            <li className="list-group-item">
+              <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+            </li>
+          </ul>
+        </div>
+      ) : (
+        <div className="card ml-5">
+          <div className="card-body">
+            <h5 className="card-title">
+              {currentWorker.name}
+              : Worker Permissions
+            </h5>
+            <p className="card-text">Set and Modify Permissions here</p>
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <div className="form-group form-check">
+                <label htmlFor="viewCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={currentWorker.viewPermission} onChange={this.onChangeViewPermission} className="form-check-input" id="viewCheckbox" />
+                  Can View Client Documents
+                </label>
+              </div>
+              <div className="form-group form-check">
+                <label htmlFor="editCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={currentWorker.editPermission} onChange={this.onChangeEditPermission} className="form-check-input" id="editCheckbox" />
+                  Can Edit Client Documents
+                </label>
+              </div>
+              <div className="form-group form-check">
+                <label htmlFor="registerCheckbox" className="form-check-label">
+                  <input type="checkbox" checked={currentWorker.registerPermission} onChange={this.onChangeRegisterPermission} className="form-check-input" id="registerCheckbox" />
+                  Can Register New Clients
+                </label>
+              </div>
+              <div className="form-group">
+                <label htmlFor="permissionSelector">
+                  Set Worker Permission Level
+                  <select className="form-control" id="permissionSelector">
+                    <option>Worker</option>
+                    <option>Admin</option>
+                    <option>Volunteer</option>
+                  </select>
+                </label>
+              </div>
+              <div className="form-group">
+                <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+              </div>
+            </li>
+            <li className="list-group-item">
+              <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+            </li>
+          </ul>
+        </div>
+      );
+
     return (
       <div>
         <div className="jumbotron jumbotron-fluid">
           <div className="container">
-            <h1 className="display-7">{this.state.organization}</h1>
+            <h1 className="display-7">{organization}</h1>
             <p className="lead">
-Welcome
-              {this.state.adminName}
-.
+              Welcome
+              {adminName}
+              .
             </p>
           </div>
         </div>
@@ -114,60 +231,19 @@ Welcome
               <BootstrapTable
                 bootstrap4
                 keyField="id"
-                data={this.state.workers}
+                data={workers}
+                hover
                 columns={this.tableCols}
-                selectRow={{ mode: 'radio', onSelect: this.onClickWorker }}
+                selectRow={{
+                  mode: 'radio',
+                  onSelect: this.onClickWorker,
+                  clickToSelect: true,
+                  hideSelectColumn: true,
+                }}
                 pagination={paginationFactory()}
               />
             </div>
-            <div className="card ml-5">
-              <div className="card-body">
-                <h5 className="card-title">
-                  {' '}
-                  {this.state.currentWorker.name}
-: Worker Permissions
-                </h5>
-                <p className="card-text">Set and Modify Permissions here</p>
-              </div>
-              <ul className="list-group list-group-flush">
-                <li className="list-group-item">
-                  <div className="form-group form-check">
-                    <label htmlFor="viewCheckbox" className="form-check-label">
-                      <input type="checkbox" checked={this.state.currentWorker.viewPermission} onChange={this.onChangeViewPermission} className="form-check-input" id="viewCheckbox" />
-                      Can View Client Documents
-                    </label>
-                  </div>
-                  <div className="form-group form-check">
-                    <label className="form-check-label">
-                      <input type="checkbox" checked={this.state.currentWorker.editPermission} onChange={this.onChangeEditPermission} className="form-check-input" id="editCheckbox" />
-                      Can Edit Client Documents
-                    </label>
-                  </div>
-                  <div className="form-group form-check">
-                    <label className="form-check-label">
-                      <input type="checkbox" checked={this.state.currentWorker.registerPermission} onChange={this.onChangeRegisterPermission} className="form-check-input" id="registerCheckbox" />
-                      Can Register New Clients
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      Set Worker Permission Level
-                      <select className="form-control" id="exampleFormControlSelect1">
-                        <option>Worker</option>
-                        <option>Admin</option>
-                        <option>Volunteer</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <button type="submit" className="btn btn-danger">Delete User</button>
-                  </div>
-                </li>
-                <li className="list-group-item">
-                  <button type="submit" className="btn btn-outline-primary">Save Changes</button>
-                </li>
-              </ul>
-            </div>
+            {workerPanel}
           </div>
         </div>
       </div>

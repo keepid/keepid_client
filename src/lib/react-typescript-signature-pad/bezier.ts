@@ -1,15 +1,15 @@
-import point from './point';
+import Point from './point';
 
 export default class Bezier {
-    startPoint: point;
+    startPoint: Point;
 
-    control1: point;
+    control1: Point;
 
-    control2: point;
+    control2: Point;
 
-    endPoint: point;
+    endPoint: Point;
 
-    constructor(startPoint: point, control1: point, control2: point, endPoint: point) {
+    constructor(startPoint: Point, control1: Point, control2: Point, endPoint: Point) {
       this.startPoint = startPoint;
       this.control1 = control1;
       this.control2 = control2;
@@ -17,20 +17,27 @@ export default class Bezier {
     }
 
     length() {
+      function PointToNumber(t: number, start: number, c1: number, c2: number, end: number) {
+        return start * (1.0 - t) * (1.0 - t) * (1.0 - t)
+              + 3.0 * c1 * (1.0 - t) * (1.0 - t) * t
+              + 3.0 * c2 * (1.0 - t) * t * t
+              + end * t * t * t;
+      }
+
       const steps = 10;
       let length = 0;
       let px: number = 0;
       let py: number = 0;
       for (let i = 0; i <= steps; i += 1) {
         const t = i / steps;
-        const cx = this.point(
+        const cx = PointToNumber(
           t,
           this.startPoint.x,
           this.control1.x,
           this.control2.x,
           this.endPoint.x,
         );
-        const cy = this.point(
+        const cy = PointToNumber(
           t,
           this.startPoint.y,
           this.control1.y,
@@ -46,12 +53,5 @@ export default class Bezier {
         py = cy;
       }
       return length;
-    }
-
-    private point(t: number, start: number, c1: number, c2: number, end: number) {
-      return start * (1.0 - t) * (1.0 - t) * (1.0 - t)
-            + 3.0 * c1 * (1.0 - t) * (1.0 - t) * t
-            + 3.0 * c2 * (1.0 - t) * t * t
-            + end * t * t * t;
     }
 }

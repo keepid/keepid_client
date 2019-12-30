@@ -13,7 +13,6 @@ interface Props {
 }
 
 interface State {
-  isLoggedIn: boolean,
   incorrectCredentials: boolean,
   username: string,
   password: string
@@ -22,9 +21,7 @@ interface State {
 class Header extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
-    console.log(`${process.env.SERVER}/login`);
     this.state = {
-      isLoggedIn: false,
       incorrectCredentials: false,
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
@@ -36,16 +33,23 @@ class Header extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     event.preventDefault();
+    const {
+      logIn,
+    } = this.props;
+    const {
+      username,
+      password,
+    } = this.state;
     fetch('http://localhost:7000/login', {
       method: 'POST',
       body: JSON.stringify({
-        username: this.state.username,
-        password: this.state.password,
+        username,
+        password,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON === 'AUTH_SUCCESS') {
-          this.props.logIn();
+          logIn();
         } else if (responseJSON === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
@@ -55,12 +59,7 @@ class Header extends Component<Props, State, {}> {
         } else {
           alert('Server Failure: Please Try Again');
         }
-        console.log(responseJSON);
       });
-  }
-
-  UNSAFE_componentWillReceiveProps(props: Props) {
-    this.setState({ isLoggedIn: props.isLoggedIn });
   }
 
   handleChangePassword(event: any) {
@@ -72,87 +71,101 @@ class Header extends Component<Props, State, {}> {
   }
 
   render() {
-    if (this.state.isLoggedIn) {
-      return (<Button onClick={this.props.logOut}>Log Out</Button>);
-    }
+    const {
+      logOut,
+      isLoggedIn,
+    } = this.props;
+    const {
+      incorrectCredentials,
+      username,
+      password,
+    } = this.state;
+
+    const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
+
     return (
-      <div>
-        <Navbar bg="primary-theme" variant="dark" sticky="top">
-          <Form id="loginForm" onSubmit={this.handleSubmit}>
-            <Row className="d-flex justify-content-end">
-              <Col sm={2}>
-                <Navbar.Brand href="/">
-                  <img
-                    alt=""
-                    src={Logo}
-                    width="48"
-                    height="48"
-                    className="d-inline-block align-top"
-                  />
-                      keep.id
-                </Navbar.Brand>
-              </Col>
-              <Col sm={4}>
-                <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroupPrepend">
+      isLoggedIn
+        ? <Button onClick={logOut}>Log Out</Button>
+        : (
+          <div>
+            <Navbar bg="primary-theme" variant="dark" sticky="top">
+              <Form id="loginForm" onSubmit={this.handleSubmit}>
+                <Row className="d-flex justify-content-end">
+                  <Col sm={2}>
+                    <Navbar.Brand href="/">
                       <img
                         alt=""
-                        src={UsernameSVG}
-                        width="22px"
-                        height="22px"
-                        className="d-inline-block align-middle"
+                        src={Logo}
+                        width="48"
+                        height="48"
+                        className="d-inline-block align-top"
                       />
-                    </InputGroup.Text>
-                  </InputGroup.Prepend>
-                  <Form.Control
-                    type="text"
-                    onChange={this.handleChangeUsername}
-                    value={this.state.username}
-                    placeholder="First-Last-MM-DD-YYYY"
-                    aria-describedby="Username Login"
-                    required
-                  />
-                  {/* <Form.Control.Feedback type="invalid">
-                        Please choose a username.
-                      </Form.Control.Feedback> */}
-                </InputGroup>
-              </Col>
-              <Col sm={4}>
-                <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroupPrepend">
-                      <img
-                        alt=""
-                        src={PasswordSVG}
-                        width="22px"
-                        height="22px"
-                        className="d-inline-block align-middle"
+                          keep.id
+                    </Navbar.Brand>
+                  </Col>
+                  <Col sm={4}>
+                    <InputGroup>
+                      <InputGroup.Prepend>
+                        <InputGroup.Text id="inputGroupPrepend">
+                          <img
+                            alt=""
+                            src={UsernameSVG}
+                            width="22px"
+                            height="22px"
+                            className="d-inline-block align-middle"
+                          />
+                        </InputGroup.Text>
+                      </InputGroup.Prepend>
+                      <Form.Control
+                        type="text"
+                        onChange={this.handleChangeUsername}
+                        value={username}
+                        placeholder="First-Last-MM-DD-YYYY"
+                        aria-describedby="Username Login"
+                        required
                       />
-                    </InputGroup.Text>
-                  </InputGroup.Prepend>
-                  <Form.Control
-                    type="password"
-                    onChange={this.handleChangePassword}
-                    value={this.state.password}
-                    placeholder="Password"
-                    aria-describedby="Password Login"
-                    required
-                  />
-                  {/* <Form.Control.Feedback type="invalid">
-                        Please choose a username.
-                      </Form.Control.Feedback> */}
-                </InputGroup>
-              </Col>
-              <Col sm={2}>
-                <Button variant="outline-light" type="submit">
-                  <b>Login</b>
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        </Navbar>
-      </div>
+                      {/* <Form.Control.Feedback type="invalid">
+                            Please choose a username.
+                          </Form.Control.Feedback> */}
+                    </InputGroup>
+                  </Col>
+                  <Col sm={4}>
+                    <InputGroup>
+                      <InputGroup.Prepend>
+                        <InputGroup.Text id="inputGroupPrepend">
+                          <img
+                            alt=""
+                            src={PasswordSVG}
+                            width="22px"
+                            height="22px"
+                            className="d-inline-block align-middle"
+                          />
+                        </InputGroup.Text>
+                      </InputGroup.Prepend>
+                      <Form.Control
+                        type="password"
+                        onChange={this.handleChangePassword}
+                        value={password}
+                        placeholder="Password"
+                        aria-describedby="Password Login"
+                        required
+                      />
+                      {/* <Form.Control.Feedback type="invalid">
+                            Please choose a username.
+                          </Form.Control.Feedback> */}
+                    </InputGroup>
+                  </Col>
+                  <Col sm={2}>
+                    <Button variant="outline-light" type="submit">
+                      <b>Login</b>
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+              {incorrectCredentialsText}
+            </Navbar>
+          </div>
+        )
     );
   }
 }

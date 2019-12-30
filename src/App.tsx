@@ -6,8 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
-import ClientSignup from './components/ClientSignup';
-import WorkerSignup from './components/WorkerSignup';
+import PersonSignup from './components/PersonSignup';
 import OrganizationSignup from './components/OrganizationSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
@@ -17,31 +16,25 @@ import Print from './components/Print';
 import Request from './components/Request';
 import SeeDocs from './components/SeeDocs';
 import Applications from './components/Applications';
+import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
 
+import Role from './static/Role';
+
 interface State {
-  userType: UserTypeLevel,
+  role: Role,
   username: string,
   name: string,
   organization: string
-}
-
-enum UserTypeLevel {
-  HeadAdmin, // can delete admin and create admin
-  Admin,
-  Worker,
-  Volunteer,
-  Client,
-  LoggedOut
 }
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      userType: UserTypeLevel.Admin, // Change this to access pages
+      role: Role.Admin, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
@@ -51,20 +44,23 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logIn() {
-    this.setState({ userType: UserTypeLevel.Client });
+    this.setState({ role: Role.Client });
   }
 
   logOut() {
-    this.setState({ userType: UserTypeLevel.LoggedOut });
+    this.setState({ role: Role.LoggedOut });
   }
 
   render() {
     const {
-      userType,
+      role,
+      username,
+      name,
+      organization,
     } = this.state;
     return (
       <div className="App">
-        <Header isLoggedIn={userType !== UserTypeLevel.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
+        <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
           <Switch>
             // Home/Login Components
@@ -72,7 +68,7 @@ class App extends React.Component<{}, State, {}> {
               exact
               path="/"
               render={() => (
-                userType !== UserTypeLevel.LoggedOut
+                role !== Role.LoggedOut
                   ? <Redirect to="/home" />
                   : <Redirect to="/login" />
               )}
@@ -80,9 +76,10 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/home"
               render={() => {
-                if (userType === UserTypeLevel.Admin || userType === UserTypeLevel.HeadAdmin) {
-                  return (<AdminLanding name={this.state.name} organization={this.state.organization} username={this.state.username} />);
-                } if (userType === UserTypeLevel.Client) {
+                if (role === Role.Admin || role === Role.HeadAdmin) {
+                  return (<AdminLanding name={name} organization={organization} username={username} />);
+                }
+                if (role === Role.Client) {
                   return (<ClientLanding />);
                 }
                 return (<Redirect to="/login" />);
@@ -91,7 +88,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/login"
               render={() => (
-                userType !== UserTypeLevel.LoggedOut
+                role !== Role.LoggedOut
                   ? <Redirect to="/home" />
                   : <Login />
               )}
@@ -102,21 +99,33 @@ class App extends React.Component<{}, State, {}> {
               <OrganizationSignup />
             </Route>
             <Route
-              path="/client-signup"
-              render={() => (
-                (userType === UserTypeLevel.HeadAdmin || userType === UserTypeLevel.Admin || userType === UserTypeLevel.Worker)
-                  ? <ClientSignup />
-                  : <Redirect to="/" />
-              )}
-            />
-
-            <Route
-              path="/worker-signup"
-              render={() => (
-                (userType === UserTypeLevel.HeadAdmin || userType === UserTypeLevel.Admin)
-                  ? <WorkerSignup />
-                  : <Redirect to="/" />
-              )}
+              path="/person-signup/:roleString"
+              render={(props) => {
+                switch (props.match.params.roleString) {
+                  case 'admin':
+                    return (role === Role.HeadAdmin
+                      ? <PersonSignup userRole={role} personRole={Role.Admin} />
+                      : <Redirect to="/error" />
+                    );
+                  case 'worker':
+                    return (role === Role.HeadAdmin || role === Role.Admin
+                      ? <PersonSignup userRole={role} personRole={Role.Worker} />
+                      : <Redirect to="/error" />
+                    );
+                  case 'volunteer':
+                    return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker
+                      ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
+                      : <Redirect to="/error" />
+                    );
+                  case 'client':
+                    return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
+                      ? <PersonSignup userRole={role} personRole={Role.Client} />
+                      : <Redirect to="/error" />
+                    );
+                  default:
+                    return <Redirect to="/error" />;
+                }
+              }}
             />
             // Client Components
             <Route path="/upload-docs">
@@ -141,8 +150,11 @@ class App extends React.Component<{}, State, {}> {
               Document Viewer Here
             </Route>
             // Component
+            <Route path="/error">
+              <Error />
+            </Route>
             <Route>
-              <Redirect to="/" />
+              <Redirect to="/error" />
             </Route>
           </Switch>
         </Router>

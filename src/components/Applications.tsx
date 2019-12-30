@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import Calendar from '../static/images/calendar.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class Applications extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: true, // Change to true in order to show landing logged in
-    };
-  }
-
+class Applications extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
