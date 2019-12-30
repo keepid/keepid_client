@@ -42,7 +42,11 @@ class AdminLanding extends Component<Props, State> {
       username: props.username,
       adminName: props.name,
       organization: props.organization,
-      workers: [{}],
+      workers: [{
+        username: '',
+        name: '',
+        role: '',
+      }],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.onClickWorker = this.onClickWorker.bind(this);
@@ -230,7 +234,7 @@ class AdminLanding extends Component<Props, State> {
             <div className="w-50 pd-3">
               <BootstrapTable
                 bootstrap4
-                keyField="id"
+                keyField="username"
                 data={workers}
                 hover
                 columns={this.tableCols}
