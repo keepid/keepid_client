@@ -38,7 +38,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      userType: UserTypeLevel.admin, // Change this to access pages
+      userType: UserTypeLevel.loggedOut, // Change this to access pages
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
