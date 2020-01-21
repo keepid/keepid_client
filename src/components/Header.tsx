@@ -157,7 +157,6 @@ class Header extends Component<Props, State, {}> {
                           />
                         </div>
                       </div>
-                      {/* <label className="sr-only" htmlFor="inlineFormInputGroupUsername">Username</label> */}
                       <input
                         type="text"
                         className="form-control"
@@ -181,7 +180,6 @@ class Header extends Component<Props, State, {}> {
                           />
                         </div>
                       </div>
-                      {/* <label className="sr-only" htmlFor="inlineFormInputGroupPassword">Password</label> */}
                       <input
                         type="text"
                         className="form-control"
