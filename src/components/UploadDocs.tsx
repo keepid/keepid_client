@@ -21,13 +21,13 @@ class UploadDocs extends React.Component<{}, State> {
 
   submitForm(event: any) {
     event.preventDefault();
-    fetch("https://localhost:7000/put-documents", {
-      method: "POST",
-      body: this.state.pdfFile
+    fetch('https://localhost:7000/put-documents', {
+      method: 'POST',
+      body: this.state.pdfFile,
     }).then((response) => response.json())
-    .then((responseJSON) => {
+      .then((responseJSON) => {
 
-    });
+      });
   }
 
   handleChangeFileUpload(event: any) {
@@ -38,7 +38,7 @@ class UploadDocs extends React.Component<{}, State> {
     reader.onloadend = (() => {
       console.log(reader.result);
       this.setState({ pdfFile: file });
-      this.setState({ pdfFileSource: reader.result});
+      this.setState({ pdfFileSource: reader.result });
     });
     reader.readAsDataURL(file);
   }
@@ -60,8 +60,10 @@ class UploadDocs extends React.Component<{}, State> {
           <div className="row">
             <div className="col-md-12">
               <p className="textUploadDesc mt-3 ml-5 mr-5">
-                  <span>Click the "Choose file" button to select a PDF file to upload. The name and a preview of the PDF will appear below the buttons.
-                  After confirming that you have chosen the correct file, click the "Upload" button to upload. Otherwise, choose a different file.</span>
+                <span>
+Click the "Choose file" button to select a PDF file to upload. The name and a preview of the PDF will appear below the buttons.
+                  After confirming that you have chosen the correct file, click the "Upload" button to upload. Otherwise, choose a different file.
+                </span>
               </p>
             </div>
           </div>
@@ -78,40 +80,41 @@ class UploadDocs extends React.Component<{}, State> {
             </form>
           </div>
           <div className="row">
-          <DocViewer pdfFile={this.state.pdfFile} />
+            <DocViewer pdfFile={this.state.pdfFile} />
           </div>
         </div>
       );
-    } else {
-      return (
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-md-6">
-                <img src={UploadLogo} className="float-right mt-2" alt="Upload" />
-              </div>
-              <div className="col-md-6 mt-4">
-                <h3 className="textPrintHeader">
+    }
+    return (
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col-md-6">
+            <img src={UploadLogo} className="float-right mt-2" alt="Upload" />
+          </div>
+          <div className="col-md-6 mt-4">
+            <h3 className="textPrintHeader">
                   Upload A Document
-                </h3>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-md-12">
-                <p className="textUploadDesc mt-3 ml-5 mr-5">
-                  <span>Click the "Choose file" button to select a PDF file to upload. A preview of the document will appear below the buttons.
-                  After confirming that you have chosen the correct file, click the "Upload" button to upload. Otherwise, choose a different file.</span>
-                </p>
-              </div>
-            </div>
+            </h3>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-12">
+            <p className="textUploadDesc mt-3 ml-5 mr-5">
+              <span>
+Click the "Choose file" button to select a PDF file to upload. A preview of the document will appear below the buttons.
+                  After confirming that you have chosen the correct file, click the "Upload" button to upload. Otherwise, choose a different file.
+              </span>
+            </p>
+          </div>
+        </div>
         <div className="row mb-5 justify-content-center">
           <form onSubmit={this.submitForm}>
             <input type="file" accept="application/pdf" onChange={this.handleChangeFileUpload} />
             <button type="submit">Upload</button>
           </form>
         </div>
-          </div>
-      );
-    }
+      </div>
+    );
   }
 }
 

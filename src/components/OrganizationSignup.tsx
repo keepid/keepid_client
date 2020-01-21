@@ -94,11 +94,9 @@ class OrganizationSignup extends Component<{}, State, {}> {
           state: this.state.organizationAddressState,
           zipcode: this.state.organizationAddressZipcode,
           taxCode: this.state.organizationEIN,
-          numUsers: this.state.organizationNumClients
-        })
-      }).then((response) => {
-        return response.json();
-      })
+          numUsers: this.state.organizationNumClients,
+        }),
+      }).then((response) => response.json())
         .then((responseJSON) => {
           if (responseJSON === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });

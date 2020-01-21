@@ -72,47 +72,46 @@ class Header extends Component<Props, State, {}> {
     if (this.state.isLoggedIn) {
       return (
         <div>
-        <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
-          <div className="container">
-            <a className="navbar-brand" href="/home">
-              <img
-                alt="Logo"
-                src={Logo}
-                width="30"
-                height="30"
-                className="d-inline-block align-middle"
-              />
-            </a>
-            <a className="navbar-brand" href="/home">
+          <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
+            <div className="container">
+              <a className="navbar-brand" href="/home">
+                <img
+                  alt="Logo"
+                  src={Logo}
+                  width="30"
+                  height="30"
+                  className="d-inline-block align-middle"
+                />
+              </a>
+              <a className="navbar-brand" href="/home">
               keep.id
-            </a>
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
-              <span className="navbar-toggler-icon"></span>
-            </button>
+              </a>
+              <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
+                <span className="navbar-toggler-icon" />
+              </button>
 
-            <div className="collapse navbar-collapse" id="navbarToggleLoggedIn">
-              <ul className="navbar-nav mr-auto mt-2 mt-lg-0">
-              </ul>
-              <li className="nav-item">
-                <a className="nav-link" href="/myaccount">My Account</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/settings">Settings</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/myorganization">My Organization</a>
-              </li>
-              <div className="col-auto my-1">
-                <button type="submit" className="btn btn-primary">Login</button>
+              <div className="collapse navbar-collapse" id="navbarToggleLoggedIn">
+                <ul className="navbar-nav mr-auto mt-2 mt-lg-0" />
+                <li className="nav-item">
+                  <a className="nav-link" href="/myaccount">My Account</a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/settings">Settings</a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/myorganization">My Organization</a>
+                </li>
+                <div className="col-auto my-1">
+                  <button type="submit" className="btn btn-primary">Login</button>
+                </div>
+                {/* My account */}
+                {/* Settings */}
+                {/* My Organization */}
+                {/* Log Out */}
               </div>
-              {/* My account */}
-              {/* Settings */}
-              {/* My Organization */}
-              {/* Log Out */}
             </div>
-          </div>
-        </nav>
-      </div>
+          </nav>
+        </div>
       );
     }
     return (
@@ -132,12 +131,11 @@ class Header extends Component<Props, State, {}> {
               keep.id
             </a>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
-              <span className="navbar-toggler-icon"></span>
+              <span className="navbar-toggler-icon" />
             </button>
 
             <div className="collapse navbar-collapse" id="navbarToggle">
-              <ul className="navbar-nav mr-auto mt-2 mt-lg-0">
-              </ul>
+              <ul className="navbar-nav mr-auto mt-2 mt-lg-0" />
               <form>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
@@ -154,9 +152,14 @@ class Header extends Component<Props, State, {}> {
                           />
                         </div>
                       </div>
-                      <input type="text" className="form-control" 
-                        id="inlineFormInputGroupUsername" onChange={this.handleChangeUsername} value={this.state.username} 
-                        placeholder="Username"/>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="inlineFormInputGroupUsername"
+                        onChange={this.handleChangeUsername}
+                        value={this.state.username}
+                        placeholder="Username"
+                      />
                     </div>
                   </div>
                   <div className="col-med-2 my-1">
@@ -165,17 +168,22 @@ class Header extends Component<Props, State, {}> {
                       <div className="input-group-prepend">
                         <div className="input-group-text">
                           <img
-                              alt="Password"
-                              src={PasswordSVG}
-                              width="22"
-                              height="22"
-                              className="d-inline-block align-middle"
-                            />
+                            alt="Password"
+                            src={PasswordSVG}
+                            width="22"
+                            height="22"
+                            className="d-inline-block align-middle"
+                          />
                         </div>
                       </div>
-                      <input type="text" className="form-control" 
-                        id="inlineFormInputGroupPassword" onChange={this.handleChangePassword} value={this.state.password} 
-                        placeholder="Password"/>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="inlineFormInputGroupPassword"
+                        onChange={this.handleChangePassword}
+                        value={this.state.password}
+                        placeholder="Password"
+                      />
                     </div>
                   </div>
                   <div className="col-auto my-1">
@@ -260,11 +268,11 @@ export default Header;
 //                       </Form.Control.Feedback> */}
 //                 {/* </InputGroup>
 //               </Col> */}
-          {/* //     <Col sm={2}>
+{ /* //     <Col sm={2}>
           //       <Button variant="outline-light" type="submit">
           //         <b>Login</b>
           //       </Button>
           //     </Col>
           //   </Row>
-          // </Form> */}
-        {/* </Navbar> */} 
+          // </Form> */ }
+{ /* </Navbar> */ }
