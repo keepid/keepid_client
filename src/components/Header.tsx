@@ -10,7 +10,6 @@ interface Props {
 }
 
 interface State {
-  isLoggedIn: boolean,
   incorrectCredentials: boolean,
   username: string,
   password: string
@@ -19,9 +18,7 @@ interface State {
 class Header extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
-    console.log(`${process.env.SERVER}/login`);
     this.state = {
-      isLoggedIn: false,
       incorrectCredentials: false,
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
@@ -33,16 +30,23 @@ class Header extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     event.preventDefault();
+    const {
+      logIn,
+    } = this.props;
+    const {
+      username,
+      password,
+    } = this.state;
     fetch('http://localhost:7000/login', {
       method: 'POST',
       body: JSON.stringify({
-        username: this.state.username,
-        password: this.state.password,
+        username,
+        password,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON === 'AUTH_SUCCESS') {
-          this.props.logIn();
+          logIn();
         } else if (responseJSON === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
@@ -52,12 +56,7 @@ class Header extends Component<Props, State, {}> {
         } else {
           alert('Server Failure: Please Try Again');
         }
-        console.log(responseJSON);
       });
-  }
-
-  UNSAFE_componentWillReceiveProps(props: Props) {
-    this.setState({ isLoggedIn: props.isLoggedIn });
   }
 
   handleChangePassword(event: any) {
@@ -69,7 +68,18 @@ class Header extends Component<Props, State, {}> {
   }
 
   render() {
-    if (this.state.isLoggedIn) {
+    const {
+      logOut,
+      isLoggedIn,
+    } = this.props;
+    const {
+      incorrectCredentials,
+      username,
+      password,
+    } = this.state;
+
+    const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
+    if (isLoggedIn) {
       return (
         <div>
           <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
@@ -102,12 +112,8 @@ class Header extends Component<Props, State, {}> {
                   <a className="nav-link" href="/myorganization">My Organization</a>
                 </li>
                 <div className="col-auto my-1">
-                  <button type="submit" className="btn btn-primary">Login</button>
+                  <button type="submit" onClick={logOut} className="btn btn-primary">Log Out</button>
                 </div>
-                {/* My account */}
-                {/* Settings */}
-                {/* My Organization */}
-                {/* Log Out */}
               </div>
             </div>
           </nav>
@@ -157,7 +163,7 @@ class Header extends Component<Props, State, {}> {
                         className="form-control"
                         id="inlineFormInputGroupUsername"
                         onChange={this.handleChangeUsername}
-                        value={this.state.username}
+                        value={username}
                         placeholder="Username"
                       />
                     </div>
@@ -181,7 +187,7 @@ class Header extends Component<Props, State, {}> {
                         className="form-control"
                         id="inlineFormInputGroupPassword"
                         onChange={this.handleChangePassword}
-                        value={this.state.password}
+                        value={password}
                         placeholder="Password"
                       />
                     </div>
@@ -191,6 +197,7 @@ class Header extends Component<Props, State, {}> {
                   </div>
                 </div>
               </form>
+              {incorrectCredentialsText}
             </div>
           </div>
         </nav>
