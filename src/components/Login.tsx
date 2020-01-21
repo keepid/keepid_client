@@ -3,18 +3,7 @@ import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class Login extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: false, // Change to true in order to show landing logged in
-    };
-  }
-
+class Login extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">

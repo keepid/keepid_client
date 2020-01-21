@@ -7,24 +7,11 @@ interface Props {
   pdfFile: File,
 }
 
-interface State {
-  pdfFile: File,
-}
-
-class DocViewer extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      pdfFile: props.pdfFile,
-    };
-  }
-
-  UNSAFE_componentWillReceiveProps(props: Props) {
-    console.log(props.pdfFile);
-    this.setState({ pdfFile: props.pdfFile });
-  }
-
+class DocViewer extends Component<Props, {}> {
   render() {
+    const {
+      pdfFile,
+    } = this.props;
     return (
       <div className="container-fluid">
         <div className="row">
@@ -35,7 +22,7 @@ class DocViewer extends Component<Props, State> {
           </div>
         </div>
         <div className="row embed-responsive embed-responsive-16by9 align-content-center">
-          <iframe className="embed-responsive-item" src={window.URL.createObjectURL(this.props.pdfFile)} title="Document" />
+          <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
         </div>
       </div>
     );

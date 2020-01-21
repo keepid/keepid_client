@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import PrintLogo from '../static/images/print.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class Print extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: true, // Change to true in order to show landing logged in
-    };
-  }
-
+class Print extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">

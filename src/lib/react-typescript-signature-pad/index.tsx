@@ -18,14 +18,14 @@ interface ISignaturePadProps extends React.Props<any> {
     minDistance?: number;
 }
 
-interface ISignatureState {
-    acceptEULA: boolean;
-}
 const customStyles = {
   height: '100%',
   width: '100%',
 };
-export default class SignaturePad extends React.Component<ISignaturePadProps, ISignatureState> {
+
+export default class SignaturePad extends React.Component<ISignaturePadProps, {}> {
+    canvasRef: any;
+
     velocityFilterWeight: number;
 
     minWidth: number;
@@ -44,7 +44,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
 
     onBegin: any;
 
-    private _isEmpty: boolean;
+    private padIsEmpty: boolean;
 
     points: Point[];
 
@@ -65,27 +65,39 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
     constructor(props: Readonly<ISignaturePadProps>) {
       super(props);
 
-      this.state = {
-        acceptEULA: this.props.acceptEULA,
-      };
-      this._isEmpty = true;
+      const {
+        velocityFilterWeight,
+        minWidth,
+        maxWidth,
+        dotSize,
+        penColor,
+        backgroundColor,
+        onEnd,
+        onBegin,
+        minDistance,
+        handleChangeAcceptEULA,
+      } = this.props;
+
+      this.canvasRef = React.createRef();
+      this.padIsEmpty = true;
       this.points = [];
-      this.velocityFilterWeight = this.props.velocityFilterWeight || 0.7;
-      this.minWidth = this.props.minWidth || 0.5;
-      this.maxWidth = this.props.maxWidth || 2.5;
-      this.dotSize = this.props.dotSize || (this.minWidth + this.maxWidth) / 2;
-      this.penColor = this.props.penColor || 'black';
-      this.backgroundColor = this.props.backgroundColor || 'rgba(0,0,0,0)';
-      this.onEnd = this.props.onEnd;
-      this.onBegin = this.props.onBegin;
-      this.minDistance = this.props.minDistance || 5;
-      this.handleChangeAcceptEULA = this.props.handleChangeAcceptEULA;
+      this.velocityFilterWeight = velocityFilterWeight || 0.7;
+      this.minWidth = minWidth || 0.5;
+      this.maxWidth = maxWidth || 2.5;
+      this.dotSize = dotSize || (this.minWidth + this.maxWidth) / 2;
+      this.penColor = penColor || 'black';
+      this.backgroundColor = backgroundColor || 'rgba(0,0,0,0)';
+      this.onEnd = onEnd;
+      this.onBegin = onBegin;
+      this.minDistance = minDistance || 5;
+      this.handleChangeAcceptEULA = handleChangeAcceptEULA;
       this.data = [];
       this.handleChangeAcceptEULA(false);
+      this.clear = this.clear.bind(this);
     }
 
     componentDidMount() {
-      this.canvas = this.refs.cv;
+      this.canvas = this.canvasRef.current;
       this.ctx = this.canvas.getContext('2d');
       this.clear();
 
@@ -98,12 +110,6 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
       this.off();
     }
 
-    UNSAFE_componentWillReceiveProps(props: ISignaturePadProps) {
-      this.setState({
-        acceptEULA: this.props.acceptEULA,
-      });
-    }
-
     clear(e?: any) {
       const { ctx } = this;
       const { canvas } = this;
@@ -114,12 +120,12 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
 
       this.data = [];
       this.reset();
-      this._isEmpty = true;
+      this.padIsEmpty = true;
     }
 
-    toDataURL(imageType?: any, quality?: any) {
+    toDataURL(imageType?: any, quality?: any, ...rest: any[]) {
       const { canvas } = this;
-      return canvas.toDataURL.apply(canvas, arguments);
+      return canvas.toDataURL(canvas, ...rest);
     }
 
     fromDataURL(dataUrl: any) {
@@ -133,11 +139,11 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
       image.onload = () => {
         this.ctx.drawImage(image, 0, 0, width, height);
       };
-      this._isEmpty = false;
+      this.padIsEmpty = false;
     }
 
     isEmpty() {
-      return this._isEmpty;
+      return this.padIsEmpty;
     }
 
     isValid() {
@@ -176,14 +182,14 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
       canvas.height = canvas.offsetHeight * ratio;
 
       ctx.scale(ratio, ratio);
-      this._isEmpty = true;
+      this.padIsEmpty = true;
     }
 
     private reset() {
       this.points = [];
       this.lastVelocity = 0;
       this.lastWidth = (this.minWidth + this.maxWidth) / 2;
-      this._isEmpty = true;
+      this.padIsEmpty = true;
       this.ctx.fillStyle = this.penColor;
       this.handleChangeAcceptEULA(false);
     }
@@ -257,7 +263,6 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
     }
 
     private handleTouchEnd(event: any) {
-      console.log(this.data);
       const wasCanvasTouched = event.target === this.canvas;
       if (wasCanvasTouched) {
         this.strokeEnd(event);
@@ -336,6 +341,31 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
     }
 
     private addPoint(point: any): any {
+      function calculateCurveControlPoints(s1: any, s2: any, s3: any): ({ c1: Point, c2: Point }) {
+        const dx1 = s1.x - s2.x; const dy1 = s1.y - s2.y;
+        const dx2 = s2.x - s3.x; const dy2 = s2.y - s3.y;
+
+        const m1 = { x: (s1.x + s2.x) / 2.0, y: (s1.y + s2.y) / 2.0 };
+        const m2 = { x: (s2.x + s3.x) / 2.0, y: (s2.y + s3.y) / 2.0 };
+
+        const l1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        const l2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+        const dxm = (m1.x - m2.x);
+        const dym = (m1.y - m2.y);
+
+        const k = l2 / (l1 + l2);
+        const cm = { x: m2.x + dxm * k, y: m2.y + dym * k };
+
+        const tx = s2.x - cm.x;
+        const ty = s2.y - cm.y;
+
+        return {
+          c1: new Point(m1.x + tx, m1.y + ty),
+          c2: new Point(m2.x + tx, m2.y + ty),
+        };
+      }
+
       const { points } = this;
 
       points.push(point);
@@ -344,9 +374,9 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
         // To reduce the initial lag make it work with 3 points
         // by copying the first point to the beginning.
         if (points.length === 3) points.unshift(points[0]);
-        let tmp = this.calculateCurveControlPoints(points[0], points[1], points[2]);
+        let tmp = calculateCurveControlPoints(points[0], points[1], points[2]);
         const { c2 } = tmp;
-        tmp = this.calculateCurveControlPoints(points[1], points[2], points[3]);
+        tmp = calculateCurveControlPoints(points[1], points[2], points[3]);
         const c3 = tmp.c1;
         const curve = new Bezier(points[1], c2, c3, points[2]);
         const widths = this.calculateCurveWidths(curve);
@@ -358,31 +388,6 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
         return { curve, widths };
       }
       return {};
-    }
-
-    private calculateCurveControlPoints(s1: any, s2: any, s3: any): ({ c1: Point, c2: Point }) {
-      const dx1 = s1.x - s2.x; const dy1 = s1.y - s2.y;
-      const dx2 = s2.x - s3.x; const dy2 = s2.y - s3.y;
-
-      const m1 = { x: (s1.x + s2.x) / 2.0, y: (s1.y + s2.y) / 2.0 };
-      const m2 = { x: (s2.x + s3.x) / 2.0, y: (s2.y + s3.y) / 2.0 };
-
-      const l1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-      const l2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-      const dxm = (m1.x - m2.x);
-      const dym = (m1.y - m2.y);
-
-      const k = l2 / (l1 + l2);
-      const cm = { x: m2.x + dxm * k, y: m2.y + dym * k };
-
-      const tx = s2.x - cm.x;
-      const ty = s2.y - cm.y;
-
-      return {
-        c1: new Point(m1.x + tx, m1.y + ty),
-        c2: new Point(m2.x + tx, m2.y + ty),
-      };
     }
 
     private addCurve(curve: any) {
@@ -406,8 +411,15 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
 
       ctx.moveTo(x, y);
       ctx.arc(x, y, size, 0, 2 * Math.PI, false);
-      this._isEmpty = false;
-      this.props.handleChangeAcceptEULA(true);
+      this.padIsEmpty = false;
+
+      const {
+        acceptEULA,
+      } = this.props;
+
+      if (!acceptEULA) {
+        this.handleChangeAcceptEULA(true);
+      }
     }
 
     private drawCurve(curve: any, startWidth: any, endWidth: any) {
@@ -416,7 +428,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
       const drawSteps = Math.floor(curve.length());
 
       ctx.beginPath();
-      for (let i = 0; i < drawSteps; i++) {
+      for (let i = 0; i < drawSteps; i += 1) {
         // Calculate the Bezier (x, y) coordinate for this step.
         const t = i / drawSteps;
         const tt = t * t;
@@ -479,9 +491,9 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, IS
       return (
         <div id="signature-pad" className="m-signature-pad">
           <div className="m-signature-pad--body">
-            <canvas style={customStyles} ref="cv" />
+            <canvas style={customStyles} ref={this.canvasRef} />
           </div>
-          <Button onClick={this.clear.bind(this)}>Clear</Button>
+          <Button onClick={this.clear}>Clear</Button>
         </div>
       );
     }

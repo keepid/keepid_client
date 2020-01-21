@@ -19,7 +19,7 @@ export default class Point {
     }
 
     distanceTo(start: Point) {
-      return Math.sqrt(Math.pow(this.x - start.x, 2) + Math.pow(this.y - start.y, 2));
+      return Math.sqrt((this.x - start.x) * (this.x - start.x) + (this.y - start.y) * (this.y - start.y));
     }
 
     equals(other: Point) {

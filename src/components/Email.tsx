@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import EmailLogo from '../static/images/email-24px.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class Email extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: true, // Change to true in order to show landing logged in
-    };
-  }
-
+class Email extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
@@ -30,22 +19,28 @@ class Email extends Component<{}, State, {}> {
           <div className="col-md-12 overflow-auto" id="emailTable">
             <form>
               <div className="form-group row">
-                <label htmlFor="inputEmail" className="col-sm-2 col-form-label">To: </label>
-                <div className="col-sm-10">
-                  <input type="email" className="form-control" id="inputEmail" placeholder="Email address" />
-                </div>
+                <label htmlFor="inputEmail" className="col-sm-2 col-form-label">
+                  To:
+                  <div className="col-sm-10">
+                    <input type="email" className="form-control" id="inputEmail" placeholder="Email address" />
+                  </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="inputSubject" className="col-sm-2 col-form-label">Subject: </label>
-                <div className="col-sm-10">
-                  <input type="text" className="form-control" id="inputSubject" placeholder="Subject" />
-                </div>
+                <label htmlFor="inputSubject" className="col-sm-2 col-form-label">
+                  Subject:
+                  <div className="col-sm-10">
+                    <input type="text" className="form-control" id="inputSubject" placeholder="Subject" />
+                  </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="inputBody" className="col-sm-2 col-form-label">Body: </label>
-                <div className="col-sm-10">
-                  <textarea className="form-control" id="inputBody" placeholder="Type your message here." />
-                </div>
+                <label htmlFor="inputBody" className="col-sm-2 col-form-label">
+                  Body:
+                  <div className="col-sm-10">
+                    <textarea className="form-control" id="inputBody" placeholder="Type your message here." />
+                  </div>
+                </label>
               </div>
               <button type="submit" className="btn btn-lg">
                 Send

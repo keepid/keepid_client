@@ -145,7 +145,6 @@ class Header extends Component<Props, State, {}> {
               <form>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
-                    <label className="sr-only">Username</label>
                     <div className="input-group">
                       <div className="input-group-prepend">
                         <div className="input-group-text">
@@ -158,6 +157,7 @@ class Header extends Component<Props, State, {}> {
                           />
                         </div>
                       </div>
+                      {/* <label className="sr-only" htmlFor="inlineFormInputGroupUsername">Username</label> */}
                       <input
                         type="text"
                         className="form-control"
@@ -169,7 +169,6 @@ class Header extends Component<Props, State, {}> {
                     </div>
                   </div>
                   <div className="col-med-2 my-1">
-                    <label className="sr-only">Password</label>
                     <div className="input-group">
                       <div className="input-group-prepend">
                         <div className="input-group-text">
@@ -182,6 +181,7 @@ class Header extends Component<Props, State, {}> {
                           />
                         </div>
                       </div>
+                      {/* <label className="sr-only" htmlFor="inlineFormInputGroupPassword">Password</label> */}
                       <input
                         type="text"
                         className="form-control"
@@ -207,79 +207,3 @@ class Header extends Component<Props, State, {}> {
 }
 
 export default Header;
-
-// {/* <Navbar bg="primary-theme" variant="dark" sticky="top">
-//           <Form id="loginForm" onSubmit={this.handleSubmit}>
-//             <Row className="d-flex justify-content-end">
-//               <Col sm={2}>
-//                 <Navbar.Brand href="/">
-//                   <img
-//                     alt=""
-//                     src={Logo}
-//                     width="48"
-//                     height="48"
-//                     className="d-inline-block align-top"
-//                   />
-//                       keep.id
-//                 </Navbar.Brand>
-//               </Col>
-//               <Col sm={4}>
-//                 <InputGroup>
-//                   <InputGroup.Prepend>
-//                     <InputGroup.Text id="inputGroupPrepend">
-//                       <img
-//                         alt=""
-//                         src={UsernameSVG}
-//                         width="22px"
-//                         height="22px"
-//                         className="d-inline-block align-middle"
-//                       />
-//                     </InputGroup.Text>
-//                   </InputGroup.Prepend>
-//                   <Form.Control
-//                     type="text"
-//                     onChange={this.handleChangeUsername}
-//                     value={this.state.username}
-//                     placeholder="First-Last-MM-DD-YYYY"
-//                     aria-describedby="Username Login"
-//                     required
-//                   />
-//                   {/* <Form.Control.Feedback type="invalid">
-//                         Please choose a username.
-//                       </Form.Control.Feedback> */}
-//                 {/* </InputGroup>
-//               </Col>
-//               <Col sm={4}>
-//                 <InputGroup>
-//                   <InputGroup.Prepend>
-//                     <InputGroup.Text id="inputGroupPrepend">
-//                       <img
-//                         alt=""
-//                         src={PasswordSVG}
-//                         width="22px"
-//                         height="22px"
-//                         className="d-inline-block align-middle"
-//                       />
-//                     </InputGroup.Text>
-//                   </InputGroup.Prepend>
-//                   <Form.Control
-//                     type="password"
-//                     onChange={this.handleChangePassword}
-//                     value={this.state.password}
-//                     placeholder="Password"
-//                     aria-describedby="Password Login"
-//                     required
-//                   />
-//                   {/* <Form.Control.Feedback type="invalid">
-//                         Please choose a username.
-//                       </Form.Control.Feedback> */}
-//                 {/* </InputGroup>
-//               </Col> */}
-{ /* //     <Col sm={2}>
-          //       <Button variant="outline-light" type="submit">
-          //         <b>Login</b>
-          //       </Button>
-          //     </Col>
-          //   </Row>
-          // </Form> */ }
-{ /* </Navbar> */ }

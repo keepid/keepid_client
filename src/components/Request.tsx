@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import RequestLogo from '../static/images/request.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class Request extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: true, // Change to true in order to show landing logged in
-    };
-  }
-
+class Request extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">

@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import SeeLogo from '../static/images/uploading-files-to-the-cloud.svg';
 
-interface State {
-	loggedIn: boolean,
-}
-
-class SeeDocs extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      loggedIn: true, // Change to true in order to show landing logged in
-    };
-  }
-
+class SeeDocs extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
