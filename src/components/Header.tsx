@@ -101,19 +101,20 @@ class Header extends Component<Props, State, {}> {
               </button>
 
               <div className="collapse navbar-collapse" id="navbarToggleLoggedIn">
-                <ul className="navbar-nav mr-auto mt-2 mt-lg-0" />
-                <li className="nav-item">
-                  <a className="nav-link" href="/myaccount">My Account</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/settings">Settings</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/myorganization">My Organization</a>
-                </li>
-                <div className="col-auto my-1">
-                  <button type="submit" onClick={logOut} className="btn btn-primary">Log Out</button>
-                </div>
+                <ul className="navbar-nav mr-auto mt-2 mt-lg-0">
+                  <li className="nav-item col-med-2 my-1">
+                    <a className="nav-link" href="/myaccount">My Account</a>
+                  </li>
+                  <li className="nav-item col-med-2 my-1">
+                    <a className="nav-link" href="/settings">Settings</a>
+                  </li>
+                  <li className="nav-item col-med-2 my-1">
+                    <a className="nav-link" href="/myorganization">My Organization</a>
+                  </li>
+                  <div className="col-auto my-1">
+                    <button type="submit" onClick={logOut} className="btn btn-primary">Log Out</button>
+                  </div>
+                </ul>
               </div>
             </div>
           </nav>
