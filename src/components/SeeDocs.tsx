@@ -13,7 +13,6 @@ interface State {
 }
 
 class SeeDocs extends Component<Props, State> {
-  
   ButtonFormatter = (cell: any, row: any) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
@@ -86,6 +85,7 @@ class SeeDocs extends Component<Props, State> {
     };
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
+
   render() {
     return (
       <div className="container">
