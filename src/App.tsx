@@ -128,11 +128,11 @@ class App extends React.Component<{}, State, {}> {
               }}
             />
             // Client Components
-            <Route path="/upload-docs">
+            <Route path="/upload-document">
               <UploadDocs />
             </Route>
-            <Route path="/see-my-docs">
-              <SeeDocs />
+            <Route path="/my-documents">
+              <SeeDocs username={name} />
             </Route>
             <Route path="/applications">
               <Applications />

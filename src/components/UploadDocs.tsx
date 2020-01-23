@@ -50,44 +50,37 @@ class UploadDocs extends React.Component<{}, State> {
       pdfFile,
     } = this.state;
     return (
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col-md-6">
-            <img src={UploadLogo} className="float-right mt-2" alt="Upload" />
-          </div>
-          <div className="col-md-6 mt-4">
-            <h3 className="textPrintHeader">
-              Upload A Document
-            </h3>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-md-12">
-            <p className="textUploadDesc mt-3 ml-5 mr-5">
-              <span>
-                Click the &quot;Choose file&quot; button to select a PDF file to upload. The name and a preview of the PDF will appear below the buttons.
-                After confirming that you have chosen the correct file, click the &quot;Upload&quot; button to upload. Otherwise, choose a different file.
-              </span>
-            </p>
-          </div>
-        </div>
-        {pdfFile
-          ? (
-            <div className="row">
-              <DocViewer pdfFile={pdfFile} />
-            </div>
-          ) : <div />}
-        <div className="row justify-content-center form-group mb-5">
-          <form onSubmit={this.submitForm}>
-            <div className="form-row">
-              <div className="col">
-                <input type="file" accept="application/pdf" id="potentialPdf" onChange={this.handleChangeFileUpload} />
+      <div className="container">
+        <div className="jumbotron-fluid mt-5">
+          <h1 className="display-4">Upload Documents</h1>
+          <p className="lead pt-3">
+            Click the &quot;Choose file&quot; button to select a PDF file to upload.
+            The name and a preview of the PDF will appear below the buttons.
+            After confirming that you have chosen the correct file, click the &quot;Upload&quot; button to upload.
+            Otherwise, choose a different file.
+          </p>
+          {pdfFile
+            ? (
+              <div className="row">
+                <DocViewer pdfFile={pdfFile} />
               </div>
-              <div className="col">
-                <button type="submit">Upload</button>
+            ) : <div />}
+          <div className="row justify-content-left form-group mb-5">
+            <form onSubmit={this.submitForm}>
+              <div className="form-row mt-3">
+                <div className="col">
+                  <label className="btn btn-filestack btn-widget ml-5 mr-5">
+                    Choose File
+                    {' '}
+                    <input type="file" accept="application/pdf" id="potentialPdf" onChange={this.handleChangeFileUpload} hidden />
+                  </label>
+                </div>
+                <div className="col">
+                  <button type="submit" className="btn btn-outline-success">Upload</button>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     );

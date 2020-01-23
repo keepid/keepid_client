@@ -237,6 +237,7 @@ class AdminLanding extends Component<Props, State> {
                 keyField="username"
                 data={workers}
                 hover
+                striped
                 columns={this.tableCols}
                 selectRow={{
                   mode: 'radio',
@@ -244,6 +245,7 @@ class AdminLanding extends Component<Props, State> {
                   clickToSelect: true,
                   hideSelectColumn: true,
                 }}
+                noDataIndication="No Workers Present"
                 pagination={paginationFactory()}
               />
             </div>

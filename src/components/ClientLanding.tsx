@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 // import { Redirect } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
-import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
-import PrintLogo from '../static/images/print.svg';
-import RequestLogo from '../static/images/request.svg';
-import AppLogo from '../static/images/calendar.svg';
-import EmailLogo from '../static/images/email-24px.svg';
-import AssistLogo from '../static/images/assistance.svg';
+import UploadSVG from '../static/images/uploading-files-to-the-cloud.svg';
+import RequestSVG from '../static/images/request.svg';
+import AppSVG from '../static/images/calendar.svg';
+import EmailSVG from '../static/images/email-24px.svg';
+import AssistSVG from '../static/images/assistance.svg';
+import FileSVG from '../static/images/file.svg';
 
 interface State {
     show: boolean
@@ -36,21 +36,21 @@ class ClientLanding extends Component<{}, State, {}> {
       <div id="Buttons" className="container">
         <div className="row m-auto">
           <div className="col d-flex" id="Upload container">
-            <a href="/seemydocs">
-              <div className="rectangle mt-5">
-                <img className="uploadImg" src={UploadLogo} alt="See" />
+            <a href="/upload-document">
+              <div className="rectangle mt-5 pt-4">
+                <img className="uploadImg pb-2" src={UploadSVG} alt="See" />
                 <p className="textLanding">
-                  See My Documents
+                  Upload a Document
                 </p>
               </div>
 
             </a>
           </div>
           <div className="col d-flex" id="Print container">
-            <a href="/print">
-              <div className="rectangle mt-5">
-                <img className="normalImage" src={PrintLogo} alt="Print" />
-                <p className="textLanding mt-5">Print My Documents</p>
+            <a href="/my-documents">
+              <div className="rectangle mt-5 pt-2">
+                <img className="normalImage" src={FileSVG} alt="Print" />
+                <p className="textLanding mt-4 pt-3">See My Documents</p>
               </div>
 
             </a>
@@ -58,8 +58,8 @@ class ClientLanding extends Component<{}, State, {}> {
           <div className="col d-flex" id="Request container">
             <a href="/request">
               <div className="rectangle mt-5">
-                <img className="normalImage" src={RequestLogo} alt="Request" />
-                <p className="textLanding mt-3">
+                <img className="normalImage" src={RequestSVG} alt="Request" />
+                <p className="textLanding mt-3 pt-4">
                   Request My
                   <br />
                   Documents
@@ -69,24 +69,24 @@ class ClientLanding extends Component<{}, State, {}> {
           </div>
           <div className="col d-flex" id="Applications container">
             <a href="/applications">
-              <div className="rectangle mt-5">
-                <img className="normalImage" src={AppLogo} alt="Applications" />
+              <div className="rectangle mt-5 pt-2">
+                <img className="normalImage" src={AppSVG} alt="Applications" />
                 <p className="textLanding mt-5">My Applications</p>
               </div>
             </a>
           </div>
           <div className="col d-flex" id="Email container">
             <a href="/email">
-              <div className="rectangle mt-5">
-                <img className="normalImage" src={EmailLogo} alt="Email" />
+              <div className="rectangle mt-5 pt-2">
+                <img className="normalImage" src={EmailSVG} alt="Email" />
                 <p className="textLanding mt-5">Send an Email</p>
               </div>
             </a>
           </div>
           <div className="col d-flex">
             <button type="button" className="btn btn-assist mt-5" onClick={this.showModal}>
-              <div className="rectangle">
-                <img className="normalImage" src={AssistLogo} alt="Assistance" />
+              <div className="rectangle pt-2">
+                <img className="normalImage" src={AssistSVG} alt="Assistance" />
                 <p className="textLanding mt-5">Need Assistance?</p>
               </div>
             </button>
