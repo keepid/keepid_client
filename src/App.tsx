@@ -34,7 +34,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.Admin, // Change this to access pages
+      role: Role.Client, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
