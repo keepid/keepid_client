@@ -27,20 +27,20 @@ class MyAccount extends Component<{}, State, {}> {
           <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card&apos;s content.</p>
           <a href="/home" className="card-link">Card link</a>
           <a href="/home" className="card-link">Another link</a>
-          <form onSubmit={}>
+          <form>
             <div className="col-md-12">
               <div className="form-row">
                 <div className="col-md-6 form-group">
                   <label htmlFor="inputOrgName">
                       Organization Name
                     <text className="red-star">*</text>
-                    <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="Keep" value={} onChange={} required />
+                    <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="Keep" required />
                   </label>
                 </div>
                 <div className="col-md-6 form-group">
                   <label htmlFor="inputOrgWebsite">
                       Organization Website
-                    <input type="url" readOnly={} className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" value={} onChange={} />
+                    <input type="url" className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id"  />
                   </label>
                 </div>
               </div>
