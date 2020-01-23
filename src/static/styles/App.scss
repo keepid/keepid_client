@@ -19,6 +19,11 @@ $secondary-theme: rgba(123, 130, 255, 0.12);
 $secondary-dark-theme: #262867;
 $text-red: #F24D4D;
 
+.navbar-custom {
+	background-color: $primary-theme;
+	color: white
+}
+
 .background {
 	background: $secondary-theme;
 };

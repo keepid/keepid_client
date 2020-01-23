@@ -36,11 +36,13 @@ class UploadDocs extends React.Component<{}, State> {
   handleChangeFileUpload(event: any) {
     event.preventDefault();
     const file : File = event.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = (() => {
-      this.setState({ pdfFile: file });
-    });
-    reader.readAsDataURL(file);
+    const req = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    req.open('POST', 'http://localhost:7000/upload');
+    req.send(formData);
+    this.setState({ pdfFile: file });
   }
 
   render() {
@@ -69,6 +71,12 @@ class UploadDocs extends React.Component<{}, State> {
             </p>
           </div>
         </div>
+        {pdfFile
+          ? (
+            <div className="row">
+              <DocViewer pdfFile={pdfFile} />
+            </div>
+          ) : <div />}
         <div className="row justify-content-center form-group mb-5">
           <form onSubmit={this.submitForm}>
             <div className="form-row">
@@ -81,12 +89,6 @@ class UploadDocs extends React.Component<{}, State> {
             </div>
           </form>
         </div>
-        {pdfFile
-          ? (
-            <div className="row">
-              <DocViewer pdfFile={pdfFile} />
-            </div>
-          ) : <div />}
       </div>
     );
   }
