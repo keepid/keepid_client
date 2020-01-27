@@ -17,7 +17,7 @@
     <testSourceDirectory>${project.basedir}/src/test/</testSourceDirectory>
     <resources>
       <resource>
-        <directory>${project.basedir}/src/main/Logger/Resources</directory>
+        <directory>${project.basedir}/src/main/Logger/Resources/</directory>
       </resource>
     </resources>
     <testResources>
@@ -127,6 +127,11 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-nosql</artifactId>
+      <version>9.4.10.v20180503</version>
     </dependency>
   </dependencies>
 </project>

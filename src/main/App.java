@@ -1,5 +1,6 @@
 import Config.Env;
 import Config.MongoConfig;
+import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
@@ -47,7 +48,8 @@ public class App {
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
                   //            config.requestLogger();                    // set a request logger
-                  //            config.sessionHandler();                   // set a SessionHandler
+                  config.sessionHandler(SessionConfig::fileSessionHandler);
+                  //                  config.accessManager(UserController::accessManager);
                 })
             .start(Integer.parseInt(dotenv.get("PORT")));
     LogFactory l = new LogFactory();
@@ -58,6 +60,7 @@ public class App {
 
     // we need to instantiate the controllers with the database
     OrganizationController orgController = new OrganizationController(db);
+    UserController userController = new UserController(db);
     /*
      * Server API:
      *  /login
@@ -97,8 +100,8 @@ public class App {
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
 
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
-    app.post("/login", UserController.loginUser);
+    app.post("/login", userController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
-    // app.post("/create-user", UserController.createUser);
+    app.post("/create-user", userController.createNewUser);
   }
 }
