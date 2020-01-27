@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
+import getServerURL from '../serverOverride';
 
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
@@ -85,7 +86,7 @@ class PersonSignup extends Component<Props, State, {}> {
     if (personPassword !== personConfirmPassword) {
       alert('Your passwords are not identical');
     } else {
-      fetch('http://localhost:7000/person-signup', {
+      fetch(getServerURL() + '/person-signup', {
         method: 'POST',
         body: JSON.stringify({
           firstname: personFirstName,

@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
+import getServerURL from '../serverOverride';
 
 interface Props {
   username: string,
@@ -96,7 +97,7 @@ class AdminLanding extends Component<Props, State> {
       registerPermission: true,
     }];
     this.setState({ workers });
-    // fetch("http://localhost:7000/get-admin-workers", {
+    // fetch(getServerURL() + "/get-admin-workers", {
     //   method: "POST",
     //   body: JSON.stringify({
     //     username: this.state.username,

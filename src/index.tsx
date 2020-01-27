@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import envFile from './.env.json';
+// import envFile from './.env.json';
 import * as serviceWorker from './serviceWorker';
 
-process.env.SERVER = envFile.SERVER;
+// process.env.SERVER = envFile.SERVER;
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

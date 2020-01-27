@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
+import getServerURL from '../serverOverride';
 
 interface Props {
   logIn: () => void,
@@ -37,7 +38,7 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-    fetch('http://localhost:7000/login', {
+    fetch(getServerURL() + '/login', {
       method: 'POST',
       body: JSON.stringify({
         username,

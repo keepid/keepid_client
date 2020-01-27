@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom';
 
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
+import getServerURL from '../serverOverride';
 
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
@@ -93,7 +94,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
       alert('Please accept EULA before completing application');
     } else {
       alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
-      fetch('http://localhost:7000/organization-signup', {
+      fetch(getServerURL() + '/organization-signup', {
         method: 'POST',
         body: JSON.stringify({
           orgWebsite: organizationWebsite,

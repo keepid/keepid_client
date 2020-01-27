@@ -2,6 +2,7 @@ import React from 'react';
 
 import DocViewer from './DocViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
+import getServerURL from '../serverOverride';
 
 interface State {
   pdfFile: File | undefined
@@ -24,7 +25,7 @@ class UploadDocs extends React.Component<{}, State> {
     const {
       pdfFile,
     } = this.state;
-    fetch('https://localhost:7000/put-documents', {
+    fetch(getServerURL() + '/put-documents', {
       method: 'POST',
       body: pdfFile,
     }).then((response) => response.json())
@@ -40,7 +41,7 @@ class UploadDocs extends React.Component<{}, State> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    req.open('POST', 'http://localhost:7000/upload');
+    req.open('POST', getServerURL() + '/upload');
     req.send(formData);
     this.setState({ pdfFile: file });
   }

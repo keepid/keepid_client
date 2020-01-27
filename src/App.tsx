@@ -128,14 +128,7 @@ class App extends React.Component<{}, State, {}> {
               }}
             />
             // Client Components
-<<<<<<< HEAD
             <Route path="/upload-document">
-=======
-            <Route path="/my-account">
-              <UploadDocs />
-            </Route>
-            <Route path="/upload-docs">
->>>>>>> c0851e37e7ed4ac2c9b487ca42556e79366d23e0
               <UploadDocs />
             </Route>
             <Route path="/my-documents">
