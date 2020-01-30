@@ -22,6 +22,8 @@ import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
 
 import Role from './static/Role';
+import MyAccount from './components/MyAccount';
+import Footer from './components/Footer';
 
 interface State {
   role: Role,
@@ -134,6 +136,9 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/my-documents">
               <SeeDocs username={name} />
             </Route>
+            <Route path="/settings">
+              <MyAccount />
+            </Route>
             <Route path="/applications">
               <Applications />
             </Route>
@@ -158,6 +163,7 @@ class App extends React.Component<{}, State, {}> {
             </Route>
           </Switch>
         </Router>
+        <Footer/>
       </div>
     );
   }

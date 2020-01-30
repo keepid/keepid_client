@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import EmailLogo from '../static/images/email-24px.svg';
+import EmailLogo from '../static/images/email.svg';
 
 class Email extends Component<{}, {}, {}> {
   render() {

@@ -104,7 +104,7 @@ class Header extends Component<Props, State, {}> {
               <div className="collapse navbar-collapse" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav mr-auto mt-2 mt-lg-0 d-flex">
                   <li className="nav-item col-med-2 my-1 flex-fill">
-                    <a className="nav-link" href="/my-account">My Account Settings</a>
+                    <a className="nav-link" href="/settings">My Account Settings</a>
                   </li>
                   <li className="nav-item col-med-2 my-1 flex-fill">
                     <a className="nav-link" href="/my-organization">My Organization</a>
