@@ -22,7 +22,8 @@ $footer-color:#413f57;
 $footer-text-color: rgb(183, 183, 192);
 $footer-text-color-accent: rgb(230, 230, 230);
 .navbar-custom {
-	background-color: $primary-theme;
+	background: rgb(123,150,255);
+	background: linear-gradient(35deg, rgba(123,150,255,1) 0%, rgba(123,129,255,1) 45%, rgba(154,100,255,1) 100%);
 	color: white
 }
 
