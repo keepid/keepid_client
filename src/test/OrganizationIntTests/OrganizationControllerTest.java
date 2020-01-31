@@ -11,6 +11,7 @@ import java.util.HashMap;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,11 +62,8 @@ class OrganizationControllerTest {
     HttpServletResponse res = mock(HttpServletResponse.class);
     Context context = ContextUtil.init(req, res);
     Mockito.when(context.req.getInputStream()).thenReturn(Mockito.mock(ServletInputStream.class));
-    // load all params here
-    HashMap<String, String> exampleOrgLoad1 = loadExampleOrg1();
-    for (HashMap.Entry<String, String> entry : exampleOrgLoad1.entrySet()) {
-      Mockito.when(context.req.getParameter(entry.getKey())).thenReturn(entry.getValue());
-    }
+    JSONObject obj = new JSONObject(loadExampleOrg1());
+    Mockito.when(context.body()).thenReturn(obj.toString());
     OrganizationController orgController = new OrganizationController(database);
     orgController.enrollOrganization.handle(context);
     assertEquals(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString(), context.resultString());
@@ -80,9 +78,8 @@ class OrganizationControllerTest {
     // load all params except orgname
     HashMap<String, String> exampleOrgLoad1 = loadExampleOrg1();
     exampleOrgLoad1.put("orgName", null);
-    for (HashMap.Entry<String, String> entry : exampleOrgLoad1.entrySet()) {
-      Mockito.when(context.req.getParameter(entry.getKey())).thenReturn(entry.getValue());
-    }
+    JSONObject obj = new JSONObject(loadExampleOrg1());
+    Mockito.when(context.body()).thenReturn(obj.toString());
     OrganizationController orgController = new OrganizationController(database);
     orgController.enrollOrganization.handle(context);
     assertEquals(OrgEnrollmentStatus.INVALID_PARAMETER.toString(), context.resultString());
