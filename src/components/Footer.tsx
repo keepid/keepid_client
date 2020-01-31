@@ -70,19 +70,19 @@ class Footer extends Component<Props, State> {
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">Legal</h6>
               <ul className="list-unstyled text-muted mb-6 mb-md-8 mb-lg-0">
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Organization Policies</a>
+                  <a href="/organization-policies" className="footer-link">Organization Policies</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Terms of Use</a>
+                  <a href="/terms-of-use" className="footer-link">Terms of Use</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">End User License Agreements</a>
+                  <a href="/eula" className="footer-link">End User License Agreements</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Privacy Policy</a>
+                  <a href="/privacy-policy" className="footer-link">Privacy Policy</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Copyright Policy</a>
+                  <a href="/copyright-policy" className="footer-link">Copyright Policy</a>
                 </li>
               </ul>
             </div>
