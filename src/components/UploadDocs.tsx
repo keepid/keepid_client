@@ -1,8 +1,8 @@
 import React from 'react';
-
 import DocViewer from './DocViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
+import {Helmet} from "react-helmet";
 
 interface State {
   pdfFile: File | undefined
@@ -52,6 +52,10 @@ class UploadDocs extends React.Component<{}, State> {
     } = this.state;
     return (
       <div className="container">
+        <Helmet>
+          <title>Upload Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">Upload Documents</h1>
           <p className="lead pt-3">

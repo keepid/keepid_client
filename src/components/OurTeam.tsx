@@ -3,6 +3,7 @@ import ConnorJPG from '../static/images/connor.jpg';
 import SteffenJPG from '../static/images/steffen.jpg';
 import GregJPG from '../static/images/greg.jpg';
 import JamesJPG from '../static/images/james.jpg';
+import {Helmet} from "react-helmet";
 
 interface State {}
 
@@ -14,6 +15,10 @@ class OurTeam extends React.Component<{}, State> {
   render() {
     return (
       <div className="container">
+        <Helmet>
+          <title>Our Team</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">Our Team</h1>
           <p className="lead pt-3">

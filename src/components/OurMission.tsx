@@ -1,4 +1,5 @@
 import React from 'react';
+import {Helmet} from "react-helmet";
 
 interface State {}
 
@@ -10,6 +11,10 @@ class OurMission extends React.Component<{}, State> {
   render() {
     return (
       <div className="container">
+        <Helmet>
+          <title>Our Mission</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-5">Mission Statement</h1>
           <p className="lead pt-3">

@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 import RequestLogo from '../static/images/request.svg';
+import {Helmet} from "react-helmet";
 
 class Request extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Request Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-6">
             <img src={RequestLogo} className="float-right mt-2" alt="Print" />

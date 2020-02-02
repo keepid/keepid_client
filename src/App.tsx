@@ -26,6 +26,7 @@ import MyAccount from './components/MyAccount';
 import Footer from './components/Footer';
 import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
+import {Helmet} from "react-helmet";
 
 interface State {
   role: Role,
@@ -64,6 +65,10 @@ class App extends React.Component<{}, State, {}> {
     } = this.state;
     return (
       <div className="App">
+        <Helmet>
+          <title>Keep.id</title>
+          <meta name="description" content="Securely Combating Homelessness" />
+        </Helmet>
         <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
           <Switch>

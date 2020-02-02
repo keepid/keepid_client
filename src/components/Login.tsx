@@ -2,11 +2,16 @@ import React, { Component } from 'react';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
+import {Helmet} from "react-helmet";
 
 class Login extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Login</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row mt-5">
           <div className="col-md-12">
             <div className="row">

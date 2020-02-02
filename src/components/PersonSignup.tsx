@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
+import {Helmet} from "react-helmet";
 
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
@@ -192,6 +193,10 @@ class PersonSignup extends Component<Props, State, {}> {
 
     return (
       <div className="container">
+        <Helmet>
+          <title>Sign Up</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-12 mt-5">
             <h3 className="text-center textPrintHeader">

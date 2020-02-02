@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
-// import cellEditFactory from 'react-bootstrap-table2-editor';
+import {Helmet} from "react-helmet";
 
 interface Props {
   username: string,
@@ -22,9 +22,6 @@ class SeeDocs extends Component<Props, State> {
       </button>
       <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
                 Print
-      </button>
-      <button type="button" className="btn btn-outline-primary btn-sm ml-2">
-                Edit
       </button>
       <button type="button" className="btn btn-outline-danger btn-sm ml-2">
                 Delete
@@ -89,6 +86,10 @@ class SeeDocs extends Component<Props, State> {
   render() {
     return (
       <div className="container">
+        <Helmet>
+          <title>View Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">View and Print Documents</h1>
           <p className="lead pt-3">

@@ -7,6 +7,7 @@ import AppSVG from '../static/images/calendar.svg';
 import EmailSVG from '../static/images/email.svg';
 import AssistSVG from '../static/images/assistance.svg';
 import FileSVG from '../static/images/file.svg';
+import {Helmet} from "react-helmet";
 
 interface State {
     show: boolean
@@ -34,6 +35,10 @@ class ClientLanding extends Component<{}, State, {}> {
     } = this.state;
     return (
       <div id="Buttons" className="container">
+        <Helmet>
+          <title>Home</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row m-auto">
           <div className="col d-flex" id="Upload container">
             <a href="/upload-document">

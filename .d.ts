@@ -10,3 +10,4 @@ declare module "*.jpg" {
 declare module 'react-bootstrap-table-next';
 declare module 'react-bootstrap-table2-paginator';
 declare module 'react-dom';
+declare module 'react-helmet';

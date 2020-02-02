@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import { Redirect } from 'react-router-dom';
+import {Helmet} from "react-helmet";
 
 interface State {
     show: boolean
@@ -21,6 +21,10 @@ class MyAccount extends Component<{}, State, {}> {
     } = this.state;
     return (
       <div className="container">
+        <Helmet>
+          <title>My Account</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="card mt-2 mb-2">
           <div className="card-body">
             <h5 className="card-title pb-3">My Account Details</h5>

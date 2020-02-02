@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Helmet} from "react-helmet";
 
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
@@ -14,6 +15,10 @@ class DocViewer extends Component<Props, {}> {
     } = this.props;
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Document: Document Title Here</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-12">
             <h2 className="text-center">

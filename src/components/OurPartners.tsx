@@ -1,5 +1,6 @@
 import React from 'react';
 import BSMJPG from '../static/images/bsm.jpg';
+import {Helmet} from "react-helmet";
 
 interface State {}
 
@@ -11,6 +12,10 @@ class OurPartners extends React.Component<{}, State> {
   render() {
     return (
       <div className="container">
+        <Helmet>
+          <title>Our Partners</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">Our Partners</h1>
           <p className="lead pt-3">
