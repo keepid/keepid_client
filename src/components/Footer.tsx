@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import Logo from "../static/images/logo.svg"
-import Email from "../static/images/email-2.svg"
-import FacebookLogo from "../static/images/fb-logo.svg"
-import GithubLogo from "../static/images/github-logo.svg"
+import Logo from '../static/images/logo.svg';
+import Email from '../static/images/email-2.svg';
+import FacebookLogo from '../static/images/fb-logo.svg';
+import GithubLogo from '../static/images/github-logo.svg';
 
 interface Props {
 }
@@ -11,7 +11,6 @@ interface State {
 }
 
 class Footer extends Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
   }
@@ -23,24 +22,24 @@ class Footer extends Component<Props, State> {
           <div className="d-flex flex-row bd-highlight py-8 py-md-11 flex-wrap">
             <div className="p-2 bd-highlight col-12 col-md-4 col-lg-4 mb-4">
               <div className="row">
-                <img className="footer-brand img-fluid mb-2 ml-3" src={Logo}/>
+                <img className="footer-brand img-fluid mb-2 ml-3" src={Logo} />
                 <div className="mb-2 ml-3 footer-brand-logo">Keep.id</div>
               </div>
               <p className="text-gray-700 mb-2">Securely Combating Homelessness</p>
               <ul className="list-unstyled list-inline list-social">
                 <li className="list-inline-item list-social-item mr-3">
                   <a href="" className="text-decoration-none">
-                    <img src={Email} className="list-social-icon"></img>
+                    <img src={Email} className="list-social-icon" />
                   </a>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
                   <a href="" className="text-decoration-none">
-                    <img src={FacebookLogo} className="list-social-icon"></img>
+                    <img src={FacebookLogo} className="list-social-icon" />
                   </a>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
                   <a href="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
-                    <img src={GithubLogo} className="list-social-icon"></img>
+                    <img src={GithubLogo} className="list-social-icon" />
                   </a>
                 </li>
               </ul>
@@ -84,7 +83,7 @@ class Footer extends Component<Props, State> {
               </ul>
             </div>
           </div>
-          
+
         </div>
       </footer>
     );

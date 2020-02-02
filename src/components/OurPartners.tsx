@@ -1,5 +1,5 @@
 import React from 'react';
-import BSMJPG from '../static/images/bsm.jpg'
+import BSMJPG from '../static/images/bsm.jpg';
 
 interface State {}
 
@@ -19,11 +19,13 @@ class OurPartners extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <div className="card partner-card m-3">
-            <img src={BSMJPG} className="card-img-top" alt="..."/>
+            <img src={BSMJPG} className="card-img-top" alt="..." />
             <div className="card-body">
               <h5 className="card-title">Broad Street Ministries</h5>
-              <p className="card-text">We transform our city, our institutions, 
-              and ourselves when we embrace the individual needs of our most vulnerable sisters and brothers.</p>
+              <p className="card-text">
+We transform our city, our institutions,
+              and ourselves when we embrace the individual needs of our most vulnerable sisters and brothers.
+              </p>
               <a href="https://www.broadstreetministry.org/" className="card-link">Website</a>
               <a href="https://www.facebook.com/BroadStreetMinistry/" className="card-link">Facebook Page</a>
             </div>

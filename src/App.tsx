@@ -174,7 +174,7 @@ class App extends React.Component<{}, State, {}> {
             </Route>
           </Switch>
         </Router>
-        <Footer/>
+        <Footer />
       </div>
     );
   }

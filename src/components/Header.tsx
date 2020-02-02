@@ -38,7 +38,7 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-    fetch(getServerURL() + '/login', {
+    fetch(`${getServerURL()}/login`, {
       method: 'POST',
       body: JSON.stringify({
         username,
@@ -112,7 +112,7 @@ class Header extends Component<Props, State, {}> {
                     <button type="submit" onClick={logOut} className="btn btn-primary">Log Out</button>
                   </div>
                 </ul>
-            </div>
+              </div>
             </div>
           </nav>
         </div>

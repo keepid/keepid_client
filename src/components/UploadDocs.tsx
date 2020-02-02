@@ -25,7 +25,7 @@ class UploadDocs extends React.Component<{}, State> {
     const {
       pdfFile,
     } = this.state;
-    fetch(getServerURL() + '/put-documents', {
+    fetch(`${getServerURL()}/put-documents`, {
       method: 'POST',
       body: pdfFile,
     }).then((response) => response.json())
@@ -41,7 +41,7 @@ class UploadDocs extends React.Component<{}, State> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    req.open('POST', getServerURL() + '/upload');
+    req.open('POST', `${getServerURL()}/upload`);
     req.send(formData);
     this.setState({ pdfFile: file });
   }
