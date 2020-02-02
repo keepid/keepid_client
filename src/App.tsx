@@ -20,10 +20,12 @@ import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
-
+import OurTeam from './components/OurTeam';
 import Role from './static/Role';
 import MyAccount from './components/MyAccount';
 import Footer from './components/Footer';
+import OurPartners from './components/OurPartners';
+import OurMission from './components/OurMission';
 
 interface State {
   role: Role,
@@ -147,6 +149,15 @@ class App extends React.Component<{}, State, {}> {
             </Route>
             <Route path="/request">
               <Request />
+            </Route>
+            <Route path="/our-team">
+              <OurTeam />
+            </Route>
+            <Route path="/our-partners">
+              <OurPartners />
+            </Route>
+            <Route path="/our-mission">
+              <OurMission />
             </Route>
             <Route path="/email">
               <Email />

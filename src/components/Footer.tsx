@@ -50,19 +50,16 @@ class Footer extends Component<Props, State> {
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">About Us</h6>
               <ul className="list-unstyled text-muted mb-6 mb-md-8 mb-lg-0">
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Our Team</a>
+                  <a href="/our-team" className="footer-link">Our Team</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Our Partners</a>
+                  <a href="/our-partners" className="footer-link">Our Partners</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Our Mission</a>
+                  <a href="/our-mission" className="footer-link">Our Mission</a>
                 </li>
                 <li className="mb-3">
-                  <a href="/" className="footer-link">Join Us</a>
-                </li>
-                <li className="mb-3">
-                  <a href="/" className="footer-link"></a>
+                  <a href="/careers" className="footer-link">Join Us</a>
                 </li>
               </ul>
             </div>
