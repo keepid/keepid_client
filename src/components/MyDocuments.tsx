@@ -12,7 +12,7 @@ interface State {
   currentDocument: any,
 }
 
-class SeeDocs extends Component<Props, State> {
+class MyDocuments extends Component<Props, State> {
   ButtonFormatter = (cell: any, row: any) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
@@ -22,6 +22,9 @@ class SeeDocs extends Component<Props, State> {
       </button>
       <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
                 Print
+      </button>
+      <button type="button" className="btn btn-outline-info ml-2 btn-sm">
+                Request
       </button>
       <button type="button" className="btn btn-outline-danger btn-sm ml-2">
                 Delete
@@ -125,4 +128,4 @@ You can view, edit, print, and delete your documents you currently have stored o
   }
 }
 
-export default SeeDocs;
+export default MyDocuments;

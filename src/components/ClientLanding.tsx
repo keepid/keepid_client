@@ -55,7 +55,7 @@ class ClientLanding extends Component<{}, State, {}> {
             <a href="/my-documents">
               <div className="rectangle mt-5 pt-2">
                 <img className="normalImage" src={FileSVG} alt="Print" />
-                <p className="textLanding mt-4 pt-3">See My Documents</p>
+                <p className="textLanding mt-4 pt-3">My Documents</p>
               </div>
 
             </a>

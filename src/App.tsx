@@ -15,12 +15,12 @@ import ClientLanding from './components/ClientLanding';
 import Login from './components/Login';
 import Print from './components/Print';
 import Request from './components/Request';
-import SeeDocs from './components/SeeDocs';
+import SeeDocs from './components/MyDocuments';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
-import DocViewer from './components/DocViewer';
+import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/OurTeam';
 import Role from './static/Role';
 import MyAccount from './components/MyAccount';
@@ -141,7 +141,7 @@ class App extends React.Component<{}, State, {}> {
               <UploadDocs />
             </Route>
             <Route path="/my-documents">
-              <SeeDocs username={name} />
+              <MyDocuments username={name} />
             </Route>
             <Route path="/settings">
               <MyAccount />
