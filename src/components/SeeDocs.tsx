@@ -99,7 +99,7 @@ class SeeDocs extends Component<Props, State> {
       documentData,
     } = this.state;
     if (currentDocumentId) {
-      return <Redirect to={"/view-document/" + currentDocumentId} />;
+      return <Redirect to={`/view-document/${currentDocumentId}`} />;
     }
     return (
       <div className="container">

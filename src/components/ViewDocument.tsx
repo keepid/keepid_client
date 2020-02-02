@@ -3,11 +3,11 @@ import React, { Component } from 'react';
 class ViewDocument extends Component<{}, {}, {}> {
   constructor(props: any) {
     super(props);
-    console.log()
+    console.log();
   }
 
   render() {
-    return(
+    return (
       <div>
         <div className="row mt-5">
           <p className="textPrintDesc pl-3">
@@ -25,7 +25,7 @@ class ViewDocument extends Component<{}, {}, {}> {
         </button>
       </div>
     );
-  }  
+  }
 }
 
 export default ViewDocument;
