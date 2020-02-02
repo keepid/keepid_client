@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import PrintLogo from '../static/images/print.svg';
 
 class Print extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Print</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-6">
             <img src={PrintLogo} className="float-right mt-2" alt="Print" />

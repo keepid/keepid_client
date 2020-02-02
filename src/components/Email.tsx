@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
-import EmailLogo from '../static/images/email-24px.svg';
+import { Helmet } from 'react-helmet';
+import EmailLogo from '../static/images/email.svg';
 
 class Email extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Email</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-6">
             <img src={EmailLogo} className="float-right mt-2" alt="Email" />

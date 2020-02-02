@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
+import { Helmet } from 'react-helmet';
 import getServerURL from '../serverOverride';
 
 interface Props {
@@ -57,7 +58,7 @@ class AdminLanding extends Component<Props, State> {
     this.onChangeRegisterPermission = this.onChangeRegisterPermission.bind(this);
   }
 
-  componentDidMount() {
+  UNSAFE_componentWillMount() {
     this.getAdminWorkers();
   }
 
@@ -216,6 +217,10 @@ class AdminLanding extends Component<Props, State> {
 
     return (
       <div>
+        <Helmet>
+          <title>Admin Panel</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron jumbotron-fluid">
           <div className="container">
             <h1 className="display-7">{organization}</h1>

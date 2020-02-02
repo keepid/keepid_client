@@ -3,6 +3,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Redirect } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 interface Props {
   username: string,
@@ -13,7 +14,7 @@ interface State {
   documentData: any,
 }
 
-class SeeDocs extends Component<Props, State> {
+class MyDocuments extends Component<Props, State> {
   ButtonFormatter = (cell: any, row: any) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
@@ -23,6 +24,9 @@ class SeeDocs extends Component<Props, State> {
       </button>
       <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
                 Print
+      </button>
+      <button type="button" className="btn btn-outline-info ml-2 btn-sm">
+                Request
       </button>
       <button type="button" className="btn btn-outline-danger btn-sm ml-2">
                 Delete
@@ -103,6 +107,10 @@ class SeeDocs extends Component<Props, State> {
     }
     return (
       <div className="container">
+        <Helmet>
+          <title>View Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">View and Print Documents</h1>
           <p className="lead pt-3">
@@ -132,4 +140,4 @@ class SeeDocs extends Component<Props, State> {
   }
 }
 
-export default SeeDocs;
+export default MyDocuments;

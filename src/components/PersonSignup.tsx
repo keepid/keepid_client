@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
@@ -59,7 +60,7 @@ class PersonSignup extends Component<Props, State, {}> {
     this.handleChangePersonConfirmPassword = this.handleChangePersonConfirmPassword.bind(this);
   }
 
-  componentDidMount() {
+  UNSAFE_componentWillMount() {
     function checkPermission() {
     }
     checkPermission();
@@ -192,6 +193,10 @@ class PersonSignup extends Component<Props, State, {}> {
 
     return (
       <div className="container">
+        <Helmet>
+          <title>Sign Up</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-12 mt-5">
             <h3 className="text-center textPrintHeader">

@@ -100,13 +100,12 @@ class Header extends Component<Props, State, {}> {
               <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon" />
               </button>
-
-              <div className="collapse navbar-collapse" id="navbarToggleLoggedIn">
-                <ul className="navbar-nav mr-auto mt-2 mt-lg-0 d-flex">
-                  <li className="nav-item col-med-2 my-1 flex-fill">
-                    <a className="nav-link" href="/my-account">My Account Settings</a>
+              <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
+                <ul className="navbar-nav ml-auto">
+                  <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                    <a className="nav-link" href="/settings">My Account Settings</a>
                   </li>
-                  <li className="nav-item col-med-2 my-1 flex-fill">
+                  <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
                     <a className="nav-link" href="/my-organization">My Organization</a>
                   </li>
                   <div className="col-auto my-1 flex-fill">
@@ -140,7 +139,7 @@ class Header extends Component<Props, State, {}> {
             </button>
 
             <div className="collapse navbar-collapse" id="navbarToggle">
-              <ul className="navbar-nav mr-auto mt-2 mt-lg-0" />
+              <ul className="navbar-nav mr-auto mt-2 mt-lg-0 " />
               <form>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">

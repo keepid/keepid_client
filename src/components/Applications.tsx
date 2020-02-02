@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import Calendar from '../static/images/calendar.svg';
 
 class Applications extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
+        <Helmet>
+          <title>Applications</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-6">
             <img src={Calendar} className="float-right mt-2" alt="Calendar" />

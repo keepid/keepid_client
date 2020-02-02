@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 
+import { Helmet } from 'react-helmet';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
@@ -233,6 +234,10 @@ class OrganizationSignup extends Component<{}, State, {}> {
       : 'Please check information and sign and submit your form.';
     const organizationForm = (
       <div className="container">
+        <Helmet>
+          <title>Organization Signup</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row">
           <div className="col-md-12 mt-5">
             <h3 className="text-center textPrintHeader">

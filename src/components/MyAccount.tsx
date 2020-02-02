@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import { Redirect } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 interface State {
     show: boolean
@@ -20,32 +20,49 @@ class MyAccount extends Component<{}, State, {}> {
       show,
     } = this.state;
     return (
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">My Account</h5>
-          <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
-          <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card&apos;s content.</p>
-          <a href="/home" className="card-link">Card link</a>
-          <a href="/home" className="card-link">Another link</a>
-          <form>
-            <div className="col-md-12">
-              <div className="form-row">
-                <div className="col-md-6 form-group">
-                  <label htmlFor="inputOrgName">
-                      Organization Name
-                    <text className="red-star">*</text>
-                    <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="Keep" required />
-                  </label>
-                </div>
-                <div className="col-md-6 form-group">
-                  <label htmlFor="inputOrgWebsite">
-                      Organization Website
-                    <input type="url" className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" />
-                  </label>
-                </div>
+      <div className="container">
+        <Helmet>
+          <title>My Account</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="card mt-2 mb-2">
+          <div className="card-body">
+            <h5 className="card-title pb-3">My Account Details</h5>
+
+            <div className="row mb-3 mt-3">
+              <div className="col card-text mt-2">
+                My Name
+              </div>
+              <div className="col-6 card-text">
+                <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="John Smith" />
+              </div>
+              <div className="col card-text mt-2">
+                Change
               </div>
             </div>
-          </form>
+            <div className="row mb-3 mt-3">
+              <div className="col card-text mt-2">
+                My Name
+              </div>
+              <div className="col-6 card-text">
+                <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="John Smith" />
+              </div>
+              <div className="col card-text mt-2">
+                Change
+              </div>
+            </div>
+            <div className="row mb-3 mt-3">
+              <div className="col card-text mt-2">
+                My Name
+              </div>
+              <div className="col-6 card-text">
+                <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="John Smith" />
+              </div>
+              <div className="col card-text mt-2">
+                Change
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

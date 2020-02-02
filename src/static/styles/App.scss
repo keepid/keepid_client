@@ -18,9 +18,13 @@ $primary-theme: #7B81FF;
 $secondary-theme: rgba(123, 130, 255, 0.12);
 $secondary-dark-theme: #262867;
 $text-red: #F24D4D;
+$footer-color:#413f57;
+$footer-text-color: rgb(183, 183, 192);
+$footer-text-color-accent: rgb(230, 230, 230);
 
 .navbar-custom {
-	background-color: $primary-theme;
+	background: rgb(123,150,255);
+	background: linear-gradient(35deg, rgba(123,150,255,1) 0%, rgba(123,129,255,1) 45%, rgba(154,100,255,1) 100%);
 	color: white
 }
 
@@ -208,7 +212,7 @@ thead {
 
 .btn-filestack:hover {
 	//background-color: #330000;
-	box-shadow: 0 2px 2px 0 rgba(256,256,256,0.24), 0 6px 6px 0 rgba(120,120,120,0.19);
+	box-shadow: 0 0.125rem 0.125rem 0 rgba(256,256,256,0.24), 0 0.375rem 0.375rem 0 rgba(120,120,120,0.19);
 }
 
 .btn.btn-filestack:focus {
@@ -217,12 +221,59 @@ thead {
 }
 
 .btn-widget, .btn-widget:active {
-	font-size: 16px;
+	font-size: 1rem;
 	font-weight: 600;
-	// border-radius: 17px;
-	padding: 6px 30px 5px 40px;
+	padding: 0.375rem 1.875rem 0.3125rem 2.5rem;
 	height: 2.4rem;
 	width: 15rem;
 	background-repeat: no-repeat;
-	line-height: 23px;
+	line-height: 1.4375rem;
+}
+
+.footer-brand {
+	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
+	// outline-color: 
+}
+
+.footer-brand-logo{
+	color: $footer-text-color-accent;
+	margin-top: .8rem;
+	font-weight: bold;
+	font-size: 1.45rem;
+	line-height: 1.3525rem;
+	text-align: left;
+}
+
+.custom-footer-color {
+	margin-top: 3.5rem;
+	padding-bottom: 3.5rem;
+	padding-top: 2rem;
+	background-color: $footer-color;
+	color: $footer-text-color;
+}
+
+.list-social-icon {
+	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.footer-link {
+	color: $footer-text-color;
+}
+
+.footer-link:hover {
+	color: $footer-text-color-accent !important;
+}
+
+.footer-text-header{
+	color: $footer-text-color-accent;
+}
+
+.member-card {
+	width: 20vw;
+}
+
+.partner-card {
+	width: 30vw;
 }

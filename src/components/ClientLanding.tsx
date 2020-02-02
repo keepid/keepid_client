@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 // import { Redirect } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
 import UploadSVG from '../static/images/uploading-files-to-the-cloud.svg';
 import RequestSVG from '../static/images/request.svg';
 import AppSVG from '../static/images/calendar.svg';
-import EmailSVG from '../static/images/email-24px.svg';
+import EmailSVG from '../static/images/email.svg';
 import AssistSVG from '../static/images/assistance.svg';
 import FileSVG from '../static/images/file.svg';
 
@@ -34,6 +35,10 @@ class ClientLanding extends Component<{}, State, {}> {
     } = this.state;
     return (
       <div id="Buttons" className="container">
+        <Helmet>
+          <title>Home</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="row m-auto">
           <div className="col d-flex" id="Upload container">
             <a href="/upload-document">
@@ -50,7 +55,7 @@ class ClientLanding extends Component<{}, State, {}> {
             <a href="/my-documents">
               <div className="rectangle mt-5 pt-2">
                 <img className="normalImage" src={FileSVG} alt="Print" />
-                <p className="textLanding mt-4 pt-3">See My Documents</p>
+                <p className="textLanding mt-4 pt-3">My Documents</p>
               </div>
 
             </a>

@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Helmet } from 'react-helmet';
 import DocViewer from './DocViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
@@ -29,7 +29,6 @@ class UploadDocs extends React.Component<{}, State> {
       const req = new XMLHttpRequest();
       const formData = new FormData();
       formData.append('file', pdfFile, pdfFile.name);
-
       req.open('POST', `${getServerURL()}/upload`);
       req.send(formData);
     } else {
@@ -49,6 +48,10 @@ class UploadDocs extends React.Component<{}, State> {
     } = this.state;
     return (
       <div className="container">
+        <Helmet>
+          <title>Upload Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">Upload Documents</h1>
           <p className="lead pt-3">

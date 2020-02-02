@@ -6,6 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import { Helmet } from 'react-helmet';
 import PersonSignup from './components/PersonSignup';
 import OrganizationSignup from './components/OrganizationSignup';
 import Header from './components/Header';
@@ -14,15 +15,20 @@ import ClientLanding from './components/ClientLanding';
 import Login from './components/Login';
 import Print from './components/Print';
 import Request from './components/Request';
-import SeeDocs from './components/SeeDocs';
+import SeeDocs from './components/MyDocuments';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
 import ViewDocument from './components/ViewDocument';
-
+import MyDocuments from './components/MyDocuments';
+import OurTeam from './components/OurTeam';
 import Role from './static/Role';
+import MyAccount from './components/MyAccount';
+import Footer from './components/Footer';
+import OurPartners from './components/OurPartners';
+import OurMission from './components/OurMission';
 
 interface State {
   role: Role,
@@ -61,6 +67,10 @@ class App extends React.Component<{}, State, {}> {
     } = this.state;
     return (
       <div className="App">
+        <Helmet>
+          <title>Keep.id</title>
+          <meta name="description" content="Securely Combating Homelessness" />
+        </Helmet>
         <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
           <Switch>
@@ -133,7 +143,10 @@ class App extends React.Component<{}, State, {}> {
               <UploadDocs />
             </Route>
             <Route path="/my-documents">
-              <SeeDocs username={name} />
+              <MyDocuments username={name} />
+            </Route>
+            <Route path="/settings">
+              <MyAccount />
             </Route>
             <Route path="/applications">
               <Applications />
@@ -143,6 +156,15 @@ class App extends React.Component<{}, State, {}> {
             </Route>
             <Route path="/request">
               <Request />
+            </Route>
+            <Route path="/our-team">
+              <OurTeam />
+            </Route>
+            <Route path="/our-partners">
+              <OurPartners />
+            </Route>
+            <Route path="/our-mission">
+              <OurMission />
             </Route>
             <Route path="/email">
               <Email />
@@ -159,6 +181,7 @@ class App extends React.Component<{}, State, {}> {
             </Route>
           </Switch>
         </Router>
+        <Footer />
       </div>
     );
   }
