@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import EmailLogo from '../static/images/email.svg';
-import {Helmet} from "react-helmet";
 
 class Email extends Component<{}, {}, {}> {
   render() {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import Calendar from '../static/images/calendar.svg';
-import {Helmet} from "react-helmet";
 
 class Applications extends Component<{}, {}, {}> {
   render() {

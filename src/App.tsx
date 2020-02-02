@@ -6,6 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import { Helmet } from 'react-helmet';
 import PersonSignup from './components/PersonSignup';
 import OrganizationSignup from './components/OrganizationSignup';
 import Header from './components/Header';
@@ -26,7 +27,6 @@ import MyAccount from './components/MyAccount';
 import Footer from './components/Footer';
 import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
-import {Helmet} from "react-helmet";
 
 interface State {
   role: Role,

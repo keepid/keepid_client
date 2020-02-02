@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
-import {Helmet} from "react-helmet";
 
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
@@ -60,7 +60,7 @@ class PersonSignup extends Component<Props, State, {}> {
     this.handleChangePersonConfirmPassword = this.handleChangePersonConfirmPassword.bind(this);
   }
 
-  componentDidMount() {
+  UNSAFE_componentWillMount() {
     function checkPermission() {
     }
     checkPermission();

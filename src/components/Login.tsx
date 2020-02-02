@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
-import {Helmet} from "react-helmet";
 
 class Login extends Component<{}, {}, {}> {
   render() {

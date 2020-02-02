@@ -1,8 +1,8 @@
 import React from 'react';
+import { Helmet } from 'react-helmet';
 import DocViewer from './DocViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
-import {Helmet} from "react-helmet";
 
 interface State {
   pdfFile: File | undefined

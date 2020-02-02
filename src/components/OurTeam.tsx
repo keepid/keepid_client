@@ -1,9 +1,9 @@
 import React from 'react';
+import { Helmet } from 'react-helmet';
 import ConnorJPG from '../static/images/connor.jpg';
 import SteffenJPG from '../static/images/steffen.jpg';
 import GregJPG from '../static/images/greg.jpg';
 import JamesJPG from '../static/images/james.jpg';
-import {Helmet} from "react-helmet";
 
 interface State {}
 

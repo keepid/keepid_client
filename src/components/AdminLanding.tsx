@@ -5,8 +5,8 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
+import { Helmet } from 'react-helmet';
 import getServerURL from '../serverOverride';
-import {Helmet} from "react-helmet";
 
 interface Props {
   username: string,
@@ -58,7 +58,7 @@ class AdminLanding extends Component<Props, State> {
     this.onChangeRegisterPermission = this.onChangeRegisterPermission.bind(this);
   }
 
-  componentDidMount() {
+  UNSAFE_componentWillMount() {
     this.getAdminWorkers();
   }
 

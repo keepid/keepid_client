@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import RequestLogo from '../static/images/request.svg';
-import {Helmet} from "react-helmet";
 
 class Request extends Component<{}, {}, {}> {
   render() {

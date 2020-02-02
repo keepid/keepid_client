@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 import PrintLogo from '../static/images/print.svg';
-import {Helmet} from "react-helmet";
 
 class Print extends Component<{}, {}, {}> {
   render() {
