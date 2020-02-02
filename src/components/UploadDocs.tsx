@@ -5,7 +5,7 @@ import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
 
 interface State {
-  pdfFile: File | undefined
+  pdfFile: File | undefined,
 }
 
 class UploadDocs extends React.Component<{}, State> {
@@ -25,24 +25,21 @@ class UploadDocs extends React.Component<{}, State> {
     const {
       pdfFile,
     } = this.state;
-    fetch(getServerURL() + '/put-documents', {
-      method: 'POST',
-      body: pdfFile,
-    }).then((response) => response.json())
-      .then((responseJSON) => {
+    if (pdfFile) {
+      const req = new XMLHttpRequest();
+      const formData = new FormData();
+      formData.append('file', pdfFile, pdfFile.name);
 
-      });
+      req.open('POST', `${getServerURL()}/upload`);
+      req.send(formData);
+    } else {
+      alert('Please select a file');
+    }
   }
 
   handleChangeFileUpload(event: any) {
     event.preventDefault();
     const file : File = event.target.files[0];
-    const req = new XMLHttpRequest();
-    const formData = new FormData();
-    formData.append('file', file, file.name);
-
-    req.open('POST', getServerURL() + '/upload');
-    req.send(formData);
     this.setState({ pdfFile: file });
   }
 

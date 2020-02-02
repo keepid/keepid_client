@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
-// import cellEditFactory from 'react-bootstrap-table2-editor';
+import { Redirect } from 'react-router-dom';
 
 interface Props {
   username: string,
 }
 
 interface State {
-  currentDocument: any,
+  currentDocumentId: string | undefined,
+  documentData: any,
 }
 
 class SeeDocs extends Component<Props, State> {
@@ -17,14 +18,11 @@ class SeeDocs extends Component<Props, State> {
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <div>
-      <button type="button" className="btn btn-outline-success btn-sm">
+      <button type="button" onClick={(event) => this.onViewDocument(event, row)} className="btn btn-outline-success btn-sm">
                 View
       </button>
       <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
                 Print
-      </button>
-      <button type="button" className="btn btn-outline-primary btn-sm ml-2">
-                Edit
       </button>
       <button type="button" className="btn btn-outline-danger btn-sm ml-2">
                 Delete
@@ -32,32 +30,6 @@ class SeeDocs extends Component<Props, State> {
 
     </div>
   )
-
-  exampleData = [
-    {
-      documentId: '1',
-      documentName: 'doc1',
-      uploadDate: '01/01/2020',
-      uploader: 'You',
-    },
-    {
-      documentId: '2',
-      documentName: 'doc2',
-      uploadDate: '01/02/2020',
-      uploader: 'You',
-    },
-    {
-      documentId: '3',
-      documentName: 'doc3',
-      uploadDate: '01/03/2020',
-      uploader: 'You',
-    },
-    {
-      documentId: '4',
-      documentName: 'doc4',
-      uploadDate: '01/04/2020',
-      uploader: 'You',
-    }]
 
   tableCols = [{
     dataField: 'documentName',
@@ -81,18 +53,60 @@ class SeeDocs extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      currentDocument: undefined,
+      currentDocumentId: undefined,
+      documentData: [],
     };
+    this.getDocumentData = this.getDocumentData.bind(this);
+    this.onViewDocument = this.onViewDocument.bind(this);
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
 
+  componentDidMount() {
+    this.getDocumentData();
+  }
+
+  getDocumentData() {
+    const exampleData = [
+      {
+        documentId: '1',
+        documentName: 'doc1',
+        uploadDate: '01/01/2020',
+        uploader: 'You',
+      },
+      {
+        documentId: '2',
+        documentName: 'doc2',
+        uploadDate: '01/02/2020',
+        uploader: 'You',
+      },
+      {
+        documentId: '3',
+        documentName: 'doc3',
+        uploadDate: '01/03/2020',
+        uploader: 'You',
+      }];
+    this.setState({ documentData: exampleData });
+  }
+
+  onViewDocument(event: any, row: any) {
+    console.log(row.documentId);
+    this.setState({ currentDocumentId: row.documentId });
+  }
+
   render() {
+    const {
+      currentDocumentId,
+      documentData,
+    } = this.state;
+    if (currentDocumentId) {
+      return <Redirect to={"/view-document/" + currentDocumentId} />;
+    }
     return (
       <div className="container">
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">View and Print Documents</h1>
           <p className="lead pt-3">
-You can view, edit, print, and delete your documents you currently have stored on keep.id.
+    You can view, edit, print, and delete your documents you currently have stored on keep.id.
           </p>
         </div>
         <form className="form-inline my-2 my-lg-0">
@@ -104,17 +118,11 @@ You can view, edit, print, and delete your documents you currently have stored o
             <BootstrapTable
               bootstrap4
               keyField="uploadDate"
-              data={this.exampleData}
+              data={documentData}
               hover
               striped
               noDataIndication="No Documents Present"
               columns={this.tableCols}
-              selectRow={{
-                mode: 'radio',
-                // onSelect: ,
-                clickToSelect: true,
-                hideSelectColumn: true,
-              }}
               pagination={paginationFactory()}
             />
           </div>

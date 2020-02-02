@@ -17,7 +17,7 @@ class DocViewer extends Component<Props, {}> {
         <div className="row">
           <div className="col-md-12">
             <h2 className="text-center">
-                        Document Title Here
+              {pdfFile.name}
             </h2>
           </div>
         </div>

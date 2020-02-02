@@ -38,7 +38,7 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-    fetch(getServerURL() + '/login', {
+    fetch(`${getServerURL()}/login`, {
       method: 'POST',
       body: JSON.stringify({
         username,

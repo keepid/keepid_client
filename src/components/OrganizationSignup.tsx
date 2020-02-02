@@ -94,7 +94,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
       alert('Please accept EULA before completing application');
     } else {
       alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
-      fetch(getServerURL() + '/organization-signup', {
+      fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
         body: JSON.stringify({
           orgWebsite: organizationWebsite,

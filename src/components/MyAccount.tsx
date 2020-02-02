@@ -40,7 +40,7 @@ class MyAccount extends Component<{}, State, {}> {
                 <div className="col-md-6 form-group">
                   <label htmlFor="inputOrgWebsite">
                       Organization Website
-                    <input type="url" className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id"  />
+                    <input type="url" className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" />
                   </label>
                 </div>
               </div>

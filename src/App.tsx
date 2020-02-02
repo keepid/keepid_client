@@ -20,6 +20,7 @@ import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
 import DocViewer from './components/DocViewer';
+import ViewDocument from './components/ViewDocument';
 
 import Role from './static/Role';
 
@@ -146,8 +147,8 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/email">
               <Email />
             </Route>
-            <Route path="/document-viewer">
-              Document Viewer Here
+            <Route path="/view-document/:documentId">
+              <ViewDocument />
             </Route>
             // Component
             <Route path="/error">
