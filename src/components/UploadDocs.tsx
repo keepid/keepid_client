@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import DocViewer from './DocViewer';
+import DocumentViewer from './DocumentViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
 
@@ -63,7 +63,7 @@ class UploadDocs extends React.Component<{}, State> {
           {pdfFile
             ? (
               <div className="row">
-                <DocViewer pdfFile={pdfFile} />
+                <DocumentViewer pdfFile={pdfFile} />
               </div>
             ) : <div />}
           <div className="row justify-content-left form-group mb-5">

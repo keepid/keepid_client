@@ -60,12 +60,6 @@ class PersonSignup extends Component<Props, State, {}> {
     this.handleChangePersonConfirmPassword = this.handleChangePersonConfirmPassword.bind(this);
   }
 
-  UNSAFE_componentWillMount() {
-    function checkPermission() {
-    }
-    checkPermission();
-  }
-
   handleSubmit(event: any) {
     event.preventDefault();
     const {

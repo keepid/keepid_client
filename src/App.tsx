@@ -13,14 +13,12 @@ import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
 import ClientLanding from './components/ClientLanding';
 import Login from './components/Login';
-import Print from './components/Print';
 import Request from './components/Request';
-import SeeDocs from './components/MyDocuments';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
 import AdminLanding from './components/AdminLanding';
-import DocViewer from './components/DocViewer';
+import DocumentViewer from './components/DocumentViewer';
 import ViewDocument from './components/ViewDocument';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/OurTeam';
@@ -151,9 +149,6 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/applications">
               <Applications />
             </Route>
-            <Route path="/print">
-              <Print />
-            </Route>
             <Route path="/request">
               <Request />
             </Route>
@@ -168,9 +163,6 @@ class App extends React.Component<{}, State, {}> {
             </Route>
             <Route path="/email">
               <Email />
-            </Route>
-            <Route path="/view-document/:documentId">
-              <ViewDocument />
             </Route>
             // Component
             <Route path="/error">

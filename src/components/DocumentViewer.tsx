@@ -8,7 +8,7 @@ interface Props {
   pdfFile: File,
 }
 
-class DocViewer extends Component<Props, {}> {
+class DocumentViewer extends Component<Props, {}> {
   render() {
     const {
       pdfFile,
@@ -34,4 +34,4 @@ class DocViewer extends Component<Props, {}> {
   }
 }
 
-export default DocViewer;
+export default DocumentViewer;

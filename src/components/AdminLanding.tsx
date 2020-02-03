@@ -58,7 +58,7 @@ class AdminLanding extends Component<Props, State> {
     this.onChangeRegisterPermission = this.onChangeRegisterPermission.bind(this);
   }
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.getAdminWorkers();
   }
 

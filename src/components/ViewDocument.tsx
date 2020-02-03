@@ -1,28 +1,51 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import DocumentViewer from './DocumentViewer';
 
-class ViewDocument extends Component<{}, {}, {}> {
+interface Props {
+  documentId: string | undefined,
+}
+
+interface State {
+  pdfFile: File | undefined,
+}
+
+class ViewDocument extends Component<Props, State> {
   constructor(props: any) {
     super(props);
-    console.log();
+    this.state = {
+      pdfFile: undefined,
+    };
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:7000/download', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+    }).then((response) => response.blob())
+      .then((response) => {
+        const file = new Blob([response], {
+          type: 'application/pdf',
+        });
+        const pdfFile = new File([file], 'Pdf File Name');
+        this.setState({ pdfFile });
+      });
   }
 
   render() {
+    const {
+      pdfFile,
+    } = this.state;
     return (
       <div>
-        <div className="row mt-5">
-          <p className="textPrintDesc pl-3">
-            <span>End User License Agreement</span>
-          </p>
-          <div className="embed-responsive embed-responsive-16by9">
-            <iframe className="embed-responsive-item" src="eula-template.pdf" title="EULA Agreement" />
-          </div>
-        </div>
-
-        <button>
-          <a href="/my-documents">
+        { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
+        <Link to="/my-documents">
+          <button type="button">
             Back
-          </a>
-        </button>
+          </button>
+        </Link>
       </div>
     );
   }
