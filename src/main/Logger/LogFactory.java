@@ -11,6 +11,8 @@ public class LogFactory {
 
   public LogFactory() {
     logger = LoggerFactory.getLogger("App");
+    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    //    StatusPrinter.print(lc);
   }
 
   public Logger createLogger() {

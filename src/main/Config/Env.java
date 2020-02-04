@@ -7,7 +7,7 @@ public class Env {
 
   public static Dotenv getInstance() {
     if (dotenv == null) {
-      dotenv = Dotenv.configure().directory("./").load();
+      dotenv = Dotenv.configure().ignoreIfMissing().directory("./").load();
     }
     return dotenv;
   }
