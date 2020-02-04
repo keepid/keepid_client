@@ -27,7 +27,7 @@ class DocumentViewer extends Component<Props, {}> {
           </div>
         </div>
         <div className="row embed-responsive embed-responsive-16by9 align-content-center">
-          <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
+          <iframe id="pdf-shower" className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
         </div>
       </div>
     );

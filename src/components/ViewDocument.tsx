@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
+import getServerURL from '../serverOverride';
 
 interface Props {
   documentId: string | undefined,
@@ -19,7 +20,7 @@ class ViewDocument extends Component<Props, State> {
   }
 
   componentDidMount() {
-    fetch('http://localhost:7000/download', {
+    fetch(`${getServerURL()}/download`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/pdf',

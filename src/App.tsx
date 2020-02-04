@@ -39,7 +39,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.Client, // Change this to access pages
+      role: Role.LoggedOut, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
@@ -48,8 +48,8 @@ class App extends React.Component<{}, State, {}> {
     this.logOut = this.logOut.bind(this);
   }
 
-  logIn() {
-    this.setState({ role: Role.Client });
+  logIn(role: Role) {
+    this.setState({ role });
   }
 
   logOut() {

@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet';
 
 import PrintDocument from './PrintDocument';
 import ViewDocument from './ViewDocument';
+import getServerURL from '../serverOverride';
 
 interface Props {
   username: string,
@@ -38,26 +39,12 @@ class MyDocuments extends Component<Props, State> {
   }
 
   getDocumentData() {
-    const exampleData = [
-      {
-        documentId: '1',
-        documentName: 'doc1',
-        uploadDate: '01/01/2020',
-        uploader: 'You',
-      },
-      {
-        documentId: '2',
-        documentName: 'doc2',
-        uploadDate: '01/02/2020',
-        uploader: 'You',
-      },
-      {
-        documentId: '3',
-        documentName: 'doc3',
-        uploadDate: '01/03/2020',
-        uploader: 'You',
-      }];
-    this.setState({ documentData: exampleData });
+    fetch(`${getServerURL()}/get-file-information`, {
+      method: "GET",
+    }).then(response => response.json())
+    .then(responseJSON => {
+      this.setState({ documentData: responseJSON });
+    });
   }
 
   ButtonFormatter = (cell: any, row: any) => (

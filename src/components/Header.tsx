@@ -3,9 +3,10 @@ import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
+import Role from '../static/Role';
 
 interface Props {
-  logIn: () => void,
+  logIn: (arg0: Role) => void,
   logOut: () => void,
   isLoggedIn: boolean
 }
@@ -38,26 +39,36 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-    fetch(`${getServerURL()}/login`, {
-      method: 'POST',
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        if (responseJSON === 'AUTH_SUCCESS') {
-          logIn();
-        } else if (responseJSON === 'AUTH_FAILURE') {
-          alert('Incorrect Password');
-          this.setState({ incorrectCredentials: true });
-        } else if (responseJSON === 'USER_NOT_FOUND') {
-          alert('Incorrect Username');
-          this.setState({ incorrectCredentials: true });
-        } else {
-          alert('Server Failure: Please Try Again');
-        }
-      });
+
+    //CODE FOR TEST
+    if (username === "client") {
+      logIn(Role.Client);
+    } else if (username === "worker") {
+      logIn(Role.Worker);
+    } else if (username === "admin") {
+      logIn(Role.Admin);
+    }
+
+    // fetch(`${getServerURL()}/login`, {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     username,
+    //     password,
+    //   }),
+    // }).then((response) => response.json())
+    //   .then((responseJSON) => {
+    //     if (responseJSON === 'AUTH_SUCCESS') {
+    //       logIn(Role.LoggedOut); //Change
+    //     } else if (responseJSON === 'AUTH_FAILURE') {
+    //       alert('Incorrect Password');
+    //       this.setState({ incorrectCredentials: true });
+    //     } else if (responseJSON === 'USER_NOT_FOUND') {
+    //       alert('Incorrect Username');
+    //       this.setState({ incorrectCredentials: true });
+    //     } else {
+    //       alert('Server Failure: Please Try Again');
+    //     }
+    //   });
   }
 
   handleChangePassword(event: any) {
@@ -140,7 +151,7 @@ class Header extends Component<Props, State, {}> {
 
             <div className="collapse navbar-collapse" id="navbarToggle">
               <ul className="navbar-nav mr-auto mt-2 mt-lg-0 " />
-              <form>
+              <form onSubmit={this.handleSubmit} >
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
                     <div className="input-group">
