@@ -90,13 +90,13 @@ class MyDocuments extends Component<Props, State> {
     return (
       <div className="container">
         <Helmet>
-          <title>View Documents</title>
+          <title>My Documents</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">View and Print Documents</h1>
+          <h1 className="display-4">My Documents</h1>
           <p className="lead pt-3">
-You can view, edit, print, and delete your documents you currently have stored on keep.id.
+You can view, print, and delete your documents you currently have stored on keep.id. You can also request documents from the organization that is currently storing your files.
           </p>
         </div>
         <form className="form-inline my-2 my-lg-0">

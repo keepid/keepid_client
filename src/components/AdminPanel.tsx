@@ -22,7 +22,7 @@ interface State {
   organization: string,
 }
 
-class AdminLanding extends Component<Props, State> {
+class AdminPanel extends Component<Props, State> {
   tableCols = [{
     dataField: 'username',
     text: 'Worker User ID',
@@ -263,4 +263,4 @@ class AdminLanding extends Component<Props, State> {
   }
 }
 
-export default AdminLanding;
+export default AdminPanel;

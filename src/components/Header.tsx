@@ -3,17 +3,20 @@ import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
+import Role from '../static/Role';
 
 interface Props {
   logIn: () => void,
   logOut: () => void,
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  role: Role
 }
 
 interface State {
   incorrectCredentials: boolean,
   username: string,
-  password: string
+  password: string,
+  role: Role
 }
 
 class Header extends Component<Props, State, {}> {
@@ -23,6 +26,7 @@ class Header extends Component<Props, State, {}> {
       incorrectCredentials: false,
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
+      role: Role.Admin
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -77,6 +81,7 @@ class Header extends Component<Props, State, {}> {
       incorrectCredentials,
       username,
       password,
+      role
     } = this.state;
 
     const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
@@ -102,6 +107,11 @@ class Header extends Component<Props, State, {}> {
               </button>
               <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav ml-auto">
+                  {(role === Role.Admin || role === Role.HeadAdmin) && 
+                    <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                      <a className="nav-link" href="/admin-panel">Admin Panel</a>
+                    </li>
+                  }
                   <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                     <a className="nav-link" href="/settings">My Account Settings</a>
                   </li>
