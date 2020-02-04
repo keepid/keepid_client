@@ -22,9 +22,11 @@ public class OrganizationController {
   public Handler enrollOrganization =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+        System.out.println("here");
         if (!OrganizationValidation.isValid(req, ctx)) {
           return;
         }
+        System.out.println("here2");
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
         String adminName = req.getString("name").toLowerCase();
