@@ -3,18 +3,21 @@ import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
+import { Link } from 'react-router-dom';
 import Role from '../static/Role';
 
 interface Props {
   logIn: (arg0: Role) => void,
   logOut: () => void,
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  role: Role
 }
 
 interface State {
   incorrectCredentials: boolean,
   username: string,
-  password: string
+  password: string,
+  role: Role
 }
 
 class Header extends Component<Props, State, {}> {
@@ -24,6 +27,7 @@ class Header extends Component<Props, State, {}> {
       incorrectCredentials: false,
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
+      role: Role.Admin
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -47,6 +51,8 @@ class Header extends Component<Props, State, {}> {
       logIn(Role.Worker);
     } else if (username === "admin") {
       logIn(Role.Admin);
+    } else {
+      logIn(Role.LoggedOut);
     }
 
     // fetch(`${getServerURL()}/login`, {
@@ -88,6 +94,7 @@ class Header extends Component<Props, State, {}> {
       incorrectCredentials,
       username,
       password,
+      role
     } = this.state;
 
     const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
@@ -96,7 +103,7 @@ class Header extends Component<Props, State, {}> {
         <div>
           <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
             <div className="container">
-              <a className="navbar-brand" href="/home">
+              <Link className="navbar-brand" to="/home">
                 <img
                   alt="Logo"
                   src={Logo}
@@ -104,23 +111,28 @@ class Header extends Component<Props, State, {}> {
                   height="30"
                   className="d-inline-block align-middle"
                 />
-              </a>
-              <a className="navbar-brand" href="/home">
-              keep.id
-              </a>
+              </Link>
+              <Link className="navbar-brand" to="/home">
+                keep.id
+              </Link>
               <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon" />
               </button>
               <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav ml-auto">
+                  {(role === Role.Admin || role === Role.HeadAdmin) && 
+                    <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                      <Link className="nav-link" to="/admin-panel">Admin Panel</Link>
+                    </li>
+                  }
                   <li className="nav-item col-med-2 my-1 flex-fill mr-2">
-                    <a className="nav-link" href="/settings">My Account Settings</a>
+                    <Link className="nav-link" to="/settings">My Account Settings</Link>
                   </li>
                   <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
-                    <a className="nav-link" href="/my-organization">My Organization</a>
+                    <Link className="nav-link" to="/my-organization">My Organization</Link>
                   </li>
                   <div className="col-auto my-1 flex-fill">
-                    <button type="submit" onClick={logOut} className="btn btn-primary">Log Out</button>
+                    <button type="button" onClick={logOut} className="btn btn-primary">Log Out</button>
                   </div>
                 </ul>
               </div>
@@ -133,7 +145,7 @@ class Header extends Component<Props, State, {}> {
       <div>
         <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
           <div className="container">
-            <a className="navbar-brand" href="/home">
+            <Link className="navbar-brand" to="/home">
               <img
                 alt="Logo"
                 src={Logo}
@@ -141,10 +153,10 @@ class Header extends Component<Props, State, {}> {
                 height="30"
                 className="d-inline-block align-middle"
               />
-            </a>
-            <a className="navbar-brand" href="/home">
+            </Link>
+            <Link className="navbar-brand" to="/home">
               keep.id
-            </a>
+            </Link>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
               <span className="navbar-toggler-icon" />
             </button>

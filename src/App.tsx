@@ -17,9 +17,9 @@ import Request from './components/Request';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
-import AdminLanding from './components/AdminLanding';
 import DocumentViewer from './components/DocumentViewer';
 import ViewDocument from './components/ViewDocument';
+import AdminPanel from './components/AdminPanel';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/OurTeam';
 import Role from './static/Role';
@@ -27,6 +27,7 @@ import MyAccount from './components/MyAccount';
 import Footer from './components/Footer';
 import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
+import WorkerLanding from './components/WorkerLanding';
 
 interface State {
   role: Role,
@@ -65,12 +66,12 @@ class App extends React.Component<{}, State, {}> {
     } = this.state;
     return (
       <div className="App">
-        <Helmet>
-          <title>Keep.id</title>
-          <meta name="description" content="Securely Combating Homelessness" />
-        </Helmet>
-        <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} />
         <Router>
+          <Helmet>
+            <title>Keep.id</title>
+            <meta name="description" content="Securely Combating Homelessness" />
+          </Helmet>
+          <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role}/>
           <Switch>
             // Home/Login Components
             <Route
@@ -85,8 +86,8 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/home"
               render={() => {
-                if (role === Role.Admin || role === Role.HeadAdmin) {
-                  return (<AdminLanding name={name} organization={organization} username={username} />);
+                if (role === Role.Admin || role === Role.HeadAdmin || role == Role.Worker) {
+                  return (<WorkerLanding name={name} organization={organization} username={username} />);
                 }
                 if (role === Role.Client) {
                   return (<ClientLanding />);
@@ -133,6 +134,14 @@ class App extends React.Component<{}, State, {}> {
                     );
                   default:
                     return <Redirect to="/error" />;
+                }
+              }}
+            />
+            <Route
+              path="/admin-panel"
+              render={() => {
+                if (role === Role.Admin || role === Role.HeadAdmin) {
+                  return (<AdminPanel name={name} organization={organization} username={username} />);
                 }
               }}
             />

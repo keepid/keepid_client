@@ -1,0 +1,127 @@
+import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
+import Select from 'react-select'
+import makeAnimated from 'react-select/animated';
+
+interface Props {
+    username: string,
+    name: string,
+    organization: string,
+  }
+  
+interface State {
+  username: string,
+  adminName: string,
+  organization: string,
+}
+
+const options = [
+  { value: 'name', label: 'Name' },
+  { value: 'ssn', label: 'Social Security Number' },
+  { value: 'phoneNumber', label: 'Phone Number' },
+]
+
+
+const listOptions = [
+  { value: '10', label: '10' },
+  { value: '25', label: '25' },
+  { value: '50', label: '50' },
+]
+
+
+const animatedComponents = makeAnimated();
+
+class WorkerLanding extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      username: props.username,
+      adminName: props.name,
+      organization: props.organization,
+    }; 
+  }
+  render() {
+    return (
+      <div>
+        <Helmet>
+          <title>Home</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron pt-5 pb-3 jumbotron-fluid">
+          <div className="container">
+            <h1 className="display-5">My Clients</h1>
+            <p className="lead">Use the search bar to help look up clients.</p>
+            <form className="form-inline">
+              <input className="form-control form-control-med w-50 mt-3 mb-4" type="text" placeholder="Search" aria-label="Search"/>
+            </form>
+            <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#advancedSearch" aria-expanded="false" aria-controls="collapseExample">
+              Toggle Advanced Search
+            </button>
+            <div className="collapse" id="advancedSearch">
+              <div className="card card-body mt-3 mb-3 w-50 border-0">
+                <h5 className="card-title">Search on multiple fields</h5>
+                <Select options={options} 
+                  closeMenuOnSelect={false}
+                  components={animatedComponents}
+                  isMulti />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="container">
+          <div className="row">
+            <nav aria-label="Page navigation example">
+              <ul className="pagination mt-4 mb-3 mr-5 ml-4">
+                <li className="page-item"><a className="page-link" href="#">Previous</a></li>
+                <li className="page-item"><a className="page-link" href="#">1</a></li>
+                <li className="page-item"><a className="page-link" href="#">2</a></li>
+                <li className="page-item"><a className="page-link" href="#">3</a></li>
+                <li className="page-item"><a className="page-link" href="#">Next</a></li>
+              </ul>
+            </nav>
+            <div className="w-25">
+              <div className="card card-body mt-0 mb-4 border-0 p-0">
+                <h5 className="card-text"># Items per page</h5>
+                <Select options={listOptions} 
+                  autoFocus={true}
+                  closeMenuOnSelect={false}
+                  defaultValue={listOptions[0]} />
+              </div>
+            </div>
+          </div>
+          {/* RENDER CLIENT CARDS BELOW: MOVE THIS TO A FUNCTION LATER AND HAVE IT RENDER ALL THE INFORMATION */}
+          <div className="card">
+            <div className="card-body">
+              <div className="d-flex flex-row">
+                <div className="d-flex flex-column mr-4">
+                  <div className="p-2 ">PROFILE PICTURE HERE</div>
+                </div>
+                <div className="d-flex flex-lg-column mr-4">
+                  <h5 className="card-title mb-3 h4">Client First Last Name</h5>
+                  <h6 className="card-subtitle mb-2 text-muted">Email, Phone #, Address, etc.</h6>
+                  <p className="card-text">Some information about the client here</p>
+                  <a href="#" className="card-link">Client Profile</a>
+                </div>
+                <div className="d-flex flex-column mr-4">
+                  <h5 className="card-title">Recent Actions</h5>
+                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 1" on "example date 1"</h6>
+                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 2" on "example date 2"</h6>
+                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 3" on "example date 3"</h6>
+                </div>
+                <div className="d-flex flex-column mr-4">
+                  <h5 className="card-title">Actions for Client</h5>
+                  <button type="button" className="btn btn-success mb-2 btn-sm">Upload Documents</button>
+                  <button type="button" className="btn btn-danger mb-2 btn-sm">Delete Documents</button>
+                  <button type="button" className="btn btn-info mb-2 btn-sm">Another Action</button>
+                  <button type="button" className="btn btn-dark mb-2 btn-sm">Another Action</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default WorkerLanding;
