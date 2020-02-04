@@ -142,7 +142,8 @@ class App extends React.Component<{}, State, {}> {
               render={() => {
                 if (role === Role.Admin || role === Role.HeadAdmin) {
                   return (<AdminPanel name={name} organization={organization} username={username} />);
-                }
+                } 
+                return <Redirect to="/error" />;
               }}
             />
             // Client Components

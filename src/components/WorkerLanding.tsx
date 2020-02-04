@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select'
 import makeAnimated from 'react-select/animated';
+import SearchSVG from '../static/images/search.svg';
 
 interface Props {
     username: string,
@@ -47,18 +48,27 @@ class WorkerLanding extends Component<Props, State> {
           <title>Home</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="jumbotron pt-5 pb-3 jumbotron-fluid">
+        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
           <div className="container">
-            <h1 className="display-5">My Clients</h1>
+            <h1 className="display-5 pb-0">My Clients</h1>
             <p className="lead">Use the search bar to help look up clients.</p>
-            <form className="form-inline">
-              <input className="form-control form-control-med w-50 mt-3 mb-4" type="text" placeholder="Search" aria-label="Search"/>
-            </form>
-            <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#advancedSearch" aria-expanded="false" aria-controls="collapseExample">
-              Toggle Advanced Search
-            </button>
+            <div className="d-flex flex-row">
+              <form className="form-inline mr-3 w-50">
+                <input className="form-control mr-2 w-75" type="text" placeholder="Search" aria-label="Search"/>
+                <img
+                  alt="Password"
+                  src={SearchSVG}
+                  width="22"
+                  height="22"
+                  className="d-inline-block align-middle ml-1"
+                />
+              </form>
+              <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#advancedSearch" aria-expanded="false" aria-controls="collapseExample">
+                Toggle Advanced Search
+              </button>
+            </div>
             <div className="collapse" id="advancedSearch">
-              <div className="card card-body mt-3 mb-3 w-50 border-0">
+              <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
                 <h5 className="card-title">Search on multiple fields</h5>
                 <Select options={options} 
                   closeMenuOnSelect={false}
@@ -81,7 +91,7 @@ class WorkerLanding extends Component<Props, State> {
             </nav>
             <div className="w-25">
               <div className="card card-body mt-0 mb-4 border-0 p-0">
-                <h5 className="card-text"># Items per page</h5>
+                <h5 className="card-text h6"># Items per page</h5>
                 <Select options={listOptions} 
                   autoFocus={true}
                   closeMenuOnSelect={false}
