@@ -5,11 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
-
 public class LogFactory {
 
   Logger appLogger; // default logger
-  HashMap<String, Logger> loggers; 
+  HashMap<String, Logger> loggers;
 
   public LogFactory() {
     loggers = new HashMap<String, Logger>();
@@ -37,8 +36,8 @@ public class LogFactory {
     logger.debug("Hello world.");
 
     // print internal state
-//    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-//    StatusPrinter.print(lc);
+    //    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    //    StatusPrinter.print(lc);
     logger.warn("PRINT LOGGER HERE WARN");
     logger.error("PRINT LOGGER HERE ERROR");
     logger.debug("PRINT LOGGER HERE DEBUG");
