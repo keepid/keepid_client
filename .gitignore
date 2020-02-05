@@ -27,3 +27,5 @@ lib
 keepid.iml
 log.txt
 .github
+.classpath
+.project
