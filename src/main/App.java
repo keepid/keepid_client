@@ -1,11 +1,9 @@
-import Config.Env;
 import Config.MongoConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
@@ -16,8 +14,6 @@ public class App {
   public static Long ASYNC_TIME_OUT = 10L;
 
   public static void main(String[] args) {
-
-    Dotenv dotenv = Env.getInstance();
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 
@@ -47,17 +43,19 @@ public class App {
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
                   //            config.requestLogger();                    // set a request logger
-                  //            config.sessionHandler();                   // set a SessionHandler
+                  //                  config.sessionHandler(SessionConfig::fileSessionHandler);
+                  //                  config.accessManager(UserController::accessManager);
                 })
-            .start(Integer.parseInt(dotenv.get("PORT")));
+            .start(Integer.parseInt(System.getenv("PORT")));
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger();
-    logger.warn("PRINT LOGGER HERE WARN");
-    logger.error("PRINT LOGGER HERE ERROR");
-    logger.debug("PRINT LOGGER HERE DEBUG");
+    logger.warn("EXAMPLE OF WARN");
+    logger.error("EXAMPLE OF ERROR");
+    logger.debug("EXAMPLE OF DEBUG");
 
     // we need to instantiate the controllers with the database
     OrganizationController orgController = new OrganizationController(db);
+    UserController userController = new UserController(db);
     /*
      * Server API:
      *  /login
@@ -97,8 +95,8 @@ public class App {
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
 
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
-    app.post("/login", UserController.loginUser);
+    app.post("/login", userController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
-    // app.post("/create-user", UserController.createUser);
+    //    app.post("/create-user", userController.createNewUser);
   }
 }

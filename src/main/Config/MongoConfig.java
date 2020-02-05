@@ -2,24 +2,29 @@ package Config;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import io.github.cdimascio.dotenv.Dotenv;
+
 import java.util.Objects;
 
 public class MongoConfig {
 
   private static MongoClient client;
   private static MongoClient testClient;
-
+  // ALSO if you are having a Null Pointer Exception in the Mongo Config, please follow the
+  // instructions here: https://github.com/Ashald/EnvFile. We are deprecating the use of dotenv
+  // because it is interfering
+  // with our heroku deployment (also the heroku deployment doesn't see the env file anyway).
+  // Therefore, please edit the run configurations in IntelliJ at this link here:
+  // https://github.com/Ashald/EnvFile.
   public static String getDatabaseName() {
-    return Env.getInstance().get("MONGO_DB_NAME");
+    return System.getenv("MONGO_DB_NAME");
   }
 
   public static void startConnection() {
-    client = MongoClients.create(Objects.requireNonNull(Dotenv.load().get("MONGO_URI")));
+    client = MongoClients.create(Objects.requireNonNull(System.getenv("MONGO_URI")));
   }
 
   public static void startTestConnection() {
-    testClient = MongoClients.create(Objects.requireNonNull(Dotenv.load().get("MONGO_TEST_URI")));
+    testClient = MongoClients.create(Objects.requireNonNull(System.getenv("MONGO_TEST_URI")));
   }
 
   public static MongoClient getMongoClient() {
