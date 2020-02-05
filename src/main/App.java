@@ -1,4 +1,3 @@
-import Config.Env;
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
@@ -6,7 +5,6 @@ import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
@@ -17,8 +15,6 @@ public class App {
   public static Long ASYNC_TIME_OUT = 10L;
 
   public static void main(String[] args) {
-
-    Dotenv dotenv = Env.getInstance();
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 
@@ -51,7 +47,7 @@ public class App {
                   config.sessionHandler(SessionConfig::fileSessionHandler);
                   //                  config.accessManager(UserController::accessManager);
                 })
-            .start(Integer.parseInt(dotenv.get("PORT")));
+            .start(Integer.parseInt(System.getenv("PORT")));
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger();
     logger.warn("EXAMPLE OF WARN");
