@@ -1,5 +1,4 @@
 import Config.MongoConfig;
-import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
@@ -44,7 +43,7 @@ public class App {
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
                   //            config.requestLogger();                    // set a request logger
-                  config.sessionHandler(SessionConfig::fileSessionHandler);
+                  //                  config.sessionHandler(SessionConfig::fileSessionHandler);
                   //                  config.accessManager(UserController::accessManager);
                 })
             .start(Integer.parseInt(System.getenv("PORT")));
@@ -98,6 +97,6 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
-    app.post("/create-user", userController.createNewUser);
+    //    app.post("/create-user", userController.createNewUser);
   }
 }
