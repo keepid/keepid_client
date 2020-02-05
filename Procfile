@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -cp target/classes:target/dependency/* App
+web: java -jar ./target/keepid-1.0.0-jar-with-dependencies.jar
