@@ -123,10 +123,5 @@
             <artifactId>logback-core</artifactId>
             <version>1.2.3</version>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-nosql</artifactId>
-            <version>9.4.10.v20180503</version>
-        </dependency>
     </dependencies>
 </project>
