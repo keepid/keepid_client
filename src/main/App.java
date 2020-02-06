@@ -1,4 +1,5 @@
 import Config.MongoConfig;
+import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import UserIntTests.UserController;
@@ -45,6 +46,7 @@ public class App {
                   //            config.requestLogger();                    // set a request logger
                   //                  config.sessionHandler(SessionConfig::fileSessionHandler);
                   //                  config.accessManager(UserController::accessManager);
+                    config.sessionHandler(() -> SessionConfig.getSessionHandlerInstance());
                 })
             .start(Integer.parseInt(System.getenv("PORT")));
     LogFactory l = new LogFactory();

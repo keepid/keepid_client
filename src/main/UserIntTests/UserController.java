@@ -58,6 +58,8 @@ public class UserController {
             ctx.sessionAttribute("orgName", user.get("organization"));
             logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
             logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
+
+
             ctx.json(UserMessage.AUTH_SUCCESS.getErrorName());
           } else {
             // Hash doesn't match password

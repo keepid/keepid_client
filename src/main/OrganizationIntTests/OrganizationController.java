@@ -22,12 +22,10 @@ public class OrganizationController {
   public Handler enrollOrganization =
       ctx -> {
 
-        //ctx.req.getSession().invalidate();
-
         JSONObject req = new JSONObject(ctx.body());
-        if (!OrganizationValidation.isValid(req, ctx)) {
-          return;
-        }
+//        if (!OrganizationValidation.isValid(req, ctx)) {
+//          return;
+//        }
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
         String firstName = req.getString("firstName").toLowerCase();
