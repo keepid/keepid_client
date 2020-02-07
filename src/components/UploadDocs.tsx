@@ -53,7 +53,7 @@ class UploadDocs extends React.Component<{}, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">Upload Documents</h1>
+          <h1 className="display-4">Upload Document</h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
             The name and a preview of the PDF will appear below the buttons.

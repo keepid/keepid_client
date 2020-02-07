@@ -119,11 +119,14 @@ class OrganizationSignup extends Component<{}, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          if (responseJSON === 'SUCCESSFUL_ENROLLMENT') {
+          const {
+            enrollmentStatus,
+          } = responseJSON;
+          if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });
-          } else if (responseJSON === 'USER_ALREADY_EXISTS') {
+          } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
             alert('User already exists');
-          } else if (responseJSON === 'ORG_EXISTS') {
+          } else if (enrollmentStatus === 'ORG_EXISTS') {
             alert('Organization already exists');
           } else {
             alert('Server Failure: Please Try Again');
