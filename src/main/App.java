@@ -100,7 +100,7 @@ public class App {
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
     app.post("/put-documents", pdfUpload.pdf_upload);
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
-    app.post("/login", UserController.loginUser);
+    app.post("/login", userController.loginUser);
     app.get("/download",pdf_dowload.pdf_dowload);
     app.post("/organization-signup", orgController.enrollOrganization);
     //    app.post("/create-user", userController.createNewUser);
