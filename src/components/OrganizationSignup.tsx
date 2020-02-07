@@ -91,6 +91,9 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationNumClients,
       acceptEULA,
     } = this.state;
+    const splitContactName : string[] = contactName.split(" ");
+    const firstName : string = splitContactName.splice(0)[0];
+    const lastName : string = splitContactName.join(" ");
     if (!acceptEULA) {
       alert('Please accept EULA before completing application');
     } else {
@@ -99,7 +102,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
         method: 'POST',
         body: JSON.stringify({
           orgWebsite: organizationWebsite,
-          name: contactName,
+          firstName,
+          lastName,
           phone: contactPhoneNumber,
           orgName: organizationName,
           orgStatus: organizationStatus,

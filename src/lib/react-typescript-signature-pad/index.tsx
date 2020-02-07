@@ -96,7 +96,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.clear = this.clear.bind(this);
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
       this.canvas = this.canvasRef.current;
       this.ctx = this.canvas.getContext('2d');
       this.clear();

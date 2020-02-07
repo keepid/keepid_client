@@ -40,7 +40,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.LoggedOut, // Change this to access pages
+      role: Role.Client, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
@@ -49,8 +49,13 @@ class App extends React.Component<{}, State, {}> {
     this.logOut = this.logOut.bind(this);
   }
 
-  logIn(role: Role) {
-    this.setState({ role });
+  logIn(role: Role, username: string, organization: string, name: string) {
+    this.setState({ 
+      role,
+      username,
+      name,
+      organization,
+    });
   }
 
   logOut() {
@@ -87,7 +92,7 @@ class App extends React.Component<{}, State, {}> {
               path="/home"
               render={() => {
                 if (role === Role.Admin || role === Role.HeadAdmin || role == Role.Worker) {
-                  return (<WorkerLanding name={name} organization={organization} username={username} />);
+                  return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                 }
                 if (role === Role.Client) {
                   return (<ClientLanding />);

@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select'
 import makeAnimated from 'react-select/animated';
+import Role from '../static/Role';
 
 interface Props {
-    username: string,
-    name: string,
-    organization: string,
-  }
-  
-interface State {
   username: string,
-  adminName: string,
+  name: string,
   organization: string,
+  role: Role,
+}
+
+interface State {
+
 }
 
 const options = [
@@ -34,13 +35,12 @@ const animatedComponents = makeAnimated();
 class WorkerLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = {
-      username: props.username,
-      adminName: props.name,
-      organization: props.organization,
-    }; 
   }
+
   render() {
+    const {
+      role,
+    } = this.props;
     return (
       <div>
         <Helmet>
@@ -119,6 +119,8 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
+        {role === Role.Admin ? <Link to="/person-signup/worker"><button>Signup Worker</button></Link> : <div/>}
+        <Link to="/person-signup/client"><button>Signup Client</button></Link>
       </div>
     );
   }

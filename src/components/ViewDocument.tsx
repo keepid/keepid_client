@@ -9,6 +9,7 @@ interface Props {
 
 interface State {
   pdfFile: File | undefined,
+  numPages: number,
 }
 
 class ViewDocument extends Component<Props, State> {
@@ -16,6 +17,7 @@ class ViewDocument extends Component<Props, State> {
     super(props);
     this.state = {
       pdfFile: undefined,
+      numPages: 0,
     };
   }
 
@@ -33,6 +35,10 @@ class ViewDocument extends Component<Props, State> {
         const pdfFile = new File([file], 'Pdf File Name');
         this.setState({ pdfFile });
       });
+  }
+
+  onDocumentLoadSuccess(numPages: number) {
+    this.setState({ numPages });
   }
 
   render() {

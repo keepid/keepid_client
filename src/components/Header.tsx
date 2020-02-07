@@ -7,17 +7,16 @@ import { Link } from 'react-router-dom';
 import Role from '../static/Role';
 
 interface Props {
-  logIn: (arg0: Role) => void,
+  logIn: (role: Role, username: string, organization: string, name: string) => void,
   logOut: () => void,
   isLoggedIn: boolean,
-  role: Role
+  role: Role,
 }
 
 interface State {
   incorrectCredentials: boolean,
   username: string,
   password: string,
-  role: Role
 }
 
 class Header extends Component<Props, State, {}> {
@@ -27,7 +26,6 @@ class Header extends Component<Props, State, {}> {
       incorrectCredentials: false,
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
-      role: Role.Admin
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -44,37 +42,26 @@ class Header extends Component<Props, State, {}> {
       password,
     } = this.state;
 
-    //CODE FOR TEST
-    if (username === "client") {
-      logIn(Role.Client);
-    } else if (username === "worker") {
-      logIn(Role.Worker);
-    } else if (username === "admin") {
-      logIn(Role.Admin);
-    } else {
-      logIn(Role.LoggedOut);
-    }
-
-    // fetch(`${getServerURL()}/login`, {
-    //   method: 'POST',
-    //   body: JSON.stringify({
-    //     username,
-    //     password,
-    //   }),
-    // }).then((response) => response.json())
-    //   .then((responseJSON) => {
-    //     if (responseJSON === 'AUTH_SUCCESS') {
-    //       logIn(Role.LoggedOut); //Change
-    //     } else if (responseJSON === 'AUTH_FAILURE') {
-    //       alert('Incorrect Password');
-    //       this.setState({ incorrectCredentials: true });
-    //     } else if (responseJSON === 'USER_NOT_FOUND') {
-    //       alert('Incorrect Username');
-    //       this.setState({ incorrectCredentials: true });
-    //     } else {
-    //       alert('Server Failure: Please Try Again');
-    //     }
-    //   });
+    fetch(`${getServerURL()}/login`, {
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        if (responseJSON === 'AUTH_SUCCESS') {
+          logIn(Role.LoggedOut, username, "Test Organization", "Test Name"); //Change
+        } else if (responseJSON === 'AUTH_FAILURE') {
+          alert('Incorrect Password');
+          this.setState({ incorrectCredentials: true });
+        } else if (responseJSON === 'USER_NOT_FOUND') {
+          alert('Incorrect Username');
+          this.setState({ incorrectCredentials: true });
+        } else {
+          alert('Server Failure: Please Try Again');
+        }
+      });
   }
 
   handleChangePassword(event: any) {
@@ -89,12 +76,12 @@ class Header extends Component<Props, State, {}> {
     const {
       logOut,
       isLoggedIn,
+      role,
     } = this.props;
     const {
       incorrectCredentials,
       username,
       password,
-      role
     } = this.state;
 
     const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
