@@ -2,6 +2,8 @@ import Config.Env;
 import Config.MongoConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
+import PDFUpload.PDF_dowload;
+import PDFUpload.PDF_upload;
 import UserIntTests.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -9,6 +11,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
+import io.javalin.http.Handler;
 import org.slf4j.Logger;
 
 public class App {
@@ -58,6 +61,8 @@ public class App {
 
     // we need to instantiate the controllers with the database
     OrganizationController orgController = new OrganizationController(db);
+    PDF_upload pdfUpload = new PDF_upload(db);
+    PDF_dowload pdf_dowload = new PDF_dowload(db);
     /*
      * Server API:
      *  /login
@@ -95,9 +100,10 @@ public class App {
      */
 
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
-
+    app.post("/put-documents", pdfUpload.pdf_upload);
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", UserController.loginUser);
+    app.get("/download",pdf_dowload.pdf_dowload);
     app.post("/organization-signup", orgController.enrollOrganization);
     // app.post("/create-user", UserController.createUser);
   }

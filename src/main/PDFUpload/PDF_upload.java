@@ -19,16 +19,8 @@ public class PDF_upload
     }
     public Handler pdf_upload = ctx -> {
         HttpServletRequest req = ctx.req;
-        String username = "test";//req.getParameter("name");
-        //Files.writeString(Paths.get("hello.pdf"), ctx.body());
-        System.out.println("We are here");
-        //System.out.println("This is a print statment" + ctx.body());
-        //String file2 = ctx.body();
+        String username = "test";//req.getParameter("name")
         UploadedFile file = ctx.uploadedFile("file");
-        System.out.println("now we here");
-        //UploadedFile file = ctx.uploadedFile("file");
-        //System.out.println("We here" + ctx.body());
-        //System.out.println(ctx.body().length());
         assert file != null;
         System.out.print(file.getContent());
         System.out.println("We got here, " + "upload/" + username + file.getFilename());
@@ -36,4 +28,5 @@ public class PDF_upload
         ObjectId fileId = PDF_Mongo.upload(username, file.getFilename(), "upload/" + username + file.getFilename(), this.db);
         System.out.println("4 here" + fileId.toString());
     };
+
 }
