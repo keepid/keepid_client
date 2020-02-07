@@ -7,7 +7,8 @@ dist: bionic
 install: true
 script:
   - mvn test -B
-#  - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
 cache:
   directories:
     - $HOME/.m2
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
