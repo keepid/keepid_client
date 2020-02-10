@@ -55,13 +55,15 @@ class Header extends Component<Props, State, {}> {
           userRole,
         } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
-          const role = () => {switch(userRole) {
-            case "admin": return Role.Admin;
-            case "worker": return Role.Worker;
-            case "client": return Role.Client;
-            default: return Role.LoggedOut;
-          }};
-          logIn(role(), username, "Test Organization", "Test Name"); //Change
+          const role = () => {
+            switch (userRole) {
+              case 'admin': return Role.Admin;
+              case 'worker': return Role.Worker;
+              case 'client': return Role.Client;
+              default: return Role.LoggedOut;
+            }
+          };
+          logIn(role(), username, 'Test Organization', 'Test Name'); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });

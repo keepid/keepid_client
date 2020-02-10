@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import pdfjs from 'pdfjs-dist';
-const pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry")
+
+const pdfjsWorker = require('pdfjs-dist/build/pdf.worker.entry');
+
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // Need to validate form to make sure inputs are good, address is good, etc.
@@ -42,23 +44,23 @@ class DocumentViewer extends Component<Props, State> {
       currentPage,
     } = this.state;
     pdfjs.getDocument({ url: URL.createObjectURL(pdfFile) })
-    .promise.then((pdf) => {
-      this.setState({
-        pdfDocumentProxy: pdf,
-        numPages: pdf.numPages,
-      });
-      pdf.getPage(currentPage).then(page => {
-        const canvas = this.canvasRef.current;
-        const context = canvas.getContext('2d');
-        const viewport = page.getViewport({scale: 1.5});
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        const renderTask = page.render({
-          canvasContext: context,
-          viewport: viewport,
+      .promise.then((pdf) => {
+        this.setState({
+          pdfDocumentProxy: pdf,
+          numPages: pdf.numPages,
+        });
+        pdf.getPage(currentPage).then((page) => {
+          const canvas = this.canvasRef.current;
+          const context = canvas.getContext('2d');
+          const viewport = page.getViewport({ scale: 1.5 });
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          const renderTask = page.render({
+            canvasContext: context,
+            viewport,
+          });
         });
       });
-    });
   }
 
   onClickPrevPage(event: any) {
@@ -69,15 +71,15 @@ class DocumentViewer extends Component<Props, State> {
     const newCurrentPage = currentPage - 1;
     this.setState({ currentPage: newCurrentPage });
     if (pdfDocumentProxy) {
-      pdfDocumentProxy.getPage(newCurrentPage).then(page => {
+      pdfDocumentProxy.getPage(newCurrentPage).then((page) => {
         const canvas = this.canvasRef.current;
         const context = canvas.getContext('2d');
-        const viewport = page.getViewport({scale: 1.5});
+        const viewport = page.getViewport({ scale: 1.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         const renderTask = page.render({
           canvasContext: context,
-          viewport: viewport,
+          viewport,
         });
       });
     }
@@ -91,15 +93,15 @@ class DocumentViewer extends Component<Props, State> {
     const newCurrentPage = currentPage + 1;
     this.setState({ currentPage: newCurrentPage });
     if (pdfDocumentProxy) {
-      pdfDocumentProxy.getPage(newCurrentPage).then(page => {
+      pdfDocumentProxy.getPage(newCurrentPage).then((page) => {
         const canvas = this.canvasRef.current;
         const context = canvas.getContext('2d');
-        const viewport = page.getViewport({scale: 1.5});
+        const viewport = page.getViewport({ scale: 1.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         const renderTask = page.render({
           canvasContext: context,
-          viewport: viewport,
+          viewport,
         });
       });
     }
@@ -129,11 +131,11 @@ Document:
             </h2>
           </div>
         </div>
-        <canvas 
+        <canvas
           ref={this.canvasRef}
         />
-        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div/>}
-        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div/>}
+        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div />}
+        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div />}
       </div>
     );
   }
