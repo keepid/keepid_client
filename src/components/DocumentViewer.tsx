@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import { pdfjs, Document, Page } from 'react-pdf';
+import pdfjs from 'pdfjs-dist';
+const pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry")
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 // Need to validate form to make sure inputs are good, address is good, etc.
 // Google API for address checking
 
@@ -11,41 +12,97 @@ interface Props {
 }
 
 interface State {
+  pdfDocumentProxy: null | pdfjs.PDFDocumentProxy,
   currentPage: number,
   numPages: number,
 }
 
 class DocumentViewer extends Component<Props, State> {
+  canvasRef: any;
+
   constructor(props: Props) {
     super(props);
     this.state = {
       currentPage: 1,
       numPages: 5,
+      pdfDocumentProxy: null,
     };
     this.onClickPrevPage = this.onClickPrevPage.bind(this);
     this.onClickNextPage = this.onClickNextPage.bind(this);
-    this.onPdfLoad = this.onPdfLoad.bind(this);
+
+    this.canvasRef = React.createRef();
+  }
+
+  componentDidMount() {
+    const {
+      pdfFile,
+    } = this.props;
+    const {
+      pdfDocumentProxy,
+      currentPage,
+    } = this.state;
+    pdfjs.getDocument({ url: URL.createObjectURL(pdfFile) })
+    .promise.then((pdf) => {
+      this.setState({
+        pdfDocumentProxy: pdf,
+        numPages: pdf.numPages,
+      });
+      pdf.getPage(currentPage).then(page => {
+        const canvas = this.canvasRef.current;
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({scale: 1.5});
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const renderTask = page.render({
+          canvasContext: context,
+          viewport: viewport,
+        });
+      });
+    });
   }
 
   onClickPrevPage(event: any) {
     const {
       currentPage,
+      pdfDocumentProxy,
     } = this.state;
     const newCurrentPage = currentPage - 1;
     this.setState({ currentPage: newCurrentPage });
+    if (pdfDocumentProxy) {
+      pdfDocumentProxy.getPage(newCurrentPage).then(page => {
+        const canvas = this.canvasRef.current;
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({scale: 1.5});
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const renderTask = page.render({
+          canvasContext: context,
+          viewport: viewport,
+        });
+      });
+    }
   }
 
   onClickNextPage(event: any) {
     const {
       currentPage,
+      pdfDocumentProxy,
     } = this.state;
     const newCurrentPage = currentPage + 1;
     this.setState({ currentPage: newCurrentPage });
-  }
-
-  onPdfLoad(pdf: any) {
-    const { numPages } = pdf;
-    this.setState({ numPages });
+    if (pdfDocumentProxy) {
+      pdfDocumentProxy.getPage(newCurrentPage).then(page => {
+        const canvas = this.canvasRef.current;
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({scale: 1.5});
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const renderTask = page.render({
+          canvasContext: context,
+          viewport: viewport,
+        });
+      });
+    }
   }
 
   render() {
@@ -72,11 +129,11 @@ Document:
             </h2>
           </div>
         </div>
-        <Document onLoadSuccess={this.onPdfLoad} file={URL.createObjectURL(pdfFile)}>
-          <Page pageNumber={currentPage} />
-        </Document>
-        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div />}
-        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div />}
+        <canvas 
+          ref={this.canvasRef}
+        />
+        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div/>}
+        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div/>}
       </div>
     );
   }

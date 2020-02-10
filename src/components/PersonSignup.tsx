@@ -100,6 +100,10 @@ class PersonSignup extends Component<Props, State, {}> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           alert('Submitted request for new guest');
+          const {
+            creationStatus,
+          } = responseJSON;
+          alert(`${creationStatus}`);
           this.setState({ submitSuccessful: true });
         });
     }

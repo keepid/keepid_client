@@ -50,12 +50,22 @@ class Header extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON === 'AUTH_SUCCESS') {
-          logIn(Role.LoggedOut, username, 'Test Organization', 'Test Name'); // Change
-        } else if (responseJSON === 'AUTH_FAILURE') {
+        const {
+          loginStatus,
+          userRole,
+        } = responseJSON;
+        if (loginStatus === 'AUTH_SUCCESS') {
+          const role = () => {switch(userRole) {
+            case "admin": return Role.Admin;
+            case "worker": return Role.Worker;
+            case "client": return Role.Client;
+            default: return Role.LoggedOut;
+          }};
+          logIn(role(), username, "Test Organization", "Test Name"); //Change
+        } else if (loginStatus === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
-        } else if (responseJSON === 'USER_NOT_FOUND') {
+        } else if (loginStatus === 'USER_NOT_FOUND') {
           alert('Incorrect Username');
           this.setState({ incorrectCredentials: true });
         } else {
