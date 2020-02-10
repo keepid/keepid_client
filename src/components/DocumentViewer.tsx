@@ -45,7 +45,7 @@ class DocumentViewer extends Component<Props, State> {
 
   onPdfLoad(pdf: any) {
     const { numPages } = pdf;
-    this.setState({ numPages });    
+    this.setState({ numPages });
   }
 
   render() {
@@ -59,7 +59,10 @@ class DocumentViewer extends Component<Props, State> {
     return (
       <div className="container-fluid">
         <Helmet>
-          <title>Document: {pdfFile.name}</title>
+          <title>
+Document:
+            {pdfFile.name}
+          </title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
@@ -72,8 +75,8 @@ class DocumentViewer extends Component<Props, State> {
         <Document onLoadSuccess={this.onPdfLoad} file={URL.createObjectURL(pdfFile)}>
           <Page pageNumber={currentPage} />
         </Document>
-        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div/>}
-        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div/>}
+        {currentPage !== 1 ? <button onClick={this.onClickPrevPage}>Prev Page</button> : <div />}
+        {currentPage !== numPages ? <button onClick={this.onClickNextPage}>Next Page</button> : <div />}
       </div>
     );
   }

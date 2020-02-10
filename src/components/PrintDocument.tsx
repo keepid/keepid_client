@@ -36,7 +36,7 @@ class ViewDocument extends Component<Props, State> {
   }
 
   printDocument() {
-    //window.frames[0].print();
+    // window.frames[0].print();
   }
 
   render() {

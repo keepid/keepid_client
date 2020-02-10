@@ -91,9 +91,9 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationNumClients,
       acceptEULA,
     } = this.state;
-    const splitContactName : string[] = contactName.split(" ");
+    const splitContactName : string[] = contactName.split(' ');
     const firstName : string = splitContactName.splice(0)[0];
-    const lastName : string = splitContactName.join(" ");
+    const lastName : string = splitContactName.join(' ');
     if (!acceptEULA) {
       alert('Please accept EULA before completing application');
     } else {

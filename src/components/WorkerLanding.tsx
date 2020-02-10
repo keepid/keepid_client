@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import Select from 'react-select'
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
@@ -21,14 +21,14 @@ const options = [
   { value: 'name', label: 'Name' },
   { value: 'ssn', label: 'Social Security Number' },
   { value: 'phoneNumber', label: 'Phone Number' },
-]
+];
 
 
 const listOptions = [
   { value: '10', label: '10' },
   { value: '25', label: '25' },
   { value: '50', label: '50' },
-]
+];
 
 
 const animatedComponents = makeAnimated();
@@ -54,7 +54,7 @@ class WorkerLanding extends Component<Props, State> {
             <p className="lead">Use the search bar to help look up clients.</p>
             <div className="d-flex flex-row">
               <form className="form-inline mr-3 w-50">
-                <input className="form-control mr-2 w-75" type="text" placeholder="Search" aria-label="Search"/>
+                <input className="form-control mr-2 w-75" type="text" placeholder="Search" aria-label="Search" />
                 <img
                   alt="Password"
                   src={SearchSVG}
@@ -70,10 +70,12 @@ class WorkerLanding extends Component<Props, State> {
             <div className="collapse" id="advancedSearch">
               <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
                 <h5 className="card-title">Search on multiple fields</h5>
-                <Select options={options} 
+                <Select
+                  options={options}
                   closeMenuOnSelect={false}
                   components={animatedComponents}
-                  isMulti />
+                  isMulti
+                />
               </div>
             </div>
           </div>
@@ -92,10 +94,12 @@ class WorkerLanding extends Component<Props, State> {
             <div className="w-25">
               <div className="card card-body mt-0 mb-4 border-0 p-0">
                 <h5 className="card-text h6"># Items per page</h5>
-                <Select options={listOptions} 
-                  autoFocus={true}
+                <Select
+                  options={listOptions}
+                  autoFocus
                   closeMenuOnSelect={false}
-                  defaultValue={listOptions[0]} />
+                  defaultValue={listOptions[0]}
+                />
               </div>
             </div>
           </div>
@@ -129,7 +133,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
-        {role === Role.Admin ? <Link to="/person-signup/worker"><button>Signup Worker</button></Link> : <div/>}
+        {role === Role.Admin ? <Link to="/person-signup/worker"><button>Signup Worker</button></Link> : <div />}
         <Link to="/person-signup/client"><button>Signup Client</button></Link>
       </div>
     );

@@ -78,7 +78,7 @@ class PersonSignup extends Component<Props, State, {}> {
       personPassword,
       personConfirmPassword,
     } = this.state;
-    const username = personFirstName + "-" + personLastName;
+    const username = `${personFirstName}-${personLastName}`;
     if (personPassword !== personConfirmPassword) {
       alert('Your passwords are not identical');
     } else {
