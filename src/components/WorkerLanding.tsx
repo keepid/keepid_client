@@ -56,7 +56,7 @@ class WorkerLanding extends Component<Props, State> {
               <form className="form-inline mr-3 w-50">
                 <input className="form-control mr-2 w-75" type="text" placeholder="Search" aria-label="Search" />
                 <img
-                  alt="Password"
+                  alt="Search"
                   src={SearchSVG}
                   width="22"
                   height="22"
