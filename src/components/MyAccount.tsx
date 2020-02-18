@@ -20,6 +20,9 @@ class MyAccount extends Component<{}, State, {}> {
     }
     this.modalRender = this.modalRender.bind(this);
   }
+  changePassword() {
+    
+  }
   modalRender() {
     let allModals: React.ReactFragment[] = [];
     for(let field in editData) {
@@ -144,7 +147,7 @@ class MyAccount extends Component<{}, State, {}> {
               <div className="col-6 card-text">
                 <input type="text" className="form-control form-purple" id="oldPassword" placeholder="*******"/>
               </div>
-              <button type="button" className="btn btn-outline-success">Submit</button>
+              <button type="button" onSubmit={this.changePassword} className="btn btn-outline-success">Submit</button>
             </div>            
           </div>
         </div>
