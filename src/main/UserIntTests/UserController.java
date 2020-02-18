@@ -93,7 +93,7 @@ public class UserController {
         String zipcode = req.getString("zipcode");
         String username = req.getString("username");
         String password = req.getString("password");
-        String userLevel = req.getString("userLevel");
+        String userLevel = req.getString("personRole");
 
         // Session attributes.
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
@@ -162,12 +162,9 @@ public class UserController {
         }
       };
 
-  public static void accessManager(Handler handler, Context ctx, Set<Role> roles) throws Exception {
-    String priv = ctx.sessionAttribute("privilegeLevel");
-    if ("admin".equals(priv) || "worker".equals(priv) || "client".equals("priv")) {
-      handler.handle(ctx);
-    } else {
-      ctx.status(401);
-    }
-  }
+  public Handler logout =
+          ctx -> {
+              ctx.req.getSession().invalidate();
+              ctx.result("SUCCESS");
+          };
 }

@@ -99,6 +99,7 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
-    //    app.post("/create-user", userController.createNewUser);
+    app.post("/create-user", userController.createNewUser);
+    app.post("/logout", userController.logout);
   }
 }
