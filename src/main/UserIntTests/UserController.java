@@ -14,6 +14,7 @@ import org.bson.Document;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.util.Map;
 import java.util.Set;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -32,6 +33,7 @@ public class UserController {
       ctx -> {
         // ctx.req.changeSessionId();
         JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
         String username = req.getString("username");
         String password = req.getString("password");
         Argon2 argon2 = Argon2Factory.create();
@@ -45,7 +47,9 @@ public class UserController {
           MongoCollection<Document> userCollection = database.getCollection("user");
           Document user = userCollection.find(eq("username", username)).first();
           if (user == null) {
-            ctx.json(UserMessage.USER_NOT_FOUND.getErrorName());
+              res.put("loginStatus", UserMessage.USER_NOT_FOUND.getErrorName());
+              res.put("userRole", "");
+            ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
             return;
           }
@@ -58,13 +62,20 @@ public class UserController {
             ctx.sessionAttribute("orgName", user.get("organization"));
             logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
             logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
-            ctx.json(UserMessage.AUTH_SUCCESS.getErrorName());
+
+            res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
+            res.put("userRole", user.get("privilegeLevel"));
+            ctx.json(res.toString());
           } else {
             // Hash doesn't match password
-            ctx.json(UserMessage.AUTH_FAILURE.getErrorName());
+              res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+              res.put("userRole", "");
+            ctx.json(res.toString());
           }
         } catch (Exception e) {
-          ctx.json(UserMessage.HASH_FAILURE.getErrorName());
+            res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
+            res.put("userRole", "");
+          ctx.json(res.toString());
         } finally {
           // Wipe confidential data from cache
           argon2.wipeArray(passwordArr);
@@ -73,12 +84,8 @@ public class UserController {
 
   public Handler createNewUser =
       ctx -> {
-        logger.error("SESSION: " + ctx.req.getSession().toString());
-        logger.error("SESSION: " + ctx.sessionAttribute("orgName"));
-        logger.error("SESSION: " + ctx.sessionAttribute("privilegeLevel"));
-        logger.error("SESSION: " + ctx.sessionAttributeMap());
 
-        System.out.println("SESSION: " + ctx.req.getSession().toString());
+        //System.out.println("SESSION: " + ctx.req.getSession().toString());
         JSONObject req = new JSONObject(ctx.body());
         // Get all formParams
         String firstName = req.getString("firstname");
@@ -91,7 +98,7 @@ public class UserController {
         String zipcode = req.getString("zipcode");
         String username = req.getString("username");
         String password = req.getString("password");
-        String userLevel = req.getString("userLevel");
+        String userLevel = req.getString("personRole");
 
         // Session attributes.
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
@@ -105,17 +112,17 @@ public class UserController {
         }
 
         if (userLevel.equals("admin") && !sessionUserLevel.equals("admin")) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName());
+          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName()));
           return;
         }
 
         if (userLevel.equals("worker") && !sessionUserLevel.equals("admin")) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName());
+          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName()));
           return;
         }
 
         if (userLevel.equals("client") && sessionUserLevel.equals("client")) {
-          ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.getErrorName());
+          ctx.json(new JSONObject(UserMessage.CLIENT_ENROLL_CLIENT.getErrorName()));
           return;
         }
 
@@ -137,7 +144,7 @@ public class UserController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.result(UserMessage.HASH_FAILURE.getErrorName());
+            ctx.json(UserMessage.HASH_FAILURE.getErrorName());
             return;
           }
 
@@ -156,16 +163,13 @@ public class UserController {
                   .append("privilegeLevel", userLevel);
           userCollection.insertOne(newUser);
 
-          ctx.result(UserMessage.ENROLL_SUCCESS.getErrorName());
+          ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
         }
       };
 
-  public static void accessManager(Handler handler, Context ctx, Set<Role> roles) throws Exception {
-    String priv = ctx.sessionAttribute("privilegeLevel");
-    if ("admin".equals(priv) || "worker".equals(priv) || "client".equals("priv")) {
-      handler.handle(ctx);
-    } else {
-      ctx.status(401);
-    }
-  }
+  public Handler logout =
+          ctx -> {
+              ctx.req.getSession().invalidate();
+              ctx.result("SUCCESS");
+          };
 }

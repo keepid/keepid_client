@@ -1,4 +1,5 @@
 import Config.MongoConfig;
+import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
 import PDFUpload.PDF_dowload;
@@ -48,6 +49,7 @@ public class App {
                   //            config.requestLogger();                    // set a request logger
                   //                  config.sessionHandler(SessionConfig::fileSessionHandler);
                   //                  config.accessManager(UserController::accessManager);
+                    config.sessionHandler(() -> SessionConfig.getSessionHandlerInstance());
                 })
             .start(Integer.parseInt(System.getenv("PORT")));
     LogFactory l = new LogFactory();
@@ -103,6 +105,7 @@ public class App {
     app.post("/login", userController.loginUser);
     app.get("/download",pdf_dowload.pdf_dowload);
     app.post("/organization-signup", orgController.enrollOrganization);
-    //    app.post("/create-user", userController.createNewUser);
+    app.post("/create-user", userController.createNewUser);
+    app.post("/logout", userController.logout);
   }
 }
