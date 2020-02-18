@@ -23,10 +23,12 @@ public class PDF_upload {
         assert file != null;
         System.out.print(file.getContent());
         System.out.println("We got here, " + "upload/" + username + file.getFilename());
+        ObjectId fileId = PDF_Mongo.upload(file.getFilename(), file.getContent(), this.db);
+        /*
         FileUtil.streamToFile(file.getContent(), "upload/" + username + file.getFilename());
         ObjectId fileId =
             PDF_Mongo.upload(
-                username, file.getFilename(), "upload/" + username + file.getFilename(), this.db);
+                username, file.getFilename(), "upload/" + username + file.getFilename(), this.db);*/
         System.out.println("4 here" + fileId.toString());
     };
 }
