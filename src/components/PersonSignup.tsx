@@ -95,6 +95,7 @@ class PersonSignup extends Component<Props, State, {}> {
       }
       fetch(`${getServerURL()}/create-user`, {
         method: 'POST',
+        credentials: 'include',
         body: JSON.stringify({
           firstname: personFirstName,
           lastname: personLastName,
