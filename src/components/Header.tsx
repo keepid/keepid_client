@@ -44,6 +44,7 @@ class Header extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
+      credentials: 'include',
       body: JSON.stringify({
         username,
         password,

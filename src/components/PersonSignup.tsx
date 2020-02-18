@@ -84,6 +84,7 @@ class PersonSignup extends Component<Props, State, {}> {
     } else {
       fetch(`${getServerURL()}/create-user`, {
         method: 'POST',
+        credentials: 'include',
         body: JSON.stringify({
           firstname: personFirstName,
           lastname: personLastName,
@@ -95,7 +96,7 @@ class PersonSignup extends Component<Props, State, {}> {
           state: personAddressState,
           zipcode: personAddressZipcode,
           password: personPassword,
-          personRole,
+          personRole: personRole.toString()
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
