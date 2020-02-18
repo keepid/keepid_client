@@ -82,6 +82,17 @@ class PersonSignup extends Component<Props, State, {}> {
     if (personPassword !== personConfirmPassword) {
       alert('Your passwords are not identical');
     } else {
+      const personRoleString = () => {
+        switch(personRole) {
+          case Role.Admin: return "admin";
+          case Role.Client: return "client";
+          case Role.HeadAdmin: return "headadmin";
+          case Role.LoggedOut: return "loggedout";
+          case Role.Volunteer: return "volunteer";
+          case Role.Worker: return "worker";
+          default: return "";
+        }
+      }
       fetch(`${getServerURL()}/create-user`, {
         method: 'POST',
         body: JSON.stringify({
@@ -95,11 +106,10 @@ class PersonSignup extends Component<Props, State, {}> {
           state: personAddressState,
           zipcode: personAddressZipcode,
           password: personPassword,
-          personRole,
+          personRole: personRoleString,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          alert('Submitted request for new guest');
           const {
             creationStatus,
           } = responseJSON;
