@@ -13,7 +13,7 @@ class DocumentViewer extends Component<Props> {
     const {
       pdfFile,
     } = this.props;
-    const pdfFileURL : string = (window.URL ? URL : webkitURL).createObjectURL(pdfFile);
+    const pdfFileURL : string = (webkitURL).createObjectURL(pdfFile);
     console.log(pdfFileURL);
     return (
       <div className="container-fluid">
