@@ -50,7 +50,7 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
-    this.setState({ 
+    this.setState({
       role,
       username,
       name,
@@ -76,7 +76,7 @@ class App extends React.Component<{}, State, {}> {
             <title>Keep.id</title>
             <meta name="description" content="Securely Combating Homelessness" />
           </Helmet>
-          <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role}/>
+          <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
           <Switch>
             // Home/Login Components
             <Route
@@ -147,7 +147,7 @@ class App extends React.Component<{}, State, {}> {
               render={() => {
                 if (role === Role.Admin || role === Role.HeadAdmin) {
                   return (<AdminPanel name={name} organization={organization} username={username} />);
-                } 
+                }
                 return <Redirect to="/error" />;
               }}
             />

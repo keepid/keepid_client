@@ -40,11 +40,11 @@ class MyDocuments extends Component<Props, State> {
 
   getDocumentData() {
     fetch(`${getServerURL()}/get-file-information`, {
-      method: "GET",
-    }).then(response => response.json())
-    .then(responseJSON => {
-      this.setState({ documentData: responseJSON });
-    });
+      method: 'GET',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        this.setState({ documentData: responseJSON });
+      });
   }
 
   ButtonFormatter = (cell: any, row: any) => (

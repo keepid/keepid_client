@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
-import { Link } from 'react-router-dom';
 import Role from '../static/Role';
 
 interface Props {
@@ -55,13 +55,15 @@ class Header extends Component<Props, State, {}> {
           userRole,
         } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
-          const role = () => {switch(userRole) {
-            case "admin": return Role.Admin;
-            case "worker": return Role.Worker;
-            case "client": return Role.Client;
-            default: return Role.LoggedOut;
-          }};
-          logIn(role(), username, "Test Organization", "Test Name"); //Change
+          const role = () => {
+            switch (userRole) {
+              case 'admin': return Role.Admin;
+              case 'worker': return Role.Worker;
+              case 'client': return Role.Client;
+              default: return Role.LoggedOut;
+            }
+          };
+          logIn(role(), username, 'Test Organization', 'Test Name'); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
@@ -117,11 +119,12 @@ class Header extends Component<Props, State, {}> {
               </button>
               <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav ml-auto">
-                  {(role === Role.Admin || role === Role.HeadAdmin) && 
+                  {(role === Role.Admin || role === Role.HeadAdmin)
+                    && (
                     <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                       <Link className="nav-link" to="/admin-panel">Admin Panel</Link>
                     </li>
-                  }
+                    )}
                   <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                     <Link className="nav-link" to="/settings">My Account Settings</Link>
                   </li>
@@ -160,7 +163,7 @@ class Header extends Component<Props, State, {}> {
 
             <div className="collapse navbar-collapse" id="navbarToggle">
               <ul className="navbar-nav mr-auto mt-2 mt-lg-0 " />
-              <form onSubmit={this.handleSubmit} >
+              <form onSubmit={this.handleSubmit}>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
                     <div className="input-group">
