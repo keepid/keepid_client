@@ -82,7 +82,7 @@ class PersonSignup extends Component<Props, State, {}> {
     if (personPassword !== personConfirmPassword) {
       alert('Your passwords are not identical');
     } else {
-      fetch(`${getServerURL()}/person-signup`, {
+      fetch(`${getServerURL()}/create-user`, {
         method: 'POST',
         body: JSON.stringify({
           firstname: personFirstName,

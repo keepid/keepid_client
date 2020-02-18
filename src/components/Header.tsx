@@ -50,10 +50,9 @@ class Header extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          loginStatus,
-          userRole,
-        } = responseJSON;
+        responseJSON = JSON.parse(responseJSON);
+        const { loginStatus } = responseJSON;
+        const { userRole } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
           const role = () => {
             switch (userRole) {
