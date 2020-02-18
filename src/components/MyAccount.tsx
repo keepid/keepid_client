@@ -6,34 +6,38 @@ interface State {
 }
 
 const editData = {
-    firstName: "First Name",
-    lastName: "Last Name",
-    email: "Email"
-}
+  firstName: 'First Name',
+  lastName: 'Last Name',
+  email: 'Email',
+};
 
 class MyAccount extends Component<{}, State, {}> {
-
   constructor(props: Readonly<{}>) {
     super(props);
     this.state = {
       show: false,
-    }
+    };
     this.modalRender = this.modalRender.bind(this);
   }
+
   changePassword() {
-    
+
   }
+
   modalRender() {
-    let allModals: React.ReactFragment[] = [];
-    for(let field in editData) {
-      console.log(field + ", " + editData[field])
+    const allModals: React.ReactFragment[] = [];
+    for (const field in editData) {
+      console.log(`${field}, ${editData[field]}`);
       allModals.push(
         <React.Fragment key={field}>
-          <div className="modal fade" id={field + "Modal"} role="dialog" aria-labelledby={field + "Modal"} aria-hidden="true">
+          <div className="modal fade" id={`${field}Modal`} role="dialog" aria-labelledby={`${field}Modal`} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Edit {editData[field]}</h5>
+                  <h5 className="modal-title">
+Edit
+                    {editData[field]}
+                  </h5>
                   <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -41,10 +45,12 @@ class MyAccount extends Component<{}, State, {}> {
                 <div className="modal-body">
                   <div className="row mb-3 mt-3">
                     <div className="col card-text mt-2">
-                      Enter New {editData[field]}
+                      Enter New
+                      {' '}
+                      {editData[field]}
                     </div>
                     <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id={field + "Form"} placeholder={"Enter " + editData[field] + " Here"}/>
+                      <input type="text" className="form-control form-purple" id={`${field}Form`} placeholder={`Enter ${editData[field]} Here`} />
                     </div>
                   </div>
                   <div className="row mb-3 mt-3">
@@ -52,7 +58,7 @@ class MyAccount extends Component<{}, State, {}> {
                       Enter Your Password
                     </div>
                     <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here"/>
+                      <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here" />
                     </div>
                   </div>
                 </div>
@@ -63,14 +69,14 @@ class MyAccount extends Component<{}, State, {}> {
               </div>
             </div>
           </div>
-        </React.Fragment>
-        )
-      } 
+        </React.Fragment>,
+      );
+    }
     return (
       <div>
         {allModals}
       </div>
-      ) 
+    );
   }
 
   render() {
@@ -92,7 +98,7 @@ class MyAccount extends Component<{}, State, {}> {
                 First Name
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="firstName" placeholder="John" readOnly/>
+                <input type="text" className="form-control form-purple" id="firstName" placeholder="John" readOnly />
               </div>
               <button type="button" className="btn btn-outline-dark" data-toggle="modal" data-target="#firstNameModal">Edit</button>
             </div>
@@ -101,7 +107,7 @@ class MyAccount extends Component<{}, State, {}> {
                 Last Name
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="lastName" placeholder="Smith" readOnly/>
+                <input type="text" className="form-control form-purple" id="lastName" placeholder="Smith" readOnly />
               </div>
               <button type="button" className="btn btn-outline-dark" data-toggle="modal" data-target="#lastNameModal">Edit</button>
             </div>
@@ -110,7 +116,7 @@ class MyAccount extends Component<{}, State, {}> {
                 Email
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="my.email@example.com" readOnly/>
+                <input type="text" className="form-control form-purple" id="inputOrgName" placeholder="my.email@example.com" readOnly />
               </div>
               <button type="button" className="btn btn-outline-dark" data-toggle="modal" data-target="#emailModal">Edit</button>
             </div>
@@ -126,7 +132,7 @@ class MyAccount extends Component<{}, State, {}> {
                 Enter Old Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="newPassword" placeholder="*******"/>
+                <input type="text" className="form-control form-purple" id="newPassword" placeholder="*******" />
               </div>
             </div>
             <div className="row mb-3 mt-3">
@@ -134,7 +140,7 @@ class MyAccount extends Component<{}, State, {}> {
                 Enter New Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="confirmNewPassword" placeholder="*******"/>
+                <input type="text" className="form-control form-purple" id="confirmNewPassword" placeholder="*******" />
               </div>
               <div className=" ml-0 pl-0 col-3 card-text mt-2 text-muted">
                 At least 8 characters long
@@ -145,10 +151,10 @@ class MyAccount extends Component<{}, State, {}> {
                 Retype New Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="oldPassword" placeholder="*******"/>
+                <input type="text" className="form-control form-purple" id="oldPassword" placeholder="*******" />
               </div>
               <button type="button" onSubmit={this.changePassword} className="btn btn-outline-success">Submit</button>
-            </div>            
+            </div>
           </div>
         </div>
         <div className="card mt-3 mb-3">
@@ -167,7 +173,7 @@ class MyAccount extends Component<{}, State, {}> {
                 Phone Number:
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="phoneNumber" placeholder="(123)-456-7890"/>
+                <input type="text" className="form-control form-purple" id="phoneNumber" placeholder="(123)-456-7890" />
               </div>
               <button type="button" className="btn btn-outline-success">Submit</button>
             </div>
