@@ -83,16 +83,16 @@ class PersonSignup extends Component<Props, State, {}> {
       alert('Your passwords are not identical');
     } else {
       const personRoleString = () => {
-        switch(personRole) {
-          case Role.Admin: return "admin";
-          case Role.Client: return "client";
-          case Role.HeadAdmin: return "headadmin";
-          case Role.LoggedOut: return "loggedout";
-          case Role.Volunteer: return "volunteer";
-          case Role.Worker: return "worker";
-          default: return "";
+        switch (personRole) {
+          case Role.Admin: return 'admin';
+          case Role.Client: return 'client';
+          case Role.HeadAdmin: return 'headadmin';
+          case Role.LoggedOut: return 'loggedout';
+          case Role.Volunteer: return 'volunteer';
+          case Role.Worker: return 'worker';
+          default: return '';
         }
-      }
+      };
       fetch(`${getServerURL()}/create-user`, {
         method: 'POST',
         credentials: 'include',

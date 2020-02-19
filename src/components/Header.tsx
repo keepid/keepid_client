@@ -202,7 +202,7 @@ class Header extends Component<Props, State, {}> {
                         </div>
                       </div>
                       <input
-                        type="text"
+                        type="password"
                         className="form-control"
                         id="inlineFormInputGroupPassword"
                         onChange={this.handleChangePassword}

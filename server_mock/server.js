@@ -18,7 +18,8 @@ server.get('/download', (req, res) => {
 	file.pipe(res);
 })
 server.get('/get-file-information', (req, res) => {
-	res.json([{
+	res.setHeader('Content-Type', 'application/pdf');
+	res.send([{
 	    documentId: '1',
 	    documentName: 'doc1',
 	    uploadDate: '01/01/2020',

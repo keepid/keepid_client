@@ -28,6 +28,7 @@ import Footer from './components/Footer';
 import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
 import WorkerLanding from './components/WorkerLanding';
+import getServerURL from './serverOverride';
 
 interface State {
   role: Role,
@@ -40,7 +41,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.LoggedOut, // Change this to access pages
+      role: Role.Admin, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
@@ -59,7 +60,12 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
-    this.setState({ role: Role.LoggedOut });
+    fetch(`${getServerURL()}/logout`, {
+      method: 'GET',
+      credentials: 'include',
+    }).then((response) => {
+      this.setState({ role: Role.LoggedOut });
+    });
   }
 
   render() {

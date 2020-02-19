@@ -8,7 +8,7 @@ interface Props {
 }
 
 interface State {
-  pdfFile: File | undefined,
+  pdfFile: string | undefined,
   numPages: number,
 }
 
@@ -24,15 +24,12 @@ class ViewDocument extends Component<Props, State> {
   componentDidMount() {
     fetch(`${getServerURL()}/download`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/pdf',
-      },
-    }).then((response) => response.blob())
+    }).then((response) => {
+      console.log(response);
+      return response.blob();
+    })
       .then((response) => {
-        const file = new Blob([response], {
-          type: 'application/pdf',
-        });
-        const pdfFile = new File([file], 'Pdf File Name');
+        const pdfFile : string = URL.createObjectURL(response);
         this.setState({ pdfFile });
       });
   }
