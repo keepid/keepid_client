@@ -13,7 +13,8 @@ public enum UserMessage {
   USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS:This username is taken."),
   PASSWORDS_DO_NOT_MATCH("PASSWORDS_DO_NOT_MATCH:The passwords entered do not match"),
   SERVER_ERROR("SERVER_ERROR:There was an error with the server."),
-  INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low.");
+  INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low."),
+  SUCCESS("SUCCESS:Success.");
 
   public String errorMessage;
 
