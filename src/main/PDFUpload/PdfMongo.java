@@ -17,12 +17,11 @@ import java.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class PDF_Mongo {
+public class PdfMongo {
 
-  static ObjectId upload(String title, InputStream inputStream, MongoDatabase db) {
+  public static ObjectId upload(String uploader, String title, InputStream inputStream, MongoDatabase db) {
       System.out.println("Calling upload...");
       ObjectId fileId = null;
-      String user = "meh"; //Sessions
       GridFSBucket gridBucket = GridFSBuckets.create(db);
       GridFSUploadOptions options =
               new GridFSUploadOptions()
@@ -30,16 +29,15 @@ public class PDF_Mongo {
                       .metadata(
                               new Document("type", "pdf")
                                       .append("upload_date", String.valueOf(LocalDate.now()))
-                                      .append("uploader", user));
+                                      .append("uploader", uploader));
       fileId = gridBucket.uploadFromStream(title, inputStream, options);
       return fileId;
   }  //Add option user
-    static JSONArray getAllFiles(MongoDatabase db){
+    public static JSONArray getAllFiles(String uploader, MongoDatabase db){
         JSONArray files = new JSONArray();
-        String uploader = ""; //Sessions
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
-            for (GridFSFile grid_out : gridBucket.find(Filters.in("uploader", uploader))){
+            for (GridFSFile grid_out : gridBucket.find()){//Filters.in("uploader", uploader))){
                 files.put(new JSONObject().put("FileName",grid_out.getFilename())
                                         .put("ID", grid_out.getId())
                                         .put("UploadDate", grid_out.getUploadDate().toString()));
@@ -51,7 +49,7 @@ public class PDF_Mongo {
     }
 
     //Add option user
-    static InputStream download(String id, MongoDatabase db){
+    public static InputStream download(ObjectId id, MongoDatabase db){
         System.out.println("Calling download...");
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);

@@ -1,21 +1,20 @@
 package PDFUpload;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 
-public class PDF_dowload {
-    MongoDatabase db;
-    public PDF_dowload(MongoDatabase db){
+public class PdfDownload {
+    private MongoDatabase db;
+    public PdfDownload(MongoDatabase db){
         this.db = db;
     }
-    public Handler pdf_dowload = ctx -> {
+    public Handler pdfDownload = ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        String fileName = req.getString("FileName");
-        String fileID = req.getString("FileID");
-        InputStream targetStream = PDF_Mongo.download("fileID.pdf", db);
+        ObjectId fileID = new ObjectId(req.getString("FileID"));
+        InputStream targetStream = PdfMongo.download(fileID, db);
         //InputStream targetStream = new FileInputStream("CIS331_Final_Review.pdf");
         assert targetStream != null;
         ctx.result(targetStream);
