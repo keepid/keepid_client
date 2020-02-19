@@ -2,15 +2,15 @@ import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
-import PDFUpload.PDF_dowload;
-import PDFUpload.PDF_upload;
+import PDFUpload.PdfSearch;
+import PDFUpload.PdfUpload;
+import PDFUpload.PdfDownload;
 import UserIntTests.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
-import io.javalin.http.Handler;
 import org.slf4j.Logger;
 
 public class App {
@@ -61,8 +61,9 @@ public class App {
     // we need to instantiate the controllers with the database
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
-    PDF_upload pdfUpload = new PDF_upload(db);
-    PDF_dowload pdf_dowload = new PDF_dowload(db);
+    PdfUpload pdfUpload = new PdfUpload(db);
+    PdfDownload pdfDownload = new PdfDownload(db);
+    PdfSearch pdfSearch = new PdfSearch(db);
     /*
      * Server API:
      *  /login
@@ -100,10 +101,11 @@ public class App {
      */
 
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
-    app.post("/put-documents", pdfUpload.pdf_upload);
+    app.post("/put-documents", pdfUpload.pdfUpload);
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
-    app.get("/download",pdf_dowload.pdf_dowload);
+    app.get("/download",pdfDownload.pdfDownload);
+    app.get("get-documents", pdfSearch.pdfSearch);
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
