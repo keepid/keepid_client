@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 // Google API for address checking
 
 interface Props {
-  pdfFile: string | File,
+  pdfFile: File,
 }
 
 class DocumentViewer extends Component<Props> {
@@ -13,7 +13,6 @@ class DocumentViewer extends Component<Props> {
       pdfFile,
     } = this.props;
     console.log(pdfFile);
-    if (typeof (pdfFile) === 'string') {
       return (
         <div className="container-fluid">
           <Helmet>
@@ -23,9 +22,7 @@ Document:
             </title>
             <meta name="description" content="Keep.id" />
           </Helmet>
-          <object data={pdfFile}>
-            <embed src={pdfFile} />
-          </object>
+          <iframe src={URL.createObjectURL(pdfFile)} />
         </div>
       );
     }
