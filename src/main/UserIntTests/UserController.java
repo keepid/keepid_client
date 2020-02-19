@@ -261,7 +261,7 @@ public class UserController {
             }
 
             if (!privilegeLevel.equals("admin")) {
-                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE);
+                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
                 return;
             }
 
@@ -280,6 +280,6 @@ public class UserController {
               Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
               userCollection.findOneAndUpdate(filter, updates);
 
-              ctx.json(UserMessage.SUCCESS);
+              ctx.json(UserMessage.SUCCESS.getErrorName());
           };
 }
