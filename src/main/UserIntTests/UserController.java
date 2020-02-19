@@ -4,6 +4,7 @@ import Config.MongoConfig;
 import Logger.LogFactory;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
@@ -11,13 +12,16 @@ import io.javalin.core.security.Role;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.bson.Document;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.or;
 
 public class UserController {
   Logger logger;
@@ -172,5 +176,70 @@ public class UserController {
           ctx -> {
               ctx.req.getSession().invalidate();
               ctx.result("SUCCESS");
+          };
+
+  public Handler getMembers =
+          ctx -> {
+            String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+            String orgName = ctx.sessionAttribute("orgName");
+
+            JSONObject req = new JSONObject(ctx.body());
+              String listType = req.getString("listType");
+
+            if (privilegeLevel == null || orgName == null) {
+                ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+                return;
+            }
+
+            if (privilegeLevel.equals("client")) {
+                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+                return;
+            }
+
+            JSONObject memberList = new JSONObject();
+
+              JSONArray admins = new JSONArray();
+              JSONArray workers = new JSONArray();
+              JSONArray clients = new JSONArray();
+
+              MongoClient client = MongoConfig.getMongoClient();
+              MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
+              MongoCollection<Document> userCollection = database.getCollection("user");
+
+              MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
+              while (cursor.hasNext()) {
+                  Document doc = cursor.next();
+                  String userType = doc.get("privilegeLevel").toString();
+
+                  JSONObject userFirstLast = new JSONObject();
+                  userFirstLast.put("firstName", doc.get("firstName").toString());
+                  userFirstLast.put("lastName", doc.get("lastName").toString());
+
+                  if (userType.equals("admin")) {
+                    admins.put(userFirstLast);
+                  }
+                  else if (userType.equals("worker")) {
+                      workers.put(userFirstLast);
+                  }
+                  else if (userType.equals("client")) {
+                      clients.put(userFirstLast);
+                  }
+              }
+
+
+            if (privilegeLevel.equals("worker")) {
+                memberList.put("clients", clients);
+            }
+            else if (privilegeLevel.equals("admin")) {
+                if (listType.equals("members")) {
+                    memberList.put("admins", admins);
+                    memberList.put("workers", workers);
+                }
+                else if (listType.equals("clients")) {
+                    memberList.put("clients", clients);
+                }
+            }
+
+            ctx.json(memberList);
           };
 }
