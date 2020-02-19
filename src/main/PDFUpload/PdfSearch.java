@@ -5,13 +5,13 @@ import io.javalin.http.Handler;
 import org.json.JSONArray;
 
 public class PdfSearch {
-    MongoDatabase db;
+    private MongoDatabase db;
     public PdfSearch(MongoDatabase db){
         this.db=db;
     }
     public Handler pdfSearch =
             ctx -> {
-                String user = "woow"; //Sessions
+                String user = ctx.sessionAttribute("username");
                 JSONArray files = PdfMongo.getAllFiles(user, db);
                 ctx.json(files);
             };

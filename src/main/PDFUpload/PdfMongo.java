@@ -9,6 +9,7 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.*;
@@ -21,7 +22,6 @@ public class PdfMongo {
 
   public static ObjectId upload(String uploader, String title, InputStream inputStream, MongoDatabase db) {
       System.out.println("Calling upload...");
-      ObjectId fileId = null;
       GridFSBucket gridBucket = GridFSBuckets.create(db);
       GridFSUploadOptions options =
               new GridFSUploadOptions()
@@ -30,17 +30,18 @@ public class PdfMongo {
                               new Document("type", "pdf")
                                       .append("upload_date", String.valueOf(LocalDate.now()))
                                       .append("uploader", uploader));
-      fileId = gridBucket.uploadFromStream(title, inputStream, options);
-      return fileId;
+      return gridBucket.uploadFromStream(title, inputStream, options);
   }  //Add option user
     public static JSONArray getAllFiles(String uploader, MongoDatabase db){
         JSONArray files = new JSONArray();
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
-            for (GridFSFile grid_out : gridBucket.find()){//Filters.in("uploader", uploader))){
-                files.put(new JSONObject().put("FileName",grid_out.getFilename())
-                                        .put("ID", grid_out.getId())
-                                        .put("UploadDate", grid_out.getUploadDate().toString()));
+            //Figure out filters
+            for (GridFSFile grid_out : gridBucket.find(Filters.eq("metadata.uploader", uploader))){
+                files.put(new JSONObject().put("filename", grid_out.getFilename())
+                        .put("uploader", grid_out.getMetadata().getString("uploader"))
+                        .put("id", grid_out.getId())
+                        .put("uploadDate", grid_out.getUploadDate().toString()));
             }
             return files;
         } catch (Exception e) {
@@ -49,11 +50,14 @@ public class PdfMongo {
     }
 
     //Add option user
-    public static InputStream download(ObjectId id, MongoDatabase db){
+    public static InputStream download(String user, ObjectId id, MongoDatabase db){
         System.out.println("Calling download...");
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
-            return gridBucket.openDownloadStream(id);
+            GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
+            if (grid_out.getMetadata().getString("uploader").equals(user)) {
+                return gridBucket.openDownloadStream(id);
+            }
         } catch (Exception e) {
           e.printStackTrace();
         }

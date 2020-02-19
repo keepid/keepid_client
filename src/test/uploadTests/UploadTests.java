@@ -6,10 +6,12 @@ import OrganizationIntTests.OrganizationController;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfMongo;
 import PDFUpload.PdfUpload;
+import com.google.gson.JsonElement;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
 import io.javalin.http.util.ContextUtil;
 import org.bson.types.ObjectId;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,7 +52,12 @@ public class UploadTests {
         File initialFile = new File("CIS331_Final_Review.pdf");
         InputStream targetStream = new FileInputStream(initialFile);
         ObjectId id = PdfMongo.upload("James", "BlahBlah", targetStream, database);
-        InputStream inputStream = PdfMongo.download(new ObjectId(id.toString()), database);
+        JSONArray files = PdfMongo.getAllFiles("test", database);
+        for (Object j : files) {
+            JSONObject js = (JSONObject) j;
+            System.out.println(js);
+        }
+        InputStream inputStream = PdfMongo.download("James", new ObjectId(id.toString()), database);
         File file = new File("test.pdf");
         FileOutputStream outputStream = new FileOutputStream(file);
         int read;

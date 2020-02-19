@@ -17,7 +17,7 @@ public class PdfUpload {
   public Handler pdfUpload =
       ctx -> {
         HttpServletRequest req = ctx.req;
-        String username = "test";//req.getParameter("name")
+        String username = ctx.sessionAttribute("username");
         UploadedFile file = ctx.uploadedFile("file");
         assert file != null;
         System.out.print(file.getContent());

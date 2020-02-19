@@ -12,9 +12,10 @@ public class PdfDownload {
         this.db = db;
     }
     public Handler pdfDownload = ctx -> {
+        String user = ctx.sessionAttribute("username");
         JSONObject req = new JSONObject(ctx.body());
         ObjectId fileID = new ObjectId(req.getString("FileID"));
-        InputStream targetStream = PdfMongo.download(fileID, db);
+        InputStream targetStream = PdfMongo.download(user, fileID, db);
         //InputStream targetStream = new FileInputStream("CIS331_Final_Review.pdf");
         assert targetStream != null;
         ctx.result(targetStream);

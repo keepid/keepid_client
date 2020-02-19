@@ -2,6 +2,7 @@ import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
+import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
 import PDFUpload.PdfDownload;
 import UserIntTests.UserController;
@@ -62,6 +63,7 @@ public class App {
     UserController userController = new UserController(db);
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
+    PdfSearch pdfSearch = new PdfSearch(db);
     /*
      * Server API:
      *  /login
@@ -103,6 +105,7 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
     app.get("/download",pdfDownload.pdfDownload);
+    app.get("get-documents", pdfSearch.pdfSearch);
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
