@@ -15,7 +15,6 @@ import static com.mongodb.client.model.Filters.eq;
 public class ResetPassword {
     public Handler resetPassword =
             ctx -> {
-                System.out.println("SESSION: " + ctx.req.getSession().toString());
                 JSONObject req = new JSONObject(ctx.body());
                 String username = req.getString("username");
                 String password = req.getString("password");
