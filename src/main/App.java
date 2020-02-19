@@ -106,6 +106,6 @@ public class App {
     app.get("/download",pdf_dowload.pdf_dowload);
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
-    app.post("/logout", userController.logout);
+    app.get("/logout", userController.logout);
   }
 }
