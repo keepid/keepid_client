@@ -1,4 +1,7 @@
 # keepid_server
+[![Build Status](https://travis-ci.com/crchong1/keepid_server.svg?token=ZfxxuGjvV4UyCBCswM7B&branch=master)](https://travis-ci.com/crchong1/keepid_server)
+[![codecov](https://codecov.io/gh/crchong1/keepid_server/branch/master/graph/badge.svg?token=4wI4QFPmQv)](https://codecov.io/gh/crchong1/keepid_server)
+
 Keep.id Server Application. Built with Java and Kotlin, this application serves to empower organizations fighting homelessness with tools to help with document storage and other aid.
 
 How to get the backend service running:

@@ -5,66 +5,36 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>id.keep</groupId>
   <artifactId>keepid</artifactId>
+  <packaging>jar</packaging>
   <version>1.0.0</version>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>13</java.version>
+    <maven.compiler.version>3.6.1</maven.compiler.version>
+  </properties>
   <build>
+    <sourceDirectory>${project.basedir}/src/main/</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>${maven.compiler.version}</version>
         <configuration>
-          <source>13</source>
-          <target>13</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.1</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <archive>
-            <manifest>
-              <mainClass>App</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.heroku.sdk</groupId>
-        <artifactId>heroku-maven-plugin</artifactId>
-        <version>2.0.13</version>
-        <configuration>
-          <jdkVersion>1.8</jdkVersion>
-          <appName>Keep.id</appName>
-          <processTypes>
-            <!-- Tell Heroku how to launch your application -->
-            <web>java -jar ./target/keepid-1.0.0-jar-with-dependencies.jar</web>
-          </processTypes>
+          <encoding>UTF-8</encoding>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-          </execution>
-        </executions>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
       </plugin>
     </plugins>
   </build>
@@ -86,8 +56,8 @@
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver</artifactId>
-      <version>3.4.3</version>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>3.11.2</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -118,7 +88,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>LATEST</version>
+      <version>3.2.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -136,27 +106,27 @@
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
-      <version>LATEST</version>
+      <version>1.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>LATEST</version>
+      <version>1.7.29</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>LATEST</version>
+      <version>1.2.3</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>LATEST</version>
+      <version>1.2.3</version>
     </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.28</version>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>org.slf4j</groupId>-->
+    <!--      <artifactId>slf4j-simple</artifactId>-->
+    <!--      <version>1.7.28</version>-->
+    <!--    </dependency>-->
   </dependencies>
 </project>

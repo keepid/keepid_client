@@ -4,28 +4,27 @@ import Logger.LogFactory;
 import Security.GeneralValidator;
 import Security.ValidationUtils;
 import io.javalin.http.Context;
-import org.slf4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
 
 public class OrganizationValidation implements GeneralValidator {
 
-  protected static boolean isValid(HttpServletRequest req, Context ctx)
+  protected static boolean isValid(JSONObject req, Context ctx)
       throws SecurityException, IOException {
-    String orgName = req.getParameter("orgName");
-    String orgWebsite = req.getParameter("orgWebsite");
-    String adminName = req.getParameter("name");
-    String orgContactPhoneNumber = req.getParameter("phone");
-    String email = req.getParameter("email");
-    String username = req.getParameter("username");
-    String password = req.getParameter("password");
-    String address = req.getParameter("address").toLowerCase();
-    String city = req.getParameter("city").toLowerCase();
-    String state = req.getParameter("state").toUpperCase();
-    String zipcode = req.getParameter("zipcode");
-    String taxCode = req.getParameter("taxCode");
-    String numUsers = req.getParameter("numUsers");
+    String orgName = req.getString("orgName");
+    String orgWebsite = req.getString("orgWebsite");
+    String adminName = req.getString("name");
+    String orgContactPhoneNumber = req.getString("phone");
+    String email = req.getString("email");
+    String username = req.getString("username");
+    String password = req.getString("password");
+    String address = req.getString("address").toLowerCase();
+    String city = req.getString("city").toLowerCase();
+    String state = req.getString("state").toUpperCase();
+    String zipcode = req.getString("zipcode");
+    String taxCode = req.getString("taxCode");
+    String numUsers = req.getString("numUsers");
 
     // declare logger here
     LogFactory l = new LogFactory();
