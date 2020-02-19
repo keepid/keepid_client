@@ -116,6 +116,7 @@ class AdminPanel extends Component<Props, State> {
       })     
     }).then(res => res.json())
     .then(responseJSON => {
+      responseJSON = JSON.parse(responseJSON);
       this.setState({
         workers: responseJSON.admins.concat(responseJSON.workers)
       });
