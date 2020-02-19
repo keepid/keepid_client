@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import { Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import UploadSVG from '../static/images/uploading-files-to-the-cloud.svg';
@@ -41,7 +41,7 @@ class ClientLanding extends Component<{}, State, {}> {
         </Helmet>
         <div className="row m-auto">
           <div className="col d-flex" id="Upload container">
-            <a href="/upload-document">
+            <Link to="/upload-document">
               <div className="rectangle mt-5 pt-4">
                 <img className="uploadImg pb-2" src={UploadSVG} alt="See" />
                 <p className="textLanding">
@@ -49,19 +49,19 @@ class ClientLanding extends Component<{}, State, {}> {
                 </p>
               </div>
 
-            </a>
+            </Link>
           </div>
           <div className="col d-flex" id="Print container">
-            <a href="/my-documents">
+            <Link to="/my-documents">
               <div className="rectangle mt-5 pt-2">
                 <img className="normalImage" src={FileSVG} alt="Print" />
                 <p className="textLanding mt-4 pt-3">My Documents</p>
               </div>
 
-            </a>
+            </Link>
           </div>
           <div className="col d-flex" id="Request container">
-            <a href="/request">
+            <Link to="/request">
               <div className="rectangle mt-5">
                 <img className="normalImage" src={RequestSVG} alt="Request" />
                 <p className="textLanding mt-3 pt-4">
@@ -70,23 +70,23 @@ class ClientLanding extends Component<{}, State, {}> {
                   Functionality Here
                 </p>
               </div>
-            </a>
+            </Link>
           </div>
           <div className="col d-flex" id="Applications container">
-            <a href="/applications">
+            <Link to="/applications">
               <div className="rectangle mt-5 pt-2">
                 <img className="normalImage" src={AppSVG} alt="Applications" />
                 <p className="textLanding mt-5">My Applications</p>
               </div>
-            </a>
+            </Link>
           </div>
           <div className="col d-flex" id="Email container">
-            <a href="/email">
+            <Link to="/email">
               <div className="rectangle mt-5 pt-2">
                 <img className="normalImage" src={EmailSVG} alt="Email" />
                 <p className="textLanding mt-5">Send an Email</p>
               </div>
-            </a>
+            </Link>
           </div>
           <div className="col d-flex">
             <button type="button" className="btn btn-assist mt-5" onClick={this.showModal}>
