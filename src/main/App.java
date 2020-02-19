@@ -109,5 +109,6 @@ public class App {
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
+    app.post("/get-organization-members", userController.getMembers);
   }
 }
