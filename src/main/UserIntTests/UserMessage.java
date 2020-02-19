@@ -11,7 +11,8 @@ public enum UserMessage {
   NONADMIN_ENROLL_WORKER("NONADMIN_ENROLL_WORKER:A non-admin cannot enroll a worker."),
   CLIENT_ENROLL_CLIENT("CLIENT_ENROLL_CLIENT:Only workers or admins can enroll new clients."),
   USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS:This username is taken."),
-  PASSWORDS_DO_NOT_MATCH("PASSWORDS_DO_NOT_MATCH:The passwords entered do not match");
+  PASSWORDS_DO_NOT_MATCH("PASSWORDS_DO_NOT_MATCH:The passwords entered do not match"),
+  SERVER_ERROR("SERVER_ERROR:There was an error with the server.");
 
   public String errorMessage;
 
