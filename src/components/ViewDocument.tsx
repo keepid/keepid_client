@@ -25,9 +25,9 @@ class ViewDocument extends Component<Props, State> {
     fetch(`${getServerURL()}/download`, {
       method: 'GET',
     }).then((response) => {
-      console.log(response)
-      return response.blob()
-      })
+      console.log(response);
+      return response.blob();
+    })
       .then((response) => {
         const pdfFile : string = URL.createObjectURL(response);
         this.setState({ pdfFile });

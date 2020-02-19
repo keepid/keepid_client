@@ -8,29 +8,27 @@ interface Props {
 }
 
 class DocumentViewer extends Component<Props> {
-
   render() {
     const {
       pdfFile,
     } = this.props;
     console.log(pdfFile);
-    if (typeof(pdfFile) == "string") {
+    if (typeof (pdfFile) === 'string') {
       return (
-      <div className="container-fluid">
-        <Helmet>
-          <title>
+        <div className="container-fluid">
+          <Helmet>
+            <title>
 Document:
-            
-          </title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <object data={pdfFile} >
-          <embed src={pdfFile} />
-        </object>
-      </div>
-    );
+
+            </title>
+            <meta name="description" content="Keep.id" />
+          </Helmet>
+          <object data={pdfFile}>
+            <embed src={pdfFile} />
+          </object>
+        </div>
+      );
     }
-    
   }
 }
 
