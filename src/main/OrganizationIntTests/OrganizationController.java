@@ -1,7 +1,5 @@
 package OrganizationIntTests;
 
-import static com.mongodb.client.model.Filters.eq;
-
 import UserIntTests.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -10,6 +8,8 @@ import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.Document;
 import org.json.JSONObject;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class OrganizationController {
 
@@ -21,13 +21,15 @@ public class OrganizationController {
 
   public Handler enrollOrganization =
       ctx -> {
+
         JSONObject req = new JSONObject(ctx.body());
-        if (!OrganizationValidation.isValid(req, ctx)) {
-          return;
-        }
+//        if (!OrganizationValidation.isValid(req, ctx)) {
+//          return;
+//        }
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
-        String adminName = req.getString("name").toLowerCase();
+        String firstName = req.getString("firstName").toLowerCase();
+        String lastName = req.getString("lastName").toLowerCase();
         String orgContactPhoneNumber = req.getString("phone").toLowerCase();
         String email = req.getString("email").toLowerCase();
         String username = req.getString("username");
@@ -67,7 +69,13 @@ public class OrganizationController {
                   .append("password", passwordHash)
                   .append("organization", orgName)
                   .append("email", email)
-                  .append("name", adminName)
+                  .append("phone", orgContactPhoneNumber)
+                  .append("firstName", firstName)
+                  .append("lastName", lastName)
+                  .append("address", address)
+                  .append("city", city)
+                  .append("state", state)
+                  .append("zipcode", zipcode)
                   .append("privilegeLevel", "admin");
           userCollection.insertOne(newAdmin);
 
@@ -83,14 +91,9 @@ public class OrganizationController {
                   .append("expectedNumUsers", numUsers);
           orgCollection.insertOne(newOrg);
 
-          /*
-          Algorithm algo = Algorithm.HMAC256("secret");
-          String token = JWT.create()
-                  .withClaim("privilegeLevel", "admin")
-                  .withClaim("orgName", orgName)
-                  .sign(algo);
-          ctx.cookieStore("token", token);
-           */
+          ctx.sessionAttribute("privilegeLevel", "admin");
+          ctx.sessionAttribute("orgName", orgName);
+
           ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
         }
       };

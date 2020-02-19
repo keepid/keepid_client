@@ -1,5 +1,5 @@
 <configuration>
-
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
   <property name="HOME_LOG" value="logs/app.log"/>
 
   <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -20,19 +20,20 @@
   </appender>
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <layout class="ch.qos.logback.classic.PatternLayout">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
       <Pattern>
         %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
       </Pattern>
-    </layout>
+    </encoder>
   </appender>
 
-  <logger name="org.mongodb.driver.cluster" level="OFF"/>
-  <logger name="org.mongodb.driver.connection" level="OFF"/>
+  <logger name="org.mongodb.driver.cluster" level="ERROR"/>
+  <logger name="org.mongodb.driver.connection" level="ERROR"/>
+  <logger name="org.mongodb.driver.protocol.command" level="ERROR"/>
 
-  <root level="trace">
+  <root level="info">
     <appender-ref ref="FILE-ROLLING"/>
     <appender-ref ref="CONSOLE"/>
   </root>
-  <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
 </configuration>
