@@ -60,6 +60,7 @@ public class UserController {
 
             ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
             ctx.sessionAttribute("orgName", user.get("organization"));
+            ctx.sessionAttribute("username", username);
             logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
             logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
 

@@ -10,7 +10,8 @@ public enum UserMessage {
   NONADMIN_ENROLL_ADMIN("NONADMIN_ENROLL_ADMIN:A Non-Admin cannot enroll an admin."),
   NONADMIN_ENROLL_WORKER("NONADMIN_ENROLL_WORKER:A non-admin cannot enroll a worker."),
   CLIENT_ENROLL_CLIENT("CLIENT_ENROLL_CLIENT:Only workers or admins can enroll new clients."),
-  USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS:This username is taken.");
+  USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS:This username is taken."),
+  SERVER_ERROR("SERVER_ERROR:There was an error with the server.");
 
   public String errorMessage;
 
