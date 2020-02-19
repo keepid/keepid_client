@@ -132,7 +132,9 @@ class Header extends Component<Props, State, {}> {
                     <Link className="nav-link" to="/my-organization">My Organization</Link>
                   </li>
                   <div className="col-auto my-1 flex-fill">
-                    <button type="button" onClick={logOut} className="btn btn-primary">Log Out</button>
+                    <Link to="/login" >
+                      <button type="button" onClick={logOut} className="btn btn-primary">Log Out</button>
+                    </Link>
                   </div>
                 </ul>
               </div>

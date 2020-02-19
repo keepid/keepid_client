@@ -41,7 +41,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.Admin, // Change this to access pages
+      role: Role.LoggedOut, // Change this to access pages
       username: 'Test',
       name: 'Test Name',
       organization: 'Test Organization',
@@ -114,7 +114,6 @@ class App extends React.Component<{}, State, {}> {
                   : <Login />
               )}
             />
-            // Admin Components
             // Signup Components
             <Route path="/organization-signup">
               <OrganizationSignup />
@@ -148,6 +147,7 @@ class App extends React.Component<{}, State, {}> {
                 }
               }}
             />
+            // Admin Components
             <Route
               path="/admin-panel"
               render={() => {
@@ -158,21 +158,52 @@ class App extends React.Component<{}, State, {}> {
               }}
             />
             // Client Components
-            <Route path="/upload-document">
-              <UploadDocs />
-            </Route>
-            <Route path="/my-documents">
-              <MyDocuments username={name} />
-            </Route>
-            <Route path="/settings">
-              <MyAccount />
-            </Route>
-            <Route path="/applications">
-              <Applications />
-            </Route>
-            <Route path="/request">
-              <Request />
-            </Route>
+            <Route 
+              path="/upload-document"
+              render={() => {
+                if (role === Role.Client) {
+                  return <UploadDocs />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            <Route 
+              path="/my-documents"
+              render={() => {
+                if (role === Role.Client) {
+                  return <MyDocuments username={name} />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            <Route 
+              path="/applications"
+              render={() => {
+                if (role === Role.Client) {
+                  return <Applications />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            <Route 
+              path="/request"
+              render={() => {
+                if (role === Role.Client) {
+                  return <Request />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            <Route
+              path="/email"
+              render={() => {
+                if (role === Role.Client) {
+                  return <Email />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            // All Users
             <Route path="/our-team">
               <OurTeam />
             </Route>
@@ -182,9 +213,16 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/our-mission">
               <OurMission />
             </Route>
-            <Route path="/email">
-              <Email />
-            </Route>
+            <Route 
+              path="/settings"
+              render={() => {
+                if (role !== Role.LoggedOut) {
+                  return <MyAccount />;
+                }
+                return <Redirect to="/error" />;
+              }}
+            />
+            // Website
             // Component
             <Route path="/error">
               <Error />
