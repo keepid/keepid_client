@@ -28,12 +28,12 @@ class AdminPanel extends Component<Props, State> {
     text: 'Worker User ID',
     sort: true,
   }, {
-    dataField: 'name',
-    text: 'Name',
+    dataField: 'firstName',
+    text: 'First Name',
     sort: true,
   }, {
-    dataField: 'role',
-    text: 'Role',
+    dataField: 'lastName',
+    text: 'Last Name',
     sort: true,
   }];
 
@@ -107,6 +107,20 @@ class AdminPanel extends Component<Props, State> {
     // .then((responseJSON) => {
     //   this.setState({workers: responseJSON.workers});
     // })
+
+    fetch(`${getServerURL()}/get-organization-members`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        listType: 'members'
+      })     
+    }).then(res => res.json())
+    .then(responseJSON => {
+      responseJSON = JSON.parse(responseJSON);
+      this.setState({
+        workers: responseJSON.admins.concat(responseJSON.workers)
+      });
+    });
   }
 
   render() {

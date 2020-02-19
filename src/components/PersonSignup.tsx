@@ -107,14 +107,12 @@ class PersonSignup extends Component<Props, State, {}> {
           state: personAddressState,
           zipcode: personAddressZipcode,
           password: personPassword,
-          personRole: personRoleString,
+          personRole: personRoleString(),
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const {
-            creationStatus,
-          } = responseJSON;
-          alert(`${creationStatus}`);
+          console.log(responseJSON);
+          alert(responseJSON);
           this.setState({ submitSuccessful: true });
         });
     }
