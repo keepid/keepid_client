@@ -208,10 +208,14 @@ public class UserController {
 
               MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
               while (cursor.hasNext()) {
+                  System.out.println("NEXT CURSOR");
                   Document doc = cursor.next();
                   String userType = doc.get("privilegeLevel").toString();
 
+                  System.out.println(userType);
+
                   JSONObject userFirstLast = new JSONObject();
+                  userFirstLast.put("username", doc.get("username").toString());
                   userFirstLast.put("firstName", doc.get("firstName").toString());
                   userFirstLast.put("lastName", doc.get("lastName").toString());
 
@@ -231,6 +235,8 @@ public class UserController {
                 memberList.put("clients", clients);
             }
             else if (privilegeLevel.equals("admin")) {
+                System.out.println("LIST TYPE");
+                System.out.println(listType);
                 if (listType.equals("members")) {
                     memberList.put("admins", admins);
                     memberList.put("workers", workers);
@@ -240,6 +246,6 @@ public class UserController {
                 }
             }
 
-            ctx.json(memberList);
+            ctx.json(memberList.toString());
           };
 }
