@@ -162,7 +162,10 @@ public class UserController {
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
-                  .append("privilegeLevel", userLevel);
+                  .append("privilegeLevel", userLevel)
+                  .append("canView", userLevel.equals("admin"))
+                  .append("canEdit", userLevel.equals("admin"))
+                  .append("canRegister", userLevel.equals("admin"));
           userCollection.insertOne(newUser);
 
           ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
