@@ -16,19 +16,11 @@ public class PdfUpload {
 
   public Handler pdfUpload =
       ctx -> {
-        System.out.print("uploading");
         HttpServletRequest req = ctx.req;
-        String username = ctx.sessionAttribute("username");
+        String username = ctx.sessionAttribute("privilegeLevel");
+        System.out.println("Username: " + username);
         UploadedFile file = ctx.uploadedFile("file");
         assert file != null;
-        System.out.print(file.getContent());
-        System.out.println("We got here, " + "upload/" + username + file.getFilename());
-        ObjectId fileId = PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
-        /*
-        FileUtil.streamToFile(file.getContent(), "upload/" + username + file.getFilename());
-        ObjectId fileId =
-            PDF_Mongo.upload(
-                username, file.getFilename(), "upload/" + username + file.getFilename(), this.db);*/
-        System.out.println("4 here" + fileId.toString());
+        PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
     };
 }

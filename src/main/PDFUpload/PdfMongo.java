@@ -23,6 +23,7 @@ public class PdfMongo {
   public static ObjectId upload(String uploader, String title, InputStream inputStream, MongoDatabase db) {
       System.out.println("Calling upload...");
       GridFSBucket gridBucket = GridFSBuckets.create(db);
+      System.out.println(uploader);
       GridFSUploadOptions options =
               new GridFSUploadOptions()
                       .chunkSizeBytes(1024)
@@ -38,7 +39,7 @@ public class PdfMongo {
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
             //Figure out filters
-            System.out.println("got here");
+            System.out.println("got here " + uploader);
             for (GridFSFile grid_out : gridBucket.find()){//Filters.eq("metadata.uploader", uploader))){
                 System.out.println("add");
                 files.put(new JSONObject().put("filename", grid_out.getFilename())
