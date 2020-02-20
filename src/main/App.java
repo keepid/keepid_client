@@ -105,7 +105,7 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
     app.get("/download",pdfDownload.pdfDownload);
-    app.get("get-documents", pdfSearch.pdfSearch);
+    app.get("/get-documents", pdfSearch.pdfSearch);
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
