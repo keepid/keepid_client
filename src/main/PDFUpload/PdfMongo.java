@@ -26,12 +26,15 @@ public class PdfMongo {
       System.out.println(uploader);
       GridFSUploadOptions options =
               new GridFSUploadOptions()
-                      .chunkSizeBytes(1024)
+                      .chunkSizeBytes(100000)
                       .metadata(
                               new Document("type", "pdf")
                                       .append("upload_date", String.valueOf(LocalDate.now()))
                                       .append("uploader", uploader));
-      return gridBucket.uploadFromStream(title, inputStream, options);
+      System.out.println("about to upload");
+      ObjectId id = gridBucket.uploadFromStream(title, inputStream, options);
+      System.out.println("uploaded");
+      return id;
   }  //Add option user
     public static JSONObject getAllFiles(String uploader, MongoDatabase db){
         JSONArray files = new JSONArray();

@@ -1,6 +1,7 @@
 package PDFUpload;
 
 import com.mongodb.client.MongoDatabase;
+import io.javalin.core.util.FileUtil;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.bson.types.ObjectId;
@@ -18,7 +19,7 @@ public class PdfUpload {
   public Handler pdfUpload =
       ctx -> {
         HttpServletRequest req = ctx.req;
-        String username = ctx.sessionAttribute("privilegeLevel");
+        String username = ctx.sessionAttribute("username");
         System.out.println("Username: " + username);
         UploadedFile file = ctx.uploadedFile("file");
         System.out.println(file.getContentType());
@@ -28,6 +29,7 @@ public class PdfUpload {
         if (file != null) {
             if (file.getContentType().equals("application/pdf")) {
                 ObjectId out = PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
+                System.out.println(out.toString());
                 if (out != null) {
                     res.put("status", "success");
                 }
