@@ -8,20 +8,17 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-import io.javalin.core.security.Role;
-import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 public class UserController {
   Logger logger;
@@ -165,7 +162,10 @@ public class UserController {
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
-                  .append("privilegeLevel", userLevel);
+                  .append("privilegeLevel", userLevel)
+                  .append("canView", userLevel.equals("admin"))
+                  .append("canEdit", userLevel.equals("admin"))
+                  .append("canRegister", userLevel.equals("admin"));
           userCollection.insertOne(newUser);
 
           ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
@@ -208,10 +208,14 @@ public class UserController {
 
               MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
               while (cursor.hasNext()) {
+                  System.out.println("NEXT CURSOR");
                   Document doc = cursor.next();
                   String userType = doc.get("privilegeLevel").toString();
 
+                  System.out.println(userType);
+
                   JSONObject userFirstLast = new JSONObject();
+                  userFirstLast.put("username", doc.get("username").toString());
                   userFirstLast.put("firstName", doc.get("firstName").toString());
                   userFirstLast.put("lastName", doc.get("lastName").toString());
 
@@ -231,6 +235,8 @@ public class UserController {
                 memberList.put("clients", clients);
             }
             else if (privilegeLevel.equals("admin")) {
+                System.out.println("LIST TYPE");
+                System.out.println(listType);
                 if (listType.equals("members")) {
                     memberList.put("admins", admins);
                     memberList.put("workers", workers);
@@ -240,6 +246,40 @@ public class UserController {
                 }
             }
 
-            ctx.json(memberList);
+            ctx.json(memberList.toString());
+          };
+
+  public Handler modifyPermissions =
+          ctx -> {
+            String username = ctx.sessionAttribute("username");
+            String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+            String orgName = ctx.sessionAttribute("orgName");
+
+            if (username == null || privilegeLevel == null || orgName == null) {
+                ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+                return;
+            }
+
+            if (!privilegeLevel.equals("admin")) {
+                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+                return;
+            }
+
+            JSONObject req = new JSONObject(ctx.body());
+            boolean canView = req.getBoolean("canView");
+            boolean canEdit = req.getBoolean("canEdit");
+            boolean canRegister = req.getBoolean("canRegister");
+
+              MongoDatabase database =
+                      MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
+              MongoCollection<Document> userCollection = database.getCollection("user");
+              Bson filter = eq("username", username);
+              Bson updateCanView = set("canView", canView);
+              Bson updateCanEdit = set("canEdit", canEdit);
+              Bson updateCanRegister = set("canRegister", canRegister);
+              Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
+              userCollection.findOneAndUpdate(filter, updates);
+
+              ctx.json(UserMessage.SUCCESS.getErrorName());
           };
 }

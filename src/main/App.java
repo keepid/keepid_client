@@ -110,5 +110,6 @@ public class App {
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
     app.post("/get-organization-members", userController.getMembers);
+    app.post("/modify-permissions", userController.modifyPermissions);
   }
 }
