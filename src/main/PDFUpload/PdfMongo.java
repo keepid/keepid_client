@@ -40,7 +40,7 @@ public class PdfMongo {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
             //Figure out filters
             System.out.println("got here " + uploader);
-            for (GridFSFile grid_out : gridBucket.find()){//Filters.eq("metadata.uploader", uploader))){
+            for (GridFSFile grid_out : gridBucket.find(Filters.eq("metadata.uploader", uploader))){
                 System.out.println("add");
                 files.put(new JSONObject().put("filename", grid_out.getFilename())
                         .put("uploader", grid_out.getMetadata().getString("uploader"))
