@@ -218,7 +218,6 @@ class Header extends Component<Props, State, {}> {
                   </div>
                 </div>
               </form>
-              {incorrectCredentialsText}
             </div>
           </div>
         </nav>

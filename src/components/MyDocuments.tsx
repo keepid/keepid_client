@@ -35,7 +35,8 @@ class MyDocuments extends Component<Props, State> {
   }
 
   onViewDocument(event: any, row: any) {
-    this.setState({ currentDocumentId: row.documentId });
+    console.log(row.id);
+    this.setState({ currentDocumentId: row.id });
   }
 
   getDocumentData() {
@@ -44,10 +45,11 @@ class MyDocuments extends Component<Props, State> {
       credentials: 'include',
     }).then((response) => response.json())
       .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
         const {
           documents,
         } = responseJSON;
-       console.log(JSON.stringify(responseJSON));
+        console.log(responseJSON);
         this.setState({ documentData: documents });
         console.log(documents);
       });
@@ -77,12 +79,8 @@ class MyDocuments extends Component<Props, State> {
     </div>
   )
 
-  tableCols = [  {
-      dataField: 'id',
-      text: 'Id', 
-      sort: false,
-    }, {
-    dataField: 'fileName',
+  tableCols = [ {
+    dataField: 'filename',
     text: 'File Name',
     sort: true,
   }, {

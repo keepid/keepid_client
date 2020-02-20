@@ -22,7 +22,9 @@ Document:
             </title>
             <meta name="description" content="Keep.id" />
           </Helmet>
-          <iframe src={URL.createObjectURL(pdfFile)} />
+          <div className="row embed-responsive embed-responsive-16by9 align-content-center">
+            <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
+          </div>
         </div>
       );
     }

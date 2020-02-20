@@ -22,8 +22,12 @@ class ViewDocument extends Component<Props, State> {
   }
 
   componentDidMount() {
-    fetch(`${getServerURL()}/download`, {
+    const {
+      documentId,
+    } = this.props;
+    fetch(`${getServerURL()}/download?FileID=${documentId}`, {
       method: 'GET',
+      credentials: 'include',
     }).then((response) => {
       console.log(response);
       return response.blob();

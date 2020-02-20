@@ -1,10 +1,12 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DocumentViewer from './DocumentViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
 
 interface State {
+  submitStatus: boolean,
   pdfFile: File | undefined,
 }
 
@@ -14,6 +16,7 @@ class UploadDocs extends React.Component<{}, State> {
     this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
     this.state = {
+      submitStatus: false,
       pdfFile: undefined,
     };
     this.submitForm = this.submitForm.bind(this);
@@ -26,11 +29,28 @@ class UploadDocs extends React.Component<{}, State> {
       pdfFile,
     } = this.state;
     if (pdfFile) {
-      const req = new XMLHttpRequest();
       const formData = new FormData();
       formData.append('file', pdfFile, pdfFile.name);
-      req.open('POST', `${getServerURL()}/upload`);
-      req.send(formData);
+      fetch(`${getServerURL()}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      }).then(response => response.json())
+      .then(responseJSON => {
+        responseJSON = JSON.parse(responseJSON);
+        const {
+          status,
+        } = responseJSON;
+        if (status === "success") {
+          alert('Successfully Uploaded File');
+          this.setState({
+            submitStatus: true,
+          });
+        } else {
+          alert('Failure to Upload File');
+        }
+        console.log(status);
+      })
     } else {
       alert('Please select a file');
     }
@@ -44,8 +64,12 @@ class UploadDocs extends React.Component<{}, State> {
 
   render() {
     const {
+      submitStatus,
       pdfFile,
     } = this.state;
+    if (submitStatus) {
+      return <Redirect to="/home" />;
+    }
     return (
       <div className="container">
         <Helmet>
