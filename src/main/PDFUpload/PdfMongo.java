@@ -23,6 +23,7 @@ public class PdfMongo {
   public static ObjectId upload(String uploader, String title, InputStream inputStream, MongoDatabase db) {
       System.out.println("Calling upload...");
       GridFSBucket gridBucket = GridFSBuckets.create(db);
+      System.out.println(uploader);
       GridFSUploadOptions options =
               new GridFSUploadOptions()
                       .chunkSizeBytes(1024)
@@ -32,20 +33,24 @@ public class PdfMongo {
                                       .append("uploader", uploader));
       return gridBucket.uploadFromStream(title, inputStream, options);
   }  //Add option user
-    public static JSONArray getAllFiles(String uploader, MongoDatabase db){
+    public static JSONObject getAllFiles(String uploader, MongoDatabase db){
         JSONArray files = new JSONArray();
+        JSONObject filesj = new JSONObject();
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(db);
             //Figure out filters
+            System.out.println("got here " + uploader);
             for (GridFSFile grid_out : gridBucket.find(Filters.eq("metadata.uploader", uploader))){
+                System.out.println("add");
                 files.put(new JSONObject().put("filename", grid_out.getFilename())
                         .put("uploader", grid_out.getMetadata().getString("uploader"))
-                        .put("id", grid_out.getId())
+                        .put("id", grid_out.getId().toString())
                         .put("uploadDate", grid_out.getUploadDate().toString()));
             }
-            return files;
+            filesj.put("documents", files);
+            return filesj;
         } catch (Exception e) {
-            return files;
+            return filesj;
         }
     }
 

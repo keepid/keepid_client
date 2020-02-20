@@ -52,7 +52,7 @@ public class UploadTests {
         File initialFile = new File("CIS331_Final_Review.pdf");
         InputStream targetStream = new FileInputStream(initialFile);
         ObjectId id = PdfMongo.upload("James", "BlahBlah", targetStream, database);
-        JSONArray files = PdfMongo.getAllFiles("test", database);
+        JSONArray files = PdfMongo.getAllFiles("test", database).getJSONArray("documents");
         for (Object j : files) {
             JSONObject js = (JSONObject) j;
             System.out.println(js);
