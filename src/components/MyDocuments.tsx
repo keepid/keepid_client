@@ -39,11 +39,17 @@ class MyDocuments extends Component<Props, State> {
   }
 
   getDocumentData() {
-    fetch(`${getServerURL()}/get-file-information`, {
+    fetch(`${getServerURL()}/get-documents `, {
       method: 'GET',
+      credentials: 'include',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        this.setState({ documentData: responseJSON });
+        const {
+          documents,
+        } = responseJSON;
+       console.log(JSON.stringify(responseJSON));
+        this.setState({ documentData: documents });
+        console.log(documents);
       });
   }
 
@@ -71,9 +77,13 @@ class MyDocuments extends Component<Props, State> {
     </div>
   )
 
-  tableCols = [{
-    dataField: 'documentName',
-    text: 'Document Name',
+  tableCols = [  {
+      dataField: 'id',
+      text: 'Id', 
+      sort: false,
+    }, {
+    dataField: 'fileName',
+    text: 'File Name',
     sort: true,
   }, {
     dataField: 'uploadDate',

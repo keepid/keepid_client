@@ -27,6 +27,5 @@ Document:
       );
     }
   }
-}
 
 export default DocumentViewer;

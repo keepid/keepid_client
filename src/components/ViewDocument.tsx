@@ -8,7 +8,7 @@ interface Props {
 }
 
 interface State {
-  pdfFile: string | undefined,
+  pdfFile: File | undefined,
   numPages: number,
 }
 
@@ -29,7 +29,7 @@ class ViewDocument extends Component<Props, State> {
       return response.blob();
     })
       .then((response) => {
-        const pdfFile : string = URL.createObjectURL(response);
+        const pdfFile = new File([response], "Filename PDF");
         this.setState({ pdfFile });
       });
   }
