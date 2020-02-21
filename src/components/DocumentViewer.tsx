@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-// Need to validate form to make sure inputs are good, address is good, etc.
-// Google API for address checking
 
 interface Props {
   pdfFile: File,

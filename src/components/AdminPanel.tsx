@@ -89,25 +89,6 @@ class AdminPanel extends Component<Props, State> {
   }
 
   getAdminWorkers() {
-    const workers = [{
-      username: 'conchong1',
-      name: 'Connor Chong',
-      role: 'Admin',
-      viewPermission: true,
-      editPermission: true,
-      registerPermission: true,
-    }];
-    this.setState({ workers });
-    // fetch(getServerURL() + "/get-admin-workers", {
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     username: this.state.username,
-    //   })
-    // }).then((response) => (response.json()))
-    // .then((responseJSON) => {
-    //   this.setState({workers: responseJSON.workers});
-    // })
-
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
@@ -117,6 +98,7 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
+        console.log(responseJSON);
         this.setState({
           workers: responseJSON.admins.concat(responseJSON.workers),
         });
@@ -183,7 +165,7 @@ class AdminPanel extends Component<Props, State> {
         <div className="card ml-5">
           <div className="card-body">
             <h5 className="card-title">
-              {currentWorker.name}
+              {currentWorker.firstName}` `{currentWorker.lastName}
               : Worker Permissions
             </h5>
             <p className="card-text">Set and Modify Permissions here</p>
