@@ -207,20 +207,22 @@ class PersonSignup extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
-          <div className="col-md-12 mt-5">
-            <h3 className="text-center textPrintHeader">
-              {personFormHeader}
-              {' '}
-              Signup Page
-            </h3>
-            <p className="textPrintDesc pl-3">
-              <span>Please fill out the following form to proceed with setting up the keep.id account.</span>
-            </p>
+          <div className="col-md-12">
+            <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
+              <div className="container">
+                <h1 className="display-5 text-center font-weight-bold mb-3">
+                  {personFormHeader}
+                  {' '}
+                  Signup Page
+                </h1>
+                <p className="lead">Please fill out the following form to proceed with setting up the keep.id account.</p>
+              </div>
+            </div>
             <form onSubmit={this.handleSubmit}>
               <div className="col-md-12">
                 <div className="form-row">
                   <div className="col-md-6 form-group">
-                    <label htmlFor="inputFirstName">
+                    <label htmlFor="inputFirstName" className="w-100 pr-3">
                       First Name
                       <text className="red-star">*</text>
                       <input
@@ -235,7 +237,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-6 form-group">
-                    <label htmlFor="inputLastName">
+                    <label htmlFor="inputLastName" className="w-100 pr-3">
                       Last Name
                       <text className="red-star">*</text>
                       <input
@@ -252,7 +254,7 @@ class PersonSignup extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row">
                   <div className="col-md-5 form-group">
-                    <label htmlFor="inputPhoneNumber">
+                    <label htmlFor="inputPhoneNumber" className="w-100 pr-3">
                       Contact Phone Number
                       <text className="red-star">*</text>
                       <input
@@ -267,7 +269,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-7 form-group">
-                    <label htmlFor="inputEmail">
+                    <label htmlFor="inputEmail" className="w-100 pr-3">
                       Contact Email Address
                       <text className="red-star">*</text>
                       <input
@@ -284,7 +286,7 @@ class PersonSignup extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputMailingAddress">
+                    <label htmlFor="inputMailingAddress" className="w-100 pr-3">
                       Person Mailing Address
                       <text className="red-star">*</text>
                       <input
@@ -299,7 +301,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-3 form-group">
-                    <label htmlFor="inputCity">
+                    <label htmlFor="inputCity" className="w-100 pr-3">
                       City
                       <text className="red-star">*</text>
                       <input
@@ -314,7 +316,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-2 form-group">
-                    <label htmlFor="inputState">
+                    <label htmlFor="inputState" className="w-100 pr-3">
                       State
                       <text className="red-star">*</text>
                       <select
@@ -329,7 +331,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-3 form-group">
-                    <label htmlFor="inputZipCode">
+                    <label htmlFor="inputZipCode" className="w-100 pr-3">
                       Zip Code
                       <text className="red-star">*</text>
                       <input
@@ -346,7 +348,7 @@ class PersonSignup extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputPassword">
+                    <label htmlFor="inputPassword" className="w-100 pr-3">
                       Password
                       <text className="red-star">*</text>
                       <input
@@ -361,7 +363,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputConfirmPassword">
+                    <label htmlFor="inputConfirmPassword" className="w-100 pr-3">
                       Confirm Password
                       <text className="red-star">*</text>
                       <input
@@ -375,7 +377,7 @@ class PersonSignup extends Component<Props, State, {}> {
                       />
                     </label>
                   </div>
-                  <div className="col-auto mt-4 pt-2">
+                  <div className="col-auto mt-3 pl-4 pt-2">
                     <button type="submit" className="btn btn-primary">Submit</button>
                   </div>
                 </div>

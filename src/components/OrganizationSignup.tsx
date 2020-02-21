@@ -425,7 +425,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
             />
           </div>
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger pr-4">Back</button>
+            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
             <button type="button" onClick={this.handleSubmit} className="btn btn-success">Submit</button>
           </div>
         </div>

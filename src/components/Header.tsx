@@ -28,8 +28,23 @@ class Header extends Component<Props, State, {}> {
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
     };
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
+
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+  }
+
+  handleLogout(event: any) {
+    fetch(`${getServerURL()}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    }).then((response) => {
+      // steffen please finish this
+    });
   }
 
   handleSubmit(event: any) {
