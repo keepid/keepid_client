@@ -36,7 +36,7 @@ public class PdfMongo {
       System.out.println("uploaded");
       return id;
   }  //Add option user
-    public static JSONObject getAllFiles(String uploader, MongoDatabase db){
+   public static JSONObject getAllFiles(String uploader, MongoDatabase db){
         JSONArray files = new JSONArray();
         JSONObject filesj = new JSONObject();
         try {
@@ -55,20 +55,35 @@ public class PdfMongo {
         } catch (Exception e) {
             return filesj;
         }
-    }
+   }
 
     //Add option user
     public static InputStream download(String user, ObjectId id, MongoDatabase db){
         System.out.println("Calling download...");
-        try {
-            GridFSBucket gridBucket = GridFSBuckets.create(db);
-            GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
-            if (grid_out.getMetadata().getString("uploader").equals(user)) {
-                return gridBucket.openDownloadStream(id);
-            }
-        } catch (Exception e) {
-          e.printStackTrace();
+        GridFSBucket gridBucket = GridFSBuckets.create(db);
+        GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
+        if (grid_out == null || grid_out.getMetadata() == null) {
+            return null;
+        }
+        if (grid_out.getMetadata().getString("uploader").equals(user)) {
+            return gridBucket.openDownloadStream(id);
         }
         return null;
-  }
+    }
+    public static boolean delete(String user, ObjectId id, MongoDatabase db){
+      GridFSBucket gridBucket = GridFSBuckets.create(db);
+      GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
+      if (grid_out == null || grid_out.getMetadata() == null) {
+          return false;
+      }
+      if (grid_out.getMetadata().getString("uploader").equals(user)) {
+          gridBucket.delete(id);
+          return true;
+      }
+      else {
+          return false;
+      }
+
+
+    }
 }

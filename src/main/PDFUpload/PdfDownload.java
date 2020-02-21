@@ -19,7 +19,11 @@ public class PdfDownload {
         ObjectId fileID = new ObjectId(fileIDStr);
         InputStream targetStream = PdfMongo.download(user, fileID, db);
         //InputStream targetStream = new FileInputStream("CIS331_Final_Review.pdf");
-        assert targetStream != null;
-        ctx.result(targetStream);
+        if (targetStream != null) {
+            ctx.result(targetStream);
+        }
+        else {
+            ctx.result("Error");
+        }
     };
 }
