@@ -2,6 +2,7 @@ import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
 import OrganizationIntTests.OrganizationController;
+import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
@@ -64,6 +65,7 @@ public class App {
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
+    PdfDelete pdfDelete = new PdfDelete(db);
     /*
      * Server API:
      *  /login
@@ -105,6 +107,7 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
     app.post("/login", userController.loginUser);
     app.get("/download/:fileID", pdfDownload.pdfDownload);
+    app.get("/delete-document", pdfDelete.pdfDelete);
     app.get("/get-documents", pdfSearch.pdfSearch);
     app.post("/organization-signup", orgController.enrollOrganization);
     app.post("/create-user", userController.createNewUser);
