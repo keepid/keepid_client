@@ -132,7 +132,7 @@ Edit
                 Enter Old Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="newPassword" placeholder="*******" />
+                <input type="password" className="form-control form-purple" id="newPassword" placeholder="*******" />
               </div>
             </div>
             <div className="row mb-3 mt-3">
@@ -140,7 +140,7 @@ Edit
                 Enter New Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="confirmNewPassword" placeholder="*******" />
+                <input type="password" className="form-control form-purple" id="confirmNewPassword" placeholder="*******" />
               </div>
               <div className=" ml-0 pl-0 col-3 card-text mt-2 text-muted">
                 At least 8 characters long
@@ -151,7 +151,7 @@ Edit
                 Retype New Password
               </div>
               <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="oldPassword" placeholder="*******" />
+                <input type="password" className="form-control form-purple" id="oldPassword" placeholder="*******" />
               </div>
               <button type="button" onSubmit={this.changePassword} className="btn btn-outline-success">Submit</button>
             </div>
