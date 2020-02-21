@@ -5,6 +5,7 @@ import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
+import getServerURL from '../serverOverride';
 
 interface Props {
   username: string,
@@ -14,7 +15,7 @@ interface Props {
 }
 
 interface State {
-
+  clients: any;
 }
 
 const options = [
@@ -36,8 +37,31 @@ const animatedComponents = makeAnimated();
 class WorkerLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
+    this.state = {
+      clients: [{
+        username: '',
+        firstName: '',
+        lastName: ''
+      }],
+      // we should also pass in other state such as the admin information. we could also do a fetch call inside
+    };
+    this.getAdminWorkers = this.getAdminWorkers.bind(this);
   }
-
+  getAdminWorkers() {
+    fetch(`${getServerURL()}/get-organization-members`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        listType: 'clients',
+      }),
+    }).then((res) => res.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        this.setState({
+          clients: responseJSON.clients,
+        });
+      });
+  }
   render() {
     const {
       role,
