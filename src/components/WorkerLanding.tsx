@@ -45,9 +45,15 @@ class WorkerLanding extends Component<Props, State> {
       }],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
-    this.getAdminWorkers = this.getAdminWorkers.bind(this);
+    this.getClients = this.getClients.bind(this);
+    this.renderClients = this.renderClients.bind(this)
   }
-  getAdminWorkers() {
+
+  componentDidMount() {
+    this.getClients();
+  }
+
+  getClients() {
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
@@ -62,6 +68,43 @@ class WorkerLanding extends Component<Props, State> {
         });
       });
   }
+
+  renderClients() {
+    console.log(this.state.clients);
+    let clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
+      <div className="card mb-3">
+        <div className="card-body">
+          <div className="d-flex flex-row">
+            <div className="d-flex flex-column mr-4">
+              <div className="p-2 ">PROFILE PICTURE HERE</div>
+            </div>
+            <div className="d-flex flex-lg-column mr-4">
+              <h5 className="card-title mb-3 h4">{client.firstName} {client.lastName}</h5>
+              <h6 className="card-subtitle mb-2 text-muted">Email, Phone #, Address, etc.</h6>
+              <p className="card-text">Some information about the client here.</p>
+              <a href="#" className="card-link">Client Profile</a>
+            </div>
+            <div className="d-flex flex-column mr-4">
+              <h5 className="card-title">Recent Actions</h5>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 1" on "example date 1"</h6>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 2" on "example date 2"</h6>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 3" on "example date 3"</h6>
+            </div>
+            <div className="d-flex flex-column mr-4">
+              <h5 className="card-title">Actions for Client</h5>
+              <button type="button" className="btn btn-success mb-2 btn-sm">Upload Documents</button>
+              <button type="button" className="btn btn-danger mb-2 btn-sm">Delete Documents</button>
+              <button type="button" className="btn btn-info mb-2 btn-sm">Another Action</button>
+              <button type="button" className="btn btn-dark mb-2 btn-sm">Another Action</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+
+    return clientCards;
+  }
+
   render() {
     const {
       role,
@@ -128,34 +171,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
           {/* RENDER CLIENT CARDS BELOW: MOVE THIS TO A FUNCTION LATER AND HAVE IT RENDER ALL THE INFORMATION */}
-          <div className="card">
-            <div className="card-body">
-              <div className="d-flex flex-row">
-                <div className="d-flex flex-column mr-4">
-                  <div className="p-2 ">PROFILE PICTURE HERE</div>
-                </div>
-                <div className="d-flex flex-lg-column mr-4">
-                  <h5 className="card-title mb-3 h4">Client First Last Name</h5>
-                  <h6 className="card-subtitle mb-2 text-muted">Email, Phone #, Address, etc.</h6>
-                  <p className="card-text">Some information about the client here</p>
-                  <a href="#" className="card-link">Client Profile</a>
-                </div>
-                <div className="d-flex flex-column mr-4">
-                  <h5 className="card-title">Recent Actions</h5>
-                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 1" on "example date 1"</h6>
-                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 2" on "example date 2"</h6>
-                  <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 3" on "example date 3"</h6>
-                </div>
-                <div className="d-flex flex-column mr-4">
-                  <h5 className="card-title">Actions for Client</h5>
-                  <button type="button" className="btn btn-success mb-2 btn-sm">Upload Documents</button>
-                  <button type="button" className="btn btn-danger mb-2 btn-sm">Delete Documents</button>
-                  <button type="button" className="btn btn-info mb-2 btn-sm">Another Action</button>
-                  <button type="button" className="btn btn-dark mb-2 btn-sm">Another Action</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {this.renderClients()}
         </div>
         {role === Role.Admin ? <Link to="/person-signup/worker"><button>Signup Worker</button></Link> : <div />}
         <Link to="/person-signup/client"><button>Signup Client</button></Link>
