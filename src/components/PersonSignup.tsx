@@ -211,7 +211,7 @@ class PersonSignup extends Component<Props, State, {}> {
             <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
               <div className="container">
                 <h1 className="display-5 text-center font-weight-bold mb-3">
-                  {personFormHeader}
+                  {personFormHeader()}
                   {' '}
                   Signup Page
                 </h1>

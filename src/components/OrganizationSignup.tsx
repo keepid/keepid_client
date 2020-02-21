@@ -98,9 +98,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
-      alert('Please accept EULA before completing application');
+      alert('You must read and accept the EULA before submitting the application');
     } else {
-      alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
         body: JSON.stringify({
@@ -125,6 +124,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
           const enrollmentStatus = responseJSON;
           if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });
+            alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
           } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
             alert('User already exists');
           } else if (enrollmentStatus === 'ORG_EXISTS') {
@@ -243,8 +243,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
 
     const organizationFormHeader = !reaffirmStage ? 'Organization Signup Form' : 'Finish Organization Signup';
     const organizationFormBody = !reaffirmStage
-      ? 'Thank you for expressing interest in using Keep.id in the fight to end homelessness. Please fill out the following form so we can get back to you with instructions on how to proceed. The contact should be the organization leader who will control the privileges of all users of the service.'
-      : 'Please check information and sign and submit your form.';
+      ? 'Thank you for expressing interest in using Keep.id to empower the homeless population. Please fill out the following form so we can get back to you with instructions on how to proceed. The contact should be the organization leader who will control the privileges of all users of the service.'
+      : 'Please check the information below for accuracy and read and sign the EULA below to indicate your consent to the EULA.';
     const organizationForm = (
       <div className="container">
         <Helmet>
@@ -371,9 +371,9 @@ class OrganizationSignup extends Component<{}, State, {}> {
                   </div>
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputNumUsers" className="w-100 pr-3">
-                      Expected Number of Users in 100s
+                      Expected Number of Users
                       <span className="red-star">*</span>
-                      <input readOnly={reaffirmStage} type="number" className="form-control form-purple" id="inputNumUsers" min="0" step="100" placeholder="1000" value={organizationNumClients} onChange={this.handleChangeOrganizationNumClients} required />
+                      <input readOnly={reaffirmStage} type="number" className="form-control form-purple" id="inputNumUsers" min="0" step="1" placeholder="1000" value={organizationNumClients} onChange={this.handleChangeOrganizationNumClients} required />
                     </label>
                   </div>
                   {!reaffirmStage
@@ -409,7 +409,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
         </div>
         <div className="row mt-5">
           <p className="textPrintDesc pl-3">
-            <span>I Agree and Sign</span>
+            <span>I agree to all terms and conditions in the EULA above</span>
           </p>
         </div>
         <div className="row mt-5 mb-auto">
