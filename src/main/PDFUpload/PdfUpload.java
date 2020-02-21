@@ -32,7 +32,6 @@ public class PdfUpload {
         } else {
           res.put("status", "failure");
         }
-        System.out.println(res.toString());
         ctx.json(res.toString());
       };
 }
