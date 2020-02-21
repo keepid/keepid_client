@@ -22,14 +22,10 @@ public class OrganizationController {
   public Handler enrollOrganization =
       ctx -> {
 
-        // ctx.req.getSession().invalidate();
-
         JSONObject req = new JSONObject(ctx.body());
-        System.out.println("here");
-        if (!OrganizationValidation.isValid(req, ctx)) {
-          return;
-        }
-        System.out.println("here2");
+//        if (!OrganizationValidation.isValid(req, ctx)) {
+//          return;
+//        }
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
         String firstName = req.getString("firstName").toLowerCase();
@@ -80,7 +76,10 @@ public class OrganizationController {
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
-                  .append("privilegeLevel", "admin");
+                  .append("privilegeLevel", "admin")
+                  .append("canView", true)
+                  .append("canEdit", true)
+                  .append("canRegister", true);
           userCollection.insertOne(newAdmin);
 
           Document newOrg =
