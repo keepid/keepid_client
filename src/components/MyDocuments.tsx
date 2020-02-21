@@ -27,6 +27,7 @@ class MyDocuments extends Component<Props, State> {
     };
     this.getDocumentData = this.getDocumentData.bind(this);
     this.onViewDocument = this.onViewDocument.bind(this);
+    this.deleteDocument = this.deleteDocument.bind(this);
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
 
@@ -35,11 +36,20 @@ class MyDocuments extends Component<Props, State> {
   }
 
   onViewDocument(event: any, row: any) {
-    console.log(row.id);
     let fileId = row.id.split('=')[1];
     fileId = fileId.substring(0, fileId.length - 1);
-    console.log(fileId);
     this.setState({ currentDocumentId: fileId });
+  }
+
+  deleteDocument(event: any, row: any) {
+    let fileId = row.id.split('=')[1];
+    fileId = fileId.substring(0, fileId.length - 1);
+    fetch(`${getServerURL()}/delete-document/${fileId}`, {
+      method: 'GET',
+      credentials: 'include',
+    }).then((response) => {
+      this.getDocumentData();
+    });
   }
 
   getDocumentData() {
@@ -67,15 +77,15 @@ class MyDocuments extends Component<Props, State> {
           View
         </button>
       </Link>
-      <Link to="/my-documents/print">
+      {/* <Link to="/my-documents/print">
         <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
           Print
         </button>
-      </Link>
+      </Link> */}
       <button type="button" className="btn btn-outline-info ml-2 btn-sm">
                 Request
       </button>
-      <button type="button" className="btn btn-outline-danger btn-sm ml-2">
+      <button type="button" onClick={(event) => this.deleteDocument(event, row)} className="btn btn-outline-danger btn-sm ml-2">
                 Delete
       </button>
 
