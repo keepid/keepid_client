@@ -49,6 +49,16 @@ public class UploadTests {
 
     @Test
     void listFiles() throws IOException {
+        InputStream inputStream = PdfMongo.download("Steffen12-Cornwell", new ObjectId("5e4ed83c9846e75f419256e6"), database);
+        File file = new File("test4.pdf");
+        FileOutputStream outputStream = new FileOutputStream(file);
+        int read;
+        byte[] bytes = new byte[1024];
+
+        while ((read = inputStream.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        /*
         File initialFile = new File("CIS331_Final_Review.pdf");
         InputStream targetStream = new FileInputStream(initialFile);
         ObjectId id = PdfMongo.upload("James", "BlahBlah", targetStream, database);
@@ -65,7 +75,7 @@ public class UploadTests {
 
         while ((read = inputStream.read(bytes)) != -1) {
             outputStream.write(bytes, 0, read);
-        }
+        }*/
 
     }
     /*@Test

@@ -13,11 +13,17 @@ public class PdfDownload {
     }
     public Handler pdfDownload = ctx -> {
         String user = ctx.sessionAttribute("username");
-        JSONObject req = new JSONObject(ctx.body());
-        ObjectId fileID = new ObjectId(req.getString("FileID"));
+        //JSONObject req = new JSONObject(ctx.body());
+        String fileIDStr = ctx.pathParam("fileID");
+        System.out.println(fileIDStr);
+        ObjectId fileID = new ObjectId(fileIDStr);
         InputStream targetStream = PdfMongo.download(user, fileID, db);
         //InputStream targetStream = new FileInputStream("CIS331_Final_Review.pdf");
-        assert targetStream != null;
-        ctx.result(targetStream);
+        if (targetStream != null) {
+            ctx.result(targetStream);
+        }
+        else {
+            ctx.result("Error");
+        }
     };
 }

@@ -18,14 +18,23 @@ public class PdfUpload {
   public Handler pdfUpload =
       ctx -> {
         HttpServletRequest req = ctx.req;
-        String username = ctx.sessionAttribute("privilegeLevel");
+        String username = ctx.sessionAttribute("username");
         System.out.println("Username: " + username);
         UploadedFile file = ctx.uploadedFile("file");
+        System.out.println(file.getContentType());
         JSONObject res = new JSONObject();
+        // if (file.getContentType() != pdf);
+        // test more with server failures
         if (file != null) {
-          ObjectId out = PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
-          if (out != null) {
-            res.put("status", "success");
+          if (file.getContentType().equals("application/pdf")) {
+            ObjectId out =
+                PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
+            System.out.println(out.toString());
+            if (out != null) {
+              res.put("status", "success");
+            } else {
+              res.put("status", "failure");
+            }
           } else {
             res.put("status", "failure");
           }
