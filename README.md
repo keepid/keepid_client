@@ -16,3 +16,5 @@ How to get the backend service running:
 7) under File -> Project Structure -> Modules, set Project SDK and Project Language Level to 13. Additionally, YOU MUST SET YOUR SOURCES, TESTS, TEST RESOURCES, AND EXCLUDED FOLDERS. This step is VERY IMPORTANT, or else nothing will run. Set Source Folders as src/main, Test Source Folders as src/test, Test Resource Folders as src/test/resources, and Excluded Folders as target. Make sure Language level is set to 13. Under the Dependencies tab, make sure the Project SDK is set to 13. 
 8) you can run tests or run App
 9) check logs in logs/app.log
+10) ALSO if you are having a Null Pointer Exception in the Mongo Config, please follow the instructions here: https://github.com/Ashald/EnvFile. We are deprecating the use of dotenv because it is interfering
+with our heroku deployment (also the heroku deployment doesn't see the env file anyway). Therefore, please edit the run configurations in IntelliJ at this link here: https://github.com/Ashald/EnvFile. 

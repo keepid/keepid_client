@@ -1,22 +1,32 @@
 package Logger;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.util.StatusPrinter;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LogFactory {
 
-  Logger logger;
+  Logger appLogger; // default logger
+  HashMap<String, Logger> loggers;
 
   public LogFactory() {
-    logger = LoggerFactory.getLogger("App");
-    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-    //    StatusPrinter.print(lc);
+    loggers = new HashMap<String, Logger>();
+    appLogger = LoggerFactory.getLogger("App");
+    loggers.put("App", appLogger);
   }
 
   public Logger createLogger() {
-    return logger;
+    return appLogger;
+  }
+
+  public Logger createLogger(String name) {
+    Logger newLogger = LoggerFactory.getLogger(name);
+    loggers.put(name, newLogger);
+    return newLogger;
+  }
+
+  public Logger getLogger(String name) {
+    return loggers.get(name);
   }
 
   // for debugging logs
@@ -25,8 +35,8 @@ public class LogFactory {
     logger.debug("Hello world.");
 
     // print internal state
-    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-    StatusPrinter.print(lc);
+    //    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    //    StatusPrinter.print(lc);
     logger.warn("PRINT LOGGER HERE WARN");
     logger.error("PRINT LOGGER HERE ERROR");
     logger.debug("PRINT LOGGER HERE DEBUG");
