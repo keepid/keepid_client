@@ -37,7 +37,9 @@ class UploadDocs extends React.Component<{}, State> {
         body: formData,
       }).then((response) => response.json())
         .then((responseJSON) => {
+          console.log(responseJSON);
           responseJSON = JSON.parse(responseJSON);
+          console.log(responseJSON);
           const {
             status,
           } = responseJSON;

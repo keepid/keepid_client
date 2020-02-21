@@ -36,7 +36,10 @@ class MyDocuments extends Component<Props, State> {
 
   onViewDocument(event: any, row: any) {
     console.log(row.id);
-    this.setState({ currentDocumentId: row.id });
+    let fileId = row.id.split('=')[1];
+    fileId = fileId.substring(0, fileId.length - 1);
+    console.log(fileId);
+    this.setState({ currentDocumentId: fileId });
   }
 
   getDocumentData() {
