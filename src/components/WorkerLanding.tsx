@@ -148,6 +148,8 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
+          {role === Role.Admin ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
+          <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
           <div className="row">
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
@@ -173,8 +175,6 @@ class WorkerLanding extends Component<Props, State> {
           {/* RENDER CLIENT CARDS BELOW: MOVE THIS TO A FUNCTION LATER AND HAVE IT RENDER ALL THE INFORMATION */}
           {this.renderClients()}
         </div>
-        {role === Role.Admin ? <Link to="/person-signup/worker"><button>Signup Worker</button></Link> : <div />}
-        <Link to="/person-signup/client"><button>Signup Client</button></Link>
       </div>
     );
   }
