@@ -23,6 +23,7 @@
     "react-bootstrap-table2-editor": "^1.4.0",
     "react-bootstrap-table2-paginator": "^2.1.0",
     "react-dom": "^16.11",
+    "react-google-recaptcha": "^2.0.1",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.12.17",
     "react-pdf": "^4.1.0",

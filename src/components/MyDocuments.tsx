@@ -79,7 +79,7 @@ class MyDocuments extends Component<Props, State> {
     </div>
   )
 
-  tableCols = [ {
+  tableCols = [{
     dataField: 'filename',
     text: 'File Name',
     sort: true,

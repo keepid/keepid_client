@@ -33,7 +33,7 @@ class ViewDocument extends Component<Props, State> {
       return response.blob();
     })
       .then((response) => {
-        const pdfFile = new File([response], "Filename PDF");
+        const pdfFile = new File([response], 'Filename PDF');
         this.setState({ pdfFile });
       });
   }

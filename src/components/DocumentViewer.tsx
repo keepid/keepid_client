@@ -13,21 +13,21 @@ class DocumentViewer extends Component<Props> {
       pdfFile,
     } = this.props;
     console.log(pdfFile);
-      return (
-        <div className="container-fluid">
-          <Helmet>
-            <title>
+    return (
+      <div className="container-fluid">
+        <Helmet>
+          <title>
 Document:
 
-            </title>
-            <meta name="description" content="Keep.id" />
-          </Helmet>
-          <div className="row embed-responsive embed-responsive-16by9 align-content-center">
-            <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
-          </div>
+          </title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="row embed-responsive embed-responsive-16by9 align-content-center">
+          <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
         </div>
-      );
-    }
+      </div>
+    );
   }
+}
 
 export default DocumentViewer;

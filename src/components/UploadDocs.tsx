@@ -35,22 +35,22 @@ class UploadDocs extends React.Component<{}, State> {
         method: 'POST',
         credentials: 'include',
         body: formData,
-      }).then(response => response.json())
-      .then(responseJSON => {
-        responseJSON = JSON.parse(responseJSON);
-        const {
-          status,
-        } = responseJSON;
-        if (status === "success") {
-          alert('Successfully Uploaded File');
-          this.setState({
-            submitStatus: true,
-          });
-        } else {
-          alert('Failure to Upload File');
-        }
-        console.log(status);
-      })
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          responseJSON = JSON.parse(responseJSON);
+          const {
+            status,
+          } = responseJSON;
+          if (status === 'success') {
+            alert('Successfully Uploaded File');
+            this.setState({
+              submitStatus: true,
+            });
+          } else {
+            alert('Failure to Upload File');
+          }
+          console.log(status);
+        });
     } else {
       alert('Please select a file');
     }

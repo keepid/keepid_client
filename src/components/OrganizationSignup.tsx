@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-
 import { Helmet } from 'react-helmet';
+import ReCAPTCHA from 'react-google-recaptcha';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
-
-// Need to validate form to make sure inputs are good, address is good, etc.
-// Google API for address checking
 
 interface State {
   submitSuccessful: boolean,
@@ -16,7 +13,8 @@ interface State {
   organizationWebsite: string,
   organizationEIN: string,
   organizationNumClients: number,
-  contactName: string,
+  firstName: string,
+  lastName: string,
   contactEmail: string,
   contactPhoneNumber: string,
   organizationAddressStreet: string,
@@ -40,7 +38,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationWebsite: 'http://',
       organizationNumClients: 0, // ${NumClientOptions[0][0]}-${NumClientOptions[0][1]}`,
       organizationEIN: '',
-      contactName: '',
+      firstName: '',
+      lastName: '',
       contactEmail: '',
       contactPhoneNumber: '',
       organizationAddressStreet: '',
@@ -59,7 +58,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
     this.handleChangeOrganizationWebsite = this.handleChangeOrganizationWebsite.bind(this);
     this.handleChangeOrganizationNumClients = this.handleChangeOrganizationNumClients.bind(this);
     this.handleChangeOrganizationEIN = this.handleChangeOrganizationEIN.bind(this);
-    this.handleChangeContactName = this.handleChangeContactName.bind(this);
+    this.handleChangeFirstName = this.handleChangeFirstName.bind(this);
+    this.handleChangeLastName = this.handleChangeLastName.bind(this);
     this.handleChangeContactEmail = this.handleChangeContactEmail.bind(this);
     this.handleChangeContactPhoneNumber = this.handleChangeContactPhoneNumber.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -71,12 +71,18 @@ class OrganizationSignup extends Component<{}, State, {}> {
     this.handleChangeOrganizationAddressZipcode = this.handleChangeOrganizationAddressZipcode.bind(this);
     this.handleChangeReaffirmStage = this.handleChangeReaffirmStage.bind(this);
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
+    this.captchaVerify = this.captchaVerify.bind(this);
+  }
+
+  captchaVerify(value) {
+    console.log('Captcha value:', value);
   }
 
   handleSubmit(event: any) {
     const {
       organizationWebsite,
-      contactName,
+      firstName,
+      lastName,
       contactPhoneNumber,
       organizationName,
       organizationStatus,
@@ -91,9 +97,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationNumClients,
       acceptEULA,
     } = this.state;
-    const splitContactName : string[] = contactName.split(' ');
-    const firstName : string = splitContactName.splice(0)[0];
-    const lastName : string = splitContactName.join(' ');
     if (!acceptEULA) {
       alert('Please accept EULA before completing application');
     } else {
@@ -155,8 +158,12 @@ class OrganizationSignup extends Component<{}, State, {}> {
     this.setState({ organizationNumClients: event.target.value });
   }
 
-  handleChangeContactName(event: any) {
-    this.setState({ contactName: event.target.value });
+  handleChangeFirstName(event: any) {
+    this.setState({ firstName: event.target.value });
+  }
+
+  handleChangeLastName(event: any) {
+    this.setState({ lastName: event.target.value });
   }
 
   handleChangeContactEmail(event: any) {
@@ -216,7 +223,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
   render() {
     const {
       organizationWebsite,
-      contactName,
+      firstName,
+      lastName,
       contactPhoneNumber,
       organizationName,
       organizationStatus,
@@ -246,132 +254,137 @@ class OrganizationSignup extends Component<{}, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
-          <div className="col-md-12 mt-5">
-            <h3 className="text-center textPrintHeader">
-              {organizationFormHeader}
-            </h3>
-            <p className="textPrintDesc pl-3">
-              <span>
-                {organizationFormBody}
-              </span>
-            </p>
+          <div className="col-md-12">
+            <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
+              <div className="container">
+                <h1 className="display-5 text-center font-weight-bold mb-3">{organizationFormHeader}</h1>
+                <p className="lead">{organizationFormBody}</p>
+              </div>
+            </div>
             <form onSubmit={this.handleChangeReaffirmStage}>
               <div className="col-md-12">
                 <div className="form-row">
-                  <div className="col-md-6 form-group">
-                    <label htmlFor="inputOrgName">
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputOrgName" className="w-100 pr-3">
                       Organization Name
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputOrgName" placeholder="Keep" value={organizationName} onChange={this.handleChangeOrganizationName} required />
                     </label>
                   </div>
-                  <div className="col-md-6 form-group">
-                    <label htmlFor="inputOrgWebsite">
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputOrgWebsite" className="w-100 pr-3">
                       Organization Website
                       <input type="url" readOnly={reaffirmStage} className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" value={organizationWebsite} onChange={this.handleChangeOrganizationWebsite} />
                     </label>
                   </div>
-                </div>
-                <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputContactName">
-                      Contact Name
-                      <text className="red-star">*</text>
-                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactName" placeholder="John Doe" value={contactName} onChange={this.handleChangeContactName} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputContactPhoneNumber">
-                      Contact Phone Number
-                      <text className="red-star">*</text>
-                      <input type="tel" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactPhoneNumber" placeholder="1-(234)-567-8901" value={contactPhoneNumber} onChange={this.handleChangeContactPhoneNumber} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputContactEmail">
+                    <label htmlFor="inputContactEmail" className="w-100 pr-3">
                       Contact Email Address
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="email" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactEmail" placeholder="contact@example.com" value={contactEmail} onChange={this.handleChangeContactEmail} required />
                     </label>
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputUsername">
+                    <label htmlFor="inputFirstName" className="w-100 pr-3">
+                      Contact First Name
+                      <span className="red-star">*</span>
+                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputFirstName" placeholder="John" value={firstName} onChange={this.handleChangeFirstName} required />
+                    </label>
+                  </div>
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputLastName" className="w-100 pr-3">
+                      Contact Last Name
+                      <span className="red-star">*</span>
+                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputLastName" placeholder="Smith" value={lastName} onChange={this.handleChangeLastName} required />
+                    </label>
+                  </div>
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputContactPhoneNumber" className="w-100 pr-3">
+                      Contact Phone Number
+                      <span className="red-star">*</span>
+                      <input type="tel" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactPhoneNumber" placeholder="1-(234)-567-8901" value={contactPhoneNumber} onChange={this.handleChangeContactPhoneNumber} required />
+                    </label>
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputUsername" className="w-100 pr-3">
                       Admin Username
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputUsername" placeholder="John Doe" value={username} onChange={this.handleChangeUsername} required />
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputPassword">
+                    <label htmlFor="inputPassword" className="w-100 pr-3">
                       Password
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="password" readOnly={reaffirmStage} className="form-control form-purple" id="inputPassword" placeholder="*******" value={password} onChange={this.handleChangePassword} required />
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputConfirmpassword">
+                    <label htmlFor="inputConfirmpassword" className="w-100 pr-3">
                       Confirm Password
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="password" readOnly={reaffirmStage} className="form-control form-purple" id="inputConfirmPassword" placeholder="********" value={confirmPassword} onChange={this.handleChangeConfirmPassword} required />
                     </label>
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputAddress">
+                    <label htmlFor="inputAddress" className="w-100 pr-3">
                       Organization Address
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputAddress" placeholder="311 Broad St" value={organizationAddressStreet} onChange={this.handleChangeOrganizationAddressStreet} required />
                     </label>
                   </div>
                   <div className="col-md-3 form-group">
-                    <label htmlFor="inputCity">
+                    <label htmlFor="inputCity" className="w-100 pr-3">
                       City
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputCity" placeholder="Philadelphia" value={organizationAddressCity} onChange={this.handleChangeOrganizationAddressCity} required />
                     </label>
                   </div>
                   <div className="col-md-2 form-group">
-                    <label htmlFor="inputState">
+                    <label htmlFor="inputState" className="w-100 pr-3">
                       State
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <select disabled={reaffirmStage} className="form-control form-purple" id="inputState" value={organizationAddressState} onChange={this.handleChangeOrganizationAddressState} required>
                         {USStates.map((USState) => (<option>{USState.abbreviation}</option>))}
                       </select>
                     </label>
                   </div>
                   <div className="col-md-3 form-group">
-                    <label htmlFor="inputZipCode">
+                    <label htmlFor="inputZipCode" className="w-100 pr-3">
                       Zip Code
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputZipCode" placeholder="19104" value={organizationAddressZipcode} onChange={this.handleChangeOrganizationAddressZipcode} required />
                     </label>
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputEIN">
-                      Organization Employer Identification Number
-                      <text className="red-star">*</text>
+                    <label htmlFor="inputEIN" className="w-100 pr-3">
+                      Employer Identification Number
+                      <span className="red-star">*</span>
                       <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputEIN" placeholder="12-3456789" value={organizationEIN} onChange={this.handleChangeOrganizationEIN} required />
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputNumUsers">
+                    <label htmlFor="inputNumUsers" className="w-100 pr-3">
                       Expected Number of Users in 100s
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input readOnly={reaffirmStage} type="number" className="form-control form-purple" id="inputNumUsers" min="0" step="100" placeholder="1000" value={organizationNumClients} onChange={this.handleChangeOrganizationNumClients} required />
                     </label>
                   </div>
+                  {!reaffirmStage
+                    ? (
+                      <div className="col mt-3 pl-5 pt-2">
+                        <input type="submit" className="btn btn-primary w-50" value="Continue" />
+                      </div>
+                    ) : <div />}
                 </div>
-                {!reaffirmStage
-                  ? (
-                    <div className="col-auto mt-4 pt-2">
-                      <input type="submit" className="btn btn-primary" value="Continue" />
-                    </div>
-                  ) : <div />}
               </div>
             </form>
           </div>
@@ -386,7 +399,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
       return (<div>{ organizationForm }</div>);
     }
     return (
-      <div>
+      <div className="container">
         {organizationForm}
         <div className="row mt-5">
           <p className="textPrintDesc pl-3">
@@ -408,11 +421,14 @@ class OrganizationSignup extends Component<{}, State, {}> {
         </div>
         <div className="row mt-5">
           <div className="col-md-6">
-            <p> Need API key for ReCaptcha, which requires domain name</p>
+            <ReCAPTCHA
+              sitekey="6LdC2doUAAAAAOPR99_VV97ifNVQiF7I3RQOTc8T"
+              onChange={this.captchaVerify}
+            />
           </div>
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-primary">Back</button>
-            <button type="button" onClick={this.handleSubmit} className="btn btn-primary">Submit</button>
+            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger pr-4">Back</button>
+            <button type="button" onClick={this.handleSubmit} className="btn btn-success">Submit</button>
           </div>
         </div>
       </div>

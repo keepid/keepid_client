@@ -1,18 +1,6 @@
 
-$theme-colors: (
-"primary-theme": #7B81FF,
-"secondary-theme": rgba(123, 130, 255, 0.12),
-"secondary-dark-theme": #262867
-);
-
-
 // import bootstrap
 @import "../../../node_modules/bootstrap/scss/bootstrap";
-
-// import roboto
-@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
-
-// @import '../../node_modules/react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 $primary-theme: #7B81FF;
 $secondary-theme: rgba(123, 130, 255, 0.12);
@@ -21,6 +9,19 @@ $text-red: #F24D4D;
 $footer-color:#413f57;
 $footer-text-color: rgb(183, 183, 192);
 $footer-text-color-accent: rgb(230, 230, 230);
+
+$theme-colors: (
+"primary-theme": $primary-theme,
+"secondary-theme": rgba(123, 130, 255, 0.12),
+"secondary-dark-theme": #262867
+);
+
+// import open sans
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
+
+.App {
+	font-family: 'Noto Sans', sans-serif !important;
+}
 
 .navbar-custom {
 	background: rgb(123,150,255);
@@ -45,7 +46,6 @@ $footer-text-color-accent: rgb(230, 230, 230);
 // Landing
 
 .textLanding {
-	font-family: Roboto;
 	font-style: normal;
 	font-weight: bold;
 	font-size: 1.5rem;
@@ -67,71 +67,6 @@ $footer-text-color-accent: rgb(230, 230, 230);
 	top: 10%;
 	width: 30%;
 };
-
-// Login classes
-.textLoginLeftHeader {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: 900;
-	font-size: 2.0625rem;
-	line-height: 2.4375rem;
-}
-
-.textLoginLeftSubHeader {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: 500;
-	font-size: 1.875rem;
-	line-height: 2.1875rem;
-	color: #000000;
-}
-
-.textLoginRightHeader {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: bold;
-	font-size: 2.25rem;
-	line-height: 2.625rem;
-	text-align: center;
-
-	color: #000000;
-}
-
-.textLoginRightPara {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: 500;
-	font-size: 1.375rem;
-	line-height: 1.625rem;
-}
-
-// Print page classes
-.textPrintHeader {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: bold;
-	font-size: 1.5rem;
-	line-height: 1.75rem;
-	text-align: left;
-}
-
-.textPrintDesc {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 1.125rem;
-	line-height: 1.3125rem;
-	text-align: left;
-}
-
-.textUploadDesc {
-	font-family: Roboto;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 1.125rem;
-	line-height: 1.3125rem;
-	text-align: center;
-}
 
 td, th{
 	text-align: center;

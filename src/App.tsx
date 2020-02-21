@@ -158,7 +158,7 @@ class App extends React.Component<{}, State, {}> {
               }}
             />
             // Client Components
-            <Route 
+            <Route
               path="/upload-document"
               render={() => {
                 if (role === Role.Client) {
@@ -167,7 +167,7 @@ class App extends React.Component<{}, State, {}> {
                 return <Redirect to="/error" />;
               }}
             />
-            <Route 
+            <Route
               path="/my-documents"
               render={() => {
                 if (role === Role.Client) {
@@ -176,7 +176,7 @@ class App extends React.Component<{}, State, {}> {
                 return <Redirect to="/error" />;
               }}
             />
-            <Route 
+            <Route
               path="/applications"
               render={() => {
                 if (role === Role.Client) {
@@ -185,7 +185,7 @@ class App extends React.Component<{}, State, {}> {
                 return <Redirect to="/error" />;
               }}
             />
-            <Route 
+            <Route
               path="/request"
               render={() => {
                 if (role === Role.Client) {
@@ -213,7 +213,7 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/our-mission">
               <OurMission />
             </Route>
-            <Route 
+            <Route
               path="/settings"
               render={() => {
                 if (role !== Role.LoggedOut) {

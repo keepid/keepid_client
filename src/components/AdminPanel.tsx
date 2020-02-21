@@ -112,15 +112,15 @@ class AdminPanel extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        listType: 'members'
-      })     
-    }).then(res => res.json())
-    .then(responseJSON => {
-      responseJSON = JSON.parse(responseJSON);
-      this.setState({
-        workers: responseJSON.admins.concat(responseJSON.workers)
+        listType: 'members',
+      }),
+    }).then((res) => res.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        this.setState({
+          workers: responseJSON.admins.concat(responseJSON.workers),
+        });
       });
-    });
   }
 
   render() {
