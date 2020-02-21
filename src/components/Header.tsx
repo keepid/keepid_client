@@ -35,6 +35,10 @@ class Header extends Component<Props, State, {}> {
   }
 
   handleLogout(event: any) {
+    const {
+      username,
+      password,
+    } = this.state;
     fetch(`${getServerURL()}/logout`, {
       method: 'POST',
       credentials: 'include',
