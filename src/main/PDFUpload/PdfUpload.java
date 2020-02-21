@@ -23,17 +23,16 @@ public class PdfUpload {
         UploadedFile file = ctx.uploadedFile("file");
         JSONObject res = new JSONObject();
         if (file != null) {
-            ObjectId out = PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
-            if (out != null) {
-                res.put("status", "success");
-            }
-            else {
-                res.put("status", "failure");
-            }
-        }
-        else {
+          ObjectId out = PdfMongo.upload(username, file.getFilename(), file.getContent(), this.db);
+          if (out != null) {
+            res.put("status", "success");
+          } else {
             res.put("status", "failure");
+          }
+        } else {
+          res.put("status", "failure");
         }
+        System.out.println(res.toString());
         ctx.json(res.toString());
-    };
+      };
 }
