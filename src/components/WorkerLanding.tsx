@@ -41,12 +41,12 @@ class WorkerLanding extends Component<Props, State> {
       clients: [{
         username: '',
         firstName: '',
-        lastName: ''
+        lastName: '',
       }],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.getClients = this.getClients.bind(this);
-    this.renderClients = this.renderClients.bind(this)
+    this.renderClients = this.renderClients.bind(this);
   }
 
   componentDidMount() {
@@ -71,7 +71,7 @@ class WorkerLanding extends Component<Props, State> {
 
   renderClients() {
     console.log(this.state.clients);
-    let clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
+    const clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
       <div className="card mb-3">
         <div className="card-body">
           <div className="d-flex flex-row">
@@ -79,7 +79,11 @@ class WorkerLanding extends Component<Props, State> {
               <div className="p-2 ">PROFILE PICTURE HERE</div>
             </div>
             <div className="d-flex flex-lg-column mr-4">
-              <h5 className="card-title mb-3 h4">{client.firstName} {client.lastName}</h5>
+              <h5 className="card-title mb-3 h4">
+                {client.firstName}
+                {' '}
+                {client.lastName}
+              </h5>
               <h6 className="card-subtitle mb-2 text-muted">Email, Phone #, Address, etc.</h6>
               <p className="card-text">Some information about the client here.</p>
               <a href="#" className="card-link">Client Profile</a>

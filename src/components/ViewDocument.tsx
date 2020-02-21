@@ -25,7 +25,7 @@ class ViewDocument extends Component<Props, State> {
     const {
       documentId,
     } = this.props;
-    //fetch(`${getServerURL()}/download?FileID=${documentId}`, {
+    // fetch(`${getServerURL()}/download?FileID=${documentId}`, {
     fetch(`${getServerURL()}/download/${documentId}`, {
       method: 'GET',
       credentials: 'include',
