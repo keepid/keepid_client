@@ -24,3 +24,4 @@ yarn-error.log*
 
 package-lock.json
 .idea
+stale_outputs_checked
