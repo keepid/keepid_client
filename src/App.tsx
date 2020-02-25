@@ -76,8 +76,8 @@ class App extends React.Component<{}, State, {}> {
       organization,
     } = this.state;
     return (
-      <div className="App">
-        <Router>
+      <Router>
+        <div className="App">
           <Helmet>
             <title>Keep.id</title>
             <meta name="description" content="Securely Combating Homelessness" />
@@ -227,13 +227,11 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/error">
               <Error />
             </Route>
-            <Route>
-              <Redirect to="/error" />
-            </Route>
+            
           </Switch>
-        </Router>
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </Router>
     );
   }
 }

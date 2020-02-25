@@ -3,6 +3,7 @@ import Logo from '../static/images/logo.svg';
 import Email from '../static/images/email-2.svg';
 import FacebookLogo from '../static/images/fb-logo.svg';
 import GithubLogo from '../static/images/github-logo.svg';
+import { Link } from 'react-router-dom';
 
 interface Props {
 }
@@ -28,19 +29,19 @@ class Footer extends Component<Props, State> {
               <p className="text-gray-700 mb-2">Securely Combating Homelessness</p>
               <ul className="list-unstyled list-inline list-social">
                 <li className="list-inline-item list-social-item mr-3">
-                  <a href="" className="text-decoration-none">
+                  <Link to="/error" className="text-decoration-none">
                     <img src={Email} className="list-social-icon" />
-                  </a>
+                  </Link>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
-                  <a href="" className="text-decoration-none">
+                  <Link to="/error" className="text-decoration-none">
                     <img src={FacebookLogo} className="list-social-icon" />
-                  </a>
+                  </Link>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
-                  <a href="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
+                  <Link to="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
                     <img src={GithubLogo} className="list-social-icon" />
-                  </a>
+                  </Link>
                 </li>
               </ul>
               <span className="text-muted pb-2">&copy;	2020 Keep.id</span>
@@ -49,16 +50,16 @@ class Footer extends Component<Props, State> {
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">About Us</h6>
               <ul className="list-unstyled text-muted mb-6 mb-md-8 mb-lg-0">
                 <li className="mb-3">
-                  <a href="/our-team" className="footer-link">Our Team</a>
+                  <Link to="/our-team" className="footer-link">Our Team</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/our-partners" className="footer-link">Our Partners</a>
+                  <Link to="/our-partners" className="footer-link">Our Partners</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/our-mission" className="footer-link">Our Mission</a>
+                  <Link to="/our-mission" className="footer-link">Our Mission</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/careers" className="footer-link">Join Us</a>
+                  <Link to="/careers" className="footer-link">Join Us</Link>
                 </li>
               </ul>
             </div>
@@ -66,19 +67,19 @@ class Footer extends Component<Props, State> {
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">Legal</h6>
               <ul className="list-unstyled text-muted mb-6 mb-md-8 mb-lg-0">
                 <li className="mb-3">
-                  <a href="/organization-policies" className="footer-link">Organization Policies</a>
+                  <Link to="/organization-policies" className="footer-link">Organization Policies</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/terms-of-use" className="footer-link">Terms of Use</a>
+                  <Link to="/terms-of-use" className="footer-link">Terms of Use</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/eula" className="footer-link">End User License Agreements</a>
+                  <Link to="/eula" className="footer-link">End User License Agreements</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/privacy-policy" className="footer-link">Privacy Policy</a>
+                  <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
                 </li>
                 <li className="mb-3">
-                  <a href="/copyright-policy" className="footer-link">Copyright Policy</a>
+                  <Link to="/copyright-policy" className="footer-link">Copyright Policy</Link>
                 </li>
               </ul>
             </div>

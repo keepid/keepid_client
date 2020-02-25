@@ -131,7 +131,7 @@ class Header extends Component<Props, State, {}> {
                 />
               </Link>
               <Link className="navbar-brand" to="/home">
-                keep.id
+                Keep.id
               </Link>
               <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon" />
@@ -176,7 +176,7 @@ class Header extends Component<Props, State, {}> {
               />
             </Link>
             <Link className="navbar-brand" to="/home">
-              keep.id
+              Keep.id
             </Link>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
               <span className="navbar-toggler-icon" />

@@ -21,7 +21,7 @@ class Login extends Component<{}, {}, {}> {
               <div className="background col-md-5 ml-5 pb-4">
                 <div className="page-header textLoginLeftHeader">
                   <h1>
-                    <span><b>Building a Safety Net around experienced homelessness in the Cloud</b></span>
+                    <span><b>Empowering those Experiencing Homelessness through Secure ID Storage in the Cloud</b></span>
                   </h1>
                 </div>
                 <h2 className="textLoginLeftSubHeader mt-5">
@@ -31,13 +31,13 @@ class Login extends Component<{}, {}, {}> {
                   <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>
                 </p>
                 <button type="button" className="btn btn-primary btn-lg loginButtonBackground">
-                    Get Started
+                    Find Local Organizations
                 </button>
                 <h2 className="textLoginLeftSubHeader mt-3">
                   <span>For Organizations: Partner with Us</span>
                 </h2>
                 <p>
-                  <span>Are you an aid organization fighting to end homelessness?</span>
+                  <span>Are you an aid organization fighting homelessness?</span>
                 </p>
                 <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground">Join Our Cause</a>
               </div>

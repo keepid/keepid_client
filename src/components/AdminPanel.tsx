@@ -24,16 +24,16 @@ interface State {
 
 class AdminPanel extends Component<Props, State> {
   tableCols = [{
-    dataField: 'username',
-    text: 'Worker User ID',
-    sort: true,
-  }, {
     dataField: 'firstName',
     text: 'First Name',
     sort: true,
   }, {
     dataField: 'lastName',
     text: 'Last Name',
+    sort: true,
+  }, {
+    dataField: 'type',
+    text: 'Worker Type',
     sort: true,
   }];
 
@@ -98,9 +98,12 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        console.log(responseJSON);
+        const workers = responseJSON.workers;
+        const admins = responseJSON.admins;
+        workers.forEach(element => element['type'] = 'worker');
+        admins.forEach(element => element['type'] = 'admin');
         this.setState({
-          workers: responseJSON.admins.concat(responseJSON.workers),
+          workers: workers.concat(admins),
         });
       });
   }
