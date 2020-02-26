@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
@@ -183,6 +184,8 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
+        String firstNameSearch = req.getString("firstName").trim();
+        String lastNameSearch = req.getString("lastName").trim();
         String listType = req.getString("listType");
 
         if (privilegeLevel == null || orgName == null) {
@@ -209,7 +212,18 @@ public class UserController {
         MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
         MongoCollection<Document> userCollection = database.getCollection("user");
 
-        MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
+        Bson orgNameMatch = eq("organization", orgName);
+        Bson filter;
+
+        if (!firstNameSearch.contentEquals("") || !lastNameSearch.contentEquals("")) {
+          Bson firstNameMatch = regex("firstName", firstNameSearch, "i");
+          Bson lastNameMatch = regex("lastName", lastNameSearch, "i");
+          filter = combine(orgNameMatch, firstNameMatch, lastNameMatch);
+        } else {
+          filter = orgNameMatch;
+        }
+
+        MongoCursor<Document> cursor = userCollection.find(filter).iterator();
         while (cursor.hasNext()) {
           System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
