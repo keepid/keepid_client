@@ -50,6 +50,7 @@ class WorkerLanding extends Component<Props, State> {
     this.handleChangeSearchFirstName = this.handleChangeSearchFirstName.bind(this);
     this.getClients = this.getClients.bind(this);
     this.renderClients = this.renderClients.bind(this);
+    this.modalRender = this.modalRender.bind(this);
   }
 
   componentDidMount() {
@@ -108,18 +109,64 @@ class WorkerLanding extends Component<Props, State> {
               <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 3" on "example date 3"</h6>
             </div>
             <div className="d-flex flex-column mr-4">
-              <h5 className="card-title">Actions for Client</h5>
-              <button type="button" className="btn btn-success mb-2 btn-sm">Upload Documents</button>
-              <button type="button" className="btn btn-danger mb-2 btn-sm">Delete Documents</button>
-              <button type="button" className="btn btn-info mb-2 btn-sm">Another Action</button>
-              <button type="button" className="btn btn-dark mb-2 btn-sm">Another Action</button>
+              <h5 className="card-title">Client Actions</h5>
+              <button type="button" className="btn btn-success mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Upload Document</button>
+              <button type="button" className="btn btn-danger mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">View Documents</button>
+              <button type="button" className="btn btn-info mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Send Email</button>
+              <button type="button" className="btn btn-dark mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Submit Application</button>
             </div>
           </div>
         </div>
+        {this.modalRender()}
       </div>
     ));
 
     return clientCards;
+  }
+
+  modalRender() {
+    return (
+      <div>
+        <React.Fragment key="authenticateAction">
+          <div className="modal fade" id="authenticateModal" role="dialog" aria-labelledby={`authenticateModal`} aria-hidden="true">
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    Authenticate Client Account Action
+                  </h5>
+                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="row mb-3 mt-3">
+                    <div className="col card-text mt-2">
+                      Client Username
+                    </div>
+                    <div className="col-6 card-text">
+                      <input type="text" className="form-control form-purple" id={`authenticateForm`} placeholder={`Enter Username Here`} />
+                    </div>
+                  </div>
+                  <div className="row mb-3 mt-3">
+                    <div className="col card-text mt-2">
+                      Client Password
+                    </div>
+                    <div className="col-6 card-text">
+                      <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here" />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" className="btn btn-primary">Authenticate</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
+      </div>
+    );
   }
 
   render() {

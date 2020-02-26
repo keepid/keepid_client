@@ -10,7 +10,7 @@ import AssistSVG from '../static/images/assistance.svg';
 import FileSVG from '../static/images/file.svg';
 
 interface State {
-    show: boolean
+  show: boolean
 }
 
 class ClientLanding extends Component<{}, State, {}> {
