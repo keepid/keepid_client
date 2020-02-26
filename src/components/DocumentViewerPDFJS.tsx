@@ -11,7 +11,6 @@ export default class DocumentViewer extends React.Component<Props, {}> {
 }
 
 
-
 // import React, { Component } from 'react';
 // import { Helmet } from 'react-helmet';
 // import pdfjs from 'pdfjs-dist';

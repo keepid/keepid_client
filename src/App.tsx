@@ -227,7 +227,7 @@ class App extends React.Component<{}, State, {}> {
             <Route path="/error">
               <Error />
             </Route>
-            
+
           </Switch>
           <Footer />
         </div>

@@ -98,10 +98,10 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const workers = responseJSON.workers;
-        const admins = responseJSON.admins;
-        workers.forEach(element => element['type'] = 'worker');
-        admins.forEach(element => element['type'] = 'admin');
+        const { workers } = responseJSON;
+        const { admins } = responseJSON;
+        workers.forEach((element) => element.type = 'worker');
+        admins.forEach((element) => element.type = 'admin');
         this.setState({
           workers: workers.concat(admins),
         });

@@ -138,13 +138,13 @@ class WorkerLanding extends Component<Props, State> {
             <p className="lead">Use the search bar to help look up clients.</p>
             <div className="d-flex flex-row">
               <form className="form-inline mr-3 w-50">
-                <input 
-                  className="form-control mr-2 w-75" 
-                  type="text" 
+                <input
+                  className="form-control mr-2 w-75"
+                  type="text"
                   onChange={this.handleChangeSearchFirstName}
                   value={this.state.firstNameSearch}
-                  placeholder="Search First Name" 
-                  aria-label="Search" 
+                  placeholder="Search First Name"
+                  aria-label="Search"
                 />
                 <img
                   alt="Search"

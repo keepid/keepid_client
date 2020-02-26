@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import Logo from '../static/images/logo.svg';
 import Email from '../static/images/email-2.svg';
 import FacebookLogo from '../static/images/fb-logo.svg';
 import GithubLogo from '../static/images/github-logo.svg';
-import { Link } from 'react-router-dom';
 
 interface Props {
 }

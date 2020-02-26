@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
@@ -171,17 +171,17 @@ class PersonSignup extends Component<Props, State, {}> {
     } = this.state;
     if (personBirthDate) {
       const personBirthMonth = personBirthDate.getMonth() + 1;
-      const personBirthMonthString = (personBirthMonth < 10 ? "0" + personBirthMonth : personBirthMonth);
+      const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
       const personBirthDay = personBirthDate.getDate();
-      const personBirthDayString = (personBirthDay < 10 ? "0" + personBirthDay : personBirthDay);
-      const personBirthDateFormatted = personBirthMonthString + "-" + personBirthDayString + "-" + personBirthDate.getFullYear();
-      const personUsername = personFirstName.toLowerCase() + "-" + personLastName.toLowerCase() + "-" + personBirthDateFormatted;
+      const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+      const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${personBirthDate.getFullYear()}`;
+      const personUsername = `${personFirstName.toLowerCase()}-${personLastName.toLowerCase()}-${personBirthDateFormatted}`;
       this.setState({ personUsername });
     }
   }
 
   handleChangePersonUsername(event: any) {
-    this.setState({ personUsername: event.target.value })
+    this.setState({ personUsername: event.target.value });
   }
 
   handleChangePersonPassword(event: any) {
