@@ -51,7 +51,7 @@ class ViewDocument extends Component<Props, State> {
       <div>
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
         <Link to="/my-documents">
-          <button type="button">
+          <button type="button" className="btn btn-outline-success">
             Back
           </button>
         </Link>

@@ -7,7 +7,7 @@
 /server_mock/node_modules
 # testing
 /coverage
-
+/server_mock
 # production
 /build
 
@@ -24,3 +24,4 @@ yarn-error.log*
 
 package-lock.json
 .idea
+stale_outputs_checked

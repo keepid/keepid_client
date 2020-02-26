@@ -34,11 +34,12 @@
     "react-pdf": "^4.1.0",
     "react-redirect": "^1.0.0",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.3.1",
+    "react-scripts": "3.4.0",
     "react-select": "^3.0.8",
     "typescript": "3.6.4"
   },
   "devDependencies": {
+    "@babel/core": "^7.8.4",
     "@typescript-eslint/eslint-plugin": "^2.5.0",
     "@typescript-eslint/parser": "^2.5.0",
     "autoprefixer": "6.7.2",
@@ -85,7 +86,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts --max_old_space_size=500 build",
     "test": "set \"CI=false\" && react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
