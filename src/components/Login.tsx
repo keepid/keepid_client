@@ -21,7 +21,7 @@ class Login extends Component<{}, {}, {}> {
               <div className="background col-md-5 ml-5 pb-4">
                 <div className="page-header textLoginLeftHeader">
                   <h1>
-                    <span><b>Building a Safety Net around experienced homelessness in the Cloud</b></span>
+                    <span><b>Secure Document Storage for those Experiencing Homelessness</b></span>
                   </h1>
                 </div>
                 <h2 className="textLoginLeftSubHeader mt-5">

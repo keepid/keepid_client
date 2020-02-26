@@ -6,6 +6,7 @@ import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 
+const logoSize = 40;
 interface Props {
   logIn: (role: Role, username: string, organization: string, name: string) => void,
   logOut: () => void,
@@ -121,17 +122,17 @@ class Header extends Component<Props, State, {}> {
         <div>
           <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
             <div className="container">
-              <Link className="navbar-brand" to="/home">
+              <Link className="pr-2" to="/home">
                 <img
                   alt="Logo"
                   src={Logo}
-                  width="30"
-                  height="30"
-                  className="d-inline-block align-middle"
+                  width={logoSize}
+                  height={logoSize}
+                  className="d-inline-block"
                 />
               </Link>
               <Link className="navbar-brand" to="/home">
-                keep.id
+                Keep.id
               </Link>
               <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon" />
@@ -166,17 +167,17 @@ class Header extends Component<Props, State, {}> {
       <div>
         <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
           <div className="container">
-            <Link className="navbar-brand" to="/home">
+            <Link className="pr-3" to="/home">
               <img
                 alt="Logo"
                 src={Logo}
-                width="30"
-                height="30"
-                className="d-inline-block align-middle"
+                width={logoSize}
+                height={logoSize}
+                className="d-inline-block"
               />
             </Link>
             <Link className="navbar-brand" to="/home">
-              keep.id
+              Keep.id
             </Link>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
               <span className="navbar-toggler-icon" />
