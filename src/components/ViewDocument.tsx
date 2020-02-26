@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import DocumentViewer from './DocumentViewerPDFJS';
+import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
 interface Props {
@@ -49,13 +49,7 @@ class ViewDocument extends Component<Props, State> {
     } = this.state;
     return (
       <div>
-        { pdfFile ? 
-          <button type="button">
-          <a target="_blank" href={URL.createObjectURL(pdfFile)}>
-          View Document
-          </a>
-          </button>
-      : <div /> }
+        { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
         <Link to="/my-documents">
           <button type="button">
             Back

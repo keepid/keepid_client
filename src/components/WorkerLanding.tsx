@@ -15,7 +15,8 @@ interface Props {
 }
 
 interface State {
-  clients: any;
+  clients: any,
+  firstNameSearch: string,
 }
 
 const options = [
@@ -38,6 +39,7 @@ class WorkerLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      firstNameSearch: '',
       clients: [{
         username: '',
         firstName: '',
@@ -45,6 +47,7 @@ class WorkerLanding extends Component<Props, State> {
       }],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
+    this.handleChangeSearchFirstName = this.handleChangeSearchFirstName.bind(this);
     this.getClients = this.getClients.bind(this);
     this.renderClients = this.renderClients.bind(this);
   }
@@ -53,12 +56,22 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients();
   }
 
+  handleChangeSearchFirstName(event: any) {
+    this.setState({ firstNameSearch: event.target.value }, this.getClients);
+  }
+
   getClients() {
+    const {
+      firstNameSearch,
+    } = this.state;
+    console.log(firstNameSearch);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         listType: 'clients',
+        firstName: firstNameSearch,
+        lastName: '',
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
@@ -125,7 +138,14 @@ class WorkerLanding extends Component<Props, State> {
             <p className="lead">Use the search bar to help look up clients.</p>
             <div className="d-flex flex-row">
               <form className="form-inline mr-3 w-50">
-                <input className="form-control mr-2 w-75" type="text" placeholder="Search" aria-label="Search" />
+                <input 
+                  className="form-control mr-2 w-75" 
+                  type="text" 
+                  onChange={this.handleChangeSearchFirstName}
+                  value={this.state.firstNameSearch}
+                  placeholder="Search First Name" 
+                  aria-label="Search" 
+                />
                 <img
                   alt="Search"
                   src={SearchSVG}
