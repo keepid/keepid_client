@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
@@ -18,12 +20,14 @@ interface State {
   submitSuccessful: boolean,
   personFirstName: string,
   personLastName: string,
+  personBirthDate: Date,
   personEmail: string,
   personPhoneNumber: string,
   personAddressStreet: string,
   personAddressCity: string,
   personAddressState: string,
   personAddressZipcode: string,
+  personUsername: string,
   personPassword: string,
   personConfirmPassword: string,
 }
@@ -37,12 +41,14 @@ class PersonSignup extends Component<Props, State, {}> {
       submitSuccessful: false,
       personFirstName: '',
       personLastName: '',
+      personBirthDate: new Date(),
       personEmail: '',
       personPhoneNumber: '',
       personAddressStreet: '',
       personAddressCity: '',
       personAddressState: USStates[0].abbreviation,
       personAddressZipcode: '',
+      personUsername: '',
       personPassword: '',
       personConfirmPassword: '',
     };
@@ -50,12 +56,15 @@ class PersonSignup extends Component<Props, State, {}> {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangePersonFirstName = this.handleChangePersonFirstName.bind(this);
     this.handleChangePersonLastName = this.handleChangePersonLastName.bind(this);
+    this.handleChangePersonBirthDate = this.handleChangePersonBirthDate.bind(this);
     this.handleChangePersonEmail = this.handleChangePersonEmail.bind(this);
     this.handleChangePersonPhoneNumber = this.handleChangePersonPhoneNumber.bind(this);
     this.handleChangePersonAddressStreet = this.handleChangePersonAddressStreet.bind(this);
     this.handleChangePersonAddressCity = this.handleChangePersonAddressCity.bind(this);
     this.handleChangePersonAddressState = this.handleChangePersonAddressState.bind(this);
     this.handleChangePersonAddressZipcode = this.handleChangePersonAddressZipcode.bind(this);
+    this.handleChangePersonUsername = this.handleChangePersonUsername.bind(this);
+    this.updatePersonUsername = this.updatePersonUsername.bind(this);
     this.handleChangePersonPassword = this.handleChangePersonPassword.bind(this);
     this.handleChangePersonConfirmPassword = this.handleChangePersonConfirmPassword.bind(this);
   }
@@ -75,10 +84,10 @@ class PersonSignup extends Component<Props, State, {}> {
       personAddressCity,
       personAddressState,
       personAddressZipcode,
+      personUsername,
       personPassword,
       personConfirmPassword,
     } = this.state;
-    const username = `${personFirstName}-${personLastName}`;
     if (personPassword !== personConfirmPassword) {
       alert('Your passwords are not identical');
     } else {
@@ -99,7 +108,7 @@ class PersonSignup extends Component<Props, State, {}> {
         body: JSON.stringify({
           firstname: personFirstName,
           lastname: personLastName,
-          username,
+          username: personUsername,
           email: personEmail,
           phonenumber: personPhoneNumber,
           address: personAddressStreet,
@@ -119,11 +128,15 @@ class PersonSignup extends Component<Props, State, {}> {
   }
 
   handleChangePersonFirstName(event: any) {
-    this.setState({ personFirstName: event.target.value });
+    this.setState({ personFirstName: event.target.value }, this.updatePersonUsername);
   }
 
   handleChangePersonLastName(event: any) {
-    this.setState({ personLastName: event.target.value });
+    this.setState({ personLastName: event.target.value }, this.updatePersonUsername);
+  }
+
+  handleChangePersonBirthDate(date: any) {
+    this.setState({ personBirthDate: date }, this.updatePersonUsername);
   }
 
   handleChangePersonEmail(event: any) {
@@ -148,6 +161,27 @@ class PersonSignup extends Component<Props, State, {}> {
 
   handleChangePersonAddressZipcode(event: any) {
     this.setState({ personAddressZipcode: event.target.value });
+  }
+
+  updatePersonUsername() {
+    const {
+      personFirstName,
+      personLastName,
+      personBirthDate,
+    } = this.state;
+    if (personBirthDate) {
+      const personBirthMonth = personBirthDate.getMonth() + 1;
+      const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+      const personBirthDay = personBirthDate.getDate();
+      const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+      const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${personBirthDate.getFullYear()}`;
+      const personUsername = `${personFirstName.toLowerCase()}-${personLastName.toLowerCase()}-${personBirthDateFormatted}`;
+      this.setState({ personUsername });
+    }
+  }
+
+  handleChangePersonUsername(event: any) {
+    this.setState({ personUsername: event.target.value });
   }
 
   handleChangePersonPassword(event: any) {
@@ -175,6 +209,7 @@ class PersonSignup extends Component<Props, State, {}> {
       personAddressCity,
       personAddressState,
       personAddressZipcode,
+      personUsername,
       personPassword,
       personConfirmPassword,
     } = this.state;
@@ -341,6 +376,28 @@ class PersonSignup extends Component<Props, State, {}> {
                         onChange={this.handleChangePersonAddressZipcode}
                         value={personAddressZipcode}
                         placeholder="19104"
+                        required
+                      />
+                    </label>
+                  </div>
+                  <div className="col-md-4 form-group">
+                    <label htmlFor="inputBirthDate" className="w-100 pr-3">
+                      Birth Date
+                      <text className="red-star">*</text>
+                      <DatePicker id="inputBirthDate" onChange={this.handleChangePersonBirthDate} selected={this.state.personBirthDate} />
+                    </label>
+                  </div>
+                  <div className="col-md-3 form-group">
+                    <label htmlFor="inputUsername" className="w-100 pr-3">
+                      Username (auto-generated)
+                      <text className="red-star">*</text>
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        id="inputUsername"
+                        onChange={this.handleChangePersonUsername}
+                        value={personUsername}
+                        placeholder="John-Doe-02-21-20"
                         required
                       />
                     </label>

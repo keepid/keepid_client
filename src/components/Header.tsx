@@ -122,7 +122,7 @@ class Header extends Component<Props, State, {}> {
         <div>
           <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
             <div className="container">
-              <Link className="pr-2" to="/home">
+              <Link className="pr-3" to="/home">
                 <img
                   alt="Logo"
                   src={Logo}

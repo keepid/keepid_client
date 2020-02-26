@@ -31,13 +31,13 @@ class Login extends Component<{}, {}, {}> {
                   <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>
                 </p>
                 <button type="button" className="btn btn-primary btn-lg loginButtonBackground">
-                    Get Started
+                    Find Local Organizations
                 </button>
                 <h2 className="textLoginLeftSubHeader mt-3">
                   <span>For Organizations: Partner with Us</span>
                 </h2>
                 <p>
-                  <span>Are you an aid organization fighting to end homelessness?</span>
+                  <span>Are you an aid organization fighting homelessness?</span>
                 </p>
                 <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground">Join Our Cause</a>
               </div>
