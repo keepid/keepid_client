@@ -36,19 +36,13 @@ class Header extends Component<Props, State, {}> {
 
   handleLogout(event: any) {
     const {
-      username,
-      password,
-    } = this.state;
-    fetch(`${getServerURL()}/logout`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    }).then((response) => {
-      // steffen please finish this
+      logOut,
+    } = this.props;
+    this.setState({
+      username: '',
+      password: '',
     });
+    logOut();
   }
 
   handleSubmit(event: any) {
@@ -71,8 +65,13 @@ class Header extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const { loginStatus } = responseJSON;
-        const { userRole } = responseJSON;
+        const { 
+          loginStatus,
+          userRole,
+          organization,
+          firstName,
+          lastName,
+        } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
           const role = () => {
             switch (userRole) {
@@ -82,7 +81,8 @@ class Header extends Component<Props, State, {}> {
               default: return Role.LoggedOut;
             }
           };
-          logIn(role(), username, 'Test Organization', 'Test Name'); // Change
+          console.log(responseJSON);
+          logIn(role(), username, organization, firstName + " " + lastName); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
           alert('Incorrect Password');
           this.setState({ incorrectCredentials: true });
@@ -105,7 +105,6 @@ class Header extends Component<Props, State, {}> {
 
   render() {
     const {
-      logOut,
       isLoggedIn,
       role,
     } = this.props;
@@ -152,7 +151,7 @@ class Header extends Component<Props, State, {}> {
                   </li>
                   <div className="col-auto my-1 flex-fill">
                     <Link to="/login">
-                      <button type="button" onClick={logOut} className="btn btn-primary">Log Out</button>
+                      <button type="button" onClick={this.handleLogout} className="btn btn-primary">Log Out</button>
                     </Link>
                   </div>
                 </ul>

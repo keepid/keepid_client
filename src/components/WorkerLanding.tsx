@@ -16,7 +16,14 @@ interface Props {
 
 interface State {
   clients: any,
+  numClients: number,
   firstNameSearch: string,
+  redirect: boolean,
+  redirectLink: string,
+  clientUsername: string,
+  clientPassword: string,
+  itemsPerPage: number,
+  currentPage: number,
 }
 
 const options = [
@@ -40,15 +47,31 @@ class WorkerLanding extends Component<Props, State> {
     super(props);
     this.state = {
       firstNameSearch: '',
+      redirectLink: '',
+      redirect: false,
+      clientUsername: '',
+      clientPassword: '',
+      numClients: 0,
       clients: [{
         username: '',
         firstName: '',
         lastName: '',
       }],
+      itemsPerPage: 5,
+      currentPage: 0,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchFirstName = this.handleChangeSearchFirstName.bind(this);
+    this.handleClickPrevious = this.handleClickPrevious.bind(this);
+    this.handleClickNext = this.handleClickNext.bind(this);
     this.getClients = this.getClients.bind(this);
+    this.handleChangeClientPassword = this.handleChangeClientPassword.bind(this);
+    this.handleClickUploadDocuments = this.handleClickUploadDocuments.bind(this);
+    this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
+    this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    this.handleClickSendApplication = this.handleClickSendApplication.bind(this);
+    this.handleClickAuthenticateClient = this.handleClickAuthenticateClient.bind(this);
+    this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
     this.modalRender = this.modalRender.bind(this);
   }
@@ -59,6 +82,20 @@ class WorkerLanding extends Component<Props, State> {
 
   handleChangeSearchFirstName(event: any) {
     this.setState({ firstNameSearch: event.target.value }, this.getClients);
+  }
+
+  handleClickPrevious(event: any) {
+    const {
+      currentPage,
+    } = this.state;
+    this.setState({ currentPage : currentPage - 1});
+  }
+
+  handleClickNext(event: any) {
+    const {
+      currentPage,
+    } = this.state;
+    this.setState({ currentPage : currentPage + 1});
   }
 
   getClients() {
@@ -77,10 +114,77 @@ class WorkerLanding extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        this.setState({
-          clients: responseJSON.clients,
-        });
+        const {
+          numClients,
+          memberList,
+        } = responseJSON;
+        console.log(responseJSON);
+        if (memberList) {
+          this.setState({
+            numClients,
+            clients: memberList.clients,
+          });
+        }
       });
+  }
+
+  handleClickClose(event: any) {
+    this.setState({ clientPassword: ''});
+  }
+
+  handleClickAuthenticateClient(event: any) {
+    event.preventDefault();
+    const {
+      clientUsername,
+      clientPassword,
+    } = this.state;
+
+    fetch(`${getServerURL()}/login`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username: clientUsername,
+        password: clientPassword,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const { loginStatus } = responseJSON;
+        const { userRole } = responseJSON;
+        if (loginStatus === 'AUTH_SUCCESS') {
+          //Allow worker privileges
+        } else if (loginStatus === 'AUTH_FAILURE') {
+          alert('Incorrect Password');
+        } else if (loginStatus === 'USER_NOT_FOUND') {
+          alert('Username Does Not Exist');
+        } else {
+          alert('Server Failure: Please Try Again');
+        }
+      });
+  }
+
+  handleClickUploadDocuments(event: any, client: any) {
+    this.setState({ clientUsername: client.username });
+    this.setState({ redirectLink: '/upload-document'});
+  }
+
+  handleClickViewDocuments(event: any, client: any) {
+    this.setState({ clientUsername: client.username });
+    this.setState({ redirectLink: '/my-documents'});
+  }
+
+  handleClickSendEmail(event: any, client: any) {
+    this.setState({ clientUsername: client.username });
+    this.setState({ redirectLink: '/email'});
+  }
+
+  handleClickSendApplication(event: any, client: any) {
+    this.setState({ clientUsername: client.username });
+    this.setState({ redirectLink: '/applications'});
+  }
+
+  handleChangeClientPassword(event: any) {
+    this.setState({ clientPassword: event.target.value });
   }
 
   renderClients() {
@@ -110,10 +214,38 @@ class WorkerLanding extends Component<Props, State> {
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
-              <button type="button" className="btn btn-success mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Upload Document</button>
-              <button type="button" className="btn btn-danger mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">View Documents</button>
-              <button type="button" className="btn btn-info mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Send Email</button>
-              <button type="button" className="btn btn-dark mb-2 btn-sm" data-toggle="modal" data-target="#authenticateModal">Submit Application</button>
+              <button 
+                type="button" 
+                className="btn btn-success mb-2 btn-sm" 
+                data-toggle="modal" 
+                data-target="#authenticateModal" 
+                onClick={(event) => this.handleClickUploadDocuments(event, client)}>
+                  Upload Document
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-danger mb-2 btn-sm" 
+                data-toggle="modal" 
+                data-target="#authenticateModal"
+                onClick={(event) => this.handleClickViewDocuments(event, client)} >
+                  View Documents
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-info mb-2 btn-sm" 
+                data-toggle="modal" 
+                data-target="#authenticateModal"
+                onClick={(event) => this.handleClickSendEmail(event, client)}>
+                  Send Email
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-dark mb-2 btn-sm" 
+                data-toggle="modal" 
+                data-target="#authenticateModal"
+                onClick={(event) => this.handleClickSendApplication(event, client)}>
+                  Send Application
+              </button>
             </div>
           </div>
         </div>
@@ -145,7 +277,14 @@ class WorkerLanding extends Component<Props, State> {
                       Client Username
                     </div>
                     <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id={`authenticateForm`} placeholder={`Enter Username Here`} />
+                      <input 
+                        type="text" 
+                        className="form-control form-purple" 
+                        id={`authenticateForm`} 
+                        readOnly 
+                        placeholder={`Enter Username Here`} 
+                        value={this.state.clientUsername}
+                      />
                     </div>
                   </div>
                   <div className="row mb-3 mt-3">
@@ -153,13 +292,20 @@ class WorkerLanding extends Component<Props, State> {
                       Client Password
                     </div>
                     <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here" />
+                      <input 
+                        type="password" 
+                        className="form-control form-purple" 
+                        id="passwordVerification" 
+                        placeholder="Enter Password Here"
+                        onChange={this.handleChangeClientPassword}
+                        value={this.state.clientPassword}
+                      />
                     </div>
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" className="btn btn-primary">Authenticate</button>
+                  <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.handleClickClose}>Close</button>
+                  <button type="button" className="btn btn-primary" onClick={this.handleClickAuthenticateClient}>Submit</button>
                 </div>
               </div>
             </div>
@@ -173,6 +319,13 @@ class WorkerLanding extends Component<Props, State> {
     const {
       role,
     } = this.props;
+    const {
+      itemsPerPage,
+      currentPage,
+      numClients,
+    } = this.state;
+    console.log(numClients);
+    const numPages : number = Math.floor(numClients / itemsPerPage) + 1;
     return (
       <div>
         <Helmet>
@@ -224,11 +377,11 @@ class WorkerLanding extends Component<Props, State> {
           <div className="row">
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
-                <li className="page-item"><a className="page-link" href="#">Previous</a></li>
+                {currentPage > 0 ? <li className="page-item"><a className="page-link" onClick={this.handleClickPrevious} href="#">Previous</a></li> : <div />}
                 <li className="page-item"><a className="page-link" href="#">1</a></li>
                 <li className="page-item"><a className="page-link" href="#">2</a></li>
                 <li className="page-item"><a className="page-link" href="#">3</a></li>
-                <li className="page-item"><a className="page-link" href="#">Next</a></li>
+                {currentPage < (numPages - 1) ? <li className="page-item"><a className="page-link" onClick={this.handleClickNext} href="#">Next</a></li> : <div />}
               </ul>
             </nav>
             <div className="w-25">
