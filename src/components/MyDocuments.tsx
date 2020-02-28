@@ -127,7 +127,7 @@ class MyDocuments extends Component<Props, State> {
             <div className="jumbotron-fluid mt-5">
               <h1 className="display-4">View and Print Documents</h1>
               <p className="lead pt-3">
-        You can view, edit, print, and delete your documents you currently have stored on keep.id.
+        You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
             <form className="form-inline my-2 my-lg-0">

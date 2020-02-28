@@ -250,7 +250,7 @@ class PersonSignup extends Component<Props, State, {}> {
                   {' '}
                   Signup Page
                 </h1>
-                <p className="lead">Please fill out the following form to proceed with setting up the keep.id account.</p>
+                <p className="lead">Please fill out the following form to proceed with setting up the Keep.id account.</p>
               </div>
             </div>
             <form onSubmit={this.handleSubmit}>

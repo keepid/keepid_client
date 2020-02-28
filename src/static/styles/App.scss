@@ -18,9 +18,24 @@ $theme-colors: (
 
 // import open sans
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
 
 .App {
 	font-family: 'Noto Sans', sans-serif !important;
+}
+
+.input-group-text {
+	background-color: white;
+}
+
+.navbar-brand {
+	font-family: Raleway;
+	font-weight: bold;
+	font-size: 2.25rem;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .navbar-custom {
@@ -171,10 +186,11 @@ thead {
 }
 
 .footer-brand-logo{
+	font-family: Raleway;
 	color: $footer-text-color-accent;
 	margin-top: .8rem;
 	font-weight: bold;
-	font-size: 1.45rem;
+	font-size: 2.25rem;
 	line-height: 1.3525rem;
 	text-align: left;
 }
