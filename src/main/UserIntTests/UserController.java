@@ -67,16 +67,25 @@ public class UserController {
 
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.get("privilegeLevel"));
+            res.put("organization", user.get("organization"));
+            res.put("firstName", user.get("firstName"));
+            res.put("lastName", user.get("lastName"));
             ctx.json(res.toString());
           } else {
             // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             res.put("userRole", "");
+            res.put("organization", "");
+            res.put("firstName", "");
+            res.put("lastName", "");
             ctx.json(res.toString());
           }
         } catch (Exception e) {
           res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
           res.put("userRole", "");
+          res.put("organization", "");
+          res.put("firstName", "");
+          res.put("lastName", "");
           ctx.json(res.toString());
         } finally {
           // Wipe confidential data from cache
@@ -224,6 +233,9 @@ public class UserController {
         }
 
         MongoCursor<Document> cursor = userCollection.find(filter).iterator();
+        int numClients = 0;
+        int numAdmins = 0;
+        int numWorkers = 0;
         while (cursor.hasNext()) {
           System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
@@ -238,10 +250,13 @@ public class UserController {
 
           if (userType.equals("admin")) {
             admins.put(userFirstLast);
+            numAdmins += 1;
           } else if (userType.equals("worker")) {
             workers.put(userFirstLast);
+            numWorkers += 1;
           } else if (userType.equals("client")) {
             clients.put(userFirstLast);
+            numClients += 1;
           }
         }
 
@@ -258,7 +273,12 @@ public class UserController {
           }
         }
 
-        ctx.json(memberList.toString());
+        JSONObject response = new JSONObject();
+        response.put("memberList", memberList);
+        response.put("numClients", numClients);
+        response.put("numAdmins", numAdmins);
+        response.put("numWorkers", numWorkers);
+        ctx.json(response.toString());
       };
 
   public Handler modifyPermissions =
