@@ -169,13 +169,15 @@ class PersonSignup extends Component<Props, State, {}> {
       personLastName,
       personBirthDate,
     } = this.state;
+    const personFirstNameNew = personFirstName.replace(/ /g, "-");
+    const personLastNameNew = personLastName.replace(/ /g, "-");
     if (personBirthDate) {
       const personBirthMonth = personBirthDate.getMonth() + 1;
       const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
       const personBirthDay = personBirthDate.getDate();
       const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
       const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${personBirthDate.getFullYear()}`;
-      const personUsername = `${personFirstName.toLowerCase()}-${personLastName.toLowerCase()}-${personBirthDateFormatted}`;
+      const personUsername = `${personFirstNameNew.toUpperCase()}-${personLastNameNew.toUpperCase()}-${personBirthDateFormatted}`;
       this.setState({ personUsername });
     }
   }

@@ -22,7 +22,7 @@ interface State {
   redirectLink: string,
   clientUsername: string,
   clientPassword: string,
-  itemsPerPage: number,
+  itemsPerPageSelected: any,
   currentPage: number,
 }
 
@@ -34,6 +34,7 @@ const options = [
 
 
 const listOptions = [
+  { value: '5',  label: '5'  },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
   { value: '50', label: '50' },
@@ -57,11 +58,13 @@ class WorkerLanding extends Component<Props, State> {
         firstName: '',
         lastName: '',
       }],
-      itemsPerPage: 5,
+      itemsPerPageSelected: listOptions[0],
       currentPage: 0,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchFirstName = this.handleChangeSearchFirstName.bind(this);
+    this.handleClickToPage = this.handleClickToPage.bind(this);
+    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
     this.handleClickPrevious = this.handleClickPrevious.bind(this);
     this.handleClickNext = this.handleClickNext.bind(this);
     this.getClients = this.getClients.bind(this);
@@ -81,33 +84,52 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleChangeSearchFirstName(event: any) {
-    this.setState({ firstNameSearch: event.target.value }, this.getClients);
+    this.setState({ 
+      firstNameSearch: event.target.value,
+      currentPage : 0,
+    }, this.getClients);
+  }
+
+  handleClickToPage(index: number) {
+    this.setState({ currentPage : index - 1 }, this.getClients);
   }
 
   handleClickPrevious(event: any) {
     const {
       currentPage,
     } = this.state;
-    this.setState({ currentPage : currentPage - 1});
+    this.setState({ currentPage : currentPage - 1}, this.getClients);
   }
 
   handleClickNext(event: any) {
     const {
       currentPage,
     } = this.state;
-    this.setState({ currentPage : currentPage + 1});
+    this.setState({ currentPage : currentPage + 1}, this.getClients);
+  }
+
+  handleChangeItemsPerPage(itemsPerPageSelected: any) {
+    this.setState({ 
+      itemsPerPageSelected,
+      currentPage : 0,
+    }, this.getClients);
   }
 
   getClients() {
     const {
       firstNameSearch,
+      currentPage,
+      itemsPerPageSelected,
     } = this.state;
     console.log(firstNameSearch);
+    const itemsPerPage = parseInt(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         listType: 'clients',
+        currentPage,
+        itemsPerPage,
         firstName: firstNameSearch,
         lastName: '',
       }),
@@ -118,7 +140,7 @@ class WorkerLanding extends Component<Props, State> {
           numClients,
           memberList,
         } = responseJSON;
-        console.log(responseJSON);
+        console.log(numClients);
         if (memberList) {
           this.setState({
             numClients,
@@ -202,7 +224,10 @@ class WorkerLanding extends Component<Props, State> {
                 {' '}
                 {client.lastName}
               </h5>
-              <h6 className="card-subtitle mb-2 text-muted">Email, Phone #, Address, etc.</h6>
+              <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
+              <h6 className="card-subtitle mb-2 text-muted">#{client.phone}</h6>
+              <h6 className="card-subtitle mb-2 text-muted">{client.address}</h6>
+              <h6 className="card-subtitle mb-2 text-muted">{client.city}{', '}{client.state}{' '}{client.zipcode}</h6>
               <p className="card-text">Some information about the client here.</p>
               <a href="#" className="card-link">Client Profile</a>
             </div>
@@ -320,12 +345,16 @@ class WorkerLanding extends Component<Props, State> {
       role,
     } = this.props;
     const {
-      itemsPerPage,
+      itemsPerPageSelected,
       currentPage,
       numClients,
     } = this.state;
-    console.log(numClients);
+    const itemsPerPage = parseInt(itemsPerPageSelected.value);
     const numPages : number = Math.floor(numClients / itemsPerPage) + 1;
+    let numPagesArray : number[] = [];
+    for (let i = 1; i <= numPages; i++) {
+      numPagesArray.push(i);
+    }
     return (
       <div>
         <Helmet>
@@ -378,9 +407,7 @@ class WorkerLanding extends Component<Props, State> {
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
                 {currentPage > 0 ? <li className="page-item"><a className="page-link" onClick={this.handleClickPrevious} href="#">Previous</a></li> : <div />}
-                <li className="page-item"><a className="page-link" href="#">1</a></li>
-                <li className="page-item"><a className="page-link" href="#">2</a></li>
-                <li className="page-item"><a className="page-link" href="#">3</a></li>
+                {numPagesArray.map((index) => <li className="page-item"><a className="page-link" onClick={(event) => this.handleClickToPage(index)} href="#">{index}</a></li>)}
                 {currentPage < (numPages - 1) ? <li className="page-item"><a className="page-link" onClick={this.handleClickNext} href="#">Next</a></li> : <div />}
               </ul>
             </nav>
@@ -391,7 +418,8 @@ class WorkerLanding extends Component<Props, State> {
                   options={listOptions}
                   autoFocus
                   closeMenuOnSelect={false}
-                  defaultValue={listOptions[0]}
+                  onChange={this.handleChangeItemsPerPage}
+                  value={itemsPerPageSelected}
                 />
               </div>
             </div>
