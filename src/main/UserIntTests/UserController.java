@@ -165,10 +165,10 @@ public class UserController {
                   .append("organization", sessionOrg)
                   .append("email", email)
                   .append("phone", phonenumber)
-                  .append("firstName", firstName)
-                  .append("lastName", lastName)
-                  .append("address", address)
-                  .append("city", city)
+                  .append("firstName", firstName.toUpperCase())
+                  .append("lastName", lastName.toUpperCase())
+                  .append("address", address.toUpperCase())
+                  .append("city", city.toUpperCase())
                   .append("state", state)
                   .append("zipcode", zipcode)
                   .append("privilegeLevel", userLevel)
@@ -196,6 +196,10 @@ public class UserController {
         String firstNameSearch = req.getString("firstName").trim();
         String lastNameSearch = req.getString("lastName").trim();
         String listType = req.getString("listType");
+        int currentPage = req.getInt("currentPage");
+        int itemsPerPage = req.getInt("itemsPerPage");
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = (currentPage + 1) * itemsPerPage;
 
         if (privilegeLevel == null || orgName == null) {
           JSONObject response = new JSONObject();
@@ -243,33 +247,51 @@ public class UserController {
 
           System.out.println(userType);
 
-          JSONObject userFirstLast = new JSONObject();
-          userFirstLast.put("username", doc.get("username").toString());
-          userFirstLast.put("firstName", doc.get("firstName").toString());
-          userFirstLast.put("lastName", doc.get("lastName").toString());
+          JSONObject user = new JSONObject();
+          user.put("username", doc.get("username").toString());
+          user.put("firstName", doc.get("firstName").toString());
+          user.put("lastName", doc.get("lastName").toString());
+          user.put("email", doc.get("email").toString());
+          user.put("phone", doc.get("phone").toString());
+          user.put("address", doc.get("address").toString());
+          user.put("city", doc.get("city").toString());
+          user.put("state", doc.get("state").toString());
+          user.put("zipcode", doc.get("zipcode").toString());
 
           if (userType.equals("admin")) {
-            admins.put(userFirstLast);
+            admins.put(user);
             numAdmins += 1;
           } else if (userType.equals("worker")) {
-            workers.put(userFirstLast);
+            workers.put(user);
             numWorkers += 1;
           } else if (userType.equals("client")) {
-            clients.put(userFirstLast);
+            clients.put(user);
             numClients += 1;
           }
         }
 
-        if (privilegeLevel.equals("worker")) {
-          memberList.put("clients", clients);
+        if (privilegeLevel.equals("worker")
+            || (privilegeLevel.equals("admin") && listType.equals("clients"))) {
+          JSONArray clientPage = new JSONArray();
+          if (startIndex >= 0 && endIndex <= clients.length()) {
+            for (int i = startIndex; i < endIndex; i++) {
+              clientPage.put(clients.get(i));
+            }
+          } else if (startIndex >= 0
+              && endIndex > clients.length()
+              && clients.length() > startIndex) {
+            endIndex = clients.length();
+            for (int i = startIndex; i < endIndex; i++) {
+              clientPage.put(clients.get(i));
+            }
+          }
+          memberList.put("clients", clientPage);
         } else if (privilegeLevel.equals("admin")) {
           System.out.println("LIST TYPE");
           System.out.println(listType);
           if (listType.equals("members")) {
             memberList.put("admins", admins);
             memberList.put("workers", workers);
-          } else if (listType.equals("clients")) {
-            memberList.put("clients", clients);
           }
         }
 
