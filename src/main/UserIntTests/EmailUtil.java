@@ -20,33 +20,36 @@ public class EmailUtil {
             MessagingException, UnsupportedEncodingException {
 
         // sets SMTP server properties
-        Properties properties = new Properties();
+        Properties properties = System.getProperties();
         properties.put("mail.smtp.host", host);
         properties.put("mail.smtp.port", port);
         properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-
-        // creates a new session with an authenticator
-        Authenticator auth = new Authenticator() {
-            public PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, password);
-            }
-        };
-
-        Session session = Session.getInstance(properties, auth);
-
+        properties.put("mail.smtp.starttls.enable", "true");// creates a new session with an authenticator
+        Session session = Session.getDefaultInstance(properties,
+                new javax.mail.Authenticator(){
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(
+                                senderEmail, password);// Specify the Username and the PassWord
+                    }
+                });
         // creates a new e-mail message
-        Message msg = new MimeMessage(session);
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(senderEmail, senderName));
+            InternetAddress[] toAddresses = { new InternetAddress(recipientEmail) };
+            msg.setRecipients(Message.RecipientType.TO, toAddresses);
+            msg.setSubject(subject);
+            msg.setSentDate(new Date());
+            msg.setText(message);
 
-        msg.setFrom(new InternetAddress(senderEmail, senderName));
-        InternetAddress[] toAddresses = { new InternetAddress(recipientEmail) };
-        msg.setRecipients(Message.RecipientType.TO, toAddresses);
-        msg.setSubject(subject);
-        msg.setSentDate(new Date());
-        msg.setText(message);
+            // sends the e-mail
+            Transport.send(msg);
+        }
+        catch (MessagingException e){
+            e.printStackTrace();
+        }
 
-        // sends the e-mail
-        Transport.send(msg);
+
 
     }
 }
