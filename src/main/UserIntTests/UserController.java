@@ -15,8 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
@@ -193,8 +192,8 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
-        String firstNameSearch = req.getString("firstName").trim();
-        String lastNameSearch = req.getString("lastName").trim();
+        String nameSearch = req.getString("name").trim();
+        String[] nameSearchSplit = nameSearch.split(" ");
         String listType = req.getString("listType");
         int currentPage = req.getInt("currentPage");
         int itemsPerPage = req.getInt("itemsPerPage");
@@ -228,10 +227,13 @@ public class UserController {
         Bson orgNameMatch = eq("organization", orgName);
         Bson filter;
 
-        if (!firstNameSearch.contentEquals("") || !lastNameSearch.contentEquals("")) {
-          Bson firstNameMatch = regex("firstName", firstNameSearch, "i");
-          Bson lastNameMatch = regex("lastName", lastNameSearch, "i");
-          filter = combine(orgNameMatch, firstNameMatch, lastNameMatch);
+        if (!nameSearch.contentEquals("")) {
+          filter = regex("firstName", nameSearchSplit[0], "i");
+          filter = or(filter, regex("lastName", nameSearchSplit[0], "i"));
+          for (int i = 1; i < nameSearchSplit.length; i++) {
+            filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
+            filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
+          }
         } else {
           filter = orgNameMatch;
         }
