@@ -65,9 +65,7 @@ class ClientLanding extends Component<{}, State, {}> {
               <div className="rectangle mt-5">
                 <img className="normalImage" src={RequestSVG} alt="Request" />
                 <p className="textLanding mt-3 pt-4">
-                  Some Other
-                  <br />
-                  Functionality Here
+                  Request Documents
                 </p>
               </div>
             </Link>
