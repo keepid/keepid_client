@@ -17,7 +17,7 @@ interface Props {
 interface State {
   clients: any,
   numClients: number,
-  firstNameSearch: string,
+  nameSearch: string,
   redirect: boolean,
   redirectLink: string,
   clientUsername: string,
@@ -40,6 +40,8 @@ const listOptions = [
   { value: '50', label: '50' },
 ];
 
+const numPagesCap = 10;
+
 
 const animatedComponents = makeAnimated();
 
@@ -47,7 +49,7 @@ class WorkerLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      firstNameSearch: '',
+      nameSearch: '',
       redirectLink: '',
       redirect: false,
       clientUsername: '',
@@ -62,7 +64,7 @@ class WorkerLanding extends Component<Props, State> {
       currentPage: 0,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
-    this.handleChangeSearchFirstName = this.handleChangeSearchFirstName.bind(this);
+    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
     this.handleClickToPage = this.handleClickToPage.bind(this);
     this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
     this.handleClickPrevious = this.handleClickPrevious.bind(this);
@@ -83,9 +85,9 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients();
   }
 
-  handleChangeSearchFirstName(event: any) {
+  handleChangeSearchName(event: any) {
     this.setState({ 
-      firstNameSearch: event.target.value,
+      nameSearch: event.target.value,
       currentPage : 0,
     }, this.getClients);
   }
@@ -117,11 +119,11 @@ class WorkerLanding extends Component<Props, State> {
 
   getClients() {
     const {
-      firstNameSearch,
+      nameSearch,
       currentPage,
       itemsPerPageSelected,
     } = this.state;
-    console.log(firstNameSearch);
+    console.log(nameSearch);
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
@@ -130,7 +132,7 @@ class WorkerLanding extends Component<Props, State> {
         listType: 'clients',
         currentPage,
         itemsPerPage,
-        firstName: firstNameSearch,
+        name: nameSearch,
         lastName: '',
       }),
     }).then((res) => res.json())
@@ -350,7 +352,7 @@ class WorkerLanding extends Component<Props, State> {
       numClients,
     } = this.state;
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
-    const numPages : number = Math.floor(numClients / itemsPerPage) + 1;
+    const numPages : number = Math.floor((numClients - 1) / itemsPerPage) + 1;
     let numPagesArray : number[] = [];
     for (let i = 1; i <= numPages; i++) {
       numPagesArray.push(i);
@@ -370,9 +372,9 @@ class WorkerLanding extends Component<Props, State> {
                 <input
                   className="form-control mr-2 w-75"
                   type="text"
-                  onChange={this.handleChangeSearchFirstName}
-                  value={this.state.firstNameSearch}
-                  placeholder="Search First Name"
+                  onChange={this.handleChangeSearchName}
+                  value={this.state.nameSearch}
+                  placeholder="Search Name"
                   aria-label="Search"
                 />
                 <img
