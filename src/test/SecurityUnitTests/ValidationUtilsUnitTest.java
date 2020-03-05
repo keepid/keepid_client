@@ -1,10 +1,10 @@
 package SecurityUnitTests;
 
-import Security.ValidationUtils;
-import org.junit.Test;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import Security.ValidationUtils;
+import org.junit.Test;
 
 public class ValidationUtilsUnitTest {
 
@@ -40,6 +40,19 @@ public class ValidationUtilsUnitTest {
     assertFalse(ValidationUtils.isValidZipCode("    "));
     assertFalse(ValidationUtils.isValidZipCode(""));
     assertFalse(ValidationUtils.isValidZipCode(null));
+  }
+
+  @Test
+  public void USStateTest() {
+    assertTrue(ValidationUtils.isValidUSState("IL"));
+    assertTrue(ValidationUtils.isValidUSState("PA"));
+    assertTrue(ValidationUtils.isValidUSState("WA"));
+    assertFalse(ValidationUtils.isValidUSState("1-6789"));
+    assertFalse(ValidationUtils.isValidUSState("XJ"));
+    assertFalse(ValidationUtils.isValidUSState("<script>"));
+    assertFalse(ValidationUtils.isValidUSState("    "));
+    assertFalse(ValidationUtils.isValidUSState(""));
+    assertFalse(ValidationUtils.isValidUSState(null));
   }
 
   @Test
@@ -81,20 +94,5 @@ public class ValidationUtilsUnitTest {
     assertFalse(ValidationUtils.isValidOrgWebsite("    "));
     assertFalse(ValidationUtils.isValidOrgWebsite(""));
     assertFalse(ValidationUtils.isValidOrgWebsite(null));
-  }
-
-  @Test
-  public void validNumUsers() {
-    assertTrue(ValidationUtils.isValidNumUsers("5"));
-    assertTrue(ValidationUtils.isValidNumUsers("10"));
-    assertTrue(ValidationUtils.isValidNumUsers("100000"));
-    assertTrue(ValidationUtils.isValidNumUsers("0"));
-    assertFalse(ValidationUtils.isValidNumUsers(""));
-    assertFalse(ValidationUtils.isValidNumUsers("1.122"));
-    assertFalse(ValidationUtils.isValidNumUsers("pi"));
-    assertFalse(ValidationUtils.isValidNumUsers("1000000000000000000000000000"));
-    assertFalse(ValidationUtils.isValidNumUsers("    "));
-    assertFalse(ValidationUtils.isValidNumUsers(""));
-    assertFalse(ValidationUtils.isValidNumUsers(null));
   }
 }
