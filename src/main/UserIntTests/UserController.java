@@ -19,6 +19,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
+
 public class UserController {
   Logger logger;
   MongoDatabase db;
@@ -66,16 +70,25 @@ public class UserController {
 
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.get("privilegeLevel"));
+            res.put("organization", user.get("organization"));
+            res.put("firstName", user.get("firstName"));
+            res.put("lastName", user.get("lastName"));
             ctx.json(res.toString());
           } else {
             // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             res.put("userRole", "");
+            res.put("organization", "");
+            res.put("firstName", "");
+            res.put("lastName", "");
             ctx.json(res.toString());
           }
         } catch (Exception e) {
           res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
           res.put("userRole", "");
+          res.put("organization", "");
+          res.put("firstName", "");
+          res.put("lastName", "");
           ctx.json(res.toString());
         } finally {
           // Wipe confidential data from cache
@@ -155,10 +168,10 @@ public class UserController {
                   .append("organization", sessionOrg)
                   .append("email", email)
                   .append("phone", phonenumber)
-                  .append("firstName", firstName)
-                  .append("lastName", lastName)
-                  .append("address", address)
-                  .append("city", city)
+                  .append("firstName", firstName.toUpperCase())
+                  .append("lastName", lastName.toUpperCase())
+                  .append("address", address.toUpperCase())
+                  .append("city", city.toUpperCase())
                   .append("state", state)
                   .append("zipcode", zipcode)
                   .append("privilegeLevel", userLevel)
@@ -183,7 +196,13 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
+        String nameSearch = req.getString("name").trim();
+        String[] nameSearchSplit = nameSearch.split(" ");
         String listType = req.getString("listType");
+        int currentPage = req.getInt("currentPage");
+        int itemsPerPage = req.getInt("itemsPerPage");
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = (currentPage + 1) * itemsPerPage;
 
         if (privilegeLevel == null || orgName == null) {
           JSONObject response = new JSONObject();
@@ -209,7 +228,24 @@ public class UserController {
         MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
         MongoCollection<Document> userCollection = database.getCollection("user");
 
-        MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
+        Bson orgNameMatch = eq("organization", orgName);
+        Bson filter;
+
+        if (!nameSearch.contentEquals("")) {
+          filter = regex("firstName", nameSearchSplit[0], "i");
+          filter = or(filter, regex("lastName", nameSearchSplit[0], "i"));
+          for (int i = 1; i < nameSearchSplit.length; i++) {
+            filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
+            filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
+          }
+        } else {
+          filter = orgNameMatch;
+        }
+
+        MongoCursor<Document> cursor = userCollection.find(filter).iterator();
+        int numClients = 0;
+        int numAdmins = 0;
+        int numWorkers = 0;
         while (cursor.hasNext()) {
           System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
@@ -217,34 +253,60 @@ public class UserController {
 
           System.out.println(userType);
 
-          JSONObject userFirstLast = new JSONObject();
-          userFirstLast.put("username", doc.get("username").toString());
-          userFirstLast.put("firstName", doc.get("firstName").toString());
-          userFirstLast.put("lastName", doc.get("lastName").toString());
+          JSONObject user = new JSONObject();
+          user.put("username", doc.get("username").toString());
+          user.put("firstName", doc.get("firstName").toString());
+          user.put("lastName", doc.get("lastName").toString());
+          user.put("email", doc.get("email").toString());
+          user.put("phone", doc.get("phone").toString());
+          user.put("address", doc.get("address").toString());
+          user.put("city", doc.get("city").toString());
+          user.put("state", doc.get("state").toString());
+          user.put("zipcode", doc.get("zipcode").toString());
 
           if (userType.equals("admin")) {
-            admins.put(userFirstLast);
+            admins.put(user);
+            numAdmins += 1;
           } else if (userType.equals("worker")) {
-            workers.put(userFirstLast);
+            workers.put(user);
+            numWorkers += 1;
           } else if (userType.equals("client")) {
-            clients.put(userFirstLast);
+            clients.put(user);
+            numClients += 1;
           }
         }
 
-        if (privilegeLevel.equals("worker")) {
-          memberList.put("clients", clients);
+        if (privilegeLevel.equals("worker")
+            || (privilegeLevel.equals("admin") && listType.equals("clients"))) {
+          JSONArray clientPage = new JSONArray();
+          if (startIndex >= 0 && endIndex <= clients.length()) {
+            for (int i = startIndex; i < endIndex; i++) {
+              clientPage.put(clients.get(i));
+            }
+          } else if (startIndex >= 0
+              && endIndex > clients.length()
+              && clients.length() > startIndex) {
+            endIndex = clients.length();
+            for (int i = startIndex; i < endIndex; i++) {
+              clientPage.put(clients.get(i));
+            }
+          }
+          memberList.put("clients", clientPage);
         } else if (privilegeLevel.equals("admin")) {
           System.out.println("LIST TYPE");
           System.out.println(listType);
           if (listType.equals("members")) {
             memberList.put("admins", admins);
             memberList.put("workers", workers);
-          } else if (listType.equals("clients")) {
-            memberList.put("clients", clients);
           }
         }
 
-        ctx.json(memberList.toString());
+        JSONObject response = new JSONObject();
+        response.put("memberList", memberList);
+        response.put("numClients", numClients);
+        response.put("numAdmins", numAdmins);
+        response.put("numWorkers", numWorkers);
+        ctx.json(response.toString());
       };
 
   public Handler modifyPermissions =
