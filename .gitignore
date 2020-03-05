@@ -33,3 +33,4 @@ log.txt
 session-store
 ./session-store
 session-store*
+session-store/*
