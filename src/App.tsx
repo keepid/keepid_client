@@ -29,7 +29,6 @@ import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
 import WorkerLanding from './components/WorkerLanding';
 import getServerURL from './serverOverride';
-import { withAlert } from 'react-alert'
 
 interface State {
   role: Role,
@@ -99,7 +98,7 @@ class App extends React.Component<{}, State, {}> {
             <Route
               path="/home"
               render={() => {
-                if (role === Role.Admin || role === Role.HeadAdmin || role == Role.Worker) {
+                if (role === Role.Admin || role === Role.HeadAdmin || role === Role.Worker) {
                   return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                 }
                 if (role === Role.Client) {

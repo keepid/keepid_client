@@ -37,21 +37,21 @@ class OurTeam extends React.Component<{}, State> {
             <img src={SteffenJPG} className="card-img-top" alt="..." />
             <div className="card-body">
               <h5 className="card-title">Steffen Cornwell</h5>
-              <p className="card-text">Developer at Keep.id. Serves as the product's front end lead.</p>
+              <p className="card-text">Developer at Keep.id. Serves as the product&apos;s front end lead.</p>
             </div>
           </div>
           <div className="card member-card m-3">
             <img src={GregJPG} className="card-img-top" alt="..." />
             <div className="card-body">
               <h5 className="card-title">Gregory Koffman</h5>
-              <p className="card-text">Developer at Keep.id. Serves as the product's back end and database lead.</p>
+              <p className="card-text">Developer at Keep.id. Serves as the product&apos;s back end and database lead.</p>
             </div>
           </div>
           <div className="card member-card m-3">
             <img src={JamesJPG} className="card-img-top" alt="..." />
             <div className="card-body">
               <h5 className="card-title">James Bigbee</h5>
-              <p className="card-text">Developer at Keep.id. Serves as the product's security lead.</p>
+              <p className="card-text">Developer at Keep.id. Serves as the product&apos;s security lead.</p>
             </div>
           </div>
           <div className="card member-card m-3">
@@ -59,13 +59,6 @@ class OurTeam extends React.Component<{}, State> {
             <div className="card-body">
               <h5 className="card-title">Matthew Copeland</h5>
               <p className="card-text">Legal advisor in the University of Pennsylvania Law School and HIPAA Specialist.</p>
-            </div>
-          </div>
-          <div className="card member-card m-3">
-            <img src="..." className="card-img-top" alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Mike Dahl</h5>
-              <p className="card-text">Broad Street Ministries Advisor</p>
             </div>
           </div>
         </div>

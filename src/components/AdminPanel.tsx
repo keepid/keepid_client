@@ -226,7 +226,7 @@ class AdminPanel extends Component<Props, State> {
           <div className="container">
             <h1 className="display-7">{organization}</h1>
             <p className="lead">
-              {"Welcome "}
+              {'Welcome '}
               {adminName}
               .
             </p>

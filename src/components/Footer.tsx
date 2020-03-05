@@ -5,17 +5,7 @@ import Email from '../static/images/email-2.svg';
 import FacebookLogo from '../static/images/fb-logo.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 
-interface Props {
-}
-
-interface State {
-}
-
-class Footer extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-  }
-
+class Footer extends Component<{}, {}> {
   render() {
     return (
       <footer className="footer custom-footer-color">

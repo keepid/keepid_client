@@ -1,22 +1,15 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 
-interface State {
-    show: boolean
-}
-
 const editData = {
   firstName: 'First Name',
   lastName: 'Last Name',
   email: 'Email',
 };
 
-class MyAccount extends Component<{}, State, {}> {
+class MyAccount extends Component<{}, {}, {}> {
   constructor(props: Readonly<{}>) {
     super(props);
-    this.state = {
-      show: false,
-    };
     this.modalRender = this.modalRender.bind(this);
   }
 
@@ -27,50 +20,52 @@ class MyAccount extends Component<{}, State, {}> {
   modalRender() {
     const allModals: React.ReactFragment[] = [];
     for (const field in editData) {
-      console.log(`${field}, ${editData[field]}`);
-      allModals.push(
-        <React.Fragment key={field}>
-          <div className="modal fade" id={`${field}Modal`} role="dialog" aria-labelledby={`${field}Modal`} aria-hidden="true">
-            <div className="modal-dialog modal-dialog-centered" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">
-Edit
-                    {editData[field]}
-                  </h5>
-                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="row mb-3 mt-3">
-                    <div className="col card-text mt-2">
-                      Enter New
-                      {' '}
+      if ({}.hasOwnProperty.call(editData, field)) {
+        // console.log(`${field}, ${editData[field]}`);
+        allModals.push(
+          <React.Fragment key={field}>
+            <div className="modal fade" id={`${field}Modal`} role="dialog" aria-labelledby={`${field}Modal`} aria-hidden="true">
+              <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+  Edit
                       {editData[field]}
+                    </h5>
+                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="row mb-3 mt-3">
+                      <div className="col card-text mt-2">
+                        Enter New
+                        {' '}
+                        {editData[field]}
+                      </div>
+                      <div className="col-6 card-text">
+                        <input type="text" className="form-control form-purple" id={`${field}Form`} placeholder={`Enter ${editData[field]} Here`} />
+                      </div>
                     </div>
-                    <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id={`${field}Form`} placeholder={`Enter ${editData[field]} Here`} />
+                    <div className="row mb-3 mt-3">
+                      <div className="col card-text mt-2">
+                        Enter Your Password
+                      </div>
+                      <div className="col-6 card-text">
+                        <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here" />
+                      </div>
                     </div>
                   </div>
-                  <div className="row mb-3 mt-3">
-                    <div className="col card-text mt-2">
-                      Enter Your Password
-                    </div>
-                    <div className="col-6 card-text">
-                      <input type="text" className="form-control form-purple" id="passwordVerification" placeholder="Enter Password Here" />
-                    </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" className="btn btn-primary">Save changes</button>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" className="btn btn-primary">Save changes</button>
                 </div>
               </div>
             </div>
-          </div>
-        </React.Fragment>,
-      );
+          </React.Fragment>,
+        );
+      }
     }
     return (
       <div>
@@ -80,9 +75,6 @@ Edit
   }
 
   render() {
-    const {
-      show,
-    } = this.state;
     return (
       <div className="container">
         <Helmet>

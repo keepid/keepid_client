@@ -5,10 +5,6 @@ import BSMJPG from '../static/images/bsm.jpg';
 interface State {}
 
 class OurPartners extends React.Component<{}, State> {
-  constructor(props: any) {
-    super(props);
-  }
-
   render() {
     return (
       <div className="container">

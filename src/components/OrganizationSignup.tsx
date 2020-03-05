@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { withAlert } from 'react-alert';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
-import { withAlert } from "react-alert";
 
 interface Props {
   alert: any
@@ -14,7 +14,6 @@ interface Props {
 interface State {
   submitSuccessful: boolean,
   organizationName: string,
-  organizationStatus: string,
   organizationWebsite: string,
   organizationEIN: string,
   firstName: string,
@@ -39,7 +38,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.state = {
       submitSuccessful: false,
       organizationName: '',
-      organizationStatus: '', // 501c3, etc.
       organizationWebsite: 'http://',
       organizationEIN: '',
       firstName: '',
@@ -55,11 +53,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
       confirmPassword: '',
       acceptEULA: false,
       reaffirmStage: false,
-      isCaptchaFilled: false
+      isCaptchaFilled: false,
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
-    this.handleChangeOrganizationStatus = this.handleChangeOrganizationStatus.bind(this);
     this.handleChangeOrganizationWebsite = this.handleChangeOrganizationWebsite.bind(this);
     this.handleChangeOrganizationEIN = this.handleChangeOrganizationEIN.bind(this);
     this.handleChangeFirstName = this.handleChangeFirstName.bind(this);
@@ -80,7 +77,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
 
   captchaVerify(value) {
     console.log('Captcha value:', value);
-    this.setState({ isCaptchaFilled: true});
+    this.setState({ isCaptchaFilled: true });
   }
 
   handleSubmit(event: any) {
@@ -90,7 +87,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
       lastName,
       contactPhoneNumber,
       organizationName,
-      organizationStatus,
       contactEmail,
       username,
       password,
@@ -114,7 +110,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
           lastName,
           phone: contactPhoneNumber,
           orgName: organizationName,
-          orgStatus: organizationStatus,
           email: contactEmail,
           username,
           password,
@@ -122,7 +117,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           city: organizationAddressCity,
           state: organizationAddressState,
           zipcode: organizationAddressZipcode,
-          taxCode: organizationEIN
+          taxCode: organizationEIN,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -143,10 +138,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
 
   handleChangeOrganizationName(event: any) {
     this.setState({ organizationName: event.target.value });
-  }
-
-  handleChangeOrganizationStatus(event: any) {
-    this.setState({ organizationStatus: event.target.value });
   }
 
   handleChangeOrganizationWebsite(event: any) {
@@ -226,7 +217,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
       lastName,
       contactPhoneNumber,
       organizationName,
-      organizationStatus,
       contactEmail,
       username,
       password,
@@ -349,7 +339,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                       State
                       <span className="red-star">*</span>
                       <select disabled={reaffirmStage} className="form-control form-purple" id="inputState" value={organizationAddressState} onChange={this.handleChangeOrganizationAddressState} required>
-                        {USStates.map((USState) => (<option>{USState.abbreviation}</option>))}
+                        {USStates.map((USState) => (<option key={USState.abbreviation}>{USState.abbreviation}</option>))}
                       </select>
                     </label>
                   </div>

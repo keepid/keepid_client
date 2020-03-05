@@ -3,13 +3,12 @@ import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { withAlert } from 'react-alert';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
-import { withAlert } from "react-alert";
 
 interface Props {
-  userRole: Role,
   personRole: Role,
   alert: any
 }
@@ -71,7 +70,6 @@ class PersonSignup extends Component<Props, State, {}> {
   handleSubmit(event: any) {
     event.preventDefault();
     const {
-      userRole,
       personRole,
     } = this.props;
     const {
@@ -167,8 +165,8 @@ class PersonSignup extends Component<Props, State, {}> {
       personLastName,
       personBirthDate,
     } = this.state;
-    const personFirstNameNew = personFirstName.replace(/ /g, "-");
-    const personLastNameNew = personLastName.replace(/ /g, "-");
+    const personFirstNameNew = personFirstName.replace(/ /g, '-');
+    const personLastNameNew = personLastName.replace(/ /g, '-');
     if (personBirthDate) {
       const personBirthMonth = personBirthDate.getMonth() + 1;
       const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
@@ -194,7 +192,6 @@ class PersonSignup extends Component<Props, State, {}> {
 
   render() {
     const {
-      userRole,
       personRole,
     } = this.props;
 

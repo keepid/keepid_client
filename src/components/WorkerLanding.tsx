@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import { withAlert } from 'react-alert';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
 import getServerURL from '../serverOverride';
-import { withAlert } from "react-alert";
 
 interface Props {
   username: string,
@@ -36,7 +36,7 @@ const options = [
 
 
 const listOptions = [
-  { value: '5',  label: '5'  },
+  { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
   { value: '50', label: '50' },
@@ -88,34 +88,34 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleChangeSearchName(event: any) {
-    this.setState({ 
+    this.setState({
       nameSearch: event.target.value,
-      currentPage : 0,
+      currentPage: 0,
     }, this.getClients);
   }
 
   handleClickToPage(index: number) {
-    this.setState({ currentPage : index - 1 }, this.getClients);
+    this.setState({ currentPage: index - 1 }, this.getClients);
   }
 
   handleClickPrevious(event: any) {
     const {
       currentPage,
     } = this.state;
-    this.setState({ currentPage : currentPage - 1}, this.getClients);
+    this.setState({ currentPage: currentPage - 1 }, this.getClients);
   }
 
   handleClickNext(event: any) {
     const {
       currentPage,
     } = this.state;
-    this.setState({ currentPage : currentPage + 1}, this.getClients);
+    this.setState({ currentPage: currentPage + 1 }, this.getClients);
   }
 
   handleChangeItemsPerPage(itemsPerPageSelected: any) {
-    this.setState({ 
+    this.setState({
       itemsPerPageSelected,
-      currentPage : 0,
+      currentPage: 0,
     }, this.getClients);
   }
 
@@ -155,7 +155,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickClose(event: any) {
-    this.setState({ clientPassword: ''});
+    this.setState({ clientPassword: '' });
   }
 
   handleClickAuthenticateClient(event: any) {
@@ -176,9 +176,8 @@ class WorkerLanding extends Component<Props, State> {
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
         const { loginStatus } = responseJSON;
-        const { userRole } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
-          //Allow worker privileges
+          // Allow worker privileges
         } else if (loginStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
         } else if (loginStatus === 'USER_NOT_FOUND') {
@@ -191,22 +190,22 @@ class WorkerLanding extends Component<Props, State> {
 
   handleClickUploadDocuments(event: any, client: any) {
     this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/upload-document'});
+    this.setState({ redirectLink: '/upload-document' });
   }
 
   handleClickViewDocuments(event: any, client: any) {
     this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/my-documents'});
+    this.setState({ redirectLink: '/my-documents' });
   }
 
   handleClickSendEmail(event: any, client: any) {
     this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/email'});
+    this.setState({ redirectLink: '/email' });
   }
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/applications'});
+    this.setState({ redirectLink: '/applications' });
   }
 
   handleChangeClientPassword(event: any) {
@@ -229,11 +228,20 @@ class WorkerLanding extends Component<Props, State> {
                 {client.lastName}
               </h5>
               <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
-              <h6 className="card-subtitle mb-2 text-muted">#{client.phone}</h6>
+              <h6 className="card-subtitle mb-2 text-muted">
+#
+                {client.phone}
+              </h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.address}</h6>
-              <h6 className="card-subtitle mb-2 text-muted">{client.city}{', '}{client.state}{' '}{client.zipcode}</h6>
+              <h6 className="card-subtitle mb-2 text-muted">
+                {client.city}
+                {', '}
+                {client.state}
+                {' '}
+                {client.zipcode}
+              </h6>
               <p className="card-text">Some information about the client here.</p>
-              <a href="#" className="card-link">Client Profile</a>
+              <a href="/" className="card-link">Client Profile</a>
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>
@@ -243,36 +251,40 @@ class WorkerLanding extends Component<Props, State> {
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
-              <button 
-                type="button" 
-                className="btn btn-success mb-2 btn-sm" 
-                data-toggle="modal" 
-                data-target="#authenticateModal" 
-                onClick={(event) => this.handleClickUploadDocuments(event, client)}>
+              <button
+                type="button"
+                className="btn btn-success mb-2 btn-sm"
+                data-toggle="modal"
+                data-target="#authenticateModal"
+                onClick={(event) => this.handleClickUploadDocuments(event, client)}
+              >
                   Upload Document
               </button>
-              <button 
-                type="button" 
-                className="btn btn-danger mb-2 btn-sm" 
-                data-toggle="modal" 
+              <button
+                type="button"
+                className="btn btn-danger mb-2 btn-sm"
+                data-toggle="modal"
                 data-target="#authenticateModal"
-                onClick={(event) => this.handleClickViewDocuments(event, client)} >
+                onClick={(event) => this.handleClickViewDocuments(event, client)}
+              >
                   View Documents
               </button>
-              <button 
-                type="button" 
-                className="btn btn-info mb-2 btn-sm" 
-                data-toggle="modal" 
+              <button
+                type="button"
+                className="btn btn-info mb-2 btn-sm"
+                data-toggle="modal"
                 data-target="#authenticateModal"
-                onClick={(event) => this.handleClickSendEmail(event, client)}>
+                onClick={(event) => this.handleClickSendEmail(event, client)}
+              >
                   Send Email
               </button>
-              <button 
-                type="button" 
-                className="btn btn-dark mb-2 btn-sm" 
-                data-toggle="modal" 
+              <button
+                type="button"
+                className="btn btn-dark mb-2 btn-sm"
+                data-toggle="modal"
                 data-target="#authenticateModal"
-                onClick={(event) => this.handleClickSendApplication(event, client)}>
+                onClick={(event) => this.handleClickSendApplication(event, client)}
+              >
                   Send Application
               </button>
             </div>
@@ -289,7 +301,7 @@ class WorkerLanding extends Component<Props, State> {
     return (
       <div>
         <React.Fragment key="authenticateAction">
-          <div className="modal fade" id="authenticateModal" role="dialog" aria-labelledby={`authenticateModal`} aria-hidden="true">
+          <div className="modal fade" id="authenticateModal" role="dialog" aria-labelledby="authenticateModal" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
@@ -306,12 +318,12 @@ class WorkerLanding extends Component<Props, State> {
                       Client Username
                     </div>
                     <div className="col-6 card-text">
-                      <input 
-                        type="text" 
-                        className="form-control form-purple" 
-                        id={`authenticateForm`} 
-                        readOnly 
-                        placeholder={`Enter Username Here`} 
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        id="authenticateForm"
+                        readOnly
+                        placeholder="Enter Username Here"
                         value={this.state.clientUsername}
                       />
                     </div>
@@ -321,10 +333,10 @@ class WorkerLanding extends Component<Props, State> {
                       Client Password
                     </div>
                     <div className="col-6 card-text">
-                      <input 
-                        type="password" 
-                        className="form-control form-purple" 
-                        id="passwordVerification" 
+                      <input
+                        type="password"
+                        className="form-control form-purple"
+                        id="passwordVerification"
                         placeholder="Enter Password Here"
                         onChange={this.handleChangeClientPassword}
                         value={this.state.clientPassword}
@@ -355,7 +367,7 @@ class WorkerLanding extends Component<Props, State> {
     } = this.state;
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
     const numPages : number = Math.floor((numClients - 1) / itemsPerPage) + 1;
-    let numPagesArray : number[] = [];
+    const numPagesArray : number[] = [];
     for (let i = 1; i <= numPages; i++) {
       numPagesArray.push(i);
     }
@@ -412,9 +424,9 @@ class WorkerLanding extends Component<Props, State> {
           <div className="row mt-2 mb-2">
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
-                {currentPage > 0 ? <li className="page-item"><a className="page-link" onClick={this.handleClickPrevious} href="#">Previous</a></li> : <div />}
-                {numPagesArray.map((index) => <li className="page-item"><a className="page-link" onClick={(event) => this.handleClickToPage(index)} href="#">{index}</a></li>)}
-                {currentPage < (numPages - 1) ? <li className="page-item"><a className="page-link" onClick={this.handleClickNext} href="#">Next</a></li> : <div />}
+                {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={this.handleClickPrevious}>Previous</span></li> : <div />}
+                {numPagesArray.map((index) => <li className="page-item"><span className="page-link" onClick={(event) => this.handleClickToPage(index)}>{index}</span></li>)}
+                {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={this.handleClickNext}>Next</span></li> : <div />}
               </ul>
             </nav>
             <div className="w-25">

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { withAlert } from 'react-alert';
 import Logo from '../static/images/logo.svg';
 import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
-import { withAlert } from "react-alert";
 
 const logoSize = 40;
 interface Props {
@@ -51,7 +51,7 @@ class Header extends Component<Props, State, {}> {
   }
 
   handleLogin(event: any) {
-    this.setState({buttonState: 'running'})
+    this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
       logIn,
@@ -71,7 +71,7 @@ class Header extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const { 
+        const {
           loginStatus,
           userRole,
           organization,
@@ -87,22 +87,22 @@ class Header extends Component<Props, State, {}> {
               default: return Role.LoggedOut;
             }
           };
-          logIn(role(), username, organization, firstName + " " + lastName); // Change
+          logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
           this.setState({ incorrectCredentials: true });
-          this.setState({buttonState: ''})
+          this.setState({ buttonState: '' });
         } else if (loginStatus === 'USER_NOT_FOUND') {
           this.props.alert.show('Incorrect Username');
           this.setState({ incorrectCredentials: true });
-          this.setState({buttonState: ''})
+          this.setState({ buttonState: '' });
         } else {
           this.props.alert.show('Server Failure: Please Try Again');
-          this.setState({buttonState: ''})
+          this.setState({ buttonState: '' });
         }
-      }).catch(error => {
+      }).catch((error) => {
         this.props.alert.show('Network Failure: Check Server Connection');
-        this.setState({buttonState: ''})
+        this.setState({ buttonState: '' });
       });
   }
 
@@ -243,9 +243,9 @@ class Header extends Component<Props, State, {}> {
                     </div>
                   </div>
                   <div className="col-auto my-1">
-                    <button type="submit" className={"btn btn-primary ld-ext-right " + this.state.buttonState}>
+                    <button type="submit" className={`btn btn-primary ld-ext-right ${this.state.buttonState}`}>
                       Login
-                      <div className="ld ld-ring ld-spin"></div>
+                      <div className="ld ld-ring ld-spin" />
                     </button>
                   </div>
                 </div>

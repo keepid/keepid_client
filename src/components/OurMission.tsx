@@ -4,10 +4,6 @@ import { Helmet } from 'react-helmet';
 interface State {}
 
 class OurMission extends React.Component<{}, State> {
-  constructor(props: any) {
-    super(props);
-  }
-
   render() {
     return (
       <div className="container">

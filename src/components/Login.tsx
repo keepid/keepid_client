@@ -25,7 +25,7 @@ class Login extends Component<{}, {}, {}> {
                   </h1>
                 </div>
                 <h2 className="textLoginLeftSubHeader mt-5">
-    <span>For Those Experiencing Homelessness: Become Empowered</span>
+                  <span>For Those Experiencing Homelessness: Become Empowered</span>
                 </h2>
                 <p>
                   <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>

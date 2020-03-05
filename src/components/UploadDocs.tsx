@@ -1,10 +1,9 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
-import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
-import { withAlert } from "react-alert";
 
 interface Props {
   alert: any
