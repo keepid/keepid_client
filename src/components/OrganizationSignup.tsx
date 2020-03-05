@@ -12,7 +12,6 @@ interface State {
   organizationStatus: string,
   organizationWebsite: string,
   organizationEIN: string,
-  organizationNumClients: number,
   firstName: string,
   lastName: string,
   contactEmail: string,
@@ -36,7 +35,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationName: '',
       organizationStatus: '', // 501c3, etc.
       organizationWebsite: 'http://',
-      organizationNumClients: 0, // ${NumClientOptions[0][0]}-${NumClientOptions[0][1]}`,
       organizationEIN: '',
       firstName: '',
       lastName: '',
@@ -56,7 +54,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
     this.handleChangeOrganizationStatus = this.handleChangeOrganizationStatus.bind(this);
     this.handleChangeOrganizationWebsite = this.handleChangeOrganizationWebsite.bind(this);
-    this.handleChangeOrganizationNumClients = this.handleChangeOrganizationNumClients.bind(this);
     this.handleChangeOrganizationEIN = this.handleChangeOrganizationEIN.bind(this);
     this.handleChangeFirstName = this.handleChangeFirstName.bind(this);
     this.handleChangeLastName = this.handleChangeLastName.bind(this);
@@ -94,7 +91,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationAddressState,
       organizationAddressZipcode,
       organizationEIN,
-      organizationNumClients,
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
@@ -116,8 +112,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
           city: organizationAddressCity,
           state: organizationAddressState,
           zipcode: organizationAddressZipcode,
-          taxCode: organizationEIN,
-          numUsers: organizationNumClients,
+          taxCode: organizationEIN
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -150,10 +145,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
 
   handleChangeOrganizationEIN(event: any) {
     this.setState({ organizationEIN: event.target.value });
-  }
-
-  handleChangeOrganizationNumClients(event: any) {
-    this.setState({ organizationNumClients: event.target.value });
   }
 
   handleChangeFirstName(event: any) {
@@ -235,7 +226,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
       organizationAddressState,
       organizationAddressZipcode,
       organizationEIN,
-      organizationNumClients,
       acceptEULA,
       submitSuccessful,
       reaffirmStage,
@@ -367,13 +357,6 @@ class OrganizationSignup extends Component<{}, State, {}> {
                       Employer Identification Number
                       <span className="red-star">*</span>
                       <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputEIN" placeholder="12-3456789" value={organizationEIN} onChange={this.handleChangeOrganizationEIN} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputNumUsers" className="w-100 pr-3">
-                      Expected Number of Users
-                      <span className="red-star">*</span>
-                      <input readOnly={reaffirmStage} type="number" className="form-control form-purple" id="inputNumUsers" min="0" step="1" placeholder="1000" value={organizationNumClients} onChange={this.handleChangeOrganizationNumClients} required />
                     </label>
                   </div>
                   {!reaffirmStage
