@@ -31,4 +31,4 @@ log.txt
 .project
 
 session-store
-session-store/*
+./session-store
