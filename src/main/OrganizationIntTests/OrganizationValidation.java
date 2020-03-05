@@ -4,20 +4,20 @@ import Logger.LogFactory;
 import Security.GeneralValidator;
 import Security.ValidationUtils;
 import io.javalin.http.Context;
+import java.io.IOException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import java.io.IOException;
 
 public class OrganizationValidation implements GeneralValidator {
 
   protected static boolean isValid(JSONObject req, Context ctx)
       throws SecurityException, IOException {
     String orgName = req.getString("orgName");
-    String orgWebsite = req.getString("orgWebsite");
-    String adminName = req.getString("firstName") + " " + req.getString("lastName");
-    String orgContactPhoneNumber = req.getString("phone");
-    String email = req.getString("email");
+    String orgWebsite = req.getString("orgWebsite").toLowerCase();
+    String firstName = req.getString("firstName").toLowerCase();
+    String lastName = req.getString("lastName").toLowerCase();
+    String orgContactPhoneNumber = req.getString("phone").toLowerCase();
+    String email = req.getString("email").toLowerCase();
     String username = req.getString("username");
     String password = req.getString("password");
     String address = req.getString("address").toLowerCase();
@@ -25,7 +25,6 @@ public class OrganizationValidation implements GeneralValidator {
     String state = req.getString("state").toUpperCase();
     String zipcode = req.getString("zipcode");
     String taxCode = req.getString("taxCode");
-    String numUsers = req.getString("numUsers");
 
     // declare logger here
     LogFactory l = new LogFactory();
@@ -41,8 +40,13 @@ public class OrganizationValidation implements GeneralValidator {
       ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }
-    if (!ValidationUtils.isValidFirstName(adminName)) {
-      logger.error("Invalid or null adminName: " + adminName);
+    if (!ValidationUtils.isValidFirstName(firstName)) {
+      logger.error("Invalid or null firstName: " + firstName);
+      ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
+      return false;
+    }
+    if (!ValidationUtils.isValidLastName(lastName)) {
+      logger.error("Invalid or null lastName: " + lastName);
       ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }
@@ -78,11 +82,6 @@ public class OrganizationValidation implements GeneralValidator {
     }
     if (!ValidationUtils.isValidTaxCode(taxCode)) {
       logger.error("Invalid or null taxCode: " + taxCode);
-      ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      return false;
-    }
-    if (!ValidationUtils.isValidNumUsers(numUsers)) {
-      logger.error("Invalid or null numUsers: " + numUsers);
       ctx.result(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }

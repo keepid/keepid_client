@@ -30,7 +30,7 @@
   <logger name="org.mongodb.driver.cluster" level="OFF"/>
   <logger name="org.mongodb.driver.connection" level="OFF"/>
   <logger name="org.mongodb.driver.protocol" level="OFF"/>
-  <root level="warn">
+  <root level="info">
     <appender-ref ref="FILE-ROLLING"/>
     <appender-ref ref="CONSOLE"/>
   </root>

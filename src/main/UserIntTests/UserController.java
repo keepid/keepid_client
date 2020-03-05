@@ -1,5 +1,9 @@
 package UserIntTests;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
+
 import Config.MongoConfig;
 import Logger.LogFactory;
 import com.mongodb.client.MongoClient;
@@ -14,11 +18,6 @@ import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.or;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
 
 public class UserController {
   Logger logger;
@@ -48,8 +47,8 @@ public class UserController {
           MongoCollection<Document> userCollection = database.getCollection("user");
           Document user = userCollection.find(eq("username", username)).first();
           if (user == null) {
-              res.put("loginStatus", UserMessage.USER_NOT_FOUND.getErrorName());
-              res.put("userRole", "");
+            res.put("loginStatus", UserMessage.USER_NOT_FOUND.getErrorName());
+            res.put("userRole", "");
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
             return;
@@ -70,13 +69,13 @@ public class UserController {
             ctx.json(res.toString());
           } else {
             // Hash doesn't match password
-              res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
-              res.put("userRole", "");
+            res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+            res.put("userRole", "");
             ctx.json(res.toString());
           }
         } catch (Exception e) {
-            res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
-            res.put("userRole", "");
+          res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
+          res.put("userRole", "");
           ctx.json(res.toString());
         } finally {
           // Wipe confidential data from cache
@@ -87,7 +86,7 @@ public class UserController {
   public Handler createNewUser =
       ctx -> {
 
-        //System.out.println("SESSION: " + ctx.req.getSession().toString());
+        // System.out.println("SESSION: " + ctx.req.getSession().toString());
         JSONObject req = new JSONObject(ctx.body());
         // Get all formParams
         String firstName = req.getString("firstname");
@@ -173,113 +172,112 @@ public class UserController {
       };
 
   public Handler logout =
-          ctx -> {
-              ctx.req.getSession().invalidate();
-              ctx.result("SUCCESS");
-          };
+      ctx -> {
+        ctx.req.getSession().invalidate();
+        ctx.result("SUCCESS");
+      };
 
   public Handler getMembers =
-          ctx -> {
-            String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-            String orgName = ctx.sessionAttribute("orgName");
+      ctx -> {
+        String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String orgName = ctx.sessionAttribute("orgName");
 
-            JSONObject req = new JSONObject(ctx.body());
-              String listType = req.getString("listType");
+        JSONObject req = new JSONObject(ctx.body());
+        String listType = req.getString("listType");
 
-            if (privilegeLevel == null || orgName == null) {
-                ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
-                return;
-            }
+        if (privilegeLevel == null || orgName == null) {
+          JSONObject response = new JSONObject();
+          response.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          ctx.json(response.toString());
+          return;
+        }
 
-            if (privilegeLevel.equals("client")) {
-                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
-                return;
-            }
+        if (privilegeLevel.equals("client")) {
+          JSONObject response = new JSONObject();
+          response.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+          ctx.json(response.toString());
+          return;
+        }
 
-            JSONObject memberList = new JSONObject();
+        JSONObject memberList = new JSONObject();
 
-              JSONArray admins = new JSONArray();
-              JSONArray workers = new JSONArray();
-              JSONArray clients = new JSONArray();
+        JSONArray admins = new JSONArray();
+        JSONArray workers = new JSONArray();
+        JSONArray clients = new JSONArray();
 
-              MongoClient client = MongoConfig.getMongoClient();
-              MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
-              MongoCollection<Document> userCollection = database.getCollection("user");
+        MongoClient client = MongoConfig.getMongoClient();
+        MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
+        MongoCollection<Document> userCollection = database.getCollection("user");
 
-              MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
-              while (cursor.hasNext()) {
-                  System.out.println("NEXT CURSOR");
-                  Document doc = cursor.next();
-                  String userType = doc.get("privilegeLevel").toString();
+        MongoCursor<Document> cursor = userCollection.find(eq("organization", orgName)).iterator();
+        while (cursor.hasNext()) {
+          System.out.println("NEXT CURSOR");
+          Document doc = cursor.next();
+          String userType = doc.get("privilegeLevel").toString();
 
-                  System.out.println(userType);
+          System.out.println(userType);
 
-                  JSONObject userFirstLast = new JSONObject();
-                  userFirstLast.put("username", doc.get("username").toString());
-                  userFirstLast.put("firstName", doc.get("firstName").toString());
-                  userFirstLast.put("lastName", doc.get("lastName").toString());
+          JSONObject userFirstLast = new JSONObject();
+          userFirstLast.put("username", doc.get("username").toString());
+          userFirstLast.put("firstName", doc.get("firstName").toString());
+          userFirstLast.put("lastName", doc.get("lastName").toString());
 
-                  if (userType.equals("admin")) {
-                    admins.put(userFirstLast);
-                  }
-                  else if (userType.equals("worker")) {
-                      workers.put(userFirstLast);
-                  }
-                  else if (userType.equals("client")) {
-                      clients.put(userFirstLast);
-                  }
-              }
+          if (userType.equals("admin")) {
+            admins.put(userFirstLast);
+          } else if (userType.equals("worker")) {
+            workers.put(userFirstLast);
+          } else if (userType.equals("client")) {
+            clients.put(userFirstLast);
+          }
+        }
 
+        if (privilegeLevel.equals("worker")) {
+          memberList.put("clients", clients);
+        } else if (privilegeLevel.equals("admin")) {
+          System.out.println("LIST TYPE");
+          System.out.println(listType);
+          if (listType.equals("members")) {
+            memberList.put("admins", admins);
+            memberList.put("workers", workers);
+          } else if (listType.equals("clients")) {
+            memberList.put("clients", clients);
+          }
+        }
 
-            if (privilegeLevel.equals("worker")) {
-                memberList.put("clients", clients);
-            }
-            else if (privilegeLevel.equals("admin")) {
-                System.out.println("LIST TYPE");
-                System.out.println(listType);
-                if (listType.equals("members")) {
-                    memberList.put("admins", admins);
-                    memberList.put("workers", workers);
-                }
-                else if (listType.equals("clients")) {
-                    memberList.put("clients", clients);
-                }
-            }
-
-            ctx.json(memberList.toString());
-          };
+        ctx.json(memberList.toString());
+      };
 
   public Handler modifyPermissions =
-          ctx -> {
-            String username = ctx.sessionAttribute("username");
-            String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-            String orgName = ctx.sessionAttribute("orgName");
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String orgName = ctx.sessionAttribute("orgName");
 
-            if (username == null || privilegeLevel == null || orgName == null) {
-                ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
-                return;
-            }
+        if (username == null || privilegeLevel == null || orgName == null) {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          return;
+        }
 
-            if (!privilegeLevel.equals("admin")) {
-                ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
-                return;
-            }
+        if (!privilegeLevel.equals("admin")) {
+          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+          return;
+        }
 
-            JSONObject req = new JSONObject(ctx.body());
-            boolean canView = req.getBoolean("canView");
-            boolean canEdit = req.getBoolean("canEdit");
-            boolean canRegister = req.getBoolean("canRegister");
+        JSONObject req = new JSONObject(ctx.body());
+        boolean canView = req.getBoolean("canView");
+        boolean canEdit = req.getBoolean("canEdit");
+        boolean canRegister = req.getBoolean("canRegister");
 
-              MongoDatabase database =
-                      MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
-              MongoCollection<Document> userCollection = database.getCollection("user");
-              Bson filter = eq("username", username);
-              Bson updateCanView = set("canView", canView);
-              Bson updateCanEdit = set("canEdit", canEdit);
-              Bson updateCanRegister = set("canRegister", canRegister);
-              Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
-              userCollection.findOneAndUpdate(filter, updates);
+        MongoDatabase database =
+            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
+        MongoCollection<Document> userCollection = database.getCollection("user");
+        Bson filter = eq("username", username);
+        Bson updateCanView = set("canView", canView);
+        Bson updateCanEdit = set("canEdit", canEdit);
+        Bson updateCanRegister = set("canRegister", canRegister);
+        Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
+        userCollection.findOneAndUpdate(filter, updates);
 
-              ctx.json(UserMessage.SUCCESS.getErrorName());
-          };
+        ctx.json(UserMessage.SUCCESS.getErrorName());
+      };
 }

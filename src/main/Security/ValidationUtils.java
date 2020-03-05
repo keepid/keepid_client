@@ -60,15 +60,6 @@ public class ValidationUtils {
     return input != null && !input.strip().isBlank();
   }
 
-  public static boolean isValidNumUsers(String input) {
-    try {
-      Integer.parseInt(input);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
   public static boolean isValidPhoneNumber(String input) {
     return input != null
         && !input.strip().isBlank()

@@ -21,11 +21,10 @@ public class OrganizationController {
 
   public Handler enrollOrganization =
       ctx -> {
-
         JSONObject req = new JSONObject(ctx.body());
-//        if (!OrganizationValidation.isValid(req, ctx)) {
-//          return;
-//        }
+        if (!OrganizationValidation.isValid(req, ctx)) {
+          return;
+        }
         String orgName = req.getString("orgName");
         String orgWebsite = req.getString("orgWebsite").toLowerCase();
         String firstName = req.getString("firstName").toLowerCase();
@@ -39,7 +38,6 @@ public class OrganizationController {
         String state = req.getString("state").toUpperCase();
         String zipcode = req.getString("zipcode");
         String taxCode = req.getString("taxCode");
-        Integer numUsers = Integer.parseInt(req.getString("numUsers"));
 
         MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", orgName)).first();
@@ -90,8 +88,7 @@ public class OrganizationController {
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
-                  .append("taxCode", taxCode)
-                  .append("expectedNumUsers", numUsers);
+                  .append("taxCode", taxCode);
           orgCollection.insertOne(newOrg);
 
           ctx.sessionAttribute("privilegeLevel", "admin");
