@@ -5,6 +5,11 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
+import { withAlert } from "react-alert";
+
+interface Props {
+  alert: any
+}
 
 interface State {
   submitSuccessful: boolean,
@@ -24,11 +29,12 @@ interface State {
   password: string,
   confirmPassword: string,
   acceptEULA: boolean,
-  reaffirmStage: boolean
+  reaffirmStage: boolean,
+  isCaptchaFilled: boolean
 }
 
-class OrganizationSignup extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
+class OrganizationSignup extends Component<Props, State, {}> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       submitSuccessful: false,
@@ -49,6 +55,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
       confirmPassword: '',
       acceptEULA: false,
       reaffirmStage: false,
+      isCaptchaFilled: false
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
@@ -73,6 +80,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
 
   captchaVerify(value) {
     console.log('Captcha value:', value);
+    this.setState({ isCaptchaFilled: true});
   }
 
   handleSubmit(event: any) {
@@ -94,7 +102,9 @@ class OrganizationSignup extends Component<{}, State, {}> {
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
-      alert('You must read and accept the EULA before submitting the application');
+      this.props.alert.show('You must read and accept the EULA before submitting the application');
+    } else if (!this.state.isCaptchaFilled) {
+      this.props.alert.show('Please click the Recaptcha');
     } else {
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
@@ -119,13 +129,13 @@ class OrganizationSignup extends Component<{}, State, {}> {
           const enrollmentStatus = responseJSON;
           if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });
-            alert('Thank you for Submitting. Please wait 1-3 business days for a response.');
+            this.props.alert.show('Thank you for Submitting. Please wait 1-3 business days for a response.');
           } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
-            alert('User already exists');
+            this.props.alert.show('User already exists');
           } else if (enrollmentStatus === 'ORG_EXISTS') {
-            alert('Organization already exists');
+            this.props.alert.show('Organization already exists');
           } else {
-            alert('Server Failure: Please Try Again');
+            this.props.alert.show('Server Failure: Please Try Again');
           }
         });
     }
@@ -191,7 +201,7 @@ class OrganizationSignup extends Component<{}, State, {}> {
       reaffirmStage,
     } = this.state;
     if (password !== confirmPassword) {
-      alert('Your Passwords are not Identical');
+      this.props.alert.show('Your Passwords are not Identical');
     } else {
       this.setState({ reaffirmStage: !reaffirmStage });
     }
@@ -233,8 +243,8 @@ class OrganizationSignup extends Component<{}, State, {}> {
 
     const organizationFormHeader = !reaffirmStage ? 'Organization Signup Form' : 'Finish Organization Signup';
     const organizationFormBody = !reaffirmStage
-      ? 'Thank you for expressing interest in using Keep.id to empower the homeless population. Please fill out the following form so we can get back to you with instructions on how to proceed. The contact should be the organization leader who will control the privileges of all users of the service.'
-      : 'Please check the information below for accuracy and read and sign the EULA below to indicate your consent to the EULA.';
+      ? 'Thank you for expressing interest in using Keep.id to secure documents for the housing-vulnerable. Please fill out the following form so we can get back to you with instructions on how to proceed. The contact should be the organization leader who will control the privileges of all users of the service.'
+      : 'Please check the information below for accuracy and read and sign the EULA below to indicate your consent to the terms and conditions.';
     const organizationForm = (
       <div className="container">
         <Helmet>
@@ -417,4 +427,4 @@ class OrganizationSignup extends Component<{}, State, {}> {
   }
 }
 
-export default OrganizationSignup;
+export default withAlert()(OrganizationSignup);

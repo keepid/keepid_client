@@ -4,14 +4,19 @@ import { Helmet } from 'react-helmet';
 import DocumentViewer from './DocumentViewer';
 import UploadLogo from '../static/images/uploading-files-to-the-cloud.svg';
 import getServerURL from '../serverOverride';
+import { withAlert } from "react-alert";
+
+interface Props {
+  alert: any
+}
 
 interface State {
   submitStatus: boolean,
   pdfFile: File | undefined,
 }
 
-class UploadDocs extends React.Component<{}, State> {
-  constructor(props: any) {
+class UploadDocs extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
@@ -44,17 +49,17 @@ class UploadDocs extends React.Component<{}, State> {
             status,
           } = responseJSON;
           if (status === 'success') {
-            alert('Successfully Uploaded File');
+            this.props.alert.show('Successfully Uploaded File');
             this.setState({
               submitStatus: true,
             });
           } else {
-            alert('Failure to Upload File');
+            this.props.alert.show('Failure to Upload File');
           }
           console.log(status);
         });
     } else {
-      alert('Please select a file');
+      this.props.alert.show('Please select a file');
     }
   }
 
@@ -114,4 +119,4 @@ class UploadDocs extends React.Component<{}, State> {
   }
 }
 
-export default UploadDocs;
+export default withAlert()(UploadDocs);

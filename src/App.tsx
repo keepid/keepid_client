@@ -29,6 +29,7 @@ import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
 import WorkerLanding from './components/WorkerLanding';
 import getServerURL from './serverOverride';
+import { withAlert } from 'react-alert'
 
 interface State {
   role: Role,
@@ -36,6 +37,7 @@ interface State {
   name: string,
   organization: string
 }
+
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {

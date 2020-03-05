@@ -5,6 +5,7 @@ import UsernameSVG from '../static/images/username.svg';
 import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
+import { withAlert } from "react-alert";
 
 const logoSize = 40;
 interface Props {
@@ -12,12 +13,14 @@ interface Props {
   logOut: () => void,
   isLoggedIn: boolean,
   role: Role,
+  alert: any
 }
 
 interface State {
   incorrectCredentials: boolean,
   username: string,
   password: string,
+  buttonState: string
 }
 
 class Header extends Component<Props, State, {}> {
@@ -25,10 +28,11 @@ class Header extends Component<Props, State, {}> {
     super(props);
     this.state = {
       incorrectCredentials: false,
+      buttonState: '',
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
     };
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -46,7 +50,8 @@ class Header extends Component<Props, State, {}> {
     logOut();
   }
 
-  handleSubmit(event: any) {
+  handleLogin(event: any) {
+    this.setState({buttonState: 'running'})
     event.preventDefault();
     const {
       logIn,
@@ -82,17 +87,22 @@ class Header extends Component<Props, State, {}> {
               default: return Role.LoggedOut;
             }
           };
-          console.log(responseJSON);
           logIn(role(), username, organization, firstName + " " + lastName); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
-          alert('Incorrect Password');
+          this.props.alert.show('Incorrect Password');
           this.setState({ incorrectCredentials: true });
+          this.setState({buttonState: ''})
         } else if (loginStatus === 'USER_NOT_FOUND') {
-          alert('Incorrect Username');
+          this.props.alert.show('Incorrect Username');
           this.setState({ incorrectCredentials: true });
+          this.setState({buttonState: ''})
         } else {
-          alert('Server Failure: Please Try Again');
+          this.props.alert.show('Server Failure: Please Try Again');
+          this.setState({buttonState: ''})
         }
+      }).catch(error => {
+        this.props.alert.show('Network Failure: Check Server Connection');
+        this.setState({buttonState: ''})
       });
   }
 
@@ -184,7 +194,7 @@ class Header extends Component<Props, State, {}> {
 
             <div className="collapse navbar-collapse" id="navbarToggle">
               <ul className="navbar-nav mr-auto mt-2 mt-lg-0 " />
-              <form onSubmit={this.handleSubmit}>
+              <form onSubmit={this.handleLogin}>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
                     <div className="input-group">
@@ -233,7 +243,10 @@ class Header extends Component<Props, State, {}> {
                     </div>
                   </div>
                   <div className="col-auto my-1">
-                    <button type="submit" className="btn btn-primary">Login</button>
+                    <button type="submit" className={"btn btn-primary ld-ext-right " + this.state.buttonState}>
+                      Login
+                      <div className="ld ld-ring ld-spin"></div>
+                    </button>
                   </div>
                 </div>
               </form>
@@ -245,4 +258,4 @@ class Header extends Component<Props, State, {}> {
   }
 }
 
-export default Header;
+export default withAlert()(Header);

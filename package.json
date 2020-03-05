@@ -22,6 +22,8 @@
     "normalize.css": "^8.0.1",
     "pdfjs-dist": "^2.2.228",
     "react": "^16.11.0",
+    "react-alert": "^6.0.1",
+    "react-alert-template-basic": "^1.0.0",
     "react-bootstrap": "^1.0.0-beta.14",
     "react-bootstrap-table-next": "^3.3.1",
     "react-bootstrap-table2-editor": "^1.4.0",

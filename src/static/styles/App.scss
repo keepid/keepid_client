@@ -1,6 +1,8 @@
 
 // import bootstrap
 @import "../../../node_modules/bootstrap/scss/bootstrap";
+@import "./ldbtn.scss";
+@import "./loading.scss";
 
 $primary-theme: #7B81FF;
 $secondary-theme: rgba(123, 130, 255, 0.12);
@@ -227,4 +229,10 @@ thead {
 
 .partner-card {
 	width: 30vw;
+}
+.alert-provider-custom div div {
+	background-color: $secondary-dark-theme !important;
+}
+.alert-provider-custom span {
+	text-transform: none;
 }

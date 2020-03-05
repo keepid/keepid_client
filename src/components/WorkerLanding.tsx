@@ -6,12 +6,14 @@ import makeAnimated from 'react-select/animated';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
 import getServerURL from '../serverOverride';
+import { withAlert } from "react-alert";
 
 interface Props {
   username: string,
   name: string,
   organization: string,
   role: Role,
+  alert: any
 }
 
 interface State {
@@ -178,11 +180,11 @@ class WorkerLanding extends Component<Props, State> {
         if (loginStatus === 'AUTH_SUCCESS') {
           //Allow worker privileges
         } else if (loginStatus === 'AUTH_FAILURE') {
-          alert('Incorrect Password');
+          this.props.alert.show('Incorrect Password');
         } else if (loginStatus === 'USER_NOT_FOUND') {
-          alert('Username Does Not Exist');
+          this.props.alert.show('Username Does Not Exist');
         } else {
-          alert('Server Failure: Please Try Again');
+          this.props.alert.show('Server Failure: Please Try Again');
         }
       });
   }
@@ -403,9 +405,11 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          {role === Role.Admin ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
-          <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
-          <div className="row">
+          <div className="row mt-2 mb-2">
+            {role === Role.Admin ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
+            <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
+          </div>
+          <div className="row mt-2 mb-2">
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
                 {currentPage > 0 ? <li className="page-item"><a className="page-link" onClick={this.handleClickPrevious} href="#">Previous</a></li> : <div />}
@@ -434,4 +438,4 @@ class WorkerLanding extends Component<Props, State> {
   }
 }
 
-export default WorkerLanding;
+export default withAlert()(WorkerLanding);

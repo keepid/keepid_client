@@ -6,13 +6,12 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
-
-// Need to validate form to make sure inputs are good, address is good, etc.
-// Google API for address checking
+import { withAlert } from "react-alert";
 
 interface Props {
   userRole: Role,
   personRole: Role,
+  alert: any
 }
 
 interface State {
@@ -89,7 +88,7 @@ class PersonSignup extends Component<Props, State, {}> {
       personConfirmPassword,
     } = this.state;
     if (personPassword !== personConfirmPassword) {
-      alert('Your passwords are not identical');
+      this.props.alert.show('Your passwords are not identical');
     } else {
       const personRoleString = () => {
         switch (personRole) {
@@ -120,8 +119,7 @@ class PersonSignup extends Component<Props, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          console.log(responseJSON);
-          alert(responseJSON);
+          this.props.alert.show(responseJSON);
           this.setState({ submitSuccessful: true });
         });
     }
@@ -449,4 +447,4 @@ class PersonSignup extends Component<Props, State, {}> {
   }
 }
 
-export default PersonSignup;
+export default withAlert()(PersonSignup);
