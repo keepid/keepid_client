@@ -8,6 +8,10 @@ import JamesJPG from '../static/images/james.jpg';
 interface State {}
 
 class OurTeam extends React.Component<{}, State> {
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
+  
   render() {
     return (
       <div className="container">

@@ -5,6 +5,10 @@ import BSMJPG from '../static/images/bsm.jpg';
 interface State {}
 
 class OurPartners extends React.Component<{}, State> {
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
+  
   render() {
     return (
       <div className="container">
