@@ -102,7 +102,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
     if (!acceptEULA) {
       this.props.alert.show('You must read and accept the EULA before submitting the application');
       this.setState({ buttonState: '' });
-    } else if (!this.state.isCaptchaFilled) {
+    } else if (process.env.NODE_ENV === 'production' && !this.state.isCaptchaFilled) {
       this.props.alert.show('Please click the Recaptcha');
       this.setState({ buttonState: '' });
     } else {
