@@ -17,7 +17,6 @@ interface Props {
 }
 
 interface State {
-  incorrectCredentials: boolean,
   username: string,
   password: string,
   buttonState: string
@@ -27,7 +26,6 @@ class Header extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      incorrectCredentials: false,
       buttonState: '',
       username: '',
       password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
@@ -90,11 +88,9 @@ class Header extends Component<Props, State, {}> {
           logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
         } else if (loginStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
-          this.setState({ incorrectCredentials: true });
           this.setState({ buttonState: '' });
         } else if (loginStatus === 'USER_NOT_FOUND') {
           this.props.alert.show('Incorrect Username');
-          this.setState({ incorrectCredentials: true });
           this.setState({ buttonState: '' });
         } else {
           this.props.alert.show('Server Failure: Please Try Again');
@@ -120,12 +116,10 @@ class Header extends Component<Props, State, {}> {
       role,
     } = this.props;
     const {
-      incorrectCredentials,
       username,
       password,
     } = this.state;
 
-    const incorrectCredentialsText = incorrectCredentials ? <p color="red">Incorrect Credentials</p> : <div />;
     if (isLoggedIn) {
       return (
         <div>

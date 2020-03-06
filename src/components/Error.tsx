@@ -11,7 +11,7 @@ class Error extends Component {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-2 text-center">
-          <img className="w-50 p-4" src={NotFoundSVG} />
+          <img alt="404 Error Not Found" className="w-50 p-4" src={NotFoundSVG} />
           <h1 className="display-5">Error: Page Not Found</h1>
           <p className="lead pt-3">
             The page you tried to visit does not exist, or you do not have permission.

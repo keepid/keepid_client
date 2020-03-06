@@ -13,24 +13,24 @@ class Footer extends Component<{}, {}> {
           <div className="d-flex flex-row bd-highlight py-8 py-md-11 flex-wrap">
             <div className="p-2 bd-highlight col-12 col-md-4 col-lg-4 mb-4">
               <div className="row">
-                <img className="footer-brand img-fluid mb-2 ml-3" src={Logo} />
+                <img alt="Keep.id Logo" className="footer-brand img-fluid mb-2 ml-3" src={Logo} />
                 <div className="mb-2 ml-3 footer-brand-logo">Keep.id</div>
               </div>
               <p className="text-gray-700 mb-2">Securely Combating Homelessness</p>
               <ul className="list-unstyled list-inline list-social">
                 <li className="list-inline-item list-social-item mr-3">
                   <Link to="/error" className="text-decoration-none">
-                    <img src={Email} className="list-social-icon" />
+                    <img alt="Email Address" src={Email} className="list-social-icon" />
                   </Link>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
                   <Link to="/error" className="text-decoration-none">
-                    <img src={FacebookLogo} className="list-social-icon" />
+                    <img alt="Facebook Link" src={FacebookLogo} className="list-social-icon" />
                   </Link>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
                   <Link to="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
-                    <img src={GithubLogo} className="list-social-icon" />
+                    <img alt="Github Link" src={GithubLogo} className="list-social-icon" />
                   </Link>
                 </li>
               </ul>

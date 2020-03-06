@@ -80,12 +80,10 @@ class AdminPanel extends Component<Props, State> {
 
   onChangeEditPermission(event: any) {
     const thisCopy = this;
-    // console.log(event);
   }
 
   onChangeRegisterPermission(event: any) {
     const thisCopy = this;
-    // console.log(event);
   }
 
   getAdminWorkers() {

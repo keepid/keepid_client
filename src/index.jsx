@@ -8,7 +8,7 @@ import * as serviceWorker from './serviceWorker';
 
 const options = {
   position: 'top right',
-  timeout: 0,
+  timeout: 5000,
   offset: '10vh',
   type: 'info',
   transition: transitions.fade,

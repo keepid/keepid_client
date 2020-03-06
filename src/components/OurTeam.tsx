@@ -8,10 +8,6 @@ import JamesJPG from '../static/images/james.jpg';
 interface State {}
 
 class OurTeam extends React.Component<{}, State> {
-  constructor(props: any) {
-    super(props);
-  }
-
   render() {
     return (
       <div className="container">

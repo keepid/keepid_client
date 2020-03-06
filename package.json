@@ -1,10 +1,7 @@
 {
-  "name": "Keep.id",
+  "name": "keep.id",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": "12.13.0"
-  },
   "dependencies": {
     "@mikecousins/react-pdf": "^5.5.1",
     "@types/jest": "^24.0.19",
