@@ -38,6 +38,7 @@ class Header extends Component<Props, State, {}> {
   }
 
   handleLogout(event: any) {
+    this.setState({ buttonState: '' });
     const {
       logOut,
     } = this.props;
