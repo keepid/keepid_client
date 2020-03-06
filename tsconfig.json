@@ -24,7 +24,7 @@
     "src/components/*",
     "src/static/*",
     "src/App.tsx",
-    "srcindex.tsx",
+    "src/index.jsx",
     ".d.ts"
   ]
 }

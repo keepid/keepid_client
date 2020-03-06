@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { transitions, Provider as AlertProvider } from 'react-alert';
+import { transitions, Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
@@ -18,9 +18,9 @@ const options = {
 };
 
 const Root = () => (
-  <AlertProvider template={AlertTemplate} {...options} className="alert-provider-custom">
+  <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
     <App />
-  </AlertProvider>
+  </Provider>
 );
 
 ReactDOM.render(<Root />, document.getElementById('root'));
