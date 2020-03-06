@@ -30,7 +30,6 @@ class ViewDocument extends Component<Props, State> {
       method: 'GET',
       credentials: 'include',
     }).then((response) => {
-      console.log(response);
       return response.blob();
     })
       .then((response) => {

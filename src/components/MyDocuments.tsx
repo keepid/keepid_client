@@ -62,9 +62,7 @@ class MyDocuments extends Component<Props, State> {
         const {
           documents,
         } = responseJSON;
-        console.log(responseJSON);
         this.setState({ documentData: documents });
-        console.log(documents);
       });
   }
 

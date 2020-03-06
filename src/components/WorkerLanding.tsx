@@ -125,7 +125,6 @@ class WorkerLanding extends Component<Props, State> {
       currentPage,
       itemsPerPageSelected,
     } = this.state;
-    console.log(nameSearch);
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
@@ -144,7 +143,6 @@ class WorkerLanding extends Component<Props, State> {
           numClients,
           memberList,
         } = responseJSON;
-        console.log(numClients);
         if (memberList) {
           this.setState({
             numClients,
@@ -213,7 +211,6 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   renderClients() {
-    console.log(this.state.clients);
     const clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
       <div className="card mb-3">
         <div className="card-body">

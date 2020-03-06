@@ -41,9 +41,7 @@ class UploadDocs extends React.Component<Props, State> {
         body: formData,
       }).then((response) => response.json())
         .then((responseJSON) => {
-          console.log(responseJSON);
           responseJSON = JSON.parse(responseJSON);
-          console.log(responseJSON);
           const {
             status,
           } = responseJSON;
@@ -55,7 +53,6 @@ class UploadDocs extends React.Component<Props, State> {
           } else {
             this.props.alert.show('Failure to Upload File');
           }
-          console.log(status);
         });
     } else {
       this.props.alert.show('Please select a file');

@@ -21,7 +21,6 @@ class MyAccount extends Component<{}, {}, {}> {
     const allModals: React.ReactFragment[] = [];
     for (const field in editData) {
       if ({}.hasOwnProperty.call(editData, field)) {
-        // console.log(`${field}, ${editData[field]}`);
         allModals.push(
           <React.Fragment key={field}>
             <div className="modal fade" id={`${field}Modal`} role="dialog" aria-labelledby={`${field}Modal`} aria-hidden="true">
