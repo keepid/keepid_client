@@ -28,6 +28,7 @@ interface State {
   personUsername: string,
   personPassword: string,
   personConfirmPassword: string,
+  buttonState: string
 }
 
 class PersonSignup extends Component<Props, State, {}> {
@@ -49,6 +50,7 @@ class PersonSignup extends Component<Props, State, {}> {
       personUsername: '',
       personPassword: '',
       personConfirmPassword: '',
+      buttonState: ''
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -69,6 +71,7 @@ class PersonSignup extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     event.preventDefault();
+    this.setState({ buttonState: 'running' });
     const {
       personRole,
     } = this.props;
@@ -87,6 +90,7 @@ class PersonSignup extends Component<Props, State, {}> {
     } = this.state;
     if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
+      this.setState({ buttonState: '' });
     } else {
       const personRoleString = () => {
         switch (personRole) {
@@ -119,6 +123,10 @@ class PersonSignup extends Component<Props, State, {}> {
         .then((responseJSON) => {
           this.props.alert.show(responseJSON);
           this.setState({ submitSuccessful: true });
+          this.setState({ buttonState: '' });
+        }).catch((error) => {
+          this.props.alert.show('Network Failure: Check Server Connection');
+          this.setState({ buttonState: '' });
         });
     }
   }
@@ -432,7 +440,10 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-auto mt-3 pl-4 pt-2">
-                    <button type="submit" className="btn btn-primary">Submit</button>
+                    <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
+                      Submit
+                      <div className="ld ld-ring ld-spin" />
+                    </button>
                   </div>
                 </div>
               </div>

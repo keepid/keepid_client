@@ -58,48 +58,52 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-
-    fetch(`${getServerURL()}/login`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
-        const {
-          loginStatus,
-          userRole,
-          organization,
-          firstName,
-          lastName,
-        } = responseJSON;
-        if (loginStatus === 'AUTH_SUCCESS') {
-          const role = () => {
-            switch (userRole) {
-              case 'admin': return Role.Admin;
-              case 'worker': return Role.Worker;
-              case 'client': return Role.Client;
-              default: return Role.LoggedOut;
-            }
-          };
-          logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-        } else if (loginStatus === 'AUTH_FAILURE') {
-          this.props.alert.show('Incorrect Password');
+    if(username.trim() === "" || password.trim() === ""){
+      this.props.alert.show('Please enter a valid username or password');
+      this.setState({ buttonState: '' });
+    } else {
+      fetch(`${getServerURL()}/login`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          responseJSON = JSON.parse(responseJSON);
+          const {
+            loginStatus,
+            userRole,
+            organization,
+            firstName,
+            lastName,
+          } = responseJSON;
+          if (loginStatus === 'AUTH_SUCCESS') {
+            const role = () => {
+              switch (userRole) {
+                case 'admin': return Role.Admin;
+                case 'worker': return Role.Worker;
+                case 'client': return Role.Client;
+                default: return Role.LoggedOut;
+              }
+            };
+            logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+          } else if (loginStatus === 'AUTH_FAILURE') {
+            this.props.alert.show('Incorrect Password');
+            this.setState({ buttonState: '' });
+          } else if (loginStatus === 'USER_NOT_FOUND') {
+            this.props.alert.show('Incorrect Username');
+            this.setState({ buttonState: '' });
+          } else {
+            this.props.alert.show('Server Failure: Please Try Again');
+            this.setState({ buttonState: '' });
+          }
+        }).catch((error) => {
+          this.props.alert.show('Network Failure: Check Server Connection');
           this.setState({ buttonState: '' });
-        } else if (loginStatus === 'USER_NOT_FOUND') {
-          this.props.alert.show('Incorrect Username');
-          this.setState({ buttonState: '' });
-        } else {
-          this.props.alert.show('Server Failure: Please Try Again');
-          this.setState({ buttonState: '' });
-        }
-      }).catch((error) => {
-        this.props.alert.show('Network Failure: Check Server Connection');
-        this.setState({ buttonState: '' });
-      });
+        });
+    }
   }
 
   handleChangePassword(event: any) {

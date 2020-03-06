@@ -29,7 +29,8 @@ interface State {
   confirmPassword: string,
   acceptEULA: boolean,
   reaffirmStage: boolean,
-  isCaptchaFilled: boolean
+  isCaptchaFilled: boolean,
+  buttonState: string
 }
 
 class OrganizationSignup extends Component<Props, State, {}> {
@@ -54,6 +55,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       acceptEULA: false,
       reaffirmStage: false,
       isCaptchaFilled: false,
+      buttonState: ''
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
@@ -80,6 +82,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
   }
 
   handleSubmit(event: any) {
+    this.setState({ buttonState: 'running' });
     const {
       organizationWebsite,
       firstName,
@@ -98,8 +101,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
     } = this.state;
     if (!acceptEULA) {
       this.props.alert.show('You must read and accept the EULA before submitting the application');
+      this.setState({ buttonState: '' });
     } else if (!this.state.isCaptchaFilled) {
       this.props.alert.show('Please click the Recaptcha');
+      this.setState({ buttonState: '' });
     } else {
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
@@ -123,13 +128,17 @@ class OrganizationSignup extends Component<Props, State, {}> {
           const enrollmentStatus = responseJSON;
           if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ submitSuccessful: true });
+            this.setState({ buttonState: '' });
             this.props.alert.show('Thank you for Submitting. Please wait 1-3 business days for a response.');
           } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
             this.props.alert.show('User already exists');
+            this.setState({ buttonState: '' });
           } else if (enrollmentStatus === 'ORG_EXISTS') {
             this.props.alert.show('Organization already exists');
+            this.setState({ buttonState: '' });
           } else {
             this.props.alert.show('Server Failure: Please Try Again');
+            this.setState({ buttonState: '' });
           }
         });
     }
@@ -394,7 +403,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
             <span>I agree to all terms and conditions in the EULA above</span>
           </p>
         </div>
-        <div className="row mt-5 mb-auto">
+        <div className="row mt-0 mb-auto">
           <span className="border">
             <SignaturePad acceptEULA={acceptEULA} handleChangeAcceptEULA={this.handleChangeAcceptEULA} />
           </span>
@@ -408,7 +417,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
           </div>
           <div className="col-md-6 text-right">
             <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
-            <button type="button" onClick={this.handleSubmit} className="btn btn-success">Submit</button>
+            <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
+              Submit
+              <div className="ld ld-ring ld-spin" />
+            </button>
           </div>
         </div>
       </div>
