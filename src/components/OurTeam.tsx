@@ -4,7 +4,7 @@ import ConnorJPG from '../static/images/connor.jpg';
 import SteffenJPG from '../static/images/steffen.jpg';
 import GregJPG from '../static/images/greg.jpg';
 import JamesJPG from '../static/images/james.jpg';
-
+import JacksonJPG from '../static/images/jackson.jpg';
 interface State {}
 
 class OurTeam extends React.Component<{}, State> {
@@ -52,6 +52,13 @@ class OurTeam extends React.Component<{}, State> {
             <div className="card-body">
               <h5 className="card-title">James Bigbee</h5>
               <p className="card-text">Developer at Keep.id. Serves as the product&apos;s security lead.</p>
+            </div>
+          </div>
+          <div className="card member-card m-3">
+            <img src={JacksonJPG} className="card-img-top" alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jackson Foltz</h5>
+              <p className="card-text">Our Nonprofit Ambassador and Marketing Lead.</p>
             </div>
           </div>
           <div className="card member-card m-3">
