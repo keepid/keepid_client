@@ -29,6 +29,7 @@ import OurPartners from './components/OurPartners';
 import OurMission from './components/OurMission';
 import WorkerLanding from './components/WorkerLanding';
 import getServerURL from './serverOverride';
+import BugReport from './components/BugReport';
 
 interface State {
   role: Role,
@@ -213,6 +214,9 @@ class App extends React.Component<{}, State, {}> {
             </Route>
             <Route path="/our-mission">
               <OurMission />
+            </Route>
+            <Route path="/bug-report">
+              <BugReport/>
             </Route>
             <Route
               path="/settings"

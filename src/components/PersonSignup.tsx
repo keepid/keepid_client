@@ -389,7 +389,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     <label htmlFor="inputBirthDate" className="w-100 pr-3">
                       Birth Date
                       <text className="red-star">*</text>
-                      <DatePicker id="inputBirthDate" onChange={this.handleChangePersonBirthDate} selected={this.state.personBirthDate} />
+                      <DatePicker id="inputBirthDate" onChange={this.handleChangePersonBirthDate} selected={this.state.personBirthDate} className="form-control form-purple"/>
                     </label>
                   </div>
                   <div className="col-md-3 form-group">

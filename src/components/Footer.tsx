@@ -34,6 +34,11 @@ class Footer extends Component<{}, {}> {
                   </Link>
                 </li>
               </ul>
+              <ul className="list-unstyled list-inline list-social">
+                <Link to="/bug-report" className="text-decoration-none">
+                  <span className="footer-link pb-1">Report a Bug</span>
+                </Link>
+              </ul>
               <span className="text-muted pb-2">&copy;	2020 Keep.id</span>
             </div>
             <div className="p-2 bd-highlight col-12 col-md-4 col-lg-3 mb-4">

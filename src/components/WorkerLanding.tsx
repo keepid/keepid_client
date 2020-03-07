@@ -414,11 +414,11 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          <div className="row mt-2 mb-2">
+          <div className="row ml-1 mt-2 mb-2">
             {role === Role.Admin ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
             <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
           </div>
-          <div className="row mt-2 mb-2">
+          <div className="row ml-1 mt-2 mb-2">
             <nav aria-label="Page navigation example">
               <ul className="pagination mt-4 mb-3 mr-5 ml-4">
                 {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={this.handleClickPrevious}>Previous</span></li> : <div />}
