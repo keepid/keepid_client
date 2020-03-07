@@ -78,6 +78,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
   }
 
   captchaVerify(value) {
+    console.log('RECAPTCHA VALUE', value)
     this.setState({ isCaptchaFilled: true });
   }
 
@@ -127,8 +128,8 @@ class OrganizationSignup extends Component<Props, State, {}> {
         .then((responseJSON) => {
           const enrollmentStatus = responseJSON;
           if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
-            this.setState({ submitSuccessful: true });
             this.setState({ buttonState: '' });
+            this.setState({ submitSuccessful: true });
             this.props.alert.show('Thank you for Submitting. Please wait 1-3 business days for a response.');
           } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
             this.props.alert.show('User already exists');
@@ -137,9 +138,12 @@ class OrganizationSignup extends Component<Props, State, {}> {
             this.props.alert.show('Organization already exists');
             this.setState({ buttonState: '' });
           } else {
-            this.props.alert.show('Server Failure: Please Try Again');
+            this.props.alert.show('Invalid Field Parameter: Please enter a valid website, email address, phone number, state, or zip code');
             this.setState({ buttonState: '' });
           }
+        }).catch((error) => {
+          this.props.alert.show('Server Failure: ' + error);
+          this.setState({ buttonState: '' });
         });
     }
   }
