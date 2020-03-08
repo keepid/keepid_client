@@ -19,7 +19,7 @@ $theme-colors: (
 );
 
 // import open sans
-@import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
 
 .App {
@@ -30,7 +30,7 @@ $theme-colors: (
 
 .app {
 	background-color: white;
-	padding-bottom: 4.25rem;
+	padding-bottom: 3.75rem;
 }
 
 .input-group-text {
@@ -60,6 +60,21 @@ $theme-colors: (
 .background {
 	background: $secondary-theme;
 };
+
+
+@media screen and (max-width: 770px) {
+	.background {
+		margin-left: 0 !important;
+	};
+}
+
+
+@media screen and (max-width: 770px) {
+	.container-home-right {
+		margin-right: 0 !important;
+	};
+}
+
 
 .loginButtonBackground {
 	background: $primary-theme;
@@ -278,3 +293,42 @@ thead {
 .grecaptcha-badge { 
 	visibility: hidden;
 }
+
+.home-svgs {
+	width: 140px;
+	height: 140px;
+}
+
+@media screen and (max-width: 770px) {
+	.home-svgs {
+		float: none !important;
+		display: block !important;
+		margin: 0 auto !important;
+	};
+}
+
+.color-bold{
+	color: $secondary-dark-theme
+}
+
+.home-text {
+	margin:auto;
+	font-size: large;
+}
+
+@media screen and (min-width: 1001px) {
+	.brand-text {
+		font-weight: bolder;
+		font-size: 3.5rem;
+		line-height: 1.3;
+	}
+}
+
+@media screen and (max-width: 1000px) {
+	.brand-text {
+		font-weight: bolder;
+		font-size: 2.5rem;
+		line-height: 1.3;
+	}
+}
+

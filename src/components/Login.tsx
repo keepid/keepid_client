@@ -18,74 +18,71 @@ class Login extends Component<{}, {}, {}> {
               <div className="col-md-12" />
             </div>
             <div className="row">
-              <div className="background col-md-5 ml-5 pb-4">
-                <div className="page-header textLoginLeftHeader">
-                  <h1>
-                    <span><b>Secure Document Storage for those Experiencing Homelessness</b></span>
-                  </h1>
+              <div className="col-md-6">
+                <div className="background ml-5 p-4 rounded mb-3 pb-5">
+                  <div className="page-header">
+                    <span className="brand-text">
+                      Secure Document Storage for Experienced Homelessness
+                    </span>
+                  </div>
+                  <h2 className="mt-4 pt-2 pb-2">
+                    <span>For Those Experiencing Homelessness</span>
+                  </h2>
+                  <p>
+                    <span>Find a nearby registered organization against homelessness that can help get you started.</span>
+                  </p>
+                  <button type="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
+                      Sign Up Here
+                  </button>
+                  <h2 className="mt-4">
+                    <span>For Organizations: Partner with Us</span>
+                  </h2>
+                  <p>
+                    <span>Are you an aid organization fighting homelessness?</span>
+                  </p>
+                  <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground w-50">Start a 3 Month Free Trial</a>
                 </div>
-                <h2 className="textLoginLeftSubHeader mt-5">
-                  <span>For Those Experiencing Homelessness: Become Empowered</span>
-                </h2>
-                <p>
-                  <span>Want to use our services? Find some nearby registered organizations that can help you get started.</span>
-                </p>
-                <button type="button" className="btn btn-primary btn-lg loginButtonBackground">
-                    Find Local Organizations
-                </button>
-                <h2 className="textLoginLeftSubHeader mt-3">
-                  <span>For Organizations: Partner with Us</span>
-                </h2>
-                <p>
-                  <span>Are you an aid organization fighting homelessness?</span>
-                </p>
-                <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground">Join Our Cause</a>
               </div>
-              <div className="col-md-1" />
-              <div className="col-md-5">
-                <h3 className="text-center textLoginRightHeader">
-                    How Keep.id Works
-                </h3>
-                <div className="row">
-                  <div className="col-md-4">
-                    <img alt="Hubs" src={HubLogo} />
-                  </div>
-                  <div className="col-md-8">
-                    <p className="textLoginRightPara">
-                      <span>
-1. Local organizations become
-                        <b> hubs </b>
-for Keep.id services
+              <div className="col-md-6">
+                <div className="mr-5 p-4 container-home-right">
+                  <h1 className="text-center font-weight-bold">
+                      Our Model
+                  </h1>
+                  <div className="row pb-4">
+                    <div className="col-md-4">
+                      <img alt="Hubs" src={HubLogo} className="home-svgs float-right"/>
+                    </div>
+                    <div className="col-md-8 d-flex">
+                      <span className="home-text">
+  Local nonprofits against homelessness become
+                        <b className="color-bold"> hubs </b>
+  for Keep.id services
                       </span>
-                    </p>
+                    </div>
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-4">
-                    <img alt="Database" src={DatabaseLogo} />
-                  </div>
-                  <div className="col-md-8">
-                    <p className="textLoginRightPara">
-                      <span>
-2. Keep.id
-                        <b> securely stores </b>
-documents and records for those experiencing homelessness
+                  <div className="row pb-4">
+                    <div className="col-md-4">
+                      <img alt="Database" src={DatabaseLogo} className="home-svgs float-right" />
+                    </div>
+                    <div className="col-md-8 d-flex">
+                      <span className="home-text">
+  Keep.id
+                        <b className="color-bold"> securely stores </b>
+  documents and records for those experiencing homelessness
                       </span>
-                    </p>
+                    </div>
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-4">
-                    <img alt="Aid platform" src={AidPlatLogo} />
-                  </div>
-                  <div className="col-md-8">
-                    <p className="textLoginRightPara">
-                      <span>
-3. Keep.id becomes an
-                        <b> aid platform </b>
-to streamline access to assistance programs and strengthen relationships between organizations and people
+                  <div className="row pb-4">
+                    <div className="col-md-4">
+                      <img alt="Aid platform" src={AidPlatLogo} className="home-svgs float-right" />
+                    </div>
+                    <div className="col-md-8 d-flex">
+                      <span className="home-text">
+  Keep.id becomes an
+                        <b className="color-bold"> aid platform </b>
+  to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>

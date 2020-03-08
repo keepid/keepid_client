@@ -137,16 +137,25 @@ class BugReport extends Component<Props, State, {}> {
                   </div>
                 </div>
                 <div className="form-row mt-2">
-                  <div className="col-md-6">
+                  <div className="col-md-8">
                     <ReCAPTCHA
                       ref={recaptchaRef}
                       size="invisible"
                       sitekey={reCaptchaKey}
                       onChange={this.captchaVerify}
                     />
+                    <span className="text-muted recaptcha-login-text">
+                        This page is protected by reCAPTCHA, and subject to the Google
+                      {' '}
+                      <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                        and
+                      {' '}
+                      <a href="https://www.google.com/policies/terms/">Terms of service</a>
+    .
+                    </span>
                   </div>
-                  <div className="col-md-6 text-right pr-4">
-                    <button type="submit" onClick={this.handleSubmit} className={`ml-5 btn btn-success ld-ext-right ${this.state.buttonState}`}>
+                  <div className="col-md-4 text-right pr-4">
+                    <button type="submit" onClick={this.handleSubmit} className={`ml-5 w-50 btn btn-success ld-ext-right ${this.state.buttonState}`}>
                       Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>
