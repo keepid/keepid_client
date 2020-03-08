@@ -6,6 +6,7 @@ import { withAlert } from 'react-alert';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
+import { reCaptchaKey } from '../configVars';
 
 interface Props {
   alert: any
@@ -55,7 +56,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       acceptEULA: false,
       reaffirmStage: false,
       isCaptchaFilled: false,
-      buttonState: ''
+      buttonState: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
@@ -141,7 +142,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
             this.setState({ buttonState: '' });
           }
         }).catch((error) => {
-          this.props.alert.show('Server Failure: ' + error);
+          this.props.alert.show(`Server Failure: ${error}`);
           this.setState({ buttonState: '' });
         });
     }
@@ -414,7 +415,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
         <div className="row mt-5">
           <div className="col-md-6">
             <ReCAPTCHA
-              sitekey="6LdC2doUAAAAAOPR99_VV97ifNVQiF7I3RQOTc8T"
+              sitekey={reCaptchaKey}
               onChange={this.captchaVerify}
             />
           </div>

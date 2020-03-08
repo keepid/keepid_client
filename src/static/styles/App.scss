@@ -24,6 +24,13 @@ $theme-colors: (
 
 .App {
 	font-family: 'Noto Sans', sans-serif;
+	background-color: $footer-color;
+	min-height: 100vh;
+}
+
+.app {
+	background-color: white;
+	padding-bottom: 4.25rem;
 }
 
 .input-group-text {
@@ -47,7 +54,7 @@ $theme-colors: (
 }
 
 .bg-gray {
-	background-color:#e9ecef;
+	background-color: #e9ecef;
 }
 
 .background {
@@ -203,8 +210,6 @@ thead {
 }
 
 .custom-footer-color {
-	margin-top: 3.5rem;
-	padding-bottom: 3.5rem;
 	padding-top: 2rem;
 	background-color: $footer-color;
 	color: $footer-text-color;
@@ -250,12 +255,13 @@ thead {
 
 .form-signin {
 	width: 100%;
-	max-width: 330px;
+	max-width: 430px;
 }
 
 .form-signin .checkbox {
 	font-weight: 400;
 }
+
 .form-signin .form-control {
 	position: relative;
 	box-sizing: border-box;
@@ -270,5 +276,5 @@ thead {
 }
 
 .grecaptcha-badge { 
-    visibility: hidden;
+	visibility: hidden;
 }

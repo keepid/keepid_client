@@ -28,7 +28,7 @@ class Header extends Component<Props, State, {}> {
     this.state = {
       buttonState: '',
       username: '',
-      password: '', 
+      password: '',
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -59,7 +59,7 @@ class Header extends Component<Props, State, {}> {
       username,
       password,
     } = this.state;
-    if(username.trim() === "" || password.trim() === ""){
+    if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
     } else {

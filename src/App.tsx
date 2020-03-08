@@ -31,6 +31,7 @@ import WorkerLanding from './components/WorkerLanding';
 import getServerURL from './serverOverride';
 import BugReport from './components/BugReport';
 import LoginPage from './components/LoginPage';
+import ForgotPassword from './components/ForgotPassword';
 
 interface State {
   role: Role,
@@ -81,168 +82,173 @@ class App extends React.Component<{}, State, {}> {
     return (
       <Router>
         <div className="App">
-          <Helmet>
-            <title>Keep.id</title>
-            <meta name="description" content="Securely Combating Homelessness" />
-          </Helmet>
-          <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-          <Switch>
-            // Home/Login Components
-            <Route
-              exact
-              path="/"
-              render={() => (
-                role !== Role.LoggedOut
-                  ? <Redirect to="/home" />
-                  : <Redirect to="/login" />
-              )}
-            />
-            <Route
-              path="/home"
-              render={() => {
-                if (role === Role.Admin || role === Role.HeadAdmin || role === Role.Worker) {
-                  return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
-                }
-                if (role === Role.Client) {
-                  return (<ClientLanding />);
-                }
-                return (<Redirect to="/login" />);
-              }}
-            />
-            <Route
-              path="/login"
-              render={() => (
-                role !== Role.LoggedOut
-                  ? <Redirect to="/home" />
-                  : <Login />
-              )}
-            />
-            <Route
-              path="/login-page"
-              render={() => (
-                role !== Role.LoggedOut
-                  ? <Redirect to="/home" />
-                  : <LoginPage />
-              )}
-            />
-            // Signup Components
-            <Route path="/organization-signup">
-              <OrganizationSignup />
-            </Route>
-            <Route
-              path="/person-signup/:roleString"
-              render={(props) => {
-                switch (props.match.params.roleString) {
-                  case 'admin':
-                    return (role === Role.HeadAdmin
-                      ? <PersonSignup userRole={role} personRole={Role.Admin} />
-                      : <Redirect to="/error" />
-                    );
-                  case 'worker':
-                    return (role === Role.HeadAdmin || role === Role.Admin
-                      ? <PersonSignup userRole={role} personRole={Role.Worker} />
-                      : <Redirect to="/error" />
-                    );
-                  case 'volunteer':
-                    return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker
-                      ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
-                      : <Redirect to="/error" />
-                    );
-                  case 'client':
-                    return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
-                      ? <PersonSignup userRole={role} personRole={Role.Client} />
-                      : <Redirect to="/error" />
-                    );
-                  default:
-                    return <Redirect to="/error" />;
-                }
-              }}
-            />
-            // Admin Components
-            <Route
-              path="/admin-panel"
-              render={() => {
-                if (role === Role.Admin || role === Role.HeadAdmin) {
-                  return (<AdminPanel name={name} organization={organization} username={username} />);
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            // Client Components
-            <Route
-              path="/upload-document"
-              render={() => {
-                if (role === Role.Client) {
-                  return <UploadDocs />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            <Route
-              path="/my-documents"
-              render={() => {
-                if (role === Role.Client) {
-                  return <MyDocuments username={name} />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            <Route
-              path="/applications"
-              render={() => {
-                if (role === Role.Client) {
-                  return <Applications />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            <Route
-              path="/request"
-              render={() => {
-                if (role === Role.Client) {
-                  return <Request />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            <Route
-              path="/email"
-              render={() => {
-                if (role === Role.Client) {
-                  return <Email />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            // All Users
-            <Route path="/our-team">
-              <OurTeam />
-            </Route>
-            <Route path="/our-partners">
-              <OurPartners />
-            </Route>
-            <Route path="/our-mission">
-              <OurMission />
-            </Route>
-            <Route path="/bug-report">
-              <BugReport/>
-            </Route>
-            <Route
-              path="/settings"
-              render={() => {
-                if (role !== Role.LoggedOut) {
-                  return <MyAccount />;
-                }
-                return <Redirect to="/error" />;
-              }}
-            />
-            // Website
-            // Component
-            <Route path="/error">
-              <Error />
-            </Route>
+          <div className="app">
+            <Helmet>
+              <title>Keep.id</title>
+              <meta name="description" content="Securely Combating Homelessness" />
+            </Helmet>
+            <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
+            <Switch>
+              // Home/Login Components
+              <Route
+                exact
+                path="/"
+                render={() => (
+                  role !== Role.LoggedOut
+                    ? <Redirect to="/home" />
+                    : <Redirect to="/login" />
+                )}
+              />
+              <Route
+                path="/home"
+                render={() => {
+                  if (role === Role.Admin || role === Role.HeadAdmin || role === Role.Worker) {
+                    return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
+                  }
+                  if (role === Role.Client) {
+                    return (<ClientLanding />);
+                  }
+                  return (<Redirect to="/login" />);
+                }}
+              />
+              <Route
+                path="/login"
+                render={() => (
+                  role !== Role.LoggedOut
+                    ? <Redirect to="/home" />
+                    : <Login />
+                )}
+              />
+              <Route
+                path="/login-page"
+                render={() => (
+                  role !== Role.LoggedOut
+                    ? <Redirect to="/home" />
+                    : <LoginPage />
+                )}
+              />
+              // Signup Components
+              <Route path="/organization-signup">
+                <OrganizationSignup />
+              </Route>
+              <Route
+                path="/person-signup/:roleString"
+                render={(props) => {
+                  switch (props.match.params.roleString) {
+                    case 'admin':
+                      return (role === Role.HeadAdmin
+                        ? <PersonSignup userRole={role} personRole={Role.Admin} />
+                        : <Redirect to="/error" />
+                      );
+                    case 'worker':
+                      return (role === Role.HeadAdmin || role === Role.Admin
+                        ? <PersonSignup userRole={role} personRole={Role.Worker} />
+                        : <Redirect to="/error" />
+                      );
+                    case 'volunteer':
+                      return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker
+                        ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
+                        : <Redirect to="/error" />
+                      );
+                    case 'client':
+                      return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
+                        ? <PersonSignup userRole={role} personRole={Role.Client} />
+                        : <Redirect to="/error" />
+                      );
+                    default:
+                      return <Redirect to="/error" />;
+                  }
+                }}
+              />
+              // Admin Components
+              <Route
+                path="/admin-panel"
+                render={() => {
+                  if (role === Role.Admin || role === Role.HeadAdmin) {
+                    return (<AdminPanel name={name} organization={organization} username={username} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              // Client Components
+              <Route
+                path="/upload-document"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <UploadDocs />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/my-documents"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <MyDocuments username={name} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/applications"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <Applications />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/request"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <Request />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/email"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <Email />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              // All Users
+              <Route path="/our-team">
+                <OurTeam />
+              </Route>
+              <Route path="/our-partners">
+                <OurPartners />
+              </Route>
+              <Route path="/our-mission">
+                <OurMission />
+              </Route>
+              <Route path="/bug-report">
+                <BugReport />
+              </Route>
+              <Route path="/forgot-password">
+                <ForgotPassword />
+              </Route>
+              <Route
+                path="/settings"
+                render={() => {
+                  if (role !== Role.LoggedOut) {
+                    return <MyAccount />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              // Website
+              // Component
+              <Route path="/error">
+                <Error />
+              </Route>
 
-          </Switch>
+            </Switch>
+          </div>
           <Footer />
         </div>
       </Router>

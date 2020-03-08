@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
 import getServerURL from '../serverOverride';
+import { reCaptchaKey } from '../configVars';
 
 interface Props{
   alert: any
@@ -24,7 +25,7 @@ class BugReport extends Component<Props, State, {}> {
       bugTitle: '',
       bugDescription: '',
       isCaptchaFilled: false,
-      buttonState: ''
+      buttonState: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.captchaVerify = this.captchaVerify.bind(this);
@@ -37,7 +38,7 @@ class BugReport extends Component<Props, State, {}> {
   }
 
   componentDidMount() {
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
   }
 
   handleSubmit(event: any) {
@@ -45,7 +46,7 @@ class BugReport extends Component<Props, State, {}> {
     recaptchaRef.current.execute();
     const {
       bugTitle,
-      bugDescription
+      bugDescription,
     } = this.state;
     if (process.env.NODE_ENV === 'production' && !this.state.isCaptchaFilled) {
       this.props.alert.show('Please click the Recaptcha');
@@ -54,8 +55,8 @@ class BugReport extends Component<Props, State, {}> {
       fetch(`${getServerURL()}/submit-bug`, {
         method: 'POST',
         body: JSON.stringify({
-          bugTitle: bugTitle,
-          bugDescription: bugDescription
+          bugTitle,
+          bugDescription,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -68,14 +69,14 @@ class BugReport extends Component<Props, State, {}> {
             this.setState({ buttonState: '' });
           }
         }).catch((error) => {
-          this.props.alert.show('Server Failure: ' + error);
+          this.props.alert.show(`Server Failure: ${error}`);
           this.setState({ buttonState: '' });
         });
     }
   }
-  
+
   handleChangeBugTitle(event: any) {
-    this.setState({ bugTitle : event.target.value });
+    this.setState({ bugTitle: event.target.value });
   }
 
   handleChangeBugDescription(event: any) {
@@ -85,7 +86,7 @@ class BugReport extends Component<Props, State, {}> {
   render() {
     const {
       bugTitle,
-      bugDescription
+      bugDescription,
     } = this.state;
     return (
       <div className="container">
@@ -107,18 +108,31 @@ class BugReport extends Component<Props, State, {}> {
                   <div className="col-md-12 form-group">
                     <label htmlFor="bugTitle" className="w-100 pr-3 font-weight-bold">
                       Issue Title
-                      <input type="text" className="form-control form-purple" id="bugTitle" placeholder="Bug Title" value={bugTitle} 
-                      onChange={this.handleChangeBugTitle} required />
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        id="bugTitle"
+                        placeholder="Bug Title"
+                        value={bugTitle}
+                        onChange={this.handleChangeBugTitle}
+                        required
+                      />
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="form-row">
                   <div className="col-md-12 form-group">
                     <label htmlFor="bugDescription" className="w-100 pr-3">
                       Description of the Problem
-                      <textarea className="form-control form-purple text-area-custom" id="bugDescription" placeholder="Leave a Detailed Description" 
-                      value={bugDescription} onChange={this.handleChangeBugDescription} required />
+                      <textarea
+                        className="form-control form-purple text-area-custom"
+                        id="bugDescription"
+                        placeholder="Leave a Detailed Description"
+                        value={bugDescription}
+                        onChange={this.handleChangeBugDescription}
+                        required
+                      />
                     </label>
                   </div>
                 </div>
@@ -127,7 +141,7 @@ class BugReport extends Component<Props, State, {}> {
                     <ReCAPTCHA
                       ref={recaptchaRef}
                       size="invisible"
-                      sitekey="6LdC2doUAAAAAOPR99_VV97ifNVQiF7I3RQOTc8T"
+                      sitekey={reCaptchaKey}
                       onChange={this.captchaVerify}
                     />
                   </div>

@@ -5,9 +5,9 @@ interface State {}
 
 class OurMission extends React.Component<{}, State> {
   componentDidMount() {
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
   }
-  
+
   render() {
     return (
       <div className="container">

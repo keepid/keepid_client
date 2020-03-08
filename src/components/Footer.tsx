@@ -19,20 +19,20 @@ class Footer extends Component<{}, {}> {
               <p className="text-gray-700 mb-2">Securely Combating Homelessness</p>
               <ul className="list-unstyled list-inline list-social">
                 <li className="list-inline-item list-social-item mr-3">
-                  <Link to="/error" className="text-decoration-none">
+                  <a href="mailto:contact@keep.id" className="text-decoration-none">
                     <img alt="Email Address" src={Email} className="list-social-icon" />
-                  </Link>
+                  </a>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
                   <Link to="/error" className="text-decoration-none">
                     <img alt="Facebook Link" src={FacebookLogo} className="list-social-icon" />
                   </Link>
                 </li>
-                <li className="list-inline-item list-social-item mr-3">
+                {/* <li className="list-inline-item list-social-item mr-3">
                   <Link to="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
                     <img alt="Github Link" src={GithubLogo} className="list-social-icon" />
                   </Link>
-                </li>
+                </li> */}
               </ul>
               <ul className="list-unstyled list-inline list-social">
                 <Link to="/bug-report" className="text-decoration-none">
