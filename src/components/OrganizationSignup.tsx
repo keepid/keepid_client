@@ -78,7 +78,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
   }
 
   captchaVerify(value) {
-    console.log('RECAPTCHA VALUE', value)
     this.setState({ isCaptchaFilled: true });
   }
 
