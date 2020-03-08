@@ -30,6 +30,7 @@ import OurMission from './components/OurMission';
 import WorkerLanding from './components/WorkerLanding';
 import getServerURL from './serverOverride';
 import BugReport from './components/BugReport';
+import LoginPage from './components/LoginPage';
 
 interface State {
   role: Role,
@@ -114,6 +115,14 @@ class App extends React.Component<{}, State, {}> {
                 role !== Role.LoggedOut
                   ? <Redirect to="/home" />
                   : <Login />
+              )}
+            />
+            <Route
+              path="/login-page"
+              render={() => (
+                role !== Role.LoggedOut
+                  ? <Redirect to="/home" />
+                  : <LoginPage />
               )}
             />
             // Signup Components

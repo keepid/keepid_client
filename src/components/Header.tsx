@@ -28,7 +28,7 @@ class Header extends Component<Props, State, {}> {
     this.state = {
       buttonState: '',
       username: '',
-      password: '', // Ensure proper length, combination of words and numbers (have a mapping for people to remember)
+      password: '', 
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);

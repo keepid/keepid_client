@@ -23,7 +23,7 @@ $theme-colors: (
 @import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
 
 .App {
-	font-family: 'Noto Sans', sans-serif !important;
+	font-family: 'Noto Sans', sans-serif;
 }
 
 .input-group-text {
@@ -44,6 +44,10 @@ $theme-colors: (
 	background: rgb(123,150,255);
 	background: linear-gradient(35deg, rgba(123,150,255,1) 0%, rgba(123,129,255,1) 45%, rgba(154,100,255,1) 100%);
 	color: white
+}
+
+.bg-gray {
+	background-color:#e9ecef;
 }
 
 .background {
@@ -242,4 +246,29 @@ thead {
 
 .text-area-custom {
 	min-height: 25vh;
+}
+
+.form-signin {
+	width: 100%;
+	max-width: 330px;
+}
+
+.form-signin .checkbox {
+	font-weight: 400;
+}
+.form-signin .form-control {
+	position: relative;
+	box-sizing: border-box;
+	height: auto;
+	padding: 10px;
+	font-size: 16px;
+}
+
+.recaptcha-login-text {
+	font-size: 14px;
+	line-height: 150%;
+}
+
+.grecaptcha-badge { 
+    visibility: hidden;
 }

@@ -15,6 +15,8 @@ interface State {
   buttonState: string
 }
 
+const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+
 class BugReport extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
@@ -40,6 +42,7 @@ class BugReport extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
+    recaptchaRef.current.execute();
     const {
       bugTitle,
       bugDescription
@@ -122,6 +125,8 @@ class BugReport extends Component<Props, State, {}> {
                 <div className="form-row mt-2">
                   <div className="col-md-6">
                     <ReCAPTCHA
+                      ref={recaptchaRef}
+                      size="invisible"
                       sitekey="6LdC2doUAAAAAOPR99_VV97ifNVQiF7I3RQOTc8T"
                       onChange={this.captchaVerify}
                     />
