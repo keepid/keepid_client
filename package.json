@@ -88,7 +88,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts --max_old_space_size=500 build",
+    "build": "react-scripts build",
     "test": "set \"CI=false\" && react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
