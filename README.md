@@ -3,6 +3,8 @@
 
 [![Build Status](https://travis-ci.com/crchong1/keepid_client.svg?token=ZfxxuGjvV4UyCBCswM7B&branch=master)](https://travis-ci.com/crchong1/keepid_client)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa3d458398184301aa386a953dda4286)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crchong1/keepid_client&amp;utm_campaign=Badge_Grade)
+
 ## How to Install the Client
 After cloning, `cd client` and then do npm install
 
