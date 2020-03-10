@@ -332,3 +332,9 @@ thead {
 	}
 }
 
+
+@media screen and (max-width: 770px) {
+	.mobile-hide {
+		display: none;
+	}
+}

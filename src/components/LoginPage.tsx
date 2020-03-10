@@ -115,9 +115,9 @@ class LoginPage extends Component<Props, State> {
         </Helmet>
         <div className="container">
           <div className="row mt-4">
-            <div className="col-6 mobile-hide">
+            <div className="col mobile-hide">
               <div className="float-right w-100">
-                <img alt="Login Image" className="w-75 pt-5 mt-5 float-right " src={LoginSVG} />
+                <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " src={LoginSVG} />
               </div>
               <div className="row pl-3 pb-3">
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
@@ -132,8 +132,8 @@ class LoginPage extends Component<Props, State> {
               </div>
             </div>
 
-            <div className="col-6">
-              <form className="form-signin pt-5 ml-5">
+            <div className="col">
+              <form className="form-signin pt-5">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
                     Username
