@@ -189,7 +189,9 @@ Remember me
                 </div>
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
-                    <button type="button" className="btn btn-outline-primary w-100 ">Sign Up Here</button>
+                    <Link to="/organization-signup">
+                      <button type="button" className="btn btn-outline-primary w-100 ">Sign Up Here</button>
+                    </Link>
                   </div>
                 </div>
                 <div className="row pl-3 pb-1">
@@ -199,7 +201,9 @@ Remember me
                 </div>
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
-                    <button type="button" className="btn btn-outline-primary w-100">Start a 3 Month Free Trial</button>
+                    <Link to="/organization-signup">
+                      <button type="button" className="btn btn-outline-primary w-100">Start a 3 Month Free Trial</button>
+                    </Link>
                   </div>
                 </div>
               </form>
