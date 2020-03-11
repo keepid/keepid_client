@@ -127,7 +127,6 @@ class Header extends Component<Props, State, {}> {
 
     if (isLoggedIn) {
       return (
-        <div>
           <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
             <div className="container">
               <Link className="pr-3" to="/home">
@@ -168,11 +167,9 @@ class Header extends Component<Props, State, {}> {
               </div>
             </div>
           </nav>
-        </div>
       );
     }
     return (
-      <div>
         <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
           <div className="container">
             <Link className="pr-3" to="/home">
@@ -192,7 +189,11 @@ class Header extends Component<Props, State, {}> {
             </button>
 
             <div className="collapse navbar-collapse" id="navbarToggle">
-              <ul className="navbar-nav mr-auto mt-2 mt-lg-0 " />
+              <ul className="navbar-nav mr-auto mt-2 mt-lg-0 ">
+                <li className="nav-item my-1 mr-2">
+                  {/* <Link className="nav-link" to="/">For Orgs</Link> */}
+                </li>
+              </ul>
               <form onSubmit={this.handleLogin}>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
@@ -247,13 +248,19 @@ class Header extends Component<Props, State, {}> {
                       <div className="ld ld-ring ld-spin" />
                     </button>
                   </div>
+                  <div className="col-auto my-1">
+                    <Link to="/login-page">
+                      <button type="submit" className='btn btn-dark-custom'>
+                        Sign In
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
         </nav>
-      </div>
-    );
+      );
   }
 }
 
