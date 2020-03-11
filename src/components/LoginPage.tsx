@@ -178,7 +178,7 @@ Remember me
                   </div>
                 </div>
                 <div className="row pl-3 pb-3">
-                  <Link to="/bug-report" className="text-decoration-none">
+                  <Link to="/forgot-password" className="text-decoration-none">
                     <span className="">Forgot your password?</span>
                   </Link>
                 </div>
