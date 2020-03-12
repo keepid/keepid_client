@@ -1,9 +1,5 @@
 package UserIntTests;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
-
 import Config.MongoConfig;
 import Logger.LogFactory;
 import com.mongodb.client.MongoClient;
@@ -211,17 +207,9 @@ public class UserController {
           return;
         }
 
-        if (privilegeLevel.equals("client")) {
-          JSONObject response = new JSONObject();
-          response.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
-          ctx.json(response.toString());
-          return;
-        }
-
         JSONObject memberList = new JSONObject();
 
-        JSONArray admins = new JSONArray();
-        JSONArray workers = new JSONArray();
+        JSONArray members = new JSONArray();
         JSONArray clients = new JSONArray();
 
         MongoClient client = MongoConfig.getMongoClient();
@@ -238,14 +226,14 @@ public class UserController {
             filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
             filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
           }
+          filter = combine(filter, orgNameMatch); // Make sure good
         } else {
           filter = orgNameMatch;
         }
 
         MongoCursor<Document> cursor = userCollection.find(filter).iterator();
         int numClients = 0;
-        int numAdmins = 0;
-        int numWorkers = 0;
+        int numMembers = 0;
         while (cursor.hasNext()) {
           System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
@@ -255,6 +243,7 @@ public class UserController {
 
           JSONObject user = new JSONObject();
           user.put("username", doc.get("username").toString());
+          user.put("privilegeLevel", doc.get("privilegeLevel").toString());
           user.put("firstName", doc.get("firstName").toString());
           user.put("lastName", doc.get("lastName").toString());
           user.put("email", doc.get("email").toString());
@@ -264,48 +253,36 @@ public class UserController {
           user.put("state", doc.get("state").toString());
           user.put("zipcode", doc.get("zipcode").toString());
 
-          if (userType.equals("admin")) {
-            admins.put(user);
-            numAdmins += 1;
-          } else if (userType.equals("worker")) {
-            workers.put(user);
-            numWorkers += 1;
+          if (userType.equals("admin") || userType.equals("worker")) {
+            members.put(user);
+            numMembers += 1;
           } else if (userType.equals("client")) {
             clients.put(user);
             numClients += 1;
           }
         }
 
-        if (privilegeLevel.equals("worker")
-            || (privilegeLevel.equals("admin") && listType.equals("clients"))) {
-          JSONArray clientPage = new JSONArray();
-          if (startIndex >= 0 && endIndex <= clients.length()) {
-            for (int i = startIndex; i < endIndex; i++) {
-              clientPage.put(clients.get(i));
-            }
-          } else if (startIndex >= 0
-              && endIndex > clients.length()
-              && clients.length() > startIndex) {
-            endIndex = clients.length();
-            for (int i = startIndex; i < endIndex; i++) {
-              clientPage.put(clients.get(i));
-            }
-          }
-          memberList.put("clients", clientPage);
-        } else if (privilegeLevel.equals("admin")) {
-          System.out.println("LIST TYPE");
-          System.out.println(listType);
-          if (listType.equals("members")) {
-            memberList.put("admins", admins);
-            memberList.put("workers", workers);
-          }
+        JSONArray returnElements;
+        int numReturnElements;
+        // If Getting Client List
+        if (listType.equals("clients")
+            && (privilegeLevel.equals("worker") || privilegeLevel.equals("admin"))) {
+          returnElements = getPage(clients, startIndex, endIndex);
+          numReturnElements = clients.length();
+          // If Getting Worker/Admin List
+        } else if (listType.equals("members") && privilegeLevel.equals("admin")) {
+          returnElements = getPage(members, startIndex, endIndex);
+          numReturnElements = members.length();
+        } else {
+          JSONObject response = new JSONObject();
+          response.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+          ctx.json(response.toString());
+          return;
         }
 
         JSONObject response = new JSONObject();
-        response.put("memberList", memberList);
-        response.put("numClients", numClients);
-        response.put("numAdmins", numAdmins);
-        response.put("numWorkers", numWorkers);
+        response.put("people", returnElements);
+        response.put("numPeople", numReturnElements);
         ctx.json(response.toString());
       };
 
@@ -342,4 +319,19 @@ public class UserController {
 
         ctx.json(UserMessage.SUCCESS.getErrorName());
       };
+
+  private JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
+    JSONArray page = new JSONArray();
+    if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
+      if (pageEndIndex > elements.length()) {
+        pageEndIndex = elements.length();
+      }
+      for (int i = pageStartIndex; i < pageEndIndex; i++) {
+        page.put(elements.get(i));
+      }
+    } else {
+      System.out.println("ERROR: Invalid Start Index");
+    }
+    return page;
+  }
 }
