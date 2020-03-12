@@ -4,8 +4,10 @@
 import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import paginationFactory from 'react-bootstrap-table2-paginator';
+import TablePageSelector from './TablePageSelector';
+//import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Helmet } from 'react-helmet';
+import Select from 'react-select';
 import getServerURL from '../serverOverride';
 
 interface Props {
@@ -16,11 +18,23 @@ interface Props {
 
 interface State {
   workers: any,
-  currentWorker: any
+  currentWorker: any,
+  currentPage: number,
+  itemsPerPageSelected: any,
+  numElements: number,
+  searchName: string,
   username: string,
   adminName: string,
   organization: string,
 }
+
+const listOptions = [
+  { value: '2', label: '2'},
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '25', label: '25' },
+  { value: '50', label: '50' },
+];
 
 class AdminPanel extends Component<Props, State> {
   tableCols = [{
@@ -32,7 +46,7 @@ class AdminPanel extends Component<Props, State> {
     text: 'Last Name',
     sort: true,
   }, {
-    dataField: 'type',
+    dataField: 'privilegeLevel',
     text: 'Worker Type',
     sort: true,
   }];
@@ -41,7 +55,11 @@ class AdminPanel extends Component<Props, State> {
     super(props);
     this.state = {
       currentWorker: undefined,
+      currentPage: 0,
+      itemsPerPageSelected: listOptions[0],
+      numElements: 0,
       username: props.username,
+      searchName: '',
       adminName: props.name,
       organization: props.organization,
       workers: [{
@@ -52,6 +70,9 @@ class AdminPanel extends Component<Props, State> {
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.onClickWorker = this.onClickWorker.bind(this);
+    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
+    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
+    this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getAdminWorkers = this.getAdminWorkers.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
     this.onChangeEditPermission = this.onChangeEditPermission.bind(this);
@@ -64,6 +85,24 @@ class AdminPanel extends Component<Props, State> {
 
   onClickWorker(event: any) {
     this.setState({ currentWorker: event });
+  }
+
+  handleChangeSearchName(event: any) {
+    this.setState({
+      searchName: event.target.value,
+      currentPage: 0,
+    }, this.getAdminWorkers);
+  }
+
+  handleChangeItemsPerPage(itemsPerPageSelected: any) {
+    this.setState({
+      itemsPerPageSelected,
+      currentPage: 0,
+    }, this.getAdminWorkers);
+  }
+
+  changeCurrentPage(newCurrentPage: number) {
+    this.setState({ currentPage: newCurrentPage }, this.getAdminWorkers);
   }
 
   onChangeViewPermission(event: any) {
@@ -87,21 +126,31 @@ class AdminPanel extends Component<Props, State> {
   }
 
   getAdminWorkers() {
+    const {
+      searchName,
+      currentPage,
+      itemsPerPageSelected,
+    } = this.state;
+    const itemsPerPage = parseInt(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         listType: 'members',
+        currentPage,
+        itemsPerPage,
+        name: searchName,
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const { workers } = responseJSON;
-        const { admins } = responseJSON;
-        workers.forEach((element) => element.type = 'worker');
-        admins.forEach((element) => element.type = 'admin');
+        const { 
+          people,
+          numPeople,
+        } = responseJSON;
         this.setState({
-          workers: workers.concat(admins),
+          numElements: numPeople,
+          workers: people,
         });
       });
   }
@@ -109,6 +158,9 @@ class AdminPanel extends Component<Props, State> {
   render() {
     const {
       currentWorker,
+      currentPage,
+      itemsPerPageSelected,
+      numElements,
       username,
       adminName,
       organization,
@@ -214,6 +266,14 @@ class AdminPanel extends Component<Props, State> {
         </div>
       );
 
+    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const tablePageSelector = TablePageSelector({
+      currentPage,
+      itemsPerPage,
+      numElements,
+      changeCurrentPage: this.changeCurrentPage,
+    });
+
     return (
       <div>
         <Helmet>
@@ -232,9 +292,31 @@ class AdminPanel extends Component<Props, State> {
         </div>
         <div className="container">
           <form className="form-inline my-2 my-lg-0">
-            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-            <button className="btn btn-outline-primary my-2 my-sm-0" type="submit">Search Workers</button>
+            <input 
+              className="form-control mr-sm-2" 
+              type="search" 
+              placeholder="Search" 
+              aria-label="Search" 
+              onChange={this.handleChangeSearchName} 
+            />
           </form>
+          <div className="row ml-1 mt-2 mb-2">
+            {numElements === 0 ? <div /> : tablePageSelector }
+            {numElements === 0 ? <div /> : 
+              <div className="w-25">
+                <div className="card card-body mt-0 mb-4 border-0 p-0">
+                  <h5 className="card-text h6"># Items per page</h5>
+                  <Select
+                    options={listOptions}
+                    autoFocus
+                    closeMenuOnSelect={false}
+                    onChange={this.handleChangeItemsPerPage}
+                    value={itemsPerPageSelected}
+                  />
+                </div>
+              </div>
+            }
+          </div>
           <div className="d-flex flex-row bd-highlight mb-3 pt-5">
             <div className="w-50 pd-3">
               <BootstrapTable
@@ -250,8 +332,7 @@ class AdminPanel extends Component<Props, State> {
                   clickToSelect: true,
                   hideSelectColumn: true,
                 }}
-                noDataIndication="No Workers Present"
-                pagination={paginationFactory()}
+                noDataIndication="No Workers Found"
               />
             </div>
             {workerPanel}

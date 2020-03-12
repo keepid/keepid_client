@@ -22,14 +22,14 @@ class Login extends Component<{}, {}, {}> {
                 <div className="background ml-5 p-4 rounded mb-3 pb-5">
                   <div className="page-header">
                     <span className="brand-text">
-                      Secure Document Storage for Experienced Homelessness
+                      Empowering the Homeless through Secure Document Storage in the Cloud
                     </span>
                   </div>
                   <h2 className="mt-4 pt-2 pb-2">
                     <span>For Those Experiencing Homelessness</span>
                   </h2>
                   <p>
-                    <span>Find a nearby registered organization against homelessness that can help get you started.</span>
+                    <span>Find a nearby registered organization that can help get you started.</span>
                   </p>
                   <button type="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
                       Sign Up Here
@@ -38,7 +38,7 @@ class Login extends Component<{}, {}, {}> {
                     <span>For Organizations: Partner with Us</span>
                   </h2>
                   <p>
-                    <span>Are you an aid organization fighting homelessness?</span>
+                    <span>Start your free three-month trial to empower your clients</span>
                   </p>
                   <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground w-50">Start a 3 Month Free Trial</a>
                 </div>

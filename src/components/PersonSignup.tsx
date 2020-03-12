@@ -121,7 +121,17 @@ class PersonSignup extends Component<Props, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          this.props.alert.show(responseJSON);
+          const userMessage = responseJSON;
+          if(userMessage === "ENROLL_SUCCESS") {
+            this.props.alert.show("Successfully Enrolled Person");
+          } else if (userMessage === "USERNAME_ALREADY_EXISTS") {
+            this.props.alert.show("Username Already Exists!");
+          } else if (userMessage === "HASH_FAILURE") {
+            this.props.alert.show("Server Failure: Please Try Again");
+          } else {
+            this.props.alert.show("Permissions Error");
+          }
+          
           this.setState({ submitSuccessful: true });
           this.setState({ buttonState: '' });
         }).catch((error) => {
@@ -181,7 +191,7 @@ class PersonSignup extends Component<Props, State, {}> {
       const personBirthDay = personBirthDate.getDate();
       const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
       const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${personBirthDate.getFullYear()}`;
-      const personUsername = `${personFirstNameNew.toUpperCase()}-${personLastNameNew.toUpperCase()}-${personBirthDateFormatted}`;
+      const personUsername = `${personFirstNameNew.toUpperCase()}-${personLastNameNew.toUpperCase()}`;
       this.setState({ personUsername });
     }
   }
@@ -440,7 +450,7 @@ class PersonSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-auto mt-3 pl-4 pt-2">
-                    <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
+                    <button type="submit" className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
                       Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>

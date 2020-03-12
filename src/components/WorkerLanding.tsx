@@ -7,6 +7,7 @@ import { withAlert } from 'react-alert';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
 import getServerURL from '../serverOverride';
+import TablePageSelector from './TablePageSelector';
 
 interface Props {
   username: string,
@@ -19,7 +20,7 @@ interface Props {
 interface State {
   clients: any,
   numClients: number,
-  nameSearch: string,
+  searchName: string,
   redirect: boolean,
   redirectLink: string,
   clientUsername: string,
@@ -36,13 +37,12 @@ const options = [
 
 
 const listOptions = [
+  { value: '2', label: '2'},
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
   { value: '50', label: '50' },
 ];
-
-const numPagesCap = 10;
 
 
 const animatedComponents = makeAnimated();
@@ -51,7 +51,7 @@ class WorkerLanding extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      nameSearch: '',
+      searchName: '',
       redirectLink: '',
       redirect: false,
       clientUsername: '',
@@ -67,10 +67,8 @@ class WorkerLanding extends Component<Props, State> {
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleClickToPage = this.handleClickToPage.bind(this);
     this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.handleClickPrevious = this.handleClickPrevious.bind(this);
-    this.handleClickNext = this.handleClickNext.bind(this);
+    this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getClients = this.getClients.bind(this);
     this.handleChangeClientPassword = this.handleChangeClientPassword.bind(this);
     this.handleClickUploadDocuments = this.handleClickUploadDocuments.bind(this);
@@ -89,27 +87,13 @@ class WorkerLanding extends Component<Props, State> {
 
   handleChangeSearchName(event: any) {
     this.setState({
-      nameSearch: event.target.value,
+      searchName: event.target.value,
       currentPage: 0,
     }, this.getClients);
   }
 
-  handleClickToPage(index: number) {
-    this.setState({ currentPage: index - 1 }, this.getClients);
-  }
-
-  handleClickPrevious(event: any) {
-    const {
-      currentPage,
-    } = this.state;
-    this.setState({ currentPage: currentPage - 1 }, this.getClients);
-  }
-
-  handleClickNext(event: any) {
-    const {
-      currentPage,
-    } = this.state;
-    this.setState({ currentPage: currentPage + 1 }, this.getClients);
+  changeCurrentPage(newCurrentPage: number) {
+    this.setState({ currentPage: newCurrentPage }, this.getClients);
   }
 
   handleChangeItemsPerPage(itemsPerPageSelected: any) {
@@ -121,7 +105,7 @@ class WorkerLanding extends Component<Props, State> {
 
   getClients() {
     const {
-      nameSearch,
+      searchName,
       currentPage,
       itemsPerPageSelected,
     } = this.state;
@@ -133,20 +117,20 @@ class WorkerLanding extends Component<Props, State> {
         listType: 'clients',
         currentPage,
         itemsPerPage,
-        name: nameSearch,
+        name: searchName,
         lastName: '',
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
         const {
-          numClients,
-          memberList,
+          people,
+          numPeople,
         } = responseJSON;
-        if (memberList) {
+        if (people) {
           this.setState({
-            numClients,
-            clients: memberList.clients,
+            numClients: numPeople,
+            clients: people,
           });
         }
       });
@@ -224,6 +208,7 @@ class WorkerLanding extends Component<Props, State> {
                 {' '}
                 {client.lastName}
               </h5>
+              <h6 className="card-subtitle mb-2 text-muted">{client.username}</h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
               <h6 className="card-subtitle mb-2 text-muted">
 #
@@ -363,11 +348,13 @@ class WorkerLanding extends Component<Props, State> {
       numClients,
     } = this.state;
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
-    const numPages : number = Math.floor((numClients - 1) / itemsPerPage) + 1;
-    const numPagesArray : number[] = [];
-    for (let i = 1; i <= numPages; i++) {
-      numPagesArray.push(i);
-    }
+    
+    const tablePageSelector = TablePageSelector({
+      currentPage, 
+      itemsPerPage, 
+      numElements: numClients,
+      changeCurrentPage: this.changeCurrentPage,
+    });
     return (
       <div>
         <Helmet>
@@ -384,7 +371,7 @@ class WorkerLanding extends Component<Props, State> {
                   className="form-control mr-2 w-75"
                   type="text"
                   onChange={this.handleChangeSearchName}
-                  value={this.state.nameSearch}
+                  value={this.state.searchName}
                   placeholder="Search Name"
                   aria-label="Search"
                 />
@@ -419,28 +406,23 @@ class WorkerLanding extends Component<Props, State> {
             <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
           </div>
           <div className="row ml-1 mt-2 mb-2">
-            <nav aria-label="Page navigation example">
-              <ul className="pagination mt-4 mb-3 mr-5 ml-4">
-                {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={this.handleClickPrevious}>Previous</span></li> : <div />}
-                {numPagesArray.map((index) => <li className="page-item"><span className="page-link" onClick={(event) => this.handleClickToPage(index)}>{index}</span></li>)}
-                {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={this.handleClickNext}>Next</span></li> : <div />}
-              </ul>
-            </nav>
-            <div className="w-25">
-              <div className="card card-body mt-0 mb-4 border-0 p-0">
-                <h5 className="card-text h6"># Items per page</h5>
-                <Select
-                  options={listOptions}
-                  autoFocus
-                  closeMenuOnSelect={false}
-                  onChange={this.handleChangeItemsPerPage}
-                  value={itemsPerPageSelected}
-                />
+            {numClients === 0 ? <div /> : tablePageSelector }
+            {numClients === 0 ? <div /> : 
+              <div className="w-25">
+                <div className="card card-body mt-0 mb-4 border-0 p-0">
+                  <h5 className="card-text h6"># Items per page</h5>
+                  <Select
+                    options={listOptions}
+                    autoFocus
+                    closeMenuOnSelect={false}
+                    onChange={this.handleChangeItemsPerPage}
+                    value={itemsPerPageSelected}
+                  />
+                </div>
               </div>
-            </div>
+            }
           </div>
-          {/* RENDER CLIENT CARDS BELOW: MOVE THIS TO A FUNCTION LATER AND HAVE IT RENDER ALL THE INFORMATION */}
-          {this.renderClients()}
+          {numClients === 0 ? <h3>No Clients Found</h3> : this.renderClients()}
         </div>
       </div>
     );
