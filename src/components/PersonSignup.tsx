@@ -337,7 +337,7 @@ class PersonSignup extends Component<Props, State, {}> {
                 <div className="form-row">
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputMailingAddress" className="w-100 pr-3">
-                      Person Mailing Address
+                      Mailing Address
                       <text className="red-star">*</text>
                       <input
                         type="text"

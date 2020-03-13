@@ -7,6 +7,8 @@ interface Props {
   changeCurrentPage: any,
 }
 
+const numPagesConst = 3;
+
 function TablePageSelector(props: Props) : any {
   const {
     currentPage,
@@ -16,10 +18,27 @@ function TablePageSelector(props: Props) : any {
   } = props;
   const numPages : number = Math.floor((numElements - 1) / itemsPerPage) + 1;
   const numPagesArray : number[] = [];
-  const numPagesCap = 2;
 
-  for (let i = 1; i <= numPages; i++) {
-    numPagesArray.push(i);
+  var numPagesLowerBound;
+  var numPagesUpperBound;
+  if (numPagesConst % 2 == 0) {
+    const numPagesRange = (numPagesConst / 2) - 1;
+    numPagesLowerBound = currentPage - numPagesRange;
+    numPagesUpperBound = currentPage + numPagesRange + 1;
+  } else {
+    const numPagesRange = (numPagesConst - 1) / 2;
+    numPagesLowerBound = currentPage - numPagesRange;
+    numPagesUpperBound = currentPage + numPagesRange;
+  }
+  if (numPagesLowerBound <= 0) {
+    numPagesLowerBound = 0;
+    numPagesUpperBound = (numPagesConst < numPages ? numPagesConst : numPages) - 1;
+  } else if (numPagesUpperBound >= numPages - 1) {
+    numPagesUpperBound = numPages - 1;
+    numPagesLowerBound = (numPagesConst < numPages ? numPages - numPagesConst : 0);
+  }
+  for (let i = numPagesLowerBound; i <= numPagesUpperBound; i++) {
+    numPagesArray.push(i + 1);
   }
 
   function handleClickToPage(index: number) {
