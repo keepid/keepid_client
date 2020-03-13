@@ -183,7 +183,7 @@ public class UserController {
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
-        ctx.result("SUCCESS");
+        ctx.json("SUCCESS");
       };
 
   public Handler getMembers =
