@@ -75,6 +75,7 @@ class LoginPage extends Component<Props, State> {
             firstName,
             lastName,
           } = responseJSON;
+          console.log(loginStatus);
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
@@ -189,8 +190,8 @@ Remember me
                 </div>
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
-                    <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100 ">Sign Up Here</button>
+                    <Link to="/find-organization">
+                      <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
                     </Link>
                   </div>
                 </div>
@@ -202,7 +203,7 @@ Remember me
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100">Start a 3 Month Free Trial</button>
+                      <button type="button" className="btn btn-outline-primary w-100">Start 3-Month Free Trial</button>
                     </Link>
                   </div>
                 </div>

@@ -32,6 +32,7 @@ import getServerURL from './serverOverride';
 import BugReport from './components/BugReport';
 import LoginPage from './components/LoginPage';
 import ForgotPassword from './components/ForgotPassword';
+import FindOrganization from './components/FindOrganization';
 
 interface State {
   role: Role,
@@ -112,6 +113,10 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                path="/find-organization"
+                render={() => (<FindOrganization />)}
+              />
+              <Route
                 path="/login"
                 render={() => (
                   role !== Role.LoggedOut
@@ -124,7 +129,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <LoginPage />
+                    : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
                 )}
               />
               // Signup Components
@@ -245,8 +250,10 @@ class App extends React.Component<{}, State, {}> {
               // Component
               <Route path="/error">
                 <Error />
+              </Route> 
+              <Route>
+                <Redirect to="/error" />
               </Route>
-
             </Switch>
           </div>
           <Footer />

@@ -31,16 +31,18 @@ class Login extends Component<{}, {}, {}> {
                   <p>
                     <span>Find a nearby registered organization that can help get you started.</span>
                   </p>
-                  <button type="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
-                      Sign Up Here
-                  </button>
+                  <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
+                      Find Organizations
+                  </a>
                   <h2 className="mt-4">
                     <span>For Organizations: Partner with Us</span>
                   </h2>
                   <p>
                     <span>Start your free three-month trial to empower your clients</span>
                   </p>
-                  <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground w-50">Start a 3 Month Free Trial</a>
+                  <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground w-50">
+                    Start 3-Month Free Trial
+                  </a>
                 </div>
               </div>
               <div className="col-md-6">
