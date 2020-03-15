@@ -19,6 +19,7 @@ public class App {
   public static Long ASYNC_TIME_OUT = 10L;
 
   public static void main(String[] args) {
+    System.setProperty("logback.configurationFile", "../resources/logback.xml");
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 
@@ -47,9 +48,6 @@ public class App {
                   config.prefer405over404 =
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
-                  //            config.requestLogger();                    // set a request logger
-                  //                  config.sessionHandler(SessionConfig::fileSessionHandler);
-                  //                  config.accessManager(UserController::accessManager);
                   config.sessionHandler(() -> SessionConfig.getSessionHandlerInstance());
                 })
             .start(Integer.parseInt(System.getenv("PORT")));
@@ -66,41 +64,6 @@ public class App {
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
     PdfDelete pdfDelete = new PdfDelete(db);
-    /*
-     * Server API:
-     *  /login
-     *     - Takes {
-     *          username: (Of the form <firstname>-<lastname>-<orgName>-<dateofbirth>)
-     *          password:
-     *      }
-     *      as form parameters.
-     *     - Logs a user in, given a username and password.
-     *     - Sets proper privilege level.
-     *
-     *  /organization-signup
-     *     - Takes {
-     *          orgName:
-     *          firstname:
-     *          lastname:
-     *          password:
-     *          email:
-     *      }
-     *      as form parameters.
-     *     - Adds the organization to the database, as well as the first admin.
-     *     - Returns a status:
-     *          - OrgEnrollmentStatus.PASS_HASH_FAILURE
-     *          - OrgEnrollmentStatus.ORG_EXISTS
-     *          - OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT
-     *
-     *  TODO: /create-user
-     *     - Takes form params for creating new user, and adds to DB.
-     *
-     * TODO: /document
-     *     - Takes userID and document name
-     *
-     * TODO: /put-documents
-     *     - Adds a document to the user's db entry
-     */
 
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
     app.post("/upload", pdfUpload.pdfUpload);
