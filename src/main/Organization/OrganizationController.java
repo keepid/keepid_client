@@ -1,4 +1,4 @@
-package OrganizationIntTests;
+package Organization;
 
 import static com.mongodb.client.model.Filters.eq;
 

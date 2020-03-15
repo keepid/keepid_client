@@ -3,7 +3,7 @@ package SecurityUnitTests;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import Security.ValidationUtils;
+import Validation.ValidationUtils;
 import org.junit.Test;
 
 public class ValidationUtilsUnitTest {

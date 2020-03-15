@@ -94,8 +94,6 @@ public class UserController {
 
   public Handler createNewUser =
       ctx -> {
-
-        // System.out.println("SESSION: " + ctx.req.getSession().toString());
         JSONObject req = new JSONObject(ctx.body());
         // Get all formParams
         String firstName = req.getString("firstname");

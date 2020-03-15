@@ -1,4 +1,4 @@
-package OrganizationIntTests;
+package Organization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
