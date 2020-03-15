@@ -1,8 +1,8 @@
-package Organization;
+package OrganizationTest;
 
 import static com.mongodb.client.model.Filters.eq;
 
-import UserIntTests.UserMessage;
+import UserTest.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;

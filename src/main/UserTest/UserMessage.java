@@ -1,4 +1,4 @@
-package UserIntTests;
+package UserTest;
 
 public enum UserMessage {
   AUTH_SUCCESS("AUTH_SUCCESS:Successfully Authenticated User"),

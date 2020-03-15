@@ -1,12 +1,12 @@
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
-import Organization.OrganizationController;
+import OrganizationTest.OrganizationController;
 import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
-import UserIntTests.UserController;
+import UserTest.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;

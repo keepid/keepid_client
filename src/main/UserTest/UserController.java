@@ -1,4 +1,4 @@
-package UserIntTests;
+package UserTest;
 
 import Config.MongoConfig;
 import Logger.LogFactory;

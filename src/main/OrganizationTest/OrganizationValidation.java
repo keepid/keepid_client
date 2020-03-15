@@ -1,4 +1,4 @@
-package Organization;
+package OrganizationTest;
 
 import Logger.LogFactory;
 import Validation.GeneralValidator;

@@ -1,4 +1,4 @@
-package uploadTests;
+package PDFUploadTest;
 
 import Config.MongoConfig;
 import PDFUpload.PdfMongo;
