@@ -1,12 +1,12 @@
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
-import OrganizationIntTests.OrganizationController;
+import Organization.OrganizationController;
 import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
-import UserIntTests.UserController;
+import UserTest.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -59,60 +59,36 @@ public class App {
     logger.error("EXAMPLE OF ERROR");
     logger.debug("EXAMPLE OF DEBUG");
 
-    // we need to instantiate the controllers with the database
+    // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
     PdfDelete pdfDelete = new PdfDelete(db);
-    /*
-     * Server API:
-     *  /login
-     *     - Takes {
-     *          username: (Of the form <firstname>-<lastname>-<orgName>-<dateofbirth>)
-     *          password:
-     *      }
-     *      as form parameters.
-     *     - Logs a user in, given a username and password.
-     *     - Sets proper privilege level.
-     *
-     *  /organization-signup
-     *     - Takes {
-     *          orgName:
-     *          firstname:
-     *          lastname:
-     *          password:
-     *          email:
-     *      }
-     *      as form parameters.
-     *     - Adds the organization to the database, as well as the first admin.
-     *     - Returns a status:
-     *          - OrgEnrollmentStatus.PASS_HASH_FAILURE
-     *          - OrgEnrollmentStatus.ORG_EXISTS
-     *          - OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT
-     *
-     *  TODO: /create-user
-     *     - Takes form params for creating new user, and adds to DB.
-     *
-     * TODO: /document
-     *     - Takes userID and document name
-     *
-     * TODO: /put-documents
-     *     - Adds a document to the user's db entry
-     */
 
+    /* -------------- BEFORE FILTERS ---------------------- */
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
-    app.post("/upload", pdfUpload.pdfUpload);
+
+    /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
-    app.post("/login", userController.loginUser);
+
+    /* -------------- FILE MANAGEMENT --------------------- */
+    app.post("/upload", pdfUpload.pdfUpload);
     app.get("/download/:fileID", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.get("/get-documents", pdfSearch.pdfSearch);
-    app.post("/organization-signup", orgController.enrollOrganization);
+    app.post("/get-organization-members", userController.getMembers);
+
+    /* -------------- USER AUTHENTICATION ------------------ */
+    app.post("/login", userController.loginUser);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
-    app.post("/get-organization-members", userController.getMembers);
+
+    /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
+
+    /* -------------- ORGANIZATION SIGNUP ------------------ */
+    app.post("/organization-signup", orgController.enrollOrganization);
   }
 }

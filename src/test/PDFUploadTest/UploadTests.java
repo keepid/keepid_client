@@ -1,9 +1,9 @@
-package uploadTests;
+package PDFUploadTest;
 
 import Config.MongoConfig;
 import PDFUpload.PdfMongo;
-import UserIntTests.ChangePassword;
-import UserIntTests.EmailUtil;
+import Security.ChangePassword;
+import Security.EmailUtil;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.ObjectId;

@@ -1,4 +1,4 @@
-package OrganizationIntTests;
+package Organization;
 
 public enum OrgEnrollmentStatus {
   ORG_EXISTS,

@@ -1,6 +1,7 @@
-package OrganizationIntTests;
+package Organization;
 
-import UserIntTests.UserMessage;
+import UserTest.UserMessage;
+import Validation.OrganizationValidation;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
