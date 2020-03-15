@@ -1,7 +1,7 @@
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
-import OrganizationIntTests.OrganizationController;
+import Organization.OrganizationController;
 import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
@@ -59,48 +59,13 @@ public class App {
     logger.error("EXAMPLE OF ERROR");
     logger.debug("EXAMPLE OF DEBUG");
 
-    // we need to instantiate the controllers with the database
+    // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
     PdfDelete pdfDelete = new PdfDelete(db);
-    /*
-     * Server API:
-     *  /login
-     *     - Takes {
-     *          username: (Of the form <firstname>-<lastname>-<orgName>-<dateofbirth>)
-     *          password:
-     *      }
-     *      as form parameters.
-     *     - Logs a user in, given a username and password.
-     *     - Sets proper privilege level.
-     *
-     *  /organization-signup
-     *     - Takes {
-     *          orgName:
-     *          firstname:
-     *          lastname:
-     *          password:
-     *          email:
-     *      }
-     *      as form parameters.
-     *     - Adds the organization to the database, as well as the first admin.
-     *     - Returns a status:
-     *          - OrgEnrollmentStatus.PASS_HASH_FAILURE
-     *          - OrgEnrollmentStatus.ORG_EXISTS
-     *          - OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT
-     *
-     *  TODO: /create-user
-     *     - Takes form params for creating new user, and adds to DB.
-     *
-     * TODO: /document
-     *     - Takes userID and document name
-     *
-     * TODO: /put-documents
-     *     - Adds a document to the user's db entry
-     */
 
     /* -------------- BEFORE FILTERS ---------------------- */
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
@@ -115,15 +80,15 @@ public class App {
     app.get("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
 
-    /* -------------- AUTHENTICATION ----------------------- */
+    /* -------------- USER AUTHENTICATION ------------------ */
     app.post("/login", userController.loginUser);
-    app.post("/organization-signup", orgController.enrollOrganization);
+    app.post("/create-user", userController.createNewUser);
+    app.get("/logout", userController.logout);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
 
-    /* -------------- MISCELLANEOUS ------------------------ */
-    app.post("/create-user", userController.createNewUser);
-    app.get("/logout", userController.logout);
+    /* -------------- ORGANIZATION SIGNUP ------------------ */
+    app.post("/organization-signup", orgController.enrollOrganization);
   }
 }
