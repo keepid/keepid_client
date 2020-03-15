@@ -1,8 +1,7 @@
-package OrganizationTest;
+package Validation;
 
 import Logger.LogFactory;
-import Validation.GeneralValidator;
-import Validation.ValidationUtils;
+import Organization.OrgEnrollmentStatus;
 import io.javalin.http.Context;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import java.io.IOException;
 
 public class OrganizationValidation implements GeneralValidator {
 
-  protected static boolean isValid(JSONObject req, Context ctx)
+  public static boolean isValid(JSONObject req, Context ctx)
       throws SecurityException, IOException {
     String orgName = req.getString("orgName");
     String orgWebsite = req.getString("orgWebsite").toLowerCase();

@@ -1,7 +1,7 @@
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
-import OrganizationTest.OrganizationController;
+import Organization.OrganizationController;
 import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
