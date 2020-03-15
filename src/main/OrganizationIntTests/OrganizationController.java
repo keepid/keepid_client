@@ -1,7 +1,5 @@
 package OrganizationIntTests;
 
-import static com.mongodb.client.model.Filters.eq;
-
 import UserIntTests.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -10,6 +8,8 @@ import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.Document;
 import org.json.JSONObject;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class OrganizationController {
 
@@ -83,8 +83,8 @@ public class OrganizationController {
           Document newOrg =
               new Document("orgName", orgName)
                   .append("website", orgWebsite)
-                  .append("contact number", orgContactPhoneNumber)
-                  .append("street address", address)
+                  .append("phone", orgContactPhoneNumber)
+                  .append("address", address)
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
