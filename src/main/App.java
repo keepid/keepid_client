@@ -102,27 +102,27 @@ public class App {
      *     - Adds a document to the user's db entry
      */
 
-    // -------------- BEFORE FILTERS ---------------------- //
+    /* -------------- BEFORE FILTERS ---------------------- */
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
 
-    // -------------- DUMMY PATHS ------------------------- //
+    /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
-    // -------------- FILE MANAGEMENT --------------------- //
+    /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfUpload.pdfUpload);
     app.get("/download/:fileID", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.get("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
 
-    // -------------- AUTHENTICATION ----------------------- //
+    /* -------------- AUTHENTICATION ----------------------- */
     app.post("/login", userController.loginUser);
     app.post("/organization-signup", orgController.enrollOrganization);
 
-    // -------------- AUTHORIZATION  ----------------------- //
+    /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
 
-    // -------------- MISCELLANEOUS ------------------------ //
+    /* -------------- MISCELLANEOUS ------------------------ */
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
   }
