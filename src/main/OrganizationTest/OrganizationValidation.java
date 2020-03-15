@@ -1,8 +1,8 @@
-package OrganizationIntTests;
+package OrganizationTest;
 
 import Logger.LogFactory;
-import Security.GeneralValidator;
-import Security.ValidationUtils;
+import Validation.GeneralValidator;
+import Validation.ValidationUtils;
 import io.javalin.http.Context;
 import org.json.JSONObject;
 import org.slf4j.Logger;

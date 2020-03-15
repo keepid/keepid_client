@@ -1,12 +1,12 @@
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
-import OrganizationIntTests.OrganizationController;
+import OrganizationTest.OrganizationController;
 import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
-import UserIntTests.UserController;
+import UserTest.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -57,7 +57,7 @@ public class App {
     logger.error("EXAMPLE OF ERROR");
     logger.debug("EXAMPLE OF DEBUG");
 
-    // we need to instantiate the controllers with the database
+    // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
     PdfUpload pdfUpload = new PdfUpload(db);
@@ -65,17 +65,28 @@ public class App {
     PdfSearch pdfSearch = new PdfSearch(db);
     PdfDelete pdfDelete = new PdfDelete(db);
 
+    /* -------------- BEFORE FILTERS ---------------------- */
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
-    app.post("/upload", pdfUpload.pdfUpload);
+
+    /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
-    app.post("/login", userController.loginUser);
+
+    /* -------------- FILE MANAGEMENT --------------------- */
+    app.post("/upload", pdfUpload.pdfUpload);
     app.get("/download/:fileID", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.get("/get-documents", pdfSearch.pdfSearch);
-    app.post("/organization-signup", orgController.enrollOrganization);
+    app.post("/get-organization-members", userController.getMembers);
+
+    /* -------------- USER AUTHENTICATION ------------------ */
+    app.post("/login", userController.loginUser);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
-    app.post("/get-organization-members", userController.getMembers);
+
+    /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
+
+    /* -------------- ORGANIZATION SIGNUP ------------------ */
+    app.post("/organization-signup", orgController.enrollOrganization);
   }
 }
