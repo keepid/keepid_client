@@ -10,21 +10,28 @@ import java.io.IOException;
 
 public class OrganizationValidation implements GeneralValidator {
 
-  public static boolean isValid(JSONObject req, Context ctx)
-      throws SecurityException, IOException {
-    String orgName = req.getString("orgName");
-    String orgWebsite = req.getString("orgWebsite").toLowerCase();
-    String firstName = req.getString("firstName").toLowerCase();
-    String lastName = req.getString("lastName").toLowerCase();
-    String orgContactPhoneNumber = req.getString("phone").toLowerCase();
-    String email = req.getString("email").toLowerCase();
-    String username = req.getString("username");
-    String password = req.getString("password");
-    String address = req.getString("address").toLowerCase();
-    String city = req.getString("city").toLowerCase();
-    String state = req.getString("state").toUpperCase();
-    String zipcode = req.getString("zipcode");
-    String taxCode = req.getString("taxCode");
+  public static boolean isValid(JSONObject req, Context ctx) throws SecurityException, IOException {
+    String orgName = req.getString("organizationName");
+    String orgWebsite = req.getString("organizationWebsite").toLowerCase();
+    String orgTaxCode = req.getString("organizationEIN");
+    String orgAddress = req.getString("organizationAddressStreet").toUpperCase();
+    String orgCity = req.getString("organizationAddressCity").toUpperCase();
+    String orgState = req.getString("organizationAddressState").toUpperCase();
+    String orgZipcode = req.getString("organizationAddressZipcode");
+    String orgEmail = req.getString("organizationEmail");
+    String orgPhoneNumber = req.getString("organizationPhoneNumber");
+
+    String firstName = req.getString("personFirstName").toUpperCase();
+    String lastName = req.getString("personLastName").toUpperCase();
+    String birthDate = req.getString("personBirthDate");
+    String email = req.getString("personEmail").toLowerCase();
+    String phone = req.getString("personPhoneNumber");
+    String address = req.getString("personAddressStreet").toUpperCase();
+    String city = req.getString("personAddressCity").toUpperCase();
+    String state = req.getString("personAddressState").toUpperCase();
+    String zipcode = req.getString("personAddressZipcode");
+    String username = req.getString("personUsername");
+    String password = req.getString("personPassword");
 
     // declare logger here
     LogFactory l = new LogFactory();
@@ -50,8 +57,8 @@ public class OrganizationValidation implements GeneralValidator {
       ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }
-    if (!ValidationUtils.isValidPhoneNumber(orgContactPhoneNumber)) {
-      logger.error("Invalid or null orgContactPhoneNumber: " + orgContactPhoneNumber);
+    if (!ValidationUtils.isValidPhoneNumber(phone)) {
+      logger.error("Invalid or null orgContactPhoneNumber: " + phone);
       ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }
@@ -80,8 +87,8 @@ public class OrganizationValidation implements GeneralValidator {
       ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }
-    if (!ValidationUtils.isValidTaxCode(taxCode)) {
-      logger.error("Invalid or null taxCode: " + taxCode);
+    if (!ValidationUtils.isValidTaxCode(orgTaxCode)) {
+      logger.error("Invalid or null taxCode: " + orgTaxCode);
       ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toString());
       return false;
     }

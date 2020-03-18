@@ -1,0 +1,4 @@
+PORT=7000
+MONGO_DB_NAME=test
+MONGO_URI=mongodb+srv://test:test@staging-fpz2l.mongodb.net/test?retryWrites=true&w=majority
+MONGO_TEST_URI=mongodb+srv://test:test@test-fpz2l.mongodb.net/test?retryWrites=true&w=majority

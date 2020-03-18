@@ -47,7 +47,8 @@ public class UserController {
           MongoCollection<Document> userCollection = database.getCollection("user");
           Document user = userCollection.find(eq("username", username)).first();
           if (user == null) {
-            res.put("loginStatus", UserMessage.USER_NOT_FOUND.getErrorName());
+            // Put Auth failure so that they can't discover the username of a person by brute force
+            res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             res.put("userRole", "");
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
@@ -92,12 +93,30 @@ public class UserController {
         }
       };
 
+  public Handler generateUniqueUsername =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        MongoDatabase database =
+            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
+
+        MongoCollection<Document> userCollection = database.getCollection("user");
+        String username = req.getString("username");
+        String candidateUsername = username;
+        int i = 0;
+        while (userCollection.find(eq("username", candidateUsername)).first() != null && i < 1000) {
+          i++;
+          candidateUsername = username + "-" + i;
+        }
+        ctx.json(candidateUsername);
+      };
+
   public Handler createNewUser =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
         // Get all formParams
         String firstName = req.getString("firstname");
         String lastName = req.getString("lastname");
+        String birthDate = req.getString("birthDate");
         String email = req.getString("email");
         String phonenumber = req.getString("phonenumber");
         String address = req.getString("address");
@@ -119,17 +138,17 @@ public class UserController {
           return;
         }
 
-        if (userLevel.equals("admin") && !sessionUserLevel.equals("admin")) {
-          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName()));
+        if (userLevel.equals("Admin") && !sessionUserLevel.equals("Admin")) {
+          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName());
           return;
         }
 
-        if (userLevel.equals("worker") && !sessionUserLevel.equals("admin")) {
-          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName()));
+        if (userLevel.equals("Worker") && !sessionUserLevel.equals("Admin")) {
+          ctx.json(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName());
           return;
         }
 
-        if (userLevel.equals("client") && sessionUserLevel.equals("client")) {
+        if (userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
           ctx.json(new JSONObject(UserMessage.CLIENT_ENROLL_CLIENT.getErrorName()));
           return;
         }
@@ -164,14 +183,15 @@ public class UserController {
                   .append("phone", phonenumber)
                   .append("firstName", firstName.toUpperCase())
                   .append("lastName", lastName.toUpperCase())
+                  .append("birthDate", birthDate)
                   .append("address", address.toUpperCase())
                   .append("city", city.toUpperCase())
                   .append("state", state)
                   .append("zipcode", zipcode)
                   .append("privilegeLevel", userLevel)
-                  .append("canView", userLevel.equals("admin"))
-                  .append("canEdit", userLevel.equals("admin"))
-                  .append("canRegister", userLevel.equals("admin"));
+                  .append("canView", userLevel.equals("Admin"))
+                  .append("canEdit", userLevel.equals("Admin"))
+                  .append("canRegister", userLevel.equals("Admin"));
           userCollection.insertOne(newUser);
 
           ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
@@ -251,10 +271,10 @@ public class UserController {
           user.put("state", doc.get("state").toString());
           user.put("zipcode", doc.get("zipcode").toString());
 
-          if (userType.equals("admin") || userType.equals("worker")) {
+          if (userType.equals("Admin") || userType.equals("Worker")) {
             members.put(user);
             numMembers += 1;
-          } else if (userType.equals("client")) {
+          } else if (userType.equals("Client")) {
             clients.put(user);
             numClients += 1;
           }
@@ -264,11 +284,11 @@ public class UserController {
         int numReturnElements;
         // If Getting Client List
         if (listType.equals("clients")
-            && (privilegeLevel.equals("worker") || privilegeLevel.equals("admin"))) {
+            && (privilegeLevel.equals("Worker") || privilegeLevel.equals("Admin"))) {
           returnElements = getPage(clients, startIndex, endIndex);
           numReturnElements = clients.length();
           // If Getting Worker/Admin List
-        } else if (listType.equals("members") && privilegeLevel.equals("admin")) {
+        } else if (listType.equals("members") && privilegeLevel.equals("Admin")) {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
@@ -295,7 +315,7 @@ public class UserController {
           return;
         }
 
-        if (!privilegeLevel.equals("admin")) {
+        if (!privilegeLevel.equals("Admin")) {
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
           return;
         }

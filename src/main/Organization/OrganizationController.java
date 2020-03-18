@@ -26,19 +26,27 @@ public class OrganizationController {
         if (!OrganizationValidation.isValid(req, ctx)) {
           return;
         }
-        String orgName = req.getString("orgName");
-        String orgWebsite = req.getString("orgWebsite").toLowerCase();
-        String firstName = req.getString("firstName").toLowerCase();
-        String lastName = req.getString("lastName").toLowerCase();
-        String orgContactPhoneNumber = req.getString("phone").toLowerCase();
-        String email = req.getString("email").toLowerCase();
-        String username = req.getString("username");
-        String password = req.getString("password");
-        String address = req.getString("address").toLowerCase();
-        String city = req.getString("city").toLowerCase();
-        String state = req.getString("state").toUpperCase();
-        String zipcode = req.getString("zipcode");
-        String taxCode = req.getString("taxCode");
+        String orgName = req.getString("organizationName");
+        String orgWebsite = req.getString("organizationWebsite").toLowerCase();
+        String orgTaxCode = req.getString("organizationEIN");
+        String orgAddress = req.getString("organizationAddressStreet").toUpperCase();
+        String orgCity = req.getString("organizationAddressCity").toUpperCase();
+        String orgState = req.getString("organizationAddressState").toUpperCase();
+        String orgZipcode = req.getString("organizationAddressZipcode");
+        String orgEmail = req.getString("organizationEmail");
+        String orgPhoneNumber = req.getString("organizationPhoneNumber");
+
+        String firstName = req.getString("personFirstName").toUpperCase();
+        String lastName = req.getString("personLastName").toUpperCase();
+        String birthDate = req.getString("personBirthDate");
+        String email = req.getString("personEmail").toLowerCase();
+        String phone = req.getString("personPhoneNumber");
+        String address = req.getString("personAddressStreet").toUpperCase();
+        String city = req.getString("personAddressCity").toUpperCase();
+        String state = req.getString("personAddressState").toUpperCase();
+        String zipcode = req.getString("personAddressZipcode");
+        String username = req.getString("personUsername");
+        String password = req.getString("personPassword");
 
         MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", orgName)).first();
@@ -68,9 +76,10 @@ public class OrganizationController {
                   .append("password", passwordHash)
                   .append("organization", orgName)
                   .append("email", email)
-                  .append("phone", orgContactPhoneNumber)
+                  .append("phone", phone)
                   .append("firstName", firstName)
                   .append("lastName", lastName)
+                  .append("birthDate", birthDate)
                   .append("address", address)
                   .append("city", city)
                   .append("state", state)
@@ -84,16 +93,17 @@ public class OrganizationController {
           Document newOrg =
               new Document("orgName", orgName)
                   .append("website", orgWebsite)
-                  .append("phone", orgContactPhoneNumber)
-                  .append("address", address)
-                  .append("city", city)
-                  .append("state", state)
-                  .append("zipcode", zipcode)
-                  .append("taxCode", taxCode);
+                  .append("taxCode", orgTaxCode)
+                  .append("address", orgAddress)
+                  .append("city", orgCity)
+                  .append("state", orgState)
+                  .append("zipcode", orgZipcode)
+                  .append("email", orgEmail)
+                  .append("phone", orgPhoneNumber);
           orgCollection.insertOne(newOrg);
 
-          ctx.sessionAttribute("privilegeLevel", "admin");
-          ctx.sessionAttribute("orgName", orgName);
+          // ctx.sessionAttribute("privilegeLevel", "admin");
+          // ctx.sessionAttribute("orgName", orgName);
 
           ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
         }

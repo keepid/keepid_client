@@ -82,6 +82,7 @@ public class App {
 
     /* -------------- USER AUTHENTICATION ------------------ */
     app.post("/login", userController.loginUser);
+    app.post("/generate-username", userController.generateUniqueUsername);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
 
