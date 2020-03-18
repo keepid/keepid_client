@@ -87,7 +87,7 @@ class LoginPage extends Component<Props, State> {
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Password');
+            this.props.alert.show('Incorrect Username/Password');
             this.setState({ buttonState: '' });
           } else if (loginStatus === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');

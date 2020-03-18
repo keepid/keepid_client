@@ -91,7 +91,7 @@ class Header extends Component<Props, State, {}> {
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Password');
+            this.props.alert.show('Incorrect Username/Password');
             this.setState({ buttonState: '' });
           } else if (loginStatus === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
@@ -146,7 +146,7 @@ class Header extends Component<Props, State, {}> {
               </button>
               <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav ml-auto">
-                  {(role === Role.Admin || role === Role.HeadAdmin)
+                  {(role === Role.Director || role === Role.Admin)
                     && (
                     <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                       <Link className="nav-link" to="/admin-panel">Admin Panel</Link>

@@ -3,33 +3,42 @@ import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
+import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import SignaturePad from '../lib/react-typescript-signature-pad';
 import getServerURL from '../serverOverride';
 import { reCaptchaKey } from '../configVars';
+import Signup from './Signup';
 
 interface Props {
   alert: any
 }
 
 interface State {
-  submitSuccessful: boolean,
   organizationName: string,
   organizationWebsite: string,
   organizationEIN: string,
-  firstName: string,
-  lastName: string,
-  contactEmail: string,
-  contactPhoneNumber: string,
   organizationAddressStreet: string,
   organizationAddressCity: string,
   organizationAddressState: string,
   organizationAddressZipcode: string,
-  username:string,
-  password: string,
-  confirmPassword: string,
+  organizationEmail: string,
+  organizationPhoneNumber: string,
+  personFirstName: string,
+  personLastName: string,
+  personBirthDate: string,
+  personEmail: string,
+  personPhoneNumber: string,
+  personAddressStreet: string,
+  personAddressCity: string,
+  personAddressState: string,
+  personAddressZipcode: string,
+  personUsername: string,
+  personPassword: string,
   acceptEULA: boolean,
   reaffirmStage: boolean,
+  personSubmitted: boolean,
+  submitSuccessful: boolean,
   isCaptchaFilled: boolean,
   buttonState: string
 }
@@ -38,43 +47,47 @@ class OrganizationSignup extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      submitSuccessful: false,
       organizationName: '',
       organizationWebsite: 'http://',
       organizationEIN: '',
-      firstName: '',
-      lastName: '',
-      contactEmail: '',
-      contactPhoneNumber: '',
       organizationAddressStreet: '',
       organizationAddressCity: '',
       organizationAddressState: USStates[0].abbreviation,
       organizationAddressZipcode: '',
-      username: '',
-      password: '',
-      confirmPassword: '',
+      organizationEmail: '',
+      organizationPhoneNumber: '',
+      personFirstName: '',
+      personLastName: '',
+      personBirthDate: '',
+      personEmail: '',
+      personPhoneNumber: '',
+      personAddressStreet: '',
+      personAddressCity: '',
+      personAddressState: '',
+      personAddressZipcode: '',
+      personUsername: '',
+      personPassword: '',
       acceptEULA: false,
       reaffirmStage: false,
+      personSubmitted: false,
       isCaptchaFilled: false,
+      submitSuccessful: false,
       buttonState: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.onSubmitProp = this.onSubmitProp.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
     this.handleChangeOrganizationWebsite = this.handleChangeOrganizationWebsite.bind(this);
     this.handleChangeOrganizationEIN = this.handleChangeOrganizationEIN.bind(this);
-    this.handleChangeFirstName = this.handleChangeFirstName.bind(this);
-    this.handleChangeLastName = this.handleChangeLastName.bind(this);
-    this.handleChangeContactEmail = this.handleChangeContactEmail.bind(this);
-    this.handleChangeContactPhoneNumber = this.handleChangeContactPhoneNumber.bind(this);
-    this.handleChangeUsername = this.handleChangeUsername.bind(this);
-    this.handleChangePassword = this.handleChangePassword.bind(this);
-    this.handleChangeConfirmPassword = this.handleChangeConfirmPassword.bind(this);
     this.handleChangeOrganizationAddressStreet = this.handleChangeOrganizationAddressStreet.bind(this);
     this.handleChangeOrganizationAddressCity = this.handleChangeOrganizationAddressCity.bind(this);
     this.handleChangeOrganizationAddressState = this.handleChangeOrganizationAddressState.bind(this);
     this.handleChangeOrganizationAddressZipcode = this.handleChangeOrganizationAddressZipcode.bind(this);
+    this.handleChangeOrganizationEmail = this.handleChangeOrganizationEmail.bind(this);
+    this.handleChangeOrganizationPhoneNumber = this.handleChangeOrganizationPhoneNumber.bind(this);
     this.handleChangeReaffirmStage = this.handleChangeReaffirmStage.bind(this);
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
+    this.handleChangePersonSubmitted = this.handleChangePersonSubmitted.bind(this);
     this.captchaVerify = this.captchaVerify.bind(this);
   }
 
@@ -86,18 +99,25 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.setState({ buttonState: 'running' });
     const {
       organizationWebsite,
-      firstName,
-      lastName,
-      contactPhoneNumber,
       organizationName,
-      contactEmail,
-      username,
-      password,
+      organizationEIN,
       organizationAddressStreet,
       organizationAddressCity,
       organizationAddressState,
       organizationAddressZipcode,
-      organizationEIN,
+      organizationEmail,
+      organizationPhoneNumber,
+      personFirstName,
+      personLastName,
+      personBirthDate,
+      personEmail,
+      personPhoneNumber,
+      personAddressStreet,
+      personAddressCity,
+      personAddressState,
+      personAddressZipcode,
+      personUsername,
+      personPassword,
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
@@ -110,19 +130,26 @@ class OrganizationSignup extends Component<Props, State, {}> {
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
         body: JSON.stringify({
-          orgWebsite: organizationWebsite,
-          firstName,
-          lastName,
-          phone: contactPhoneNumber,
-          orgName: organizationName,
-          email: contactEmail,
-          username,
-          password,
-          address: organizationAddressStreet,
-          city: organizationAddressCity,
-          state: organizationAddressState,
-          zipcode: organizationAddressZipcode,
-          taxCode: organizationEIN,
+          organizationWebsite,
+          organizationName,
+          organizationEIN,
+          organizationAddressStreet,
+          organizationAddressCity,
+          organizationAddressState,
+          organizationAddressZipcode,
+          organizationEmail,
+          organizationPhoneNumber,
+          personFirstName,
+          personLastName,
+          personBirthDate,
+          personEmail,
+          personPhoneNumber,
+          personAddressStreet,
+          personAddressCity,
+          personAddressState,
+          personAddressZipcode,
+          personUsername,
+          personPassword,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -148,6 +175,25 @@ class OrganizationSignup extends Component<Props, State, {}> {
     }
   }
 
+  onSubmitProp(personFirstName, personLastName, personBirthDate, personEmail,
+    personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
+    personAddressZipcode, personUsername, personPassword, personRoleString) {
+    this.setState({
+      personSubmitted: true,
+      personFirstName,
+      personLastName,
+      personBirthDate,
+      personEmail,
+      personPhoneNumber,
+      personAddressStreet,
+      personAddressCity,
+      personAddressState,
+      personAddressZipcode,
+      personUsername,
+      personPassword,
+    });
+  }
+
   handleChangeOrganizationName(event: any) {
     this.setState({ organizationName: event.target.value });
   }
@@ -158,22 +204,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
 
   handleChangeOrganizationEIN(event: any) {
     this.setState({ organizationEIN: event.target.value });
-  }
-
-  handleChangeFirstName(event: any) {
-    this.setState({ firstName: event.target.value });
-  }
-
-  handleChangeLastName(event: any) {
-    this.setState({ lastName: event.target.value });
-  }
-
-  handleChangeContactEmail(event: any) {
-    this.setState({ contactEmail: event.target.value });
-  }
-
-  handleChangeContactPhoneNumber(event: any) {
-    this.setState({ contactPhoneNumber: event.target.value });
   }
 
   handleChangeOrganizationAddressStreet(event: any) {
@@ -192,6 +222,14 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.setState({ organizationAddressZipcode: event.target.value });
   }
 
+  handleChangeOrganizationEmail(event: any) {
+    this.setState({ organizationEmail: event.target.value });
+  }
+
+  handleChangeOrganizationPhoneNumber(event: any) {
+    this.setState({ organizationPhoneNumber: event.target.value });
+  }
+
   handleChangeAcceptEULA(acceptEULA: boolean) {
     this.setState({ acceptEULA });
   }
@@ -199,46 +237,31 @@ class OrganizationSignup extends Component<Props, State, {}> {
   handleChangeReaffirmStage(event: any) {
     event.preventDefault();
     const {
-      password,
-      confirmPassword,
       reaffirmStage,
     } = this.state;
-    if (password !== confirmPassword) {
-      this.props.alert.show('Your Passwords are not Identical');
-    } else {
-      this.setState({ reaffirmStage: !reaffirmStage });
-    }
+    this.setState({ reaffirmStage: !reaffirmStage });
   }
 
-  handleChangeUsername(event: any) {
-    this.setState({ username: event.target.value });
-  }
-
-  handleChangePassword(event: any) {
-    this.setState({ password: event.target.value });
-  }
-
-  handleChangeConfirmPassword(event: any) {
-    this.setState({ confirmPassword: event.target.value });
+  handleChangePersonSubmitted(event: any) {
+    const {
+      personSubmitted,
+    } = this.state;
+    this.setState({ personSubmitted: !personSubmitted });
   }
 
   render() {
     const {
       organizationWebsite,
-      firstName,
-      lastName,
-      contactPhoneNumber,
       organizationName,
-      contactEmail,
-      username,
-      password,
-      confirmPassword,
+      organizationEIN,
       organizationAddressStreet,
       organizationAddressCity,
       organizationAddressState,
       organizationAddressZipcode,
-      organizationEIN,
+      organizationEmail,
+      organizationPhoneNumber,
       acceptEULA,
+      personSubmitted,
       submitSuccessful,
       reaffirmStage,
     } = this.state;
@@ -278,56 +301,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
-                    <label htmlFor="inputContactEmail" className="w-100 pr-3">
-                      Contact Email Address
+                    <label htmlFor="inputEIN" className="w-100 pr-3">
+                      Organization EIN
                       <span className="red-star">*</span>
-                      <input type="email" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactEmail" placeholder="contact@example.com" value={contactEmail} onChange={this.handleChangeContactEmail} required />
-                    </label>
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputFirstName" className="w-100 pr-3">
-                      Contact First Name
-                      <span className="red-star">*</span>
-                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputFirstName" placeholder="John" value={firstName} onChange={this.handleChangeFirstName} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputLastName" className="w-100 pr-3">
-                      Contact Last Name
-                      <span className="red-star">*</span>
-                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputLastName" placeholder="Smith" value={lastName} onChange={this.handleChangeLastName} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputContactPhoneNumber" className="w-100 pr-3">
-                      Contact Phone Number
-                      <span className="red-star">*</span>
-                      <input type="tel" readOnly={reaffirmStage} className="form-control form-purple" id="inputContactPhoneNumber" placeholder="1-(234)-567-8901" value={contactPhoneNumber} onChange={this.handleChangeContactPhoneNumber} required />
-                    </label>
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputUsername" className="w-100 pr-3">
-                      Admin Username
-                      <span className="red-star">*</span>
-                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputUsername" placeholder="John Doe" value={username} onChange={this.handleChangeUsername} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputPassword" className="w-100 pr-3">
-                      Password
-                      <span className="red-star">*</span>
-                      <input type="password" readOnly={reaffirmStage} className="form-control form-purple" id="inputPassword" placeholder="*******" value={password} onChange={this.handleChangePassword} required />
-                    </label>
-                  </div>
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputConfirmpassword" className="w-100 pr-3">
-                      Confirm Password
-                      <span className="red-star">*</span>
-                      <input type="password" readOnly={reaffirmStage} className="form-control form-purple" id="inputConfirmPassword" placeholder="********" value={confirmPassword} onChange={this.handleChangeConfirmPassword} required />
+                      <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputEIN" placeholder="12-3456789" value={organizationEIN} onChange={this.handleChangeOrganizationEIN} required />
                     </label>
                   </div>
                 </div>
@@ -357,26 +334,53 @@ class OrganizationSignup extends Component<Props, State, {}> {
                   </div>
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputZipCode" className="w-100 pr-3">
-                      Zip Code
+                      Zipcode
                       <span className="red-star">*</span>
                       <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputZipCode" placeholder="19104" value={organizationAddressZipcode} onChange={this.handleChangeOrganizationAddressZipcode} required />
                     </label>
                   </div>
                 </div>
                 <div className="form-row">
-                  <div className="col-md-4 form-group">
-                    <label htmlFor="inputEIN" className="w-100 pr-3">
-                      Employer Identification Number
-                      <span className="red-star">*</span>
-                      <input readOnly={reaffirmStage} type="text" className="form-control form-purple" id="inputEIN" placeholder="12-3456789" value={organizationEIN} onChange={this.handleChangeOrganizationEIN} required />
+                  <div className="col-md-5 form-group">
+                    <label htmlFor="inputPhoneNumber" className="w-100 pr-3">
+                      Organization Phone Number
+                      <text className="red-star">*</text>
+                      <input
+                        readOnly={reaffirmStage}
+                        type="tel"
+                        className="form-control form-purple"
+                        id="inputPhoneNumber"
+                        onChange={this.handleChangeOrganizationPhoneNumber}
+                        value={organizationPhoneNumber}
+                        placeholder="1-(234)-567-8901"
+                        required
+                      />
                     </label>
                   </div>
+                  <div className="col-md-7 form-group">
+                    <label htmlFor="inputEmail" className="w-100 pr-3">
+                      Organization Email Address
+                      <text className="red-star">*</text>
+                      <input
+                        readOnly={reaffirmStage}
+                        type="email"
+                        className="form-control form-purple"
+                        id="inputEmail"
+                        onChange={this.handleChangeOrganizationEmail}
+                        value={organizationEmail}
+                        placeholder="contact@example.com"
+                        required
+                      />
+                    </label>
+                  </div>
+                </div> 
+                <div className="form-row">
                   {!reaffirmStage
                     ? (
                       <div className="col mt-3 pl-5 pt-2">
                         <input type="submit" className="btn btn-primary w-50" value="Continue" />
                       </div>
-                    ) : <div />}
+                    ) : <br />}
                 </div>
               </div>
             </form>
@@ -387,6 +391,9 @@ class OrganizationSignup extends Component<Props, State, {}> {
 
     if (submitSuccessful) {
       return (<Redirect to="/" />);
+    }
+    if (!personSubmitted) {
+      return (<Signup onSubmitProp={this.onSubmitProp} personRole={Role.Director} buttonState='' />)
     }
     if (!reaffirmStage) {
       return (<div>{ organizationForm }</div>);
@@ -418,6 +425,11 @@ class OrganizationSignup extends Component<Props, State, {}> {
               sitekey={reCaptchaKey}
               onChange={this.captchaVerify}
             />
+          </div>
+        </div>
+        <div className="row mt-5">
+          <div className="col-md-6 text-left">
+            <button type="button" onClick={this.handleChangePersonSubmitted} className="btn btn-danger">Redo Director Signup</button>
           </div>
           <div className="col-md-6 text-right">
             <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
