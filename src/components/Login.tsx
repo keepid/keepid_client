@@ -52,7 +52,7 @@ class Login extends Component<{}, {}, {}> {
                   </h1>
                   <div className="row pb-4">
                     <div className="col-md-4">
-                      <img alt="Hubs" src={HubLogo} className="home-svgs float-right"/>
+                      <img alt="Hubs" src={HubLogo} className="home-svgs float-right" />
                     </div>
                     <div className="col-md-8 d-flex">
                       <span className="home-text">

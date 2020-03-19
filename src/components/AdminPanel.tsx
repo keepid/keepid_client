@@ -4,10 +4,10 @@
 import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import TablePageSelector from './TablePageSelector';
-//import paginationFactory from 'react-bootstrap-table2-paginator';
+// import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
+import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
 
 interface Props {
@@ -29,7 +29,7 @@ interface State {
 }
 
 const listOptions = [
-  { value: '2', label: '2'},
+  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -144,7 +144,7 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const { 
+        const {
           people,
           numPeople,
         } = responseJSON;
@@ -292,30 +292,31 @@ class AdminPanel extends Component<Props, State> {
         </div>
         <div className="container">
           <form className="form-inline my-2 my-lg-0">
-            <input 
-              className="form-control mr-sm-2" 
-              type="search" 
-              placeholder="Search" 
-              aria-label="Search" 
-              onChange={this.handleChangeSearchName} 
+            <input
+              className="form-control mr-sm-2"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+              onChange={this.handleChangeSearchName}
             />
           </form>
           <div className="row ml-1 mt-2 mb-2">
             {numElements === 0 ? <div /> : tablePageSelector }
-            {numElements === 0 ? <div /> : 
-              <div className="w-25">
-                <div className="card card-body mt-0 mb-4 border-0 p-0">
-                  <h5 className="card-text h6"># Items per page</h5>
-                  <Select
-                    options={listOptions}
-                    autoFocus
-                    closeMenuOnSelect={false}
-                    onChange={this.handleChangeItemsPerPage}
-                    value={itemsPerPageSelected}
-                  />
+            {numElements === 0 ? <div />
+              : (
+                <div className="w-25">
+                  <div className="card card-body mt-0 mb-4 border-0 p-0">
+                    <h5 className="card-text h6"># Items per page</h5>
+                    <Select
+                      options={listOptions}
+                      autoFocus
+                      closeMenuOnSelect={false}
+                      onChange={this.handleChangeItemsPerPage}
+                      value={itemsPerPageSelected}
+                    />
+                  </div>
                 </div>
-              </div>
-            }
+              )}
           </div>
           <div className="d-flex flex-row bd-highlight mb-3 pt-5">
             <div className="w-50 pd-3">

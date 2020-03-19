@@ -250,7 +250,7 @@ class App extends React.Component<{}, State, {}> {
               // Component
               <Route path="/error">
                 <Error />
-              </Route> 
+              </Route>
               <Route>
                 <Redirect to="/error" />
               </Route>

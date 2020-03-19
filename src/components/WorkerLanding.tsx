@@ -37,7 +37,7 @@ const options = [
 
 
 const listOptions = [
-  { value: '2', label: '2'},
+  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -348,10 +348,10 @@ class WorkerLanding extends Component<Props, State> {
       numClients,
     } = this.state;
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
-    
+
     const tablePageSelector = TablePageSelector({
-      currentPage, 
-      itemsPerPage, 
+      currentPage,
+      itemsPerPage,
       numElements: numClients,
       changeCurrentPage: this.changeCurrentPage,
     });
@@ -407,20 +407,21 @@ class WorkerLanding extends Component<Props, State> {
           </div>
           <div className="row ml-1 mt-2 mb-2">
             {numClients === 0 ? <div /> : tablePageSelector }
-            {numClients === 0 ? <div /> : 
-              <div className="w-25">
-                <div className="card card-body mt-0 mb-4 border-0 p-0">
-                  <h5 className="card-text h6"># Items per page</h5>
-                  <Select
-                    options={listOptions}
-                    autoFocus
-                    closeMenuOnSelect={false}
-                    onChange={this.handleChangeItemsPerPage}
-                    value={itemsPerPageSelected}
-                  />
+            {numClients === 0 ? <div />
+              : (
+                <div className="w-25">
+                  <div className="card card-body mt-0 mb-4 border-0 p-0">
+                    <h5 className="card-text h6"># Items per page</h5>
+                    <Select
+                      options={listOptions}
+                      autoFocus
+                      closeMenuOnSelect={false}
+                      onChange={this.handleChangeItemsPerPage}
+                      value={itemsPerPageSelected}
+                    />
+                  </div>
                 </div>
-              </div>
-            }
+              )}
           </div>
           {numClients === 0 ? <h3>No Clients Found</h3> : this.renderClients()}
         </div>

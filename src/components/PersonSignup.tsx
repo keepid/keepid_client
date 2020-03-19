@@ -31,13 +31,12 @@ class PersonSignup extends Component<Props, State, {}> {
   onSubmitProp(personFirstName : string, personLastName : string, personBirthDate: string, personEmail: string,
     personPhoneNumber: string, personAddressStreet: string, personAddressCity: string, personAddressState: string,
     personAddressZipcode: string, personUsername: string, personPassword: string, personRoleString: string) {
-    
     const {
       personRole,
     } = this.props;
 
     this.setState({ buttonState: 'running' });
-      
+
     fetch(`${getServerURL()}/create-user`, {
       method: 'POST',
       credentials: 'include',
@@ -58,15 +57,15 @@ class PersonSignup extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const userMessage = responseJSON;
-        if(userMessage === "ENROLL_SUCCESS") {
-          this.props.alert.show("Successfully Enrolled Person");
+        if (userMessage === 'ENROLL_SUCCESS') {
+          this.props.alert.show('Successfully Enrolled Person');
           this.setState({ submitSuccessful: true });
-        } else if (userMessage === "USERNAME_ALREADY_EXISTS") {
-          this.props.alert.show("Username Already Exists!");
-        } else if (userMessage === "HASH_FAILURE") {
-          this.props.alert.show("Server Failure: Please Try Again");
+        } else if (userMessage === 'USERNAME_ALREADY_EXISTS') {
+          this.props.alert.show('Username Already Exists!');
+        } else if (userMessage === 'HASH_FAILURE') {
+          this.props.alert.show('Server Failure: Please Try Again');
         } else {
-          this.props.alert.show("Permissions Error");
+          this.props.alert.show('Permissions Error');
         }
         this.setState({ buttonState: '' });
       }).catch((error) => {
@@ -92,7 +91,9 @@ class PersonSignup extends Component<Props, State, {}> {
     }
 
     return (
-      <Signup personRole={personRole} buttonState={buttonState} onSubmitProp={this.onSubmitProp} />
+      <div>
+        <Signup personRole={personRole} buttonState={buttonState} onSubmitProp={this.onSubmitProp} />
+      </div>
     );
   }
 }

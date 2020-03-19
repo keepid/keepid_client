@@ -3,8 +3,8 @@ import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import SignaturePad from '../lib/react-typescript-signature-pad';
 import { withAlert } from 'react-alert';
+import SignaturePad from '../lib/react-typescript-signature-pad';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
@@ -160,11 +160,11 @@ class Signup extends Component<Props, State, {}> {
       body: JSON.stringify({
         username: personUsername,
       }),
-    }).then(response => response.json())
-    .then(responseJSON => {
-      console.log(responseJSON);
-      this.setState({ personUsername: responseJSON });
-    })
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        console.log(responseJSON);
+        this.setState({ personUsername: responseJSON });
+      });
   }
 
   handleChangePersonUsername(event: any) {
@@ -193,7 +193,6 @@ class Signup extends Component<Props, State, {}> {
   personRoleString(personRole: Role) {
     switch (personRole) {
       case Role.Director: return 'Director';
-
       case Role.Admin: return 'Admin';
       case Role.Client: return 'Client';
       case Role.LoggedOut: return 'LoggedOut';
@@ -201,7 +200,7 @@ class Signup extends Component<Props, State, {}> {
       case Role.Worker: return 'Worker';
       default: return '';
     }
-  };
+  }
 
   render() {
     const {
@@ -230,8 +229,9 @@ class Signup extends Component<Props, State, {}> {
       <div className="container">
         <Helmet>
           <title>
-            Sign Up 
-            {personFormHeader} 
+            Sign Up
+            {' '}
+            {personFormHeader}
           </title>
           <meta name="description" content="Keep.id" />
         </Helmet>
@@ -304,16 +304,16 @@ class Signup extends Component<Props, State, {}> {
                     <label htmlFor="inputBirthDate" className="w-100 pr-3">
                       Contact Birth Date
                       <text className="red-star">*</text>
-                      <DatePicker 
-                        id="inputBirthDate" 
-                        onChange={this.handleChangePersonBirthDate} 
-                        selected={this.state.personBirthDate} 
-                        className="form-control form-purple" 
+                      <DatePicker
+                        id="inputBirthDate"
+                        onChange={this.handleChangePersonBirthDate}
+                        selected={this.state.personBirthDate}
+                        className="form-control form-purple"
                         readOnly={reaffirmStage}
                         required
                       />
                     </label>
-                  </div> 
+                  </div>
                   <div className="col-md-5 form-group">
                     <label htmlFor="inputEmail" className="w-100 pr-3">
                       Contact Email Address
@@ -396,7 +396,7 @@ class Signup extends Component<Props, State, {}> {
                       />
                     </label>
                   </div>
-              
+
                 </div>
                 <div className="form-row">
                   <div className="col-md-4 form-group">
@@ -465,9 +465,9 @@ class Signup extends Component<Props, State, {}> {
         </div>
       </div>
     );
-    
+
     if (!reaffirmStage) {
-      return( signupForm );
+      return (signupForm);
     }
     return (
       <div className="container">
@@ -494,13 +494,13 @@ class Signup extends Component<Props, State, {}> {
           <div className="col-md-6 text-right">
             <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
             <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${buttonState}`}>
-              {personRole === Role.Director ? "Next" : "Submit"}
+              {personRole === Role.Director ? 'Next' : 'Submit'}
               <div className="ld ld-ring ld-spin" />
             </button>
           </div>
         </div>
-      </div>)
-
+      </div>
+    );
   }
 }
 

@@ -48,7 +48,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
     super(props);
     this.state = {
       organizationName: '',
-      organizationWebsite: 'http://',
+      organizationWebsite: '',
       organizationEIN: '',
       organizationAddressStreet: '',
       organizationAddressCity: '',
@@ -297,7 +297,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputOrgWebsite" className="w-100 pr-3">
                       Organization Website
-                      <input type="url" readOnly={reaffirmStage} className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" value={organizationWebsite} onChange={this.handleChangeOrganizationWebsite} />
+                      <input type="text" readOnly={reaffirmStage} className="form-control form-purple" id="inputOrgWebsite" placeholder="https://www.keep.id" value={organizationWebsite} onChange={this.handleChangeOrganizationWebsite} />
                     </label>
                   </div>
                   <div className="col-md-4 form-group">
@@ -373,7 +373,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                       />
                     </label>
                   </div>
-                </div> 
+                </div>
                 <div className="form-row">
                   {!reaffirmStage
                     ? (
@@ -393,7 +393,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       return (<Redirect to="/" />);
     }
     if (!personSubmitted) {
-      return (<Signup onSubmitProp={this.onSubmitProp} personRole={Role.Director} buttonState='' />)
+      return (<Signup onSubmitProp={this.onSubmitProp} personRole={Role.Director} buttonState="" />);
     }
     if (!reaffirmStage) {
       return (<div>{ organizationForm }</div>);
