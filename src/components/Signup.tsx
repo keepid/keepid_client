@@ -8,6 +8,7 @@ import SignaturePad from '../lib/react-typescript-signature-pad';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
+import EULA_PDF from '../static/eula-template.pdf';
 
 interface Props {
   personRole: Role,
@@ -92,8 +93,11 @@ class Signup extends Component<Props, State, {}> {
       personUsername,
       personPassword,
       personConfirmPassword,
+      acceptEULA,
     } = this.state;
-    if (personPassword !== personConfirmPassword) {
+    if (!acceptEULA) {
+      this.props.alert.show('Please accept EULA before continuing')
+    } else if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
     } else {
       const personRoleStringVar = this.personRoleString(personRole);
@@ -477,7 +481,7 @@ class Signup extends Component<Props, State, {}> {
             <span>End User License Agreement</span>
           </p>
           <div className="embed-responsive embed-responsive-16by9">
-            <iframe className="embed-responsive-item" src="eula-template.pdf" title="EULA Agreement" />
+            <iframe className="embed-responsive-item" src={EULA_PDF} title="EULA Agreement" />
           </div>
         </div>
         <div className="row mt-5">
