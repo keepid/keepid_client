@@ -19,6 +19,7 @@ public class App {
   public static Long ASYNC_TIME_OUT = 10L;
 
   public static void main(String[] args) {
+    System.setProperty("logback.configurationFile", "../resources/logback.xml");
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 
@@ -47,9 +48,6 @@ public class App {
                   config.prefer405over404 =
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
-                  //            config.requestLogger();                    // set a request logger
-                  //                  config.sessionHandler(SessionConfig::fileSessionHandler);
-                  //                  config.accessManager(UserController::accessManager);
                   config.sessionHandler(() -> SessionConfig.getSessionHandlerInstance());
                 })
             .start(Integer.parseInt(System.getenv("PORT")));

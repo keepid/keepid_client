@@ -1,15 +1,9 @@
 package Organization;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import Config.MongoConfig;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
 import io.javalin.http.util.ContextUtil;
-import java.util.HashMap;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +11,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class OrganizationControllerTest {
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class OrganizationControllerIntTests {
 
   private static MongoDatabase database;
 
