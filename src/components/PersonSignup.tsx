@@ -7,6 +7,7 @@ import { withAlert } from 'react-alert';
 import Role from '../static/Role';
 import USStates from '../static/data/states_titlecase.json';
 import getServerURL from '../serverOverride';
+import EULA_PDF from '../static/eula-template.pdf';
 
 interface Props {
   personRole: Role,
@@ -458,6 +459,9 @@ class PersonSignup extends Component<Props, State, {}> {
                 </div>
               </div>
             </form>
+            <div className="embed-responsive embed-responsive-16by9">
+              <iframe className="embed-responsive-item" src={EULA_PDF} title="EULA Agreement" />
+            </div>
           </div>
         </div>
       </div>

@@ -190,11 +190,11 @@ class Header extends Component<Props, State, {}> {
 
             <div className="collapse navbar-collapse" id="navbarToggle">
               <ul className="navbar-nav mr-auto mt-2 mt-lg-0 ">
-                <li className="nav-item my-1 mr-2">
-                  {/* <Link className="nav-link" to="/">For Orgs</Link> */}
+                <li className="nav-item my-1 mr-2 ml-2">
+                  <Link className="nav-link" to="/">For Organizations</Link>
                 </li>
               </ul>
-              <form onSubmit={this.handleLogin}>
+              {/* <form onSubmit={this.handleLogin}>
                 <div className="form-row align-items-center">
                   <div className="col-med-2 my-1">
                     <div className="input-group">
@@ -256,7 +256,14 @@ class Header extends Component<Props, State, {}> {
                     </Link>
                   </div>
                 </div>
-              </form>
+              </form> */}
+              <div className="col-auto my-1">
+                <Link to="/login-page">
+                  <button type="submit" className='btn btn-dark-custom'>
+                    Sign In
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
         </nav>
