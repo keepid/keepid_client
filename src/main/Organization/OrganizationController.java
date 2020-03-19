@@ -84,7 +84,7 @@ public class OrganizationController {
                   .append("city", city)
                   .append("state", state)
                   .append("zipcode", zipcode)
-                  .append("privilegeLevel", "admin")
+                  .append("privilegeLevel", "Admin")
                   .append("canView", true)
                   .append("canEdit", true)
                   .append("canRegister", true);
