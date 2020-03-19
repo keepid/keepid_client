@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
+import HomeForm from '../static/images/home-forms.svg';
 
 class Login extends Component<{}, {}, {}> {
   render() {
@@ -47,7 +48,10 @@ class Login extends Component<{}, {}, {}> {
               </div>
               <div className="col-md-6">
                 <div className="mr-5 p-4 container-home-right">
-                  <h1 className="text-center font-weight-bold">
+                  <div className="col-md-4">
+                    <img alt="Hubs" src={HomeForm} className=""/>
+                  </div>
+                  {/* <h1 className="text-center font-weight-bold">
                       Our Model
                   </h1>
                   <div className="row pb-4">
@@ -85,7 +89,7 @@ class Login extends Component<{}, {}, {}> {
   to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
