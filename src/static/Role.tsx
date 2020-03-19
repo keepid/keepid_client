@@ -1,6 +1,6 @@
 
     enum Role {
-      HeadAdmin, // can delete admin and create admin
+      Director, // can delete admin and create admin
       Admin,
       Worker,
       Volunteer,

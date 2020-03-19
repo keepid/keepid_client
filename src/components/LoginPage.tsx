@@ -79,15 +79,15 @@ class LoginPage extends Component<Props, State> {
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
-                case 'admin': return Role.Admin;
-                case 'worker': return Role.Worker;
-                case 'client': return Role.Client;
+                case 'Admin': return Role.Admin;
+                case 'Worker': return Role.Worker;
+                case 'Client': return Role.Client;
                 default: return Role.LoggedOut;
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Password');
+            this.props.alert.show('Incorrect Username/Password');
             this.setState({ buttonState: '' });
           } else if (loginStatus === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
@@ -165,10 +165,10 @@ class LoginPage extends Component<Props, State> {
                   <div className="col-6 pl-0">
                     <div className="checkbox mb-3 pt-2">
                       <label>
-                          <input type="checkbox" className="mr-1" value="remember-me" />
-                          {' '}
+                        <input type="checkbox" className="mr-1" value="remember-me" />
+                        {' '}
 Remember me
-                        </label>
+                      </label>
                     </div>
                   </div>
                   <div className="col-6">

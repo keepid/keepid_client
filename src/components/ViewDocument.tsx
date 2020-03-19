@@ -31,7 +31,7 @@ class ViewDocument extends Component<Props, State> {
       credentials: 'include',
     }).then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], 'Filename PDF');
+        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
         this.setState({ pdfFile });
       });
   }

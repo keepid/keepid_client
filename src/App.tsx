@@ -103,7 +103,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/home"
                 render={() => {
-                  if (role === Role.Admin || role === Role.HeadAdmin || role === Role.Worker) {
+                  if (role === Role.Director || role === Role.Admin || role === Role.Worker) {
                     return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                   }
                   if (role === Role.Client) {
@@ -141,22 +141,22 @@ class App extends React.Component<{}, State, {}> {
                 render={(props) => {
                   switch (props.match.params.roleString) {
                     case 'admin':
-                      return (role === Role.HeadAdmin
+                      return (role === Role.Director
                         ? <PersonSignup userRole={role} personRole={Role.Admin} />
                         : <Redirect to="/error" />
                       );
                     case 'worker':
-                      return (role === Role.HeadAdmin || role === Role.Admin
+                      return (role === Role.Director || role === Role.Admin
                         ? <PersonSignup userRole={role} personRole={Role.Worker} />
                         : <Redirect to="/error" />
                       );
                     case 'volunteer':
-                      return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker
+                      return (role === Role.Director || role === Role.Admin || role === Role.Worker
                         ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
                         : <Redirect to="/error" />
                       );
                     case 'client':
-                      return (role === Role.HeadAdmin || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
+                      return (role === Role.Director || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
                         ? <PersonSignup userRole={role} personRole={Role.Client} />
                         : <Redirect to="/error" />
                       );
@@ -169,7 +169,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/admin-panel"
                 render={() => {
-                  if (role === Role.Admin || role === Role.HeadAdmin) {
+                  if (role === Role.Director || role === Role.Admin) {
                     return (<AdminPanel name={name} organization={organization} username={username} />);
                   }
                   return <Redirect to="/error" />;
@@ -250,7 +250,7 @@ class App extends React.Component<{}, State, {}> {
               // Component
               <Route path="/error">
                 <Error />
-              </Route> 
+              </Route>
               <Route>
                 <Redirect to="/error" />
               </Route>

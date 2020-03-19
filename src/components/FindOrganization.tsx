@@ -61,24 +61,24 @@ class FindOrganization extends Component<Props, State> {
     const {
       zipcodeSearch,
     } = this.state;
-    const url = new URL("https://maps.googleapis.com/maps/api/geocode/json?"); //Do in OrganizationSignup
-    const search = 'postal_code:' + zipcodeSearch;
+    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); // Do in OrganizationSignup
+    const search = `postal_code:${zipcodeSearch}`;
     const urlParams = {
       components: search,
       key: APIKey,
     };
-    Object.keys(urlParams).forEach(key => url.searchParams.append(key, urlParams[key]));
+    Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
     fetch(url.toString(), {
       method: 'GET',
-    }).then(response => response.json())
-    .then(responseJSON => {
-      const zipcodeLatLng = responseJSON.results[0].geometry.location;
-      console.log(zipcodeLatLng);
-      this.setState({ 
-        displayMap: true,
-        zipcodeLatLng,
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const zipcodeLatLng = responseJSON.results[0].geometry.location;
+        console.log(zipcodeLatLng);
+        this.setState({
+          displayMap: true,
+          zipcodeLatLng,
+        });
       });
-    });
   }
 
   render() {
@@ -102,32 +102,33 @@ class FindOrganization extends Component<Props, State> {
           </label>
           <button type="submit">Submit</button>
         </form>
-        {displayMap ? 
-          (<div style={{ height: '100vh', width: '100%' }}>
-            <GoogleMapReact
-              bootstrapURLKeys={{ key: APIKey }}
-              center={{
-                lat: zipcodeLatLng.lat, 
-                lng: zipcodeLatLng.lng,
-              }}
-              zoom={12}
-            >
-              {organizations.map(
-                (organization) => (
-                  <Marker 
-                    lat={organization.lat} 
-                    lng={organization.lng} 
-                    orgName={organization.orgName} 
-                    address={organization.address}  
-                    phone={organization.phone} 
-                    email={organization.email} 
-                  /> 
-                )
-              )}
-            </GoogleMapReact>
-          </div>)
-        : <div />
-      }
+        {displayMap
+          ? (
+            <div style={{ height: '100vh', width: '100%' }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{ key: APIKey }}
+                center={{
+                  lat: zipcodeLatLng.lat,
+                  lng: zipcodeLatLng.lng,
+                }}
+                zoom={12}
+              >
+                {organizations.map(
+                  (organization) => (
+                    <Marker
+                      lat={organization.lat}
+                      lng={organization.lng}
+                      orgName={organization.orgName}
+                      address={organization.address}
+                      phone={organization.phone}
+                      email={organization.email}
+                    />
+                  ),
+                )}
+              </GoogleMapReact>
+            </div>
+          )
+          : <div />}
       </div>
     );
   }

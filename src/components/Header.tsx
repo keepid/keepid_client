@@ -83,9 +83,9 @@ class Header extends Component<Props, State, {}> {
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
-                case 'admin': return Role.Admin;
-                case 'worker': return Role.Worker;
-                case 'client': return Role.Client;
+                case 'Admin': return Role.Admin;
+                case 'Worker': return Role.Worker;
+                case 'Client': return Role.Client;
                 default: return Role.LoggedOut;
               }
             };
@@ -146,7 +146,7 @@ class Header extends Component<Props, State, {}> {
               </button>
               <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
                 <ul className="navbar-nav ml-auto">
-                  {(role === Role.Admin || role === Role.HeadAdmin)
+                  {(role === Role.Admin || role === Role.Director)
                     && (
                     <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                       <Link className="nav-link" to="/admin-panel">Admin Panel</Link>
