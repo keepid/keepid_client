@@ -2,6 +2,7 @@ package Organization;
 
 import UserTest.UserMessage;
 import Validation.OrganizationValidation;
+import Validation.UserValidation;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
@@ -23,30 +24,48 @@ public class OrganizationController {
   public Handler enrollOrganization =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        if (!OrganizationValidation.isValid(req, ctx)) {
+        JSONObject res = new JSONObject();
+
+        String orgName = req.getString("organizationName").strip();
+        String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
+        String orgEIN = req.getString("organizationEIN").strip();
+        String orgStreetAddress = req.getString("organizationAddressStreet").toUpperCase().strip();
+        String orgCity = req.getString("organizationAddressCity").toUpperCase().strip();
+        String orgState = req.getString("organizationAddressState").toUpperCase().strip();
+        String orgZipcode = req.getString("organizationAddressZipcode").strip();
+        String orgEmail = req.getString("organizationEmail").strip();
+        String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+        if (!OrganizationValidation.isValid(
+            orgName,
+            orgWebsite,
+            orgEIN,
+            orgStreetAddress,
+            orgCity,
+            orgState,
+            orgZipcode,
+            orgEmail,
+            orgPhoneNumber,
+            ctx)) {
           return;
         }
-        String orgName = req.getString("organizationName");
-        String orgWebsite = req.getString("organizationWebsite").toLowerCase();
-        String orgTaxCode = req.getString("organizationEIN");
-        String orgAddress = req.getString("organizationAddressStreet").toUpperCase();
-        String orgCity = req.getString("organizationAddressCity").toUpperCase();
-        String orgState = req.getString("organizationAddressState").toUpperCase();
-        String orgZipcode = req.getString("organizationAddressZipcode");
-        String orgEmail = req.getString("organizationEmail");
-        String orgPhoneNumber = req.getString("organizationPhoneNumber");
 
-        String firstName = req.getString("personFirstName").toUpperCase();
-        String lastName = req.getString("personLastName").toUpperCase();
-        String birthDate = req.getString("personBirthDate");
-        String email = req.getString("personEmail").toLowerCase();
-        String phone = req.getString("personPhoneNumber");
-        String address = req.getString("personAddressStreet").toUpperCase();
-        String city = req.getString("personAddressCity").toUpperCase();
-        String state = req.getString("personAddressState").toUpperCase();
-        String zipcode = req.getString("personAddressZipcode");
-        String username = req.getString("personUsername");
-        String password = req.getString("personPassword");
+        String firstName = req.getString("personFirstName").toUpperCase().strip();
+        String lastName = req.getString("personLastName").toUpperCase().strip();
+        String birthDate = req.getString("personBirthDate").strip();
+        String email = req.getString("personEmail").toLowerCase().strip();
+        String phone = req.getString("personPhoneNumber").strip();
+        String address = req.getString("personAddressStreet").toUpperCase().strip();
+        String city = req.getString("personAddressCity").toUpperCase().strip();
+        String state = req.getString("personAddressState").toUpperCase().strip();
+        String zipcode = req.getString("personAddressZipcode").strip();
+        String username = req.getString("personUsername").strip();
+        String password = req.getString("personPassword").strip();
+
+        if (!UserValidation.isValid(
+            firstName, lastName, birthDate, email, phone, address, city, state, zipcode, username,
+            password, ctx)) {
+          return;
+        }
 
         MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", orgName)).first();
@@ -55,9 +74,13 @@ public class OrganizationController {
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingOrg != null) {
-          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toString());
+          res.put("status", OrgEnrollmentStatus.ORG_EXISTS.toString());
+          res.put("message", OrgEnrollmentStatus.ORG_EXISTS.getErrorDescription());
+          ctx.json(res.toString());
         } else if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          res.put("status", UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          res.put("message", UserMessage.USERNAME_ALREADY_EXISTS.getErrorDescription());
+          ctx.json(res.toString());
         } else {
           Argon2 argon2 = Argon2Factory.create();
           char[] passwordArr = password.toCharArray();
@@ -67,7 +90,9 @@ public class OrganizationController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
+            res.put("status", OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
+            res.put("message", OrgEnrollmentStatus.PASS_HASH_FAILURE.getErrorDescription());
+            ctx.json(res.toString());
             return;
           }
 
@@ -93,8 +118,8 @@ public class OrganizationController {
           Document newOrg =
               new Document("orgName", orgName)
                   .append("website", orgWebsite)
-                  .append("taxCode", orgTaxCode)
-                  .append("address", orgAddress)
+                  .append("ein", orgEIN)
+                  .append("address", orgStreetAddress)
                   .append("city", orgCity)
                   .append("state", orgState)
                   .append("zipcode", orgZipcode)
@@ -105,7 +130,9 @@ public class OrganizationController {
           // ctx.sessionAttribute("privilegeLevel", "admin");
           // ctx.sessionAttribute("orgName", orgName);
 
-          ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
+          res.put("message", OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
+          res.put("status", OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.getErrorDescription());
+          ctx.json(res.toString());
         }
       };
 }

@@ -4,10 +4,11 @@ import java.net.URL;
 
 public class ValidationUtils {
 
+  // Make Own Regex
   public static boolean isValidOrgName(String input) {
     return input != null
         && !input.strip().isBlank()
-        && ValRegex.orgNamePattern.matcher(input).matches();
+        && ValRegex.streetPattern.matcher(input).matches();
   }
 
   public static boolean isValidOrgWebsite(String input) {
@@ -20,22 +21,23 @@ public class ValidationUtils {
     }
   }
 
+  public static boolean isValidEIN(String input) {
+
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.orgEINPattern.matcher(input).matches();
+  }
+
   public static boolean isValidEmail(String input) {
     return input != null
         && !input.strip().isBlank()
         && ValRegex.emailPattern.matcher(input).matches();
   }
 
-  public static boolean isValidFirstName(String input) {
+  public static boolean isValidPhoneNumber(String input) {
     return input != null
         && !input.strip().isBlank()
-        && ValRegex.namePattern.matcher(input).matches();
-  }
-
-  public static boolean isValidLastName(String input) {
-    return input != null
-        && !input.strip().isBlank()
-        && ValRegex.namePattern.matcher(input).matches();
+        && ValRegex.phoneNumberPattern.matcher(input).matches();
   }
 
   public static boolean isValidZipCode(String input) {
@@ -56,17 +58,39 @@ public class ValidationUtils {
         && ValRegex.usStatePattern.matcher(input).matches();
   }
 
-  public static boolean isValidTaxCode(String input) {
-    return input != null && !input.strip().isBlank();
-  }
-
-  public static boolean isValidPhoneNumber(String input) {
+  public static boolean isValidAddress(String input) {
     return input != null
         && !input.strip().isBlank()
-        && ValRegex.phoneNumberPattern.matcher(input).matches();
+        && ValRegex.streetPattern.matcher(input).matches();
   }
 
-  public static boolean isValidAddress(String input) {
-    return input != null && !input.strip().isBlank();
+  public static boolean isValidFirstName(String input) {
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.namePattern.matcher(input).matches();
+  }
+
+  public static boolean isValidLastName(String input) {
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.namePattern.matcher(input).matches();
+  }
+
+  public static boolean isValidBirthDate(String input) {
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.birthDatePattern.matcher(input).matches();
+  }
+
+  public static boolean isValidUsername(String input) {
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.usernamePattern.matcher(input).matches();
+  }
+
+  public static boolean isValidPassword(String input) {
+    return input != null
+        && !input.strip().isBlank()
+        && ValRegex.passwordPattern.matcher(input).matches();
   }
 }

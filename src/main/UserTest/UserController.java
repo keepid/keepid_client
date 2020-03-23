@@ -2,6 +2,7 @@ package UserTest;
 
 import Config.MongoConfig;
 import Logger.LogFactory;
+import Validation.UserValidation;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -113,6 +114,8 @@ public class UserController {
   public Handler createNewUser =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
+
         // Get all formParams
         String firstName = req.getString("firstname");
         String lastName = req.getString("lastname");
@@ -131,25 +134,49 @@ public class UserController {
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
+        if (!UserValidation.isValid(
+            firstName,
+            lastName,
+            birthDate,
+            email,
+            phonenumber,
+            address,
+            city,
+            state,
+            zipcode,
+            username,
+            password,
+            ctx)) {
+          return;
+        }
+
         if (sessionUserLevel == null || sessionOrg == null) {
           System.out.println(sessionUserLevel);
           System.out.println(sessionOrg);
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          res.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          res.put("message", UserMessage.SESSION_TOKEN_FAILURE.getErrorDescription());
+          ctx.json(res.toString());
           return;
         }
 
         if (userLevel.equals("Admin") && !sessionUserLevel.equals("Admin")) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName());
+          res.put("status", UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName());
+          res.put("message", UserMessage.NONADMIN_ENROLL_ADMIN.getErrorDescription());
+          ctx.json(res.toString());
           return;
         }
 
         if (userLevel.equals("Worker") && !sessionUserLevel.equals("Admin")) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName());
+          res.put("status", UserMessage.NONADMIN_ENROLL_WORKER.getErrorName());
+          res.put("message", UserMessage.NONADMIN_ENROLL_WORKER.getErrorDescription());
+          ctx.json(res.toString());
           return;
         }
 
         if (userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
-          ctx.json(new JSONObject(UserMessage.CLIENT_ENROLL_CLIENT.getErrorName()));
+          res.put("status", UserMessage.CLIENT_ENROLL_CLIENT.getErrorName());
+          res.put("message", UserMessage.CLIENT_ENROLL_CLIENT.getErrorDescription());
+          ctx.json(res.toString());
           return;
         }
 
@@ -160,7 +187,9 @@ public class UserController {
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          res.put("status", UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          res.put("message", UserMessage.USERNAME_ALREADY_EXISTS.getErrorDescription());
+          ctx.json(res.toString());
           return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
@@ -171,7 +200,9 @@ public class UserController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.json(UserMessage.HASH_FAILURE.getErrorName());
+            res.put("status", UserMessage.HASH_FAILURE.getErrorName());
+            res.put("message", UserMessage.HASH_FAILURE.getErrorDescription());
+            ctx.json(res.toString());
             return;
           }
 
@@ -194,7 +225,9 @@ public class UserController {
                   .append("canRegister", userLevel.equals("Admin"));
           userCollection.insertOne(newUser);
 
-          ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
+          res.put("status", UserMessage.ENROLL_SUCCESS.getErrorName());
+          res.put("message", UserMessage.ENROLL_SUCCESS.getErrorName());
+          ctx.json(res.toString());
         }
       };
 
