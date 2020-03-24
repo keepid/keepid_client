@@ -74,6 +74,8 @@ class OrganizationSignup extends Component<Props, State, {}> {
       submitSuccessful: false,
       buttonState: '',
     };
+    this.handleBack = this.handleBack.bind(this);
+    this.handleContinue = this.handleContinue.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onSubmitProp = this.onSubmitProp.bind(this);
     this.handleChangeOrganizationName = this.handleChangeOrganizationName.bind(this);
@@ -94,6 +96,55 @@ class OrganizationSignup extends Component<Props, State, {}> {
   captchaVerify(value) {
     this.setState({ isCaptchaFilled: true });
   }
+
+  handleBack(event: any) {
+    this.setState({ reaffirmStage: false });
+  }
+
+  handleContinue(event: any) {
+    event.preventDefault();
+    const {
+      organizationWebsite,
+      organizationName,
+      organizationEIN,
+      organizationAddressStreet,
+      organizationAddressCity,
+      organizationAddressState,
+      organizationAddressZipcode,
+      organizationEmail,
+      organizationPhoneNumber,
+    } = this.state;
+    fetch(`${getServerURL()}/organization-signup-validator`, {
+      method: 'POST',
+      body: JSON.stringify({
+        organizationWebsite,
+        organizationName,
+        organizationEIN,
+        organizationAddressStreet,
+        organizationAddressCity,
+        organizationAddressState,
+        organizationAddressZipcode,
+        organizationEmail,
+        organizationPhoneNumber,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+          message,
+        } = JSON.parse(responseJSON);
+        console.log(responseJSON);
+        if (status === 'SUCCESS') {
+          this.setState({ reaffirmStage: true });
+        } else {
+          console.log(status);
+          this.props.alert.show(message);
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+      });
+  }
+  
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
@@ -153,19 +204,18 @@ class OrganizationSignup extends Component<Props, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const enrollmentStatus = responseJSON;
-          if (enrollmentStatus === 'SUCCESSFUL_ENROLLMENT') {
+          const {
+            status,
+            message,
+          } = JSON.parse(responseJSON);
+          console.log(responseJSON);
+          if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });
-            this.props.alert.show('Thank you for Submitting. Please wait 1-3 business days for a response.');
-          } else if (enrollmentStatus === 'USER_ALREADY_EXISTS') {
-            this.props.alert.show('User already exists');
-            this.setState({ buttonState: '' });
-          } else if (enrollmentStatus === 'ORG_EXISTS') {
-            this.props.alert.show('Organization already exists');
-            this.setState({ buttonState: '' });
+            this.props.alert.show(message);
           } else {
-            this.props.alert.show('Invalid Field Parameter: Please enter a valid website, email address, phone number, state, or zip code');
+            console.log(status);
+            this.props.alert.show(message);
             this.setState({ buttonState: '' });
           }
         }).catch((error) => {
@@ -284,7 +334,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                 <p className="lead">{organizationFormBody}</p>
               </div>
             </div>
-            <form onSubmit={this.handleChangeReaffirmStage}>
+            <form onSubmit={this.handleContinue}>
               <div className="col-md-12">
                 <div className="form-row">
                   <div className="col-md-4 form-group">
@@ -432,7 +482,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
             <button type="button" onClick={this.handleChangePersonSubmitted} className="btn btn-danger">Redo Director Signup</button>
           </div>
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
+            <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4">Back</button>
             <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
               Submit
               <div className="ld ld-ring ld-spin" />

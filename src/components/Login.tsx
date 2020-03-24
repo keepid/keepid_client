@@ -22,7 +22,7 @@ class Login extends Component<{}, {}, {}> {
                 <div className="background ml-5 p-4 rounded mb-3 pb-5">
                   <div className="page-header">
                     <span className="brand-text">
-                      Empowering the Homeless through Secure Document Storage in the Cloud
+                      Empowering those Experiencing Homelessness through Secure ID Document Storage in the Cloud
                     </span>
                   </div>
                   <h2 className="mt-4 pt-2 pb-2">

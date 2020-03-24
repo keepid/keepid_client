@@ -13,6 +13,7 @@ interface Props {
 
 interface State {
   buttonState: string,
+  reaffirmStage: boolean,
   submitSuccessful: boolean,
 }
 
@@ -22,6 +23,7 @@ class PersonSignup extends Component<Props, State, {}> {
 
     this.state = {
       buttonState: '',
+      reaffirmStage: false,
       submitSuccessful: false,
     };
 
@@ -56,22 +58,23 @@ class PersonSignup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const userMessage = responseJSON;
-        if (userMessage === 'ENROLL_SUCCESS') {
-          this.props.alert.show('Successfully Enrolled Person');
-          this.setState({ submitSuccessful: true });
-        } else if (userMessage === 'USERNAME_ALREADY_EXISTS') {
-          this.props.alert.show('Username Already Exists!');
-        } else if (userMessage === 'HASH_FAILURE') {
-          this.props.alert.show('Server Failure: Please Try Again');
-        } else {
-          this.props.alert.show('Permissions Error');
-        }
-        this.setState({ buttonState: '' });
-      }).catch((error) => {
-        this.props.alert.show('Network Failure: Check Server Connection');
-        this.setState({ buttonState: '' });
-      });
+          const {
+            status,
+            message,
+          } = JSON.parse(responseJSON);
+          if (status === 'ENROLL_SUCCESS') {
+            this.setState({ buttonState: '' });
+            this.setState({ submitSuccessful: true });
+            this.props.alert.show(message);
+          } else {
+            console.log(status);
+            this.props.alert.show(message);
+            this.setState({ buttonState: '' });
+          }
+        }).catch((error) => {
+          this.props.alert.show(`Server Failure: ${error}`);
+          this.setState({ buttonState: '' });
+        });
   }
 
   render() {
