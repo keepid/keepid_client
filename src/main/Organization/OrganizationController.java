@@ -21,10 +21,38 @@ public class OrganizationController {
     this.db = db;
   }
 
+  public Handler organizationSignupValidator =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+
+        String orgName = req.getString("organizationName").strip();
+        String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
+        String orgEIN = req.getString("organizationEIN").strip();
+        String orgStreetAddress = req.getString("organizationAddressStreet").toUpperCase().strip();
+        String orgCity = req.getString("organizationAddressCity").toUpperCase().strip();
+        String orgState = req.getString("organizationAddressState").toUpperCase().strip();
+        String orgZipcode = req.getString("organizationAddressZipcode").strip();
+        String orgEmail = req.getString("organizationEmail").strip();
+        String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+        if (!OrganizationValidation.isValid(
+            orgName,
+            orgWebsite,
+            orgEIN,
+            orgStreetAddress,
+            orgCity,
+            orgState,
+            orgZipcode,
+            orgEmail,
+            orgPhoneNumber,
+            ctx)) {
+          return;
+        }
+
+        ctx.json(OrgEnrollmentStatus.SUCCESS.toJSON());
+      };
   public Handler enrollOrganization =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         String orgName = req.getString("organizationName").strip();
         String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
@@ -74,13 +102,9 @@ public class OrganizationController {
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingOrg != null) {
-          res.put("status", OrgEnrollmentStatus.ORG_EXISTS.toString());
-          res.put("message", OrgEnrollmentStatus.ORG_EXISTS.getErrorDescription());
-          ctx.json(res.toString());
+          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON());
         } else if (existingUser != null) {
-          res.put("status", UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
-          res.put("message", UserMessage.USERNAME_ALREADY_EXISTS.getErrorDescription());
-          ctx.json(res.toString());
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
         } else {
           Argon2 argon2 = Argon2Factory.create();
           char[] passwordArr = password.toCharArray();
@@ -90,9 +114,7 @@ public class OrganizationController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            res.put("status", OrgEnrollmentStatus.PASS_HASH_FAILURE.toString());
-            res.put("message", OrgEnrollmentStatus.PASS_HASH_FAILURE.getErrorDescription());
-            ctx.json(res.toString());
+            ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toJSON());
             return;
           }
 
@@ -130,9 +152,7 @@ public class OrganizationController {
           // ctx.sessionAttribute("privilegeLevel", "admin");
           // ctx.sessionAttribute("orgName", orgName);
 
-          res.put("message", OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toString());
-          res.put("status", OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.getErrorDescription());
-          ctx.json(res.toString());
+          ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON());
         }
       };
 }

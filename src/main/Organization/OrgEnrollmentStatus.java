@@ -1,5 +1,7 @@
 package Organization;
 
+import org.json.JSONObject;
+
 public enum OrgEnrollmentStatus {
   ORG_EXISTS("ORG_EXISTS: Organization Exists Already"),
   SUCCESSFUL_ENROLLMENT("SUCCESSFUL_ENROLLMENT: Please Wait 1-3 Business Days For Response"),
@@ -9,7 +11,8 @@ public enum OrgEnrollmentStatus {
   EMAIL_LEN_OVER_40(""),
   INVALID_CHARACTERS(""),
   PASS_UNDER_8(""),
-  INVALID_PARAMETER("INVALID_PARAMETER: Please Check Input");
+  INVALID_PARAMETER("INVALID_PARAMETER: Please Check Input"),
+  SUCCESS("SUCCESS: Success");
 
   public String errorMessage;
 
@@ -27,5 +30,19 @@ public enum OrgEnrollmentStatus {
 
   public String getErrorDescription() {
     return this.errorMessage.split(":")[1];
+  }
+
+  public String toJSON() {
+    JSONObject res = new JSONObject();
+    res.put("status", getErrorName());
+    res.put("message", getErrorDescription());
+    return res.toString();
+  }
+
+  public String toJSON(String message) {
+    JSONObject res = new JSONObject();
+    res.put("status", getErrorName());
+    res.put("message", message);
+    return res.toString();
   }
 }

@@ -1,5 +1,7 @@
 package UserTest;
 
+import org.json.JSONObject;
+
 public enum UserMessage {
   AUTH_SUCCESS("AUTH_SUCCESS:Successfully Authenticated User"),
   ENROLL_SUCCESS("ENROLL_SUCCESS:Successfully enrolled User."),
@@ -32,5 +34,19 @@ public enum UserMessage {
 
   public String getErrorDescription() {
     return this.errorMessage.split(":")[1];
+  }
+
+  public String toJSON() {
+    JSONObject res = new JSONObject();
+    res.put("status", getErrorName());
+    res.put("message", getErrorDescription());
+    return res.toString();
+  }
+
+  public String toJSON(String message) {
+    JSONObject res = new JSONObject();
+    res.put("status", getErrorName());
+    res.put("message", message);
+    return res.toString();
   }
 }

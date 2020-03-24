@@ -81,6 +81,7 @@ public class App {
     /* -------------- USER AUTHENTICATION ------------------ */
     app.post("/login", userController.loginUser);
     app.post("/generate-username", userController.generateUniqueUsername);
+    app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
 
@@ -88,6 +89,7 @@ public class App {
     app.post("/modify-permissions", userController.modifyPermissions);
 
     /* -------------- ORGANIZATION SIGNUP ------------------ */
+    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
   }
 }

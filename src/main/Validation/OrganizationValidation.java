@@ -30,65 +30,47 @@ public class OrganizationValidation implements GeneralValidator {
 
     if (!ValidationUtils.isValidOrgName(orgName)) {
       logger.error("Invalid orgname: " + orgName);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Name");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Name"));
       return false;
     }
     if (!ValidationUtils.isValidOrgWebsite(orgWebsite)) {
       logger.error("Invalid website: " + orgWebsite);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Website");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Website"));
       return false;
     }
     if (!ValidationUtils.isValidEIN(orgEIN)) {
       logger.error("Invalid taxCode: " + orgEIN);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization EIN");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization EIN"));
       return false;
     }
     if (!ValidationUtils.isValidPhoneNumber(orgPhoneNumber)) {
       logger.error("Invalid orgContactPhoneNumber: " + orgPhoneNumber);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Phone");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Phone"));
       return false;
     }
     if (!ValidationUtils.isValidEmail(orgEmail)) {
       logger.error("Invalid email: " + orgEmail);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Email");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Email"));
       return false;
     }
     if (!ValidationUtils.isValidAddress(orgStreetAddress)) {
       logger.error("Invalid address: " + orgStreetAddress);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Street");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Street"));
       return false;
     }
     if (!ValidationUtils.isValidCity(orgCity)) {
       logger.error("Invalid city: " + orgCity);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization City");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization City"));
       return false;
     }
     if (!ValidationUtils.isValidUSState(orgState)) {
       logger.error("Invalid state: " + orgState);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization State");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization State"));
       return false;
     }
     if (!ValidationUtils.isValidZipCode(orgZipcode)) {
       logger.error("Invalid zipcode: " + orgZipcode);
-      errorJSON.put("status", OrgEnrollmentStatus.INVALID_PARAMETER.toString());
-      errorJSON.put("message", "Invalid Organization Zipcode");
-      ctx.json(errorJSON.toString());
+      ctx.json(OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Zipcode"));
       return false;
     }
     return true;
