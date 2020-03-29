@@ -4,33 +4,18 @@ import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
 interface Props {
-  documentId: string | undefined,
 }
 
 interface State {
   pdfFile: File | undefined,
 }
 
-class ViewDocument extends Component<Props, State> {
+class SendApplication extends Component<Props, State> {
   constructor(props: any) {
     super(props);
     this.state = {
       pdfFile: undefined,
     };
-  }
-
-  componentDidMount() {
-    const {
-      documentId,
-    } = this.props;
-    fetch(`${getServerURL()}/download/${documentId}`, {
-      method: 'GET',
-      credentials: 'include',
-    }).then((response) => response.blob())
-      .then((response) => {
-        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
-        this.setState({ pdfFile });
-      });
   }
 
   render() {
@@ -50,4 +35,4 @@ class ViewDocument extends Component<Props, State> {
   }
 }
 
-export default ViewDocument;
+export default SendApplication;
