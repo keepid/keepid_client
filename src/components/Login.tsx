@@ -48,9 +48,9 @@ class Login extends Component<{}, {}, {}> {
               </div>
               <div className="col-md-6">
                 <div className="mr-5 p-4 container-home-right">
-                  <div className="col-md-4">
-                    <img alt="Hubs" src={HomeForm} className=""/>
-                  </div>
+                  
+                  <img alt="Hubs" src={HomeForm} className="home-form-svg w-100"/>
+                  
                   {/* <h1 className="text-center font-weight-bold">
                       Our Model
                   </h1>
