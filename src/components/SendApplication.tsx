@@ -2,35 +2,28 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
+const j = require('pdfkit');
 
 interface Props {
-  documentId: string | undefined,
 }
 
 interface State {
   pdfFile: File | undefined,
 }
 
-class ViewDocument extends Component<Props, State> {
+class SendApplication extends Component<Props, State> {
   constructor(props: any) {
     super(props);
     this.state = {
       pdfFile: undefined,
     };
+    this.autofillPDF = this.autofillPDF.bind(this);
+    this.autofillPDF();
   }
 
-  componentDidMount() {
-    const {
-      documentId,
-    } = this.props;
-    fetch(`${getServerURL()}/download/${documentId}`, {
-      method: 'GET',
-      credentials: 'include',
-    }).then((response) => response.blob())
-      .then((response) => {
-        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
-        this.setState({ pdfFile });
-      });
+  autofillPDF() {
+    //const doc = new PDFDocument();
+    //doc.end();
   }
 
   render() {
@@ -50,4 +43,4 @@ class ViewDocument extends Component<Props, State> {
   }
 }
 
-export default ViewDocument;
+export default SendApplication;

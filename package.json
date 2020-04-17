@@ -22,6 +22,7 @@
     "node-sass": "^4.13.0",
     "normalize.css": "^8.0.1",
     "pdfjs-dist": "^2.2.228",
+    "pdfkit": "^0.11.0",
     "react": "^16.11.0",
     "react-alert": "^6.0.1",
     "react-alert-template-basic": "^1.0.0",

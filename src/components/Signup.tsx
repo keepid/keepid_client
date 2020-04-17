@@ -57,6 +57,7 @@ class Signup extends Component<Props, State, {}> {
       reaffirmStage: false,
     };
 
+    this.birthDateString = this.birthDateString.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangePersonFirstName = this.handleChangePersonFirstName.bind(this);
     this.handleChangePersonLastName = this.handleChangePersonLastName.bind(this);
@@ -71,8 +72,18 @@ class Signup extends Component<Props, State, {}> {
     this.generatePersonUsername = this.generatePersonUsername.bind(this);
     this.handleChangePersonPassword = this.handleChangePersonPassword.bind(this);
     this.handleChangePersonConfirmPassword = this.handleChangePersonConfirmPassword.bind(this);
-    this.handleChangeReaffirmStage = this.handleChangeReaffirmStage.bind(this);
+    this.handleContinue = this.handleContinue.bind(this);
+    this.handleBack = this.handleBack.bind(this);
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
+  }
+
+  birthDateString(birthDate: Date) {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
   }
 
   handleSubmit(event: any) {
@@ -101,13 +112,8 @@ class Signup extends Component<Props, State, {}> {
       this.props.alert.show('Your passwords are not identical');
     } else {
       const personRoleStringVar = this.personRoleString(personRole);
-
-      const personBirthMonth = personBirthDate.getMonth() + 1;
-      const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-      const personBirthDay = personBirthDate.getDate();
-      const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-      const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${personBirthDate.getFullYear()}`;
-
+      const personBirthDateFormatted = this.birthDateString(personBirthDate);
+     
       this.props.onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
         personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
         personAddressZipcode, personUsername, personPassword, personRoleStringVar);
@@ -183,11 +189,64 @@ class Signup extends Component<Props, State, {}> {
     this.setState({ personConfirmPassword: event.target.value });
   }
 
-  handleChangeReaffirmStage(event: any) {
+  handleContinue(event: any) {
+    event.preventDefault();
     const {
-      reaffirmStage,
+      personRole,
+    } = this.props;
+    const {
+      personFirstName,
+      personLastName,
+      personBirthDate,
+      personUsername,
+      personEmail,
+      personPhoneNumber,
+      personAddressStreet,
+      personAddressCity,
+      personAddressState,
+      personAddressZipcode,
+      personPassword,
     } = this.state;
-    this.setState({ reaffirmStage: !reaffirmStage });
+
+    const personRoleString = this.personRoleString(personRole);
+    const personBirthDateFormatted = this.birthDateString(personBirthDate);
+
+    fetch(`${getServerURL()}/create-user-validator`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        firstname: personFirstName,
+        lastname: personLastName,
+        birthDate: personBirthDateFormatted,
+        username: personUsername,
+        email: personEmail,
+        phonenumber: personPhoneNumber,
+        address: personAddressStreet,
+        city: personAddressCity,
+        state: personAddressState,
+        zipcode: personAddressZipcode,
+        password: personPassword,
+        personRole: personRoleString,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+          const {
+            status,
+            message,
+          } = JSON.parse(responseJSON);
+          if (status === 'SUCCESS') {
+            this.setState({ reaffirmStage: true });
+          } else {
+            console.log(status);
+            this.props.alert.show(message);
+          }
+        }).catch((error) => {
+          this.props.alert.show(`Server Failure: ${error}`);
+        });
+  }
+
+  handleBack(event: any) {
+    this.setState({ reaffirmStage: false });
   }
 
   handleChangeAcceptEULA(acceptEULA: boolean) {
@@ -251,7 +310,7 @@ class Signup extends Component<Props, State, {}> {
                 <p className="lead">Please fill out the following form to proceed with setting up the Keep.id account.</p>
               </div>
             </div>
-            <form onSubmit={this.handleChangeReaffirmStage}>
+            <form onSubmit={this.handleContinue}>
               <div className="col-md-12">
                 <div className="form-row">
                   <div className="col-md-6 form-group">
@@ -496,7 +555,7 @@ class Signup extends Component<Props, State, {}> {
         </div>
         <div className="row mt-5">
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleChangeReaffirmStage} className="btn btn-danger mr-4">Back</button>
+            <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4">Back</button>
             <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${buttonState}`}>
               {personRole === Role.Director ? 'Next' : 'Submit'}
               <div className="ld ld-ring ld-spin" />
