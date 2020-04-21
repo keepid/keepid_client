@@ -29,7 +29,7 @@ class Login extends Component<{}, {}, {}> {
                     <span>For Those Experiencing Homelessness</span>
                   </h2>
                   <p>
-                    <span>Find a nearby registered organization that can help get you started.</span>
+                    <span>Find a nearby registered organization that can help get you started</span>
                   </p>
                   <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
                       Find Organizations
