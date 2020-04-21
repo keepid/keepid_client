@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
-const j = require('pdfkit');
 
 interface Props {
 }
