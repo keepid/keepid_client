@@ -12,3 +12,5 @@ cache:
     - $HOME/.m2
 after_success:
   - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
+notifications:
+  slack: keepid:dSU1H1ttrbqa2CuH1d2CVui3

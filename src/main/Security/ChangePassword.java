@@ -1,9 +1,5 @@
-package UserIntTests;
+package Security;
 
-import Config.MongoConfig;
-import com.google.gson.JsonObject;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -14,10 +10,7 @@ import io.javalin.http.Handler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.json.JSONObject;
-
-import javax.servlet.http.HttpServletRequest;
 
 import java.security.SecureRandom;
 import java.util.Date;

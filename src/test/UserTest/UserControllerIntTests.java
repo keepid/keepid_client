@@ -1,9 +1,9 @@
-package UserIntTests;
+package UserTest;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-class UserControllerTest {
+class UserControllerIntTests {
 
   @BeforeEach
   void setUp() {}

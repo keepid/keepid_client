@@ -1,7 +1,8 @@
-package UserIntTests;
+package UserTest;
 
 import Config.MongoConfig;
 import Logger.LogFactory;
+import Validation.UserValidation;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -15,8 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
@@ -48,7 +48,8 @@ public class UserController {
           MongoCollection<Document> userCollection = database.getCollection("user");
           Document user = userCollection.find(eq("username", username)).first();
           if (user == null) {
-            res.put("loginStatus", UserMessage.USER_NOT_FOUND.getErrorName());
+            // Put Auth failure so that they can't discover the username of a person by brute force
+            res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             res.put("userRole", "");
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
@@ -93,14 +94,68 @@ public class UserController {
         }
       };
 
-  public Handler createNewUser =
+  public Handler generateUniqueUsername =
       ctx -> {
-
-        // System.out.println("SESSION: " + ctx.req.getSession().toString());
         JSONObject req = new JSONObject(ctx.body());
+        MongoDatabase database =
+            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
+
+        MongoCollection<Document> userCollection = database.getCollection("user");
+        String username = req.getString("username");
+        String candidateUsername = username;
+        int i = 0;
+        while (userCollection.find(eq("username", candidateUsername)).first() != null && i < 1000) {
+          i++;
+          candidateUsername = username + "-" + i;
+        }
+        ctx.json(candidateUsername);
+      };
+
+  public Handler createUserValidator =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+
         // Get all formParams
         String firstName = req.getString("firstname");
         String lastName = req.getString("lastname");
+        String birthDate = req.getString("birthDate");
+        String email = req.getString("email");
+        String phonenumber = req.getString("phonenumber");
+        String address = req.getString("address");
+        String city = req.getString("city");
+        String state = req.getString("state");
+        String zipcode = req.getString("zipcode");
+        String username = req.getString("username");
+        String password = req.getString("password");
+        String userLevel = req.getString("personRole");
+
+        if (!UserValidation.isValid(
+            firstName,
+            lastName,
+            birthDate,
+            email,
+            phonenumber,
+            address,
+            city,
+            state,
+            zipcode,
+            username,
+            password,
+            ctx)) {
+          return;
+        }
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
+  public Handler createNewUser =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+
+        // Get all formParams
+        String firstName = req.getString("firstname");
+        String lastName = req.getString("lastname");
+        String birthDate = req.getString("birthDate");
         String email = req.getString("email");
         String phonenumber = req.getString("phonenumber");
         String address = req.getString("address");
@@ -115,25 +170,41 @@ public class UserController {
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
+        if (!UserValidation.isValid(
+            firstName,
+            lastName,
+            birthDate,
+            email,
+            phonenumber,
+            address,
+            city,
+            state,
+            zipcode,
+            username,
+            password,
+            ctx)) {
+          return;
+        }
+
         if (sessionUserLevel == null || sessionOrg == null) {
           System.out.println(sessionUserLevel);
           System.out.println(sessionOrg);
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
           return;
         }
 
-        if (userLevel.equals("admin") && !sessionUserLevel.equals("admin")) {
-          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_ADMIN.getErrorName()));
+        if (userLevel.equals("Admin") && !sessionUserLevel.equals("Admin")) {
+          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
           return;
         }
 
-        if (userLevel.equals("worker") && !sessionUserLevel.equals("admin")) {
-          ctx.json(new JSONObject(UserMessage.NONADMIN_ENROLL_WORKER.getErrorName()));
+        if (userLevel.equals("Worker") && !sessionUserLevel.equals("Admin")) {
+          ctx.json(UserMessage.NONADMIN_ENROLL_WORKER.toJSON());
           return;
         }
 
-        if (userLevel.equals("client") && sessionUserLevel.equals("client")) {
-          ctx.json(new JSONObject(UserMessage.CLIENT_ENROLL_CLIENT.getErrorName()));
+        if (userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
+          ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON());
           return;
         }
 
@@ -144,7 +215,7 @@ public class UserController {
         Document existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.getErrorName());
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
           return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
@@ -155,7 +226,7 @@ public class UserController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.json(UserMessage.HASH_FAILURE.getErrorName());
+            ctx.json(UserMessage.HASH_FAILURE.toJSON());
             return;
           }
 
@@ -167,24 +238,25 @@ public class UserController {
                   .append("phone", phonenumber)
                   .append("firstName", firstName.toUpperCase())
                   .append("lastName", lastName.toUpperCase())
+                  .append("birthDate", birthDate)
                   .append("address", address.toUpperCase())
                   .append("city", city.toUpperCase())
                   .append("state", state)
                   .append("zipcode", zipcode)
                   .append("privilegeLevel", userLevel)
-                  .append("canView", userLevel.equals("admin"))
-                  .append("canEdit", userLevel.equals("admin"))
-                  .append("canRegister", userLevel.equals("admin"));
+                  .append("canView", userLevel.equals("Admin"))
+                  .append("canEdit", userLevel.equals("Admin"))
+                  .append("canRegister", userLevel.equals("Admin"));
           userCollection.insertOne(newUser);
 
-          ctx.json(UserMessage.ENROLL_SUCCESS.getErrorName());
+          ctx.json(UserMessage.ENROLL_SUCCESS.toJSON());
         }
       };
 
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
-        ctx.result("SUCCESS");
+        ctx.json("SUCCESS");
       };
 
   public Handler getMembers =
@@ -193,8 +265,8 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
-        String firstNameSearch = req.getString("firstName").trim();
-        String lastNameSearch = req.getString("lastName").trim();
+        String nameSearch = req.getString("name").trim();
+        String[] nameSearchSplit = nameSearch.split(" ");
         String listType = req.getString("listType");
         int currentPage = req.getInt("currentPage");
         int itemsPerPage = req.getInt("itemsPerPage");
@@ -202,23 +274,13 @@ public class UserController {
         int endIndex = (currentPage + 1) * itemsPerPage;
 
         if (privilegeLevel == null || orgName == null) {
-          JSONObject response = new JSONObject();
-          response.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
-          ctx.json(response.toString());
-          return;
-        }
-
-        if (privilegeLevel.equals("client")) {
-          JSONObject response = new JSONObject();
-          response.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
-          ctx.json(response.toString());
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
           return;
         }
 
         JSONObject memberList = new JSONObject();
 
-        JSONArray admins = new JSONArray();
-        JSONArray workers = new JSONArray();
+        JSONArray members = new JSONArray();
         JSONArray clients = new JSONArray();
 
         MongoClient client = MongoConfig.getMongoClient();
@@ -228,18 +290,21 @@ public class UserController {
         Bson orgNameMatch = eq("organization", orgName);
         Bson filter;
 
-        if (!firstNameSearch.contentEquals("") || !lastNameSearch.contentEquals("")) {
-          Bson firstNameMatch = regex("firstName", firstNameSearch, "i");
-          Bson lastNameMatch = regex("lastName", lastNameSearch, "i");
-          filter = combine(orgNameMatch, firstNameMatch, lastNameMatch);
+        if (!nameSearch.contentEquals("")) {
+          filter = regex("firstName", nameSearchSplit[0], "i");
+          filter = or(filter, regex("lastName", nameSearchSplit[0], "i"));
+          for (int i = 1; i < nameSearchSplit.length; i++) {
+            filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
+            filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
+          }
+          filter = combine(filter, orgNameMatch); // Make sure good
         } else {
           filter = orgNameMatch;
         }
 
         MongoCursor<Document> cursor = userCollection.find(filter).iterator();
         int numClients = 0;
-        int numAdmins = 0;
-        int numWorkers = 0;
+        int numMembers = 0;
         while (cursor.hasNext()) {
           System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
@@ -249,6 +314,7 @@ public class UserController {
 
           JSONObject user = new JSONObject();
           user.put("username", doc.get("username").toString());
+          user.put("privilegeLevel", doc.get("privilegeLevel").toString());
           user.put("firstName", doc.get("firstName").toString());
           user.put("lastName", doc.get("lastName").toString());
           user.put("email", doc.get("email").toString());
@@ -258,48 +324,36 @@ public class UserController {
           user.put("state", doc.get("state").toString());
           user.put("zipcode", doc.get("zipcode").toString());
 
-          if (userType.equals("admin")) {
-            admins.put(user);
-            numAdmins += 1;
-          } else if (userType.equals("worker")) {
-            workers.put(user);
-            numWorkers += 1;
-          } else if (userType.equals("client")) {
+          if (userType.equals("Admin") || userType.equals("Worker")) {
+            members.put(user);
+            numMembers += 1;
+          } else if (userType.equals("Client")) {
             clients.put(user);
             numClients += 1;
           }
         }
 
-        if (privilegeLevel.equals("worker")
-            || (privilegeLevel.equals("admin") && listType.equals("clients"))) {
-          JSONArray clientPage = new JSONArray();
-          if (startIndex >= 0 && endIndex <= clients.length()) {
-            for (int i = startIndex; i < endIndex; i++) {
-              clientPage.put(clients.get(i));
-            }
-          } else if (startIndex >= 0
-              && endIndex > clients.length()
-              && clients.length() > startIndex) {
-            endIndex = clients.length();
-            for (int i = startIndex; i < endIndex; i++) {
-              clientPage.put(clients.get(i));
-            }
-          }
-          memberList.put("clients", clientPage);
-        } else if (privilegeLevel.equals("admin")) {
-          System.out.println("LIST TYPE");
-          System.out.println(listType);
-          if (listType.equals("members")) {
-            memberList.put("admins", admins);
-            memberList.put("workers", workers);
-          }
+        JSONArray returnElements;
+        int numReturnElements;
+        // If Getting Client List
+        if (listType.equals("clients")
+            && (privilegeLevel.equals("Worker") || privilegeLevel.equals("Admin"))) {
+          returnElements = getPage(clients, startIndex, endIndex);
+          numReturnElements = clients.length();
+          // If Getting Worker/Admin List
+        } else if (listType.equals("members") && privilegeLevel.equals("Admin")) {
+          returnElements = getPage(members, startIndex, endIndex);
+          numReturnElements = members.length();
+        } else {
+          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON());
+          return;
         }
 
         JSONObject response = new JSONObject();
-        response.put("memberList", memberList);
-        response.put("numClients", numClients);
-        response.put("numAdmins", numAdmins);
-        response.put("numWorkers", numWorkers);
+        response.put("status", UserMessage.SUCCESS.getErrorName());
+        response.put("message", UserMessage.SUCCESS.getErrorDescription());
+        response.put("people", returnElements);
+        response.put("numPeople", numReturnElements);
         ctx.json(response.toString());
       };
 
@@ -310,12 +364,12 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
 
         if (username == null || privilegeLevel == null || orgName == null) {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.getErrorName());
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
           return;
         }
 
-        if (!privilegeLevel.equals("admin")) {
-          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName());
+        if (!privilegeLevel.equals("Admin")) {
+          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON());
           return;
         }
 
@@ -334,6 +388,21 @@ public class UserController {
         Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
         userCollection.findOneAndUpdate(filter, updates);
 
-        ctx.json(UserMessage.SUCCESS.getErrorName());
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
+
+  private JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
+    JSONArray page = new JSONArray();
+    if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
+      if (pageEndIndex > elements.length()) {
+        pageEndIndex = elements.length();
+      }
+      for (int i = pageStartIndex; i < pageEndIndex; i++) {
+        page.put(elements.get(i));
+      }
+    } else {
+      System.out.println("ERROR: Invalid Start Index");
+    }
+    return page;
+  }
 }
