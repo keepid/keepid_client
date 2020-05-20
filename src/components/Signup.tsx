@@ -107,13 +107,13 @@ class Signup extends Component<Props, State, {}> {
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
-      this.props.alert.show('Please accept EULA before continuing')
+      this.props.alert.show('Please accept EULA before continuing');
     } else if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
     } else {
       const personRoleStringVar = this.personRoleString(personRole);
       const personBirthDateFormatted = this.birthDateString(personBirthDate);
-     
+
       this.props.onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
         personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
         personAddressZipcode, personUsername, personPassword, personRoleStringVar);
@@ -230,19 +230,19 @@ class Signup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-          const {
-            status,
-            message,
-          } = JSON.parse(responseJSON);
-          if (status === 'SUCCESS') {
-            this.setState({ reaffirmStage: true });
-          } else {
-            console.log(status);
-            this.props.alert.show(message);
-          }
-        }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
-        });
+        const {
+          status,
+          message,
+        } = JSON.parse(responseJSON);
+        if (status === 'SUCCESS') {
+          this.setState({ reaffirmStage: true });
+        } else {
+          console.log(status);
+          this.props.alert.show(message);
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+      });
   }
 
   handleBack(event: any) {

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
-const j = require('pdfkit');
+
+// const j = require('pdfkit');
 
 interface Props {
 }
@@ -22,8 +23,8 @@ class SendApplication extends Component<Props, State> {
   }
 
   autofillPDF() {
-    //const doc = new PDFDocument();
-    //doc.end();
+    // const doc = new PDFDocument();
+    // doc.end();
   }
 
   render() {

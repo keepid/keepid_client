@@ -58,23 +58,23 @@ class PersonSignup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-          const {
-            status,
-            message,
-          } = JSON.parse(responseJSON);
-          if (status === 'ENROLL_SUCCESS') {
-            this.setState({ buttonState: '' });
-            this.setState({ submitSuccessful: true });
-            this.props.alert.show(message);
-          } else {
-            console.log(status);
-            this.props.alert.show(message);
-            this.setState({ buttonState: '' });
-          }
-        }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
+        const {
+          status,
+          message,
+        } = JSON.parse(responseJSON);
+        if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-        });
+          this.setState({ submitSuccessful: true });
+          this.props.alert.show(message);
+        } else {
+          console.log(status);
+          this.props.alert.show(message);
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+        this.setState({ buttonState: '' });
+      });
   }
 
   render() {

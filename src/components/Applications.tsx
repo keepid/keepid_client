@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import Calendar from '../static/images/calendar.svg';
 import { Switch, Route, Link } from 'react-router-dom';
+import Calendar from '../static/images/calendar.svg';
 import SendApplication from './SendApplication';
 
 class Applications extends Component<{}, {}, {}> {
   render() {
     return (
-      <Switch> 
+      <Switch>
         <Route path="/applications/send">
           <SendApplication />
         </Route>

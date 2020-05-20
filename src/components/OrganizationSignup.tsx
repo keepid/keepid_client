@@ -144,7 +144,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
         this.props.alert.show(`Server Failure: ${error}`);
       });
   }
-  
+
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
