@@ -6,7 +6,7 @@ import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
-import UserTest.UserController;
+import User.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -19,7 +19,7 @@ public class App {
   public static Long ASYNC_TIME_OUT = 10L;
 
   public static void main(String[] args) {
-    System.setProperty("logback.configurationFile", "../resources/logback.xml");
+    System.setProperty("logback.configurationFile", "./logger/resources/logback.xml");
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
 

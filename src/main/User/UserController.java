@@ -1,9 +1,8 @@
-package UserTest;
+package User;
 
-import Config.MongoConfig;
 import Logger.LogFactory;
 import Validation.UserValidation;
-import com.mongodb.client.MongoClient;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -32,75 +31,62 @@ public class UserController {
 
   public Handler loginUser =
       ctx -> {
-        // ctx.req.changeSessionId();
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
         String username = req.getString("username");
         String password = req.getString("password");
+
+        res.put("userRole", "");
+        res.put("organization", "");
+        res.put("firstName", "");
+        res.put("lastName", "");
+
+        if (!ValidationUtils.isValidUsername(username)
+            || !ValidationUtils.isValidPassword(password)) {
+          res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+          ctx.json(res.toString());
+        }
         Argon2 argon2 = Argon2Factory.create();
-        // @validate make sure that username and password are not null
         char[] passwordArr = password.toCharArray();
         try {
-          // retrieve hash from database
-          // do mongodb lookup here
-          MongoClient client = MongoConfig.getMongoClient();
-          MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
-          MongoCollection<Document> userCollection = database.getCollection("user");
+          MongoCollection<Document> userCollection = db.getCollection("user");
           Document user = userCollection.find(eq("username", username)).first();
-          if (user == null) {
-            // Put Auth failure so that they can't discover the username of a person by brute force
+          if (user == null) { // Prevent Brute Force Attack
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
-            res.put("userRole", "");
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
             return;
           }
-
           String hash = user.get("password", String.class);
-          if (argon2.verify(hash, passwordArr)) {
-            // Hash matches password
-
+          if (argon2.verify(hash, passwordArr)) { // Hash matches password
             ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
             ctx.sessionAttribute("orgName", user.get("organization"));
             ctx.sessionAttribute("username", username);
-            logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
-            logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
-
+            //  logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
+            //  logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.get("privilegeLevel"));
             res.put("organization", user.get("organization"));
             res.put("firstName", user.get("firstName"));
             res.put("lastName", user.get("lastName"));
             ctx.json(res.toString());
-          } else {
-            // Hash doesn't match password
+          } else { // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
-            res.put("userRole", "");
-            res.put("organization", "");
-            res.put("firstName", "");
-            res.put("lastName", "");
             ctx.json(res.toString());
           }
-        } catch (Exception e) {
+        } catch (Exception e) { // catch exceptions
           res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
-          res.put("userRole", "");
-          res.put("organization", "");
-          res.put("firstName", "");
-          res.put("lastName", "");
           ctx.json(res.toString());
         } finally {
-          // Wipe confidential data from cache
-          argon2.wipeArray(passwordArr);
+          argon2.wipeArray(passwordArr); // Wipe confidential data from cache
         }
       };
 
   public Handler generateUniqueUsername =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        MongoDatabase database =
-            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
 
-        MongoCollection<Document> userCollection = database.getCollection("user");
+        MongoCollection<Document> userCollection = db.getCollection("user");
         String username = req.getString("username");
         String candidateUsername = username;
         int i = 0;
@@ -113,76 +99,19 @@ public class UserController {
 
   public Handler createUserValidator =
       ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
-
-        // Get all formParams
-        String firstName = req.getString("firstname");
-        String lastName = req.getString("lastname");
-        String birthDate = req.getString("birthDate");
-        String email = req.getString("email");
-        String phonenumber = req.getString("phonenumber");
-        String address = req.getString("address");
-        String city = req.getString("city");
-        String state = req.getString("state");
-        String zipcode = req.getString("zipcode");
-        String username = req.getString("username");
-        String password = req.getString("password");
-        String userLevel = req.getString("personRole");
-
-        if (!UserValidation.isValid(
-            firstName,
-            lastName,
-            birthDate,
-            email,
-            phonenumber,
-            address,
-            city,
-            state,
-            zipcode,
-            username,
-            password,
-            ctx)) {
+        if (!UserValidation.isValid(new User(ctx))) {
           return;
         }
-
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
   public Handler createNewUser =
       ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
-
-        // Get all formParams
-        String firstName = req.getString("firstname");
-        String lastName = req.getString("lastname");
-        String birthDate = req.getString("birthDate");
-        String email = req.getString("email");
-        String phonenumber = req.getString("phonenumber");
-        String address = req.getString("address");
-        String city = req.getString("city");
-        String state = req.getString("state");
-        String zipcode = req.getString("zipcode");
-        String username = req.getString("username");
-        String password = req.getString("password");
-        String userLevel = req.getString("personRole");
-
-        // Session attributes.
+        User user = new User(ctx);
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
-        if (!UserValidation.isValid(
-            firstName,
-            lastName,
-            birthDate,
-            email,
-            phonenumber,
-            address,
-            city,
-            state,
-            zipcode,
-            username,
-            password,
-            ctx)) {
+        if (!UserValidation.isValid(user)) {
           return;
         }
 
@@ -193,33 +122,26 @@ public class UserController {
           return;
         }
 
-        if (userLevel.equals("Admin") && !sessionUserLevel.equals("Admin")) {
+        if ((user.userLevel.equals("Admin") || user.userLevel.equals("Worker"))
+            && !sessionUserLevel.equals("Admin")) {
           ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
           return;
         }
 
-        if (userLevel.equals("Worker") && !sessionUserLevel.equals("Admin")) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_WORKER.toJSON());
-          return;
-        }
-
-        if (userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
+        if (user.userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
           ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON());
           return;
         }
 
-        MongoDatabase database =
-            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
-
-        MongoCollection<Document> userCollection = database.getCollection("user");
-        Document existingUser = userCollection.find(eq("username", username)).first();
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document existingUser = userCollection.find(eq("username", user.username)).first();
 
         if (existingUser != null) {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
           return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = password.toCharArray();
+          char[] passwordArr = user.password.toCharArray();
           String passwordHash;
           try {
             passwordHash = argon2.hash(10, 65536, 1, passwordArr);
@@ -231,22 +153,22 @@ public class UserController {
           }
 
           Document newUser =
-              new Document("username", username)
+              new Document("username", user.username)
                   .append("password", passwordHash)
                   .append("organization", sessionOrg)
-                  .append("email", email)
-                  .append("phone", phonenumber)
-                  .append("firstName", firstName.toUpperCase())
-                  .append("lastName", lastName.toUpperCase())
-                  .append("birthDate", birthDate)
-                  .append("address", address.toUpperCase())
-                  .append("city", city.toUpperCase())
-                  .append("state", state)
-                  .append("zipcode", zipcode)
-                  .append("privilegeLevel", userLevel)
-                  .append("canView", userLevel.equals("Admin"))
-                  .append("canEdit", userLevel.equals("Admin"))
-                  .append("canRegister", userLevel.equals("Admin"));
+                  .append("email", user.email)
+                  .append("phone", user.phone)
+                  .append("firstName", user.firstName)
+                  .append("lastName", user.lastName)
+                  .append("birthDate", user.birthDate)
+                  .append("address", user.address)
+                  .append("city", user.city)
+                  .append("state", user.state)
+                  .append("zipcode", user.zipcode)
+                  .append("privilegeLevel", user.userLevel)
+                  .append("canView", user.userLevel.equals("Admin"))
+                  .append("canEdit", user.userLevel.equals("Admin"))
+                  .append("canRegister", user.userLevel.equals("Admin"));
           userCollection.insertOne(newUser);
 
           ctx.json(UserMessage.ENROLL_SUCCESS.toJSON());
@@ -278,14 +200,9 @@ public class UserController {
           return;
         }
 
-        JSONObject memberList = new JSONObject();
-
         JSONArray members = new JSONArray();
         JSONArray clients = new JSONArray();
-
-        MongoClient client = MongoConfig.getMongoClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.getDatabaseName());
-        MongoCollection<Document> userCollection = database.getCollection("user");
+        MongoCollection<Document> userCollection = db.getCollection("user");
 
         Bson orgNameMatch = eq("organization", orgName);
         Bson filter;
@@ -297,7 +214,7 @@ public class UserController {
             filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
             filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
           }
-          filter = combine(filter, orgNameMatch); // Make sure good
+          filter = combine(filter, orgNameMatch);
         } else {
           filter = orgNameMatch;
         }
@@ -306,12 +223,8 @@ public class UserController {
         int numClients = 0;
         int numMembers = 0;
         while (cursor.hasNext()) {
-          System.out.println("NEXT CURSOR");
           Document doc = cursor.next();
           String userType = doc.get("privilegeLevel").toString();
-
-          System.out.println(userType);
-
           JSONObject user = new JSONObject();
           user.put("username", doc.get("username").toString());
           user.put("privilegeLevel", doc.get("privilegeLevel").toString());
@@ -378,9 +291,7 @@ public class UserController {
         boolean canEdit = req.getBoolean("canEdit");
         boolean canRegister = req.getBoolean("canRegister");
 
-        MongoDatabase database =
-            MongoConfig.getMongoClient().getDatabase(MongoConfig.getDatabaseName());
-        MongoCollection<Document> userCollection = database.getCollection("user");
+        MongoCollection<Document> userCollection = db.getCollection("user");
         Bson filter = eq("username", username);
         Bson updateCanView = set("canView", canView);
         Bson updateCanEdit = set("canEdit", canEdit);
