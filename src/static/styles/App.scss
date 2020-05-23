@@ -61,13 +61,15 @@ $theme-colors: (
 	background: $secondary-theme;
 };
 
+.container-home-right {
+	text-align: center;
+}
 
 @media screen and (max-width: 770px) {
 	.background {
 		margin-left: 0 !important;
 	};
 }
-
 
 @media screen and (max-width: 770px) {
 	.container-home-right {
@@ -355,5 +357,8 @@ thead {
 }
 
 .home-form-svg {
-	// min-width: 400px;
+	width: 80%;
+	text-align: center;
+	overflow: hidden;
+	min-width: 300px;
 }

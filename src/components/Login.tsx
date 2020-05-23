@@ -30,7 +30,7 @@ class Login extends Component<{}, {}, {}> {
                     <span>For Those Experiencing Homelessness</span>
                   </h2>
                   <p>
-                    <span>Find a nearby registered organization that can help get you started.</span>
+                    <span>Find a nearby registered organization that can help get you started</span>
                   </p>
                   <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
                       Find Organizations
@@ -48,8 +48,13 @@ class Login extends Component<{}, {}, {}> {
               </div>
               <div className="col-md-6">
                 <div className="mr-5 p-4 container-home-right">
-
-                  <img alt="Hubs" src={HomeForm} className="home-form-svg w-100" />
+                  <h1 className="text-left font-weight-bold">
+                      Document Storage for Experienced Homelessness
+                  </h1>
+                  <h4 className="text-left font-weight-bold">
+                      Store essential identification securely and Streamline aid services, all in one place.
+                  </h4>
+                  <img alt="Hubs" src={HomeForm} className="home-form-svg" />
 
                   {/* <h1 className="text-center font-weight-bold">
                       Our Model
