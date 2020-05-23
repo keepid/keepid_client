@@ -21,7 +21,7 @@ public class UploadIntTests {
 
   @BeforeAll
   static void setUp() {
-    MongoConfig.startTestConnection();
+    MongoConfig.getMongoTestClient();
     database = MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
   }
 

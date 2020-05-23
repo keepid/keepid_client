@@ -19,7 +19,7 @@ public class MongoConfig {
     }
   }
 
-  public static void startConnection() {
+  private static void startConnection() {
     if (System.getenv("MONGO_URI") == null) {
       throw new NullPointerException(
           "Please use https://github.com/Ashald/EnvFile to configure the .env file");
@@ -27,7 +27,7 @@ public class MongoConfig {
     client = MongoClients.create(Objects.requireNonNull(System.getenv("MONGO_URI")));
   }
 
-  public static void startTestConnection() {
+  private static void startTestConnection() {
     if (System.getenv("MONGO_TEST_URI") == null) {
       throw new NullPointerException(
           "Please use https://github.com/Ashald/EnvFile to configure the .env file");
