@@ -46,7 +46,7 @@ class OrganizationControllerIntTests {
     exampleOrg1.put("state", "PA");
     exampleOrg1.put("address", "exampleAddress");
     exampleOrg1.put("zipcode", "19104");
-    exampleOrg1.put("taxCode", "501c3");
+    exampleOrg1.put("taxCode", "1827364590");
     exampleOrg1.put("numUsers", "1000");
     return exampleOrg1;
   }
