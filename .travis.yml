@@ -14,3 +14,6 @@ after_success:
   - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
 notifications:
   slack: keepid:dSU1H1ttrbqa2CuH1d2CVui3
+env:
+  global:
+    - CODECOV_TOKEN="4b9c6987-3c19-46a7-b4cc-0b8a1aabfd7b"

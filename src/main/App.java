@@ -1,3 +1,4 @@
+import AccountSecurity.AccountSecurityController;
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
@@ -60,6 +61,7 @@ public class App {
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
+    AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
@@ -78,12 +80,15 @@ public class App {
     app.get("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
 
-    /* -------------- USER AUTHENTICATION ------------------ */
+    /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
     app.post("/generate-username", userController.generateUniqueUsername);
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
+    app.post("forgot-password", accountSecurityController.forgotPassword);
+    app.post("change-password", accountSecurityController.changePasswordIn);
+    app.post("reset-password/:jwt", accountSecurityController.resetPassword);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);

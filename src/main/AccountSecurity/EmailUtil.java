@@ -1,4 +1,4 @@
-package Security;
+package AccountSecurity;
 
 import javax.mail.*;
 import javax.mail.internet.AddressException;

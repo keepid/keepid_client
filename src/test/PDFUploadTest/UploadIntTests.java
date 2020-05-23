@@ -1,9 +1,9 @@
 package PDFUploadTest;
 
+import AccountSecurity.AccountSecurityController;
+import AccountSecurity.EmailUtil;
 import Config.MongoConfig;
 import PDFUpload.PdfMongo;
-import Security.ChangePassword;
-import Security.EmailUtil;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.ObjectId;
@@ -64,7 +64,7 @@ public class UploadIntTests {
         "keepidtest@gmail.com",
         "Test",
         "Test");
-    ChangePassword.change("Steffen12-Cornwell", "test", "test2", database);
+    AccountSecurityController.change("Steffen12-Cornwell", "test", "test2", database);
   }
 
   @Test
