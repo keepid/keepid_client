@@ -54,6 +54,7 @@ public class MongoConfig {
   }
 
   public static void cleanTestDatabase() {
+    getMongoTestClient();
     testClient.getDatabase(getDatabaseName()).drop();
   }
 
