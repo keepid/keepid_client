@@ -48,7 +48,7 @@ class OurTeam extends React.Component<{}, State> {
             </div>
           </div>
           <div className="card member-card m-3">
-            <img src={GregJPG} className="card-img-top" alt="..." />
+            <img src={JackieJPG} className="card-img-top" alt="..." />
             <div className="card-body">
               <h5 className="card-title">Jackie Peng</h5>
               <p className="card-text">Software Developer at Keep.id. Serves as a front end engineer.</p>
