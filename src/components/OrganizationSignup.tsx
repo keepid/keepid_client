@@ -133,11 +133,9 @@ class OrganizationSignup extends Component<Props, State, {}> {
           status,
           message,
         } = JSON.parse(responseJSON);
-        console.log(responseJSON);
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
-          console.log(status);
           this.props.alert.show(message);
         }
       }).catch((error) => {
@@ -209,13 +207,11 @@ class OrganizationSignup extends Component<Props, State, {}> {
             status,
             message,
           } = JSON.parse(responseJSON);
-          console.log(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });
             this.props.alert.show(message);
           } else {
-            console.log(status);
             this.props.alert.show(message);
             this.setState({ buttonState: '' });
           }

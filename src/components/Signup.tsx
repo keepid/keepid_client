@@ -172,7 +172,6 @@ class Signup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         this.setState({ personUsername: responseJSON });
       });
   }
@@ -237,7 +236,6 @@ class Signup extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
-          console.log(status);
           this.props.alert.show(message);
         }
       }).catch((error) => {

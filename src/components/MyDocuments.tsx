@@ -105,6 +105,7 @@ class MyDocuments extends Component<Props, State> {
     sort: true,
   },
   {
+    dataField: 'actions',
     text: 'Actions',
     formatter: this.ButtonFormatter,
   }];
@@ -136,7 +137,7 @@ class MyDocuments extends Component<Props, State> {
               <div className="w-100 pd-3">
                 <BootstrapTable
                   bootstrap4
-                  keyField="uploadDate"
+                  keyField="id"
                   data={documentData}
                   hover
                   striped
