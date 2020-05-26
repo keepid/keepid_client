@@ -75,7 +75,6 @@ class LoginPage extends Component<Props, State> {
             firstName,
             lastName,
           } = responseJSON;
-          console.log(loginStatus);
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {

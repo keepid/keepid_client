@@ -67,7 +67,6 @@ class PersonSignup extends Component<Props, State, {}> {
           this.setState({ submitSuccessful: true });
           this.props.alert.show(message);
         } else {
-          console.log(status);
           this.props.alert.show(message);
           this.setState({ buttonState: '' });
         }
