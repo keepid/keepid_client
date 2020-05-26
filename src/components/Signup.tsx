@@ -107,13 +107,13 @@ class Signup extends Component<Props, State, {}> {
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
-      this.props.alert.show('Please accept EULA before continuing')
+      this.props.alert.show('Please accept EULA before continuing');
     } else if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
     } else {
       const personRoleStringVar = this.personRoleString(personRole);
       const personBirthDateFormatted = this.birthDateString(personBirthDate);
-     
+
       this.props.onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
         personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
         personAddressZipcode, personUsername, personPassword, personRoleStringVar);
@@ -172,7 +172,6 @@ class Signup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         this.setState({ personUsername: responseJSON });
       });
   }
@@ -211,6 +210,7 @@ class Signup extends Component<Props, State, {}> {
 
     const personRoleString = this.personRoleString(personRole);
     const personBirthDateFormatted = this.birthDateString(personBirthDate);
+
 
     if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');

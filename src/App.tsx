@@ -46,10 +46,10 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.LoggedOut, // Change this to access pages
-      username: 'Test',
-      name: 'Test Name',
-      organization: 'Test Organization',
+      role: Role.LoggedOut, 
+      username: '',
+      name: '',
+      organization: '',
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);

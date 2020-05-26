@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
+import HomeForm from '../static/images/home-forms.svg';
 
 class Login extends Component<{}, {}, {}> {
   render() {
@@ -22,11 +23,11 @@ class Login extends Component<{}, {}, {}> {
                 <div className="background ml-5 p-4 rounded mb-3 pb-5">
                   <div className="page-header">
                     <span className="brand-text">
-                      Breaking Barriers to Homelessness Services
+                      Safeguarding Identities of Those Experiencing Homelessness
                     </span>
                   </div>
                   <h2 className="mt-4 pt-2 pb-2">
-                    <span>For Those Experiencing Homelessness</span>
+                    <span className="home-subtext">For Those Experiencing Homelessness</span>
                   </h2>
                   <p>
                     <span>Find a nearby registered organization that can help get you started</span>
@@ -35,7 +36,7 @@ class Login extends Component<{}, {}, {}> {
                       Find Organizations
                   </a>
                   <h2 className="mt-4">
-                    <span>For Organizations: Partner with Us</span>
+                    <span className="home-subtext">For Organizations: Partner with Us</span>
                   </h2>
                   <p>
                     <span>Start your free three-month trial to empower clients you serve</span>
@@ -45,44 +46,53 @@ class Login extends Component<{}, {}, {}> {
                   </a>
                 </div>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-6 custom-vertical-center">
                 <div className="mr-5 p-4 container-home-right">
-                  <h1 className="text-center font-weight-bold">
-                      Our Model
+                  <div>
+                    <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+            <div className="container mt-5 mb-3">
+              <div className="row">
+                <div className="col-md-6 custom-vertical-center">
+                  <h1 className="text-center font-weight-bold m-3 pb-5">
+                    We partner with aid organizations, leveraging existing resources and programming. 
                   </h1>
-                  <div className="row pb-4">
-                    <div className="col-md-4">
+                </div>
+                <div className="col-md-6">
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
                       <img alt="Hubs" src={HubLogo} className="home-svgs float-right" />
                     </div>
-                    <div className="col-md-8 d-flex">
-                      <span className="home-text">
-  Local nonprofits against homelessness become
-                        <b className="color-bold"> hubs </b>
-  for Keep.id services
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Non-profit Focused</h3>
+                      <span>
+    Local nonprofits against homelessness become hubs for Keep.id services
                       </span>
                     </div>
                   </div>
-                  <div className="row pb-4">
-                    <div className="col-md-4">
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
                       <img alt="Database" src={DatabaseLogo} className="home-svgs float-right" />
                     </div>
-                    <div className="col-md-8 d-flex">
-                      <span className="home-text">
-  Keep.id
-                        <b className="color-bold"> securely stores </b>
-  documents and records for those experiencing homelessness
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Security First</h3>
+                      <span>
+    Keep.id securely stores documents and records for those experiencing homelessness
                       </span>
                     </div>
                   </div>
-                  <div className="row pb-4">
-                    <div className="col-md-4">
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
                       <img alt="Aid platform" src={AidPlatLogo} className="home-svgs float-right" />
                     </div>
-                    <div className="col-md-8 d-flex">
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Efficient and Relational</h3>
                       <span className="home-text">
-  Keep.id becomes an
-                        <b className="color-bold"> aid platform </b>
-  to streamline access to assistance programs and strengthen relationships between organizations and people
+    Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
                     </div>
                   </div>
