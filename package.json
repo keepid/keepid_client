@@ -33,6 +33,7 @@
     "react-google-recaptcha": "^2.0.1",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.12.17",
+    "react-idle-timer": "^4.2.12",
     "react-redirect": "^1.0.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
