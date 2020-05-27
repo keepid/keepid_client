@@ -321,7 +321,7 @@ thead {
 @media screen and (min-width: 1001px) {
 	.brand-text {
 		font-weight: bolder;
-		font-size: 3.15rem;
+		font-size: calc(2rem + (16 * (100vw - 800px)/ 624));
 		line-height: 1.3;
 	}
 }
@@ -357,8 +357,19 @@ thead {
 }
 
 .home-form-svg {
-	width: 80%;
-	text-align: center;
+	width: 100%;
 	overflow: hidden;
 	min-width: 300px;
+	max-width: 780px;
+	margin-left: 0rem;
+	padding-left: 0rem;
+}
+
+.custom-vertical-center {
+	display: flex;
+	align-items: center;
+}
+
+.home-subtext {
+	font-size: calc(1.25rem + (4 * (100vw - 200px)/ 624));
 }

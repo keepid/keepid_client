@@ -10,7 +10,6 @@ class DocumentViewer extends Component<Props> {
     const {
       pdfFile,
     } = this.props;
-    console.log(pdfFile);
     return (
       <div className="container-fluid">
         <Helmet>
