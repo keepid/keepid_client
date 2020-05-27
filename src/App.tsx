@@ -41,101 +41,85 @@ interface State {
   username: string,
   name: string,
   organization: string,
-  timeout: number,
   showModal: boolean,
-  remaining: number,
 }
 
-const timeUntilWarn: number = 1000 * 30;
-const timeFromWarnToLogout: number = 1000 * 15;
+const timeUntilWarn: number = 1000 * 60 * 120;
+const timeFromWarnToLogout: number = 1000 * 60;
 const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
 class App extends React.Component<{}, State, {}> {
+  private idleTimerWarn;
 
-  private idleTimer;
+  private logoutTimeout;
 
   constructor(props: {}) {
     super(props);
-    this.idleTimer = null;
+    this.idleTimerWarn = null;
+    this.logoutTimeout = null;
     this.state = {
-      role: Role.LoggedOut, 
+      role: Role.LoggedOut,
       username: '',
       name: '',
       organization: '',
-      timeout: timeoutTotal,
       showModal: false,
-      remaining: 0
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
 
-    this._onActive = this._onActive.bind(this);
-    this._onAction = this._onAction.bind(this);
-    this._onIdle = this._onIdle.bind(this);
+    this.warnUserIdle = this.warnUserIdle.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
   }
 
-  componentDidMount () {
-    setInterval(() => {
-      const {
-        role,
-      } = this.state;
-
-      // if the user is currently logged in - check whether enough time has elapsed to show warning
-      if (role !== Role.LoggedOut) {
-
-        this.setState({
-          remaining: this.idleTimer.getRemainingTime(),
-        });
-
-        const {
-          remaining
-        } = this.state;
-
-        if (remaining < timeFromWarnToLogout) {
-          this.setState({
-            showModal: true,
-          });
-        }
-      } 
-    }, 1000);
-  }
-
-  // user did something
-  _onAction() {
-    this.setState({showModal: false})
-  }
-   
-  // user is active
-  _onActive() {
-    this.setState({showModal: false})
-  }
- 
-  // user idle for set amount of time
-  _onIdle() {
+  warnUserIdle() {
     const {
       role,
     } = this.state;
 
     // if the user is currently logged in
     if (role !== Role.LoggedOut) {
-      this.handleLogout();
+      this.setState({
+        showModal: true,
+      });
     }
+
+    // start the logout timer
+    this.logoutTimeout = setTimeout(this.handleLogout, timeFromWarnToLogout);
   }
 
   // closing idle modal warning
   handleClose() {
-    this.idleTimer.reset();
     this.setState({
       showModal: false,
     });
+
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
+
+    // reset the warn timer
+    this.idleTimerWarn.reset();
   }
 
   handleLogout() {
-    this.setState({showModal: false})
-    this.logOut();
+    const {
+      role,
+    } = this.state;
+
+    // if the user is currently logged in
+    if (role !== Role.LoggedOut) {
+      this.setState({ showModal: false });
+
+      // clear the logout timeout
+      if (this.logoutTimeout) {
+        clearTimeout(this.logoutTimeout);
+      }
+
+      this.logOut();
+    }
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -162,11 +146,10 @@ class App extends React.Component<{}, State, {}> {
       username,
       name,
       organization,
-      timeout,
       showModal,
     } = this.state;
 
-    return (                
+    return (
       <Router>
         <div className="App">
           <div className="app">
@@ -175,25 +158,25 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-            
+
             {role !== Role.LoggedOut ? (
-            <div>
-              <IdleTimer
-                key='idleTimer'
-                startOnMount={ true }
-                ref={ref => { this.idleTimer = ref }}
-                element={document}
-                onActive={this._onActive}
-                onIdle={this._onIdle}
-                onAction={this._onAction}
-                debounce={250}
-                timeout={timeout} 
-              /> 
-              <IdleTimeOutModal 
-                showModal={showModal}
-                handleClose={this.handleClose} 
-              />
-            </div>) : null}
+              <div>
+                <IdleTimer
+                  key="idleTimerWarn"
+                  ref={(ref) => { this.idleTimerWarn = ref; }}
+                  element={document}
+                  onIdle={this.warnUserIdle}
+                  debounce={250}
+                  timeout={timeUntilWarn}
+                  stopOnIdle
+                />
+                <IdleTimeOutModal
+                  showModal={showModal}
+                  handleClose={this.handleClose}
+                  handleLogout={this.handleLogout}
+                />
+              </div>
+            ) : null}
 
             <Switch>
               // Home/Login Components
