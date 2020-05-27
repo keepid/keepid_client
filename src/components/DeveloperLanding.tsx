@@ -36,7 +36,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class UploadDocs extends React.Component<Props, State> {
+class DeveloperLanding extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
@@ -68,7 +68,7 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', 'Identification');
+        formData.append('pdfType', 'Form');
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -168,4 +168,4 @@ Upload
   }
 }
 
-export default withAlert()(UploadDocs);
+export default withAlert()(DeveloperLanding);

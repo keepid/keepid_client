@@ -76,11 +76,17 @@ class SendApplication extends Component<Props, State> {
       <div>
         <div className="webviewer" ref={this.viewer}></div>
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
+        <form>
+          <select>
+            {["1", "2"].map((form) => (<option>{form}</option>))}
+          </select>
+        </form>
         <Link to="/my-documents">
           <button type="button" className="btn btn-outline-success">
             Back
           </button>
         </Link>
+        <Link to="/developer-landing">Developer Landing</Link>
       </div>
     );
   }

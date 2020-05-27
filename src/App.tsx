@@ -33,6 +33,7 @@ import BugReport from './components/BugReport';
 import LoginPage from './components/LoginPage';
 import ForgotPassword from './components/ForgotPassword';
 import FindOrganization from './components/FindOrganization';
+import DeveloperLanding from './components/DeveloperLanding';
 
 interface State {
   role: Role,
@@ -222,6 +223,16 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <Route
+                path="/developer-landing"
+                render={() => {
+                  if (role === Role.Client) {
+                    return <DeveloperLanding />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+
               // All Users
               <Route path="/our-team">
                 <OurTeam />
