@@ -20,6 +20,8 @@ interface PDFProps {
   pdfFile: File
 }
 
+const MAX_NUM_OF_FILES: number = 5;
+
 function RenderPDF(props: PDFProps): React.ReactElement {
   const [showResults, setShowResults] = useState(false);
   const { pdfFile } = props;
@@ -35,16 +37,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class UploadDocs extends React.Component<Props, State> {
-  
-  static fileNamesUnique(files: FileList) {
-    const fileNames : string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const fileName = files[i].name;
-      fileNames.push(fileName);
-    }
-
-    return fileNames.length === new Set(fileNames).size;
-  }
 
   constructor(props: Props) {
     super(props);
@@ -111,19 +103,11 @@ class UploadDocs extends React.Component<Props, State> {
       alert,
     } = this.props;
     const { files } = event.target;
-    const maxNumFiles = 3;
 
     // check that the number of files uploaded doesn't exceed the maximum
-    if (files.length > maxNumFiles) {
+    if (files.length > MAX_NUM_OF_FILES) {
       event.target.value = null; // discard selected files
-      alert.show(`A maximum of ${maxNumFiles} files can be uploaded at a time`);
-      return;
-    }
-
-    // check that file names are unique
-    if (!UploadDocs.fileNamesUnique(files)) {
-      event.target.value = null; // discard selected files
-      alert.show('File names must be unique');
+      alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
       return;
     }
 
