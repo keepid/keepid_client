@@ -71,6 +71,7 @@ class App extends React.Component<{}, State, {}> {
     }).then((response) => {
       this.setState({ role: Role.LoggedOut });
     });
+    return <Redirect to="login"/>
   }
 
   render() {

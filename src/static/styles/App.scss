@@ -65,13 +65,13 @@ $theme-colors: (
 	text-align: center;
 }
 
-@media screen and (max-width: 770px) {
+@media screen and (max-width: 48.125rem) {
 	.background {
 		margin-left: 0 !important;
 	};
 }
 
-@media screen and (max-width: 770px) {
+@media screen and (max-width: 48.125rem) {
 	.container-home-right {
 		margin-right: 0 !important;
 	};
@@ -252,10 +252,12 @@ thead {
 
 .member-card {
 	width: 20vw;
+	min-width: 18.75rem;
 }
 
 .partner-card {
 	width: 30vw;
+	min-width: 18.75rem;
 }
 
 .alert-provider-custom div div {
@@ -272,7 +274,7 @@ thead {
 
 .form-signin {
 	width: 100%;
-	max-width: 430px;
+	max-width: 26.875rem;
 }
 
 .form-signin .checkbox {
@@ -283,12 +285,12 @@ thead {
 	position: relative;
 	box-sizing: border-box;
 	height: auto;
-	padding: 10px;
-	font-size: 16px;
+	padding: 0.625rem;
+	font-size: 1rem;
 }
 
 .recaptcha-login-text {
-	font-size: 14px;
+	font-size: 0.875rem;
 	line-height: 150%;
 }
 
@@ -297,11 +299,11 @@ thead {
 }
 
 .home-svgs {
-	width: 140px;
-	height: 140px;
+	width: 8.75rem;
+	height: 8.75rem;
 }
 
-@media screen and (max-width: 770px) {
+@media screen and (max-width: 48.125rem) { // small screens
 	.home-svgs {
 		float: none !important;
 		display: block !important;
@@ -318,15 +320,15 @@ thead {
 	font-size: large;
 }
 
-@media screen and (min-width: 1001px) {
+@media screen and (min-width: 62.5625rem) { // medium screens
 	.brand-text {
 		font-weight: bolder;
-		font-size: calc(2rem + (16 * (100vw - 800px)/ 624));
+		font-size: calc(2rem + (16 * (100vw - 50rem)/ 624));
 		line-height: 1.3;
 	}
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 62.5rem) { // large screens
 	.brand-text {
 		font-weight: bolder;
 		font-size: 2.15rem;
@@ -335,7 +337,7 @@ thead {
 }
 
 
-@media screen and (max-width: 770px) {
+@media screen and (max-width: 48.125rem) {
 	.mobile-hide {
 		display: none;
 	}
@@ -346,7 +348,7 @@ thead {
 	background-color: rgb(96, 41, 168);
 	color: white;
 	text-decoration: none;
-	width: 140px;
+	width: 8.75rem;
 }
 
 .btn-dark-custom:hover{
@@ -359,8 +361,8 @@ thead {
 .home-form-svg {
 	width: 100%;
 	overflow: hidden;
-	min-width: 300px;
-	max-width: 780px;
+	min-width: 18.75rem;
+	max-width: 48.75rem;
 	margin-left: 0rem;
 	padding-left: 0rem;
 }
@@ -371,5 +373,15 @@ thead {
 }
 
 .home-subtext {
-	font-size: calc(1.25rem + (4 * (100vw - 200px)/ 624));
+	font-size: calc(1.25rem + (4 * (100vw - 12.5rem)/ 624));
+}
+
+.statistic-text {
+	color: $secondary-dark-theme;
+	font-size: calc(3rem + (16 * (100vw - 50rem)/ 624));
+}
+
+.statistic-subtext {
+	color: $footer-color;
+	font-size: calc(.9rem + (4 * (100vw - 13rem)/ 624));
 }

@@ -16,20 +16,28 @@ interface State {
   buttonState: string
 }
 
-function RenderPDF(props) {
+interface PDFProps {
+  pdfFile: File
+}
+
+const MAX_NUM_OF_FILES: number = 5;
+
+function RenderPDF(props: PDFProps): React.ReactElement {
   const [showResults, setShowResults] = useState(false);
+  const { pdfFile } = props;
   return (
-    <li className="mt-3" key={props.index}>
+    <li className="mt-3">
       <div className="row">
-        <button className="btn btn-outline-primary btn-sm mr-3" onClick={() => setShowResults(!showResults)}>{showResults ? 'Hide' : 'View'}</button>
-        <p>{props.pdfFile.name}</p>
+        <button className="btn btn-outline-primary btn-sm mr-3" type="button" onClick={() => setShowResults(!showResults)}>{showResults ? 'Hide' : 'View'}</button>
+        <p>{pdfFile.name}</p>
       </div>
-      { showResults ? <div className="row mt-3"><DocumentViewer pdfFile={props.pdfFile} /></div> : null }
+      { showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null }
     </li>
   );
 }
 
 class UploadDocs extends React.Component<Props, State> {
+
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -49,6 +57,11 @@ class UploadDocs extends React.Component<Props, State> {
     const {
       pdfFiles,
     } = this.state;
+
+    const {
+      alert,
+    } = this.props;
+
     if (pdfFiles) {
       // upload each pdf file
       for (let i = 0; i < pdfFiles.length; i++) {
@@ -66,53 +79,35 @@ class UploadDocs extends React.Component<Props, State> {
               status,
             } = responseJSON;
             if (status === 'success') {
-              this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
+              alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
                 submitStatus: true,
-                buttonState: ''
+                buttonState: '',
+                pdfFiles: undefined,
               });
             } else {
-              this.props.alert.show(`Failure to upload ${pdfFile.name}`);
+              alert.show(`Failure to upload ${pdfFile.name}`);
               this.setState({ buttonState: '' });
             }
           });
       }
     } else {
-      this.props.alert.show('Please select a file');
+      alert.show('Please select a file');
       this.setState({ buttonState: '' });
     }
   }
 
-  maxFilesExceeded(files, maxNumFiles) {
-    return files.length > maxNumFiles;
-  }
-
-  fileNamesUnique(files) {
-    const fileNames : string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const fileName = files[i].name;
-      fileNames.push(fileName);
-    }
-
-    return fileNames.length === new Set(fileNames).size;
-  }
-
   handleChangeFileUpload(event: any) {
     event.preventDefault();
+    const {
+      alert,
+    } = this.props;
     const { files } = event.target;
-    const maxNumFiles = 3;
 
     // check that the number of files uploaded doesn't exceed the maximum
-    if (this.maxFilesExceeded(files, maxNumFiles)) {
+    if (files.length > MAX_NUM_OF_FILES) {
       event.target.value = null; // discard selected files
-      this.props.alert.show(`A maximum of ${maxNumFiles} files can be uploaded at a time`);
-      return;
-    }
-
-    // check that file names are unique
-    if (!this.fileNamesUnique(files)) {
-      event.target.value = null; // discard selected files
-      this.props.alert.show('File names must be unique');
+      alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
       return;
     }
 
@@ -126,6 +121,7 @@ class UploadDocs extends React.Component<Props, State> {
     const {
       submitStatus,
       pdfFiles,
+      buttonState,
     } = this.state;
 
     return (
@@ -145,7 +141,7 @@ class UploadDocs extends React.Component<Props, State> {
 
           <ul className="list-unstyled mt-5">
             {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF index={index} pdfFile={pdfFile} />) : null
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={index} pdfFile={pdfFile} />) : null
               }
           </ul>
 
@@ -156,9 +152,12 @@ class UploadDocs extends React.Component<Props, State> {
                   { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                   <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                 </label>
-                { pdfFiles && pdfFiles.length > 0 ? <button type="submit" className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>Upload
-                  <div className="ld ld-ring ld-spin" />
-                </button> : null}
+                { pdfFiles && pdfFiles.length > 0 ? (
+                  <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
+Upload
+                    <div className="ld ld-ring ld-spin" />
+                  </button>
+                ) : null}
               </div>
             </form>
           </div>
