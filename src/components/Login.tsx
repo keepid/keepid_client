@@ -99,6 +99,22 @@ class Login extends Component<{}, {}, {}> {
                 </div>
               </div>
             </div>
+            <div className="container mt-4 mb-4 pt-5 pb-5 background">
+              <div className="row">
+                <div className="col-md-4 flex-column ">
+                  <h1 className="font-weight-bold display-3">550,000</h1>
+                  <span>Homeless Population in U.S.</span>
+                </div>
+                <div className="col-md-4 flex-column">
+                  <h1 className="font-weight-bold display-3">5,800</h1>
+                  <span>Chronically Homeless Population in Philadelphia</span>
+                </div>
+                <div className="col-md-4 flex-column">
+                  <h1 className="font-weight-bold display-3">5,800</h1>
+                  <span>Chronically Homeless Population in Philadelphia</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
