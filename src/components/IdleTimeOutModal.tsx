@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import { Link } from 'react-router-dom';
 
 interface Props {
     showModal: boolean,
@@ -19,12 +19,10 @@ function IdleTimeOutModal(props: Props): React.ReactElement {
         <p>You will be automatically logged off soon.</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="primary" onClick={handleClose}>
-                Stay
-        </Button>
-        <Button variant="danger" onClick={handleLogout}>
-                Logout
-        </Button>
+        <button type="button" onClick={handleClose} className="btn btn-primary">Stay</button>
+        <Link to="/login">
+            <button type="button" onClick={handleLogout} className="btn btn-danger">Log Out</button>
+        </Link>
       </Modal.Footer>
     </Modal>
   );

@@ -42,6 +42,7 @@ interface State {
   name: string,
   organization: string,
   showModal: boolean,
+  autoLogout: boolean,
 }
 
 const timeUntilWarn: number = 1000 * 60 * 120;
@@ -50,8 +51,8 @@ const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
 class App extends React.Component<{}, State, {}> {
+  
   private idleTimerWarn;
-
   private logoutTimeout;
 
   constructor(props: {}) {
@@ -64,13 +65,21 @@ class App extends React.Component<{}, State, {}> {
       name: '',
       organization: '',
       showModal: false,
+      autoLogout: false,
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
 
     this.warnUserIdle = this.warnUserIdle.bind(this);
     this.handleClose = this.handleClose.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
+    this.handleAutoLogout = this.handleAutoLogout.bind(this);
+    this.resetAutoLogout = this.resetAutoLogout.bind(this);
+  }
+
+  resetAutoLogout() {
+    this.setState({
+      autoLogout: false,
+    })
   }
 
   warnUserIdle() {
@@ -86,7 +95,7 @@ class App extends React.Component<{}, State, {}> {
     }
 
     // start the logout timer
-    this.logoutTimeout = setTimeout(this.handleLogout, timeFromWarnToLogout);
+    this.logoutTimeout = setTimeout(this.handleAutoLogout, timeFromWarnToLogout);
   }
 
   // closing idle modal warning
@@ -104,22 +113,12 @@ class App extends React.Component<{}, State, {}> {
     this.idleTimerWarn.reset();
   }
 
-  handleLogout() {
-    const {
-      role,
-    } = this.state;
-
-    // if the user is currently logged in
-    if (role !== Role.LoggedOut) {
-      this.setState({ showModal: false });
-
-      // clear the logout timeout
-      if (this.logoutTimeout) {
-        clearTimeout(this.logoutTimeout);
-      }
-
-      this.logOut();
-    }
+  // automatically logged out
+  handleAutoLogout() {
+    this.setState({
+      autoLogout: true,
+    });
+    this.logOut();
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -132,6 +131,18 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
+    this.setState({ 
+      username: '',
+      name: '',
+      organization: '',
+      showModal: false,
+    });
+
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
+
     fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
@@ -147,6 +158,7 @@ class App extends React.Component<{}, State, {}> {
       name,
       organization,
       showModal,
+      autoLogout,
     } = this.state;
 
     return (
@@ -173,7 +185,7 @@ class App extends React.Component<{}, State, {}> {
                 <IdleTimeOutModal
                   showModal={showModal}
                   handleClose={this.handleClose}
-                  handleLogout={this.handleLogout}
+                  handleLogout={this.logOut}
                 />
               </div>
             ) : null}
@@ -210,7 +222,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <Login />
+                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout}/>
                 )}
               />
               <Route

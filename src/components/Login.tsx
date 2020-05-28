@@ -1,18 +1,45 @@
 import React, { Component } from 'react';
+import Alert from 'react-bootstrap/Alert';
 import { Helmet } from 'react-helmet';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
 
-class Login extends Component<{}, {}, {}> {
+interface Props {
+  // autoLogout is true if the user automatically logged out and was redirect to this page
+  autoLogout: boolean,
+  resetAutoLogout: () => void,
+}
+
+class Login extends Component<Props, {}, {}> {
+
+  componentWillUnmount() {
+    const {
+      resetAutoLogout
+    } = this.props;
+    resetAutoLogout();
+  }
+
   render() {
+
+    const {
+      autoLogout
+    } = this.props;
+
     return (
       <div className="container-fluid">
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+
+        { autoLogout ? 
+          <Alert variant="warning">
+            You were automatically logged out and redirected to this page.
+          </Alert> 
+          : null }
+
         <div className="row mt-5">
           <div className="col-md-12">
             <div className="row">
