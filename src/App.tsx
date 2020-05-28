@@ -1,4 +1,5 @@
 import React from 'react';
+import IdleTimer from 'react-idle-timer';
 import {
   BrowserRouter as Router,
   Route,
@@ -33,27 +34,92 @@ import BugReport from './components/BugReport';
 import LoginPage from './components/LoginPage';
 import ForgotPassword from './components/ForgotPassword';
 import FindOrganization from './components/FindOrganization';
+import IdleTimeOutModal from './components/IdleTimeOutModal';
 import DeveloperLanding from './components/DeveloperLanding';
 
 interface State {
   role: Role,
   username: string,
   name: string,
-  organization: string
+  organization: string,
+  showModal: boolean,
+  autoLogout: boolean,
 }
+
+const timeUntilWarn: number = 1000 * 60 * 120;
+const timeFromWarnToLogout: number = 1000 * 60;
+const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
 class App extends React.Component<{}, State, {}> {
+  
+  private idleTimerWarn;
+  private logoutTimeout;
+
   constructor(props: {}) {
     super(props);
+    this.idleTimerWarn = null;
+    this.logoutTimeout = null;
     this.state = {
-      role: Role.LoggedOut, 
+      role: Role.LoggedOut,
       username: '',
       name: '',
       organization: '',
+      showModal: false,
+      autoLogout: false,
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
+
+    this.warnUserIdle = this.warnUserIdle.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleAutoLogout = this.handleAutoLogout.bind(this);
+    this.resetAutoLogout = this.resetAutoLogout.bind(this);
+  }
+
+  resetAutoLogout() {
+    this.setState({
+      autoLogout: false,
+    })
+  }
+
+  warnUserIdle() {
+    const {
+      role,
+    } = this.state;
+
+    // if the user is currently logged in
+    if (role !== Role.LoggedOut) {
+      this.setState({
+        showModal: true,
+      });
+    }
+
+    // start the logout timer
+    this.logoutTimeout = setTimeout(this.handleAutoLogout, timeFromWarnToLogout);
+  }
+
+  // closing idle modal warning
+  handleClose() {
+    this.setState({
+      showModal: false,
+    });
+
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
+
+    // reset the warn timer
+    this.idleTimerWarn.reset();
+  }
+
+  // automatically logged out
+  handleAutoLogout() {
+    this.setState({
+      autoLogout: true,
+    });
+    this.logOut();
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -66,6 +132,18 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
+    this.setState({ 
+      username: '',
+      name: '',
+      organization: '',
+      showModal: false,
+    });
+
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
+
     fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
@@ -81,7 +159,10 @@ class App extends React.Component<{}, State, {}> {
       username,
       name,
       organization,
+      showModal,
+      autoLogout,
     } = this.state;
+
     return (
       <Router>
         <div className="App">
@@ -91,6 +172,26 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
+
+            {role !== Role.LoggedOut ? (
+              <div>
+                <IdleTimer
+                  key="idleTimerWarn"
+                  ref={(ref) => { this.idleTimerWarn = ref; }}
+                  element={document}
+                  onIdle={this.warnUserIdle}
+                  debounce={250}
+                  timeout={timeUntilWarn}
+                  stopOnIdle
+                />
+                <IdleTimeOutModal
+                  showModal={showModal}
+                  handleClose={this.handleClose}
+                  handleLogout={this.logOut}
+                />
+              </div>
+            ) : null}
+
             <Switch>
               // Home/Login Components
               <Route
@@ -123,7 +224,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <Login />
+                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout}/>
                 )}
               />
               <Route
