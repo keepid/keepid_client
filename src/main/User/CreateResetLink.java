@@ -1,4 +1,4 @@
-package AccountSecurity;
+package User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;

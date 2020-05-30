@@ -1,9 +1,9 @@
 package PDFUploadTest;
 
-import AccountSecurity.AccountSecurityController;
-import AccountSecurity.EmailUtil;
 import Config.MongoConfig;
 import PDFUpload.PdfMongo;
+import User.AccountSecurityController;
+import User.EmailUtil;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.ObjectId;
