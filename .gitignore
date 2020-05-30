@@ -35,3 +35,6 @@ session-store
 session-store*
 session-store/*
 .env
+
+# don't track the keys property file
+secretkeys.properties
