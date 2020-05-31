@@ -10,31 +10,18 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.Key;
 import java.util.Date;
+import java.util.Objects;
 
 /*
    Password reset through JWT generation
 */
 public class CreateResetLink {
 
-  public static String getResetKey() throws IOException {
-    String resetKey = "";
-
-    PropertyFileReader.GetPropertyValue propertyReader = new PropertyFileReader.GetPropertyValue();
-
-    try {
-      resetKey = propertyReader.getPropertyValue("secretkeys.properties", "PASSWORD_RESET_KEY");
-    } catch (Exception e) {
-      System.out.println("Exception: " + e);
-    }
-
-    return resetKey;
-  }
-
   // JWT Creation Method
   public static String createJWT(
       String id, String issuer, String user, String subject, long ttlMillis) throws IOException {
 
-    String SECRET_KEY = getResetKey();
+    String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // JWT signature algorithm to sign the token
     SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -68,7 +55,7 @@ public class CreateResetLink {
   }
 
   public static Claims decodeJWT(String jwt) throws IOException {
-    String SECRET_KEY = getResetKey();
+    String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // This line will throw an exception if it is not a signed JWS (as expected)
     Claims claims =
