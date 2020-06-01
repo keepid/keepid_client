@@ -96,5 +96,8 @@ public class App {
     /* -------------- ORGANIZATION SIGNUP ------------------ */
     app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
+
+    /* -------------- ACCOUNT SETTINGS ------------------ */
+    app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
   }
 }

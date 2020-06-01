@@ -1,6 +1,7 @@
 package AccountSecurity;
 
 import User.UserMessage;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -72,6 +73,99 @@ public class AccountSecurityController {
         } else {
           res.put("status", UserMessage.AUTH_FAILURE.toJSON());
         }
+        ctx.json(res);
+      };
+
+  public Handler changeAccountSetting =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String password = req.getString("password");
+        String key = req.getString("key");
+        String value = req.getString("value");
+        String username = ctx.sessionAttribute("username");
+        JSONObject res = new JSONObject();
+        Argon2 argon2 = Argon2Factory.create();
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document user = userCollection.find(eq("username", username)).first();
+        if (user == null) {
+          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
+          return;
+        }
+        char[] passwordChar = password.toCharArray();
+        String hash = user.get("password", String.class);
+        if (!argon2.verify(hash, passwordChar)) {
+          argon2.wipeArray(passwordChar);
+          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
+          return;
+        }
+        argon2.wipeArray(passwordChar);
+        if (!user.containsKey(key)) {
+          res.put("status", UserMessage.INVALID_PARAMETER.toJSON());
+          return;
+        }
+        // case statements for input validation
+        switch (key) {
+          case "firstName":
+            if (!ValidationUtils.isValidFirstName(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
+              return;
+            }
+            break;
+          case "lastName":
+            if (!ValidationUtils.isValidLastName(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
+              return;
+            }
+            break;
+          case "birthDate":
+            if (!ValidationUtils.isValidBirthDate(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
+              return;
+            }
+            break;
+          case "phone":
+            if (!ValidationUtils.isValidPhoneNumber(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
+              return;
+            }
+            break;
+          case "email":
+            if (!ValidationUtils.isValidEmail(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
+              return;
+            }
+            break;
+          case "address":
+            if (!ValidationUtils.isValidAddress(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
+              return;
+            }
+            break;
+          case "city":
+            if (!ValidationUtils.isValidCity(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
+              return;
+            }
+            break;
+          case "state":
+            if (!ValidationUtils.isValidUSState(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
+              return;
+            }
+            break;
+          case "zipcode":
+            if (!ValidationUtils.isValidZipCode(key)) {
+              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
+              return;
+            }
+            break;
+        }
+        Document query = new Document().append("_id", user.get("_id"));
+        Document update = new Document();
+        update.append("$set", new Document().append(key, value));
+
+        userCollection.updateOne(query, update);
+        res.put("status", UserMessage.SUCCESS.toJSON());
         ctx.json(res);
       };
 
