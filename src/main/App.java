@@ -1,4 +1,3 @@
-import AccountSecurity.AccountSecurityController;
 import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
@@ -7,6 +6,7 @@ import PDFUpload.PdfDelete;
 import PDFUpload.PdfDownload;
 import PDFUpload.PdfSearch;
 import PDFUpload.PdfUpload;
+import User.AccountSecurityController;
 import User.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -75,9 +75,9 @@ public class App {
 
     /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfUpload.pdfUpload);
-    app.get("/download/:fileID", pdfDownload.pdfDownload);
+    app.post("/download", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
-    app.get("/get-documents", pdfSearch.pdfSearch);
+    app.post("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */

@@ -122,7 +122,9 @@ public class UserController {
           return;
         }
 
-        if ((user.userLevel.equals("Admin") || user.userLevel.equals("Worker"))
+        if ((user.userLevel.equals("Director")
+                || user.userLevel.equals("Admin")
+                || user.userLevel.equals("Worker"))
             && !sessionUserLevel.equals("Admin")) {
           ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
           return;
@@ -166,9 +168,15 @@ public class UserController {
                   .append("state", user.state)
                   .append("zipcode", user.zipcode)
                   .append("privilegeLevel", user.userLevel)
-                  .append("canView", user.userLevel.equals("Admin"))
-                  .append("canEdit", user.userLevel.equals("Admin"))
-                  .append("canRegister", user.userLevel.equals("Admin"));
+                  .append(
+                      "canView",
+                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"))
+                  .append(
+                      "canEdit",
+                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"))
+                  .append(
+                      "canRegister",
+                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"));
           userCollection.insertOne(newUser);
 
           ctx.json(UserMessage.ENROLL_SUCCESS.toJSON());
@@ -237,7 +245,9 @@ public class UserController {
           user.put("state", doc.get("state").toString());
           user.put("zipcode", doc.get("zipcode").toString());
 
-          if (userType.equals("Admin") || userType.equals("Worker")) {
+          if (userType.equals("Director")
+              || userType.equals("Admin")
+              || userType.equals("Worker")) {
             members.put(user);
             numMembers += 1;
           } else if (userType.equals("Client")) {
@@ -250,11 +260,14 @@ public class UserController {
         int numReturnElements;
         // If Getting Client List
         if (listType.equals("clients")
-            && (privilegeLevel.equals("Worker") || privilegeLevel.equals("Admin"))) {
+            && (privilegeLevel.equals("Worker")
+                || privilegeLevel.equals("Admin")
+                || privilegeLevel.equals("Director"))) {
           returnElements = getPage(clients, startIndex, endIndex);
           numReturnElements = clients.length();
           // If Getting Worker/Admin List
-        } else if (listType.equals("members") && privilegeLevel.equals("Admin")) {
+        } else if (listType.equals("members") && privilegeLevel.equals("Admin")
+            || privilegeLevel.equals("Director")) {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
@@ -281,7 +294,7 @@ public class UserController {
           return;
         }
 
-        if (!privilegeLevel.equals("Admin")) {
+        if (!(privilegeLevel.equals("Director") || privilegeLevel.equals("Admin"))) {
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON());
           return;
         }

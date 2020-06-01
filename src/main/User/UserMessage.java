@@ -18,7 +18,7 @@ public enum UserMessage {
   INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low."),
   SUCCESS("SUCCESS:Success.");
 
-  public String errorMessage;
+  private String errorMessage;
 
   UserMessage(String errorMessage) {
     this.errorMessage = errorMessage;

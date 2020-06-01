@@ -17,9 +17,13 @@ import java.time.LocalDate;
 public class PdfMongo {
 
   public static ObjectId upload(
-      String uploader, String title, InputStream inputStream, MongoDatabase db) {
+      String uploader,
+      String filename,
+      PDFType pdfType,
+      InputStream inputStream,
+      MongoDatabase db) {
     System.out.println("Calling upload...");
-    GridFSBucket gridBucket = GridFSBuckets.create(db);
+    GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     System.out.println(uploader);
     GridFSUploadOptions options =
         new GridFSUploadOptions()
@@ -29,18 +33,22 @@ public class PdfMongo {
                     .append("upload_date", String.valueOf(LocalDate.now()))
                     .append("uploader", uploader));
     System.out.println("about to upload");
-    ObjectId id = gridBucket.uploadFromStream(title, inputStream, options);
+    ObjectId id = gridBucket.uploadFromStream(filename, inputStream, options);
     System.out.println("uploaded");
     return id;
   } // Add option user
 
-  public static JSONObject getAllFiles(String uploader, MongoDatabase db) {
+  public static JSONObject getAllFiles(String uploader, PDFType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
     JSONObject filesj = new JSONObject();
+    System.out.println("uploader");
+
     try {
-      GridFSBucket gridBucket = GridFSBuckets.create(db);
+      GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
       // Figure out filters
       System.out.println("got here " + uploader);
+
+      // Make all when it does form
       for (GridFSFile grid_out : gridBucket.find(Filters.eq("metadata.uploader", uploader))) {
         System.out.println("add");
         files.put(
@@ -58,9 +66,9 @@ public class PdfMongo {
   }
 
   // Add option user
-  public static InputStream download(String user, ObjectId id, MongoDatabase db) {
+  public static InputStream download(String user, ObjectId id, PDFType pdfType, MongoDatabase db) {
     System.out.println("Calling download...");
-    GridFSBucket gridBucket = GridFSBuckets.create(db);
+    GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;

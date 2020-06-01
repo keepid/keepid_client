@@ -1,6 +1,5 @@
-package AccountSecurity;
+package User;
 
-import User.UserMessage;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
