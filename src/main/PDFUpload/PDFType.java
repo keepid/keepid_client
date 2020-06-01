@@ -17,11 +17,11 @@ public enum PDFType {
 
   public static PDFType createFromString(String pdfTypeString) {
     switch (pdfTypeString) {
-      case "Application":
+      case "APPLICATION":
         return PDFType.APPLICATION;
-      case "Identification":
+      case "IDENTIFICATION":
         return PDFType.IDENTIFICATION;
-      case "Form":
+      case "FORM":
         return PDFType.FORM;
       default:
         return null;

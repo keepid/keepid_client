@@ -23,7 +23,6 @@ public class App {
     System.setProperty("logback.configurationFile", "./logger/resources/logback.xml");
     MongoClient client = MongoConfig.getMongoClient();
     MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
-    System.out.println(System.getenv("PORT"));
 
     Javalin app =
         Javalin.create(
