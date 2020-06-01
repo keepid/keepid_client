@@ -1,15 +1,17 @@
 import React, { Component, createRef } from 'react';
 import { Link } from 'react-router-dom';
+import WebViewer from '@pdftron/webviewer';
+import { PDFDocument } from 'pdf-lib';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
-import WebViewer from '@pdftron/webviewer';
-import { PDFDocument } from 'pdf-lib';
 
 interface Props {
 }
 
 interface State {
+  documentData: any,
+  documentId: string | undefined,
   pdfFile: File | undefined,
 }
 
@@ -19,10 +21,12 @@ class SendApplication extends Component<Props, State> {
   constructor(props: any) {
     super(props);
     this.state = {
+      documentData: [],
+      documentId: undefined,
       pdfFile: undefined,
     };
     this.autofillPDF = this.autofillPDF.bind(this);
-    this.autofillPDF();
+    this.onSelectDocument = this.onSelectDocument.bind(this);
     this.viewer = createRef();
   }
 
@@ -51,42 +55,72 @@ class SendApplication extends Component<Props, State> {
 
     //   });
     // });
-    
+
   }
 
   componentDidMount() {
-    WebViewer(
-      {
-        path: '/webviewer/lib',
-        initialDoc: '/files/pdftron_about.pdf',
-      },
-        this.viewer.current,
-      ).then((instance) => {
-          const { docViewer } = instance;
-          // you can now call WebViewer APIs here...
+    this.getFormData();
+  }
+
+  getFormData() {
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: 'Form',
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        console.log(responseJSON);
+        const {
+          documents,
+        } = JSON.parse(responseJSON);
+        this.setState({ documentData: documents });
+      });
+  }
+
+  onSelectDocument(event: any) {
+    const fileIdObject = event.target.value;
+    const fileId = fileIdObject.split('=')[1];
+    const documentId = fileId.substring(0, fileId.length - 1);
+    this.setState({ documentId });
+    console.log(documentId);
+    fetch(`${getServerURL()}/download/`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileID: documentId,
+        pdfType: 'Form',
+      }),
+    }).then((response) => response.blob())
+      .then((response) => {
+        console.log(response);
+        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
+        console.log(pdfFile);
+        this.setState({ pdfFile });
       });
   }
 
   render() {
     const {
+      documentData,
       pdfFile,
     } = this.state;
-    
     return (
       <div>
-        <div className="webviewer" ref={this.viewer}></div>
+        <div className="webviewer" ref={this.viewer} />
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
         <form>
-          <select>
-            {["1", "2"].map((form) => (<option>{form}</option>))}
+          <select onChange={this.onSelectDocument}>
+            <option>{}</option>
+            {documentData.map((form) => (<option value={form.id}>{form.filename}</option>))}
           </select>
         </form>
-        <Link to="/my-documents">
+        <Link to="/applications">
           <button type="button" className="btn btn-outline-success">
             Back
           </button>
         </Link>
-        <Link to="/developer-landing">Developer Landing</Link>
       </div>
     );
   }

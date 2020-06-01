@@ -23,6 +23,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "import/extensions": "off",
         "react/jsx-filename-extension": "off",
         "no-alert": "off",
         "no-unused-vars": "off",

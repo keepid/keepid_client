@@ -5,9 +5,12 @@ import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
+import Role from '../static/Role';
+
 
 interface Props {
-  alert: any
+  userRole: Role,
+  alert: any,
 }
 
 interface State {
@@ -37,7 +40,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class UploadDocs extends React.Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -52,6 +54,10 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   submitForm(event: any) {
+    const {
+      userRole,
+    } = this.props;
+
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
@@ -68,7 +74,11 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', 'Identification');
+        if (userRole === Role.Client) {
+          formData.append('pdfType', 'Identification');
+        } else if (userRole === Role.Director) {
+          formData.append('pdfType', 'Form');
+        }
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -155,7 +165,7 @@ class UploadDocs extends React.Component<Props, State> {
                 </label>
                 { pdfFiles && pdfFiles.length > 0 ? (
                   <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-Upload
+                    Upload
                     <div className="ld ld-ring ld-spin" />
                   </button>
                 ) : null}

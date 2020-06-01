@@ -211,7 +211,7 @@ class WorkerLanding extends Component<Props, State> {
               <h6 className="card-subtitle mb-2 text-muted">{client.username}</h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
               <h6 className="card-subtitle mb-2 text-muted">
-#
+                #
                 {client.phone}
               </h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.address}</h6>
@@ -240,7 +240,7 @@ class WorkerLanding extends Component<Props, State> {
                 data-target="#authenticateModal"
                 onClick={(event) => this.handleClickUploadDocuments(event, client)}
               >
-                  Upload Document
+                Upload Document
               </button>
               <button
                 type="button"
@@ -249,7 +249,7 @@ class WorkerLanding extends Component<Props, State> {
                 data-target="#authenticateModal"
                 onClick={(event) => this.handleClickViewDocuments(event, client)}
               >
-                  View Documents
+                View Documents
               </button>
               <button
                 type="button"
@@ -258,7 +258,7 @@ class WorkerLanding extends Component<Props, State> {
                 data-target="#authenticateModal"
                 onClick={(event) => this.handleClickSendEmail(event, client)}
               >
-                  Send Email
+                Send Email
               </button>
               <button
                 type="button"
@@ -267,7 +267,7 @@ class WorkerLanding extends Component<Props, State> {
                 data-target="#authenticateModal"
                 onClick={(event) => this.handleClickSendApplication(event, client)}
               >
-                  Send Application
+                Send Application
               </button>
             </div>
           </div>
@@ -402,7 +402,7 @@ class WorkerLanding extends Component<Props, State> {
         </div>
         <div className="container">
           <div className="row ml-1 mt-2 mb-2">
-            {role === Role.Admin ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
+            {(role === Role.Director || role === Role.Admin) ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
             <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
           </div>
           <div className="row ml-1 mt-2 mb-2">

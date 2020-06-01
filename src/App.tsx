@@ -52,8 +52,8 @@ const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
 class App extends React.Component<{}, State, {}> {
-  
   private idleTimerWarn;
+
   private logoutTimeout;
 
   constructor(props: {}) {
@@ -80,7 +80,7 @@ class App extends React.Component<{}, State, {}> {
   resetAutoLogout() {
     this.setState({
       autoLogout: false,
-    })
+    });
   }
 
   warnUserIdle() {
@@ -132,7 +132,7 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
-    this.setState({ 
+    this.setState({
       username: '',
       name: '',
       organization: '',
@@ -150,7 +150,7 @@ class App extends React.Component<{}, State, {}> {
     }).then((response) => {
       this.setState({ role: Role.LoggedOut });
     });
-    return <Redirect to="login"/>
+    return <Redirect to="login" />;
   }
 
   render() {
@@ -162,6 +162,8 @@ class App extends React.Component<{}, State, {}> {
       showModal,
       autoLogout,
     } = this.state;
+
+    console.log(role);
 
     return (
       <Router>
@@ -224,7 +226,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout}/>
+                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />
                 )}
               />
               <Route
@@ -282,8 +284,8 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/upload-document"
                 render={() => {
-                  if (role === Role.Client) {
-                    return <UploadDocs />;
+                  if (role === Role.Client || role === Role.Director) {
+                    return <UploadDocs userRole={role} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -324,6 +326,8 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              /*
+              {' '}
               <Route
                 path="/developer-landing"
                 render={() => {
@@ -333,6 +337,8 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              {' '}
+              */
 
               // All Users
               <Route path="/our-team">
