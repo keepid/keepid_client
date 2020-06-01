@@ -3,6 +3,7 @@ package PDFUploadTest;
 import AccountSecurity.AccountSecurityController;
 import AccountSecurity.EmailUtil;
 import Config.MongoConfig;
+import PDFUpload.PDFType;
 import PDFUpload.PdfMongo;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -41,8 +42,9 @@ public class UploadIntTests {
     File file = new File("Nope.pdf");
     File fil = new File("CIS331_Final_Review.pdf");
     InputStream inp = new FileInputStream(fil);
-    ObjectId a = PdfMongo.upload("Steffen12-Cornwell", "blah", inp, database);
-    InputStream inputStream = PdfMongo.download("Steffen12-Cornwell", a, database);
+    ObjectId a = PdfMongo.upload("Steffen12-Cornwell", "blah", PDFType.APPLICATION, inp, database);
+    InputStream inputStream =
+        PdfMongo.download("Steffen12-Cornwell", a, PDFType.APPLICATION, database);
 
     FileOutputStream outputStream = new FileOutputStream(file);
     int read;

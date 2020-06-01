@@ -75,9 +75,9 @@ public class App {
 
     /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfUpload.pdfUpload);
-    app.get("/download/:fileID", pdfDownload.pdfDownload);
+    app.post("/download", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
-    app.get("/get-documents", pdfSearch.pdfSearch);
+    app.post("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
