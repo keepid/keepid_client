@@ -4,6 +4,7 @@ import WebViewer from '@pdftron/webviewer';
 import { PDFDocument } from 'pdf-lib';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
 
 
 interface Props {
@@ -67,7 +68,7 @@ class SendApplication extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: 'Form',
+        pdfType: PDFType.FORM,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
@@ -90,7 +91,7 @@ class SendApplication extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         fileID: documentId,
-        pdfType: 'Form',
+        pdfType: PDFType.FORM,
       }),
     }).then((response) => response.blob())
       .then((response) => {

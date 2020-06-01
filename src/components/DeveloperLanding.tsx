@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
 
 
 interface Props {
@@ -67,7 +68,7 @@ class DeveloperLanding extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', 'Form');
+        formData.append('pdfType', PDFType.FORM);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',

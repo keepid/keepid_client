@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet';
 import PrintDocument from './PrintDocument';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
 
 interface Props {
   username: string,
@@ -57,7 +58,7 @@ class MyDocuments extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: 'Identification',
+        pdfType: PDFType.IDENTIFICATION,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {

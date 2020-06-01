@@ -6,6 +6,7 @@ import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
 import Role from '../static/Role';
+import PDFType from '../static/PDFType';
 
 
 interface Props {
@@ -75,9 +76,9 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
         if (userRole === Role.Client) {
-          formData.append('pdfType', 'Identification');
+          formData.append('pdfType', PDFType.IDENTIFICATION);
         } else if (userRole === Role.Director) {
-          formData.append('pdfType', 'Form');
+          formData.append('pdfType', PDFType.FORM);
         }
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',

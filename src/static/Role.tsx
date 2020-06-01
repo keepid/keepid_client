@@ -1,4 +1,3 @@
-
 enum Role {
     Director, // can delete admin and create admin
     Admin,
