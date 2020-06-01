@@ -21,7 +21,7 @@ function IdleTimeOutModal(props: Props): React.ReactElement {
       <Modal.Footer>
         <button type="button" onClick={handleClose} className="btn btn-primary">Stay</button>
         <Link to="/login">
-            <button type="button" onClick={handleLogout} className="btn btn-danger">Log Out</button>
+          <button type="button" onClick={handleLogout} className="btn btn-danger">Log Out</button>
         </Link>
       </Modal.Footer>
     </Modal>

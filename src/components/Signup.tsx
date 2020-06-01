@@ -234,20 +234,20 @@ class Signup extends Component<Props, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-            const {
-              status,
-              message,
-            } = JSON.parse(responseJSON);
-            if (status === 'SUCCESS') {
-              this.setState({ reaffirmStage: true });
-            } else {
-              console.log(status);
-              this.props.alert.show(message);
-            }
-          }).catch((error) => {
-            this.props.alert.show(`Server Failure: ${error}`);
-          });
-        }
+          const {
+            status,
+            message,
+          } = JSON.parse(responseJSON);
+          if (status === 'SUCCESS') {
+            this.setState({ reaffirmStage: true });
+          } else {
+            console.log(status);
+            this.props.alert.show(message);
+          }
+        }).catch((error) => {
+          this.props.alert.show(`Server Failure: ${error}`);
+        });
+    }
   }
 
   handleBack(event: any) {

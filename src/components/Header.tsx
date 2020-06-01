@@ -139,7 +139,7 @@ class Header extends Component<Props, State, {}> {
               />
             </Link>
             <Link className="navbar-brand" to="/home">
-                Keep.id
+              Keep.id
             </Link>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleLoggedIn" aria-controls="navbarToggleLoggedIn" aria-expanded="false" aria-label="Toggle navigation">
               <span className="navbar-toggler-icon" />
@@ -182,7 +182,7 @@ class Header extends Component<Props, State, {}> {
             />
           </Link>
           <Link className="navbar-brand" to="/home">
-              Keep.id
+            Keep.id
           </Link>
           <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon" />
@@ -260,7 +260,7 @@ class Header extends Component<Props, State, {}> {
             <div className="col-auto my-1">
               <Link to="/login-page">
                 <button type="submit" className="btn btn-dark-custom">
-                    Sign In
+                  Sign In
                 </button>
               </Link>
             </div>

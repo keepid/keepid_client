@@ -14,7 +14,7 @@ class DocumentViewer extends Component<Props> {
       <div className="container-fluid">
         <Helmet>
           <title>
-Document:
+            Document:
 
           </title>
           <meta name="description" content="Keep.id" />

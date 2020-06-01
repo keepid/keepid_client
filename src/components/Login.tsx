@@ -13,18 +13,16 @@ interface Props {
 }
 
 class Login extends Component<Props, {}, {}> {
-
   componentWillUnmount() {
     const {
-      resetAutoLogout
+      resetAutoLogout,
     } = this.props;
     resetAutoLogout();
   }
 
   render() {
-
     const {
-      autoLogout
+      autoLogout,
     } = this.props;
 
     return (
@@ -34,10 +32,12 @@ class Login extends Component<Props, {}, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
 
-        { autoLogout ? 
-          <Alert variant="warning">
-            You were automatically logged out and redirected to this page.
-          </Alert> 
+        { autoLogout
+          ? (
+            <Alert variant="warning">
+              You were automatically logged out and redirected to this page.
+            </Alert>
+          )
           : null }
 
         <div className="row mt-5">
@@ -60,7 +60,7 @@ class Login extends Component<Props, {}, {}> {
                     <span>Find a nearby registered organization that can help get you started</span>
                   </p>
                   <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
-                      Find Organizations
+                    Find Organizations
                   </a>
                   <h2 className="mt-4">
                     <span className="home-subtext">For Organizations: Partner with Us</span>
@@ -78,7 +78,7 @@ class Login extends Component<Props, {}, {}> {
                   <div>
                     <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
                   </div>
-                  
+
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ class Login extends Component<Props, {}, {}> {
               <div className="row">
                 <div className="col-md-6 custom-vertical-center">
                   <h1 className="text-center font-weight-bold m-3 pb-5">
-                    We partner with aid organizations, leveraging existing resources and programming. 
+                    We partner with aid organizations, leveraging existing resources and programming.
                   </h1>
                 </div>
                 <div className="col-md-6">
@@ -97,7 +97,7 @@ class Login extends Component<Props, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Non-profit Focused</h3>
                       <span>
-    Local nonprofits against homelessness become hubs for Keep.id services
+                        Local nonprofits against homelessness become hubs for Keep.id services
                       </span>
                     </div>
                   </div>
@@ -108,7 +108,7 @@ class Login extends Component<Props, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Security First</h3>
                       <span>
-    Keep.id securely stores documents and records for those experiencing homelessness
+                        Keep.id securely stores documents and records for those experiencing homelessness
                       </span>
                     </div>
                   </div>
@@ -119,7 +119,7 @@ class Login extends Component<Props, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Efficient and Relational</h3>
                       <span className="home-text">
-    Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
+                        Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
                     </div>
                   </div>
