@@ -1,6 +1,5 @@
-package AccountSecurity;
+package User;
 
-import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
