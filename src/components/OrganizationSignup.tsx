@@ -24,17 +24,17 @@ interface State {
   organizationAddressZipcode: string,
   organizationEmail: string,
   organizationPhoneNumber: string,
-  personFirstName: string,
-  personLastName: string,
-  personBirthDate: string,
-  personEmail: string,
-  personPhoneNumber: string,
-  personAddressStreet: string,
-  personAddressCity: string,
-  personAddressState: string,
-  personAddressZipcode: string,
-  personUsername: string,
-  personPassword: string,
+  firstname: string,
+  lastname: string,
+  birthDate: string,
+  email: string,
+  phonenumber: string,
+  address: string,
+  city: string,
+  state: string,
+  zipcode: string,
+  username: string,
+  password: string,
   acceptEULA: boolean,
   reaffirmStage: boolean,
   personSubmitted: boolean,
@@ -56,17 +56,17 @@ class OrganizationSignup extends Component<Props, State, {}> {
       organizationAddressZipcode: '',
       organizationEmail: '',
       organizationPhoneNumber: '',
-      personFirstName: '',
-      personLastName: '',
-      personBirthDate: '',
-      personEmail: '',
-      personPhoneNumber: '',
-      personAddressStreet: '',
-      personAddressCity: '',
-      personAddressState: '',
-      personAddressZipcode: '',
-      personUsername: '',
-      personPassword: '',
+      firstname: '',
+      lastname: '',
+      birthDate: '',
+      email: '',
+      phonenumber: '',
+      address: '',
+      city: '',
+      state: '',
+      zipcode: '',
+      username: '',
+      password: '',
       acceptEULA: false,
       reaffirmStage: false,
       personSubmitted: false,
@@ -133,18 +133,16 @@ class OrganizationSignup extends Component<Props, State, {}> {
           status,
           message,
         } = JSON.parse(responseJSON);
-        console.log(responseJSON);
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
-          console.log(status);
           this.props.alert.show(message);
         }
       }).catch((error) => {
         this.props.alert.show(`Server Failure: ${error}`);
       });
   }
-  
+
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
@@ -158,17 +156,17 @@ class OrganizationSignup extends Component<Props, State, {}> {
       organizationAddressZipcode,
       organizationEmail,
       organizationPhoneNumber,
-      personFirstName,
-      personLastName,
-      personBirthDate,
-      personEmail,
-      personPhoneNumber,
-      personAddressStreet,
-      personAddressCity,
-      personAddressState,
-      personAddressZipcode,
-      personUsername,
-      personPassword,
+      firstname,
+      lastname,
+      birthDate,
+      email,
+      phonenumber,
+      address,
+      city,
+      state,
+      zipcode,
+      username,
+      password,
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
@@ -190,17 +188,18 @@ class OrganizationSignup extends Component<Props, State, {}> {
           organizationAddressZipcode,
           organizationEmail,
           organizationPhoneNumber,
-          personFirstName,
-          personLastName,
-          personBirthDate,
-          personEmail,
-          personPhoneNumber,
-          personAddressStreet,
-          personAddressCity,
-          personAddressState,
-          personAddressZipcode,
-          personUsername,
-          personPassword,
+          firstname,
+          lastname,
+          birthDate,
+          email,
+          phonenumber,
+          address,
+          city,
+          state,
+          zipcode,
+          username,
+          password,
+          personRole: "Director"
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -208,13 +207,11 @@ class OrganizationSignup extends Component<Props, State, {}> {
             status,
             message,
           } = JSON.parse(responseJSON);
-          console.log(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });
             this.props.alert.show(message);
           } else {
-            console.log(status);
             this.props.alert.show(message);
             this.setState({ buttonState: '' });
           }
@@ -225,22 +222,22 @@ class OrganizationSignup extends Component<Props, State, {}> {
     }
   }
 
-  onSubmitProp(personFirstName, personLastName, personBirthDate, personEmail,
-    personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
-    personAddressZipcode, personUsername, personPassword, personRoleString) {
+  onSubmitProp(firstname, lastname, birthDate, email,
+    phonenumber, address, city, state,
+    zipcode, username, password, personRoleString) {
     this.setState({
       personSubmitted: true,
-      personFirstName,
-      personLastName,
-      personBirthDate,
-      personEmail,
-      personPhoneNumber,
-      personAddressStreet,
-      personAddressCity,
-      personAddressState,
-      personAddressZipcode,
-      personUsername,
-      personPassword,
+      firstname,
+      lastname,
+      birthDate,
+      email,
+      phonenumber,
+      address,
+      city,
+      state,
+      zipcode,
+      username,
+      password,
     });
   }
 

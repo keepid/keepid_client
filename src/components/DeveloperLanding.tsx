@@ -36,7 +36,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class UploadDocs extends React.Component<Props, State> {
+class DeveloperLanding extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
@@ -68,7 +68,7 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', 'Identification');
+        formData.append('pdfType', 'Form');
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -96,20 +96,6 @@ class UploadDocs extends React.Component<Props, State> {
       alert.show('Please select a file');
       this.setState({ buttonState: '' });
     }
-  }
-
-  maxFilesExceeded(files, maxNumFiles) {
-    return files.length > maxNumFiles;
-  }
-
-  fileNamesUnique(files) {
-    let fileNames : string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      let fileName = files[i].name;
-      fileNames.push(fileName);
-    }
-
-    return fileNames.length === new Set(fileNames).size;
   }
 
   handleChangeFileUpload(event: any) {
@@ -169,7 +155,7 @@ class UploadDocs extends React.Component<Props, State> {
                 </label>
                 { pdfFiles && pdfFiles.length > 0 ? (
                   <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-                    Upload
+Upload
                     <div className="ld ld-ring ld-spin" />
                   </button>
                 ) : null}
@@ -182,4 +168,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withAlert()(UploadDocs);
+export default withAlert()(DeveloperLanding);
