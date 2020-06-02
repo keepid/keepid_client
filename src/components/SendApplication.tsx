@@ -13,6 +13,7 @@ interface Props {
 interface State {
   documentData: any,
   documentId: string | undefined,
+  fileName: string | undefined,
   pdfFile: File | undefined,
 }
 
@@ -24,6 +25,7 @@ class SendApplication extends Component<Props, State> {
     this.state = {
       documentData: [],
       documentId: undefined,
+      fileName: undefined,
       pdfFile: undefined,
     };
     this.autofillPDF = this.autofillPDF.bind(this);
@@ -81,25 +83,27 @@ class SendApplication extends Component<Props, State> {
   }
 
   onSelectDocument(event: any) {
-    const fileIdObject = event.target.value;
-    const fileId = fileIdObject.split('=')[1];
-    const documentId = fileId.substring(0, fileId.length - 1);
-    this.setState({ documentId });
-    console.log(documentId);
+    const {
+      documentData,
+    } = this.state;
+    const index = event.target.value;
+    const form = documentData[index];
+    const {
+      id,
+      filename,
+    } = form;
     fetch(`${getServerURL()}/download/`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileID: documentId,
+        fileID: id,
         pdfType: PDFType.FORM,
       }),
-    }).then((response) => response.blob())
-      .then((response) => {
-        console.log(response);
-        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
-        console.log(pdfFile);
-        this.setState({ pdfFile });
-      });
+    }).then(async (response) => {
+      const responseBlob : Blob = await response.blob();
+      const pdfFile = new File([responseBlob], filename, { type: 'application/pdf' });
+      this.setState({ pdfFile });
+    });
   }
 
   render() {
@@ -107,16 +111,23 @@ class SendApplication extends Component<Props, State> {
       documentData,
       pdfFile,
     } = this.state;
+    const documentDataIndexes : number[] = new Array(documentData.length);
+    for (let i = 0; i < documentData.length; i += 1) {
+      documentDataIndexes[i] = i;
+    }
     return (
       <div>
         <div className="webviewer" ref={this.viewer} />
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
-        <form>
-          <select onChange={this.onSelectDocument}>
-            <option>{}</option>
-            {documentData.map((form) => (<option value={form.id}>{form.filename}</option>))}
-          </select>
-        </form>
+        { documentData
+          ? (
+            <form>
+              <select onChange={this.onSelectDocument}>
+                <option>{}</option>
+                {documentDataIndexes.map((index) => (<option value={index}>{documentData[index].filename}</option>))}
+              </select>
+            </form>
+          ) : <div /> }
         <Link to="/applications">
           <button type="button" className="btn btn-outline-success">
             Back

@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
 
 interface Props {
-  documentId: string | undefined,
+  documentId: string,
+  documentName: string,
 }
 
 interface State {
@@ -22,13 +24,18 @@ class ViewDocument extends Component<Props, State> {
   componentDidMount() {
     const {
       documentId,
+      documentName,
     } = this.props;
-    fetch(`${getServerURL()}/download/${documentId}`, {
-      method: 'GET',
+    fetch(`${getServerURL()}/download`, {
+      method: 'POST',
       credentials: 'include',
+      body: JSON.stringify({
+        fileID: documentId,
+        pdfType: PDFType.IDENTIFICATION,
+      }),
     }).then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], 'Filename PDF', { type: 'application/pdf' });
+        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         this.setState({ pdfFile });
       });
   }
