@@ -1,4 +1,4 @@
-package PDFUpload;
+package PDF;
 
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;

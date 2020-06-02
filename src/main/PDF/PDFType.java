@@ -1,4 +1,4 @@
-package PDFUpload;
+package PDF;
 
 public enum PDFType {
   APPLICATION("application"),

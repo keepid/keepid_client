@@ -1,8 +1,8 @@
 package PDFUploadTest;
 
 import Config.MongoConfig;
-import PDFUpload.PDFType;
-import PDFUpload.PdfMongo;
+import PDF.PDFType;
+import PDF.PdfMongo;
 import User.AccountSecurityController;
 import User.EmailUtil;
 import com.mongodb.client.MongoDatabase;
