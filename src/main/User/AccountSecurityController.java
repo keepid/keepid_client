@@ -172,6 +172,75 @@ public class AccountSecurityController {
 
   public Handler resetPassword =
       ctx -> {
+
+        // Decode the JWT. If invalid, return AUTH_FAILURE.
+        String jwt = ctx.pathParam("jwt");
+        Claims claim = null;
+        try {
+          claim = CreateResetLink.decodeJWT(jwt);
+        } catch (Exception e) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link."));
+          return;
+        }
+
+        String username = claim.getAudience();
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document user = userCollection.find(eq("username", username)).first();
+
+        // Return USER_NOT_FOUND if the username does not exist.
+        if (user == null) {
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
+          return;
+        }
+
+        // Check for expired reset link.
+        long nowMillis = System.currentTimeMillis();
+        Date now = new Date(nowMillis);
+
+        if (claim.getExpiration().compareTo(now) < 0) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset link expired."));
+          return;
+        }
+
+        // Check if reset token exists.
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        Document tokens = tokenCollection.find(eq("username", username)).first();
+        if (tokens == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
+          return;
+        }
+
+        String storedJWT = tokens.getString("password-reset-jwt");
+        if (storedJWT == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
+          return;
+        }
+
+        if (!storedJWT.equals(jwt)) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
+          return;
+        }
+
+        // Remove the token entry if its last remaining key is the password-reset-token.
+        // Remove only the password reset token if there are other fields.
+        if (tokens.size() == 3) {
+          tokenCollection.deleteOne(eq("username", username));
+        } else {
+          // Remove password-reset-jwt field from document.
+          tokenCollection.updateOne(
+              eq("username", username),
+              new Document().append("$unset", new Document("password-reset-jwt", "")));
+        }
+
+        JSONObject req = new JSONObject(ctx.body());
+        String newPassword = req.getString("newPassword");
+        resetPassword(claim.getAudience(), newPassword, db);
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
+  public Handler resetPassword1 =
+      ctx -> {
         JSONObject req = new JSONObject(ctx.body());
         String jwt = ctx.pathParam("jwt");
         Claims claim = CreateResetLink.decodeJWT(jwt);
