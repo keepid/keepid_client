@@ -67,12 +67,9 @@ public class AccountSecurityController {
         String newPassword = req.getString("newPassword");
         String username = ctx.sessionAttribute("username");
         JSONObject res = new JSONObject();
-        if (change(username, newPassword, oldPassword, db)) {
-          res.put("status", UserMessage.SUCCESS.toJSON());
-        } else {
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
-        }
-        ctx.json(res);
+
+        UserMessage changeStatus = changePassword(username, newPassword, oldPassword, db);
+        ctx.json(changeStatus);
       };
 
   public Handler changeAccountSetting =
@@ -186,45 +183,46 @@ public class AccountSecurityController {
           Document newID = new Document("id", id).append("expiration", claim.getExpiration());
           resetIDs.insertOne(newID);
           String newPassword = req.getString("newPassword");
-          reset(claim.getAudience(), newPassword, db);
+          resetPassword(claim.getAudience(), newPassword, db);
           res.put("status", "success");
           ctx.json(res);
         }
       };
 
-  public static boolean change(
+  public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {
-    Argon2 argon2 = Argon2Factory.create();
+
     MongoCollection<Document> userCollection = db.getCollection("user");
     Document user = userCollection.find(eq("username", username)).first();
-    if (user == null) {
-      return false;
+
+    if (user == null) { // The user does not exist in the database.
+      return UserMessage.USER_NOT_FOUND;
     }
+
     char[] oldPasswordArr = oldPassword.toCharArray();
-    char[] newPasswordArr = newPassword.toCharArray();
     String hash = user.get("password", String.class);
-    if (!argon2.verify(hash, oldPasswordArr)) {
+
+    Argon2 argon2 = Argon2Factory.create();
+    if (!argon2.verify(hash, oldPasswordArr)) { // The provided old password is not correct.
       argon2.wipeArray(oldPasswordArr);
-      argon2.wipeArray(newPasswordArr);
-      return false;
+      return UserMessage.AUTH_FAILURE;
     }
-    argon2.wipeArray(newPasswordArr);
-    reset(username, newPassword, db);
-    return true;
+    resetPassword(username, newPassword, db);
+    return UserMessage.AUTH_SUCCESS;
   }
 
-  private static void reset(String username, String newPassword, MongoDatabase db) {
-    Argon2 argon2 = Argon2Factory.create();
+  private static void resetPassword(String username, String newPassword, MongoDatabase db) {
     MongoCollection<Document> userCollection = db.getCollection("user");
     Document user = userCollection.find(eq("username", username)).first();
+
+    Argon2 argon2 = Argon2Factory.create();
     char[] newPasswordArr = newPassword.toCharArray();
     String passwordHash = argon2.hash(10, 65536, 1, newPasswordArr);
-    Document query = new Document();
-    query.append("_id", user.get("_id"));
-    Document setData = new Document();
-    setData.append("password", passwordHash);
-    Document update = new Document();
-    update.append("$set", setData);
+
+    Document query = new Document().append("_id", user.get("_id"));
+    Document setData = new Document().append("password", passwordHash);
+    Document update = new Document().append("$set", setData);
+
     userCollection.updateOne(query, update);
     argon2.wipeArray(newPasswordArr);
   }
