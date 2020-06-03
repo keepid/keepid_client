@@ -3,7 +3,6 @@ package User;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
@@ -237,34 +236,6 @@ public class AccountSecurityController {
         resetPassword(claim.getAudience(), newPassword, db);
 
         ctx.json(UserMessage.SUCCESS.toJSON());
-      };
-
-  public Handler resetPassword1 =
-      ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
-        String jwt = ctx.pathParam("jwt");
-        Claims claim = CreateResetLink.decodeJWT(jwt);
-
-        long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
-
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        MongoCollection<Document> resetIDs = db.getCollection("emailIDs");
-
-        Document user = userCollection.find(eq("username", claim.getAudience())).first();
-
-        String id = claim.getId();
-        Document resetID = resetIDs.find(Filters.eq("id", id)).first();
-
-        JSONObject res = new JSONObject();
-        if (!(claim.getExpiration().compareTo(now) < 0 || user == null || resetID != null)) {
-          Document newID = new Document("id", id).append("expiration", claim.getExpiration());
-          resetIDs.insertOne(newID);
-          String newPassword = req.getString("newPassword");
-          resetPassword(claim.getAudience(), newPassword, db);
-
-          ctx.json(UserMessage.SUCCESS.toJSON());
-        }
       };
 
   public static UserMessage changePassword(
