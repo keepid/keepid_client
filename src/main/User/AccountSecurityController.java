@@ -65,7 +65,7 @@ public class AccountSecurityController {
         JSONObject res = new JSONObject();
 
         UserMessage changeStatus = changePassword(username, newPassword, oldPassword, db);
-        ctx.json(changeStatus);
+        ctx.json(changeStatus.toJSON());
       };
 
   public Handler changeAccountSetting =
@@ -80,74 +80,74 @@ public class AccountSecurityController {
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
         if (user == null) {
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON());
           return;
         }
         char[] passwordChar = password.toCharArray();
         String hash = user.get("password", String.class);
         if (!argon2.verify(hash, passwordChar)) {
           argon2.wipeArray(passwordChar);
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON());
           return;
         }
         argon2.wipeArray(passwordChar);
         if (!user.containsKey(key)) {
-          res.put("status", UserMessage.INVALID_PARAMETER.toJSON());
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON());
           return;
         }
         // case statements for input validation
         switch (key) {
           case "firstName":
             if (!ValidationUtils.isValidFirstName(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
               return;
             }
             break;
           case "lastName":
             if (!ValidationUtils.isValidLastName(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
               return;
             }
             break;
           case "birthDate":
             if (!ValidationUtils.isValidBirthDate(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
             break;
           case "phone":
             if (!ValidationUtils.isValidPhoneNumber(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
               return;
             }
             break;
           case "email":
             if (!ValidationUtils.isValidEmail(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
               return;
             }
             break;
           case "address":
             if (!ValidationUtils.isValidAddress(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
               return;
             }
             break;
           case "city":
             if (!ValidationUtils.isValidCity(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
               return;
             }
             break;
           case "state":
             if (!ValidationUtils.isValidUSState(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
               return;
             }
             break;
           case "zipcode":
             if (!ValidationUtils.isValidZipCode(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
             break;
@@ -157,8 +157,8 @@ public class AccountSecurityController {
         update.append("$set", new Document().append(key, value));
 
         userCollection.updateOne(query, update);
-        res.put("status", UserMessage.SUCCESS.toJSON());
-        ctx.json(res);
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
   public Handler resetPassword =
@@ -166,22 +166,26 @@ public class AccountSecurityController {
         JSONObject req = new JSONObject(ctx.body());
         String jwt = ctx.pathParam("jwt");
         Claims claim = CreateResetLink.decodeJWT(jwt);
-        // Check if everything is valid exp user id (maybe set up hash map of seen)
+
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
-        String id = claim.getId();
+
         MongoCollection<Document> userCollection = db.getCollection("user");
         MongoCollection<Document> resetIDs = db.getCollection("emailIDs");
+
         Document user = userCollection.find(eq("username", claim.getAudience())).first();
+
+        String id = claim.getId();
         Document resetID = resetIDs.find(Filters.eq("id", id)).first();
+
         JSONObject res = new JSONObject();
         if (!(claim.getExpiration().compareTo(now) < 0 || user == null || resetID != null)) {
           Document newID = new Document("id", id).append("expiration", claim.getExpiration());
           resetIDs.insertOne(newID);
           String newPassword = req.getString("newPassword");
           resetPassword(claim.getAudience(), newPassword, db);
-          res.put("status", "success");
-          ctx.json(res);
+
+          ctx.json(UserMessage.SUCCESS.toJSON());
         }
       };
 
