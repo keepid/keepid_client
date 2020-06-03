@@ -88,7 +88,6 @@ public class AccountSecurityController {
         String key = req.getString("key");
         String value = req.getString("value");
         String username = ctx.sessionAttribute("username");
-        JSONObject res = new JSONObject();
         Argon2 argon2 = Argon2Factory.create();
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
