@@ -88,7 +88,7 @@ public class AccountSecurityController {
         Document user = userCollection.find(eq("username", username)).first();
         if (user == null) {
           res.put("status", UserMessage.AUTH_FAILURE.toJSON());
-          ctx.json(res);
+          ctx.json(res.toString());
           return;
         }
         char[] passwordChar = password.toCharArray();
@@ -96,13 +96,13 @@ public class AccountSecurityController {
         if (!argon2.verify(hash, passwordChar)) {
           argon2.wipeArray(passwordChar);
           res.put("status", UserMessage.AUTH_FAILURE.toJSON());
-          ctx.json(res);
+          ctx.json(res.toString());
           return;
         }
         argon2.wipeArray(passwordChar);
         if (!user.containsKey(key)) {
           res.put("status", UserMessage.INVALID_PARAMETER.toJSON());
-          ctx.json(res);
+          ctx.json(res.toString());
           return;
         }
         // case statements for input validation
@@ -110,63 +110,63 @@ public class AccountSecurityController {
           case "firstName":
             if (!ValidationUtils.isValidFirstName(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "lastName":
             if (!ValidationUtils.isValidLastName(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "birthDate":
             if (!ValidationUtils.isValidBirthDate(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "phone":
             if (!ValidationUtils.isValidPhoneNumber(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "email":
             if (!ValidationUtils.isValidEmail(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "address":
             if (!ValidationUtils.isValidAddress(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "city":
             if (!ValidationUtils.isValidCity(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "state":
             if (!ValidationUtils.isValidUSState(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
           case "zipcode":
             if (!ValidationUtils.isValidZipCode(key)) {
               res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
-              ctx.json(res);
+              ctx.json(res.toString());
               return;
             }
             break;
@@ -177,7 +177,7 @@ public class AccountSecurityController {
 
         userCollection.updateOne(query, update);
         res.put("status", UserMessage.SUCCESS.toJSON());
-        ctx.json(res);
+        ctx.json(res.toString());
       };
 
   public Handler resetPassword =
@@ -200,7 +200,7 @@ public class AccountSecurityController {
           String newPassword = req.getString("newPassword");
           reset(claim.getAudience(), newPassword, db);
           res.put("status", "success");
-          ctx.json(res);
+          ctx.json(res.toString());
         }
       };
 
