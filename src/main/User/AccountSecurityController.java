@@ -64,13 +64,18 @@ public class AccountSecurityController {
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
+  // Changes the password of a logged in user.
   public Handler changePasswordIn =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
         String oldPassword = req.getString("oldPassword");
         String newPassword = req.getString("newPassword");
         String username = ctx.sessionAttribute("username");
-        JSONObject res = new JSONObject();
+
+        if (username == null) {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON("Unauthorized to change password."));
+          return;
+        }
 
         UserMessage changeStatus = changePassword(username, newPassword, oldPassword, db);
         ctx.json(changeStatus.toJSON());
