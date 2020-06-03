@@ -47,11 +47,7 @@ public class AccountSecurityController {
                 CreateResetLink.createJWT(
                     id, "KeepID", username, "Password Reset Confirmation", expirationTime);
             EmailUtil.sendEmail(
-                "mail.privateemail.com",
-                "587",
-                "contact@keep.id",
                 "Keep Id",
-                "keepid2020", // change later to get actual password from config file
                 email,
                 "Password Reset Confirmation",
                 "https://keep.id/reset-password/" + link);
