@@ -4,6 +4,7 @@ import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
@@ -26,34 +27,42 @@ public class AccountSecurityController {
 
   public Handler forgotPassword =
       ctx -> {
-        long expirationTime = 7200000; // 2 hours
         JSONObject req = new JSONObject(ctx.body());
         String username = req.getString("username");
+
         MongoCollection<Document> userCollection = db.getCollection("user");
-        MongoCollection<Document> linkCollection = db.getCollection("link");
         Document user = userCollection.find(eq("username", username)).first();
+
         if (user == null) {
           ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
-        } else {
-          String email = user.get("email", String.class);
-          if (email == null) {
-            ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Email not found on this user"));
-          } else {
-            String id;
-            do {
-              id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-            } while (linkCollection.find(eq("id", id)).first() != null);
-            String link =
-                CreateResetLink.createJWT(
-                    id, "KeepID", username, "Password Reset Confirmation", expirationTime);
-            EmailUtil.sendEmail(
-                "Keep Id",
-                email,
-                "Password Reset Confirmation",
-                "https://keep.id/reset-password/" + link);
-            ctx.json(UserMessage.SUCCESS.toJSON());
-          }
+          return;
         }
+
+        String emailAddress = user.get("email", String.class);
+        if (emailAddress == null) {
+          ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user."));
+        }
+
+        String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+        int expirationTime = 7200000; // 2 hours
+        String jwt =
+            CreateResetLink.createJWT(
+                id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        tokenCollection.updateOne(
+            eq("username", username),
+            new Document(
+                "$set", new Document("username", username).append("password-reset-jwt", jwt)),
+            new UpdateOptions().upsert(true));
+
+        EmailUtil.sendEmail(
+            "Keep Id",
+            emailAddress,
+            "Password Reset Confirmation",
+            "https://keep.id/reset-password/" + jwt);
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
   public Handler changePasswordIn =
