@@ -45,7 +45,7 @@ public class AccountSecurityController {
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 7200000; // 2 hours
         String jwt =
-            CreateResetLink.createJWT(
+            JWTUtils.createJWT(
                 id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
         MongoCollection<Document> tokenCollection = db.getCollection("tokens");
@@ -180,7 +180,7 @@ public class AccountSecurityController {
         String jwt = ctx.pathParam("jwt");
         Claims claim = null;
         try {
-          claim = CreateResetLink.decodeJWT(jwt);
+          claim = JWTUtils.decodeJWT(jwt);
         } catch (Exception e) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link."));
           return;

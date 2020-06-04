@@ -13,9 +13,9 @@ import java.util.Date;
 import java.util.Objects;
 
 /*
-   Password reset through JWT generation
+   Methods for handling JSON Web Tokens (JWTs)
 */
-public class CreateResetLink {
+public class JWTUtils {
 
   // JWT Creation Method
   public static String createJWT(
