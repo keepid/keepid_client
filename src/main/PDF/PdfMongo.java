@@ -1,4 +1,4 @@
-package PDFUpload;
+package PDF;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -40,29 +40,27 @@ public class PdfMongo {
 
   public static JSONObject getAllFiles(String uploader, PDFType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
-    JSONObject filesj = new JSONObject();
-    System.out.println("uploader");
+    JSONObject filesJSON = new JSONObject();
 
     try {
       GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
       // Figure out filters
-      System.out.println("got here " + uploader);
-
       // Make all when it does form
+      System.out.println(pdfType.toString());
       for (GridFSFile grid_out : gridBucket.find(Filters.eq("metadata.uploader", uploader))) {
-        System.out.println("add");
         files.put(
             new JSONObject()
                 .put("filename", grid_out.getFilename())
                 .put("uploader", grid_out.getMetadata().getString("uploader"))
-                .put("id", grid_out.getId().toString())
+                .put("id", grid_out.getId().asObjectId().getValue().toString())
                 .put("uploadDate", grid_out.getUploadDate().toString()));
       }
-      filesj.put("documents", files);
-      return filesj;
+      filesJSON.put("documents", files);
     } catch (Exception e) {
-      return filesj;
+      System.out.println(e.toString());
     }
+    System.out.println(files);
+    return filesJSON;
   }
 
   // Add option user
@@ -74,6 +72,8 @@ public class PdfMongo {
       return null;
     }
     if (grid_out.getMetadata().getString("uploader").equals(user)) {
+      System.out.println(grid_out.getFilename());
+      String filename = grid_out.getFilename();
       return gridBucket.openDownloadStream(id);
     }
     return null;

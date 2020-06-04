@@ -1,4 +1,4 @@
-package PDFUpload;
+package PDF;
 
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
@@ -21,20 +21,19 @@ public class PdfDownload {
         JSONObject req = new JSONObject(ctx.body());
         String fileIDStr = req.getString("fileID");
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        System.out.println(fileIDStr);
         ObjectId fileID = new ObjectId(fileIDStr);
         if (pdfType == null) {
           ctx.result("Invalid PDFType");
         } else {
-          InputStream targetStream;
+          InputStream stream;
           if (pdfType == PDFType.FORM) {
-            targetStream = PdfMongo.download(organizationName, fileID, pdfType, db);
+            stream = PdfMongo.download(organizationName, fileID, pdfType, db);
           } else {
-            targetStream = PdfMongo.download(user, fileID, pdfType, db);
+            stream = PdfMongo.download(user, fileID, pdfType, db);
           }
-          if (targetStream != null) {
+          if (stream != null) {
             ctx.header("Content-Type", "application/pdf");
-            ctx.result(targetStream);
+            ctx.result(stream);
           } else {
             ctx.result("Error");
           }
