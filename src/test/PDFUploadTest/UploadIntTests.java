@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import javax.mail.MessagingException;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -56,17 +55,9 @@ public class UploadIntTests {
   }
 
   @Test
-  void changePass() throws UnsupportedEncodingException, MessagingException {
-    EmailUtil.sendEmail(
-        "smtp.gmail.com",
-        "587",
-        "keepidtest@gmail.com",
-        "Keep ID",
-        "t3stPasw",
-        "keepidtest@gmail.com",
-        "Test",
-        "Test");
-    AccountSecurityController.change("Steffen12-Cornwell", "test", "test2", database);
+  void changePass() throws UnsupportedEncodingException {
+    EmailUtil.sendEmail("Keep ID", "keepidtest@gmail.com", "Test", "Test");
+    AccountSecurityController.changePassword("Steffen12-Cornwell", "test", "test2", database);
   }
 
   @Test

@@ -3,7 +3,7 @@ package User;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
@@ -26,53 +26,59 @@ public class AccountSecurityController {
 
   public Handler forgotPassword =
       ctx -> {
-        long expirationTime = 7200000; // 2 hours
         JSONObject req = new JSONObject(ctx.body());
         String username = req.getString("username");
+
         MongoCollection<Document> userCollection = db.getCollection("user");
-        MongoCollection<Document> linkCollection = db.getCollection("link");
         Document user = userCollection.find(eq("username", username)).first();
+
         if (user == null) {
           ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
-        } else {
-          String email = user.get("email", String.class);
-          if (email == null) {
-            ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Email not found on this user"));
-          } else {
-            String id;
-            do {
-              id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-            } while (linkCollection.find(eq("id", id)).first() != null);
-            String link =
-                CreateResetLink.createJWT(
-                    id, "KeepID", username, "Password Reset Confirmation", expirationTime);
-            EmailUtil.sendEmail(
-                "mail.privateemail.com",
-                "587",
-                "contact@keep.id",
-                "Keep Id",
-                "keepid2020", // change later to get actual password from config file
-                email,
-                "Password Reset Confirmation",
-                "https://keep.id/reset-password/" + link);
-            ctx.json(UserMessage.SUCCESS.toJSON());
-          }
+          return;
         }
+
+        String emailAddress = user.get("email", String.class);
+        if (emailAddress == null) {
+          ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user."));
+        }
+
+        String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+        int expirationTime = 7200000; // 2 hours
+        String jwt =
+            JWTUtils.createJWT(
+                id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        tokenCollection.updateOne(
+            eq("username", username),
+            new Document(
+                "$set", new Document("username", username).append("password-reset-jwt", jwt)),
+            new UpdateOptions().upsert(true));
+
+        EmailUtil.sendEmail(
+            "Keep Id",
+            emailAddress,
+            "Password Reset Confirmation",
+            "https://keep.id/reset-password/" + jwt);
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
+  // Changes the password of a logged in user.
   public Handler changePasswordIn =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
         String oldPassword = req.getString("oldPassword");
         String newPassword = req.getString("newPassword");
         String username = ctx.sessionAttribute("username");
-        JSONObject res = new JSONObject();
-        if (change(username, newPassword, oldPassword, db)) {
-          res.put("status", UserMessage.SUCCESS.toJSON());
-        } else {
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
+
+        if (username == null) {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON("Unauthorized to change password."));
+          return;
         }
-        ctx.json(res);
+
+        UserMessage changeStatus = changePassword(username, newPassword, oldPassword, db);
+        ctx.json(changeStatus.toJSON());
       };
 
   public Handler changeAccountSetting =
@@ -82,91 +88,78 @@ public class AccountSecurityController {
         String key = req.getString("key");
         String value = req.getString("value");
         String username = ctx.sessionAttribute("username");
-        JSONObject res = new JSONObject();
         Argon2 argon2 = Argon2Factory.create();
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
         if (user == null) {
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
-          ctx.json(res.toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON());
           return;
         }
         char[] passwordChar = password.toCharArray();
         String hash = user.get("password", String.class);
         if (!argon2.verify(hash, passwordChar)) {
           argon2.wipeArray(passwordChar);
-          res.put("status", UserMessage.AUTH_FAILURE.toJSON());
-          ctx.json(res.toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON());
           return;
         }
         argon2.wipeArray(passwordChar);
         if (!user.containsKey(key)) {
-          res.put("status", UserMessage.INVALID_PARAMETER.toJSON());
-          ctx.json(res.toString());
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON());
           return;
         }
         // case statements for input validation
         switch (key) {
           case "firstName":
             if (!ValidationUtils.isValidFirstName(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
               return;
             }
             break;
           case "lastName":
             if (!ValidationUtils.isValidLastName(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
               return;
             }
             break;
           case "birthDate":
             if (!ValidationUtils.isValidBirthDate(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
             break;
           case "phone":
             if (!ValidationUtils.isValidPhoneNumber(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
               return;
             }
             break;
           case "email":
             if (!ValidationUtils.isValidEmail(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
               return;
             }
             break;
           case "address":
             if (!ValidationUtils.isValidAddress(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
               return;
             }
             break;
           case "city":
             if (!ValidationUtils.isValidCity(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
               return;
             }
             break;
           case "state":
             if (!ValidationUtils.isValidUSState(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
               return;
             }
             break;
           case "zipcode":
             if (!ValidationUtils.isValidZipCode(key)) {
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
-              ctx.json(res.toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
             break;
@@ -176,67 +169,113 @@ public class AccountSecurityController {
         update.append("$set", new Document().append(key, value));
 
         userCollection.updateOne(query, update);
-        res.put("status", UserMessage.SUCCESS.toJSON());
-        ctx.json(res.toString());
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
   public Handler resetPassword =
       ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
+
+        // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = ctx.pathParam("jwt");
-        Claims claim = CreateResetLink.decodeJWT(jwt);
-        // Check if everything is valid exp user id (maybe set up hash map of seen)
+        Claims claim = null;
+        try {
+          claim = JWTUtils.decodeJWT(jwt);
+        } catch (Exception e) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link."));
+          return;
+        }
+
+        String username = claim.getAudience();
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document user = userCollection.find(eq("username", username)).first();
+
+        // Return USER_NOT_FOUND if the username does not exist.
+        if (user == null) {
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
+          return;
+        }
+
+        // Check for expired reset link.
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
-        String id = claim.getId();
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        MongoCollection<Document> resetIDs = db.getCollection("emailIDs");
-        Document user = userCollection.find(eq("username", claim.getAudience())).first();
-        Document resetID = resetIDs.find(Filters.eq("id", id)).first();
-        JSONObject res = new JSONObject();
-        if (!(claim.getExpiration().compareTo(now) < 0 || user == null || resetID != null)) {
-          Document newID = new Document("id", id).append("expiration", claim.getExpiration());
-          resetIDs.insertOne(newID);
-          String newPassword = req.getString("newPassword");
-          reset(claim.getAudience(), newPassword, db);
-          res.put("status", "success");
-          ctx.json(res.toString());
+
+        if (claim.getExpiration().compareTo(now) < 0) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset link expired."));
+          return;
         }
+
+        // Check if reset token exists.
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        Document tokens = tokenCollection.find(eq("username", username)).first();
+        if (tokens == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
+          return;
+        }
+
+        String storedJWT = tokens.getString("password-reset-jwt");
+        if (storedJWT == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
+          return;
+        }
+
+        if (!storedJWT.equals(jwt)) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
+          return;
+        }
+
+        // Remove the token entry if its last remaining key is the password-reset-token.
+        // Remove only the password reset token if there are other fields.
+        if (tokens.size() == 3) {
+          tokenCollection.deleteOne(eq("username", username));
+        } else {
+          // Remove password-reset-jwt field from document.
+          tokenCollection.updateOne(
+              eq("username", username),
+              new Document().append("$unset", new Document("password-reset-jwt", "")));
+        }
+
+        JSONObject req = new JSONObject(ctx.body());
+        String newPassword = req.getString("newPassword");
+        resetPassword(claim.getAudience(), newPassword, db);
+
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
-  public static boolean change(
+  public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {
-    Argon2 argon2 = Argon2Factory.create();
+
     MongoCollection<Document> userCollection = db.getCollection("user");
     Document user = userCollection.find(eq("username", username)).first();
-    if (user == null) {
-      return false;
+
+    if (user == null) { // The user does not exist in the database.
+      return UserMessage.USER_NOT_FOUND;
     }
+
     char[] oldPasswordArr = oldPassword.toCharArray();
-    char[] newPasswordArr = newPassword.toCharArray();
     String hash = user.get("password", String.class);
-    if (!argon2.verify(hash, oldPasswordArr)) {
+
+    Argon2 argon2 = Argon2Factory.create();
+    if (!argon2.verify(hash, oldPasswordArr)) { // The provided old password is not correct.
       argon2.wipeArray(oldPasswordArr);
-      argon2.wipeArray(newPasswordArr);
-      return false;
+      return UserMessage.AUTH_FAILURE;
     }
-    argon2.wipeArray(newPasswordArr);
-    reset(username, newPassword, db);
-    return true;
+    resetPassword(username, newPassword, db);
+    return UserMessage.AUTH_SUCCESS;
   }
 
-  private static void reset(String username, String newPassword, MongoDatabase db) {
-    Argon2 argon2 = Argon2Factory.create();
+  private static void resetPassword(String username, String newPassword, MongoDatabase db) {
     MongoCollection<Document> userCollection = db.getCollection("user");
     Document user = userCollection.find(eq("username", username)).first();
+
+    Argon2 argon2 = Argon2Factory.create();
     char[] newPasswordArr = newPassword.toCharArray();
     String passwordHash = argon2.hash(10, 65536, 1, newPasswordArr);
-    Document query = new Document();
-    query.append("_id", user.get("_id"));
-    Document setData = new Document();
-    setData.append("password", passwordHash);
-    Document update = new Document();
-    update.append("$set", setData);
+
+    Document query = new Document().append("_id", user.get("_id"));
+    Document setData = new Document().append("password", passwordHash);
+    Document update = new Document().append("$set", setData);
+
     userCollection.updateOne(query, update);
     argon2.wipeArray(newPasswordArr);
   }
