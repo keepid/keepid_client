@@ -6,6 +6,7 @@ import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
@@ -80,6 +81,12 @@ public class UserController {
                   user.getString("email"),
                   "2FA Link",
                   "http://keep.id/two-factor-authentication/" + jwt);
+
+              MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+              tokenCollection.updateOne(
+                  eq("username", username),
+                  new Document("$set", new Document("username", username).append("2fa-jwt", jwt)),
+                  new UpdateOptions().upsert(true));
 
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
               ctx.json(res.toString());
