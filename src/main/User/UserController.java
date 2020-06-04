@@ -9,11 +9,14 @@ import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
@@ -59,11 +62,35 @@ public class UserController {
           }
           String hash = user.get("password", String.class);
           if (argon2.verify(hash, passwordArr)) { // Hash matches password
+
+            String userLevel = user.getString("privilegeLevel");
+            if (userLevel.equals("Director")
+                || userLevel.equals("Admin")
+                || userLevel.equals("Worker")) {
+
+              int expirationTime = 7200000;
+              String id =
+                  RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+              String jwt =
+                  JWTUtils.createJWT(
+                      id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+
+              EmailUtil.sendEmail(
+                  "Keep Id",
+                  user.getString("email"),
+                  "2FA Link",
+                  "http://keep.id/two-factor-authentication/" + jwt);
+
+              res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
+              ctx.json(res.toString());
+
+              return;
+            }
+
             ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
             ctx.sessionAttribute("orgName", user.get("organization"));
             ctx.sessionAttribute("username", username);
-            //  logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
-            //  logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
+
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.get("privilegeLevel"));
             res.put("organization", user.get("organization"));
