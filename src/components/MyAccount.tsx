@@ -44,13 +44,10 @@ interface InputState {
 class RenderInput extends Component<InputProps, InputState> {
   constructor(props: InputProps) {
     super(props);
-    const {
-      inputValue,
-    } = props;
     this.state = {
       readOnly: true,
-      input: inputValue,
-      originalInput: inputValue,
+      input: '',
+      originalInput: '',
       wrongPasswordInModal: false,
       showPasswordConfirm: false,
       buttonState: '',
@@ -63,6 +60,18 @@ class RenderInput extends Component<InputProps, InputState> {
     this.handleOpenPasswordConfirmModal = this.handleOpenPasswordConfirmModal.bind(this);
     this.handleClosePasswordConfirm = this.handleClosePasswordConfirm.bind(this);
     this.handleSaveInfo = this.handleSaveInfo.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    const { 
+      inputValue 
+    } = this.props;
+    if (inputValue !== prevProps.inputValue) {
+      this.setState({
+        input: inputValue,
+        originalInput: inputValue,
+      });
+    }
   }
 
   birthDateString(birthDate: Date) {
@@ -164,8 +173,6 @@ class RenderInput extends Component<InputProps, InputState> {
       password,
     };
 
-    console.log(data);
-
     fetch(`${getServerURL()}/change-account-setting`, {
       method: 'POST',
       credentials: 'include',
@@ -229,14 +236,13 @@ class RenderInput extends Component<InputProps, InputState> {
                 name={inputName}
                 value={input}
                 onChange={this.handleInputChange}
-                placeholder={input}
                 disabled={readOnly}
               >
                 {USStates.map((USState, index) => (<option key={index}>{USState.abbreviation}</option>))}
               </select>
             ) : null}
           { inputType === 'text' || inputType === 'tel'
-            ? <input type={inputType} className="form-control form-purple" name={inputName} placeholder={input} id={inputName} value={input} onChange={this.handleInputChange} readOnly={readOnly} />
+            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={this.handleInputChange} readOnly={readOnly} />
             : null}
           { inputType === 'date' ? (
             <DatePicker
@@ -244,7 +250,6 @@ class RenderInput extends Component<InputProps, InputState> {
               onChange={this.handleInputChange}
               selected={input}
               className="form-control form-purple"
-              placeholder={input}
               readOnly={readOnly}
             />
           ) : null}
@@ -451,17 +456,19 @@ class MyAccount extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        this.setState({
+        const date = responseJSON.birthDate.split("-");
+        const newState = {
           username: responseJSON.username,
           firstName: responseJSON.firstName,
           lastName: responseJSON.lastName,
           email: responseJSON.email,
-          birthDate: responseJSON.birthDate,
+          birthDate: new Date(date[2], date[0]-1, date[1]),
           city: responseJSON.city,
           state: responseJSON.state,
           address: responseJSON.address,
           zipcode: responseJSON.zipcode,
-        });
+        };
+        this.setState(newState);
       });
   }
 
