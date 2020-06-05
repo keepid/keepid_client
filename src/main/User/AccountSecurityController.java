@@ -7,7 +7,6 @@ import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import io.javalin.websocket.WsHandler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
@@ -15,7 +14,6 @@ import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -306,73 +304,6 @@ public class AccountSecurityController {
 
         ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
-
-  public Consumer<WsHandler> twoFactorAuth() {
-    return ws -> {
-      ws.onConnect(
-          ctx -> {
-            String jwt = ctx.pathParam("jwt");
-            Claims claim = null;
-            try {
-              claim = JWTUtils.decodeJWT(jwt);
-            } catch (Exception e) {
-              ctx.send(UserMessage.AUTH_FAILURE.toJSON("Invalid 2FA token."));
-              return;
-            }
-
-            String username = claim.getAudience();
-            MongoCollection<Document> userCollection = db.getCollection("user");
-            Document user = userCollection.find(eq("username", username)).first();
-
-            // Return USER_NOT_FOUND if the username does not exist.
-            if (user == null) {
-              ctx.send(UserMessage.USER_NOT_FOUND.toJSON());
-              return;
-            }
-
-            // Check for expired reset link.
-            long nowMillis = System.currentTimeMillis();
-            Date now = new Date(nowMillis);
-
-            if (claim.getExpiration().compareTo(now) < 0) {
-              ctx.send(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
-              return;
-            }
-
-            // Check if reset token exists.
-            MongoCollection<Document> tokenCollection = db.getCollection("tokens");
-            Document tokens = tokenCollection.find(eq("username", username)).first();
-            if (tokens == null) {
-              ctx.send(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
-              return;
-            }
-
-            String storedJWT = tokens.getString("2fa-jwt");
-            if (storedJWT == null) {
-              ctx.send(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
-              return;
-            }
-
-            if (!storedJWT.equals(jwt)) {
-              ctx.send(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
-              return;
-            }
-
-            // Remove the token entry if its last remaining key is the password-reset-token.
-            // Remove only the password reset token if there are other fields.
-            if (tokens.size() == 3) {
-              tokenCollection.deleteOne(eq("username", username));
-            } else {
-              // Remove password-reset-jwt field from document.
-              tokenCollection.updateOne(
-                  eq("username", username),
-                  new Document().append("$unset", new Document("2fa-jwt", "")));
-            }
-
-            ctx.send(UserMessage.AUTH_SUCCESS.toJSON());
-          });
-    };
-  }
 
   public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {
