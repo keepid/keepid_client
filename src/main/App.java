@@ -89,7 +89,7 @@ public class App {
     app.post("/forgot-password", accountSecurityController.forgotPassword);
     app.post("change-password", accountSecurityController.changePasswordIn);
     app.post("/reset-password/:jwt", accountSecurityController.resetPassword);
-    app.post("/two-factor/:token", accountSecurityController.twoFactorAuth);
+    app.post("/two-factor", accountSecurityController.twoFactorAuth);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
