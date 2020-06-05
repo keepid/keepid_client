@@ -13,7 +13,8 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 interface State {
   username: string,
   password: string,
-  buttonState: string
+  buttonState: string,
+  verificationCode: string | null
 }
 
 interface Props {
@@ -30,10 +31,17 @@ class LoginPage extends Component<Props, State> {
       username: '',
       password: '',
       buttonState: '',
+      verificationCode: '',
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+  }
+
+  handleCode = (event: any) => {
+    const enteredCode = prompt('Enter Verification Code')
+
+    this.setState({ verificationCode : enteredCode })
   }
 
   handleChangePassword(event: any) {
@@ -130,7 +138,7 @@ class LoginPage extends Component<Props, State> {
 .
                 </span>
               </div>
-            </div>
+            </div>            
 
             <div className="col">
               <form className="form-signin pt-5">
@@ -171,7 +179,7 @@ Remember me
                     </div>
                   </div>
                   <div className="col-6">
-                    <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    <button type="submit" onClick={this.handleCode} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                         Sign In
                       <div className="ld ld-ring ld-spin" />
                     </button>
