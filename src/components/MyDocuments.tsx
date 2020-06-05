@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet';
 import PrintDocument from './PrintDocument';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
 
 interface Props {
   username: string,
@@ -15,6 +16,7 @@ interface Props {
 
 interface State {
   currentDocumentId: string | undefined,
+  currentDocumentName: string | undefined,
   documentData: any,
 }
 
@@ -23,6 +25,7 @@ class MyDocuments extends Component<Props, State> {
     super(props);
     this.state = {
       currentDocumentId: undefined,
+      currentDocumentName: undefined,
       documentData: [],
     };
     this.getDocumentData = this.getDocumentData.bind(this);
@@ -36,14 +39,18 @@ class MyDocuments extends Component<Props, State> {
   }
 
   onViewDocument(event: any, row: any) {
-    let fileId = row.id.split('=')[1];
-    fileId = fileId.substring(0, fileId.length - 1);
-    this.setState({ currentDocumentId: fileId });
+    const {
+      id,
+      filename,
+    } = row;
+    this.setState({
+      currentDocumentId: id,
+      currentDocumentName: filename,
+    });
   }
 
   deleteDocument(event: any, row: any) {
-    let fileId = row.id.split('=')[1];
-    fileId = fileId.substring(0, fileId.length - 1);
+    const fileId = row.id;
     fetch(`${getServerURL()}/delete-document/${fileId}`, {
       method: 'GET',
       credentials: 'include',
@@ -54,8 +61,11 @@ class MyDocuments extends Component<Props, State> {
 
   getDocumentData() {
     fetch(`${getServerURL()}/get-documents `, {
-      method: 'GET',
+      method: 'POST',
       credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.IDENTIFICATION,
+      }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
@@ -81,10 +91,10 @@ class MyDocuments extends Component<Props, State> {
         </button>
       </Link> */}
       <button type="button" className="btn btn-outline-info ml-2 btn-sm">
-                Request
+        Request
       </button>
       <button type="button" onClick={(event) => this.deleteDocument(event, row)} className="btn btn-outline-danger btn-sm ml-2">
-                Delete
+        Delete
       </button>
 
     </div>
@@ -113,6 +123,7 @@ class MyDocuments extends Component<Props, State> {
   render() {
     const {
       currentDocumentId,
+      currentDocumentName,
       documentData,
     } = this.state;
     return (
@@ -126,7 +137,7 @@ class MyDocuments extends Component<Props, State> {
             <div className="jumbotron-fluid mt-5">
               <h1 className="display-4">View and Print Documents</h1>
               <p className="lead pt-3">
-        You can view, edit, print, and delete your documents you currently have stored on Keep.id.
+                You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
             <form className="form-inline my-2 my-lg-0">
@@ -150,7 +161,8 @@ class MyDocuments extends Component<Props, State> {
           </div>
         </Route>
         <Route path="/my-documents/view">
-          <ViewDocument documentId={currentDocumentId} />
+          {currentDocumentId && currentDocumentName
+            ? <ViewDocument documentId={currentDocumentId} documentName={currentDocumentName} /> : <div />}
         </Route>
         <Route path="/my-documents/print">
           <PrintDocument documentId={currentDocumentId} />

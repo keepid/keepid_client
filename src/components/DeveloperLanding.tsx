@@ -4,14 +4,11 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
-
-import Role from '../static/Role';
 import PDFType from '../static/PDFType';
 
 
 interface Props {
-  userRole: Role,
-  alert: any,
+  alert: any
 }
 
 interface State {
@@ -40,7 +37,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class UploadDocs extends React.Component<Props, State> {
+class DeveloperLanding extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -55,10 +52,6 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
@@ -75,11 +68,7 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
-        } else if (userRole === Role.Director) {
-          formData.append('pdfType', PDFType.FORM);
-        }
+        formData.append('pdfType', PDFType.FORM);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -179,4 +168,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withAlert()(UploadDocs);
+export default withAlert()(DeveloperLanding);

@@ -23,7 +23,7 @@ class Applications extends Component<{}, {}, {}> {
               </div>
               <div className="col-md-6 mt-4">
                 <h3 className="textPrintHeader">
-                            My Applications
+                  My Applications
                 </h3>
               </div>
             </div>
@@ -43,7 +43,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                              Document name
+                        Document name
                       </td>
                     </tr>
                     <tr>
@@ -51,7 +51,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                          Document name
+                        Document name
                       </td>
                     </tr>
                     <tr>
@@ -59,7 +59,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                              Document name
+                        Document name
                       </td>
                     </tr>
                     <tr>
@@ -67,7 +67,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                              Document name
+                        Document name
                       </td>
                     </tr>
                     <tr>
@@ -75,7 +75,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                              Document name
+                        Document name
                       </td>
                     </tr>
                   </tbody>

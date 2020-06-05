@@ -91,7 +91,7 @@ class ForgotPassword extends Component<Props, State> {
                 <h1 className="h3 mb-3 font-weight-normal">Forgot Your Password?</h1>
                 <span className="text-muted">Enter your username to reset your password. Afterwards, check your email or contact your nonprofit to get your password recovery code.</span>
                 <label htmlFor="username" className="w-100 mt-3 font-weight-bold">
-                    Username
+                  Username
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
@@ -106,7 +106,7 @@ class ForgotPassword extends Component<Props, State> {
                 <div className="row pt-3">
                   <div className="col-6">
                     <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                        Submit
+                      Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>
                   </div>
@@ -114,13 +114,13 @@ class ForgotPassword extends Component<Props, State> {
 
                 <div className="row pl-3 pb-3">
                   <span className="text-muted recaptcha-login-text mt-4">
-                      This page is protected by reCAPTCHA, and subject to the Google
+                    This page is protected by reCAPTCHA, and subject to the Google
                     {' '}
                     <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
-                      and
+                    and
                     {' '}
                     <a href="https://www.google.com/policies/terms/">Terms of service</a>
-.
+                    .
                   </span>
                 </div>
               </form>

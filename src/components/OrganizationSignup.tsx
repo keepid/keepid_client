@@ -199,7 +199,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           zipcode,
           username,
           password,
-          personRole: "Director"
+          personRole: 'Director',
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {

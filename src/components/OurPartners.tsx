@@ -28,8 +28,8 @@ class OurPartners extends React.Component<{}, State> {
             <div className="card-body">
               <h5 className="card-title">Broad Street Ministries</h5>
               <p className="card-text">
-We transform our city, our institutions,
-              and ourselves when we embrace the individual needs of our most vulnerable sisters and brothers.
+                We transform our city, our institutions,
+                and ourselves when we embrace the individual needs of our most vulnerable sisters and brothers.
               </p>
               <a href="https://www.broadstreetministry.org/" className="card-link">Website</a>
               <a href="https://www.facebook.com/BroadStreetMinistry/" className="card-link">Facebook Page</a>

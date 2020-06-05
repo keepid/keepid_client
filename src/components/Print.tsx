@@ -16,7 +16,7 @@ class Print extends Component<{}, {}, {}> {
           </div>
           <div className="col-md-6 mt-4">
             <h3 className="textPrintHeader">
-                        Print Documents
+              Print Documents
             </h3>
           </div>
         </div>
@@ -36,7 +36,7 @@ class Print extends Component<{}, {}, {}> {
                     <input className="form-check-input" type="checkbox" value="" id="defaultCheck1" />
                   </td>
                   <td>
-                          Document name
+                    Document name
                   </td>
                 </tr>
                 <tr>
@@ -44,7 +44,7 @@ class Print extends Component<{}, {}, {}> {
                     <input className="form-check-input" type="checkbox" value="" id="defaultCheck2" />
                   </td>
                   <td>
-                      Document name
+                    Document name
                   </td>
                 </tr>
                 <tr>
@@ -52,7 +52,7 @@ class Print extends Component<{}, {}, {}> {
                     <input className="form-check-input" type="checkbox" value="" id="defaultCheck2" />
                   </td>
                   <td>
-                          Document name
+                    Document name
                   </td>
                 </tr>
                 <tr>
@@ -60,7 +60,7 @@ class Print extends Component<{}, {}, {}> {
                     <input className="form-check-input" type="checkbox" value="" id="defaultCheck2" />
                   </td>
                   <td>
-                          Document name
+                    Document name
                   </td>
                 </tr>
                 <tr>
@@ -68,14 +68,14 @@ class Print extends Component<{}, {}, {}> {
                     <input className="form-check-input" type="checkbox" value="" id="defaultCheck2" />
                   </td>
                   <td>
-                          Document name
+                    Document name
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <button type="submit" className="btn btn-lg">
-                Print
+            Print
           </button>
         </div>
       </div>

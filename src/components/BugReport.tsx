@@ -145,13 +145,13 @@ class BugReport extends Component<Props, State, {}> {
                       onChange={this.captchaVerify}
                     />
                     <span className="text-muted recaptcha-login-text">
-                        This page is protected by reCAPTCHA, and subject to the Google
+                      This page is protected by reCAPTCHA, and subject to the Google
                       {' '}
                       <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
-                        and
+                      and
                       {' '}
                       <a href="https://www.google.com/policies/terms/">Terms of service</a>
-    .
+                      .
                     </span>
                   </div>
                   <div className="col-md-4 text-right pr-4">
