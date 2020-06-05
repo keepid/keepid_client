@@ -7,6 +7,7 @@ import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
+import io.javalin.http.sse.SseClient;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
@@ -14,14 +15,21 @@ import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
 
 public class AccountSecurityController {
-  MongoDatabase db;
+  // TODO(kofmangreogory): Move this to a centralized location, like a database, before Keep has
+  // many server instances.
+  private Map<String, SseClient> clients;
+  private MongoDatabase db;
 
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
+    this.clients = new ConcurrentHashMap<String, SseClient>();
   }
 
   public Handler forgotPassword =
@@ -257,8 +265,12 @@ public class AccountSecurityController {
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
 
+        SseClient client = this.clients.get(username);
+
         // Return USER_NOT_FOUND if the username does not exist.
         if (user == null) {
+          this.clients.remove(username);
+          if (client != null) client.sendEvent(UserMessage.USER_NOT_FOUND.toJSON());
           ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
           return;
         }
@@ -268,6 +280,9 @@ public class AccountSecurityController {
         Date now = new Date(nowMillis);
 
         if (claim.getExpiration().compareTo(now) < 0) {
+          this.clients.remove(username);
+          if (client != null)
+            client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
           return;
         }
@@ -276,17 +291,23 @@ public class AccountSecurityController {
         MongoCollection<Document> tokenCollection = db.getCollection("tokens");
         Document tokens = tokenCollection.find(eq("username", username)).first();
         if (tokens == null) {
+          this.clients.remove(username);
+          if (client != null)
+            client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
           return;
         }
 
         String storedJWT = tokens.getString("2fa-jwt");
-        if (storedJWT == null) {
+        if (storedJWT == null || client == null) {
+          this.clients.remove(username);
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
           return;
         }
 
         if (!storedJWT.equals(jwt)) {
+          this.clients.remove(username);
+          client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
           return;
         }
@@ -302,8 +323,20 @@ public class AccountSecurityController {
               new Document().append("$unset", new Document("2fa-jwt", "")));
         }
 
+        client.sendEvent(UserMessage.AUTH_SUCCESS.toJSON());
         ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
+
+  public Consumer<SseClient> twoFactorAuthSse() {
+    return client -> {
+      // On opening connection, username is retrieved through the Server-Event query param.
+      // The client is stored in the clients map.
+      String username = client.ctx.queryParam("username");
+      this.clients.put(username, client);
+
+      client.onClose(() -> this.clients.remove(username));
+    };
+  }
 
   public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {
