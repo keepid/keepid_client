@@ -37,6 +37,8 @@ class ViewDocument extends Component<Props, State> {
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         this.setState({ pdfFile });
+      }).catch((error) => {
+        alert('Error Fetching File');
       });
   }
 

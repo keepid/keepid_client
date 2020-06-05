@@ -4,6 +4,7 @@ import { Switch, Route, Link } from 'react-router-dom';
 import Calendar from '../static/images/calendar.svg';
 import SendApplication from './SendApplication';
 
+
 class Applications extends Component<{}, {}, {}> {
   render() {
     return (
@@ -43,7 +44,7 @@ class Applications extends Component<{}, {}, {}> {
                         <div className="app-status-box" />
                       </td>
                       <td>
-                        Document name
+                        <Link to="/applications/send">Form 1</Link>
                       </td>
                     </tr>
                     <tr>
@@ -83,7 +84,6 @@ class Applications extends Component<{}, {}, {}> {
               </div>
             </div>
           </div>
-          <Link to="/applications/send">SendApplication</Link>
         </Route>
       </Switch>
     );
