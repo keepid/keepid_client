@@ -332,7 +332,7 @@ public class AccountSecurityController {
       // On opening connection, username is retrieved through the Server-Event query param.
       // The client is stored in the clients map.
       String username = client.ctx.queryParam("username");
-      String plainPassword = client.ctx.pathParam("password");
+      String plainPassword = client.ctx.queryParam("password");
       Document user = db.getCollection("user").find(eq("username", username)).first();
 
       // Ensure a user exists with the provided username.
