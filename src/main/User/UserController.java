@@ -189,6 +189,29 @@ public class UserController {
         ctx.json("SUCCESS");
       };
 
+  public Handler getUserInfo =
+      ctx -> {
+        JSONObject res = new JSONObject();
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document user = userCollection.find(eq("username", username)).first();
+        if (user != null) {
+          res.put("userRole", user.get("privilegeLevel"));
+          res.put("organization", user.get("organization"));
+          res.put("firstName", user.get("firstName"));
+          res.put("lastName", user.get("lastName"));
+          res.put("birthDate", user.get("birthDate"));
+          res.put("address", user.get("address"));
+          res.put("city", user.get("city"));
+          res.put("state", user.get("state"));
+          res.put("email", user.get("email"));
+          res.put("phone", user.get("phone"));
+          ctx.json(res);
+        } else {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
+        }
+      };
+
   public Handler getMembers =
       ctx -> {
         String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
