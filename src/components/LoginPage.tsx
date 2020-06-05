@@ -95,7 +95,6 @@ class LoginPage extends Component<Props, State> {
             const token = handleCode();
             this.setState({ buttonState: '' });
 
-            debugger;
             fetch(`${getServerURL()}/two-factor`, {
               method: 'POST',
               credentials: 'include',
@@ -119,6 +118,9 @@ class LoginPage extends Component<Props, State> {
                     }
                   };
                   logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+                } else if (returnStatus === 'AUTH_FAILURE') {
+                  this.props.alert.show('Incorrect 2FA Token: Please Try Again');
+                  this.setState({ buttonState: '' });
                 }
               }).catch((error) => {
                 this.props.alert.show('Network Failure: Check Server Connection');
