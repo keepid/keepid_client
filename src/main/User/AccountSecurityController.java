@@ -7,7 +7,6 @@ import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import io.javalin.http.sse.SseClient;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
@@ -15,21 +14,14 @@ import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
 
 public class AccountSecurityController {
-  // TODO(kofmangreogory): Move this to a centralized location, like a database, before Keep has
-  // many server instances.
-  private Map<String, SseClient> twoFactorClients;
   private MongoDatabase db;
 
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
-    this.twoFactorClients = new ConcurrentHashMap<String, SseClient>();
   }
 
   public Handler forgotPassword =
@@ -186,7 +178,7 @@ public class AccountSecurityController {
 
         // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = ctx.pathParam("jwt");
-        Claims claim = null;
+        Claims claim;
         try {
           claim = SecurityUtils.decodeJWT(jwt);
         } catch (Exception e) {
@@ -252,26 +244,30 @@ public class AccountSecurityController {
 
   public Handler twoFactorAuth =
       ctx -> {
-        String jwt = ctx.pathParam("jwt");
-        Claims claim = null;
-        try {
-          claim = SecurityUtils.decodeJWT(jwt);
-        } catch (Exception e) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid 2FA token."));
-          return;
-        }
+        String username = ctx.queryParam("username");
+        String token = ctx.queryParam("token");
 
-        String username = claim.getAudience();
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
 
-        SseClient client = this.twoFactorClients.get(username);
-
         // Return USER_NOT_FOUND if the username does not exist.
         if (user == null) {
-          this.twoFactorClients.remove(username);
-          if (client != null) client.sendEvent(UserMessage.USER_NOT_FOUND.toJSON());
           ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
+          return;
+        }
+
+        // Check if 2fa token exists.
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        Document tokens = tokenCollection.find(eq("username", username)).first();
+        if (tokens == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
+          return;
+        }
+
+        String stored2faToken = tokens.getString("2fa-jwt");
+        Date stored2faExpiration = tokens.get("2fa-exp", Date.class);
+        if (stored2faToken == null || stored2faExpiration == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
           return;
         }
 
@@ -279,35 +275,12 @@ public class AccountSecurityController {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
 
-        if (claim.getExpiration().compareTo(now) < 0) {
-          this.twoFactorClients.remove(username);
-          if (client != null)
-            client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
+        if (stored2faExpiration.compareTo(now) < 0) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
           return;
         }
 
-        // Check if reset token exists.
-        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
-        Document tokens = tokenCollection.find(eq("username", username)).first();
-        if (tokens == null) {
-          this.twoFactorClients.remove(username);
-          if (client != null)
-            client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
-          return;
-        }
-
-        String storedJWT = tokens.getString("2fa-jwt");
-        if (storedJWT == null || client == null) {
-          this.twoFactorClients.remove(username);
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
-          return;
-        }
-
-        if (!storedJWT.equals(jwt)) {
-          this.twoFactorClients.remove(username);
-          client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
+        if (!stored2faToken.equals(token)) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
           return;
         }
@@ -320,42 +293,16 @@ public class AccountSecurityController {
           // Remove password-reset-jwt field from document.
           tokenCollection.updateOne(
               eq("username", username),
-              new Document().append("$unset", new Document("2fa-jwt", "")));
+              new Document().append("$unset", new Document("2fa-jwt", "").append("2fa-exp", "")));
         }
 
-        client.sendEvent(UserMessage.AUTH_SUCCESS.toJSON());
+        // Set Session token.
+        ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
+        ctx.sessionAttribute("orgName", user.get("organization"));
+        ctx.sessionAttribute("username", username);
+
         ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
-
-  public Consumer<SseClient> twoFactorAuthSse() {
-    return client -> {
-      // On opening connection, username is retrieved through the Server-Event query param.
-      // The client is stored in the clients map.
-      String username = client.ctx.queryParam("username");
-      String plainPassword = client.ctx.queryParam("password");
-      Document user = db.getCollection("user").find(eq("username", username)).first();
-
-      // Ensure a user exists with the provided username.
-      if (user == null) {
-        client.sendEvent(UserMessage.USER_NOT_FOUND.toJSON());
-        return;
-      }
-
-      // Ensure the password is correct.
-      char[] plainPasswordArr = plainPassword.toCharArray();
-      String hash = user.get("password", String.class);
-      Argon2 argon2 = Argon2Factory.create();
-      if (!argon2.verify(hash, plainPasswordArr)) { // The provided old password is not correct.
-        argon2.wipeArray(plainPasswordArr);
-        client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Password incorrect."));
-        return;
-      }
-
-      this.twoFactorClients.put(username, client);
-
-      client.onClose(() -> this.twoFactorClients.remove(username));
-    };
-  }
 
   public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {
