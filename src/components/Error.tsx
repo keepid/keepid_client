@@ -27,6 +27,14 @@ class Error extends React.Component<Props, State> {
     this.setTimeout();
   }
 
+  // manually redirect - clear timer
+  componentWillUnmount() {
+    const {redirect} = this.state;
+    if (this.redirectTimeout) {
+      clearTimeout(this.redirectTimeout);
+    }
+  }
+
   // set a timeout, after which the user will be redirected to the login screen
   setTimeout() {
     this.redirectTimeout = setTimeout(this.handleRedirect, timeUntilRedirect);
