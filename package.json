@@ -90,7 +90,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "set \"CI=false\" && react-scripts test --env=jsdom",
+    "test": "CI=false && react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
     "lint:scss:fix": "stylelint 'src/**/*.scss' --syntax scss --fix",
