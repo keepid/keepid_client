@@ -69,7 +69,7 @@ class UploadDocs extends React.Component<Props, State> {
               this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
                 submitStatus: true,
-                buttonState: ''
+                buttonState: '',
               });
             } else {
               this.props.alert.show(`Failure to upload ${pdfFile.name}`);
@@ -156,9 +156,12 @@ class UploadDocs extends React.Component<Props, State> {
                   { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                   <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                 </label>
-                { pdfFiles && pdfFiles.length > 0 ? <button type="submit" className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>Upload
-                  <div className="ld ld-ring ld-spin" />
-                </button> : null}
+                { pdfFiles && pdfFiles.length > 0 ? (
+                  <button type="submit" className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
+Upload
+                    <div className="ld ld-ring ld-spin" />
+                  </button>
+                ) : null}
               </div>
             </form>
           </div>

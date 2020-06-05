@@ -6,6 +6,7 @@ import GregJPG from '../static/images/greg.jpg';
 import JacksonJPG from '../static/images/jackson.jpg';
 import JackieJPG from '../static/images/jackie.jpg';
 import JohnJPG from '../static/images/john.jpg';
+
 interface State {}
 
 class OurTeam extends React.Component<{}, State> {

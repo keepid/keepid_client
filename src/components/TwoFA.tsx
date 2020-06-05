@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import NotFoundSVG from '../static/images/page-not-found.svg';
-import Role from '../static/Role';
 import getServerURL from '../serverOverride';
 
 interface Props {
@@ -9,7 +8,8 @@ interface Props {
 }
 
 interface State {
-  isValid: boolean
+  isValid: boolean,
+  validityMessage: string
 }
 
 class TwoFA extends Component<Props, State> {
@@ -17,34 +17,45 @@ class TwoFA extends Component<Props, State> {
     super(props);
     this.state = {
       isValid: false,
+      validityMessage: 'nothing'
     };
 
     this.verifyJWT = this.verifyJWT.bind(this);
   }
 
+  componentDidMount() {
+    this.verifyJWT();
+  }
+
   verifyJWT() {
     const {
-      isValid
+      isValid,
     } = this.state;
 
-    fetch(`${getServerURL()}/two-factor/${isValid}`, {
+    fetch(`${getServerURL()}/two-factor/${this.props.jwt}`, {
       method: 'POST',
       credentials: 'include',
     }).then((res) => res.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const {
-          validityMessage
-        } = responseJSON;
-        if (validityMessage) {
+
+        const returnMessage = responseJSON.message;
+        const returnStatus = responseJSON.status;
+
+        this.setState({
+            validityMessage: returnMessage,
+        });
+
+        if (returnMessage) {
           this.setState({
-            isValid: true
+            isValid: true,
           });
         }
       });
   }
 
   render() {
+    console.log(this.state.validityMessage)
     return (
       <div className="container">
         <Helmet>

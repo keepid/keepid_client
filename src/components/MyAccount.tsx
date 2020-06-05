@@ -28,7 +28,7 @@ class MyAccount extends Component<{}, {}, {}> {
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5 className="modal-title">
-  Edit 
+  Edit
                       {editData[field]}
                     </h5>
                     <button type="button" className="close" data-dismiss="modal" aria-label="Close">

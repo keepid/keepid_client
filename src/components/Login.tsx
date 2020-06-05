@@ -51,7 +51,7 @@ class Login extends Component<{}, {}, {}> {
                   <div>
                     <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
                   </div>
-                  
+
                 </div>
               </div>
             </div>
@@ -59,7 +59,7 @@ class Login extends Component<{}, {}, {}> {
               <div className="row">
                 <div className="col-md-6 custom-vertical-center">
                   <h1 className="text-center font-weight-bold m-3 pb-5">
-                    We partner with aid organizations, leveraging existing resources and programming. 
+                    We partner with aid organizations, leveraging existing resources and programming.
                   </h1>
                 </div>
                 <div className="col-md-6">

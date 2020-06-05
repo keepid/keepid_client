@@ -47,7 +47,7 @@ class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      role: Role.LoggedOut, 
+      role: Role.LoggedOut,
       username: '',
       name: '',
       organization: '',
@@ -224,10 +224,7 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/two-factor-authentication/:jwt"
-                render={(props) => {
-                  return <TwoFA jwt={props.match.params.jwt}/>;
-                  //return <Redirect to="/error" />;
-                }}
+                render={(props) => <TwoFA jwt={props.match.params.jwt} />}
               />
               // All Users
               <Route path="/our-team">
