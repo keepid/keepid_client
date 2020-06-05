@@ -332,6 +332,25 @@ public class AccountSecurityController {
       // On opening connection, username is retrieved through the Server-Event query param.
       // The client is stored in the clients map.
       String username = client.ctx.queryParam("username");
+      String plainPassword = client.ctx.pathParam("password");
+      Document user = db.getCollection("user").find(eq("username", username)).first();
+
+      // Ensure a user exists with the provided username.
+      if (user == null) {
+        client.sendEvent(UserMessage.USER_NOT_FOUND.toJSON());
+        return;
+      }
+
+      // Ensure the password is correct.
+      char[] plainPasswordArr = plainPassword.toCharArray();
+      String hash = user.get("password", String.class);
+      Argon2 argon2 = Argon2Factory.create();
+      if (!argon2.verify(hash, plainPasswordArr)) { // The provided old password is not correct.
+        argon2.wipeArray(plainPasswordArr);
+        client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Password incorrect."));
+        return;
+      }
+
       this.twoFactorClients.put(username, client);
 
       client.onClose(() -> this.twoFactorClients.remove(username));
