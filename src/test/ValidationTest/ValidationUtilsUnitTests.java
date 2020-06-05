@@ -112,6 +112,8 @@ public class ValidationUtilsUnitTests {
   public void USStateTest() {
     assertTrue(ValidationUtils.isValidUSState("IL"));
     assertTrue(ValidationUtils.isValidUSState("PA"));
+    assertTrue(ValidationUtils.isValidUSState("MO"));
+    assertTrue(ValidationUtils.isValidUSState("OR"));
     assertTrue(ValidationUtils.isValidUSState("WA"));
     assertFalse(ValidationUtils.isValidUSState("1-6789"));
     assertFalse(ValidationUtils.isValidUSState("XJ"));

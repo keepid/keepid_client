@@ -110,55 +110,55 @@ public class AccountSecurityController {
         // case statements for input validation
         switch (key) {
           case "firstName":
-            if (!ValidationUtils.isValidFirstName(key)) {
+            if (!ValidationUtils.isValidFirstName(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
               return;
             }
             break;
           case "lastName":
-            if (!ValidationUtils.isValidLastName(key)) {
+            if (!ValidationUtils.isValidLastName(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"));
               return;
             }
             break;
           case "birthDate":
-            if (!ValidationUtils.isValidBirthDate(key)) {
+            if (!ValidationUtils.isValidBirthDate(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
             break;
           case "phone":
-            if (!ValidationUtils.isValidPhoneNumber(key)) {
+            if (!ValidationUtils.isValidPhoneNumber(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"));
               return;
             }
             break;
           case "email":
-            if (!ValidationUtils.isValidEmail(key)) {
+            if (!ValidationUtils.isValidEmail(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"));
               return;
             }
             break;
           case "address":
-            if (!ValidationUtils.isValidAddress(key)) {
+            if (!ValidationUtils.isValidAddress(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"));
               return;
             }
             break;
           case "city":
-            if (!ValidationUtils.isValidCity(key)) {
+            if (!ValidationUtils.isValidCity(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"));
               return;
             }
             break;
           case "state":
-            if (!ValidationUtils.isValidUSState(key)) {
+            if (!ValidationUtils.isValidUSState(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"));
               return;
             }
             break;
           case "zipcode":
-            if (!ValidationUtils.isValidZipCode(key)) {
+            if (!ValidationUtils.isValidZipCode(value)) {
               ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
               return;
             }
