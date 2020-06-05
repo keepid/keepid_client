@@ -80,7 +80,7 @@ public class UserController {
                   "Keep Id",
                   user.getString("email"),
                   "2FA Link",
-                  "Hello,\n\n Your 2FA code is: " + randCode);
+                  "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
 
               MongoCollection<Document> tokenCollection = db.getCollection("tokens");
               tokenCollection.updateOne(
