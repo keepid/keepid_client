@@ -24,12 +24,12 @@ import static com.mongodb.client.model.Filters.eq;
 public class AccountSecurityController {
   // TODO(kofmangreogory): Move this to a centralized location, like a database, before Keep has
   // many server instances.
-  private Map<String, SseClient> clients;
+  private Map<String, SseClient> twoFactorClients;
   private MongoDatabase db;
 
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
-    this.clients = new ConcurrentHashMap<String, SseClient>();
+    this.twoFactorClients = new ConcurrentHashMap<String, SseClient>();
   }
 
   public Handler forgotPassword =
@@ -265,11 +265,11 @@ public class AccountSecurityController {
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
 
-        SseClient client = this.clients.get(username);
+        SseClient client = this.twoFactorClients.get(username);
 
         // Return USER_NOT_FOUND if the username does not exist.
         if (user == null) {
-          this.clients.remove(username);
+          this.twoFactorClients.remove(username);
           if (client != null) client.sendEvent(UserMessage.USER_NOT_FOUND.toJSON());
           ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
           return;
@@ -280,7 +280,7 @@ public class AccountSecurityController {
         Date now = new Date(nowMillis);
 
         if (claim.getExpiration().compareTo(now) < 0) {
-          this.clients.remove(username);
+          this.twoFactorClients.remove(username);
           if (client != null)
             client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
@@ -291,7 +291,7 @@ public class AccountSecurityController {
         MongoCollection<Document> tokenCollection = db.getCollection("tokens");
         Document tokens = tokenCollection.find(eq("username", username)).first();
         if (tokens == null) {
-          this.clients.remove(username);
+          this.twoFactorClients.remove(username);
           if (client != null)
             client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
@@ -300,13 +300,13 @@ public class AccountSecurityController {
 
         String storedJWT = tokens.getString("2fa-jwt");
         if (storedJWT == null || client == null) {
-          this.clients.remove(username);
+          this.twoFactorClients.remove(username);
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."));
           return;
         }
 
         if (!storedJWT.equals(jwt)) {
-          this.clients.remove(username);
+          this.twoFactorClients.remove(username);
           client.sendEvent(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
           return;
@@ -332,9 +332,9 @@ public class AccountSecurityController {
       // On opening connection, username is retrieved through the Server-Event query param.
       // The client is stored in the clients map.
       String username = client.ctx.queryParam("username");
-      this.clients.put(username, client);
+      this.twoFactorClients.put(username, client);
 
-      client.onClose(() -> this.clients.remove(username));
+      client.onClose(() -> this.twoFactorClients.remove(username));
     };
   }
 
