@@ -53,7 +53,7 @@ public class AccountSecurityController {
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 7200000; // 2 hours
         String jwt =
-            JWTUtils.createJWT(
+            SecurityUtils.createJWT(
                 id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
         MongoCollection<Document> tokenCollection = db.getCollection("tokens");
@@ -188,7 +188,7 @@ public class AccountSecurityController {
         String jwt = ctx.pathParam("jwt");
         Claims claim = null;
         try {
-          claim = JWTUtils.decodeJWT(jwt);
+          claim = SecurityUtils.decodeJWT(jwt);
         } catch (Exception e) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link."));
           return;
@@ -255,7 +255,7 @@ public class AccountSecurityController {
         String jwt = ctx.pathParam("jwt");
         Claims claim = null;
         try {
-          claim = JWTUtils.decodeJWT(jwt);
+          claim = SecurityUtils.decodeJWT(jwt);
         } catch (Exception e) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid 2FA token."));
           return;

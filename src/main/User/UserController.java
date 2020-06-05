@@ -10,14 +10,14 @@ import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.security.SecureRandom;
+import java.util.Date;
+import java.util.Random;
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
@@ -71,23 +71,25 @@ public class UserController {
                 || userLevel.equals("Admin")
                 || userLevel.equals("Worker")) {
 
-              int expirationTime = 7200000;
-              String id =
-                  RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-              String jwt =
-                  JWTUtils.createJWT(
-                      id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+              String randCode = String.format("%06d", new Random().nextInt(999999));
+              long nowMillis = System.currentTimeMillis();
+              long expMillis = 300000;
+              Date expDate = new Date(nowMillis + expMillis);
 
               EmailUtil.sendEmail(
                   "Keep Id",
                   user.getString("email"),
                   "2FA Link",
-                  "http://keep.id/two-factor-authentication/" + jwt);
+                  "Hello,\n\n Your 2FA code is: " + randCode);
 
               MongoCollection<Document> tokenCollection = db.getCollection("tokens");
               tokenCollection.updateOne(
                   eq("username", username),
-                  new Document("$set", new Document("username", username).append("2fa-jwt", jwt)),
+                  new Document(
+                      "$set",
+                      new Document("username", username)
+                          .append("2fa-code", randCode)
+                          .append("2fa-exp", expDate)),
                   new UpdateOptions().upsert(true));
 
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
