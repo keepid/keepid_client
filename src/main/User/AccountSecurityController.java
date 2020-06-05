@@ -159,7 +159,7 @@ public class AccountSecurityController {
             break;
           case "zipcode":
             if (!ValidationUtils.isValidZipCode(value)) {
-              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"));
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Zip Code"));
               return;
             }
             break;
