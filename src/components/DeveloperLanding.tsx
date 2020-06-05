@@ -37,7 +37,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class DeveloperLanding extends React.Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -155,7 +154,7 @@ class DeveloperLanding extends React.Component<Props, State> {
                 </label>
                 { pdfFiles && pdfFiles.length > 0 ? (
                   <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-Upload
+                    Upload
                     <div className="ld ld-ring ld-spin" />
                   </button>
                 ) : null}

@@ -40,7 +40,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class UploadDocs extends React.Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -106,9 +105,9 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   fileNamesUnique(files) {
-    let fileNames : string[] = [];
+    const fileNames : string[] = [];
     for (let i = 0; i < files.length; i++) {
-      let fileName = files[i].name;
+      const fileName = files[i].name;
       fileNames.push(fileName);
     }
 
@@ -143,8 +142,8 @@ class UploadDocs extends React.Component<Props, State> {
     } = this.state;
 
     const {
-      location
-    } = this.props
+      location,
+    } = this.props;
 
     return (
       <div className="container">
@@ -153,7 +152,10 @@ class UploadDocs extends React.Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">Upload Documents {location.state.clientUsername ? `for "${location.state.clientUsername}"` : null} </h1>
+          <h1 className="display-4">
+            Upload Documents
+            {location.state.clientUsername ? `for "${location.state.clientUsername}"` : null}
+          </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
             The name and a preview of the PDF will appear below the buttons.

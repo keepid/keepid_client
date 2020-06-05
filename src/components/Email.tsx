@@ -16,7 +16,7 @@ class Email extends Component<{}, {}, {}> {
           </div>
           <div className="col-md-6 mt-4">
             <h3 className="textPrintHeader">
-                        Send an Email
+              Send an Email
             </h3>
           </div>
         </div>

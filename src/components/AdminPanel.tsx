@@ -219,7 +219,7 @@ class AdminPanel extends Component<Props, State> {
           <div className="card-body">
             <h5 className="card-title">
               {currentWorker.firstName}
-` `
+              ` `
               {currentWorker.lastName}
               : Worker Permissions
             </h5>

@@ -4,12 +4,12 @@ import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import { withAlert } from 'react-alert';
+import { Redirect } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
 import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
 import getServerURL from '../serverOverride';
 import TablePageSelector from './TablePageSelector';
-import { Redirect } from 'react-router-dom';
-import Modal from 'react-bootstrap/Modal';
 
 interface Props {
   username: string,
@@ -143,7 +143,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickClose(event: any) {
-    this.setState({ 
+    this.setState({
       clientPassword: '',
       showClientAuthModal: false,
     });
@@ -169,8 +169,8 @@ class WorkerLanding extends Component<Props, State> {
         const { loginStatus } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
           // Allow worker privileges
-          this.setState({ 
-            clientCredentialsCorrect: true, 
+          this.setState({
+            clientCredentialsCorrect: true,
           });
         } else if (loginStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
@@ -183,7 +183,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickUploadDocuments(event: any, client: any) {
-    this.setState({ 
+    this.setState({
       clientUsername: client.username,
       redirectLink: '/upload-document',
       showClientAuthModal: true,
@@ -191,7 +191,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickViewDocuments(event: any, client: any) {
-    this.setState({ 
+    this.setState({
       clientUsername: client.username,
       redirectLink: '/my-documents',
       showClientAuthModal: true,
@@ -199,15 +199,15 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickSendEmail(event: any, client: any) {
-    this.setState({ 
+    this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
-      showClientAuthModal: true, 
+      showClientAuthModal: true,
     });
   }
 
   handleClickSendApplication(event: any, client: any) {
-    this.setState({ 
+    this.setState({
       clientUsername: client.username,
       redirectLink: '/applications',
       showClientAuthModal: true,
@@ -215,7 +215,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleChangeClientPassword(event: any) {
-    this.setState({ 
+    this.setState({
       clientPassword: event.target.value,
     });
   }
@@ -238,7 +238,7 @@ class WorkerLanding extends Component<Props, State> {
               <h6 className="card-subtitle mb-2 text-muted">{client.username}</h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
               <h6 className="card-subtitle mb-2 text-muted">
-#
+                #
                 {client.phone}
               </h6>
               <h6 className="card-subtitle mb-2 text-muted">{client.address}</h6>
@@ -265,28 +265,28 @@ class WorkerLanding extends Component<Props, State> {
                 className="btn btn-success mb-2 btn-sm"
                 onClick={(event) => this.handleClickUploadDocuments(event, client)}
               >
-                  Upload Document
+                Upload Document
               </button>
               <button
                 type="button"
                 className="btn btn-danger mb-2 btn-sm"
                 onClick={(event) => this.handleClickViewDocuments(event, client)}
               >
-                  View Documents
+                View Documents
               </button>
               <button
                 type="button"
                 className="btn btn-info mb-2 btn-sm"
                 onClick={(event) => this.handleClickSendEmail(event, client)}
               >
-                  Send Email
+                Send Email
               </button>
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
                 onClick={(event) => this.handleClickSendApplication(event, client)}
               >
-                  Send Application
+                Send Application
               </button>
             </div>
           </div>
@@ -308,35 +308,35 @@ class WorkerLanding extends Component<Props, State> {
 
         <Modal.Body>
           <div className="row mb-3 mt-3">
-              <div className="col card-text mt-2">
-                Client Username
-              </div>
-              <div className="col-6 card-text">
-                <input
-                  type="text"
-                  className="form-control form-purple"
-                  id="authenticateForm"
-                  readOnly
-                  placeholder="Enter Username Here"
-                  value={this.state.clientUsername}
-                />
-              </div>
+            <div className="col card-text mt-2">
+              Client Username
             </div>
-            <div className="row mb-3 mt-3">
-              <div className="col card-text mt-2">
-                Client Password
-              </div>
-              <div className="col-6 card-text">
-                <input
-                  type="password"
-                  className="form-control form-purple"
-                  id="passwordVerification"
-                  placeholder="Enter Password Here"
-                  onChange={this.handleChangeClientPassword}
-                  value={this.state.clientPassword}
-                />
-              </div>
+            <div className="col-6 card-text">
+              <input
+                type="text"
+                className="form-control form-purple"
+                id="authenticateForm"
+                readOnly
+                placeholder="Enter Username Here"
+                value={this.state.clientUsername}
+              />
             </div>
+          </div>
+          <div className="row mb-3 mt-3">
+            <div className="col card-text mt-2">
+              Client Password
+            </div>
+            <div className="col-6 card-text">
+              <input
+                type="password"
+                className="form-control form-purple"
+                id="passwordVerification"
+                placeholder="Enter Password Here"
+                onChange={this.handleChangeClientPassword}
+                value={this.state.clientPassword}
+              />
+            </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.handleClickClose}>Close</button>
@@ -361,11 +361,13 @@ class WorkerLanding extends Component<Props, State> {
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
 
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
-      return <Redirect to={{
+      return (
+        <Redirect to={{
           pathname: '/upload-document',
-          state: { clientUsername: clientUsername }
-        }} 
-      />
+          state: { clientUsername },
+        }}
+        />
+      );
     }
 
     const tablePageSelector = TablePageSelector({

@@ -52,8 +52,8 @@ const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
 class App extends React.Component<{}, State, {}> {
-  
   private idleTimerWarn;
+
   private logoutTimeout;
 
   constructor(props: {}) {
@@ -80,7 +80,7 @@ class App extends React.Component<{}, State, {}> {
   resetAutoLogout() {
     this.setState({
       autoLogout: false,
-    })
+    });
   }
 
   warnUserIdle() {
@@ -132,7 +132,7 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
-    this.setState({ 
+    this.setState({
       username: '',
       name: '',
       organization: '',
@@ -150,7 +150,7 @@ class App extends React.Component<{}, State, {}> {
     }).then((response) => {
       this.setState({ role: Role.LoggedOut });
     });
-    return <Redirect to="login"/>
+    return <Redirect to="login" />;
   }
 
   render() {
@@ -224,7 +224,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout}/>
+                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />
                 )}
               />
               <Route
@@ -282,7 +282,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/upload-document"
                 render={(props) => {
-                  console.log("role = " + role);
+                  console.log(`role = ${role}`);
                   if (role === Role.Client || role === Role.Admin) {
                     return <UploadDocs {...props} userRole={role} />;
                   }

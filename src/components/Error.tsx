@@ -1,8 +1,8 @@
 import React from 'react';
 import Alert from 'react-bootstrap/Alert';
 import { Helmet } from 'react-helmet';
-import NotFoundSVG from '../static/images/page-not-found.svg';
 import { Redirect } from 'react-router-dom';
+import NotFoundSVG from '../static/images/page-not-found.svg';
 
 interface Props {
 }
@@ -14,14 +14,13 @@ interface State {
 const timeUntilRedirect: number = 3 * 1000;
 
 class Error extends React.Component<Props, State> {
-
   private redirectTimeout;
 
   constructor(props: Props) {
     super(props);
     this.state = {
       redirect: false,
-    }
+    };
     this.handleRedirect = this.handleRedirect.bind(this);
     this.setTimeout = this.setTimeout.bind(this);
     this.setTimeout();
@@ -29,7 +28,7 @@ class Error extends React.Component<Props, State> {
 
   // manually redirect - clear timer
   componentWillUnmount() {
-    const {redirect} = this.state;
+    const { redirect } = this.state;
     if (this.redirectTimeout) {
       clearTimeout(this.redirectTimeout);
     }
@@ -46,16 +45,16 @@ class Error extends React.Component<Props, State> {
       clearTimeout(this.redirectTimeout);
     }
 
-    this.setState({redirect: true});
+    this.setState({ redirect: true });
   }
 
   render() {
     const {
-      redirect
+      redirect,
     } = this.state;
 
     if (redirect) {
-      return <Redirect to="/login" />
+      return <Redirect to="/login" />;
     }
 
     return (

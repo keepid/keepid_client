@@ -1,10 +1,10 @@
 import React, { Component, createRef } from 'react';
 import { Link } from 'react-router-dom';
+import WebViewer from '@pdftron/webviewer';
+import { PDFDocument } from 'pdf-lib';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 
-import WebViewer from '@pdftron/webviewer';
-import { PDFDocument } from 'pdf-lib';
 
 interface Props {
 }
@@ -51,7 +51,7 @@ class SendApplication extends Component<Props, State> {
 
     //   });
     // });
-    
+
   }
 
   componentDidMount() {
@@ -60,25 +60,25 @@ class SendApplication extends Component<Props, State> {
         path: '/webviewer/lib',
         initialDoc: '/files/pdftron_about.pdf',
       },
-        this.viewer.current,
-      ).then((instance) => {
-          const { docViewer } = instance;
-          // you can now call WebViewer APIs here...
-      });
+      this.viewer.current,
+    ).then((instance) => {
+      const { docViewer } = instance;
+      // you can now call WebViewer APIs here...
+    });
   }
 
   render() {
     const {
       pdfFile,
     } = this.state;
-    
+
     return (
       <div>
-        <div className="webviewer" ref={this.viewer}></div>
+        <div className="webviewer" ref={this.viewer} />
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
         <form>
           <select>
-            {["1", "2"].map((form) => (<option>{form}</option>))}
+            {['1', '2'].map((form) => (<option>{form}</option>))}
           </select>
         </form>
         <Link to="/my-documents">

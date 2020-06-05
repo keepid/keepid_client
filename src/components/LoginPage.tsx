@@ -121,13 +121,13 @@ class LoginPage extends Component<Props, State> {
               </div>
               <div className="row pl-3 pb-3">
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
-                    This page is protected by reCAPTCHA, and subject to the Google
+                  This page is protected by reCAPTCHA, and subject to the Google
                   {' '}
                   <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
-                    and
+                  and
                   {' '}
                   <a href="https://www.google.com/policies/terms/">Terms of service</a>
-.
+                  .
                 </span>
               </div>
             </div>
@@ -136,7 +136,7 @@ class LoginPage extends Component<Props, State> {
               <form className="form-signin pt-5">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
-                    Username
+                  Username
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
@@ -148,7 +148,7 @@ class LoginPage extends Component<Props, State> {
                   />
                 </label>
                 <label htmlFor="password" className="w-100 pt-2 font-weight-bold">
-                    Password
+                  Password
                   <input
                     type="password"
                     className="form-control form-purple mt-1"
@@ -166,13 +166,13 @@ class LoginPage extends Component<Props, State> {
                       <label>
                         <input type="checkbox" className="mr-1" value="remember-me" />
                         {' '}
-Remember me
+                        Remember me
                       </label>
                     </div>
                   </div>
                   <div className="col-6">
                     <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                        Sign In
+                      Sign In
                       <div className="ld ld-ring ld-spin" />
                     </button>
                   </div>
@@ -184,7 +184,7 @@ Remember me
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                      Don't have an account?
+                    Don't have an account?
                   </span>
                 </div>
                 <div className="row pl-3">
@@ -196,7 +196,7 @@ Remember me
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                      Are you a nonprofit organization?
+                    Are you a nonprofit organization?
                   </span>
                 </div>
                 <div className="row pl-3">
