@@ -206,6 +206,7 @@ public class UserController {
           res.put("state", user.get("state"));
           res.put("email", user.get("email"));
           res.put("phone", user.get("phone"));
+          res.put("username", username);
           ctx.json(res.toString());
         } else {
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
