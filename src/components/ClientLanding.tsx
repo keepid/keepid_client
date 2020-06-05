@@ -39,7 +39,7 @@ class ClientLanding extends Component<{}, State, {}> {
           <title>Home</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="row m-auto">
+        <div className="row m-auto d-flex align-items-start">
           <div className="col d-flex" id="Upload container">
             <Link to="/upload-document">
               <div className="rectangle mt-5 pt-4">
@@ -48,7 +48,6 @@ class ClientLanding extends Component<{}, State, {}> {
                   Upload a Document
                 </p>
               </div>
-
             </Link>
           </div>
           <div className="col d-flex" id="Print container">

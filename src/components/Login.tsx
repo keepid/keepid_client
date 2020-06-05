@@ -118,6 +118,7 @@ class Login extends Component<{}, {}, {}> {
                 </div>
               </div>
             </div>
+            <button type="button" className="btn btn-primary ml-5">Primary</button>
           </div>
         </div>
       </div>
