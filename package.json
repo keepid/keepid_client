@@ -125,7 +125,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "CI=true npm test"
+      "pre-push": "if [['$OSTYPE' == 'linux-gnu'* || '$OSTYPE' == 'darwin']]; then CI=true npm test; else set CI=true&&npm test"
     }
   },
   "stylelint": {
