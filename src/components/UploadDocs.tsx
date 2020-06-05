@@ -4,10 +4,13 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
+import Role from '../static/Role';
 
 
 interface Props {
-  alert: any
+  alert: any,
+  userRole: Role,
+  location?: any,
 }
 
 interface State {
@@ -139,6 +142,10 @@ class UploadDocs extends React.Component<Props, State> {
       buttonState,
     } = this.state;
 
+    const {
+      location
+    } = this.props
+
     return (
       <div className="container">
         <Helmet>
@@ -146,7 +153,7 @@ class UploadDocs extends React.Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">Upload Document</h1>
+          <h1 className="display-4">Upload Documents {location.state.clientUsername ? `for "${location.state.clientUsername}"` : null} </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
             The name and a preview of the PDF will appear below the buttons.

@@ -8,6 +8,8 @@ import Role from '../static/Role';
 import SearchSVG from '../static/images/search.svg';
 import getServerURL from '../serverOverride';
 import TablePageSelector from './TablePageSelector';
+import { Redirect } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
 
 interface Props {
   username: string,
@@ -27,6 +29,8 @@ interface State {
   clientPassword: string,
   itemsPerPageSelected: any,
   currentPage: number,
+  clientCredentialsCorrect: boolean,
+  showClientAuthModal: boolean,
 }
 
 const options = [
@@ -64,6 +68,8 @@ class WorkerLanding extends Component<Props, State> {
       }],
       itemsPerPageSelected: listOptions[0],
       currentPage: 0,
+      clientCredentialsCorrect: false,
+      showClientAuthModal: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -137,7 +143,10 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickClose(event: any) {
-    this.setState({ clientPassword: '' });
+    this.setState({ 
+      clientPassword: '',
+      showClientAuthModal: false,
+    });
   }
 
   handleClickAuthenticateClient(event: any) {
@@ -160,6 +169,9 @@ class WorkerLanding extends Component<Props, State> {
         const { loginStatus } = responseJSON;
         if (loginStatus === 'AUTH_SUCCESS') {
           // Allow worker privileges
+          this.setState({ 
+            clientCredentialsCorrect: true, 
+          });
         } else if (loginStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
         } else if (loginStatus === 'USER_NOT_FOUND') {
@@ -171,32 +183,47 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleClickUploadDocuments(event: any, client: any) {
-    this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/upload-document' });
+    this.setState({ 
+      clientUsername: client.username,
+      redirectLink: '/upload-document',
+      showClientAuthModal: true,
+    });
   }
 
   handleClickViewDocuments(event: any, client: any) {
-    this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/my-documents' });
+    this.setState({ 
+      clientUsername: client.username,
+      redirectLink: '/my-documents',
+      showClientAuthModal: true,
+    });
   }
 
   handleClickSendEmail(event: any, client: any) {
-    this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/email' });
+    this.setState({ 
+      clientUsername: client.username,
+      redirectLink: '/email',
+      showClientAuthModal: true, 
+    });
   }
 
   handleClickSendApplication(event: any, client: any) {
-    this.setState({ clientUsername: client.username });
-    this.setState({ redirectLink: '/applications' });
+    this.setState({ 
+      clientUsername: client.username,
+      redirectLink: '/applications',
+      showClientAuthModal: true,
+    });
   }
 
   handleChangeClientPassword(event: any) {
-    this.setState({ clientPassword: event.target.value });
+    this.setState({ 
+      clientPassword: event.target.value,
+    });
   }
 
   renderClients() {
+    const { showClientAuthModal } = this.state;
     const clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
-      <div className="card mb-3">
+      <div key={client} className="card mb-3">
         <div className="card-body">
           <div className="d-flex flex-row">
             <div className="d-flex flex-column mr-4">
@@ -236,8 +263,6 @@ class WorkerLanding extends Component<Props, State> {
               <button
                 type="button"
                 className="btn btn-success mb-2 btn-sm"
-                data-toggle="modal"
-                data-target="#authenticateModal"
                 onClick={(event) => this.handleClickUploadDocuments(event, client)}
               >
                   Upload Document
@@ -245,8 +270,6 @@ class WorkerLanding extends Component<Props, State> {
               <button
                 type="button"
                 className="btn btn-danger mb-2 btn-sm"
-                data-toggle="modal"
-                data-target="#authenticateModal"
                 onClick={(event) => this.handleClickViewDocuments(event, client)}
               >
                   View Documents
@@ -254,8 +277,6 @@ class WorkerLanding extends Component<Props, State> {
               <button
                 type="button"
                 className="btn btn-info mb-2 btn-sm"
-                data-toggle="modal"
-                data-target="#authenticateModal"
                 onClick={(event) => this.handleClickSendEmail(event, client)}
               >
                   Send Email
@@ -263,8 +284,6 @@ class WorkerLanding extends Component<Props, State> {
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
-                data-toggle="modal"
-                data-target="#authenticateModal"
                 onClick={(event) => this.handleClickSendApplication(event, client)}
               >
                   Send Application
@@ -272,7 +291,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
-        {this.modalRender()}
+        { showClientAuthModal ? this.modalRender() : null }
       </div>
     ));
 
@@ -280,61 +299,50 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   modalRender() {
+    const { showClientAuthModal } = this.state;
     return (
-      <div>
-        <React.Fragment key="authenticateAction">
-          <div className="modal fade" id="authenticateModal" role="dialog" aria-labelledby="authenticateModal" aria-hidden="true">
-            <div className="modal-dialog modal-dialog-centered" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">
-                    Authenticate Client Account Action
-                  </h5>
-                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="row mb-3 mt-3">
-                    <div className="col card-text mt-2">
-                      Client Username
-                    </div>
-                    <div className="col-6 card-text">
-                      <input
-                        type="text"
-                        className="form-control form-purple"
-                        id="authenticateForm"
-                        readOnly
-                        placeholder="Enter Username Here"
-                        value={this.state.clientUsername}
-                      />
-                    </div>
-                  </div>
-                  <div className="row mb-3 mt-3">
-                    <div className="col card-text mt-2">
-                      Client Password
-                    </div>
-                    <div className="col-6 card-text">
-                      <input
-                        type="password"
-                        className="form-control form-purple"
-                        id="passwordVerification"
-                        placeholder="Enter Password Here"
-                        onChange={this.handleChangeClientPassword}
-                        value={this.state.clientPassword}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.handleClickClose}>Close</button>
-                  <button type="button" className="btn btn-primary" onClick={this.handleClickAuthenticateClient}>Submit</button>
-                </div>
+      <Modal key="authenticateAction" show={showClientAuthModal}>
+        <Modal.Header>
+          <Modal.Title>Authenticate Client Account Action</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <div className="row mb-3 mt-3">
+              <div className="col card-text mt-2">
+                Client Username
+              </div>
+              <div className="col-6 card-text">
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  id="authenticateForm"
+                  readOnly
+                  placeholder="Enter Username Here"
+                  value={this.state.clientUsername}
+                />
               </div>
             </div>
-          </div>
-        </React.Fragment>
-      </div>
+            <div className="row mb-3 mt-3">
+              <div className="col card-text mt-2">
+                Client Password
+              </div>
+              <div className="col-6 card-text">
+                <input
+                  type="password"
+                  className="form-control form-purple"
+                  id="passwordVerification"
+                  placeholder="Enter Password Here"
+                  onChange={this.handleChangeClientPassword}
+                  value={this.state.clientPassword}
+                />
+              </div>
+            </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.handleClickClose}>Close</button>
+          <button type="button" className="btn btn-primary" onClick={this.handleClickAuthenticateClient}>Submit</button>
+        </Modal.Footer>
+      </Modal>
     );
   }
 
@@ -346,8 +354,19 @@ class WorkerLanding extends Component<Props, State> {
       itemsPerPageSelected,
       currentPage,
       numClients,
+      redirectLink,
+      clientCredentialsCorrect,
+      clientUsername,
     } = this.state;
     const itemsPerPage = parseInt(itemsPerPageSelected.value);
+
+    if (clientCredentialsCorrect && redirectLink === '/upload-document') {
+      return <Redirect to={{
+          pathname: '/upload-document',
+          state: { clientUsername: clientUsername }
+        }} 
+      />
+    }
 
     const tablePageSelector = TablePageSelector({
       currentPage,
