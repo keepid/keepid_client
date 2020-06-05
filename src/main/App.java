@@ -2,10 +2,7 @@ import Config.MongoConfig;
 import Config.SessionConfig;
 import Logger.LogFactory;
 import Organization.OrganizationController;
-import PDF.PdfDelete;
-import PDF.PdfDownload;
-import PDF.PdfSearch;
-import PDF.PdfUpload;
+import PDF.*;
 import User.AccountSecurityController;
 import User.UserController;
 import com.mongodb.client.MongoClient;
@@ -62,6 +59,7 @@ public class App {
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+    PdfApplication pdfApplication = new PdfApplication(db);
     PdfUpload pdfUpload = new PdfUpload(db);
     PdfDownload pdfDownload = new PdfDownload(db);
     PdfSearch pdfSearch = new PdfSearch(db);
@@ -79,6 +77,7 @@ public class App {
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.post("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
+    app.post("/fill-application", pdfApplication.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
