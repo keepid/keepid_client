@@ -245,6 +245,7 @@ public class AccountSecurityController {
   public Handler twoFactorAuth =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
         String username = req.getString("username");
         String token = req.getString("token");
 
@@ -282,7 +283,7 @@ public class AccountSecurityController {
         }
 
         if (!stored2faToken.equals(token)) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."));
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid 2fa token."));
           return;
         }
 
@@ -302,7 +303,12 @@ public class AccountSecurityController {
         ctx.sessionAttribute("orgName", user.get("organization"));
         ctx.sessionAttribute("username", username);
 
-        ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
+        res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
+        res.put("userRole", user.get("privilegeLevel"));
+        res.put("organization", user.get("organization"));
+        res.put("firstName", user.get("firstName"));
+        res.put("lastName", user.get("lastName"));
+        ctx.json(res.toString());
       };
 
   public static UserMessage changePassword(
