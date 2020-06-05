@@ -304,11 +304,6 @@ public class AccountSecurityController {
               new Document().append("$unset", new Document("2fa-jwt", "")));
         }
 
-        // Set session tokens.
-        ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
-        ctx.sessionAttribute("orgName", user.get("organization"));
-        ctx.sessionAttribute("username", username);
-
         ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
 
