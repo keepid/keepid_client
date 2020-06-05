@@ -14,7 +14,6 @@ interface State {
   username: string,
   password: string,
   buttonState: string,
-  verificationCode: string | null
 }
 
 interface Props {
@@ -24,6 +23,13 @@ interface Props {
   role: Role,
   alert: any
 }
+
+function handleCode() {
+    const enteredCode = prompt('Enter Verification Code')
+
+    return enteredCode;
+}
+
 class LoginPage extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -31,17 +37,10 @@ class LoginPage extends Component<Props, State> {
       username: '',
       password: '',
       buttonState: '',
-      verificationCode: '',
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
-  }
-
-  handleCode = (event: any) => {
-    const enteredCode = prompt('Enter Verification Code')
-
-    this.setState({ verificationCode : enteredCode })
   }
 
   handleChangePassword(event: any) {
@@ -76,13 +75,12 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const {
-            loginStatus,
-            userRole,
-            organization,
-            firstName,
-            lastName,
-          } = responseJSON;
+          const loginStatus = responseJSON.loginStatus;
+          const userRole = responseJSON.userRole;
+          const organization = responseJSON.organization;
+          const firstName = responseJSON.firstName;
+          const lastName = responseJSON.lastName;
+
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
@@ -93,6 +91,39 @@ class LoginPage extends Component<Props, State> {
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+          } else if (loginStatus === 'TOKEN_ISSUED') {
+            const token = handleCode();
+            this.setState({ buttonState: '' });
+
+            debugger;
+            fetch(`${getServerURL()}/two-factor`, {
+              method: 'POST',
+              credentials: 'include',
+              body: JSON.stringify({
+                username,
+                token,
+              }),
+            }).then((response) => response.json())
+              .then((responseJSON) => {
+                responseJSON = JSON.parse(responseJSON);
+                const returnMessage = responseJSON.message;
+                const returnStatus = responseJSON.status;
+
+                if (returnStatus === 'AUTH_SUCCESS') {
+                  const role = () => {
+                    switch (userRole) {
+                      case 'Admin': return Role.Admin;
+                      case 'Worker': return Role.Worker;
+                      case 'Client': return Role.Client;
+                      default: return Role.LoggedOut;
+                    }
+                  };
+                  logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+                }
+              }).catch((error) => {
+                this.props.alert.show('Network Failure: Check Server Connection');
+                this.setState({ buttonState: '' });
+              });
           } else if (loginStatus === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
@@ -179,7 +210,7 @@ Remember me
                     </div>
                   </div>
                   <div className="col-6">
-                    <button type="submit" onClick={this.handleCode} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                         Sign In
                       <div className="ld ld-ring ld-spin" />
                     </button>
