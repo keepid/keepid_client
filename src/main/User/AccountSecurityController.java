@@ -244,8 +244,9 @@ public class AccountSecurityController {
 
   public Handler twoFactorAuth =
       ctx -> {
-        String username = ctx.queryParam("username");
-        String token = ctx.queryParam("token");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        String token = req.getString("token");
 
         MongoCollection<Document> userCollection = db.getCollection("user");
         Document user = userCollection.find(eq("username", username)).first();
