@@ -264,7 +264,7 @@ public class AccountSecurityController {
           return;
         }
 
-        String stored2faToken = tokens.getString("2fa-jwt");
+        String stored2faToken = tokens.getString("2fa-code");
         Date stored2faExpiration = tokens.get("2fa-exp", Date.class);
         if (stored2faToken == null || stored2faExpiration == null) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
@@ -293,7 +293,7 @@ public class AccountSecurityController {
           // Remove password-reset-jwt field from document.
           tokenCollection.updateOne(
               eq("username", username),
-              new Document().append("$unset", new Document("2fa-jwt", "").append("2fa-exp", "")));
+              new Document().append("$unset", new Document("2fa-code", "").append("2fa-exp", "")));
         }
 
         // Set Session token.
