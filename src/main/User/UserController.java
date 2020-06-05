@@ -204,6 +204,7 @@ public class UserController {
           res.put("address", user.get("address"));
           res.put("city", user.get("city"));
           res.put("state", user.get("state"));
+          res.put("zipcode", user.get("zipcode"));
           res.put("email", user.get("email"));
           res.put("phone", user.get("phone"));
           res.put("username", username);
