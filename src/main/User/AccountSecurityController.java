@@ -245,7 +245,6 @@ public class AccountSecurityController {
   public Handler twoFactorAuth =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
         String username = req.getString("username");
         String token = req.getString("token");
 
@@ -303,12 +302,7 @@ public class AccountSecurityController {
         ctx.sessionAttribute("orgName", user.get("organization"));
         ctx.sessionAttribute("username", username);
 
-        res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
-        res.put("userRole", user.get("privilegeLevel"));
-        res.put("organization", user.get("organization"));
-        res.put("firstName", user.get("firstName"));
-        res.put("lastName", user.get("lastName"));
-        ctx.json(res.toString());
+        ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
 
   public static UserMessage changePassword(

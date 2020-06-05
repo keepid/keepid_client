@@ -93,6 +93,10 @@ public class UserController {
                   new UpdateOptions().upsert(true));
 
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
+              res.put("userRole", user.get("privilegeLevel"));
+              res.put("organization", user.get("organization"));
+              res.put("firstName", user.get("firstName"));
+              res.put("lastName", user.get("lastName"));
               ctx.json(res.toString());
 
               return;
