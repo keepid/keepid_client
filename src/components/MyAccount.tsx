@@ -176,7 +176,7 @@ class RenderInput extends Component<InputProps, InputState> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(JSON.parse(responseJSON).status);
+        responseJSON = JSON.parse(responseJSON);
         const status = responseJSON.status;
         const message = responseJSON.message;
         if (status === 'SUCCESS') { // succesfully updated key and value
