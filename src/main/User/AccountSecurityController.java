@@ -18,7 +18,7 @@ import java.util.Date;
 import static com.mongodb.client.model.Filters.eq;
 
 public class AccountSecurityController {
-  MongoDatabase db;
+  private MongoDatabase db;
 
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
@@ -45,7 +45,7 @@ public class AccountSecurityController {
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 7200000; // 2 hours
         String jwt =
-            JWTUtils.createJWT(
+            SecurityUtils.createJWT(
                 id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
         MongoCollection<Document> tokenCollection = db.getCollection("tokens");
@@ -178,9 +178,9 @@ public class AccountSecurityController {
 
         // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = ctx.pathParam("jwt");
-        Claims claim = null;
+        Claims claim;
         try {
-          claim = JWTUtils.decodeJWT(jwt);
+          claim = SecurityUtils.decodeJWT(jwt);
         } catch (Exception e) {
           ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link."));
           return;
@@ -240,6 +240,69 @@ public class AccountSecurityController {
         resetPassword(claim.getAudience(), newPassword, db);
 
         ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
+  public Handler twoFactorAuth =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        String token = req.getString("token");
+
+        MongoCollection<Document> userCollection = db.getCollection("user");
+        Document user = userCollection.find(eq("username", username)).first();
+
+        // Return USER_NOT_FOUND if the username does not exist.
+        if (user == null) {
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON());
+          return;
+        }
+
+        // Check if 2fa token exists.
+        MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+        Document tokens = tokenCollection.find(eq("username", username)).first();
+        if (tokens == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
+          return;
+        }
+
+        String stored2faToken = tokens.getString("2fa-code");
+        Date stored2faExpiration = tokens.get("2fa-exp", Date.class);
+        if (stored2faToken == null || stored2faExpiration == null) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
+          return;
+        }
+
+        // Check for expired reset link.
+        long nowMillis = System.currentTimeMillis();
+        Date now = new Date(nowMillis);
+
+        if (stored2faExpiration.compareTo(now) < 0) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2FA link expired."));
+          return;
+        }
+
+        if (!stored2faToken.equals(token)) {
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid 2fa token."));
+          return;
+        }
+
+        // Remove the token entry if its last remaining key is the password-reset-token.
+        // Remove only the password reset token if there are other fields.
+        if (tokens.size() == 3) {
+          tokenCollection.deleteOne(eq("username", username));
+        } else {
+          // Remove password-reset-jwt field from document.
+          tokenCollection.updateOne(
+              eq("username", username),
+              new Document().append("$unset", new Document("2fa-code", "").append("2fa-exp", "")));
+        }
+
+        // Set Session token.
+        ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
+        ctx.sessionAttribute("orgName", user.get("organization"));
+        ctx.sessionAttribute("username", username);
+
+        ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
 
   public static UserMessage changePassword(

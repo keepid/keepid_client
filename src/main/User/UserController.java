@@ -6,6 +6,7 @@ import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
@@ -14,6 +15,9 @@ import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.util.Date;
+import java.util.Random;
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
@@ -31,6 +35,8 @@ public class UserController {
 
   public Handler loginUser =
       ctx -> {
+        ctx.req.getSession().invalidate();
+
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
         String username = req.getString("username");
@@ -59,11 +65,47 @@ public class UserController {
           }
           String hash = user.get("password", String.class);
           if (argon2.verify(hash, passwordArr)) { // Hash matches password
+
+            String userLevel = user.getString("privilegeLevel");
+            if (userLevel.equals("Director")
+                || userLevel.equals("Admin")
+                || userLevel.equals("Worker")) {
+
+              String randCode = String.format("%06d", new Random().nextInt(999999));
+              long nowMillis = System.currentTimeMillis();
+              long expMillis = 300000;
+              Date expDate = new Date(nowMillis + expMillis);
+
+              EmailUtil.sendEmail(
+                  "Keep Id",
+                  user.getString("email"),
+                  "2FA Link",
+                  "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
+
+              MongoCollection<Document> tokenCollection = db.getCollection("tokens");
+              tokenCollection.updateOne(
+                  eq("username", username),
+                  new Document(
+                      "$set",
+                      new Document("username", username)
+                          .append("2fa-code", randCode)
+                          .append("2fa-exp", expDate)),
+                  new UpdateOptions().upsert(true));
+
+              res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
+              res.put("userRole", user.get("privilegeLevel"));
+              res.put("organization", user.get("organization"));
+              res.put("firstName", user.get("firstName"));
+              res.put("lastName", user.get("lastName"));
+              ctx.json(res.toString());
+
+              return;
+            }
+
             ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
             ctx.sessionAttribute("orgName", user.get("organization"));
             ctx.sessionAttribute("username", username);
-            //  logger.error("PUT SESSION LEVEL: " + ctx.sessionAttribute("privilegeLevel"));
-            //  logger.error("PUT SESSION NAME: " + ctx.sessionAttribute("orgName"));
+
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.get("privilegeLevel"));
             res.put("organization", user.get("organization"));

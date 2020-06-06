@@ -15,7 +15,7 @@ import java.util.Objects;
 /*
    Methods for handling JSON Web Tokens (JWTs)
 */
-public class JWTUtils {
+public class SecurityUtils {
 
   // JWT Creation Method
   public static String createJWT(
