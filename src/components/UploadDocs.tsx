@@ -165,13 +165,8 @@ class UploadDocs extends React.Component<Props, State> {
                   <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                 </label>
                 { pdfFiles && pdfFiles.length > 0 ? (
-<<<<<<< HEAD
-                  <button type="submit" className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
-Upload
-=======
                   <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
                     Upload
->>>>>>> master
                     <div className="ld ld-ring ld-spin" />
                   </button>
                 ) : null}
