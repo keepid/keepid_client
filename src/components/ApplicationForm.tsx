@@ -44,8 +44,6 @@ class ApplicationForm extends Component<Props, State> {
         const {
             formAnswers,
         } = this.state;
-
-        //Submit formAnswers to server, get filled PDF
     }
 
     render() {
