@@ -15,7 +15,11 @@ interface State {
   password: string,
   buttonState: string,
   twoFactorState: string, // either empty or show
-  verificationCode: string
+  verificationCode: string,
+  userRole: string,
+  firstName: string,
+  lastName: string,
+  organization: string
 }
 
 interface Props {
@@ -26,12 +30,6 @@ interface Props {
   alert: any
 }
 
-function handleCode() {
-    const enteredCode = prompt('Enter Verification Code')
-
-    return enteredCode;
-}
-
 class LoginPage extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -40,12 +38,18 @@ class LoginPage extends Component<Props, State> {
       password: '',
       buttonState: '',
       twoFactorState: '',
-      verificationCode: ''
+      verificationCode: '',
+      userRole: '',
+      firstName: '',
+      lastName: '' ,
+      organization: ''
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
+    this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
+    this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
   }
 
   handleChangePassword(event: any) {
@@ -54,6 +58,7 @@ class LoginPage extends Component<Props, State> {
 
   handleChangeVerificationCode(event: any) {
     this.setState({ verificationCode: event.target.value });
+
   }
 
   handleChangeUsername(event: any) {
@@ -62,6 +67,7 @@ class LoginPage extends Component<Props, State> {
 
   handleSubmitTwoFactorCode(event: any) {
     event.preventDefault();
+
     let token = this.state.verificationCode;
     const {
       username,
@@ -86,14 +92,14 @@ class LoginPage extends Component<Props, State> {
 
         if (returnStatus === 'AUTH_SUCCESS') {
           const role = () => {
-            switch (userRole) {
+            switch (this.state.userRole) {
               case 'Admin': return Role.Admin;
               case 'Worker': return Role.Worker;
               case 'Client': return Role.Client;
               default: return Role.LoggedOut;
             }
           };
-          logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+          logIn(role(), username, this.state.organization, this.state.firstName.concat(this.state.lastName));
         } else if (returnStatus === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect 2FA Token: Please Try Again');
           this.setState({ buttonState: '' });
@@ -145,7 +151,14 @@ class LoginPage extends Component<Props, State> {
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'TOKEN_ISSUED') {
-            this.setState({ buttonState: '', twoFactorState: 'show'});
+            this.setState({ 
+              buttonState: '', 
+              twoFactorState: 'show',
+              firstName: firstName,
+              lastName: lastName,
+              organization: organization,
+              userRole: userRole
+            });
           } else if (loginStatus === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
@@ -161,6 +174,20 @@ class LoginPage extends Component<Props, State> {
           this.setState({ buttonState: '' });
         });
     }
+  }
+
+  resubmitVerificationCode(event: any) {
+    event.preventDefault();
+    let username = this.state.username;
+    let password = this.state.password;
+    fetch(`${getServerURL()}/login`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    })
   }
 
   render() {
@@ -222,26 +249,35 @@ class LoginPage extends Component<Props, State> {
                   />
                 </label>
                 
-                <div className={`mt-2 mb-2 collapse ${this.state.twoFactorState}`}>
-                  <div className="font-weight-normal mb-2">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
+                <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
+                  <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
                   <label htmlFor="username" className="w-100 font-weight-bold">
                       Verification Code
                     <input
                       type="text"
                       className="form-control form-purple mt-1"
                       id="verificationCode"
-                      placeholder="Verification code here"
+                      placeholder="Enter your verification code here"
                       value={verificationCode}
                       onChange={this.handleChangeVerificationCode}
                       required
                     />
                   </label>
-                  <button type="submit" onClick={this.handleSubmitTwoFactorCode} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                    Sign In
-                    <div className="ld ld-ring ld-spin" />
-                  </button>
+                  
+                  <div className="row pl-3 pt-3">
+                    <div className="col-6 pl-0">
+                      <button type="submit" onClick={this.resubmitVerificationCode} className={`mt-2 btn btn-danger w-100`}>
+                        Resend Code
+                      </button>
+                    </div>
+                    <div className="col-6 pl-0">
+                      <button type="submit" onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                        Sign In
+                        <div className="ld ld-ring ld-spin" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                
 
                 <div className="row pl-3 pt-3">
                   <div className="col-6 pl-0">
@@ -253,12 +289,15 @@ Remember me
                       </label>
                     </div>
                   </div>
+                  {(this.state.twoFactorState !== 'show') ?
                   <div className="col-6">
                     <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                         Sign In
                       <div className="ld ld-ring ld-spin" />
                     </button>
                   </div>
+                  : <div></div> 
+                  }
                 </div>
                 <div className="row pl-3 pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
