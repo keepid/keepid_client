@@ -205,42 +205,49 @@ class Signup extends Component<Props, State, {}> {
       personAddressState,
       personAddressZipcode,
       personPassword,
+      personConfirmPassword,
     } = this.state;
 
     const personRoleString = this.personRoleString(personRole);
     const personBirthDateFormatted = this.birthDateString(personBirthDate);
 
-    fetch(`${getServerURL()}/create-user-validator`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        firstname: personFirstName,
-        lastname: personLastName,
-        birthDate: personBirthDateFormatted,
-        username: personUsername,
-        email: personEmail,
-        phonenumber: personPhoneNumber,
-        address: personAddressStreet,
-        city: personAddressCity,
-        state: personAddressState,
-        zipcode: personAddressZipcode,
-        password: personPassword,
-        personRole: personRoleString,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          status,
-          message,
-        } = JSON.parse(responseJSON);
-        if (status === 'SUCCESS') {
-          this.setState({ reaffirmStage: true });
-        } else {
-          this.props.alert.show(message);
-        }
-      }).catch((error) => {
-        this.props.alert.show(`Server Failure: ${error}`);
-      });
+
+    if (personPassword !== personConfirmPassword) {
+      this.props.alert.show('Your passwords are not identical');
+    } else {
+      fetch(`${getServerURL()}/create-user-validator`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          firstname: personFirstName,
+          lastname: personLastName,
+          birthDate: personBirthDateFormatted,
+          username: personUsername,
+          email: personEmail,
+          phonenumber: personPhoneNumber,
+          address: personAddressStreet,
+          city: personAddressCity,
+          state: personAddressState,
+          zipcode: personAddressZipcode,
+          password: personPassword,
+          personRole: personRoleString,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const {
+            status,
+            message,
+          } = JSON.parse(responseJSON);
+          if (status === 'SUCCESS') {
+            this.setState({ reaffirmStage: true });
+          } else {
+            console.log(status);
+            this.props.alert.show(message);
+          }
+        }).catch((error) => {
+          this.props.alert.show(`Server Failure: ${error}`);
+        });
+    }
   }
 
   handleBack(event: any) {

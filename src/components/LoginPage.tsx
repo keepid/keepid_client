@@ -41,8 +41,8 @@ class LoginPage extends Component<Props, State> {
       verificationCode: '',
       userRole: '',
       firstName: '',
-      lastName: '' ,
-      organization: ''
+      lastName: '',
+      organization: '',
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -58,7 +58,6 @@ class LoginPage extends Component<Props, State> {
 
   handleChangeVerificationCode(event: any) {
     this.setState({ verificationCode: event.target.value });
-
   }
 
   handleChangeUsername(event: any) {
@@ -68,7 +67,7 @@ class LoginPage extends Component<Props, State> {
   handleSubmitTwoFactorCode(event: any) {
     event.preventDefault();
 
-    let token = this.state.verificationCode;
+    const token = this.state.verificationCode;
     const {
       username,
       password,
@@ -82,7 +81,7 @@ class LoginPage extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         username,
-        token
+        token,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
@@ -134,15 +133,16 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const loginStatus = responseJSON.loginStatus;
-          const userRole = responseJSON.userRole;
-          const organization = responseJSON.organization;
-          const firstName = responseJSON.firstName;
-          const lastName = responseJSON.lastName;
+          const { loginStatus } = responseJSON;
+          const { userRole } = responseJSON;
+          const { organization } = responseJSON;
+          const { firstName } = responseJSON;
+          const { lastName } = responseJSON;
 
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
+                case 'Director': return Role.Director;
                 case 'Admin': return Role.Admin;
                 case 'Worker': return Role.Worker;
                 case 'Client': return Role.Client;
@@ -151,13 +151,13 @@ class LoginPage extends Component<Props, State> {
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'TOKEN_ISSUED') {
-            this.setState({ 
-              buttonState: '', 
+            this.setState({
+              buttonState: '',
               twoFactorState: 'show',
-              firstName: firstName,
-              lastName: lastName,
-              organization: organization,
-              userRole: userRole
+              firstName,
+              lastName,
+              organization,
+              userRole,
             });
           } else if (loginStatus === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
@@ -178,8 +178,8 @@ class LoginPage extends Component<Props, State> {
 
   resubmitVerificationCode(event: any) {
     event.preventDefault();
-    let username = this.state.username;
-    let password = this.state.password;
+    const { username } = this.state;
+    const { password } = this.state;
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
       credentials: 'include',
@@ -187,14 +187,14 @@ class LoginPage extends Component<Props, State> {
         username,
         password,
       }),
-    })
+    });
   }
 
   render() {
     const {
       username,
       password,
-      verificationCode
+      verificationCode,
     } = this.state;
     return (
       <div>
@@ -210,22 +210,22 @@ class LoginPage extends Component<Props, State> {
               </div>
               <div className="row pl-3 pb-3">
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
-                    This page is protected by reCAPTCHA, and subject to the Google
+                  This page is protected by reCAPTCHA, and subject to the Google
                   {' '}
                   <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
-                    and
+                  and
                   {' '}
                   <a href="https://www.google.com/policies/terms/">Terms of service</a>
-.
+                  .
                 </span>
               </div>
-            </div>            
+            </div>
 
             <div className="col">
               <form className="form-signin pt-5">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
-                    Username
+                  Username
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
@@ -237,7 +237,7 @@ class LoginPage extends Component<Props, State> {
                   />
                 </label>
                 <label htmlFor="password" className="w-100 pt-2 font-weight-bold">
-                    Password
+                  Password
                   <input
                     type="password"
                     className="form-control form-purple mt-1"
@@ -248,11 +248,11 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
-                
+
                 <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
                   <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
                   <label htmlFor="username" className="w-100 font-weight-bold">
-                      Verification Code
+                    Verification Code
                     <input
                       type="text"
                       className="form-control form-purple mt-1"
@@ -263,10 +263,10 @@ class LoginPage extends Component<Props, State> {
                       required
                     />
                   </label>
-                  
+
                   <div className="row pl-3 pt-3">
                     <div className="col-6 pl-0">
-                      <button type="submit" onClick={this.resubmitVerificationCode} className={`mt-2 btn btn-danger w-100`}>
+                      <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
                         Resend Code
                       </button>
                     </div>
@@ -285,19 +285,20 @@ class LoginPage extends Component<Props, State> {
                       <label>
                         <input type="checkbox" className="mr-1" value="remember-me" />
                         {' '}
-Remember me
+                        Remember me
                       </label>
                     </div>
                   </div>
-                  {(this.state.twoFactorState !== 'show') ?
-                  <div className="col-6">
-                    <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                        Sign In
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  </div>
-                  : <div></div> 
-                  }
+                  {(this.state.twoFactorState !== 'show')
+                    ? (
+                      <div className="col-6">
+                        <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                          Sign In
+                          <div className="ld ld-ring ld-spin" />
+                        </button>
+                      </div>
+                    )
+                    : <div />}
                 </div>
                 <div className="row pl-3 pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
@@ -306,7 +307,7 @@ Remember me
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                      Don't have an account?
+                    Don't have an account?
                   </span>
                 </div>
                 <div className="row pl-3">
@@ -318,7 +319,7 @@ Remember me
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                      Are you a nonprofit organization?
+                    Are you a nonprofit organization?
                   </span>
                 </div>
                 <div className="row pl-3">

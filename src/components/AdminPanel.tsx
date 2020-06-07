@@ -1,12 +1,9 @@
-// Idea: worker only access to client which permitted him, we can change who a client can edit
-// Superadmin can only do set admin
-
 import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-// import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
+import { Link } from 'react-router-dom';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
 
@@ -67,7 +64,6 @@ class AdminPanel extends Component<Props, State> {
         name: '',
         role: '',
       }],
-      // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.onClickWorker = this.onClickWorker.bind(this);
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -148,6 +144,7 @@ class AdminPanel extends Component<Props, State> {
           people,
           numPeople,
         } = responseJSON;
+        console.log(people);
         this.setState({
           numElements: numPeople,
           workers: people,
@@ -219,7 +216,7 @@ class AdminPanel extends Component<Props, State> {
           <div className="card-body">
             <h5 className="card-title">
               {currentWorker.firstName}
-` `
+              ` `
               {currentWorker.lastName}
               : Worker Permissions
             </h5>
@@ -338,6 +335,7 @@ class AdminPanel extends Component<Props, State> {
             </div>
             {workerPanel}
           </div>
+          <button><Link to="/upload-document">Upload Form</Link></button>
         </div>
       </div>
     );

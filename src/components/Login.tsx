@@ -1,18 +1,45 @@
 import React, { Component } from 'react';
+import Alert from 'react-bootstrap/Alert';
 import { Helmet } from 'react-helmet';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
 
-class Login extends Component<{}, {}, {}> {
+interface Props {
+  // autoLogout is true if the user automatically logged out and was redirect to this page
+  autoLogout: boolean,
+  resetAutoLogout: () => void,
+}
+
+class Login extends Component<Props, {}, {}> {
+  componentWillUnmount() {
+    const {
+      resetAutoLogout,
+    } = this.props;
+    resetAutoLogout();
+  }
+
   render() {
+    const {
+      autoLogout,
+    } = this.props;
+
     return (
       <div className="container-fluid">
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+
+        { autoLogout
+          ? (
+            <Alert variant="warning">
+              You were automatically logged out and redirected to this page.
+            </Alert>
+          )
+          : null }
+
         <div className="row mt-5">
           <div className="col-md-12">
             <div className="row">
@@ -33,7 +60,7 @@ class Login extends Component<{}, {}, {}> {
                     <span>Find a nearby registered organization that can help get you started</span>
                   </p>
                   <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
-                      Find Organizations
+                    Find Organizations
                   </a>
                   <h2 className="mt-4">
                     <span className="home-subtext">For Organizations: Partner with Us</span>
@@ -70,7 +97,7 @@ class Login extends Component<{}, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Non-profit Focused</h3>
                       <span>
-    Local nonprofits against homelessness become hubs for Keep.id services
+                        Local nonprofits against homelessness become hubs for Keep.id services
                       </span>
                     </div>
                   </div>
@@ -81,7 +108,7 @@ class Login extends Component<{}, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Security First</h3>
                       <span>
-    Keep.id securely stores documents and records for those experiencing homelessness
+                        Keep.id securely stores documents and records for those experiencing homelessness
                       </span>
                     </div>
                   </div>
@@ -92,13 +119,33 @@ class Login extends Component<{}, {}, {}> {
                     <div className="col-md-8 d-flex flex-column home-text">
                       <h3>Efficient and Relational</h3>
                       <span className="home-text">
-    Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
+                        Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div className="container mt-4 mb-4 pt-5 pb-5 background">
+              <div className="row text-center">
+                <div className="col-md-4 flex-column ">
+                  <h1 className="font-weight-bold statistic-text">552,830</h1>
+                  <span className="statistic-subtext">Homeless Population in U.S.</span>
+                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                </div>
+                <div className="col-md-4 flex-column">
+                  <h1 className="font-weight-bold statistic-text">5,800</h1>
+                  <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
+                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                </div>
+                <div className="col-md-4 flex-column">
+                  <h1 className="font-weight-bold statistic-text">6,583</h1>
+                  <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
+                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                </div>
+              </div>
+            </div>
+            <button type="button" className="btn btn-primary ml-5">Primary</button>
           </div>
         </div>
       </div>
