@@ -46,7 +46,17 @@ public class App {
                   config.prefer405over404 =
                       false; // send a 405 if handlers exist for different verb on the same path
                   // (default is false)
-                  config.sessionHandler(() -> SessionConfig.getSessionHandlerInstance());
+                  config.sessionHandler(
+                      () -> {
+                        try {
+                          return SessionConfig.getSessionHandlerInstance();
+                        } catch (Exception e) {
+                          System.err.println("Unable to instantiate session handler.");
+                          e.printStackTrace();
+                          System.exit(1);
+                          return null;
+                        }
+                      });
                 })
             .start(Integer.parseInt(System.getenv("PORT")));
     LogFactory l = new LogFactory();
