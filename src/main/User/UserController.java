@@ -76,6 +76,14 @@ public class UserController {
               long expMillis = 300000;
               Date expDate = new Date(nowMillis + expMillis);
 
+              // Send server response before 2fa email.
+              res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
+              res.put("userRole", user.get("privilegeLevel"));
+              res.put("organization", user.get("organization"));
+              res.put("firstName", user.get("firstName"));
+              res.put("lastName", user.get("lastName"));
+              ctx.json(res.toString());
+
               EmailUtil.sendEmail(
                   "Keep Id",
                   user.getString("email"),
@@ -91,13 +99,6 @@ public class UserController {
                           .append("2fa-code", randCode)
                           .append("2fa-exp", expDate)),
                   new UpdateOptions().upsert(true));
-
-              res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
-              res.put("userRole", user.get("privilegeLevel"));
-              res.put("organization", user.get("organization"));
-              res.put("firstName", user.get("firstName"));
-              res.put("lastName", user.get("lastName"));
-              ctx.json(res.toString());
 
               return;
             }
