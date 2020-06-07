@@ -14,6 +14,8 @@ interface State {
   username: string,
   password: string,
   buttonState: string,
+  twoFactorState: string, // either empty or show
+  verificationCode: string
 }
 
 interface Props {
@@ -37,18 +39,69 @@ class LoginPage extends Component<Props, State> {
       username: '',
       password: '',
       buttonState: '',
+      twoFactorState: '',
+      verificationCode: ''
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
   }
 
   handleChangePassword(event: any) {
     this.setState({ password: event.target.value });
   }
 
+  handleChangeVerificationCode(event: any) {
+    this.setState({ verificationCode: event.target.value });
+  }
+
   handleChangeUsername(event: any) {
     this.setState({ username: event.target.value });
+  }
+
+  handleSubmitTwoFactorCode(event: any) {
+    event.preventDefault();
+    let token = this.state.verificationCode;
+    const {
+      username,
+      password,
+    } = this.state;
+    this.setState({ buttonState: 'running' });
+    const {
+      logIn,
+    } = this.props;
+    fetch(`${getServerURL()}/two-factor`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+        token
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const returnMessage = responseJSON.message;
+        const returnStatus = responseJSON.status;
+
+        if (returnStatus === 'AUTH_SUCCESS') {
+          const role = () => {
+            switch (userRole) {
+              case 'Admin': return Role.Admin;
+              case 'Worker': return Role.Worker;
+              case 'Client': return Role.Client;
+              default: return Role.LoggedOut;
+            }
+          };
+          logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+        } else if (returnStatus === 'AUTH_FAILURE') {
+          this.props.alert.show('Incorrect 2FA Token: Please Try Again');
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show('Network Failure: Check Server Connection');
+        this.setState({ buttonState: '' });
+      });
   }
 
   handleLogin(event: any) {
@@ -92,40 +145,7 @@ class LoginPage extends Component<Props, State> {
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (loginStatus === 'TOKEN_ISSUED') {
-            const token = handleCode();
-            this.setState({ buttonState: '' });
-
-            fetch(`${getServerURL()}/two-factor`, {
-              method: 'POST',
-              credentials: 'include',
-              body: JSON.stringify({
-                username,
-                token,
-              }),
-            }).then((response) => response.json())
-              .then((responseJSON) => {
-                responseJSON = JSON.parse(responseJSON);
-                const returnMessage = responseJSON.message;
-                const returnStatus = responseJSON.status;
-
-                if (returnStatus === 'AUTH_SUCCESS') {
-                  const role = () => {
-                    switch (userRole) {
-                      case 'Admin': return Role.Admin;
-                      case 'Worker': return Role.Worker;
-                      case 'Client': return Role.Client;
-                      default: return Role.LoggedOut;
-                    }
-                  };
-                  logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-                } else if (returnStatus === 'AUTH_FAILURE') {
-                  this.props.alert.show('Incorrect 2FA Token: Please Try Again');
-                  this.setState({ buttonState: '' });
-                }
-              }).catch((error) => {
-                this.props.alert.show('Network Failure: Check Server Connection');
-                this.setState({ buttonState: '' });
-              });
+            this.setState({ buttonState: '', twoFactorState: 'show'});
           } else if (loginStatus === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
@@ -147,6 +167,7 @@ class LoginPage extends Component<Props, State> {
     const {
       username,
       password,
+      verificationCode
     } = this.state;
     return (
       <div>
@@ -200,6 +221,27 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
+                
+                <div className={`mt-2 mb-2 collapse ${this.state.twoFactorState}`}>
+                  <div className="font-weight-normal mb-2">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
+                  <label htmlFor="username" className="w-100 font-weight-bold">
+                      Verification Code
+                    <input
+                      type="text"
+                      className="form-control form-purple mt-1"
+                      id="verificationCode"
+                      placeholder="Verification code here"
+                      value={verificationCode}
+                      onChange={this.handleChangeVerificationCode}
+                      required
+                    />
+                  </label>
+                  <button type="submit" onClick={this.handleSubmitTwoFactorCode} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    Sign In
+                    <div className="ld ld-ring ld-spin" />
+                  </button>
+                </div>
+                
 
                 <div className="row pl-3 pt-3">
                   <div className="col-6 pl-0">
