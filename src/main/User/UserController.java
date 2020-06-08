@@ -360,7 +360,7 @@ public class UserController {
               || userType == UserType.Worker) {
             members.put(userJSON);
             numMembers += 1;
-          } else if (userType.equals("Client")) {
+          } else if (userType == UserType.Client) {
             clients.put(userJSON);
             numClients += 1;
           }
