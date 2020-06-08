@@ -68,13 +68,12 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const {
-            loginStatus,
-            userRole,
-            organization,
-            firstName,
-            lastName,
-          } = responseJSON;
+          console.log(responseJSON)
+          const loginStatus = responseJSON.loginStatus;
+          const userRole = responseJSON.userRole;
+          const organization = responseJSON.organization;
+          const firstName = responseJSON.firstName;
+          const lastName = responseJSON.lastName;
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
