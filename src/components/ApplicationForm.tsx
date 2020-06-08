@@ -15,7 +15,7 @@ class ApplicationForm extends Component<Props, State> {
     super(props);
     this.state = {
       formAnswers: {},
-      buttonState: ''
+      buttonState: '',
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
   }
@@ -43,10 +43,7 @@ class ApplicationForm extends Component<Props, State> {
 
   onSubmit(event: any) {
     event.preventDefault();
-    this.setState({buttonState: 'running'})
-    const {
-      formAnswers,
-    } = this.state;
+    this.setState({ buttonState: 'running' });
   }
 
   render() {

@@ -21,7 +21,7 @@ function TablePageSelector(props: Props) : any {
 
   let numPagesLowerBound;
   let numPagesUpperBound;
-  if (numPagesConst % 2 == 0) {
+  if (numPagesConst % 2 === 0) {
     const numPagesRange = (numPagesConst / 2) - 1;
     numPagesLowerBound = currentPage - numPagesRange;
     numPagesUpperBound = currentPage + numPagesRange + 1;
@@ -37,7 +37,7 @@ function TablePageSelector(props: Props) : any {
     numPagesUpperBound = numPages - 1;
     numPagesLowerBound = (numPagesConst < numPages ? numPages - numPagesConst : 0);
   }
-  for (let i = numPagesLowerBound; i <= numPagesUpperBound; i++) {
+  for (let i = numPagesLowerBound; i <= numPagesUpperBound; i+=1) {
     numPagesArray.push(i + 1);
   }
 

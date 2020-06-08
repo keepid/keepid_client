@@ -208,7 +208,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Client) {
                     return (<ClientLanding />);
                   }
-                  return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout}/>
+                  return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />;
                 }}
               />
               <Route

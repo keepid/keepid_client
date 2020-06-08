@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../static/images/logo.svg';
 import Email from '../static/images/email-2.svg';
-import FacebookLogo from '../static/images/fb-logo.svg';
-import GithubLogo from '../static/images/github-logo.svg';
+// import FacebookLogo from '../static/images/fb-logo.svg';
+// import GithubLogo from '../static/images/github-logo.svg';
+import InstagramLogo from '../static/images/instagram.svg';
 
 class Footer extends Component<{}, {}> {
   render() {
@@ -24,15 +25,10 @@ class Footer extends Component<{}, {}> {
                   </a>
                 </li>
                 <li className="list-inline-item list-social-item mr-3">
-                  <Link to="/error" className="text-decoration-none">
-                    <img alt="Facebook Link" src={FacebookLogo} className="list-social-icon" />
-                  </Link>
+                  <a href="https://www.instagram.com/keepidphilly/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                    <img alt="Instagram Link" src={InstagramLogo} className="list-social-icon" />
+                  </a>
                 </li>
-                {/* <li className="list-inline-item list-social-item mr-3">
-                  <Link to="https://github.com/crchong1/senior_design_2019" className="text-decoration-none">
-                    <img alt="Github Link" src={GithubLogo} className="list-social-icon" />
-                  </Link>
-                </li> */}
               </ul>
               <ul className="list-unstyled list-inline list-social">
                 <Link to="/bug-report" className="text-decoration-none">

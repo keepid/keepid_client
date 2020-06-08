@@ -51,7 +51,7 @@ class Applications extends Component<Props, State, {}> {
     dataField: 'category',
     text: 'Category',
     sort: true,
-  },{
+  }, {
     dataField: 'status',
     text: 'Application Status',
     sort: true,

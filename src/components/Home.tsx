@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
-import { Link } from 'react-router-dom';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -60,7 +60,7 @@ class Home extends Component<Props, {}, {}> {
                   <p>
                     <span>Find a nearby registered organization that can help get you started</span>
                   </p>
-                  <Link to="/request">
+                  <Link to="/find-organization">
                     <button className="btn btn-primary btn-lg loginButtonBackground w-50">Find Organizations</button>
                   </Link>
                   <h2 className="mt-4">

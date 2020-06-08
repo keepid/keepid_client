@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import Logo from '../static/images/logo.svg';
-import UsernameSVG from '../static/images/username.svg';
-import PasswordSVG from '../static/images/password.svg';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 
@@ -120,11 +118,6 @@ class Header extends Component<Props, State, {}> {
       isLoggedIn,
       role,
     } = this.props;
-    const {
-      username,
-      password,
-    } = this.state;
-
     if (isLoggedIn) {
       return (
         <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
@@ -190,9 +183,9 @@ class Header extends Component<Props, State, {}> {
 
           <div className="collapse navbar-collapse" id="navbarToggle">
             <ul className="navbar-nav mr-auto mt-2 mt-lg-0 ">
-              <li className="nav-item my-1 mr-2 ml-2">
+              {/* <li className="nav-item my-1 mr-2 ml-2">
                 <Link className="nav-link" to="/">For Organizations</Link>
-              </li>
+              </li> */}
             </ul>
             <div className="col-auto my-1">
               <Link to="/login-page">
