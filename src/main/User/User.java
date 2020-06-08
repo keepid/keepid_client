@@ -12,13 +12,13 @@ import java.util.Objects;
 public class User {
   private ObjectId id;
 
-  @BsonProperty(value = "firstname")
+  @BsonProperty(value = "firstName")
   private String firstName;
 
-  @BsonProperty(value = "lastname")
+  @BsonProperty(value = "lastName")
   private String lastName;
 
-  @BsonProperty(value = "birthdate")
+  @BsonProperty(value = "birthDate")
   private String birthDate;
 
   @BsonProperty(value = "email")
@@ -48,16 +48,16 @@ public class User {
   @BsonProperty(value = "password")
   private String password;
 
-  @BsonProperty(value = "privilege-level")
+  @BsonProperty(value = "privilegeLevel")
   private UserType userType;
 
-  @BsonProperty(value = "can-edit")
+  @BsonProperty(value = "canEdit")
   private boolean canEdit;
 
-  @BsonProperty(value = "can-view")
+  @BsonProperty(value = "canView")
   private boolean canView;
 
-  @BsonProperty(value = "can-register")
+  @BsonProperty(value = "canRegister")
   private boolean canRegister;
 
   public User() {}
