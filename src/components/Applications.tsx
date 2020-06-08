@@ -20,8 +20,23 @@ interface Props {
   organization: string,
 }
 
-class Applications extends Component<Props, State, {}> {
+const listOptions = [
+  { value: '2', label: '2' },
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '25', label: '25' },
+  { value: '50', label: '50' },
+];
 
+const exampleDocuments = [
+  { applicationName: 'Application 1', category: 'Job Application' },
+  { applicationName: 'Application 2', category: 'Aid Application' },
+  { applicationName: 'Application 3', category: 'Job Application' },
+  { applicationName: 'Application 4', category: 'SNAP Application' },
+  { applicationName: 'Application 5', category: 'Other Application' },
+];
+
+class Applications extends Component<Props, State, {}> {
 
   constructor(props: Props) {
     super(props);
@@ -33,8 +48,24 @@ class Applications extends Component<Props, State, {}> {
     this.handleViewDocument = this.handleViewDocument.bind(this);
   }
 
-  componentDidMount() {
-    this.getApplications();
+  handleChangeItemsPerPage(itemsPerPageSelected: any) {
+    this.setState({
+      itemsPerPageSelected,
+      currentPage: 0,
+    });
+  }
+
+  buttonFormatter(cell, row) {
+    return (
+      <div className="d-flex flex-column">
+        <Link to="/applications/send">
+          <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
+        </Link>
+        <Link to="/applications/send">
+          <button type="button" className="btn btn-info w-75 btn-sm p-2 m-1">Check Status</button>
+        </Link>
+      </div>
+    );
   }
 
   getApplications() {
@@ -69,7 +100,10 @@ class Applications extends Component<Props, State, {}> {
 
   handleViewDocument(event: any, rowIndex: number) {
     const {
-      documents,
+      currentUser,
+      username,
+      adminName,
+      organization,
     } = this.state;
 
     const index = rowIndex;

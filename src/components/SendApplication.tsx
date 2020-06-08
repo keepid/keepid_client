@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import WebViewer from '@pdftron/webviewer';
 import { PDFDocument } from 'pdf-lib';
 import DocumentViewer from './DocumentViewer';
-import ApplicationForm from './ApplicationForm'
+import ApplicationForm from './ApplicationForm';
 import getServerURL from '../serverOverride';
 import PDFType from '../static/PDFType';
 
@@ -58,7 +58,7 @@ class SendApplication extends Component<Props, State> {
   }
 
   getFormQuestions() {
-    this.setState({formQuestions: [["Occupation", "What do you like to do?"], ["Address", "Where do you live?"]]});
+    this.setState({ formQuestions: [['Occupation', 'What do you like to do?'], ['Address', 'Where do you live?']] });
   }
 
   onSelectDocument(event: any) {
@@ -122,30 +122,30 @@ class SendApplication extends Component<Props, State> {
 
 export default SendApplication;
 
-    //autofillPDF() {
-    // const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf'
-    // fetch(url)
-    // .then(res => res.arrayBuffer())
-    // .then(existingPDFBytes => {
-    //   PDFDocument.load(existingPDFBytes)
-    //   .then(pdfDocument => {
-    //     const pages = pdfDocument.getPages()
-    //     const firstPage = pages[0]
-    //     const { width, height } = firstPage.getSize()
-    //     firstPage.drawText('This text was added with JavaScript!', {
-    //       x: 5,
-    //       y: height / 2 + 300,
-    //       size: 50,
-    //     });
-    //     pdfDocument.save()
-    //     .then(pdfSaved => {
-    //       var url = window.URL.createObjectURL( new File([pdfSaved], "pdf", {
-    //         type: "application/pdf",
-    //       }));
-    //       window.open(url, '_blank_');
-    //     });
+// autofillPDF() {
+// const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf'
+// fetch(url)
+// .then(res => res.arrayBuffer())
+// .then(existingPDFBytes => {
+//   PDFDocument.load(existingPDFBytes)
+//   .then(pdfDocument => {
+//     const pages = pdfDocument.getPages()
+//     const firstPage = pages[0]
+//     const { width, height } = firstPage.getSize()
+//     firstPage.drawText('This text was added with JavaScript!', {
+//       x: 5,
+//       y: height / 2 + 300,
+//       size: 50,
+//     });
+//     pdfDocument.save()
+//     .then(pdfSaved => {
+//       var url = window.URL.createObjectURL( new File([pdfSaved], "pdf", {
+//         type: "application/pdf",
+//       }));
+//       window.open(url, '_blank_');
+//     });
 
-    //   });
-    // });
+//   });
+// });
 
-  //}
+// }

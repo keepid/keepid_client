@@ -13,7 +13,13 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 interface State {
   username: string,
   password: string,
-  buttonState: string
+  buttonState: string,
+  twoFactorState: string, // either empty or show
+  verificationCode: string,
+  userRole: string,
+  firstName: string,
+  lastName: string,
+  organization: string
 }
 
 interface Props {
@@ -23,6 +29,7 @@ interface Props {
   role: Role,
   alert: any
 }
+
 class LoginPage extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -30,18 +37,76 @@ class LoginPage extends Component<Props, State> {
       username: '',
       password: '',
       buttonState: '',
+      twoFactorState: '',
+      verificationCode: '',
+      userRole: '',
+      firstName: '',
+      lastName: '',
+      organization: '',
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
+    this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
+    this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
   }
 
   handleChangePassword(event: any) {
     this.setState({ password: event.target.value });
   }
 
+  handleChangeVerificationCode(event: any) {
+    this.setState({ verificationCode: event.target.value });
+  }
+
   handleChangeUsername(event: any) {
     this.setState({ username: event.target.value });
+  }
+
+  handleSubmitTwoFactorCode(event: any) {
+    event.preventDefault();
+
+    const token = this.state.verificationCode;
+    const {
+      username,
+      password,
+    } = this.state;
+    this.setState({ buttonState: 'running' });
+    const {
+      logIn,
+    } = this.props;
+    fetch(`${getServerURL()}/two-factor`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+        token,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const returnMessage = responseJSON.message;
+        const returnStatus = responseJSON.status;
+
+        if (returnStatus === 'AUTH_SUCCESS') {
+          const role = () => {
+            switch (this.state.userRole) {
+              case 'Admin': return Role.Admin;
+              case 'Worker': return Role.Worker;
+              case 'Client': return Role.Client;
+              default: return Role.LoggedOut;
+            }
+          };
+          logIn(role(), username, this.state.organization, this.state.firstName.concat(this.state.lastName));
+        } else if (returnStatus === 'AUTH_FAILURE') {
+          this.props.alert.show('Incorrect 2FA Token: Please Try Again');
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show('Network Failure: Check Server Connection');
+        this.setState({ buttonState: '' });
+      });
   }
 
   handleLogin(event: any) {
@@ -68,13 +133,12 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const {
-            loginStatus,
-            userRole,
-            organization,
-            firstName,
-            lastName,
-          } = responseJSON;
+          const { loginStatus } = responseJSON;
+          const { userRole } = responseJSON;
+          const { organization } = responseJSON;
+          const { firstName } = responseJSON;
+          const { lastName } = responseJSON;
+
           if (loginStatus === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
@@ -86,6 +150,15 @@ class LoginPage extends Component<Props, State> {
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+          } else if (loginStatus === 'TOKEN_ISSUED') {
+            this.setState({
+              buttonState: '',
+              twoFactorState: 'show',
+              firstName,
+              lastName,
+              organization,
+              userRole,
+            });
           } else if (loginStatus === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
@@ -103,10 +176,25 @@ class LoginPage extends Component<Props, State> {
     }
   }
 
+  resubmitVerificationCode(event: any) {
+    event.preventDefault();
+    const { username } = this.state;
+    const { password } = this.state;
+    fetch(`${getServerURL()}/login`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    });
+  }
+
   render() {
     const {
       username,
       password,
+      verificationCode,
     } = this.state;
     return (
       <div>
@@ -161,6 +249,36 @@ class LoginPage extends Component<Props, State> {
                   />
                 </label>
 
+                <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
+                  <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
+                  <label htmlFor="username" className="w-100 font-weight-bold">
+                    Verification Code
+                    <input
+                      type="text"
+                      className="form-control form-purple mt-1"
+                      id="verificationCode"
+                      placeholder="Enter your verification code here"
+                      value={verificationCode}
+                      onChange={this.handleChangeVerificationCode}
+                      required
+                    />
+                  </label>
+
+                  <div className="row pl-3 pt-3">
+                    <div className="col-6 pl-0">
+                      <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
+                        Resend Code
+                      </button>
+                    </div>
+                    <div className="col-6 pl-0">
+                      <button type="submit" onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                        Sign In
+                        <div className="ld ld-ring ld-spin" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="row pl-3 pt-3">
                   <div className="col-6 pl-0">
                     <div className="checkbox mb-3 pt-2">
@@ -171,12 +289,16 @@ class LoginPage extends Component<Props, State> {
                       </label>
                     </div>
                   </div>
-                  <div className="col-6">
-                    <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                      Sign In
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  </div>
+                  {(this.state.twoFactorState !== 'show')
+                    ? (
+                      <div className="col-6">
+                        <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                          Sign In
+                          <div className="ld ld-ring ld-spin" />
+                        </button>
+                      </div>
+                    )
+                    : <div />}
                 </div>
                 <div className="row pl-3 pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
