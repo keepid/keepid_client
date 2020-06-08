@@ -180,6 +180,7 @@ class LoginPage extends Component<Props, State> {
     event.preventDefault();
     const { username } = this.state;
     const { password } = this.state;
+    this.props.alert.show('Another verification code has been sent to your email.');
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
       credentials: 'include',
