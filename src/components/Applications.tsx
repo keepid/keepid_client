@@ -1,23 +1,17 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route, Link } from 'react-router-dom';
-import SendApplication from './SendApplication';
 import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
+import SendApplication from './SendApplication';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import Select from 'react-select';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
+import PDFType from '../static/PDFType';
+
 
 interface State {
   documents: any,
-  currentUser: any,
-  currentPage: number,
-  itemsPerPageSelected: any,
-  numElements: number,
-  searchName: string,
-  username: string,
-  adminName: string,
-  organization: string,
 }
 
 interface Props {
@@ -43,50 +37,15 @@ const exampleDocuments = [
 ];
 
 class Applications extends Component<Props, State, {}> {
-  tableCols = [{
-    dataField: 'applicationName',
-    text: 'Application Name',
-    sort: true,
-  }, {
-    dataField: 'category',
-    text: 'Category',
-    sort: true,
-  }, {
-    text: 'Actions',
-    formatter: this.buttonFormatter,
-  }];
 
   constructor(props: Props) {
     super(props);
     this.state = {
-      currentUser: undefined,
-      currentPage: 0,
-      itemsPerPageSelected: listOptions[0],
-      numElements: 0,
-      username: props.username,
-      searchName: '',
-      adminName: props.name,
-      organization: props.organization,
-      documents: exampleDocuments,
+      documents: [],
     };
-    this.onClickWorker = this.onClickWorker.bind(this);
-    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.changeCurrentPage = this.changeCurrentPage.bind(this);
-    this.getDocuments = this.getDocuments.bind(this);
-    this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
-    this.buttonFormatter = this.buttonFormatter.bind(this);
-  }
-
-  onClickWorker(event: any) {
-    this.setState({ currentUser: event });
-  }
-
-  handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-      currentPage: 0,
-    });
+    this.ButtonFormatter = this.ButtonFormatter.bind(this);
+    this.getApplications = this.getApplications.bind(this);
+    this.handleViewDocument = this.handleViewDocument.bind(this);
   }
 
   handleChangeItemsPerPage(itemsPerPageSelected: any) {
@@ -109,50 +68,83 @@ class Applications extends Component<Props, State, {}> {
     );
   }
 
-  changeCurrentPage(newCurrentPage: number) {
-    this.setState({ currentPage: newCurrentPage }, this.getDocuments);
+  getApplications() {
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = JSON.parse(responseJSON);
+        this.setState({
+          documents,
+        });
+      });
   }
 
-  onChangeViewPermission(event: any) {
+  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+    <div>
+      <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, rowIndex)}>View Application</button>
+      <Link to="/applications/send">
+        <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
+      </Link>
+      <Link to="/applications/send">
+        <button type="button" className="btn btn-info w-75 btn-sm p-2 m-1">Check Status</button>
+      </Link>
+    </div>
+  )
+
+  handleViewDocument(event: any, rowIndex: number) {
     const {
       currentUser,
       username,
       adminName,
       organization,
     } = this.state;
-    currentUser.viewPermission = event.target.ischecked;
-    this.setState({ currentUser }, this.getDocuments);
+
+    const index = rowIndex;
+    const form = documents[index];
+    const {
+      id,
+      filename,
+    } = form;
+    fetch(`${getServerURL()}/download/`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileID: id,
+        pdfType: PDFType.FORM,
+      }),
+    }).then(async (response) => {
+      const responseBlob : Blob = await response.blob();
+      const pdfFile = new File([responseBlob], filename, { type: 'application/pdf' });
+
+      // open pdf in new tab
+      const fileURL = URL.createObjectURL(pdfFile);
+      window.open(fileURL);
+    }).catch((error) => {
+      alert('Error Fetching File');
+    });
   }
 
-  getDocuments() {
-    const {
-      searchName,
-      currentPage,
-      itemsPerPageSelected,
-    } = this.state;
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
-    // fetch call here to get all the current Documents to fill
-  }
+  tableCols = [{
+    dataField: 'filename',
+    text: 'Application Name',
+    sort: true,
+  }, {
+    dataField: 'actions',
+    text: 'Actions',
+    formatter: this.ButtonFormatter,
+  }];
 
   render() {
     const {
-      currentUser,
-      currentPage,
-      itemsPerPageSelected,
-      numElements,
-      username,
-      adminName,
-      organization,
       documents,
     } = this.state;
-
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
-    const tablePageSelector = TablePageSelector({
-      currentPage,
-      itemsPerPage,
-      numElements,
-      changeCurrentPage: this.changeCurrentPage,
-    });
 
     return (
       <Switch>
@@ -172,55 +164,22 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              <form className="form-inline my-2 my-lg-0">
-                <input
-                  className="form-control mr-sm-2 w-50"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  onChange={this.handleChangeSearchName}
-                />
-              </form>
-              <div className="row ml-1 mt-2 mb-2">
-                {numElements === 0 ? <div /> : tablePageSelector }
-                {numElements === 0 ? <div />
-                  : (
-                    <div className="w-25">
-                      <div className="card card-body mt-0 mb-4 border-0 p-0">
-                        <h5 className="card-text h6"># Items per page</h5>
-                        <Select
-                          options={listOptions}
-                          autoFocus
-                          closeMenuOnSelect={false}
-                          onChange={this.handleChangeItemsPerPage}
-                          value={itemsPerPageSelected}
-                        />
-                      </div>
-                    </div>
-                  )}
-              </div>
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
                 <div className="w-100 pd-3">
                   <BootstrapTable
                     bootstrap4
-                    keyField="username"
+                    keyField="id"
                     data={documents}
                     hover
                     striped
+                    noDataIndication="No Applications Present"
                     columns={this.tableCols}
-                    selectRow={{
-                      mode: 'radio',
-                      onSelect: this.onClickWorker,
-                      clickToSelect: true,
-                      hideSelectColumn: true,
-                    }}
-                    noDataIndication="No Workers Found"
+                    pagination={paginationFactory()}
                   />
                 </div>
               </div>
             </div>
           </div>
-
         </Route>
       </Switch>
     );
