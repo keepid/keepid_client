@@ -35,12 +35,12 @@ const listOptions = [
 ];
 
 const exampleDocuments = [
-  { applicationName: "Application 1", category: "Job Application" },
-  { applicationName: "Application 2", category: "Aid Application" },
-  { applicationName: "Application 3", category: "Job Application" },
-  { applicationName: "Application 4", category: "SNAP Application" },
-  { applicationName: "Application 5", category: "Other Application" },
-]
+  { applicationName: 'Application 1', category: 'Job Application' },
+  { applicationName: 'Application 2', category: 'Aid Application' },
+  { applicationName: 'Application 3', category: 'Job Application' },
+  { applicationName: 'Application 4', category: 'SNAP Application' },
+  { applicationName: 'Application 5', category: 'Other Application' },
+];
 
 class Applications extends Component<Props, State, {}> {
   tableCols = [{
@@ -96,17 +96,17 @@ class Applications extends Component<Props, State, {}> {
     });
   }
 
-  buttonFormatter(cell, row){
+  buttonFormatter(cell, row) {
     return (
-        <div className="d-flex flex-column">
-          <Link to="/applications/send">
-            <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
-            </Link>
-          <Link to="/applications/send">
-            <button type="button" className="btn btn-info w-75 btn-sm p-2 m-1">Check Status</button>
-          </Link>
-        </div>
-    )
+      <div className="d-flex flex-column">
+        <Link to="/applications/send">
+          <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
+        </Link>
+        <Link to="/applications/send">
+          <button type="button" className="btn btn-info w-75 btn-sm p-2 m-1">Check Status</button>
+        </Link>
+      </div>
+    );
   }
 
   changeCurrentPage(newCurrentPage: number) {
@@ -118,7 +118,7 @@ class Applications extends Component<Props, State, {}> {
       currentUser,
       username,
       adminName,
-      organization
+      organization,
     } = this.state;
     currentUser.viewPermission = event.target.ischecked;
     this.setState({ currentUser }, this.getDocuments);
@@ -220,7 +220,7 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
           </div>
-          
+
         </Route>
       </Switch>
     );

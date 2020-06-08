@@ -303,7 +303,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/applications"
                 render={() => {
                   if (role === Role.Client) {
-                    return <Applications name={name} organization={organization} username={username}/>;
+                    return <Applications name={name} organization={organization} username={username} />;
                   }
                   return <Redirect to="/error" />;
                 }}
