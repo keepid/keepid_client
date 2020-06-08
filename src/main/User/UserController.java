@@ -1,7 +1,7 @@
 package User;
 
 import Logger.LogFactory;
-import Validation.UserValidation;
+import Validation.ValidationMessage;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -55,21 +55,21 @@ public class UserController {
         Argon2 argon2 = Argon2Factory.create();
         char[] passwordArr = password.toCharArray();
         try {
-          MongoCollection<Document> userCollection = db.getCollection("user");
-          Document user = userCollection.find(eq("username", username)).first();
+          MongoCollection<User> userCollection = db.getCollection("user", User.class);
+          User user = userCollection.find(eq("username", username)).first();
           if (user == null) { // Prevent Brute Force Attack
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
             return;
           }
-          String hash = user.get("password", String.class);
+          String hash = user.getPassword();
           if (argon2.verify(hash, passwordArr)) { // Hash matches password
 
-            String userLevel = user.getString("privilegeLevel");
-            if (userLevel.equals("Director")
-                || userLevel.equals("Admin")
-                || userLevel.equals("Worker")) {
+            UserType userLevel = user.getUserType();
+            if (userLevel == UserType.Director
+                || userLevel == UserType.Admin
+                || userLevel == UserType.Worker) {
 
               String randCode = String.format("%06d", new Random().nextInt(999999));
               long nowMillis = System.currentTimeMillis();
@@ -78,15 +78,15 @@ public class UserController {
 
               // Send server response before 2fa email.
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
-              res.put("userRole", user.get("privilegeLevel"));
-              res.put("organization", user.get("organization"));
-              res.put("firstName", user.get("firstName"));
-              res.put("lastName", user.get("lastName"));
+              res.put("userRole", user.getUserType());
+              res.put("organization", user.getOrganization());
+              res.put("firstName", user.getFirstName());
+              res.put("lastName", user.getLastName());
               ctx.json(res.toString());
 
               EmailUtil.sendEmail(
                   "Keep Id",
-                  user.getString("email"),
+                  user.getEmail(),
                   "2FA Link",
                   "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
 
@@ -103,21 +103,22 @@ public class UserController {
               return;
             }
 
-            ctx.sessionAttribute("privilegeLevel", user.get("privilegeLevel"));
-            ctx.sessionAttribute("orgName", user.get("organization"));
+            ctx.sessionAttribute("privilegeLevel", user.getUserType());
+            ctx.sessionAttribute("orgName", user.getOrganization());
             ctx.sessionAttribute("username", username);
 
             res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
-            res.put("userRole", user.get("privilegeLevel"));
-            res.put("organization", user.get("organization"));
-            res.put("firstName", user.get("firstName"));
-            res.put("lastName", user.get("lastName"));
+            res.put("userRole", user.getUserType());
+            res.put("organization", user.getOrganization());
+            res.put("firstName", user.getFirstName());
+            res.put("lastName", user.getLastName());
             ctx.json(res.toString());
           } else { // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
             ctx.json(res.toString());
           }
         } catch (Exception e) { // catch exceptions
+          e.printStackTrace();
           res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
           ctx.json(res.toString());
         } finally {
@@ -129,7 +130,7 @@ public class UserController {
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
 
-        MongoCollection<Document> userCollection = db.getCollection("user");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
         String username = req.getString("username");
         String candidateUsername = username;
         int i = 0;
@@ -142,51 +143,113 @@ public class UserController {
 
   public Handler createUserValidator =
       ctx -> {
-        if (!UserValidation.isValid(new User(ctx))) {
-          return;
-        }
-        ctx.json(UserMessage.SUCCESS.toJSON());
+        JSONObject req = new JSONObject(ctx.body());
+        String firstName = req.getString("firstname").toUpperCase().strip();
+        String lastName = req.getString("lastname").toUpperCase().strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").toLowerCase().strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").toUpperCase().strip();
+        String city = req.getString("city").toUpperCase().strip();
+        String state = req.getString("state").toUpperCase().strip();
+        String zipcode = req.getString("zipcode").strip();
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        String userType = req.getString("personRole").strip();
+
+        ValidationMessage vm =
+            User.isValid(
+                firstName, lastName, birthDate, email, phone,
+                "", // Organization does not need to be validated at this stage.
+                address, city, state, zipcode, username, password, userType);
+
+        ctx.json(ValidationMessage.toUserMessageJSON(vm));
       };
 
   public Handler createNewUser =
       ctx -> {
-        User user = new User(ctx);
         String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
-        if (!UserValidation.isValid(user)) {
-          return;
-        }
-
         if (sessionUserLevel == null || sessionOrg == null) {
-          System.out.println(sessionUserLevel);
-          System.out.println(sessionOrg);
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
           return;
         }
 
-        if ((user.userLevel.equals("Director")
-                || user.userLevel.equals("Admin")
-                || user.userLevel.equals("Worker"))
-            && !sessionUserLevel.equals("Admin")) {
+        JSONObject req = new JSONObject(ctx.body());
+        String firstName = req.getString("firstname").toUpperCase().strip();
+        String lastName = req.getString("lastname").toUpperCase().strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").toLowerCase().strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").toUpperCase().strip();
+        String city = req.getString("city").toUpperCase().strip();
+        String state = req.getString("state").toUpperCase().strip();
+        String zipcode = req.getString("zipcode").strip();
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        String userType = req.getString("personRole");
+
+        ValidationMessage vm =
+            User.isValid(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                sessionOrg,
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                userType);
+
+        if (vm != ValidationMessage.VALID) {
+          ctx.json(ValidationMessage.toUserMessageJSON(vm));
+          return;
+        }
+
+        User user =
+            new User(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                sessionOrg,
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                UserType.userTypeFromString(userType));
+
+        if ((user.getUserType() == UserType.Director
+                || user.getUserType() == UserType.Admin
+                || user.getUserType() == UserType.Worker)
+            && !sessionUserLevel.equals("Admin")
+            && !sessionUserLevel.equals("Director")) {
           ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
           return;
         }
 
-        if (user.userLevel.equals("Client") && sessionUserLevel.equals("Client")) {
+        if (user.getUserType() == UserType.Client && sessionUserLevel.equals("Client")) {
           ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON());
           return;
         }
 
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        Document existingUser = userCollection.find(eq("username", user.username)).first();
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
         if (existingUser != null) {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
           return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = user.password.toCharArray();
+          char[] passwordArr = user.getPassword().toCharArray();
           String passwordHash;
           try {
             passwordHash = argon2.hash(10, 65536, 1, passwordArr);
@@ -197,31 +260,8 @@ public class UserController {
             return;
           }
 
-          Document newUser =
-              new Document("username", user.username)
-                  .append("password", passwordHash)
-                  .append("organization", sessionOrg)
-                  .append("email", user.email)
-                  .append("phone", user.phone)
-                  .append("firstName", user.firstName)
-                  .append("lastName", user.lastName)
-                  .append("birthDate", user.birthDate)
-                  .append("address", user.address)
-                  .append("city", user.city)
-                  .append("state", user.state)
-                  .append("zipcode", user.zipcode)
-                  .append("privilegeLevel", user.userLevel)
-                  .append(
-                      "canView",
-                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"))
-                  .append(
-                      "canEdit",
-                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"))
-                  .append(
-                      "canRegister",
-                      user.userLevel.equals("Director") || user.userLevel.equals("Admin"));
-          userCollection.insertOne(newUser);
-
+          user.setPassword(passwordHash);
+          userCollection.insertOne(user);
           ctx.json(UserMessage.ENROLL_SUCCESS.toJSON());
         }
       };
@@ -236,20 +276,20 @@ public class UserController {
       ctx -> {
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        Document user = userCollection.find(eq("username", username)).first();
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
         if (user != null) {
-          res.put("userRole", user.get("privilegeLevel"));
-          res.put("organization", user.get("organization"));
-          res.put("firstName", user.get("firstName"));
-          res.put("lastName", user.get("lastName"));
-          res.put("birthDate", user.get("birthDate"));
-          res.put("address", user.get("address"));
-          res.put("city", user.get("city"));
-          res.put("state", user.get("state"));
-          res.put("zipcode", user.get("zipcode"));
-          res.put("email", user.get("email"));
-          res.put("phone", user.get("phone"));
+          res.put("userRole", user.getUserType());
+          res.put("organization", user.getOrganization());
+          res.put("firstName", user.getFirstName());
+          res.put("lastName", user.getLastName());
+          res.put("birthDate", user.getBirthDate());
+          res.put("address", user.getAddress());
+          res.put("city", user.getCity());
+          res.put("state", user.getState());
+          res.put("zipcode", user.getZipcode());
+          res.put("email", user.getEmail());
+          res.put("phone", user.getPhone());
           res.put("username", username);
           ctx.json(res.toString());
         } else {
@@ -278,7 +318,7 @@ public class UserController {
 
         JSONArray members = new JSONArray();
         JSONArray clients = new JSONArray();
-        MongoCollection<Document> userCollection = db.getCollection("user");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
 
         Bson orgNameMatch = eq("organization", orgName);
         Bson filter;
@@ -295,31 +335,33 @@ public class UserController {
           filter = orgNameMatch;
         }
 
-        MongoCursor<Document> cursor = userCollection.find(filter).iterator();
+        MongoCursor<User> cursor = userCollection.find(filter).iterator();
         int numClients = 0;
         int numMembers = 0;
         while (cursor.hasNext()) {
-          Document doc = cursor.next();
-          String userType = doc.get("privilegeLevel").toString();
-          JSONObject user = new JSONObject();
-          user.put("username", doc.get("username").toString());
-          user.put("privilegeLevel", doc.get("privilegeLevel").toString());
-          user.put("firstName", doc.get("firstName").toString());
-          user.put("lastName", doc.get("lastName").toString());
-          user.put("email", doc.get("email").toString());
-          user.put("phone", doc.get("phone").toString());
-          user.put("address", doc.get("address").toString());
-          user.put("city", doc.get("city").toString());
-          user.put("state", doc.get("state").toString());
-          user.put("zipcode", doc.get("zipcode").toString());
+          User user = cursor.next();
 
-          if (userType.equals("Director")
-              || userType.equals("Admin")
-              || userType.equals("Worker")) {
-            members.put(user);
+          JSONObject userJSON = new JSONObject();
+          userJSON.put("username", user.getUsername());
+          userJSON.put("privilegeLevel", user.getUserType());
+          userJSON.put("firstName", user.getFirstName());
+          userJSON.put("lastName", user.getLastName());
+          userJSON.put("email", user.getEmail());
+          userJSON.put("phone", user.getPhone());
+          userJSON.put("address", user.getAddress());
+          userJSON.put("city", user.getCity());
+          userJSON.put("state", user.getState());
+          userJSON.put("zipcode", user.getZipcode());
+
+          UserType userType = user.getUserType();
+
+          if (userType == UserType.Director
+              || userType == UserType.Admin
+              || userType == UserType.Worker) {
+            members.put(userJSON);
             numMembers += 1;
           } else if (userType.equals("Client")) {
-            clients.put(user);
+            clients.put(userJSON);
             numClients += 1;
           }
         }
@@ -372,7 +414,7 @@ public class UserController {
         boolean canEdit = req.getBoolean("canEdit");
         boolean canRegister = req.getBoolean("canRegister");
 
-        MongoCollection<Document> userCollection = db.getCollection("user");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
         Bson filter = eq("username", username);
         Bson updateCanView = set("canView", canView);
         Bson updateCanEdit = set("canEdit", canEdit);

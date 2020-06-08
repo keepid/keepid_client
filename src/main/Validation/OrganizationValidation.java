@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 
-public class OrganizationValidation implements GeneralValidator {
+public class OrganizationValidation {
 
   public static boolean isValid(Organization org) throws SecurityException, IOException {
     // declare logger here

@@ -2,14 +2,16 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
+import User.UserType;
 import Validation.OrganizationValidation;
-import Validation.UserValidation;
+import Validation.ValidationMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.Document;
+import org.json.JSONObject;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -31,21 +33,67 @@ public class OrganizationController {
 
   public Handler enrollOrganization =
       ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String firstName = req.getString("firstname").toUpperCase().strip();
+        String lastName = req.getString("lastname").toUpperCase().strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").toLowerCase().strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").toUpperCase().strip();
+        String city = req.getString("city").toUpperCase().strip();
+        String state = req.getString("state").toUpperCase().strip();
+        String zipcode = req.getString("zipcode").strip();
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        String userLevel = req.getString("personRole");
+
         Organization org = new Organization(ctx);
         if (!OrganizationValidation.isValid(org)) {
           return;
         }
 
-        User user = new User(ctx);
-        if (!UserValidation.isValid(user)) {
+        ValidationMessage vm =
+            User.isValid(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                org.orgName,
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                userLevel);
+
+        if (vm != ValidationMessage.VALID) {
+          ctx.json(ValidationMessage.toUserMessageJSON(vm));
           return;
         }
+
+        User user =
+            new User(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                org.orgName,
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                UserType.userTypeFromString(userLevel));
 
         MongoCollection<Document> orgCollection = db.getCollection("organization");
         Document existingOrg = orgCollection.find(eq("orgName", org.orgName)).first();
 
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        Document existingUser = userCollection.find(eq("username", user.username)).first();
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
         if (existingOrg != null) {
           ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON());
@@ -53,7 +101,7 @@ public class OrganizationController {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
         } else {
           Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = user.password.toCharArray();
+          char[] passwordArr = user.getPassword().toCharArray();
           String passwordHash;
           try {
             passwordHash = argon2.hash(10, 65536, 1, passwordArr);
@@ -64,24 +112,8 @@ public class OrganizationController {
             return;
           }
 
-          Document newAdmin =
-              new Document("username", user.username)
-                  .append("password", passwordHash)
-                  .append("organization", org.orgName)
-                  .append("email", user.email)
-                  .append("phone", user.phone)
-                  .append("firstName", user.firstName)
-                  .append("lastName", user.lastName)
-                  .append("birthDate", user.birthDate)
-                  .append("address", user.address)
-                  .append("city", user.city)
-                  .append("state", user.state)
-                  .append("zipcode", user.zipcode)
-                  .append("privilegeLevel", "Admin")
-                  .append("canView", true)
-                  .append("canEdit", true)
-                  .append("canRegister", true);
-          userCollection.insertOne(newAdmin);
+          user.setPassword(passwordHash);
+          userCollection.insertOne(user);
 
           Document newOrg =
               new Document("orgName", org.orgName)
