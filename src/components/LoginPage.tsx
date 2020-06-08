@@ -91,6 +91,7 @@ class LoginPage extends Component<Props, State> {
         if (returnStatus === 'AUTH_SUCCESS') {
           const role = () => {
             switch (this.state.userRole) {
+              case 'Director': return Role.Director;
               case 'Admin': return Role.Admin;
               case 'Worker': return Role.Worker;
               case 'Client': return Role.Client;
