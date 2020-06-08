@@ -159,8 +159,8 @@ class Header extends Component<Props, State, {}> {
                   <Link className="nav-link" to="/my-organization">My Organization</Link>
                 </li>
                 <div className="col-auto my-1 flex-fill">
-                  <Link to="/login">
-                    <button type="button" onClick={this.handleLogout} className="btn btn-primary">Log Out</button>
+                  <Link to="/home">
+                    <button type="button" onClick={this.handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
                   </Link>
                 </div>
               </ul>
@@ -194,69 +194,6 @@ class Header extends Component<Props, State, {}> {
                 <Link className="nav-link" to="/">For Organizations</Link>
               </li>
             </ul>
-            {/* <form onSubmit={this.handleLogin}>
-                <div className="form-row align-items-center">
-                  <div className="col-med-2 my-1">
-                    <div className="input-group">
-                      <div className="input-group-prepend">
-                        <div className="input-group-text">
-                          <img
-                            alt="Username"
-                            src={UsernameSVG}
-                            width="22"
-                            height="22"
-                            className="d-inline-block align-middle"
-                          />
-                        </div>
-                      </div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="inlineFormInputGroupUsername"
-                        onChange={this.handleChangeUsername}
-                        value={username}
-                        placeholder="Username"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-med-2 my-1">
-                    <div className="input-group">
-                      <div className="input-group-prepend">
-                        <div className="input-group-text">
-                          <img
-                            alt="Password"
-                            src={PasswordSVG}
-                            width="22"
-                            height="22"
-                            className="d-inline-block align-middle"
-                          />
-                        </div>
-                      </div>
-                      <input
-                        type="password"
-                        className="form-control"
-                        id="inlineFormInputGroupPassword"
-                        onChange={this.handleChangePassword}
-                        value={password}
-                        placeholder="Password"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-auto my-1">
-                    <button type="submit" className={`btn btn-primary ld-ext-right ${this.state.buttonState}`}>
-                      Login
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  </div>
-                  <div className="col-auto my-1">
-                    <Link to="/login-page">
-                      <button type="submit" className='btn btn-dark-custom'>
-                        Sign In
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </form> */}
             <div className="col-auto my-1">
               <Link to="/login-page">
                 <button type="submit" className="btn btn-dark-custom">

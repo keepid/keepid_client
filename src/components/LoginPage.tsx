@@ -50,6 +50,7 @@ class LoginPage extends Component<Props, State> {
     this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
     this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
     this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
+    this.enterKeyPressed = this.enterKeyPressed.bind(this);
   }
 
   handleChangePassword(event: any) {
@@ -190,6 +191,12 @@ class LoginPage extends Component<Props, State> {
     });
   }
 
+  enterKeyPressed(event, funct) {
+    if (event.key === 'Enter') {
+      funct();
+    }
+  }
+
   render() {
     const {
       username,
@@ -248,37 +255,39 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
+                {(this.state.twoFactorState === 'show')
+                    ? (
+                      <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
+                        <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
+                        <label htmlFor="username" className="w-100 font-weight-bold">
+                          Verification Code
+                          <input
+                            type="text"
+                            className="form-control form-purple mt-1"
+                            id="verificationCode"
+                            placeholder="Enter your verification code here"
+                            value={verificationCode}
+                            onChange={this.handleChangeVerificationCode}
+                            required
+                          />
+                        </label>
 
-                <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
-                  <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
-                  <label htmlFor="username" className="w-100 font-weight-bold">
-                    Verification Code
-                    <input
-                      type="text"
-                      className="form-control form-purple mt-1"
-                      id="verificationCode"
-                      placeholder="Enter your verification code here"
-                      value={verificationCode}
-                      onChange={this.handleChangeVerificationCode}
-                      required
-                    />
-                  </label>
-
-                  <div className="row pl-3 pt-3">
-                    <div className="col-6 pl-0">
-                      <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
-                        Resend Code
-                      </button>
-                    </div>
-                    <div className="col-6 pl-0">
-                      <button type="submit" onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                        Sign In
-                        <div className="ld ld-ring ld-spin" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
+                        <div className="row pl-3 pt-3">
+                          <div className="col-6 pl-0">
+                            <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
+                              Resend Code
+                            </button>
+                          </div>
+                          <div className="col-6 pl-0">
+                            <button type="submit" onKeyDown={(e) => this.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                              Sign In
+                              <div className="ld ld-ring ld-spin" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                    : <div />}
                 <div className="row pl-3 pt-3">
                   <div className="col-6 pl-0">
                     <div className="checkbox mb-3 pt-2">
@@ -292,7 +301,7 @@ class LoginPage extends Component<Props, State> {
                   {(this.state.twoFactorState !== 'show')
                     ? (
                       <div className="col-6">
-                        <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                        <button type="submit" onKeyDown={(e) => this.enterKeyPressed(e, this.handleLogin)} onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                           Sign In
                           <div className="ld ld-ring ld-spin" />
                         </button>

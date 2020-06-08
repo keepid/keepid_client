@@ -38,7 +38,6 @@ class ApplicationForm extends Component<Props, State> {
     const { id } = event.target;
     const { value } = event.target;
     formAnswers[id] = value;
-    console.log(formAnswers);
     this.setState({ formAnswers });
   }
 

@@ -144,7 +144,6 @@ class AdminPanel extends Component<Props, State> {
           people,
           numPeople,
         } = responseJSON;
-        console.log(people);
         this.setState({
           numElements: numPeople,
           workers: people,

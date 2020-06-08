@@ -46,7 +46,7 @@ class Error extends React.Component<Props, State> {
     } = this.state;
 
     if (redirect) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/home" />;
     }
 
     return (

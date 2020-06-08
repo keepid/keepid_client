@@ -241,7 +241,6 @@ class Signup extends Component<Props, State, {}> {
           if (status === 'SUCCESS') {
             this.setState({ reaffirmStage: true });
           } else {
-            console.log(status);
             this.props.alert.show(message);
           }
         }).catch((error) => {

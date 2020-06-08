@@ -49,7 +49,6 @@ class SendApplication extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const {
           documents,
         } = JSON.parse(responseJSON);
