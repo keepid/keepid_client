@@ -51,6 +51,10 @@ class Applications extends Component<Props, State, {}> {
     dataField: 'category',
     text: 'Category',
     sort: true,
+  },{
+    dataField: 'status',
+    text: 'Application Status',
+    sort: true,
   }, {
     text: 'Actions',
     formatter: this.buttonFormatter,
@@ -91,7 +95,6 @@ class Applications extends Component<Props, State, {}> {
 
   handleChangeItemsPerPage(itemsPerPageSelected: any) {
     this.setState({
-      itemsPerPageSelected,
       currentPage: 0,
     });
   }
@@ -101,9 +104,6 @@ class Applications extends Component<Props, State, {}> {
       <div className="d-flex flex-column">
         <Link to="/applications/send">
           <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
-        </Link>
-        <Link to="/applications/send">
-          <button type="button" className="btn btn-info w-75 btn-sm p-2 m-1">Check Status</button>
         </Link>
       </div>
     );

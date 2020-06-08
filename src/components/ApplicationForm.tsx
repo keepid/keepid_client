@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Helmet } from 'react-helmet';
 
 interface Props {
     formQuestions: [string, string][],
@@ -6,6 +7,7 @@ interface Props {
 
 interface State {
     formAnswers: any,
+    buttonState: string
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -13,6 +15,7 @@ class ApplicationForm extends Component<Props, State> {
     super(props);
     this.state = {
       formAnswers: {},
+      buttonState: ''
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
   }
@@ -41,6 +44,7 @@ class ApplicationForm extends Component<Props, State> {
 
   onSubmit(event: any) {
     event.preventDefault();
+    this.setState({buttonState: 'running'})
     const {
       formAnswers,
     } = this.state;
@@ -51,22 +55,40 @@ class ApplicationForm extends Component<Props, State> {
       formQuestions,
     } = this.props;
     return (
-      <div>
+      <div className="container">
+        <Helmet>
+          <title>Fill Application</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron jumbotron-fluid bg-white pb-0">
+          <div className="container">
+            <h1 className="display-4">Application Questions</h1>
+            <p className="lead">Fill out your application here.</p>
+          </div>
+        </div>
         <form>
           {formQuestions.map(
             (entry) => (
-              <label htmlFor={entry[0]}>
-                {entry[1]}
-                <input
-                  type="text"
-                  id={entry[0]}
-                  onChange={this.handleChangeFormValue}
-                  required
-                />
-              </label>
+              <div className="mt-2 mb-2">
+                <label htmlFor={entry[0]} className="w-100 font-weight-bold">
+                  {entry[1]}
+                  <input
+                    type="text"
+                    className="form-control form-purple mt-1"
+                    id={entry[0]}
+                    placeholder="Enter response here"
+                    onChange={this.handleChangeFormValue}
+                    required
+                  />
+                </label>
+              </div>
             ),
           )}
         </form>
+        <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
+          Submit
+          <div className="ld ld-ring ld-spin" />
+        </button>
       </div>
     );
   }
