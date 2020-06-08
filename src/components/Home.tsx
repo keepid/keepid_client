@@ -5,6 +5,7 @@ import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
+import { Link } from 'react-router-dom';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -59,18 +60,18 @@ class Home extends Component<Props, {}, {}> {
                   <p>
                     <span>Find a nearby registered organization that can help get you started</span>
                   </p>
-                  <a href="/find-organization" role="button" className="btn btn-primary btn-lg loginButtonBackground w-50">
-                    Find Organizations
-                  </a>
+                  <Link to="/request">
+                    <button className="btn btn-primary btn-lg loginButtonBackground w-50">Find Organizations</button>
+                  </Link>
                   <h2 className="mt-4">
                     <span className="home-subtext">For Organizations: Partner with Us</span>
                   </h2>
                   <p>
                     <span>Start your free three-month trial to empower clients you serve</span>
                   </p>
-                  <a href="/organization-signup" role="button" className="btn btn-lg btn-primary loginButtonBackground w-50">
-                    Start 3-Month Free Trial
-                  </a>
+                  <Link to="/organization-signup">
+                    <button className="btn btn-primary btn-lg loginButtonBackground w-50">Try Keep.id for Free</button>
+                  </Link>
                 </div>
               </div>
               <div className="col-md-6 custom-vertical-center">
