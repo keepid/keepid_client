@@ -23,6 +23,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "import/extensions": "off",
         "react/jsx-filename-extension": "off",
         "no-alert": "off",
         "no-unused-vars": "off",
@@ -30,6 +31,7 @@
         "import/no-unresolved": "off",
         "max-len": "off",
         "react/prefer-stateless-function": "off",
-        "jsx-a11y/label-has-associated-control": "off"
+        "jsx-a11y/label-has-associated-control": "off",
+        "react/destructuring-assignment": "off"
     }
 }

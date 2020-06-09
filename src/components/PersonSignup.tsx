@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import Role from '../static/Role';
 import getServerURL from '../serverOverride';
@@ -33,10 +32,6 @@ class PersonSignup extends Component<Props, State, {}> {
   onSubmitProp(personFirstName : string, personLastName : string, personBirthDate: string, personEmail: string,
     personPhoneNumber: string, personAddressStreet: string, personAddressCity: string, personAddressState: string,
     personAddressZipcode: string, personUsername: string, personPassword: string, personRoleString: string) {
-    const {
-      personRole,
-    } = this.props;
-
     this.setState({ buttonState: 'running' });
 
     fetch(`${getServerURL()}/create-user`, {

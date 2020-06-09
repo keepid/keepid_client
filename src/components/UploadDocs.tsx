@@ -5,12 +5,13 @@ import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
+import PDFType from '../static/PDFType';
 
 
 interface Props {
   alert: any,
   userRole: Role,
-  location?: any,
+  location: any,
 }
 
 interface State {
@@ -54,6 +55,10 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   submitForm(event: any) {
+    const {
+      userRole,
+    } = this.props;
+
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
@@ -70,7 +75,11 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', 'Identification');
+        if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        } else if (userRole === Role.Director) {
+          formData.append('pdfType', PDFType.FORM);
+        }
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -154,7 +163,7 @@ class UploadDocs extends React.Component<Props, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">
             Upload Documents
-            {location.state.clientUsername ? `for "${location.state.clientUsername}"` : null}
+            {location.state ? `for "${location.state.clientUsername}"` : null}
           </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.

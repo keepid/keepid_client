@@ -13,7 +13,6 @@ import OrganizationSignup from './components/OrganizationSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
 import ClientLanding from './components/ClientLanding';
-import Login from './components/Login';
 import Request from './components/Request';
 import Applications from './components/Applications';
 import Error from './components/Error';
@@ -36,6 +35,7 @@ import ForgotPassword from './components/ForgotPassword';
 import FindOrganization from './components/FindOrganization';
 import IdleTimeOutModal from './components/IdleTimeOutModal';
 import DeveloperLanding from './components/DeveloperLanding';
+import Home from './components/Home';
 
 interface State {
   role: Role,
@@ -46,8 +46,11 @@ interface State {
   autoLogout: boolean,
 }
 
-const timeUntilWarn: number = 1000 * 60 * 120;
-const timeFromWarnToLogout: number = 1000 * 60;
+// const timeUntilWarn: number = 1000 * 60 * 120;
+// const timeFromWarnToLogout: number = 1000 * 60;
+
+const timeUntilWarn: number = 1000 * 5;
+const timeFromWarnToLogout: number = 1000 * 5;
 const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
@@ -162,7 +165,6 @@ class App extends React.Component<{}, State, {}> {
       showModal,
       autoLogout,
     } = this.state;
-
     return (
       <Router>
         <div className="App">
@@ -193,14 +195,11 @@ class App extends React.Component<{}, State, {}> {
             ) : null}
 
             <Switch>
-              // Home/Login Components
               <Route
                 exact
                 path="/"
                 render={() => (
-                  role !== Role.LoggedOut
-                    ? <Redirect to="/home" />
-                    : <Redirect to="/login" />
+                  <Redirect to="/home" />
                 )}
               />
               <Route
@@ -212,20 +211,12 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Client) {
                     return (<ClientLanding />);
                   }
-                  return (<Redirect to="/login" />);
+                  return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />;
                 }}
               />
               <Route
                 path="/find-organization"
                 render={() => (<FindOrganization />)}
-              />
-              <Route
-                path="/login"
-                render={() => (
-                  role !== Role.LoggedOut
-                    ? <Redirect to="/home" />
-                    : <Login autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />
-                )}
               />
               <Route
                 path="/login-page"
@@ -235,7 +226,6 @@ class App extends React.Component<{}, State, {}> {
                     : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
                 )}
               />
-              // Signup Components
               <Route path="/organization-signup">
                 <OrganizationSignup />
               </Route>
@@ -268,7 +258,6 @@ class App extends React.Component<{}, State, {}> {
                   }
                 }}
               />
-              // Admin Components
               <Route
                 path="/admin-panel"
                 render={() => {
@@ -278,11 +267,9 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              // Client Components
               <Route
                 path="/upload-document"
                 render={(props) => {
-                  console.log(`role = ${role}`);
                   if (role === Role.Client || role === Role.Admin) {
                     return <UploadDocs {...props} userRole={role} />;
                   }
@@ -302,7 +289,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/applications"
                 render={() => {
                   if (role === Role.Client) {
-                    return <Applications />;
+                    return <Applications name={name} organization={organization} username={username} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -334,8 +321,6 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-
-              // All Users
               <Route path="/our-team">
                 <OurTeam />
               </Route>
@@ -360,8 +345,6 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              // Website
-              // Component
               <Route path="/error">
                 <Error />
               </Route>
