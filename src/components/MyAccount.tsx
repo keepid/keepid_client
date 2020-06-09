@@ -395,6 +395,9 @@ interface State {
   newPasswordConfirm: string,
   passwordError: PasswordError,
   passwordChangeReadOnly: boolean,
+
+  // 2FA variable
+  twoFactorOn: boolean,
 }
 
 class MyAccount extends Component<Props, State, {}> {
@@ -424,11 +427,16 @@ class MyAccount extends Component<Props, State, {}> {
       newPasswordConfirm: '',
       passwordError: PasswordError.NoError,
       passwordChangeReadOnly: true,
+
+      // 2FA variable
+      twoFactorOn: true,
     };
+    
     this.handleEditPassword = this.handleEditPassword.bind(this);
     this.handleCancelPassword = this.handleCancelPassword.bind(this);
     this.handleInputChangePassword = this.handleInputChangePassword.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChange2FA = this.handleChange2FA.bind(this);
   }
 
   handleEditPassword() {
@@ -538,6 +546,10 @@ class MyAccount extends Component<Props, State, {}> {
         passwordError: PasswordError.OldPasswordWrong,
       });
     }
+  }
+
+  handleChange2FA(twoFactorOn) {
+    this.setState({ twoFactorOn });
   }
 
   render() {
@@ -671,7 +683,7 @@ class MyAccount extends Component<Props, State, {}> {
               </div>
               <div className="input-group mb-3 col-6">
                 <label>
-                  <Switch onChange={this.change2FA} checked={this.state.twoFactorOn} />
+                  <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
                 </label>
               </div>
             </div>
