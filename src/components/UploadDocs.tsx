@@ -163,7 +163,7 @@ class UploadDocs extends React.Component<Props, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">
             Upload Documents
-            {location.state ? `for "${location.state.clientUsername}"` : null}
+            {location.state ? ` for "${location.state.clientUsername}"` : null}
           </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.

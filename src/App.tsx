@@ -46,11 +46,8 @@ interface State {
   autoLogout: boolean,
 }
 
-// const timeUntilWarn: number = 1000 * 60 * 120;
-// const timeFromWarnToLogout: number = 1000 * 60;
-
-const timeUntilWarn: number = 1000 * 5;
-const timeFromWarnToLogout: number = 1000 * 5;
+const timeUntilWarn: number = 1000 * 60 * 120;
+const timeFromWarnToLogout: number = 1000 * 60;
 const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 
