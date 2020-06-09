@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Random;
 
@@ -76,29 +77,39 @@ public class UserController {
               long expMillis = 300000;
               Date expDate = new Date(nowMillis + expMillis);
 
-              // Send server response before 2fa email.
+              Thread emailThread =
+                  new Thread(
+                      () -> {
+                        try {
+                          EmailUtil.sendEmail(
+                              "Keep Id",
+                              user.getEmail(),
+                              "Keepid Verification Code",
+                              "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
+
+                          MongoCollection<Tokens> tokenCollection =
+                              db.getCollection("tokens", Tokens.class);
+                          tokenCollection.replaceOne(
+                              eq("username", username),
+                              new Tokens()
+                                  .setUsername(username)
+                                  .setTwoFactorCode(randCode)
+                                  .setTwoFactorExp(expDate),
+                              new ReplaceOptions().upsert(true));
+                        } catch (UnsupportedEncodingException e) {
+                          e.printStackTrace();
+                          ctx.json(UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding"));
+                          return;
+                        }
+                      });
+              emailThread.start();
+
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
               res.put("userRole", user.getUserType());
               res.put("organization", user.getOrganization());
               res.put("firstName", user.getFirstName());
               res.put("lastName", user.getLastName());
               ctx.json(res.toString());
-
-              EmailUtil.sendEmail(
-                  "Keep Id",
-                  user.getEmail(),
-                  "Keepid Verification Code",
-                  "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
-
-              MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-              tokenCollection.replaceOne(
-                  eq("username", username),
-                  new Tokens()
-                      .setUsername(username)
-                      .setTwoFactorCode(randCode)
-                      .setTwoFactorExp(expDate),
-                  new ReplaceOptions().upsert(true));
-
               return;
             }
 
