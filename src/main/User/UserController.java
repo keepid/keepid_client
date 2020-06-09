@@ -1,15 +1,16 @@
 package User;
 
 import Logger.LogFactory;
+import Security.EmailUtil;
+import Security.Tokens;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -89,15 +90,14 @@ public class UserController {
                   "2FA Link",
                   "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
 
-              MongoCollection<Document> tokenCollection = db.getCollection("tokens");
-              tokenCollection.updateOne(
+              MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
+              tokenCollection.replaceOne(
                   eq("username", username),
-                  new Document(
-                      "$set",
-                      new Document("username", username)
-                          .append("2fa-code", randCode)
-                          .append("2fa-exp", expDate)),
-                  new UpdateOptions().upsert(true));
+                  new Tokens()
+                      .setUsername(username)
+                      .setTwoFactorCode(randCode)
+                      .setTwoFactorExp(expDate),
+                  new ReplaceOptions().upsert(true));
 
               return;
             }
@@ -167,7 +167,7 @@ public class UserController {
 
   public Handler createNewUser =
       ctx -> {
-        String sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
+        UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
         if (sessionUserLevel == null || sessionOrg == null) {
@@ -229,13 +229,13 @@ public class UserController {
         if ((user.getUserType() == UserType.Director
                 || user.getUserType() == UserType.Admin
                 || user.getUserType() == UserType.Worker)
-            && !sessionUserLevel.equals("Admin")
-            && !sessionUserLevel.equals("Director")) {
+            && sessionUserLevel != UserType.Admin
+            && sessionUserLevel != UserType.Director) {
           ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
           return;
         }
 
-        if (user.getUserType() == UserType.Client && sessionUserLevel.equals("Client")) {
+        if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
           ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON());
           return;
         }
@@ -298,7 +298,7 @@ public class UserController {
 
   public Handler getMembers =
       ctx -> {
-        String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
@@ -369,14 +369,14 @@ public class UserController {
         int numReturnElements;
         // If Getting Client List
         if (listType.equals("clients")
-            && (privilegeLevel.equals("Worker")
-                || privilegeLevel.equals("Admin")
-                || privilegeLevel.equals("Director"))) {
+            && (privilegeLevel == UserType.Worker
+                || privilegeLevel == UserType.Admin
+                || privilegeLevel == UserType.Director)) {
           returnElements = getPage(clients, startIndex, endIndex);
           numReturnElements = clients.length();
           // If Getting Worker/Admin List
-        } else if (listType.equals("members") && privilegeLevel.equals("Admin")
-            || privilegeLevel.equals("Director")) {
+        } else if (listType.equals("members") && privilegeLevel == UserType.Admin
+            || privilegeLevel == UserType.Director) {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
@@ -395,7 +395,7 @@ public class UserController {
   public Handler modifyPermissions =
       ctx -> {
         String username = ctx.sessionAttribute("username");
-        String privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
 
         if (username == null || privilegeLevel == null || orgName == null) {
@@ -403,7 +403,7 @@ public class UserController {
           return;
         }
 
-        if (!(privilegeLevel.equals("Director") || privilegeLevel.equals("Admin"))) {
+        if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON());
           return;
         }

@@ -3,7 +3,7 @@ import Config.SessionConfig;
 import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.*;
-import User.AccountSecurityController;
+import Security.AccountSecurityController;
 import User.UserController;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
