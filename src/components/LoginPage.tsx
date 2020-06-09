@@ -91,6 +91,7 @@ class LoginPage extends Component<Props, State> {
         if (returnStatus === 'AUTH_SUCCESS') {
           const role = () => {
             switch (this.state.userRole) {
+              case 'Director': return Role.Director;
               case 'Admin': return Role.Admin;
               case 'Worker': return Role.Worker;
               case 'Client': return Role.Client;
@@ -179,6 +180,7 @@ class LoginPage extends Component<Props, State> {
     event.preventDefault();
     const { username } = this.state;
     const { password } = this.state;
+    this.props.alert.show('Another verification code has been sent to your email.');
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
       credentials: 'include',

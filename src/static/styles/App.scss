@@ -137,6 +137,15 @@ thead {
 	border-radius: 0;
 }
 
+.form-red {
+	border: 0.0625rem solid red;
+	border-radius: 0;
+}
+
+.text-primary-theme {
+	color: $primary-theme;
+}
+
 .seeTable {
 	display: flex;
 	flex-flow: column;
