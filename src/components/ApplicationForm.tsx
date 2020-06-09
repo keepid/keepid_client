@@ -2,8 +2,13 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import getServerURL from '../serverOverride';
 import DocumentViewer from "./DocumentViewer";
+import {Link} from "react-router-dom";
+import Role from "../static/Role";
+import PDFType from "../static/PDFType";
 
-interface Props {}
+interface Props {
+    applicationId: string,
+}
 
 interface State {
     formQuestions: [string, string][] | undefined,
@@ -27,12 +32,17 @@ class ApplicationForm extends Component<Props, State> {
 
   componentDidMount() {
     const {
-      formAnswers,
+        applicationId,
+    } = this.props;
+    const {
+        formAnswers,
     } = this.state;
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        applicationId,
+      }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         const {
@@ -77,8 +87,16 @@ class ApplicationForm extends Component<Props, State> {
       body: JSON.stringify(formAnswers),
     }).then((response) => response.blob())
         .then((responseBlob) => {
-          const pdfApplication = new File([responseBlob], "Filename", { type: 'application/pdf' });
-          this.setState({ pdfApplication });
+          const pdfFile = new File([responseBlob], "Filename", { type: 'application/pdf' });
+          this.setState({ pdfApplication: pdfFile });
+            const formData = new FormData();
+            formData.append('file', pdfFile, pdfFile.name);
+            formData.append('pdfType', PDFType.APPLICATION);
+            fetch(`${getServerURL()}/upload`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
+            })
         });
   }
 
@@ -129,6 +147,11 @@ class ApplicationForm extends Component<Props, State> {
             </div>
               )
               : <div />}
+          <Link to="/applications">
+              <button type="button" className="btn btn-outline-success">
+                  Back
+              </button>
+          </Link>
       </div>
     );
   }

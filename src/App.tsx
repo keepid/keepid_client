@@ -267,7 +267,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/upload-document"
                 render={(props) => {
-                  if (role === Role.Client || role === Role.Admin) {
+                  if (role === Role.Client || role === Role.Admin || role === Role.Director) {
                     return <UploadDocs {...props} userRole={role} />;
                   }
                   return <Redirect to="/error" />;

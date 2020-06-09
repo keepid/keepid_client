@@ -99,12 +99,6 @@ class SendApplication extends Component<Props, State> {
     return (
       <div>
         <div className="webviewer" ref={this.viewer} />
-        { formQuestions ? <ApplicationForm /> : <div />}
-        <Link to="/applications">
-          <button type="button" className="btn btn-outline-success">
-            Back
-          </button>
-        </Link>
       </div>
     );
   }

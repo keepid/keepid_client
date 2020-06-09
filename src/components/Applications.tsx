@@ -1,14 +1,23 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route, Link } from 'react-router-dom';
-import SendApplication from './SendApplication';
+import ApplicationForm from './ApplicationForm';
 import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
+import PDFType from "../static/PDFType";
+
+interface Props {
+  username: string,
+  name: string,
+  organization: string,
+}
 
 interface State {
+  currentApplicationId: string | undefined,
   documents: any,
   currentUser: any,
   currentPage: number,
@@ -17,12 +26,6 @@ interface State {
   searchName: string,
   username: string,
   adminName: string,
-  organization: string,
-}
-
-interface Props {
-  username: string,
-  name: string,
   organization: string,
 }
 
@@ -43,8 +46,16 @@ const exampleDocuments = [
 ];
 
 class Applications extends Component<Props, State, {}> {
+  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+      <div>
+        <Link to="/applications/send">
+          <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, rowIndex)}>View Application</button>
+        </Link>
+      </div>
+  )
+
   tableCols = [{
-    dataField: 'applicationName',
+    dataField: 'filename',
     text: 'Application Name',
     sort: true,
   }, {
@@ -57,12 +68,13 @@ class Applications extends Component<Props, State, {}> {
     sort: true,
   }, {
     text: 'Actions',
-    formatter: this.buttonFormatter,
+    formatter: this.ButtonFormatter,
   }];
 
   constructor(props: Props) {
     super(props);
     this.state = {
+      currentApplicationId: undefined,
       currentUser: undefined,
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
@@ -79,7 +91,26 @@ class Applications extends Component<Props, State, {}> {
     this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getDocuments = this.getDocuments.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
-    this.buttonFormatter = this.buttonFormatter.bind(this);
+    this.ButtonFormatter = this.ButtonFormatter.bind(this);
+  }
+
+  componentDidMount() {
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = JSON.parse(responseJSON);
+        console.log(responseJSON);
+        this.setState({
+          documents,
+        });
+      });
   }
 
   onClickWorker(event: any) {
@@ -99,14 +130,35 @@ class Applications extends Component<Props, State, {}> {
     });
   }
 
-  buttonFormatter(cell, row) {
-    return (
-      <div className="d-flex flex-column">
-        <Link to="/applications/send">
-          <button type="button" className="btn btn-success w-75 btn-sm p-2 m-1">Send Application</button>
-        </Link>
-      </div>
-    );
+  handleViewDocument(event: any, rowIndex: number) {
+    const {
+      documents,
+    } = this.state;
+
+    const index = rowIndex;
+    const form = documents[index];
+    const {
+      id,
+      filename,
+    } = form;
+    this.setState({ currentApplicationId: id });
+    fetch(`${getServerURL()}/download/`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileID: id,
+        pdfType: PDFType.FORM,
+      }),
+    }).then(async (response) => {
+      const responseBlob : Blob = await response.blob();
+      const pdfFile = new File([responseBlob], filename, { type: 'application/pdf' });
+
+      // open pdf in new tab
+      const fileURL = URL.createObjectURL(pdfFile);
+      window.open(fileURL);
+    }).catch((error) => {
+      alert('Error Fetching File');
+    });
   }
 
   changeCurrentPage(newCurrentPage: number) {
@@ -136,6 +188,7 @@ class Applications extends Component<Props, State, {}> {
 
   render() {
     const {
+      currentApplicationId,
       currentUser,
       currentPage,
       itemsPerPageSelected,
@@ -156,9 +209,6 @@ class Applications extends Component<Props, State, {}> {
 
     return (
       <Switch>
-        <Route path="/applications/send">
-          <SendApplication />
-        </Route>
         <Route exact path="/applications">
           <div className="container-fluid">
             <Helmet>
@@ -203,24 +253,21 @@ class Applications extends Component<Props, State, {}> {
                 <div className="w-100 pd-3">
                   <BootstrapTable
                     bootstrap4
-                    keyField="username"
+                    keyField="id"
                     data={documents}
                     hover
                     striped
+                    noDataIndication="No Applications Present"
                     columns={this.tableCols}
-                    selectRow={{
-                      mode: 'radio',
-                      onSelect: this.onClickWorker,
-                      clickToSelect: true,
-                      hideSelectColumn: true,
-                    }}
-                    noDataIndication="No Workers Found"
+                    pagination={paginationFactory()}
                   />
                 </div>
               </div>
             </div>
           </div>
-
+        </Route>
+        <Route path="/applications/send">
+          {currentApplicationId ? <ApplicationForm applicationId={currentApplicationId} /> : <div />}
         </Route>
       </Switch>
     );
