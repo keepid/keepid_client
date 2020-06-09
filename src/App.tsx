@@ -36,6 +36,7 @@ import FindOrganization from './components/FindOrganization';
 import IdleTimeOutModal from './components/IdleTimeOutModal';
 import DeveloperLanding from './components/DeveloperLanding';
 import Home from './components/Home';
+import ResetPassword from './components/ResetPassword';
 
 interface State {
   role: Role,
@@ -266,9 +267,9 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/upload-document"
-                render={() => {
-                  if (role === Role.Client || role === Role.Director) {
-                    return <UploadDocs userRole={role} />;
+                render={(props) => {
+                  if (role === Role.Client || role === Role.Admin) {
+                    return <UploadDocs {...props} userRole={role} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -332,6 +333,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />
+              </Route>
+              <Route path="/reset-password/:jwt">
+                <ResetPassword/>
               </Route>
               <Route
                 path="/settings"

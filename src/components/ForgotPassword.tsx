@@ -23,7 +23,7 @@ class ForgotPassword extends Component<Props, State> {
       username: '',
       buttonState: '',
     };
-    this.handleLogin = this.handleLogin.bind(this);
+    this.handlePasswordReset = this.handlePasswordReset.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
   }
 
@@ -31,7 +31,7 @@ class ForgotPassword extends Component<Props, State> {
     this.setState({ username: event.target.value });
   }
 
-  handleLogin(event: any) {
+  handlePasswordReset(event: any) {
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
@@ -41,7 +41,7 @@ class ForgotPassword extends Component<Props, State> {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
     } else {
-      fetch(`${getServerURL()}/reset-password`, {
+      fetch(`${getServerURL()}/forgot-password`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
@@ -50,9 +50,10 @@ class ForgotPassword extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          // something here
-          if (responseJSON === 'SUCCESS') {
-
+          const {status} = responseJSON; 
+          if (status === 'SUCCESS') {
+            this.props.alert.show('A reset code has been sent to your email. Check your inbox.');
+            this.setState({ buttonState: '' });
           } else if (responseJSON === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
             this.setState({ buttonState: '' });
@@ -104,7 +105,7 @@ class ForgotPassword extends Component<Props, State> {
 
                 <div className="row pt-3">
                   <div className="col-6">
-                    <button type="submit" onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    <button type="submit" onClick={this.handlePasswordReset} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                       Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>
