@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
+import Switch from 'react-switch';
 
 const editData = {
   firstName: 'First Name',
@@ -10,11 +11,16 @@ const editData = {
 class MyAccount extends Component<{}, {}, {}> {
   constructor(props: Readonly<{}>) {
     super(props);
+    this.state = { twoFactorOn: true };
     this.modalRender = this.modalRender.bind(this);
   }
 
   changePassword() {
 
+  }
+
+  change2FA() {
+    console.log("Hey boul");
   }
 
   modalRender() {
@@ -155,8 +161,15 @@ class MyAccount extends Component<{}, {}, {}> {
               <div className="col-3 card-text mt-2">
                 Status:
               </div>
-              <div className="col-3 card-text mt-2 text-danger">
-                Not Set Up Yet
+              <div className="input-group mb-3">
+                <select className="custom-select" id="inputGroupSelect02">
+                  <option selected>Choose...</option>
+                  <option value="0">On</option>
+                  <option value="1" onSelect={this.change2FA}>Off</option>
+                </select>
+                <div className="input-group-append">
+                  <label className="input-group-text" id="inputGroupSelect02">Options</label>
+                </div>
               </div>
             </div>
             <div className="row mb-3 mt-3">
