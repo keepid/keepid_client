@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
+import getServerURL from '../serverOverride';
+import DocumentViewer from "./DocumentViewer";
 
-interface Props {
-    formQuestions: [string, string][],
-}
+interface Props {}
 
 interface State {
+    formQuestions: [string, string][] | undefined,
     formAnswers: any,
+    pdfApplication: File | undefined,
     buttonState: string
 }
 
@@ -14,21 +16,41 @@ class ApplicationForm extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      formQuestions: undefined,
       formAnswers: {},
+      pdfApplication: undefined,
       buttonState: '',
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   componentDidMount() {
     const {
-      formQuestions,
-    } = this.props;
-    const {
       formAnswers,
     } = this.state;
-    formQuestions.map((entry) => (formAnswers[entry[0]] = ''));
-    this.setState({ formAnswers });
+    fetch(`${getServerURL()}/get-application-questions`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({}),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          fieldNames,
+          fieldQuestions,
+        } = JSON.parse(responseJSON);
+        const fieldNamesArray : string[] = fieldNames;
+        const fieldQuestionsArray : string[] = fieldQuestions;
+        console.log(responseJSON);
+        const numFields = fieldNamesArray.length;
+        const formQuestionsCombined : [string, string][] = new Array(numFields);
+        for (let j = 0; j < numFields; j += 1) {
+          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
+        }
+        this.setState({ formQuestions: formQuestionsCombined });
+        formQuestionsCombined.map((entry) => (formAnswers[entry[0]] = ''));
+        this.setState({ formAnswers });
+      });
   }
 
   handleChangeFormValue(event: any) {
@@ -43,13 +65,28 @@ class ApplicationForm extends Component<Props, State> {
 
   onSubmit(event: any) {
     event.preventDefault();
+    const {
+      formAnswers,
+    } = this.state;
+
     this.setState({ buttonState: 'running' });
+
+    fetch(`${getServerURL()}/fill-application`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify(formAnswers),
+    }).then((response) => response.blob())
+        .then((responseBlob) => {
+          const pdfApplication = new File([responseBlob], "Filename", { type: 'application/pdf' });
+          this.setState({ pdfApplication });
+        });
   }
 
   render() {
     const {
+      pdfApplication,
       formQuestions,
-    } = this.props;
+    } = this.state;
     return (
       <div className="container">
         <Helmet>
@@ -62,7 +99,7 @@ class ApplicationForm extends Component<Props, State> {
             <p className="lead">Fill out your application here.</p>
           </div>
         </div>
-        <form>
+        {formQuestions ? (<form onSubmit={this.onSubmit}>
           {formQuestions.map(
             (entry) => (
               <div className="mt-2 mb-2">
@@ -80,11 +117,18 @@ class ApplicationForm extends Component<Props, State> {
               </div>
             ),
           )}
-        </form>
-        <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
-          Submit
-          <div className="ld ld-ring ld-spin" />
-        </button>
+          <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
+            Submit
+            <div className="ld ld-ring ld-spin" />
+          </button>
+        </form>) : <div />}
+        { pdfApplication ? (
+            <div>
+              <DocumentViewer pdfFile={pdfApplication} />
+              <button>Submit Final PDF</button>
+            </div>
+              )
+              : <div />}
       </div>
     );
   }

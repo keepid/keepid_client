@@ -57,7 +57,7 @@ class SendApplication extends Component<Props, State> {
   }
 
   getFormQuestions() {
-    this.setState({ formQuestions: [['Occupation', 'What do you like to do?'], ['Address', 'Where do you live?']] });
+    this.setState({ formQuestions: [['Production Title', 'What is the name of your production?'], ['Address', 'Where is your street address?'], ['City, State, Zip', 'What is your City, State, Zip?']] });
   }
 
   onSelectDocument(event: any) {
@@ -99,16 +99,7 @@ class SendApplication extends Component<Props, State> {
     return (
       <div>
         <div className="webviewer" ref={this.viewer} />
-        { formQuestions ? <ApplicationForm formQuestions={formQuestions} /> : <div />}
-        { documentData
-          ? (
-            <form>
-              <select onChange={this.onSelectDocument}>
-                <option>{}</option>
-                {documentDataIndexes.map((index) => (<option value={index}>{documentData[index].filename}</option>))}
-              </select>
-            </form>
-          ) : <div /> }
+        { formQuestions ? <ApplicationForm /> : <div />}
         <Link to="/applications">
           <button type="button" className="btn btn-outline-success">
             Back
