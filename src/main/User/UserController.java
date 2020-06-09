@@ -87,7 +87,7 @@ public class UserController {
               EmailUtil.sendEmail(
                   "Keep Id",
                   user.getEmail(),
-                  "2FA Link",
+                  "Keepid Verification Code",
                   "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
 
               MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
