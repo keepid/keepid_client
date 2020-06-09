@@ -87,6 +87,7 @@ public class App {
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.post("/get-documents", pdfSearch.pdfSearch);
     app.post("/get-organization-members", userController.getMembers);
+    app.post("/get-application-questions", pdfApplication.getApplicationQuestions);
     app.post("/fill-application", pdfApplication.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
