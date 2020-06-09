@@ -1,5 +1,7 @@
 package Validation;
 
+import User.UserType;
+
 import java.net.URL;
 
 public class ValidationUtils {
@@ -38,6 +40,10 @@ public class ValidationUtils {
     return input != null
         && !input.strip().isBlank()
         && ValRegex.phoneNumberPattern.matcher(input).matches();
+  }
+
+  public static boolean isValidOrganizationName(String organization) {
+    return organization != null;
   }
 
   public static boolean isValidZipCode(String input) {
@@ -92,5 +98,9 @@ public class ValidationUtils {
     return input != null
         && !input.strip().isBlank()
         && ValRegex.passwordPattern.matcher(input).matches();
+  }
+
+  public static boolean isValidUserType(String userType) {
+    return UserType.userTypeFromString(userType) != null;
   }
 }
