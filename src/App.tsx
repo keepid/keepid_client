@@ -36,6 +36,7 @@ import FindOrganization from './components/FindOrganization';
 import IdleTimeOutModal from './components/IdleTimeOutModal';
 import DeveloperLanding from './components/DeveloperLanding';
 import Home from './components/Home';
+import ResetPassword from './components/ResetPassword';
 
 interface State {
   role: Role,
@@ -332,6 +333,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />
+              </Route>
+              <Route path="/reset-password/:jwt">
+                <ResetPassword/>
               </Route>
               <Route
                 path="/settings"
