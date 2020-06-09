@@ -8,10 +8,18 @@ const editData = {
   email: 'Email',
 };
 
-class MyAccount extends Component<{}, {}, {}> {
+interface Props {
+}
+
+interface State {
+  twoFactorOn: boolean,
+};
+
+class MyAccount extends Component<{}, State, {}> {
   constructor(props: Readonly<{}>) {
     super(props);
     this.state = { twoFactorOn: true };
+    this.change2FA = this.change2FA.bind(this);
     this.modalRender = this.modalRender.bind(this);
   }
 
@@ -19,8 +27,8 @@ class MyAccount extends Component<{}, {}, {}> {
 
   }
 
-  change2FA() {
-    console.log("Hey boul");
+  change2FA(twoFactorOn) {
+    this.setState({ twoFactorOn });
   }
 
   modalRender() {
@@ -161,15 +169,10 @@ class MyAccount extends Component<{}, {}, {}> {
               <div className="col-3 card-text mt-2">
                 Status:
               </div>
-              <div className="input-group mb-3">
-                <select className="custom-select" id="inputGroupSelect02">
-                  <option selected>Choose...</option>
-                  <option value="0">On</option>
-                  <option value="1" onSelect={this.change2FA}>Off</option>
-                </select>
-                <div className="input-group-append">
-                  <label className="input-group-text" id="inputGroupSelect02">Options</label>
-                </div>
+              <div className="input-group mb-3 col-6">
+                <label>
+                  <Switch onChange={this.change2FA} checked={this.state.twoFactorOn} />
+                </label>
               </div>
             </div>
             <div className="row mb-3 mt-3">
