@@ -1,7 +1,6 @@
 package User;
 
 import Logger.LogFactory;
-import Validation.ValidationMessage;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -157,13 +156,13 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
-        ValidationMessage vm =
+        UserValidationMessage vm =
             User.isValid(
                 firstName, lastName, birthDate, email, phone,
                 "", // Organization does not need to be validated at this stage.
                 address, city, state, zipcode, username, password, userType);
 
-        ctx.json(ValidationMessage.toUserMessageJSON(vm));
+        ctx.json(UserValidationMessage.toUserMessageJSON(vm));
       };
 
   public Handler createNewUser =
@@ -190,7 +189,7 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole");
 
-        ValidationMessage vm =
+        UserValidationMessage vm =
             User.isValid(
                 firstName,
                 lastName,
@@ -206,8 +205,8 @@ public class UserController {
                 password,
                 userType);
 
-        if (vm != ValidationMessage.VALID) {
-          ctx.json(ValidationMessage.toUserMessageJSON(vm));
+        if (vm != UserValidationMessage.VALID) {
+          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
           return;
         }
 

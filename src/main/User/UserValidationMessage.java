@@ -1,8 +1,6 @@
-package Validation;
+package User;
 
-import User.UserMessage;
-
-public enum ValidationMessage {
+public enum UserValidationMessage {
   INVALID_FIRSTNAME,
   INVALID_LASTNAME,
   INVALID_BIRTHDATE,
@@ -18,7 +16,7 @@ public enum ValidationMessage {
   INVALID_USERTYPE,
   VALID;
 
-  public static String toUserMessageJSON(ValidationMessage v) {
+  public static String toUserMessageJSON(UserValidationMessage v) {
     switch (v) {
       case INVALID_FIRSTNAME:
         return UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name");

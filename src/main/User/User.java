@@ -1,7 +1,6 @@
 package User;
 
 import Logger.LogFactory;
-import Validation.ValidationMessage;
 import Validation.ValidationUtils;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
@@ -250,7 +249,7 @@ public class User {
     return this;
   }
 
-  public static ValidationMessage isValid(
+  public static UserValidationMessage isValid(
       String firstName,
       String lastName,
       String birthDate,
@@ -271,58 +270,58 @@ public class User {
 
     if (!ValidationUtils.isValidFirstName(firstName)) {
       logger.error("Invalid firstName: " + firstName);
-      return ValidationMessage.INVALID_FIRSTNAME;
+      return UserValidationMessage.INVALID_FIRSTNAME;
     }
     if (!ValidationUtils.isValidLastName(lastName)) {
       logger.error("Invalid lastName: " + lastName);
-      return ValidationMessage.INVALID_LASTNAME;
+      return UserValidationMessage.INVALID_LASTNAME;
     }
     if (!ValidationUtils.isValidBirthDate(birthDate)) {
       logger.error("Invalid birthDate: " + birthDate);
-      return ValidationMessage.INVALID_BIRTHDATE;
+      return UserValidationMessage.INVALID_BIRTHDATE;
     }
     if (!ValidationUtils.isValidPhoneNumber(phone)) {
       logger.error("Invalid orgContactPhoneNumber: " + phone);
-      return ValidationMessage.INVALID_PHONENUMBER;
+      return UserValidationMessage.INVALID_PHONENUMBER;
     }
     if (!ValidationUtils.isValidOrganizationName(organization)) {
       logger.error("Invalid organization: " + organization);
-      return ValidationMessage.INVALID_ORGANIZATION;
+      return UserValidationMessage.INVALID_ORGANIZATION;
     }
     if (!ValidationUtils.isValidEmail(email)) {
       logger.error("Invalid email: " + email);
-      return ValidationMessage.INVALID_EMAIL;
+      return UserValidationMessage.INVALID_EMAIL;
     }
     if (!ValidationUtils.isValidAddress(address)) {
       logger.error("Invalid address: " + address);
-      return ValidationMessage.INVALID_ADDRESS;
+      return UserValidationMessage.INVALID_ADDRESS;
     }
     if (!ValidationUtils.isValidCity(city)) {
       logger.error("Invalid city: " + city);
-      return ValidationMessage.INVALID_CITY;
+      return UserValidationMessage.INVALID_CITY;
     }
     if (!ValidationUtils.isValidUSState(state)) {
       logger.error("Invalid state: " + state);
-      return ValidationMessage.INVALID_STATE;
+      return UserValidationMessage.INVALID_STATE;
     }
     if (!ValidationUtils.isValidZipCode(zipcode)) {
       logger.error("Invalid zipcode: " + zipcode);
-      return ValidationMessage.INVALID_ZIPCODE;
+      return UserValidationMessage.INVALID_ZIPCODE;
     }
     if (!ValidationUtils.isValidUsername(username)) {
       logger.error("Invalid username: " + username);
-      return ValidationMessage.INVALID_USERNAME;
+      return UserValidationMessage.INVALID_USERNAME;
     }
     if (!ValidationUtils.isValidPassword(password)) {
       logger.error("Invalid password: " + password);
-      return ValidationMessage.INVALID_PASSWORD;
+      return UserValidationMessage.INVALID_PASSWORD;
     }
     if (!ValidationUtils.isValidUserType(userType)) {
       logger.error("Invalid UserType: " + userType);
-      return ValidationMessage.INVALID_USERTYPE;
+      return UserValidationMessage.INVALID_USERTYPE;
     }
 
-    return ValidationMessage.VALID;
+    return UserValidationMessage.VALID;
   }
 
   @Override
