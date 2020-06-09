@@ -2,14 +2,14 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
-import Validation.OrganizationValidation;
-import Validation.UserValidation;
+import User.UserType;
+import User.UserValidationMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
-import org.bson.Document;
+import org.json.JSONObject;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -23,29 +23,130 @@ public class OrganizationController {
 
   public Handler organizationSignupValidator =
       ctx -> {
-        if (!OrganizationValidation.isValid(new Organization(ctx))) {
-          return;
-        }
-        ctx.json(OrgEnrollmentStatus.SUCCESS.toJSON());
+        JSONObject req = new JSONObject(ctx.body());
+        String orgName = req.getString("organizationName").strip();
+        String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
+        String orgEIN = req.getString("organizationEIN").strip();
+        String orgStreetAddress = req.getString("organizationAddressStreet").toUpperCase().strip();
+        String orgCity = req.getString("organizationAddressCity").toUpperCase().strip();
+        String orgState = req.getString("organizationAddressState").toUpperCase().strip();
+        String orgZipcode = req.getString("organizationAddressZipcode").strip();
+        String orgEmail = req.getString("organizationEmail").strip();
+        String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+
+        OrganizationValidationMessage vm =
+            Organization.isValid(
+                orgName,
+                orgWebsite,
+                orgEIN,
+                orgStreetAddress,
+                orgCity,
+                orgState,
+                orgZipcode,
+                orgEmail,
+                orgPhoneNumber);
+
+        ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(vm));
       };
 
   public Handler enrollOrganization =
       ctx -> {
-        Organization org = new Organization(ctx);
-        if (!OrganizationValidation.isValid(org)) {
+        JSONObject req = new JSONObject(ctx.body());
+        String firstName = req.getString("firstname").toUpperCase().strip();
+        String lastName = req.getString("lastname").toUpperCase().strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").toLowerCase().strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").toUpperCase().strip();
+        String city = req.getString("city").toUpperCase().strip();
+        String state = req.getString("state").toUpperCase().strip();
+        String zipcode = req.getString("zipcode").strip();
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        String userLevel = req.getString("personRole");
+
+        String orgName = req.getString("organizationName").strip();
+        String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
+        String orgEIN = req.getString("organizationEIN").strip();
+        String orgStreetAddress = req.getString("organizationAddressStreet").toUpperCase().strip();
+        String orgCity = req.getString("organizationAddressCity").toUpperCase().strip();
+        String orgState = req.getString("organizationAddressState").toUpperCase().strip();
+        String orgZipcode = req.getString("organizationAddressZipcode").strip();
+        String orgEmail = req.getString("organizationEmail").strip();
+        String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+
+        OrganizationValidationMessage ovm =
+            Organization.isValid(
+                orgName,
+                orgWebsite,
+                orgEIN,
+                orgStreetAddress,
+                orgCity,
+                orgState,
+                orgZipcode,
+                orgEmail,
+                orgPhoneNumber);
+
+        if (ovm != OrganizationValidationMessage.VALID) {
+          ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
           return;
         }
 
-        User user = new User(ctx);
-        if (!UserValidation.isValid(user)) {
+        Organization org =
+            new Organization(
+                orgName,
+                orgWebsite,
+                orgEIN,
+                orgStreetAddress,
+                orgCity,
+                orgState,
+                orgZipcode,
+                orgEmail,
+                orgPhoneNumber);
+
+        UserValidationMessage vm =
+            User.isValid(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                org.getOrgName(),
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                userLevel);
+
+        if (vm != UserValidationMessage.VALID) {
+          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
           return;
         }
 
-        MongoCollection<Document> orgCollection = db.getCollection("organization");
-        Document existingOrg = orgCollection.find(eq("orgName", org.orgName)).first();
+        User user =
+            new User(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                org.getOrgName(),
+                address,
+                city,
+                state,
+                zipcode,
+                username,
+                password,
+                UserType.userTypeFromString(userLevel));
 
-        MongoCollection<Document> userCollection = db.getCollection("user");
-        Document existingUser = userCollection.find(eq("username", user.username)).first();
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        Organization existingOrg = orgCollection.find(eq("orgName", org.getOrgName())).first();
+
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
         if (existingOrg != null) {
           ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON());
@@ -53,7 +154,7 @@ public class OrganizationController {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
         } else {
           Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = user.password.toCharArray();
+          char[] passwordArr = user.getPassword().toCharArray();
           String passwordHash;
           try {
             passwordHash = argon2.hash(10, 65536, 1, passwordArr);
@@ -64,36 +165,10 @@ public class OrganizationController {
             return;
           }
 
-          Document newAdmin =
-              new Document("username", user.username)
-                  .append("password", passwordHash)
-                  .append("organization", org.orgName)
-                  .append("email", user.email)
-                  .append("phone", user.phone)
-                  .append("firstName", user.firstName)
-                  .append("lastName", user.lastName)
-                  .append("birthDate", user.birthDate)
-                  .append("address", user.address)
-                  .append("city", user.city)
-                  .append("state", user.state)
-                  .append("zipcode", user.zipcode)
-                  .append("privilegeLevel", "Admin")
-                  .append("canView", true)
-                  .append("canEdit", true)
-                  .append("canRegister", true);
-          userCollection.insertOne(newAdmin);
+          user.setPassword(passwordHash);
+          userCollection.insertOne(user);
 
-          Document newOrg =
-              new Document("orgName", org.orgName)
-                  .append("website", org.orgWebsite)
-                  .append("ein", org.orgEIN)
-                  .append("address", org.orgStreetAddress)
-                  .append("city", org.orgCity)
-                  .append("state", org.orgState)
-                  .append("zipcode", org.orgZipcode)
-                  .append("email", org.orgEmail)
-                  .append("phone", org.orgPhoneNumber);
-          orgCollection.insertOne(newOrg);
+          orgCollection.insertOne(org);
           ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON());
         }
       };
