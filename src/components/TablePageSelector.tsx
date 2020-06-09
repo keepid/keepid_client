@@ -60,7 +60,7 @@ function TablePageSelector(props: Props) : any {
       <nav aria-label="Page navigation example">
         <ul className="pagination mt-4 mb-3 mr-5 ml-4">
           {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>Previous</span></li> : <div />}
-          {numPagesArray.map((index) => <li className="page-item"><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
+          {numPagesArray.map((index) => <li key={index} className="page-item"><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
           {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>Next</span></li> : <div />}
         </ul>
       </nav>
