@@ -53,6 +53,7 @@ public class UserController {
           res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
         }
+
         Argon2 argon2 = Argon2Factory.create();
         char[] passwordArr = password.toCharArray();
         try {
@@ -157,12 +158,10 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
-        User user;
         try {
-          user =
-              new User(
-                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
-                  username, password, userType);
+          new User(
+              firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
+              username, password, userType);
           ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());

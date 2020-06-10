@@ -33,19 +33,17 @@ public class OrganizationController {
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
 
-        Organization org;
         try {
-          org =
-              new Organization(
-                  orgName,
-                  orgWebsite,
-                  orgEIN,
-                  orgStreetAddress,
-                  orgCity,
-                  orgState,
-                  orgZipcode,
-                  orgEmail,
-                  orgPhoneNumber);
+          new Organization(
+              orgName,
+              orgWebsite,
+              orgEIN,
+              orgStreetAddress,
+              orgCity,
+              orgState,
+              orgZipcode,
+              orgEmail,
+              orgPhoneNumber);
           ctx.json(
               OrganizationValidationMessage.toOrganizationMessageJSON(
                   OrganizationValidationMessage.VALID));
