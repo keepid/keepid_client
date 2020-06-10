@@ -3,6 +3,7 @@ package User;
 import Logger.LogFactory;
 import Security.EmailUtil;
 import Security.Tokens;
+import Validation.ValidationException;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -53,6 +54,7 @@ public class UserController {
           res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
         }
+
         Argon2 argon2 = Argon2Factory.create();
         char[] passwordArr = password.toCharArray();
         try {
@@ -167,13 +169,14 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
-        UserValidationMessage vm =
-            User.isValid(
-                firstName, lastName, birthDate, email, phone,
-                "", // Organization does not need to be validated at this stage.
-                address, city, state, zipcode, username, password, userType);
-
-        ctx.json(UserValidationMessage.toUserMessageJSON(vm));
+        try {
+          new User(
+              firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
+              username, password, userType);
+          ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
+        }
       };
 
   public Handler createNewUser =
@@ -200,42 +203,16 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole");
 
-        UserValidationMessage vm =
-            User.isValid(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                sessionOrg,
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                userType);
-
-        if (vm != UserValidationMessage.VALID) {
-          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
+        User user;
+        try {
+          user =
+              new User(
+                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
+                  username, password, userType);
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
           return;
         }
-
-        User user =
-            new User(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                sessionOrg,
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                UserType.userTypeFromString(userType));
 
         if ((user.getUserType() == UserType.Director
                 || user.getUserType() == UserType.Admin
