@@ -44,7 +44,4 @@ public class ValRegex {
 
   public static final Pattern usernamePattern =
       Pattern.compile("^[" + validCharacters + "_-[0-9]]{1,150}$");
-
-  public static final Pattern passwordPattern =
-      Pattern.compile("^[" + validCharacters + "\\(\\)[0-9]_!@#$%&’*+=?<>,`{\\|}~^.-]{1,150}$");
 }
