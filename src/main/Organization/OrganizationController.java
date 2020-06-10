@@ -61,6 +61,7 @@ public class OrganizationController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
         String userLevel = req.getString("personRole");
@@ -137,6 +138,7 @@ public class OrganizationController {
                 city,
                 state,
                 zipcode,
+                twoFactorOn,
                 username,
                 password,
                 UserType.userTypeFromString(userLevel));

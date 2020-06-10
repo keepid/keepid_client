@@ -177,6 +177,25 @@ public class AccountSecurityController {
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
+  public Handler change2FASetting =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String value = req.getString("value");
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+
+        if (!ValidationUtils.isValidFirstName(value)) {
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
+          return;
+        }
+
+        user.setFirstName(value);
+
+        userCollection.replaceOne(eq("username", user.getUsername()), user);
+        ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
   public Handler resetPassword =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());

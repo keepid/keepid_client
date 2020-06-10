@@ -50,6 +50,9 @@ public class User {
   @BsonProperty(value = "privilegeLevel")
   private UserType userType;
 
+  @BsonProperty(value = "twoFactorOn")
+  private boolean twoFactorOn;
+
   @BsonProperty(value = "canEdit")
   private boolean canEdit;
 
@@ -72,6 +75,7 @@ public class User {
       String city,
       String state,
       String zipcode,
+      Boolean twoFactorOn,
       String username,
       String password,
       UserType userType) {
@@ -87,6 +91,7 @@ public class User {
     this.city = city;
     this.state = state;
     this.zipcode = zipcode;
+    this.twoFactorOn = twoFactorOn;
     this.username = username;
     this.password = password;
     this.userType = userType;
@@ -156,6 +161,10 @@ public class User {
     return this.userType;
   }
 
+  public boolean getTwoFactorOn() {
+    return this.twoFactorOn;
+  }
+
   public boolean getCanEdit() {
     return this.canEdit;
   }
@@ -216,6 +225,11 @@ public class User {
 
   public User setZipcode(String zipcode) {
     this.zipcode = zipcode;
+    return this;
+  }
+
+  public User setTwoFactorOn(Boolean twoFactorOn) {
+    this.twoFactorOn = twoFactorOn;
     return this;
   }
 
@@ -340,6 +354,7 @@ public class User {
     sb.append(", username=").append(this.username);
     sb.append(", password=").append(this.password);
     sb.append(", userType=").append(this.userType);
+    sb.append(", twoFactorOn=").append(this.twoFactorOn);
     sb.append(", canEdit=").append(this.canEdit);
     sb.append(", canView=").append(this.canView);
     sb.append(", canRegister=").append(this.canRegister);
@@ -365,6 +380,7 @@ public class User {
         && Objects.equals(this.username, user.username)
         && Objects.equals(this.password, user.password)
         && Objects.equals(this.userType, user.userType)
+        && Objects.equals(this.twoFactorOn, user.twoFactorOn)
         && Objects.equals(this.canEdit, user.canEdit)
         && Objects.equals(this.canView, user.canView)
         && Objects.equals(this.canRegister, user.canRegister);
@@ -386,6 +402,7 @@ public class User {
         this.username,
         this.password,
         this.userType,
+        this.twoFactorOn,
         this.canEdit,
         this.canView,
         this.canRegister);

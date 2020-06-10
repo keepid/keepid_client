@@ -110,5 +110,6 @@ public class App {
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
     app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
+    app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
   }
 }

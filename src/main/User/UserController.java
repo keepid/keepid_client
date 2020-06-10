@@ -185,6 +185,7 @@ public class UserController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
         String userType = req.getString("personRole");
@@ -222,6 +223,7 @@ public class UserController {
                 city,
                 state,
                 zipcode,
+                twoFactorOn,
                 username,
                 password,
                 UserType.userTypeFromString(userType));
@@ -289,6 +291,7 @@ public class UserController {
           res.put("zipcode", user.getZipcode());
           res.put("email", user.getEmail());
           res.put("phone", user.getPhone());
+          res.put("twoFactorOn", user.getTwoFactorOn());
           res.put("username", username);
           ctx.json(res.toString());
         } else {
