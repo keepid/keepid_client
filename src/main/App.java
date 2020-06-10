@@ -86,7 +86,6 @@ public class App {
     app.post("/download", pdfDownload.pdfDownload);
     app.get("/delete-document/:fileId", pdfDelete.pdfDelete);
     app.post("/get-documents", pdfSearch.pdfSearch);
-    app.post("/get-organization-members", userController.getMembers);
     app.post("/fill-application", pdfApplication.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
@@ -96,19 +95,20 @@ public class App {
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
     app.post("/forgot-password", accountSecurityController.forgotPassword);
-    app.post("/change-password", accountSecurityController.changePasswordIn);
-    app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
 
-    /* -------------- ORGANIZATION SIGNUP ------------------ */
+    /* -------------- ORGANIZATION CREATION/ORGANIZATION RELATED ROUTES ------------------ */
     app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
+    app.post("/get-organization-members", userController.getMembers);
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
     app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
+    app.post("/change-password", accountSecurityController.changePasswordIn);
+    app.post("/reset-password", accountSecurityController.resetPassword);
   }
 }
