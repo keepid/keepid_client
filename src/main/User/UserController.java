@@ -52,6 +52,7 @@ public class UserController {
           res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
         }
+
         Argon2 argon2 = Argon2Factory.create();
         char[] passwordArr = password.toCharArray();
         try {
@@ -67,9 +68,12 @@ public class UserController {
           if (argon2.verify(hash, passwordArr)) { // Hash matches password
 
             UserType userLevel = user.getUserType();
-            if (userLevel == UserType.Director
-                || userLevel == UserType.Admin
-                || userLevel == UserType.Worker) {
+            Boolean twoFactorOn = user.getTwoFactorOn();
+
+            if (twoFactorOn
+                && (userLevel == UserType.Director
+                    || userLevel == UserType.Admin
+                    || userLevel == UserType.Worker)) {
 
               String randCode = String.format("%06d", new Random().nextInt(999999));
               long nowMillis = System.currentTimeMillis();
@@ -82,6 +86,7 @@ public class UserController {
               res.put("organization", user.getOrganization());
               res.put("firstName", user.getFirstName());
               res.put("lastName", user.getLastName());
+              res.put("twoFactorOn", twoFactorOn);
               ctx.json(res.toString());
 
               EmailUtil.sendEmail(
@@ -111,6 +116,7 @@ public class UserController {
             res.put("organization", user.getOrganization());
             res.put("firstName", user.getFirstName());
             res.put("lastName", user.getLastName());
+            res.put("twoFactorOn", twoFactorOn);
             ctx.json(res.toString());
           } else { // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
