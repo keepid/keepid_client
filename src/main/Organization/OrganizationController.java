@@ -33,19 +33,25 @@ public class OrganizationController {
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
 
-        OrganizationValidationMessage vm =
-            Organization.isValid(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
-        ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(vm));
+        Organization org;
+        try {
+          org =
+              new Organization(
+                  orgName,
+                  orgWebsite,
+                  orgEIN,
+                  orgStreetAddress,
+                  orgCity,
+                  orgState,
+                  orgZipcode,
+                  orgEmail,
+                  orgPhoneNumber);
+          ctx.json(
+              OrganizationValidationMessage.toOrganizationMessageJSON(
+                  OrganizationValidationMessage.VALID));
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
+        }
       };
 
   public Handler enrollOrganization =
@@ -74,37 +80,20 @@ public class OrganizationController {
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
 
-        OrganizationValidationMessage ovm =
-            Organization.isValid(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
-        if (ovm != OrganizationValidationMessage.VALID) {
-          ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
-          return;
-        }
-
-        Organization org =
-            new Organization(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
+        Organization org;
         User user;
         try {
+          org =
+              new Organization(
+                  orgName,
+                  orgWebsite,
+                  orgEIN,
+                  orgStreetAddress,
+                  orgCity,
+                  orgState,
+                  orgZipcode,
+                  orgEmail,
+                  orgPhoneNumber);
           user =
               new User(
                   firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
