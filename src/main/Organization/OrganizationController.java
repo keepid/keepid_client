@@ -2,8 +2,7 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
-import User.UserType;
-import User.UserValidationMessage;
+import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
@@ -104,42 +103,16 @@ public class OrganizationController {
                 orgEmail,
                 orgPhoneNumber);
 
-        UserValidationMessage vm =
-            User.isValid(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                org.getOrgName(),
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                userLevel);
-
-        if (vm != UserValidationMessage.VALID) {
-          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
+        User user;
+        try {
+          user =
+              new User(
+                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
+                  username, password, userLevel);
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
           return;
         }
-
-        User user =
-            new User(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                org.getOrgName(),
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                UserType.userTypeFromString(userLevel));
 
         MongoCollection<Organization> orgCollection =
             db.getCollection("organization", Organization.class);

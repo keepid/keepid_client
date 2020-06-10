@@ -1,6 +1,7 @@
 package User;
 
 import Logger.LogFactory;
+import Validation.ValidationException;
 import Validation.ValidationUtils;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
@@ -74,7 +75,27 @@ public class User {
       String zipcode,
       String username,
       String password,
-      UserType userType) {
+      String userTypeStr)
+      throws ValidationException {
+
+    UserValidationMessage validationMessage =
+        User.isValid(
+            firstName,
+            lastName,
+            birthDate,
+            email,
+            phone,
+            organization,
+            address,
+            city,
+            state,
+            zipcode,
+            username,
+            password,
+            userTypeStr);
+
+    if (validationMessage != UserValidationMessage.VALID)
+      throw new ValidationException(UserValidationMessage.toUserMessageJSON(validationMessage));
 
     this.id = new ObjectId();
     this.firstName = firstName;
@@ -89,7 +110,7 @@ public class User {
     this.zipcode = zipcode;
     this.username = username;
     this.password = password;
-    this.userType = userType;
+    this.userType = UserType.userTypeFromString(userTypeStr);
     this.calcPermissions();
   }
 
@@ -249,7 +270,7 @@ public class User {
     return this;
   }
 
-  public static UserValidationMessage isValid(
+  private static UserValidationMessage isValid(
       String firstName,
       String lastName,
       String birthDate,
@@ -262,8 +283,7 @@ public class User {
       String zipcode,
       String username,
       String password,
-      String userType)
-      throws SecurityException {
+      String userType) {
 
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger("UserValidation");
