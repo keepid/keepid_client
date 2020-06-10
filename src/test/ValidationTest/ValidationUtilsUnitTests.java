@@ -177,13 +177,17 @@ public class ValidationUtilsUnitTests {
 
   @Test
   public void passwordTest() {
-    assertTrue(ValidationUtils.isValidPassword("samuel"));
-    assertTrue(ValidationUtils.isValidPassword("T@#ST"));
-    assertTrue(ValidationUtils.isValidPassword("123Password*()"));
+    assertTrue(ValidationUtils.isValidPassword("thispasswordissufficientlylong"));
+    assertTrue(ValidationUtils.isValidPassword("12345678"));
+    assertTrue(
+        ValidationUtils.isValidPassword(
+            "123Passwordasdkjfhasdkfhafhjask.dfjhasdfjlasdkjfhaslkdjfh*()"));
     assertFalse(ValidationUtils.isValidPassword("asd\\"));
     assertFalse(ValidationUtils.isValidPassword("asdkll/"));
     assertFalse(ValidationUtils.isValidPassword("aslf;"));
-    assertFalse(ValidationUtils.isValidPassword("asd idahf"));
+    assertFalse(
+        ValidationUtils.isValidPassword(
+            "thisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpassword"));
     assertFalse(ValidationUtils.isValidPassword(" "));
     assertFalse(ValidationUtils.isValidPassword(null));
   }
