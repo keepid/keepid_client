@@ -477,6 +477,7 @@ class MyAccount extends Component<Props, State, {}> {
           state: responseJSON.state,
           address: responseJSON.address,
           zipcode: responseJSON.zipcode,
+          twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
       });
