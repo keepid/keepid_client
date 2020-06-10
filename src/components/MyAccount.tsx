@@ -431,7 +431,7 @@ class MyAccount extends Component<Props, State, {}> {
       // 2FA variable
       twoFactorOn: true,
     };
-    
+
     this.handleEditPassword = this.handleEditPassword.bind(this);
     this.handleCancelPassword = this.handleCancelPassword.bind(this);
     this.handleInputChangePassword = this.handleInputChangePassword.bind(this);
@@ -549,7 +549,28 @@ class MyAccount extends Component<Props, State, {}> {
   }
 
   handleChange2FA(twoFactorOn) {
-    this.setState({ twoFactorOn });
+    const data = {
+      twoFactorOn: twoFactorOn,
+    };
+
+    fetch(`${getServerURL()}/change-two-factor-setting`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const { status } = responseJSON;
+        const { message } = responseJSON;
+
+        if (status === 'SUCCESS') { // succesfully updated key and value
+          //alert.show(`Successfully set 2FA Value`);
+          this.setState({ twoFactorOn });
+        }
+    });
   }
 
   render() {
@@ -564,6 +585,7 @@ class MyAccount extends Component<Props, State, {}> {
       city,
       state,
       zipcode,
+      twoFactorOn,
       passwordChangeReadOnly,
       oldPassword,
       enteredPassword,
