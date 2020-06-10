@@ -180,17 +180,14 @@ public class AccountSecurityController {
   public Handler change2FASetting =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        String value = req.getString("value");
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         User user = userCollection.find(eq("username", username)).first();
 
-        if (!ValidationUtils.isValidFirstName(value)) {
-          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"));
-          return;
-        }
+        // No current way to validate this boolean
 
-        user.setFirstName(value);
+        user.setTwoFactorOn(twoFactorOn);
 
         userCollection.replaceOne(eq("username", user.getUsername()), user);
         ctx.json(UserMessage.SUCCESS.toJSON());
