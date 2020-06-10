@@ -14,7 +14,7 @@ interface State {
   username: string,
   password: string,
   buttonState: string,
-  twoFactorOn: boolean,
+  twoFactorState: string, // either empty or show
   verificationCode: string,
   userRole: string,
   firstName: string,
@@ -37,7 +37,7 @@ class LoginPage extends Component<Props, State> {
       username: '',
       password: '',
       buttonState: '',
-      twoFactorOn: true,
+      twoFactorState: '',
       verificationCode: '',
       userRole: '',
       firstName: '',
@@ -153,7 +153,7 @@ class LoginPage extends Component<Props, State> {
           } else if (loginStatus === 'TOKEN_ISSUED') {
             this.setState({
               buttonState: '',
-              twoFactorOn: true,
+              twoFactorState: 'show',
               firstName,
               lastName,
               organization,
@@ -255,9 +255,9 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
-                {(this.state.twoFactorOn)
+                {(this.state.twoFactorState === 'show')
                   ? (
-                    <div className={`mt-3 mb-3 collapse ${this.state.twoFactorOn}`}>
+                    <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
                       <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
                       <label htmlFor="username" className="w-100 font-weight-bold">
                         Verification Code
@@ -298,7 +298,7 @@ class LoginPage extends Component<Props, State> {
                       </label>
                     </div>
                   </div>
-                  {(this.state.twoFactorOn !== true)
+                  {(this.state.twoFactorState !== 'show')
                     ? (
                       <div className="col-6">
                         <button type="submit" onKeyDown={(e) => this.enterKeyPressed(e, this.handleLogin)} onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
