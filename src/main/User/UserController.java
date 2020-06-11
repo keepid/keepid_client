@@ -168,14 +168,27 @@ public class UserController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
         try {
           new User(
-              firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
-              username, password, userType);
+              firstName,
+              lastName,
+              birthDate,
+              email,
+              phone,
+              "",
+              address,
+              city,
+              state,
+              zipcode,
+              twoFactorOn,
+              username,
+              password,
+              userType);
           ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());
@@ -211,8 +224,20 @@ public class UserController {
         try {
           user =
               new User(
-                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode, twoFactorOn,
-                  username, password, userType);
+                  firstName,
+                  lastName,
+                  birthDate,
+                  email,
+                  phone,
+                  "",
+                  address,
+                  city,
+                  state,
+                  zipcode,
+                  twoFactorOn,
+                  username,
+                  password,
+                  userType);
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());
           return;
