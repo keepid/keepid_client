@@ -5,6 +5,8 @@ import User.UserType;
 import java.net.URL;
 
 public class ValidationUtils {
+  public static final int MIN_PASSWORD_LENGTH = 8;
+  public static final int MAX_PASSWORD_LENGTH = 128;
 
   // Make Own Regex
   public static boolean isValidOrgName(String input) {
@@ -95,9 +97,10 @@ public class ValidationUtils {
   }
 
   public static boolean isValidPassword(String input) {
-    return input != null
+    return (input != null
         && !input.strip().isBlank()
-        && ValRegex.passwordPattern.matcher(input).matches();
+        && input.length() >= MIN_PASSWORD_LENGTH
+        && input.length() < MAX_PASSWORD_LENGTH);
   }
 
   public static boolean isValidUserType(String userType) {

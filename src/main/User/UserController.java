@@ -1,8 +1,10 @@
 package User;
 
 import Logger.LogFactory;
+import Security.AccountSecurityController;
 import Security.EmailUtil;
 import Security.Tokens;
+import Validation.ValidationException;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -16,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Random;
 
@@ -79,8 +82,31 @@ public class UserController {
               long nowMillis = System.currentTimeMillis();
               long expMillis = 300000;
               Date expDate = new Date(nowMillis + expMillis);
+              String emailContent = AccountSecurityController.getVerificationCodeEmail(randCode);
+              Thread emailThread =
+                  new Thread(
+                      () -> {
+                        try {
+                          EmailUtil.sendEmail(
+                              "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
-              // Send server response before 2fa email.
+                          MongoCollection<Tokens> tokenCollection =
+                              db.getCollection("tokens", Tokens.class);
+                          tokenCollection.replaceOne(
+                              eq("username", username),
+                              new Tokens()
+                                  .setUsername(username)
+                                  .setTwoFactorCode(randCode)
+                                  .setTwoFactorExp(expDate),
+                              new ReplaceOptions().upsert(true));
+                        } catch (UnsupportedEncodingException e) {
+                          e.printStackTrace();
+                          ctx.json(UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding"));
+                          return;
+                        }
+                      });
+              emailThread.start();
+
               res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
               res.put("userRole", user.getUserType());
               res.put("organization", user.getOrganization());
@@ -88,22 +114,6 @@ public class UserController {
               res.put("lastName", user.getLastName());
               res.put("twoFactorOn", twoFactorOn);
               ctx.json(res.toString());
-
-              EmailUtil.sendEmail(
-                  "Keep Id",
-                  user.getEmail(),
-                  "Keepid Verification Code",
-                  "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
-
-              MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-              tokenCollection.replaceOne(
-                  eq("username", username),
-                  new Tokens()
-                      .setUsername(username)
-                      .setTwoFactorCode(randCode)
-                      .setTwoFactorExp(expDate),
-                  new ReplaceOptions().upsert(true));
-
               return;
             }
 
@@ -162,13 +172,14 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
-        UserValidationMessage vm =
-            User.isValid(
-                firstName, lastName, birthDate, email, phone,
-                "", // Organization does not need to be validated at this stage.
-                address, city, state, zipcode, username, password, userType);
-
-        ctx.json(UserValidationMessage.toUserMessageJSON(vm));
+        try {
+          new User(
+              firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
+              username, password, userType);
+          ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
+        }
       };
 
   public Handler createNewUser =
@@ -196,43 +207,16 @@ public class UserController {
         String password = req.getString("password").strip();
         String userType = req.getString("personRole");
 
-        UserValidationMessage vm =
-            User.isValid(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                sessionOrg,
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                userType);
-
-        if (vm != UserValidationMessage.VALID) {
-          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
+        User user;
+        try {
+          user =
+              new User(
+                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode, twoFactorOn,
+                  username, password, userType);
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
           return;
         }
-
-        User user =
-            new User(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                sessionOrg,
-                address,
-                city,
-                state,
-                zipcode,
-                twoFactorOn,
-                username,
-                password,
-                UserType.userTypeFromString(userType));
 
         if ((user.getUserType() == UserType.Director
                 || user.getUserType() == UserType.Admin

@@ -42,7 +42,7 @@ public class EmailUtil {
       msg.setRecipients(Message.RecipientType.TO, toAddresses);
       msg.setSubject(subject);
       msg.setSentDate(new Date());
-      msg.setText(message);
+      msg.setContent(message, "text/html; charset=utf-8");
 
       // Send the Email.
       Transport.send(msg);

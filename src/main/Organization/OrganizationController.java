@@ -2,8 +2,7 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
-import User.UserType;
-import User.UserValidationMessage;
+import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
@@ -34,19 +33,23 @@ public class OrganizationController {
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
 
-        OrganizationValidationMessage vm =
-            Organization.isValid(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
-        ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(vm));
+        try {
+          new Organization(
+              orgName,
+              orgWebsite,
+              orgEIN,
+              orgStreetAddress,
+              orgCity,
+              orgState,
+              orgZipcode,
+              orgEmail,
+              orgPhoneNumber);
+          ctx.json(
+              OrganizationValidationMessage.toOrganizationMessageJSON(
+                  OrganizationValidationMessage.VALID));
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
+        }
       };
 
   public Handler enrollOrganization =
@@ -76,72 +79,28 @@ public class OrganizationController {
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
 
-        OrganizationValidationMessage ovm =
-            Organization.isValid(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
-        if (ovm != OrganizationValidationMessage.VALID) {
-          ctx.json(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
+        Organization org;
+        User user;
+        try {
+          org =
+              new Organization(
+                  orgName,
+                  orgWebsite,
+                  orgEIN,
+                  orgStreetAddress,
+                  orgCity,
+                  orgState,
+                  orgZipcode,
+                  orgEmail,
+                  orgPhoneNumber);
+          user =
+              new User(
+                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode, twoFactorOn,
+                  username, password, userLevel);
+        } catch (ValidationException ve) {
+          ctx.json(ve.getMessage());
           return;
         }
-
-        Organization org =
-            new Organization(
-                orgName,
-                orgWebsite,
-                orgEIN,
-                orgStreetAddress,
-                orgCity,
-                orgState,
-                orgZipcode,
-                orgEmail,
-                orgPhoneNumber);
-
-        UserValidationMessage vm =
-            User.isValid(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                org.getOrgName(),
-                address,
-                city,
-                state,
-                zipcode,
-                username,
-                password,
-                userLevel);
-
-        if (vm != UserValidationMessage.VALID) {
-          ctx.json(UserValidationMessage.toUserMessageJSON(vm));
-          return;
-        }
-
-        User user =
-            new User(
-                firstName,
-                lastName,
-                birthDate,
-                email,
-                phone,
-                org.getOrgName(),
-                address,
-                city,
-                state,
-                zipcode,
-                twoFactorOn,
-                username,
-                password,
-                UserType.userTypeFromString(userLevel));
 
         MongoCollection<Organization> orgCollection =
             db.getCollection("organization", Organization.class);
