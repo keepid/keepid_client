@@ -201,6 +201,22 @@ public class AccountSecurityController {
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
+  public Handler change2FASetting =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+
+        // No current way to validate this boolean
+
+        user.setTwoFactorOn(twoFactorOn);
+
+        userCollection.replaceOne(eq("username", user.getUsername()), user);
+        ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
   public Handler resetPassword =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
