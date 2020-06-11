@@ -391,7 +391,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                   <div className="col-md-5 form-group">
                     <label htmlFor="inputPhoneNumber" className="w-100 pr-3">
                       Organization Phone Number
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         readOnly={reaffirmStage}
                         type="tel"
@@ -407,7 +407,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
                   <div className="col-md-7 form-group">
                     <label htmlFor="inputEmail" className="w-100 pr-3">
                       Organization Email Address
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         readOnly={reaffirmStage}
                         type="email"
