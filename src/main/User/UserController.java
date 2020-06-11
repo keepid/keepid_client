@@ -1,6 +1,7 @@
 package User;
 
 import Logger.LogFactory;
+import Security.AccountSecurityController;
 import Security.EmailUtil;
 import Security.Tokens;
 import Validation.ValidationException;
@@ -56,6 +57,7 @@ public class UserController {
             || !ValidationUtils.isValidPassword(password)) {
           res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
+          return;
         }
 
         Argon2 argon2 = Argon2Factory.create();
@@ -73,24 +75,24 @@ public class UserController {
           if (argon2.verify(hash, passwordArr)) { // Hash matches password
 
             UserType userLevel = user.getUserType();
-            if (userLevel == UserType.Director
-                || userLevel == UserType.Admin
-                || userLevel == UserType.Worker) {
+            Boolean twoFactorOn = user.getTwoFactorOn();
+
+            if (twoFactorOn
+                && (userLevel == UserType.Director
+                    || userLevel == UserType.Admin
+                    || userLevel == UserType.Worker)) {
 
               String randCode = String.format("%06d", new Random().nextInt(999999));
               long nowMillis = System.currentTimeMillis();
               long expMillis = 300000;
               Date expDate = new Date(nowMillis + expMillis);
-
+              String emailContent = AccountSecurityController.getVerificationCodeEmail(randCode);
               Thread emailThread =
                   new Thread(
                       () -> {
                         try {
                           EmailUtil.sendEmail(
-                              "Keep Id",
-                              user.getEmail(),
-                              "Keepid Verification Code",
-                              "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
+                              "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
                           MongoCollection<Tokens> tokenCollection =
                               db.getCollection("tokens", Tokens.class);
@@ -114,6 +116,7 @@ public class UserController {
               res.put("organization", user.getOrganization());
               res.put("firstName", user.getFirstName());
               res.put("lastName", user.getLastName());
+              res.put("twoFactorOn", twoFactorOn);
               ctx.json(res.toString());
               return;
             }
@@ -127,6 +130,7 @@ public class UserController {
             res.put("organization", user.getOrganization());
             res.put("firstName", user.getFirstName());
             res.put("lastName", user.getLastName());
+            res.put("twoFactorOn", twoFactorOn);
             ctx.json(res.toString());
           } else { // Hash doesn't match password
             res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
@@ -168,14 +172,27 @@ public class UserController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
         String userType = req.getString("personRole").strip();
 
         try {
           new User(
-              firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
-              username, password, userType);
+              firstName,
+              lastName,
+              birthDate,
+              email,
+              phone,
+              "",
+              address,
+              city,
+              state,
+              zipcode,
+              twoFactorOn,
+              username,
+              password,
+              userType);
           ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());
@@ -202,6 +219,7 @@ public class UserController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
         String userType = req.getString("personRole");
@@ -210,8 +228,20 @@ public class UserController {
         try {
           user =
               new User(
-                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode,
-                  username, password, userType);
+                  firstName,
+                  lastName,
+                  birthDate,
+                  email,
+                  phone,
+                  "",
+                  address,
+                  city,
+                  state,
+                  zipcode,
+                  twoFactorOn,
+                  username,
+                  password,
+                  userType);
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());
           return;
@@ -280,6 +310,7 @@ public class UserController {
           res.put("zipcode", user.getZipcode());
           res.put("email", user.getEmail());
           res.put("phone", user.getPhone());
+          res.put("twoFactorOn", user.getTwoFactorOn());
           res.put("username", username);
           ctx.json(res.toString());
         } else {

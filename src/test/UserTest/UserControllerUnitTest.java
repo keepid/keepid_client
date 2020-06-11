@@ -28,6 +28,7 @@ public class UserControllerUnitTest {
                       "Philadelphia",
                       "PA",
                       "19104",
+                      true,
                       "username",
                       "password",
                       "Director");
