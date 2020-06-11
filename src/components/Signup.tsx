@@ -486,7 +486,7 @@ class Signup extends Component<Props, State, {}> {
                   </div>
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputPassword" className="w-100 pr-3">
-                      Password
+                      Password (at least 8 characters long)
                       <text className="red-star">*</text>
                       <input
                         type="password"
