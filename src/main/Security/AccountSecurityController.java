@@ -203,9 +203,9 @@ public class AccountSecurityController {
 
   public Handler resetPassword =
       ctx -> {
-
+        JSONObject req = new JSONObject(ctx.body());
         // Decode the JWT. If invalid, return AUTH_FAILURE.
-        String jwt = ctx.pathParam("jwt");
+        String jwt = req.getString("jwt");
         Claims claim;
         try {
           claim = SecurityUtils.decodeJWT(jwt);
@@ -261,10 +261,8 @@ public class AccountSecurityController {
           tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
         }
 
-        JSONObject req = new JSONObject(ctx.body());
         String newPassword = req.getString("newPassword");
         resetPassword(claim.getAudience(), newPassword, db);
-
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 

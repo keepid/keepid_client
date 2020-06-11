@@ -96,8 +96,8 @@ public class App {
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
     app.post("/forgot-password", accountSecurityController.forgotPassword);
-    app.post("change-password", accountSecurityController.changePasswordIn);
-    app.post("/reset-password/:jwt", accountSecurityController.resetPassword);
+    app.post("/change-password", accountSecurityController.changePasswordIn);
+    app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
 

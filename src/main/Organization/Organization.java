@@ -1,6 +1,7 @@
 package Organization;
 
 import Logger.LogFactory;
+import Validation.ValidationException;
 import Validation.ValidationUtils;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
@@ -49,7 +50,24 @@ public class Organization {
       String orgState,
       String orgZipcode,
       String orgEmail,
-      String orgPhoneNumber) {
+      String orgPhoneNumber)
+      throws ValidationException {
+
+    OrganizationValidationMessage ovm =
+        Organization.isValid(
+            orgName,
+            orgWebsite,
+            orgEIN,
+            orgStreetAddress,
+            orgCity,
+            orgState,
+            orgZipcode,
+            orgEmail,
+            orgPhoneNumber);
+
+    if (ovm != OrganizationValidationMessage.VALID)
+      throw new ValidationException(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
+
     this.orgName = orgName;
     this.orgWebsite = orgWebsite;
     this.orgEIN = orgEIN;
@@ -148,7 +166,7 @@ public class Organization {
     return this;
   }
 
-  public static OrganizationValidationMessage isValid(
+  private static OrganizationValidationMessage isValid(
       String orgName,
       String orgWebsite,
       String orgEIN,
