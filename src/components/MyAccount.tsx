@@ -672,7 +672,7 @@ class MyAccount extends Component<Props, State, {}> {
               { passwordError === PasswordError.NewPasswordSameAsOld ? <p className="text-danger col-md-9 offset-md-3">The new password cannot match the old password</p> : null }
               { passwordError === PasswordError.NewPasswordInvalid ? <p className="text-danger col-md-9 offset-md-3">The new password is invalid</p> : null }
               <div className="row mb-3 mt-3">
-                <div className="col-3 card-text mt-2 text-primary-theme">New password</div>
+                <div className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</div>
                 <div className="col-9 card-text">
                   <input type="password" className="form-control form-purple" name="newPassword" id="newPassword" value={newPassword} onChange={this.handleInputChangePassword} readOnly={passwordChangeReadOnly} />
                 </div>
