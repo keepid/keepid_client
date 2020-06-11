@@ -1,6 +1,7 @@
 package User;
 
 import Logger.LogFactory;
+import Security.AccountSecurityController;
 import Security.EmailUtil;
 import Security.Tokens;
 import Validation.ValidationUtils;
@@ -76,16 +77,13 @@ public class UserController {
               long nowMillis = System.currentTimeMillis();
               long expMillis = 300000;
               Date expDate = new Date(nowMillis + expMillis);
-
+              String emailContent = AccountSecurityController.getVerificationCodeEmail(randCode);
               Thread emailThread =
                   new Thread(
                       () -> {
                         try {
                           EmailUtil.sendEmail(
-                              "Keep Id",
-                              user.getEmail(),
-                              "Keepid Verification Code",
-                              "Hello,\n\n Your 2FA code is: " + randCode + "\n\nBest, Keep Id");
+                              "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
                           MongoCollection<Tokens> tokenCollection =
                               db.getCollection("tokens", Tokens.class);
