@@ -222,6 +222,11 @@ public class AccountSecurityController {
         JSONObject req = new JSONObject(ctx.body());
         // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = req.getString("jwt");
+        String newPassword = req.getString("newPassword");
+        if (!ValidationUtils.isValidPassword(newPassword)) {
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Password"));
+          return;
+        }
         Claims claim;
         try {
           claim = SecurityUtils.decodeJWT(jwt);
@@ -277,7 +282,6 @@ public class AccountSecurityController {
           tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
         }
 
-        String newPassword = req.getString("newPassword");
         resetPassword(claim.getAudience(), newPassword, db);
         ctx.json(UserMessage.SUCCESS.toJSON());
       };

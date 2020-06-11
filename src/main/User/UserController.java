@@ -54,6 +54,7 @@ public class UserController {
             || !ValidationUtils.isValidPassword(password)) {
           res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
+          return;
         }
 
         Argon2 argon2 = Argon2Factory.create();
