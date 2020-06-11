@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
+import Switch from 'react-switch';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { withAlert } from 'react-alert';
@@ -394,6 +395,9 @@ interface State {
   newPasswordConfirm: string,
   passwordError: PasswordError,
   passwordChangeReadOnly: boolean,
+
+  // 2FA variable
+  twoFactorOn: boolean,
 }
 
 class MyAccount extends Component<Props, State, {}> {
@@ -423,11 +427,16 @@ class MyAccount extends Component<Props, State, {}> {
       newPasswordConfirm: '',
       passwordError: PasswordError.NoError,
       passwordChangeReadOnly: true,
+
+      // 2FA variable
+      twoFactorOn: true,
     };
+
     this.handleEditPassword = this.handleEditPassword.bind(this);
     this.handleCancelPassword = this.handleCancelPassword.bind(this);
     this.handleInputChangePassword = this.handleInputChangePassword.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChange2FA = this.handleChange2FA.bind(this);
   }
 
   handleEditPassword() {
@@ -468,6 +477,7 @@ class MyAccount extends Component<Props, State, {}> {
           state: responseJSON.state,
           address: responseJSON.address,
           zipcode: responseJSON.zipcode,
+          twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
       });
@@ -539,6 +549,31 @@ class MyAccount extends Component<Props, State, {}> {
     }
   }
 
+  handleChange2FA(twoFactorOn) {
+    const data = {
+      twoFactorOn: twoFactorOn,
+    };
+
+    fetch(`${getServerURL()}/change-two-factor-setting`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const { status } = responseJSON;
+        const { message } = responseJSON;
+
+        if (status === 'SUCCESS') { // succesfully updated key and value
+          //alert.show(`Successfully set 2FA Value`);
+          this.setState({ twoFactorOn });
+        }
+    });
+  }
+
   render() {
     const {
       username,
@@ -551,6 +586,7 @@ class MyAccount extends Component<Props, State, {}> {
       city,
       state,
       zipcode,
+      twoFactorOn,
       passwordChangeReadOnly,
       oldPassword,
       enteredPassword,
@@ -668,8 +704,10 @@ class MyAccount extends Component<Props, State, {}> {
               <div className="col-3 card-text mt-2">
                 Status:
               </div>
-              <div className="col-3 card-text mt-2 text-danger">
-                Not Set Up Yet
+              <div className="input-group mb-3 col-6">
+                <label>
+                  <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
+                </label>
               </div>
             </div>
             <div className="row mb-3 mt-3">
