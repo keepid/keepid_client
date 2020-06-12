@@ -200,6 +200,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           username,
           password,
           personRole: 'Director',
+          twoFactorOn: false
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
