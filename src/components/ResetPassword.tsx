@@ -110,9 +110,9 @@ class ResetPassword extends Component<Props, State> {
             <div className="col-8">
               <form className="form-signin pt-5 ml-5">
                 <h1 className="h3 mb-3 font-weight-normal">Enter Your New Password</h1>
-                <span className="text-muted">Enter your new passwords.</span>
+                <span className="text-muted">Enter your new password.</span>
                 <label htmlFor="password" className="w-100 mt-3 font-weight-bold">
-                  Password
+                  Password (at least 8 characters long)
                   <input
                     type="password"
                     className="form-control form-purple mt-1"
