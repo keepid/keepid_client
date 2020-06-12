@@ -152,8 +152,9 @@ public class ValidationUtilsUnitTests {
   @Test
   public void birthDateTest() {
     assertTrue(ValidationUtils.isValidBirthDate("12-23-1234"));
-    assertTrue(ValidationUtils.isValidBirthDate("69-23-2342"));
+    assertTrue(ValidationUtils.isValidBirthDate("03-23-2000"));
     assertTrue(ValidationUtils.isValidBirthDate("10-01-2019"));
+    assertFalse(ValidationUtils.isValidBirthDate("10-01-2029"));
     assertFalse(ValidationUtils.isValidBirthDate("123-10-1010"));
     assertFalse(ValidationUtils.isValidBirthDate("12-123-1233"));
     assertFalse(ValidationUtils.isValidBirthDate("12-01-2012as"));
