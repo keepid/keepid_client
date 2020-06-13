@@ -64,6 +64,7 @@ public class OrganizationController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
+        System.out.println("2FA: " + req.getString("twoFactorOn"));
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
@@ -95,8 +96,20 @@ public class OrganizationController {
                   orgPhoneNumber);
           user =
               new User(
-                  firstName, lastName, birthDate, email, phone, "", address, city, state, zipcode, twoFactorOn,
-                  username, password, userLevel);
+                  firstName,
+                  lastName,
+                  birthDate,
+                  email,
+                  phone,
+                  "",
+                  address,
+                  city,
+                  state,
+                  zipcode,
+                  twoFactorOn,
+                  username,
+                  password,
+                  userLevel);
         } catch (ValidationException ve) {
           ctx.json(ve.getMessage());
           return;

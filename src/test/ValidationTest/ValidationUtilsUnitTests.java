@@ -31,7 +31,7 @@ public class ValidationUtilsUnitTests {
     assertTrue(ValidationUtils.isValidOrgName("valid name here"));
     assertTrue(ValidationUtils.isValidOrgName("Bob"));
     assertTrue(ValidationUtils.isValidOrgName("O'Neal"));
-    assertFalse(ValidationUtils.isValidOrgName("invalid name 123"));
+    assertTrue(ValidationUtils.isValidOrgName("Valid name 123"));
     assertFalse(ValidationUtils.isValidOrgName("<script>hello</script>"));
     assertFalse(ValidationUtils.isValidOrgName("    "));
     assertFalse(ValidationUtils.isValidOrgName(""));
