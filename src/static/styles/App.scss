@@ -82,6 +82,11 @@ $theme-colors: (
 	border-color: $primary-theme;
 }
 
+.btn-primary-theme {
+	background: $primary-theme;
+	border-color: $primary-theme;
+}
+
 .rectangle {
 	width: 20rem;
 	height: 15rem;
