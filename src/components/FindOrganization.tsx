@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import MapComponent from './MapComponent';
+import { withAlert } from 'react-alert';
 
 interface Props {
-
+  alert: any,
 }
 
 interface State {
@@ -71,12 +72,19 @@ class FindOrganization extends Component<Props, State> {
       method: 'GET',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const zipcodeLatLng = responseJSON.results[0].geometry.location;
-        this.setState({
-          displayMap: true,
-          zipcodeLatLng,
-        });
-      });
+        if (responseJSON.status === "OK") {
+          const zipcodeLatLng = responseJSON.results[0].geometry.location;
+          this.setState({
+            displayMap: true,
+            zipcodeLatLng,
+          });
+        } else {
+          const {
+            alert,
+          } = this.props;
+          alert.show(`Invalid zip code`);
+        }
+    });
   }
 
   render() {
@@ -86,6 +94,7 @@ class FindOrganization extends Component<Props, State> {
       organizations,
       zipcodeLatLng,
     } = this.state;
+
     return (
       <div className="container">
         <div className="jumbotron-fluid mt-5">
@@ -95,7 +104,7 @@ class FindOrganization extends Component<Props, State> {
           <div className="input-group mb-3 mt-5">
             <input type="text" className="form-control form-purple" placeholder="Enter your zipcode here" value={zipcodeSearch} onChange={this.onHandleChangeZipcode}/>
             <div className="input-group-append">
-              <button className="btn btn-outline-dark" type="submit">Search</button>
+              <button className="btn btn-primary btn-primary-theme rounded-0" type="submit">Search</button>
             </div>
           </div>
         </form>
@@ -117,4 +126,4 @@ class FindOrganization extends Component<Props, State> {
   }
 }
 
-export default FindOrganization;
+export default withAlert()(FindOrganization);

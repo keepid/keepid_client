@@ -28,7 +28,7 @@ class MapComponent extends Component<Props, State> {
     return(
       <GoogleMap
         defaultZoom={12}
-        defaultCenter={{
+        center={{
           lat: lat,
           lng: lng,
         }}
