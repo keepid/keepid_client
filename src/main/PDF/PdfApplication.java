@@ -102,7 +102,6 @@ public class PdfApplication {
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject formAnswers = req.getJSONObject("formAnswers");
-        System.out.println(formAnswers);
 
         // File pdfInput = new File("/home/steffen/Downloads/intellectual_property_release.pdf");
         InputStream inputStream =

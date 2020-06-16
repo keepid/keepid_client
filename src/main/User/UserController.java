@@ -175,7 +175,21 @@ public class UserController {
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userType = req.getString("personRole").strip();
+        String userTypeString = req.getString("personRole").strip();
+        UserType userType = UserType.userTypeFromString(userTypeString);
+
+        if (userType == null) {
+          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          return;
+        }
+
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User existingUser = userCollection.find(eq("username", username)).first();
+
+        if (existingUser != null) {
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
+          return;
+        }
 
         try {
           new User(
@@ -222,7 +236,13 @@ public class UserController {
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userType = req.getString("personRole");
+        String userTypeString = req.getString("personRole").strip();
+        UserType userType = UserType.userTypeFromString(userTypeString);
+
+        if (userType == null) {
+          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          return;
+        }
 
         User user;
         try {

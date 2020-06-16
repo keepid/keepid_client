@@ -3,6 +3,7 @@ package TestUtils;
 import Config.MongoConfig;
 import Organization.Organization;
 import User.User;
+import User.UserType;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -56,7 +57,7 @@ public class TestDBUtils {
             false,
             "adminBSM",
             TestDBUtils.hashPassword("adminBSM"),
-            "Director");
+            UserType.Director);
 
     User workerFffBSM =
         new User(
@@ -73,7 +74,7 @@ public class TestDBUtils {
                 false,
                 "workerfffBSM",
                 TestDBUtils.hashPassword("workerfffBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(false)
             .setCanView(false)
             .setCanRegister(false);
@@ -93,7 +94,7 @@ public class TestDBUtils {
                 false,
                 "workerfftBSM",
                 TestDBUtils.hashPassword("workerfftBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(false)
             .setCanView(false)
             .setCanRegister(true);
@@ -113,7 +114,7 @@ public class TestDBUtils {
                 false,
                 "workertffBSM",
                 TestDBUtils.hashPassword("workertffBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(false)
             .setCanRegister(false);
@@ -133,7 +134,7 @@ public class TestDBUtils {
                 false,
                 "workertftBSM",
                 TestDBUtils.hashPassword("workertftBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(false)
             .setCanRegister(true);
@@ -153,7 +154,7 @@ public class TestDBUtils {
                 false,
                 "workerttfBSM",
                 TestDBUtils.hashPassword("workerttfBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(true)
             .setCanRegister(false);
@@ -173,7 +174,7 @@ public class TestDBUtils {
                 false,
                 "workertttBSM",
                 TestDBUtils.hashPassword("workertttBSM"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(true)
             .setCanRegister(true);
@@ -193,7 +194,7 @@ public class TestDBUtils {
             false,
             "client1BSM",
             TestDBUtils.hashPassword("client1BSM"),
-            "Client");
+            UserType.Client);
 
     User client2BSM =
         new User(
@@ -210,7 +211,7 @@ public class TestDBUtils {
             false,
             "client2BSM",
             TestDBUtils.hashPassword("client2BSM"),
-            "Client");
+            UserType.Client);
 
     /** ******************** YMCA **************************** */
     Organization ymca =
@@ -240,7 +241,7 @@ public class TestDBUtils {
             false,
             "adminYMCA",
             TestDBUtils.hashPassword("adminYMCA"),
-            "Director");
+            UserType.Director);
 
     User workerFffYMCA =
         new User(
@@ -257,7 +258,7 @@ public class TestDBUtils {
                 false,
                 "workerfffYMCA",
                 TestDBUtils.hashPassword("workerfffYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(false)
             .setCanView(false)
             .setCanRegister(false);
@@ -277,7 +278,7 @@ public class TestDBUtils {
                 false,
                 "workerfftYMCA",
                 TestDBUtils.hashPassword("workerfftYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(false)
             .setCanView(false)
             .setCanRegister(true);
@@ -297,7 +298,7 @@ public class TestDBUtils {
                 false,
                 "workertffYMCA",
                 TestDBUtils.hashPassword("workertffYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(false)
             .setCanRegister(false);
@@ -317,7 +318,7 @@ public class TestDBUtils {
                 false,
                 "workertftYMCA",
                 TestDBUtils.hashPassword("workertftYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(false)
             .setCanRegister(true);
@@ -337,7 +338,7 @@ public class TestDBUtils {
                 false,
                 "workerttfYMCA",
                 TestDBUtils.hashPassword("workerttfYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(true)
             .setCanRegister(false);
@@ -357,7 +358,7 @@ public class TestDBUtils {
                 false,
                 "workertttYMCA",
                 TestDBUtils.hashPassword("workertttYMCA"),
-                "Worker")
+                UserType.Worker)
             .setCanEdit(true)
             .setCanView(true)
             .setCanRegister(true);
@@ -377,7 +378,7 @@ public class TestDBUtils {
             false,
             "client1YMCA",
             TestDBUtils.hashPassword("client1YMCA"),
-            "Client");
+            UserType.Client);
 
     User client2YMCA =
         new User(
@@ -394,7 +395,7 @@ public class TestDBUtils {
             false,
             "client2YMCA",
             TestDBUtils.hashPassword("client2YMCA"),
-            "Client");
+            UserType.Client);
 
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =

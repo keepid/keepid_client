@@ -29,6 +29,7 @@ public class PdfMongo {
 
     JSONObject res = new JSONObject();
     ObjectId id;
+    System.out.println(privilegeLevel);
 
     // Privilege Checking
     if (pdfType == PDFType.APPLICATION && (privilegeLevel == UserType.Client)) {
@@ -37,14 +38,15 @@ public class PdfMongo {
     } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       id = mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
       res.put("id", id);
-    } else if (pdfType == PDFType.FORM && (privilegeLevel == UserType.Admin)) {
+    } else if (pdfType == PDFType.FORM
+        && (privilegeLevel == UserType.Admin || privilegeLevel == UserType.Director)) {
       id = mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
       res.put("id", id);
     } else {
       id = null;
     }
     if (id == null) {
-      res.put("status", "failed to upload");
+      res.put("status", "insufficient privilege");
     } else {
       res.put("status", "uploaded");
     }

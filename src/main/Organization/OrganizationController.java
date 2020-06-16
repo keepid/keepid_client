@@ -2,6 +2,7 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
+import User.UserType;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -32,6 +33,15 @@ public class OrganizationController {
         String orgZipcode = req.getString("organizationAddressZipcode").strip();
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        Organization existingOrg = orgCollection.find(eq("orgName", orgName)).first();
+
+        if (existingOrg != null) {
+          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON());
+          return;
+        }
 
         try {
           new Organization(
@@ -64,11 +74,10 @@ public class OrganizationController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
-        System.out.println("2FA: " + req.getString("twoFactorOn"));
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userLevel = req.getString("personRole");
+        UserType userLevel = UserType.Admin;
 
         String orgName = req.getString("organizationName").strip();
         String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
@@ -101,7 +110,7 @@ public class OrganizationController {
                   birthDate,
                   email,
                   phone,
-                  "",
+                  orgName,
                   address,
                   city,
                   state,

@@ -79,7 +79,7 @@ public class User {
       Boolean twoFactorOn,
       String username,
       String password,
-      String userTypeStr)
+      UserType userType)
       throws ValidationException {
 
     UserValidationMessage validationMessage =
@@ -96,7 +96,7 @@ public class User {
             zipcode,
             username,
             password,
-            userTypeStr);
+            userType);
 
     if (validationMessage != UserValidationMessage.VALID)
       throw new ValidationException(UserValidationMessage.toUserMessageJSON(validationMessage));
@@ -115,7 +115,7 @@ public class User {
     this.twoFactorOn = twoFactorOn;
     this.username = username;
     this.password = password;
-    this.userType = UserType.userTypeFromString(userTypeStr);
+    this.userType = userType;
     this.calcPermissions();
   }
 
@@ -297,7 +297,7 @@ public class User {
       String zipcode,
       String username,
       String password,
-      String userType) {
+      UserType userType) {
 
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger("UserValidation");
@@ -350,7 +350,7 @@ public class User {
       logger.error("Invalid password: " + password);
       return UserValidationMessage.INVALID_PASSWORD;
     }
-    if (!ValidationUtils.isValidUserType(userType)) {
+    if (!ValidationUtils.isValidUserType(userType.toString())) {
       logger.error("Invalid UserType: " + userType);
       return UserValidationMessage.INVALID_USERTYPE;
     }
