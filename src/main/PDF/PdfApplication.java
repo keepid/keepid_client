@@ -1,5 +1,6 @@
 package PDF;
 
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -7,7 +8,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
-import org.apache.pdfbox.tools.ImportXFDF;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,9 +39,15 @@ public class PdfApplication {
   public Handler getApplicationQuestions =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        File pdfInput =
-            new File("/home/steffen/Downloads/intellectual_property_release_form_fillable.pdf");
-        PDDocument pdfDocument = PDDocument.load(pdfInput);
+        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        // File pdfInput = new File("/home/steffen/Downloads/intellectual_property_release.pdf");
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        InputStream inputStream =
+            PdfMongo.download(
+                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
+        PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
         List<String> fieldNames = new LinkedList<String>();
@@ -70,6 +77,8 @@ public class PdfApplication {
         for (String fieldQuestion : fieldQuestions) {
           System.out.println(fieldQuestion);
         }
+
+        pdfDocument.close();
         JSONObject res = new JSONObject();
         res.put("fieldNames", fieldNames);
         res.put("fieldQuestions", fieldQuestions);
@@ -88,13 +97,26 @@ public class PdfApplication {
   public Handler fillPDFForm =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        ImportXFDF importXFDFObject = new ImportXFDF();
+        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject formAnswers = req.getJSONObject("formAnswers");
+        System.out.println(formAnswers);
 
-        File pdfInput =
-            new File("/home/steffen/Downloads/intellectual_property_release_form_fillable.pdf");
-        PDDocument pdfDocument = PDDocument.load(pdfInput);
+        // File pdfInput = new File("/home/steffen/Downloads/intellectual_property_release.pdf");
+        InputStream inputStream =
+            PdfMongo.download(
+                username,
+                organizationName,
+                privilegeLevel,
+                applicationId,
+                PDFType.APPLICATION.FORM,
+                db);
+        PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
+        // ImportXFDF importXFDFObject = new ImportXFDF();
         // String xmlString = toXFDF(req);
         // InputStream stream = new
         // ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
@@ -102,13 +124,13 @@ public class PdfApplication {
         // importXFDFObject.importFDF(pdfDocument, xfdfDocument);
 
         PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
-        for (String key : req.keySet()) {
+        for (String key : formAnswers.keySet()) {
           String fieldName = key; // + "." + key;
           System.out.println(fieldName);
           PDField field = acroForm.getField(fieldName);
           if (field instanceof PDTextField) {
             System.out.println(field.getPartialName());
-            String value = req.getString(key);
+            String value = formAnswers.getString(key);
             field.setValue(value);
           }
         }
@@ -118,9 +140,9 @@ public class PdfApplication {
         pdfDocument.save(outputStream);
         pdfDocument.close();
 
-        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        InputStream outputFileStream = new ByteArrayInputStream(outputStream.toByteArray());
         ctx.header("Content-Type", "application/pdf");
-        ctx.result(inputStream);
+        ctx.result(outputFileStream);
       };
 
   private String toXFDF(JSONObject req)

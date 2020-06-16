@@ -1,5 +1,6 @@
 package PDF;
 
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import org.bson.types.ObjectId;
@@ -15,16 +16,15 @@ public class PdfDelete {
   public Handler pdfDelete =
       ctx -> {
         String user = ctx.sessionAttribute("username");
-        String fileIDStr = ctx.pathParam("fileId");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject req = new JSONObject(ctx.body());
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        String fileIDStr = req.getString("fileId");
         System.out.println(fileIDStr);
         ObjectId fileID = new ObjectId(fileIDStr);
-        Boolean success = PdfMongo.delete(user, fileID, db);
-        JSONObject res = new JSONObject();
-        if (success) {
-          res.put("status", "success");
-        } else {
-          res.put("status", "failure");
-        }
+        JSONObject res =
+            PdfMongo.delete(user, organizationName, pdfType, privilegeLevel, fileID, db);
         ctx.json(res.toString());
       };
 }
