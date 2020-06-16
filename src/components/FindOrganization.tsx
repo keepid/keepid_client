@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import GoogleMapReact from 'google-map-react';
-import Marker from './Marker';
+import MapComponent from './MapComponent';
+import { withAlert } from 'react-alert';
 
 interface Props {
-
+  alert: any,
 }
 
 interface State {
@@ -72,12 +72,19 @@ class FindOrganization extends Component<Props, State> {
       method: 'GET',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const zipcodeLatLng = responseJSON.results[0].geometry.location;
-        this.setState({
-          displayMap: true,
-          zipcodeLatLng,
-        });
-      });
+        if (responseJSON.status === "OK") {
+          const zipcodeLatLng = responseJSON.results[0].geometry.location;
+          this.setState({
+            displayMap: true,
+            zipcodeLatLng,
+          });
+        } else {
+          const {
+            alert,
+          } = this.props;
+          alert.show(`Invalid zip code`);
+        }
+    });
   }
 
   render() {
@@ -87,50 +94,36 @@ class FindOrganization extends Component<Props, State> {
       organizations,
       zipcodeLatLng,
     } = this.state;
+
     return (
-      <div>
+      <div className="container">
+        <div className="jumbotron-fluid mt-5">
+          <h1 className="display-4">Find Nearby Organizations</h1>
+        </div>
         <form onSubmit={this.onSubmitZipcode}>
-          <label htmlFor="zipcodeInput">
-            Find Nearby Organizations by Zipcode
-            <input
-              id="zipcodeInput"
-              type="text"
-              value={zipcodeSearch}
-              onChange={this.onHandleChangeZipcode}
-            />
-          </label>
-          <button type="submit">Submit</button>
+          <div className="input-group mb-3 mt-5">
+            <input type="text" className="form-control form-purple" placeholder="Enter your zipcode here" value={zipcodeSearch} onChange={this.onHandleChangeZipcode}/>
+            <div className="input-group-append">
+              <button className="btn btn-primary btn-primary-theme rounded-0" type="submit">Search</button>
+            </div>
+          </div>
         </form>
         {displayMap
           ? (
-            <div style={{ height: '100vh', width: '100%' }}>
-              <GoogleMapReact
-                bootstrapURLKeys={{ key: APIKey }}
-                center={{
-                  lat: zipcodeLatLng.lat,
-                  lng: zipcodeLatLng.lng,
-                }}
-                zoom={12}
-              >
-                {organizations.map(
-                  (organization) => (
-                    <Marker
-                      lat={organization.lat}
-                      lng={organization.lng}
-                      orgName={organization.orgName}
-                      address={organization.address}
-                      phone={organization.phone}
-                      email={organization.email}
-                    />
-                  ),
-                )}
-              </GoogleMapReact>
-            </div>
-          )
+              <MapComponent
+                organizations={organizations}
+                lat={zipcodeLatLng.lat}
+                lng={zipcodeLatLng.lng}
+                googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
+                loadingElement={<div style={{ height: `100%` }} />}
+                containerElement={<div style={{ height: `400px` }} />}
+                mapElement={<div style={{ height: `100%` }} />}
+              />
+            )
           : <div />}
       </div>
     );
   }
 }
 
-export default FindOrganization;
+export default withAlert()(FindOrganization);

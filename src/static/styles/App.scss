@@ -82,6 +82,11 @@ $theme-colors: (
 	border-color: $primary-theme;
 }
 
+.btn-primary-theme {
+	background: $primary-theme;
+	border-color: $primary-theme;
+}
+
 .rectangle {
 	width: 20rem;
 	height: 15rem;
@@ -393,3 +398,5 @@ thead {
 	color: $footer-color;
 	font-size: calc(.9rem + (4 * (100vw - 13rem)/ 624));
 }
+
+.react-datepicker-wrapper { width: 100% }

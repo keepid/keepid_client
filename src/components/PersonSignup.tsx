@@ -50,6 +50,7 @@ class PersonSignup extends Component<Props, State, {}> {
         zipcode: personAddressZipcode,
         password: personPassword,
         personRole: personRoleString,
+        twoFactorOn: false
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
+import Switch from 'react-switch';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { withAlert } from 'react-alert';
@@ -42,6 +43,15 @@ interface InputState {
 
 // one field e.g. birthDate, address, etc.
 class RenderInput extends Component<InputProps, InputState> {
+  static birthDateString(birthDate: Date) {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
+  }
+
   constructor(props: InputProps) {
     super(props);
     this.state = {
@@ -52,7 +62,6 @@ class RenderInput extends Component<InputProps, InputState> {
       showPasswordConfirm: false,
       buttonState: '',
     };
-    this.birthDateString = this.birthDateString.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.handleSetReadOnly = this.handleSetReadOnly.bind(this);
@@ -63,8 +72,8 @@ class RenderInput extends Component<InputProps, InputState> {
   }
 
   componentDidUpdate(prevProps) {
-    const { 
-      inputValue 
+    const {
+      inputValue,
     } = this.props;
     if (inputValue !== prevProps.inputValue) {
       this.setState({
@@ -72,15 +81,6 @@ class RenderInput extends Component<InputProps, InputState> {
         originalInput: inputValue,
       });
     }
-  }
-
-  birthDateString(birthDate: Date) {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
   }
 
   // edit input
@@ -142,6 +142,7 @@ class RenderInput extends Component<InputProps, InputState> {
     this.setState({
       wrongPasswordInModal: false,
       showPasswordConfirm: false,
+      buttonState: '',
     });
   }
 
@@ -164,7 +165,7 @@ class RenderInput extends Component<InputProps, InputState> {
 
     // format date
     if (inputType === 'date') {
-      input = this.birthDateString(input);
+      input = RenderInput.birthDateString(input);
     }
 
     const data = {
@@ -185,7 +186,7 @@ class RenderInput extends Component<InputProps, InputState> {
         responseJSON = JSON.parse(responseJSON);
         const { status } = responseJSON;
         const { message } = responseJSON;
-        if (status === 'SUCCESS') { // succesfully updated key and value
+        if (status === 'SUCCESS') { // successfully updated key and value
           alert.show(`Successfully updated ${inputLabel}`);
           this.setState({
             originalInput: input,
@@ -258,7 +259,7 @@ class RenderInput extends Component<InputProps, InputState> {
           { readOnly ? <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={this.handleEdit}>Edit</button>
             : (
               <span className="float-right">
-                <button type="reset" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
+                <button type="button" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
                 <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={this.handleOpenPasswordConfirmModal}>Save</button>
               </span>
             )}
@@ -352,7 +353,7 @@ class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmP
             { wrongPasswordInModal ? <p className="text-danger">Password is incorrect</p> : null }
             <input type="password" className={wrongPasswordInModal ? 'form-control form-red' : 'form-control form-purple'} name="passwordConfirm" id="passwordConfirm" onChange={this.handlePasswordInput} />
             <Modal.Footer>
-              <Button type="reset" variant="light" onClick={this.handleClose}>Cancel</Button>
+              <Button type="button" variant="light" onClick={this.handleClose}>Cancel</Button>
               <Button type="submit" className={`ld-ext-right ${buttonState}`} variant="outline-dark" onClick={this.handlePasswordSubmit}>
                 Submit
                 <div className="ld ld-ring ld-spin" />
@@ -388,12 +389,15 @@ interface State {
   zipcode: string,
 
   // password variables
-  oldPassword: string,
   enteredPassword: string,
   newPassword: string,
   newPasswordConfirm: string,
   passwordError: PasswordError,
   passwordChangeReadOnly: boolean,
+  buttonState: string,
+
+  // 2FA variable
+  twoFactorOn: boolean,
 }
 
 class MyAccount extends Component<Props, State, {}> {
@@ -417,17 +421,49 @@ class MyAccount extends Component<Props, State, {}> {
       zipcode: '',
 
       // pasword variables
-      oldPassword: '',
       enteredPassword: '',
       newPassword: '',
       newPasswordConfirm: '',
       passwordError: PasswordError.NoError,
       passwordChangeReadOnly: true,
+      buttonState: '',
+      // 2FA variable
+      twoFactorOn: true,
     };
+
     this.handleEditPassword = this.handleEditPassword.bind(this);
     this.handleCancelPassword = this.handleCancelPassword.bind(this);
     this.handleInputChangePassword = this.handleInputChangePassword.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChange2FA = this.handleChange2FA.bind(this);
+  }
+
+  componentDidMount() {
+    fetch(`${getServerURL()}/get-user-info`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const date = responseJSON.birthDate.split('-');
+        const newState = {
+          username: responseJSON.username,
+          firstName: responseJSON.firstName,
+          lastName: responseJSON.lastName,
+          birthDate: new Date(date[2], date[0] - 1, date[1]),
+          email: responseJSON.email,
+          phone: responseJSON.phone,
+          city: responseJSON.city,
+          state: responseJSON.state,
+          address: responseJSON.address,
+          zipcode: responseJSON.zipcode,
+          twoFactorOn: responseJSON.twoFactorOn,
+        };
+        this.setState(newState);
+      });
   }
 
   handleEditPassword() {
@@ -443,34 +479,8 @@ class MyAccount extends Component<Props, State, {}> {
       newPassword: '',
       newPasswordConfirm: '',
       passwordError: PasswordError.NoError,
+      buttonState: '',
     });
-  }
-
-  componentDidMount() {
-    fetch(`${getServerURL()}/get-user-info`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
-        const date = responseJSON.birthDate.split("-");
-        const newState = {
-          username: responseJSON.username,
-          firstName: responseJSON.firstName,
-          lastName: responseJSON.lastName,
-          birthDate: new Date(date[2], date[0]-1, date[1]),
-          email: responseJSON.email,
-          phone: responseJSON.phone,
-          city: responseJSON.city,
-          state: responseJSON.state,
-          address: responseJSON.address,
-          zipcode: responseJSON.zipcode,
-        };
-        this.setState(newState);
-      });
   }
 
   handleInputChangePassword(event) {
@@ -487,56 +497,93 @@ class MyAccount extends Component<Props, State, {}> {
   // change password section
   handleChangePassword(event) {
     event.preventDefault();
+    this.setState({
+      buttonState: 'running',
+    });
 
     const {
-      oldPassword,
       enteredPassword,
       newPassword,
       newPasswordConfirm,
     } = this.state;
 
-    // check the old password was entered correctly
-    if (oldPassword === enteredPassword) {
-      // new password must be different from old password
-      if (oldPassword !== newPassword) {
-        // new password meets requirements - TODO figure out the actual requirements
-        if (newPassword.length >= 8) {
-          // new password must be entered correctly twice
-          if (newPassword === newPasswordConfirm) {
-            // TODO - call API to change password - also add popup confirming
-            console.log('password reset API called');
+    const {
+      alert,
+    } = this.props;
 
+    // confirm new passwor doesn't match
+    if (newPassword !== newPasswordConfirm) {
+      this.setState({
+        buttonState: '',
+        passwordError: PasswordError.NewPasswordConfirmWrong,
+      });
+      return;
+    }
+
+    // call API route to change password
+    const data = {
+      oldPassword: enteredPassword,
+      newPassword,
+    };
+    fetch(`${getServerURL()}/change-password`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const { status } = responseJSON;
+        const { message } = responseJSON;
+
+        // old passwrod entered correctly
+        if (status === 'AUTH_SUCCESS') {
+          // new password is the same as the old password
+          if (enteredPassword === newPassword) {
             this.setState({
-              passwordError: PasswordError.NoError,
-              oldPassword: newPassword,
-              passwordChangeReadOnly: true,
-              enteredPassword: '',
-              newPassword: '',
-              newPasswordConfirm: '',
+              passwordError: PasswordError.NewPasswordSameAsOld,
             });
-          } else {
-            this.setState({
-              passwordError: PasswordError.NewPasswordConfirmWrong,
-            });
+          } else { // no error - password changed succesfully
+            this.handleCancelPassword();
+            alert.show('Successfully updated password');
           }
-        } else {
-          // new password doesn't meet requirements
+        } else if (status === 'AUTH_FAILURE') { // wrong old password
           this.setState({
-            passwordError: PasswordError.NewPasswordInvalid,
+            passwordError: PasswordError.OldPasswordWrong,
           });
         }
-      } else {
-        // new password same as old password
+
         this.setState({
-          passwordError: PasswordError.NewPasswordSameAsOld,
+          buttonState: '',
         });
-      }
-    } else {
-      // old password entered wrong
-      this.setState({
-        passwordError: PasswordError.OldPasswordWrong,
       });
-    }
+  }
+
+  handleChange2FA(twoFactorOn) {
+    const data = {
+      twoFactorOn: twoFactorOn,
+    };
+
+    fetch(`${getServerURL()}/change-two-factor-setting`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        responseJSON = JSON.parse(responseJSON);
+        const { status } = responseJSON;
+        const { message } = responseJSON;
+
+        if (status === 'SUCCESS') { // succesfully updated key and value
+          //alert.show(`Successfully set 2FA Value`);
+          this.setState({ twoFactorOn });
+        }
+    });
   }
 
   render() {
@@ -551,12 +598,13 @@ class MyAccount extends Component<Props, State, {}> {
       city,
       state,
       zipcode,
+      twoFactorOn,
       passwordChangeReadOnly,
-      oldPassword,
       enteredPassword,
       newPassword,
       newPasswordConfirm,
       passwordError,
+      buttonState,
     } = this.state;
 
     const {
@@ -636,7 +684,7 @@ class MyAccount extends Component<Props, State, {}> {
               { passwordError === PasswordError.NewPasswordSameAsOld ? <p className="text-danger col-md-9 offset-md-3">The new password cannot match the old password</p> : null }
               { passwordError === PasswordError.NewPasswordInvalid ? <p className="text-danger col-md-9 offset-md-3">The new password is invalid</p> : null }
               <div className="row mb-3 mt-3">
-                <div className="col-3 card-text mt-2 text-primary-theme">New password</div>
+                <div className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</div>
                 <div className="col-9 card-text">
                   <input type="password" className="form-control form-purple" name="newPassword" id="newPassword" value={newPassword} onChange={this.handleInputChangePassword} readOnly={passwordChangeReadOnly} />
                 </div>
@@ -652,8 +700,11 @@ class MyAccount extends Component<Props, State, {}> {
                 { passwordChangeReadOnly ? null
                   : (
                     <span className="float-right">
-                      <button type="reset" name={Section.PasswordChange} className="btn btn-light mr-3" onClick={this.handleCancelPassword}>Cancel</button>
-                      <button type="submit" className="btn btn-outline-dark" onClick={this.handleChangePassword}>Save</button>
+                      <Button type="button" name={Section.PasswordChange} className="mr-3" variant="light" onClick={this.handleCancelPassword}>Cancel</Button>
+                      <Button type="submit" className={`ld-ext-right ${buttonState}`} variant="outline-dark" onClick={this.handleChangePassword}>
+                        Submit
+                        <div className="ld ld-ring ld-spin" />
+                      </Button>
                     </span>
                   )}
               </div>
@@ -668,8 +719,10 @@ class MyAccount extends Component<Props, State, {}> {
               <div className="col-3 card-text mt-2">
                 Status:
               </div>
-              <div className="col-3 card-text mt-2 text-danger">
-                Not Set Up Yet
+              <div className="input-group mb-3 col-6">
+                <label>
+                  <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
+                </label>
               </div>
             </div>
             <div className="row mb-3 mt-3">

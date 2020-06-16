@@ -230,6 +230,7 @@ class Signup extends Component<Props, State, {}> {
           zipcode: personAddressZipcode,
           password: personPassword,
           personRole: personRoleString,
+          twoFactorOn: false
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -319,7 +320,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-6 form-group">
                     <label htmlFor="inputFirstName" className="w-100 pr-3">
                       Contact First Name
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -335,7 +336,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-6 form-group">
                     <label htmlFor="inputLastName" className="w-100 pr-3">
                       Contact Last Name
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -353,7 +354,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputPhoneNumber" className="w-100 pr-3">
                       Contact Phone Number
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="tel"
                         className="form-control form-purple"
@@ -369,7 +370,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputBirthDate" className="w-100 pr-3">
                       Contact Birth Date
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <DatePicker
                         id="inputBirthDate"
                         onChange={this.handleChangePersonBirthDate}
@@ -383,7 +384,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-5 form-group">
                     <label htmlFor="inputEmail" className="w-100 pr-3">
                       Contact Email Address
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="email"
                         className="form-control form-purple"
@@ -401,7 +402,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputMailingAddress" className="w-100 pr-3">
                       Contact Mailing Address
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -417,7 +418,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputCity" className="w-100 pr-3">
                       City
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -433,7 +434,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-2 form-group">
                     <label htmlFor="inputState" className="w-100 pr-3">
                       State
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <select
                         className="form-control form-purple"
                         id="inputState"
@@ -442,14 +443,14 @@ class Signup extends Component<Props, State, {}> {
                         disabled={reaffirmStage}
                         required
                       >
-                        {USStates.map((USState) => (<option>{USState.abbreviation}</option>))}
+                        {USStates.map((USState) => (<option key={USState.abbreviation}>{USState.abbreviation}</option>))}
                       </select>
                     </label>
                   </div>
                   <div className="col-md-3 form-group">
                     <label htmlFor="inputZipCode" className="w-100 pr-3">
                       Zip Code
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -468,7 +469,7 @@ class Signup extends Component<Props, State, {}> {
                   <div className="col-md-4 form-group">
                     <label htmlFor="inputUsername" className="w-100 pr-3">
                       Contact Username
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="text"
                         className="form-control form-purple"
@@ -481,13 +482,13 @@ class Signup extends Component<Props, State, {}> {
                       />
                     </label>
                   </div>
-                  <div className="col-md-2 form-group">
+                  {/* <div className="col-md-2 form-group">
                     <button type="button" className="btn btn-success" onClick={this.generatePersonUsername}>Generate Username</button>
-                  </div>
-                  <div className="col-md-3 form-group">
+                  </div> */}
+                  <div className="col-md-4 form-group">
                     <label htmlFor="inputPassword" className="w-100 pr-3">
-                      Password
-                      <text className="red-star">*</text>
+                      Password (at least 8 characters long)
+                      <span className="red-star">*</span>
                       <input
                         type="password"
                         className="form-control form-purple"
@@ -500,10 +501,10 @@ class Signup extends Component<Props, State, {}> {
                       />
                     </label>
                   </div>
-                  <div className="col-md-3 form-group">
+                  <div className="col-md-4 form-group">
                     <label htmlFor="inputConfirmPassword" className="w-100 pr-3">
                       Confirm Password
-                      <text className="red-star">*</text>
+                      <span className="red-star">*</span>
                       <input
                         type="password"
                         className="form-control form-purple"
@@ -520,8 +521,21 @@ class Signup extends Component<Props, State, {}> {
                 <div className="form-row">
                   {!reaffirmStage
                     ? (
-                      <div className="col mt-3 pl-5 pt-2">
-                        <input type="submit" className="btn btn-primary w-50" value="Continue" />
+                      <div className="w-100">
+                        <div className="">
+                          <span className="text-muted recaptcha-login-text">
+                            This page is protected by reCAPTCHA, and subject to the Google
+                            {' '}
+                            <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                            and
+                            {' '}
+                            <a href="https://www.google.com/policies/terms/">Terms of service</a>
+                            .
+                          </span>
+                        </div>
+                        <div className="pr-3 mr-1">
+                          <input type="submit" className="btn btn-primary btn-lg float-right" value="Continue" />
+                        </div>
                       </div>
                     ) : <br />}
                 </div>
