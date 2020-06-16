@@ -2,19 +2,23 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import getServerURL from '../serverOverride';
 import DocumentViewer from "./DocumentViewer";
-import {Link} from "react-router-dom";
+import { Link, Redirect } from 'react-router-dom';
 import Role from "../static/Role";
 import PDFType from "../static/PDFType";
+// import {Simulate} from "react-dom/test-utils";
+// import submit = Simulate.submit;
 
 interface Props {
     applicationId: string,
+    applicationFilename: string,
 }
 
 interface State {
     formQuestions: [string, string][] | undefined,
     formAnswers: any,
     pdfApplication: File | undefined,
-    buttonState: string
+    buttonState: string,
+    submitSuccessful: boolean,
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -25,17 +29,19 @@ class ApplicationForm extends Component<Props, State> {
       formAnswers: {},
       pdfApplication: undefined,
       buttonState: '',
+      submitSuccessful: false,
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
+    this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
 
   componentDidMount() {
     const {
-        applicationId,
+      applicationId,
     } = this.props;
     const {
-        formAnswers,
+      formAnswers,
     } = this.state;
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
@@ -73,8 +79,12 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   }
 
-  onSubmit(event: any) {
+  onSubmitFormQuestions(event: any) {
     event.preventDefault();
+    const {
+      applicationId,
+      applicationFilename,
+    } = this.props;
     const {
       formAnswers,
     } = this.state;
@@ -84,40 +94,58 @@ class ApplicationForm extends Component<Props, State> {
     fetch(`${getServerURL()}/fill-application`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify(formAnswers),
+      body: JSON.stringify({
+        applicationId,
+        formAnswers,
+      }),
     }).then((response) => response.blob())
-        .then((responseBlob) => {
-          const pdfFile = new File([responseBlob], "Filename", { type: 'application/pdf' });
-          this.setState({ pdfApplication: pdfFile });
-            const formData = new FormData();
-            formData.append('file', pdfFile, pdfFile.name);
-            formData.append('pdfType', PDFType.APPLICATION);
-            fetch(`${getServerURL()}/upload`, {
-                method: 'POST',
-                credentials: 'include',
-                body: formData,
-            })
+      .then((responseBlob) => {
+        const pdfFile = new File([responseBlob], applicationFilename, { type: 'application/pdf' });
+        this.setState({ pdfApplication: pdfFile });
+      });
+  }
+
+  onSubmitPdfApplication(event: any) {
+    const {
+      pdfApplication,
+    } = this.state;
+    if (pdfApplication) {
+      const formData = new FormData();
+      formData.append('file', pdfApplication, pdfApplication.name);
+      formData.append('pdfType', PDFType.APPLICATION);
+      fetch(`${getServerURL()}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      }).then((response) => (response.json()))
+        .then((responseJSON) => {
+          this.setState({ submitSuccessful: true });
         });
+    }
   }
 
   render() {
     const {
       pdfApplication,
       formQuestions,
+      submitSuccessful,
     } = this.state;
-    return (
-      <div className="container">
-        <Helmet>
-          <title>Fill Application</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron jumbotron-fluid bg-white pb-0">
-          <div className="container">
-            <h1 className="display-4">Application Questions</h1>
-            <p className="lead">Fill out your application here.</p>
-          </div>
+
+    if (submitSuccessful) {
+      return (<Redirect to="/home" />);
+    }
+
+    let bodyElement;
+    if (pdfApplication) {
+      bodyElement = (
+        <div>
+          <DocumentViewer pdfFile={pdfApplication} />
+          <button onClick={this.onSubmitPdfApplication} type="button">Submit Final Application</button>
         </div>
-        {formQuestions ? (<form onSubmit={this.onSubmit}>
+      );
+    } else if (formQuestions) {
+      bodyElement = (
+        <form onSubmit={this.onSubmitFormQuestions}>
           {formQuestions.map(
             (entry) => (
               <div className="mt-2 mb-2">
@@ -136,22 +164,32 @@ class ApplicationForm extends Component<Props, State> {
             ),
           )}
           <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
-            Submit
+            Submit Form Answers
             <div className="ld ld-ring ld-spin" />
           </button>
-        </form>) : <div />}
-        { pdfApplication ? (
-            <div>
-              <DocumentViewer pdfFile={pdfApplication} />
-              <button>Submit Final PDF</button>
-            </div>
-              )
-              : <div />}
-          <Link to="/applications">
-              <button type="button" className="btn btn-outline-success">
-                  Back
-              </button>
-          </Link>
+        </form>
+      );
+    } else {
+      bodyElement = (<div />);
+    }
+    return (
+      <div className="container">
+        <Helmet>
+          <title>Fill Application</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron jumbotron-fluid bg-white pb-0">
+          <div className="container">
+            <h1 className="display-4">Application Questions</h1>
+            <p className="lead">Fill out your application here.</p>
+          </div>
+        </div>
+        {bodyElement}
+        <Link to="/applications">
+          <button type="button" className="btn btn-outline-success">
+            Back
+          </button>
+        </Link>
       </div>
     );
   }

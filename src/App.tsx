@@ -277,7 +277,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/my-documents"
                 render={() => {
-                  if (role === Role.Client) {
+                  if (role === Role.Client || role === Role.Admin || role === Role.Director) {
                     return <MyDocuments username={name} />;
                   }
                   return <Redirect to="/error" />;

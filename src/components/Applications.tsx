@@ -18,6 +18,7 @@ interface Props {
 
 interface State {
   currentApplicationId: string | undefined,
+  currentApplicationFilename: string | undefined,
   documents: any,
   currentUser: any,
   currentPage: number,
@@ -75,6 +76,7 @@ class Applications extends Component<Props, State, {}> {
     super(props);
     this.state = {
       currentApplicationId: undefined,
+      currentApplicationFilename: undefined,
       currentUser: undefined,
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
@@ -141,24 +143,12 @@ class Applications extends Component<Props, State, {}> {
       id,
       filename,
     } = form;
-    this.setState({ currentApplicationId: id });
-    fetch(`${getServerURL()}/download/`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        fileID: id,
-        pdfType: PDFType.FORM,
-      }),
-    }).then(async (response) => {
-      const responseBlob : Blob = await response.blob();
-      const pdfFile = new File([responseBlob], filename, { type: 'application/pdf' });
-
-      // open pdf in new tab
-      const fileURL = URL.createObjectURL(pdfFile);
-      window.open(fileURL);
-    }).catch((error) => {
-      alert('Error Fetching File');
-    });
+    this.setState(
+      {
+        currentApplicationId: id,
+        currentApplicationFilename: filename,
+      },
+    );
   }
 
   changeCurrentPage(newCurrentPage: number) {
@@ -188,6 +178,7 @@ class Applications extends Component<Props, State, {}> {
 
   render() {
     const {
+      currentApplicationFilename,
       currentApplicationId,
       currentUser,
       currentPage,
@@ -267,7 +258,9 @@ class Applications extends Component<Props, State, {}> {
           </div>
         </Route>
         <Route path="/applications/send">
-          {currentApplicationId ? <ApplicationForm applicationId={currentApplicationId} /> : <div />}
+          {currentApplicationId && currentApplicationFilename ?
+            <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+            : <div />}
         </Route>
       </Switch>
     );
