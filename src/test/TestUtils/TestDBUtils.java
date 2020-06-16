@@ -1,11 +1,13 @@
 package TestUtils;
 
 import Config.MongoConfig;
+import Organization.Organization;
+import User.User;
+import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-import org.bson.Document;
 
 import java.util.Arrays;
 
@@ -15,369 +17,408 @@ public class TestDBUtils {
 
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
-   * Workers with all sets of permissions, labelled with flags denoting their permission level, i.e. 001 denotes
+   * Workers with all sets of permissions, labelled with flags denoting their permission level, i.e. fft denotes
    * permission levels set to false, false, true for canView, canEdit, canRegister.
    * 2 clients each.
    *
    * Passwords are the same as usernames.
    */
-  public static void setUpTestDB() {
+  public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
     TestDBUtils.tearDownTestDB();
     MongoConfig.getMongoTestClient();
 
     /* *********************** Broad Street Ministry ************************ */
-    Document broadStreetMinistry =
-        new Document("orgName", "Broad Street Ministry")
-            .append("website", "http://www.broadstreetministry.org")
-            .append("ein", "123456")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("email", "mikedahl@broadstreetministry.org")
-            .append("phone", "1234567890");
+    Organization broadStreetMinistry =
+        new Organization(
+            "Broad Street Ministry",
+            "http://www.broadstreetministry.org",
+            "123456789",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            "mikedahl@broadstreetministry.org",
+            "1234567890");
 
-    Document adminBSM =
-        new Document("username", "adminBSM")
-            .append("password", TestDBUtils.hashPassword("adminBSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "mikedahl@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Mike")
-            .append("lastName", "Dahl")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "admin")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", true);
+    User adminBSM =
+        new User(
+            "Mike",
+            "Dahl",
+            "06/16/1960",
+            "mikedahl@broadstreetministry.org",
+            "1234567890",
+            "Broad Street Ministry",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "adminBSM",
+            TestDBUtils.hashPassword("adminBSM"),
+            "Director");
 
-    Document worker000BSM =
-        new Document("username", "worker000BSM")
-            .append("password", TestDBUtils.hashPassword("worker000BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker000BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "000")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User workerFffBSM =
+        new User(
+                "Worker",
+                "Fff",
+                "12/14/1997",
+                "workerfff@broadstreetministry.org",
+                "2157354847",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workerfffBSM",
+                TestDBUtils.hashPassword("workerfffBSM"),
+                "Worker")
+            .setCanEdit(false)
+            .setCanView(false)
+            .setCanRegister(false);
 
-    Document worker001BSM =
-        new Document("username", "worker001BSM")
-            .append("password", TestDBUtils.hashPassword("worker001BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker001BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "001")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", true);
+    User workerFftBSM =
+        new User(
+                "Worker",
+                "Fft",
+                "09/04/1978",
+                "workerfft@broadstreetministry.org",
+                "2152839504",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workerfftBSM",
+                TestDBUtils.hashPassword("workerfftBSM"),
+                "Worker")
+            .setCanEdit(false)
+            .setCanView(false)
+            .setCanRegister(true);
 
-    Document worker100BSM =
-        new Document("username", "worker100BSM")
-            .append("password", TestDBUtils.hashPassword("worker100BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker100BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "100")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User workerTffBSM =
+        new User(
+                "Worker",
+                "Tff",
+                "09/04/1978",
+                "workertff@broadstreetministry.org",
+                "2152839504",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workertffBSM",
+                TestDBUtils.hashPassword("workertffBSM"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(false)
+            .setCanRegister(false);
 
-    Document worker101BSM =
-        new Document("username", "worker101BSM")
-            .append("password", TestDBUtils.hashPassword("worker101BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker101BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "101")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", false)
-            .append("canRegister", true);
+    User workerTftBSM =
+        new User(
+                "Worker",
+                "Tft",
+                "09/14/1978",
+                "workertft@broadstreetministry.org",
+                "2152839204",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workertftBSM",
+                TestDBUtils.hashPassword("workertftBSM"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(false)
+            .setCanRegister(true);
 
-    Document worker110BSM =
-        new Document("username", "worker110BSM")
-            .append("password", TestDBUtils.hashPassword("worker110BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker110BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "110")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", false);
+    User workerTtfBSM =
+        new User(
+                "Worker",
+                "Ttf",
+                "09/14/1978",
+                "workerttf@broadstreetministry.org",
+                "2152812204",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workerttfBSM",
+                TestDBUtils.hashPassword("workerttfBSM"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(true)
+            .setCanRegister(false);
 
-    Document worker111BSM =
-        new Document("username", "worker111BSM")
-            .append("password", TestDBUtils.hashPassword("worker111BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "worker111BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Worker")
-            .append("lastName", "111")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", true);
+    User workerTttBSM =
+        new User(
+                "Worker",
+                "Ttt",
+                "09/14/1978",
+                "workerttt@broadstreetministry.org",
+                "2152839204",
+                "Broad Street Ministry",
+                "311 Broad Street",
+                "Philadelphia",
+                "PA",
+                "19104",
+                false,
+                "workertttBSM",
+                TestDBUtils.hashPassword("workertttBSM"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(true)
+            .setCanRegister(true);
 
-    Document client1BSM =
-        new Document("username", "client1BSM")
-            .append("password", TestDBUtils.hashPassword("client1BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "client1BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Client")
-            .append("lastName", "1")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "client")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User client1BSM =
+        new User(
+            "Client",
+            "Bsm",
+            "09/14/1978",
+            "clien1@broadstreetministry.org",
+            "2152839204",
+            "Broad Street Ministry",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "client1BSM",
+            TestDBUtils.hashPassword("client1BSM"),
+            "Client");
 
-    Document client2BSM =
-        new Document("username", "client2BSM")
-            .append("password", TestDBUtils.hashPassword("client2BSM"))
-            .append("organization", "Broad Street Ministry")
-            .append("email", "client2BSM@broadstreetministry.org")
-            .append("phone", "2157354847")
-            .append("firstName", "Client")
-            .append("lastName", "2")
-            .append("address", "315 S Broad Street")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19107")
-            .append("privilegeLevel", "client")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User client2BSM =
+        new User(
+            "Steffen",
+            "Cornwell",
+            "09/14/1997",
+            "steffen@broadstreetministry.org",
+            "2152839204",
+            "Broad Street Ministry",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "client2BSM",
+            TestDBUtils.hashPassword("client2BSM"),
+            "Client");
 
     /** ******************** YMCA **************************** */
-    Document ymca =
-        new Document("orgName", "YMCA")
-            .append("website", "http://www.ymca.net")
-            .append("ein", "123456")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("email", "info@ymca.net")
-            .append("phone", "1234567890");
+    Organization ymca =
+        new Organization(
+            "YMCA",
+            "http://www.ymca.net",
+            "987654321",
+            "11088 Knights Rd",
+            "Philadelphia",
+            "PA",
+            "19154",
+            "info@ymca.net",
+            "1234567890");
 
-    Document adminYMCA =
-        new Document("username", "adminYMCA")
-            .append("password", TestDBUtils.hashPassword("adminYMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "admin")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", true);
+    User adminYMCA =
+        new User(
+            "Ym",
+            "Ca",
+            "06/16/1960",
+            "info@ymca.net",
+            "1234567890",
+            "YMCA",
+            "11088 Knights Road",
+            "Philadelphia",
+            "PA",
+            "19154",
+            false,
+            "adminYMCA",
+            TestDBUtils.hashPassword("adminYMCA"),
+            "Director");
 
-    Document worker000YMCA =
-        new Document("username", "worker000YMCA")
-            .append("password", TestDBUtils.hashPassword("worker000YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User workerFffYMCA =
+        new User(
+                "Worker",
+                "Fff",
+                "12/14/1997",
+                "workerfff@ymca.net",
+                "2157354847",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workerfffYMCA",
+                TestDBUtils.hashPassword("workerfffYMCA"),
+                "Worker")
+            .setCanEdit(false)
+            .setCanView(false)
+            .setCanRegister(false);
 
-    Document worker001YMCA =
-        new Document("username", "worker001YMCA")
-            .append("password", TestDBUtils.hashPassword("worker001YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", true);
+    User workerFftYMCA =
+        new User(
+                "Worker",
+                "Fft",
+                "09/04/1978",
+                "workerfft@ymca.net",
+                "2152839504",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workerfftYMCA",
+                TestDBUtils.hashPassword("workerfftYMCA"),
+                "Worker")
+            .setCanEdit(false)
+            .setCanView(false)
+            .setCanRegister(true);
 
-    Document worker100YMCA =
-        new Document("username", "worker100YMCA")
-            .append("password", TestDBUtils.hashPassword("worker100YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User workerTffYMCA =
+        new User(
+                "Worker",
+                "Tff",
+                "09/04/1978",
+                "workertff@ymca.net",
+                "2152839504",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workertffYMCA",
+                TestDBUtils.hashPassword("workertffYMCA"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(false)
+            .setCanRegister(false);
 
-    Document worker101YMCA =
-        new Document("username", "worker101YMCA")
-            .append("password", TestDBUtils.hashPassword("worker101YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", false)
-            .append("canRegister", true);
+    User workerTftYMCA =
+        new User(
+                "Worker",
+                "Tft",
+                "09/14/1978",
+                "workertft@ymca.net",
+                "2152839204",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workertftYMCA",
+                TestDBUtils.hashPassword("workertftYMCA"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(false)
+            .setCanRegister(true);
 
-    Document worker110YMCA =
-        new Document("username", "worker110YMCA")
-            .append("password", TestDBUtils.hashPassword("worker110YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", false);
+    User workerTtfYMCA =
+        new User(
+                "Worker",
+                "Ttf",
+                "09/14/1978",
+                "workerttf@ymca.net",
+                "2152812204",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workerttfYMCA",
+                TestDBUtils.hashPassword("workerttfYMCA"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(true)
+            .setCanRegister(false);
 
-    Document worker111YMCA =
-        new Document("username", "worker111YMCA")
-            .append("password", TestDBUtils.hashPassword("worker111YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "worker")
-            .append("canView", true)
-            .append("canEdit", true)
-            .append("canRegister", true);
+    User workerTttYMCA =
+        new User(
+                "Worker",
+                "Ttt",
+                "09/14/1978",
+                "workerttt@ymca.net",
+                "2152839204",
+                "YMCA",
+                "11088 Knights Road",
+                "Philadelphia",
+                "PA",
+                "19154",
+                false,
+                "workertttYMCA",
+                TestDBUtils.hashPassword("workertttYMCA"),
+                "Worker")
+            .setCanEdit(true)
+            .setCanView(true)
+            .setCanRegister(true);
 
-    Document client1YMCA =
-        new Document("username", "client1YMCA")
-            .append("password", TestDBUtils.hashPassword("client1YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "client")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User client1YMCA =
+        new User(
+            "Client",
+            "Ymca",
+            "09/14/1978",
+            "clien1@ymca.net",
+            "2152839204",
+            "YMCA",
+            "11088 Knights Road",
+            "Philadelphia",
+            "PA",
+            "19154",
+            false,
+            "client1YMCA",
+            TestDBUtils.hashPassword("client1YMCA"),
+            "Client");
 
-    Document client2YMCA =
-        new Document("username", "client1YMCA")
-            .append("password", TestDBUtils.hashPassword("client2YMCA"))
-            .append("organization", "YMCA")
-            .append("email", "info@ymca.net")
-            .append("phone", "2157354847")
-            .append("firstName", "YM")
-            .append("lastName", "CA")
-            .append("address", "11088 Knights Rd")
-            .append("city", "Philadelphia")
-            .append("state", "PA")
-            .append("zipcode", "19154")
-            .append("privilegeLevel", "client")
-            .append("canView", false)
-            .append("canEdit", false)
-            .append("canRegister", false);
+    User client2YMCA =
+        new User(
+            "Steffen",
+            "Cornwell",
+            "09/14/1997",
+            "steffen@ymca.net",
+            "2152839204",
+            "YMCA",
+            "11088 Knights Road",
+            "Philadelphia",
+            "PA",
+            "19154",
+            false,
+            "client2YMCA",
+            TestDBUtils.hashPassword("client2YMCA"),
+            "Client");
 
     // Add the organization documents to the test database.
-    MongoCollection<Document> organizationCollection = testDB.getCollection("organization");
+    MongoCollection<Organization> organizationCollection =
+        testDB.getCollection("organization", Organization.class);
     organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca));
 
     // Add the user documents to the test database.
-    MongoCollection<Document> userCollection = testDB.getCollection("user");
+    MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
     userCollection.insertMany(
         Arrays.asList(
             adminBSM,
-            worker000BSM,
-            worker001BSM,
-            worker100BSM,
-            worker101BSM,
-            worker110BSM,
-            worker111BSM,
+            workerFffBSM,
+            workerFftBSM,
+            workerTffBSM,
+            workerTftBSM,
+            workerTtfBSM,
+            workerTttBSM,
             adminYMCA,
-            worker000YMCA,
-            worker001YMCA,
-            worker100YMCA,
-            worker101YMCA,
-            worker110YMCA,
-            worker111YMCA));
+            workerFffYMCA,
+            workerFftYMCA,
+            workerTffYMCA,
+            workerTftYMCA,
+            workerTtfYMCA,
+            workerTttYMCA));
   }
 
   // Tears down the test database by clearing all collections.
