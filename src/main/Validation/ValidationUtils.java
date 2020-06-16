@@ -3,8 +3,14 @@ package Validation;
 import User.UserType;
 
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ValidationUtils {
+  public static final int MIN_PASSWORD_LENGTH = 8;
+  public static final int MAX_PASSWORD_LENGTH = 128;
 
   // Make Own Regex
   public static boolean isValidOrgName(String input) {
@@ -83,9 +89,19 @@ public class ValidationUtils {
   }
 
   public static boolean isValidBirthDate(String input) {
-    return input != null
-        && !input.strip().isBlank()
-        && ValRegex.birthDatePattern.matcher(input).matches();
+    if (input == null
+        || input.strip().isBlank()
+        || !ValRegex.birthDatePattern.matcher(input).matches()) {
+      return false;
+    }
+    DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+    try {
+      dateFormat.setLenient(false);
+      Date date = dateFormat.parse(input);
+      return date.before(new Date());
+    } catch (ParseException e) {
+      return false;
+    }
   }
 
   public static boolean isValidUsername(String input) {
@@ -95,9 +111,10 @@ public class ValidationUtils {
   }
 
   public static boolean isValidPassword(String input) {
-    return input != null
+    return (input != null
         && !input.strip().isBlank()
-        && ValRegex.passwordPattern.matcher(input).matches();
+        && input.length() >= MIN_PASSWORD_LENGTH
+        && input.length() < MAX_PASSWORD_LENGTH);
   }
 
   public static boolean isValidUserType(String userType) {

@@ -12,7 +12,13 @@ import io.javalin.http.Handler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.Date;
 
@@ -24,6 +30,28 @@ public class AccountSecurityController {
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
   }
+
+  private static String verificationCodeEmailPath =
+      Paths.get("").toAbsolutePath().toString()
+          + File.separator
+          + "src"
+          + File.separator
+          + "main"
+          + File.separator
+          + "Security"
+          + File.separator
+          + "verificationCodeEmail.html";
+
+  private static String passwordResetLinkEmailPath =
+      Paths.get("").toAbsolutePath().toString()
+          + File.separator
+          + "src"
+          + File.separator
+          + "main"
+          + File.separator
+          + "Security"
+          + File.separator
+          + "passwordResetLinkEmail.html";
 
   public Handler forgotPassword =
       ctx -> {
@@ -54,12 +82,8 @@ public class AccountSecurityController {
             eq("username", username),
             new Tokens().setUsername(username).setResetJwt(jwt),
             new ReplaceOptions().upsert(true));
-
-        EmailUtil.sendEmail(
-            "Keep Id",
-            emailAddress,
-            "Password Reset Confirmation",
-            "https://keep.id/reset-password/" + jwt);
+        String emailJWT = getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
+        EmailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
 
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
@@ -177,11 +201,32 @@ public class AccountSecurityController {
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
+  public Handler change2FASetting =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+
+        // No current way to validate this boolean
+
+        user.setTwoFactorOn(twoFactorOn);
+
+        userCollection.replaceOne(eq("username", user.getUsername()), user);
+        ctx.json(UserMessage.SUCCESS.toJSON());
+      };
+
   public Handler resetPassword =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
         // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = req.getString("jwt");
+        String newPassword = req.getString("newPassword");
+        if (!ValidationUtils.isValidPassword(newPassword)) {
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Password"));
+          return;
+        }
         Claims claim;
         try {
           claim = SecurityUtils.decodeJWT(jwt);
@@ -237,7 +282,6 @@ public class AccountSecurityController {
           tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
         }
 
-        String newPassword = req.getString("newPassword");
         resetPassword(claim.getAudience(), newPassword, db);
         ctx.json(UserMessage.SUCCESS.toJSON());
       };
@@ -303,6 +347,32 @@ public class AccountSecurityController {
 
         ctx.json(UserMessage.AUTH_SUCCESS.toJSON());
       };
+
+  public static String getVerificationCodeEmail(String verificationCode) {
+    File verificationCodeEmail = new File(verificationCodeEmailPath);
+    try {
+      Document htmlDoc = Jsoup.parse(verificationCodeEmail, "UTF-8");
+      Element targetElement = htmlDoc.getElementById("targetVerificationCode");
+      targetElement.text(verificationCode);
+      return htmlDoc.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static String getPasswordResetEmail(String jwt) {
+    File passwordResetEmail = new File(passwordResetLinkEmailPath);
+    try {
+      Document htmlDoc = Jsoup.parse(passwordResetEmail, "UTF-8");
+      Element targetElement = htmlDoc.getElementById("hrefTarget");
+      targetElement.attr("href", jwt);
+      return htmlDoc.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
 
   public static UserMessage changePassword(
       String username, String newPassword, String oldPassword, MongoDatabase db) {

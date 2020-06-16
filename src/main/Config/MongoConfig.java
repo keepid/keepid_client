@@ -83,7 +83,7 @@ public class MongoConfig {
             .codecRegistry(codecRegistry)
             .build();
 
-    client = MongoClients.create(clientSettings);
+    testClient = MongoClients.create(clientSettings);
   }
 
   public static MongoClient getMongoClient() {

@@ -1,6 +1,7 @@
 package User;
 
 import Logger.LogFactory;
+import Validation.ValidationException;
 import Validation.ValidationUtils;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
@@ -50,6 +51,9 @@ public class User {
   @BsonProperty(value = "privilegeLevel")
   private UserType userType;
 
+  @BsonProperty(value = "twoFactorOn")
+  private boolean twoFactorOn;
+
   @BsonProperty(value = "canEdit")
   private boolean canEdit;
 
@@ -72,9 +76,30 @@ public class User {
       String city,
       String state,
       String zipcode,
+      Boolean twoFactorOn,
       String username,
       String password,
-      UserType userType) {
+      String userTypeStr)
+      throws ValidationException {
+
+    UserValidationMessage validationMessage =
+        User.isValid(
+            firstName,
+            lastName,
+            birthDate,
+            email,
+            phone,
+            organization,
+            address,
+            city,
+            state,
+            zipcode,
+            username,
+            password,
+            userTypeStr);
+
+    if (validationMessage != UserValidationMessage.VALID)
+      throw new ValidationException(UserValidationMessage.toUserMessageJSON(validationMessage));
 
     this.id = new ObjectId();
     this.firstName = firstName;
@@ -87,9 +112,10 @@ public class User {
     this.city = city;
     this.state = state;
     this.zipcode = zipcode;
+    this.twoFactorOn = twoFactorOn;
     this.username = username;
     this.password = password;
-    this.userType = userType;
+    this.userType = UserType.userTypeFromString(userTypeStr);
     this.calcPermissions();
   }
 
@@ -156,6 +182,10 @@ public class User {
     return this.userType;
   }
 
+  public boolean getTwoFactorOn() {
+    return this.twoFactorOn;
+  }
+
   public boolean getCanEdit() {
     return this.canEdit;
   }
@@ -219,6 +249,11 @@ public class User {
     return this;
   }
 
+  public User setTwoFactorOn(Boolean twoFactorOn) {
+    this.twoFactorOn = twoFactorOn;
+    return this;
+  }
+
   public User setUsername(String username) {
     this.username = username;
     return this;
@@ -249,7 +284,7 @@ public class User {
     return this;
   }
 
-  public static UserValidationMessage isValid(
+  private static UserValidationMessage isValid(
       String firstName,
       String lastName,
       String birthDate,
@@ -262,8 +297,7 @@ public class User {
       String zipcode,
       String username,
       String password,
-      String userType)
-      throws SecurityException {
+      String userType) {
 
     LogFactory l = new LogFactory();
     Logger logger = l.createLogger("UserValidation");
@@ -340,6 +374,7 @@ public class User {
     sb.append(", username=").append(this.username);
     sb.append(", password=").append(this.password);
     sb.append(", userType=").append(this.userType);
+    sb.append(", twoFactorOn=").append(this.twoFactorOn);
     sb.append(", canEdit=").append(this.canEdit);
     sb.append(", canView=").append(this.canView);
     sb.append(", canRegister=").append(this.canRegister);
@@ -365,6 +400,7 @@ public class User {
         && Objects.equals(this.username, user.username)
         && Objects.equals(this.password, user.password)
         && Objects.equals(this.userType, user.userType)
+        && Objects.equals(this.twoFactorOn, user.twoFactorOn)
         && Objects.equals(this.canEdit, user.canEdit)
         && Objects.equals(this.canView, user.canView)
         && Objects.equals(this.canRegister, user.canRegister);
@@ -386,6 +422,7 @@ public class User {
         this.username,
         this.password,
         this.userType,
+        this.twoFactorOn,
         this.canEdit,
         this.canView,
         this.canRegister);

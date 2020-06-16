@@ -31,7 +31,7 @@ public class ValidationUtilsUnitTests {
     assertTrue(ValidationUtils.isValidOrgName("valid name here"));
     assertTrue(ValidationUtils.isValidOrgName("Bob"));
     assertTrue(ValidationUtils.isValidOrgName("O'Neal"));
-    assertFalse(ValidationUtils.isValidOrgName("invalid name 123"));
+    assertTrue(ValidationUtils.isValidOrgName("Valid name 123"));
     assertFalse(ValidationUtils.isValidOrgName("<script>hello</script>"));
     assertFalse(ValidationUtils.isValidOrgName("    "));
     assertFalse(ValidationUtils.isValidOrgName(""));
@@ -152,8 +152,9 @@ public class ValidationUtilsUnitTests {
   @Test
   public void birthDateTest() {
     assertTrue(ValidationUtils.isValidBirthDate("12-23-1234"));
-    assertTrue(ValidationUtils.isValidBirthDate("69-23-2342"));
+    assertTrue(ValidationUtils.isValidBirthDate("03-23-2000"));
     assertTrue(ValidationUtils.isValidBirthDate("10-01-2019"));
+    assertFalse(ValidationUtils.isValidBirthDate("10-01-2029"));
     assertFalse(ValidationUtils.isValidBirthDate("123-10-1010"));
     assertFalse(ValidationUtils.isValidBirthDate("12-123-1233"));
     assertFalse(ValidationUtils.isValidBirthDate("12-01-2012as"));
@@ -177,13 +178,17 @@ public class ValidationUtilsUnitTests {
 
   @Test
   public void passwordTest() {
-    assertTrue(ValidationUtils.isValidPassword("samuel"));
-    assertTrue(ValidationUtils.isValidPassword("T@#ST"));
-    assertTrue(ValidationUtils.isValidPassword("123Password*()"));
+    assertTrue(ValidationUtils.isValidPassword("thispasswordissufficientlylong"));
+    assertTrue(ValidationUtils.isValidPassword("12345678"));
+    assertTrue(
+        ValidationUtils.isValidPassword(
+            "123Passwordasdkjfhasdkfhafhjask.dfjhasdfjlasdkjfhaslkdjfh*()"));
     assertFalse(ValidationUtils.isValidPassword("asd\\"));
     assertFalse(ValidationUtils.isValidPassword("asdkll/"));
     assertFalse(ValidationUtils.isValidPassword("aslf;"));
-    assertFalse(ValidationUtils.isValidPassword("asd idahf"));
+    assertFalse(
+        ValidationUtils.isValidPassword(
+            "thisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpassword"));
     assertFalse(ValidationUtils.isValidPassword(" "));
     assertFalse(ValidationUtils.isValidPassword(null));
   }
