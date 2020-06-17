@@ -18,6 +18,7 @@ public class PdfUpload {
         String username = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        System.out.println(privilegeLevel);
         UploadedFile file = ctx.uploadedFile("file");
         // Different actions?
         PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));

@@ -48,7 +48,7 @@ public class PdfMongo {
     if (id == null) {
       res.put("status", "insufficient privilege");
     } else {
-      res.put("status", "uploaded");
+      res.put("status", "success");
     }
     return res;
   } // Add option user
@@ -88,7 +88,9 @@ public class PdfMongo {
 
       // Privilege Checking
       if (pdfType == PDFType.APPLICATION
-          && (privilegeLevel == UserType.Admin || privilegeLevel == UserType.Worker)) {
+          && (privilegeLevel == UserType.Director
+              || privilegeLevel == UserType.Admin
+              || privilegeLevel == UserType.Worker)) {
         filter = Filters.eq("metadata.organizationName", organizationName);
         files = mongodbGetAllFiles(filter, pdfType, db);
         res.put("status", "success");
@@ -144,7 +146,9 @@ public class PdfMongo {
 
     // Privilege Checking
     if (pdfType == PDFType.APPLICATION
-        && (privilegeLevel == UserType.Admin || privilegeLevel == UserType.Worker)) {
+        && (privilegeLevel == UserType.Director
+            || privilegeLevel == UserType.Admin
+            || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         String filename = grid_out.getFilename();
         return gridBucket.openDownloadStream(id);

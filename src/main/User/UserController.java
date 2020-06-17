@@ -121,6 +121,7 @@ public class UserController {
               return;
             }
 
+            System.out.println(user.getUserType());
             ctx.sessionAttribute("privilegeLevel", user.getUserType());
             ctx.sessionAttribute("orgName", user.getOrganization());
             ctx.sessionAttribute("username", username);
@@ -162,6 +163,8 @@ public class UserController {
 
   public Handler createUserValidator =
       ctx -> {
+        String sessionOrg = ctx.sessionAttribute("orgName");
+
         JSONObject req = new JSONObject(ctx.body());
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
@@ -198,7 +201,7 @@ public class UserController {
               birthDate,
               email,
               phone,
-              "",
+              sessionOrg,
               address,
               city,
               state,
@@ -253,7 +256,7 @@ public class UserController {
                   birthDate,
                   email,
                   phone,
-                  "",
+                  sessionOrg,
                   address,
                   city,
                   state,
