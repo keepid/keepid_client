@@ -50,7 +50,7 @@ class ForgotPassword extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const {status} = responseJSON; 
+          const { status } = responseJSON;
           if (status === 'SUCCESS') {
             this.props.alert.show('A reset code has been sent to your email. Check your inbox.');
             this.setState({ buttonState: '' });

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withScriptjs, withGoogleMap, GoogleMap } from "react-google-maps"
+import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import OrganizationMarker from './OrganizationMarker';
 
 interface Props {
@@ -13,7 +13,6 @@ interface State {
 }
 
 class MapComponent extends Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
   }
@@ -22,20 +21,20 @@ class MapComponent extends Component<Props, State> {
     const {
       organizations,
       lat,
-      lng
+      lng,
     } = this.props;
 
-    return(
+    return (
       <GoogleMap
         defaultZoom={12}
         center={{
-          lat: lat,
-          lng: lng,
+          lat,
+          lng,
         }}
       >
         {organizations.map(
           (organization, index) => (
-            <OrganizationMarker 
+            <OrganizationMarker
               key={index}
               lat={organization.lat}
               lng={organization.lng}
@@ -44,11 +43,11 @@ class MapComponent extends Component<Props, State> {
               phone={organization.phone}
               email={organization.email}
             />
-          ))
-        }
+          ),
+        )}
       </GoogleMap>
-    )
+    );
   }
 }
 
-export default withScriptjs(withGoogleMap(MapComponent))
+export default withScriptjs(withGoogleMap(MapComponent));
