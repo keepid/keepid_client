@@ -278,7 +278,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/my-documents"
                 render={() => {
                   if (role === Role.Client || role === Role.Admin || role === Role.Director) {
-                    return <MyDocuments username={name} />;
+                    return <MyDocuments userRole={role} username={name} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -335,7 +335,7 @@ class App extends React.Component<{}, State, {}> {
                 <ForgotPassword />
               </Route>
               <Route path="/reset-password/:jwt">
-                <ResetPassword/>
+                <ResetPassword />
               </Route>
               <Route
                 path="/settings"

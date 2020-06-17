@@ -8,7 +8,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
-import PDFType from "../static/PDFType";
+import PDFType from '../static/PDFType';
 
 interface Props {
   username: string,
@@ -38,21 +38,13 @@ const listOptions = [
   { value: '50', label: '50' },
 ];
 
-const exampleDocuments = [
-  { applicationName: 'Application 1', category: 'Job Application' },
-  { applicationName: 'Application 2', category: 'Aid Application' },
-  { applicationName: 'Application 3', category: 'Job Application' },
-  { applicationName: 'Application 4', category: 'SNAP Application' },
-  { applicationName: 'Application 5', category: 'Other Application' },
-];
-
 class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
-      <div>
-        <Link to="/applications/send">
-          <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, rowIndex)}>View Application</button>
-        </Link>
-      </div>
+    <div>
+      <Link to="/applications/send">
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, rowIndex)}>View Application</button>
+      </Link>
+    </div>
   )
 
   tableCols = [{
@@ -85,7 +77,7 @@ class Applications extends Component<Props, State, {}> {
       searchName: '',
       adminName: props.name,
       organization: props.organization,
-      documents: exampleDocuments,
+      documents: [],
     };
     this.onClickWorker = this.onClickWorker.bind(this);
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -258,8 +250,8 @@ class Applications extends Component<Props, State, {}> {
           </div>
         </Route>
         <Route path="/applications/send">
-          {currentApplicationId && currentApplicationFilename ?
-            <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+          {currentApplicationId && currentApplicationFilename
+            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
             : <div />}
         </Route>
       </Switch>
