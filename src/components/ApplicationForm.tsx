@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
+import { withAlert } from 'react-alert';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import Role from '../static/Role';
@@ -9,6 +10,7 @@ import PDFType from '../static/PDFType';
 // import submit = Simulate.submit;
 
 interface Props {
+    alert: any,
     applicationId: string,
     applicationFilename: string,
 }
@@ -120,6 +122,7 @@ class ApplicationForm extends Component<Props, State> {
       }).then((response) => (response.json()))
         .then((responseJSON) => {
           this.setState({ submitSuccessful: true });
+          this.props.alert.show('Successfully Submitted Application');
         });
     }
   }
@@ -195,4 +198,4 @@ class ApplicationForm extends Component<Props, State> {
   }
 }
 
-export default ApplicationForm;
+export default withAlert()(ApplicationForm);
