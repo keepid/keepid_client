@@ -1,5 +1,6 @@
 package PDF;
 
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import org.bson.types.ObjectId;
@@ -18,6 +19,7 @@ public class PdfDownload {
       ctx -> {
         String user = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         String fileIDStr = req.getString("fileID");
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
@@ -25,12 +27,8 @@ public class PdfDownload {
         if (pdfType == null) {
           ctx.result("Invalid PDFType");
         } else {
-          InputStream stream;
-          if (pdfType == PDFType.FORM) {
-            stream = PdfMongo.download(organizationName, fileID, pdfType, db);
-          } else {
-            stream = PdfMongo.download(user, fileID, pdfType, db);
-          }
+          InputStream stream =
+              PdfMongo.download(user, organizationName, privilegeLevel, fileID, pdfType, db);
           if (stream != null) {
             ctx.header("Content-Type", "application/pdf");
             ctx.result(stream);

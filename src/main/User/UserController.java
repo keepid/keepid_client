@@ -120,6 +120,7 @@ public class UserController {
               return;
             }
 
+            System.out.println(user.getUserType());
             ctx.sessionAttribute("privilegeLevel", user.getUserType());
             ctx.sessionAttribute("orgName", user.getOrganization());
             ctx.sessionAttribute("username", username);
@@ -161,6 +162,8 @@ public class UserController {
 
   public Handler createUserValidator =
       ctx -> {
+        String sessionOrg = ctx.sessionAttribute("orgName");
+
         JSONObject req = new JSONObject(ctx.body());
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
@@ -174,7 +177,21 @@ public class UserController {
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userType = req.getString("personRole").strip();
+        String userTypeString = req.getString("personRole").strip();
+        UserType userType = UserType.userTypeFromString(userTypeString);
+
+        if (userType == null) {
+          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          return;
+        }
+
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User existingUser = userCollection.find(eq("username", username)).first();
+
+        if (existingUser != null) {
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
+          return;
+        }
 
         try {
           new User(
@@ -183,7 +200,7 @@ public class UserController {
               birthDate,
               email,
               phone,
-              "",
+              sessionOrg,
               address,
               city,
               state,
@@ -221,7 +238,13 @@ public class UserController {
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userType = req.getString("personRole");
+        String userTypeString = req.getString("personRole").strip();
+        UserType userType = UserType.userTypeFromString(userTypeString);
+
+        if (userType == null) {
+          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          return;
+        }
 
         User user;
         try {
@@ -232,7 +255,7 @@ public class UserController {
                   birthDate,
                   email,
                   phone,
-                  "",
+                  sessionOrg,
                   address,
                   city,
                   state,

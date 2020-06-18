@@ -1,6 +1,7 @@
 package UserTest;
 
 import User.User;
+import User.UserType;
 import Validation.ValidationException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class UserControllerUnitTest {
                       true,
                       "username",
                       "password",
-                      "Director");
+                      UserType.Director);
             });
 
     JSONObject expectedJSON =
@@ -63,7 +64,7 @@ public class UserControllerUnitTest {
                       true,
                       "username",
                       "password",
-                      "Director");
+                      UserType.Director);
             });
 
     JSONObject expectedJSON =

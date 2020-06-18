@@ -205,6 +205,11 @@
             <artifactId>pdfbox-tools</artifactId>
             <version>2.0.19</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-examples</artifactId>
+            <version>2.0.19</version>
+        </dependency>
         <!-- MongoSessionDataStore -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

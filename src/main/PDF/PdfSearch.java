@@ -1,5 +1,6 @@
 package PDF;
 
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import org.json.JSONObject;
@@ -15,16 +16,17 @@ public class PdfSearch {
       ctx -> {
         String user = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        JSONObject res = new JSONObject();
+
         if (pdfType == null) {
-          ctx.json("Error!");
-        } else if (pdfType == PDFType.FORM) {
-          JSONObject fileDescriptions = PdfMongo.getAllFiles(organizationName, pdfType, db);
-          ctx.json(fileDescriptions.toString());
+          res.put("status", "Invalid PDFType");
         } else {
-          JSONObject fileDescriptions = PdfMongo.getAllFiles(user, pdfType, db);
-          ctx.json(fileDescriptions.toString());
+          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, db);
         }
+
+        ctx.json(res.toString());
       };
 }
