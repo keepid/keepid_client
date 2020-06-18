@@ -444,19 +444,14 @@ public class TestUtils {
   }
 
   public static JSONObject responseStringToJSON(String response) {
-    System.out.println("RESPONSE: " + response);
-
     JSONObject json = new JSONObject();
 
     String strippedResponse = response.substring(4);
     strippedResponse = strippedResponse.substring(0, strippedResponse.length() - 4);
 
-    System.out.println("Stripped: " + strippedResponse);
-
     String[] responseArr = strippedResponse.split(Pattern.quote("\\\",\\\""));
 
     for (int i = 0; i < responseArr.length; i++) {
-      System.out.println("KVP: " + responseArr[i]);
       String[] keyValPair = responseArr[i].split(Pattern.quote("\\\":\\\""));
 
       String key = keyValPair[0];

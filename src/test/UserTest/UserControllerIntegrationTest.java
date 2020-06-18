@@ -47,14 +47,6 @@ public class UserControllerIntegrationTest {
             .body(body.toString())
             .asString();
 
-    JSONObject expectedResponse =
-        new JSONObject()
-            .put("firstName", "")
-            .put("lastName", "")
-            .put("organization", "")
-            .put("userRole", "")
-            .put("loginStatus", "AUTH_FAILURE");
-
     JSONObject actualResponseJSON =
         TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
