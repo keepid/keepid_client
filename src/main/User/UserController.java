@@ -54,7 +54,7 @@ public class UserController {
 
         if (!ValidationUtils.isValidUsername(username)
             || !ValidationUtils.isValidPassword(password)) {
-          res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+          res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
           ctx.json(res.toString());
           return;
         }
@@ -65,7 +65,7 @@ public class UserController {
           MongoCollection<User> userCollection = db.getCollection("user", User.class);
           User user = userCollection.find(eq("username", username)).first();
           if (user == null) { // Prevent Brute Force Attack
-            res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+            res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
             ctx.json(res.toString());
             argon2.wipeArray(passwordArr);
             return;
@@ -104,13 +104,15 @@ public class UserController {
                               new ReplaceOptions().upsert(true));
                         } catch (UnsupportedEncodingException e) {
                           e.printStackTrace();
-                          ctx.json(UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding"));
+                          ctx.json(
+                              res.put("status", UserMessage.SERVER_ERROR.getErrorName())
+                                  .toString());
                           return;
                         }
                       });
               emailThread.start();
 
-              res.put("loginStatus", UserMessage.TOKEN_ISSUED.getErrorName());
+              res.put("status", UserMessage.TOKEN_ISSUED.getErrorName());
               res.put("userRole", user.getUserType());
               res.put("organization", user.getOrganization());
               res.put("firstName", user.getFirstName());
@@ -120,12 +122,11 @@ public class UserController {
               return;
             }
 
-            System.out.println(user.getUserType());
             ctx.sessionAttribute("privilegeLevel", user.getUserType());
             ctx.sessionAttribute("orgName", user.getOrganization());
             ctx.sessionAttribute("username", username);
 
-            res.put("loginStatus", UserMessage.AUTH_SUCCESS.getErrorName());
+            res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
             res.put("userRole", user.getUserType());
             res.put("organization", user.getOrganization());
             res.put("firstName", user.getFirstName());
@@ -133,12 +134,12 @@ public class UserController {
             res.put("twoFactorOn", twoFactorOn);
             ctx.json(res.toString());
           } else { // Hash doesn't match password
-            res.put("loginStatus", UserMessage.AUTH_FAILURE.getErrorName());
+            res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
             ctx.json(res.toString());
           }
         } catch (Exception e) { // catch exceptions
           e.printStackTrace();
-          res.put("loginStatus", UserMessage.HASH_FAILURE.getErrorName());
+          res.put("status", UserMessage.HASH_FAILURE.getErrorName());
           ctx.json(res.toString());
         } finally {
           argon2.wipeArray(passwordArr); // Wipe confidential data from cache
@@ -148,6 +149,7 @@ public class UserController {
   public Handler generateUniqueUsername =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
 
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         String username = req.getString("username");
@@ -157,7 +159,7 @@ public class UserController {
           i++;
           candidateUsername = username + "-" + i;
         }
-        ctx.json(candidateUsername);
+        ctx.json(res.put("username", candidateUsername).toString());
       };
 
   public Handler createUserValidator =
@@ -165,6 +167,8 @@ public class UserController {
         String sessionOrg = ctx.sessionAttribute("orgName");
 
         JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
+
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
         String birthDate = req.getString("birthDate").strip();
@@ -181,7 +185,7 @@ public class UserController {
         UserType userType = UserType.userTypeFromString(userTypeString);
 
         if (userType == null) {
-          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          ctx.json(res.put("status", UserMessage.INVALID_PRIVILEGE_TYPE.toJSON()).toString());
           return;
         }
 
@@ -189,7 +193,7 @@ public class UserController {
         User existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
+          ctx.json(res.put("status", UserMessage.USERNAME_ALREADY_EXISTS.toJSON()).toString());
           return;
         }
 
@@ -209,23 +213,29 @@ public class UserController {
               username,
               password,
               userType);
-          ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID));
+          ctx.json(
+              res.put(
+                      "status",
+                      UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID))
+                  .toString());
         } catch (ValidationException ve) {
-          ctx.json(ve.getMessage());
+          ctx.json(res.put("status", ve.getMessage()).toString());
         }
       };
 
   public Handler createNewUser =
       ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
+
         UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
         String sessionOrg = ctx.sessionAttribute("orgName");
 
         if (sessionUserLevel == null || sessionOrg == null) {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.toJSON()).toString());
           return;
         }
 
-        JSONObject req = new JSONObject(ctx.body());
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
         String birthDate = req.getString("birthDate").strip();
@@ -242,7 +252,7 @@ public class UserController {
         UserType userType = UserType.userTypeFromString(userTypeString);
 
         if (userType == null) {
-          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON());
+          ctx.json(res.put("status", UserMessage.INVALID_PRIVILEGE_TYPE.toJSON()).toString());
           return;
         }
 
@@ -265,7 +275,7 @@ public class UserController {
                   password,
                   userType);
         } catch (ValidationException ve) {
-          ctx.json(ve.getMessage());
+          ctx.json(res.put("status", ve.getMessage()).toString());
           return;
         }
 
@@ -274,12 +284,12 @@ public class UserController {
                 || user.getUserType() == UserType.Worker)
             && sessionUserLevel != UserType.Admin
             && sessionUserLevel != UserType.Director) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON());
+          ctx.json(res.put("status", UserMessage.NONADMIN_ENROLL_ADMIN.toJSON()).toString());
           return;
         }
 
         if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
-          ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON());
+          ctx.json(res.put("status", UserMessage.CLIENT_ENROLL_CLIENT.toJSON()).toString());
           return;
         }
 
@@ -287,7 +297,7 @@ public class UserController {
         User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
         if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
+          ctx.json(res.put("status", UserMessage.USERNAME_ALREADY_EXISTS.toJSON()).toString());
           return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
@@ -298,20 +308,20 @@ public class UserController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.json(UserMessage.HASH_FAILURE.toJSON());
+            ctx.json(res.put("status", UserMessage.HASH_FAILURE.toJSON()).toString());
             return;
           }
 
           user.setPassword(passwordHash);
           userCollection.insertOne(user);
-          ctx.json(UserMessage.ENROLL_SUCCESS.toJSON());
+          ctx.json(res.put("status", UserMessage.ENROLL_SUCCESS.toJSON()).toString());
         }
       };
 
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
-        ctx.json("SUCCESS");
+        ctx.json(new JSONObject().put("status", UserMessage.SUCCESS.getErrorName()).toString());
       };
 
   public Handler getUserInfo =
@@ -334,9 +344,10 @@ public class UserController {
           res.put("phone", user.getPhone());
           res.put("twoFactorOn", user.getTwoFactorOn());
           res.put("username", username);
+          res.put("status", UserMessage.SUCCESS.getErrorName());
           ctx.json(res.toString());
         } else {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName()).toString());
         }
       };
 
@@ -354,8 +365,10 @@ public class UserController {
         int startIndex = currentPage * itemsPerPage;
         int endIndex = (currentPage + 1) * itemsPerPage;
 
+        JSONObject res = new JSONObject();
+
         if (privilegeLevel == null || orgName == null) {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName()).toString());
           return;
         }
 
@@ -424,16 +437,15 @@ public class UserController {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
-          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON());
+          ctx.json(res.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName()).toString());
           return;
         }
 
-        JSONObject response = new JSONObject();
-        response.put("status", UserMessage.SUCCESS.getErrorName());
-        response.put("message", UserMessage.SUCCESS.getErrorDescription());
-        response.put("people", returnElements);
-        response.put("numPeople", numReturnElements);
-        ctx.json(response.toString());
+        res.put("status", UserMessage.SUCCESS.getErrorName());
+        res.put("message", UserMessage.SUCCESS.getErrorDescription());
+        res.put("people", returnElements);
+        res.put("numPeople", numReturnElements);
+        ctx.json(res.toString());
       };
 
   public Handler modifyPermissions =
@@ -442,8 +454,10 @@ public class UserController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
 
+        JSONObject res = new JSONObject();
+
         if (username == null || privilegeLevel == null || orgName == null) {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.toJSON()).toString());
           return;
         }
 
@@ -465,7 +479,7 @@ public class UserController {
         Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
         userCollection.findOneAndUpdate(filter, updates);
 
-        ctx.json(UserMessage.SUCCESS.toJSON());
+        ctx.json(res.put("status", UserMessage.SUCCESS.toJSON()).toString());
       };
 
   private JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
