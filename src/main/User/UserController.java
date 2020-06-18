@@ -105,7 +105,9 @@ public class UserController {
                         } catch (UnsupportedEncodingException e) {
                           e.printStackTrace();
                           ctx.json(
-                              res.put("status", UserMessage.SERVER_ERROR.getErrorName())
+                              res.put(
+                                      "status",
+                                      UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding"))
                                   .toString());
                           return;
                         }
@@ -347,7 +349,7 @@ public class UserController {
           res.put("status", UserMessage.SUCCESS.getErrorName());
           ctx.json(res.toString());
         } else {
-          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName()).toString());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.toJSON()).toString());
         }
       };
 
@@ -368,7 +370,7 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         if (privilegeLevel == null || orgName == null) {
-          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.getErrorName()).toString());
+          ctx.json(res.put("status", UserMessage.SESSION_TOKEN_FAILURE.toJSON()).toString());
           return;
         }
 
@@ -437,7 +439,7 @@ public class UserController {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
-          ctx.json(res.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.getErrorName()).toString());
+          ctx.json(res.put("status", UserMessage.INSUFFICIENT_PRIVILEGE.toJSON()).toString());
           return;
         }
 
