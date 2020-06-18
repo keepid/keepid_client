@@ -8,10 +8,12 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
-public class TestDBUtils {
+public class TestUtils {
   private static MongoDatabase testDB =
       MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
 
@@ -25,7 +27,7 @@ public class TestDBUtils {
    */
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
-    TestDBUtils.tearDownTestDB();
+    TestUtils.tearDownTestDB();
     MongoConfig.getMongoTestClient();
 
     /* *********************** Broad Street Ministry ************************ */
@@ -55,7 +57,7 @@ public class TestDBUtils {
             "19104",
             false,
             "adminBSM",
-            TestDBUtils.hashPassword("adminBSM"),
+            TestUtils.hashPassword("adminBSM"),
             "Director");
 
     User workerFffBSM =
@@ -72,7 +74,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workerfffBSM",
-                TestDBUtils.hashPassword("workerfffBSM"),
+                TestUtils.hashPassword("workerfffBSM"),
                 "Worker")
             .setCanEdit(false)
             .setCanView(false)
@@ -92,7 +94,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workerfftBSM",
-                TestDBUtils.hashPassword("workerfftBSM"),
+                TestUtils.hashPassword("workerfftBSM"),
                 "Worker")
             .setCanEdit(false)
             .setCanView(false)
@@ -112,7 +114,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workertffBSM",
-                TestDBUtils.hashPassword("workertffBSM"),
+                TestUtils.hashPassword("workertffBSM"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(false)
@@ -132,7 +134,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workertftBSM",
-                TestDBUtils.hashPassword("workertftBSM"),
+                TestUtils.hashPassword("workertftBSM"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(false)
@@ -152,7 +154,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workerttfBSM",
-                TestDBUtils.hashPassword("workerttfBSM"),
+                TestUtils.hashPassword("workerttfBSM"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(true)
@@ -172,7 +174,7 @@ public class TestDBUtils {
                 "19104",
                 false,
                 "workertttBSM",
-                TestDBUtils.hashPassword("workertttBSM"),
+                TestUtils.hashPassword("workertttBSM"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(true)
@@ -192,7 +194,7 @@ public class TestDBUtils {
             "19104",
             false,
             "client1BSM",
-            TestDBUtils.hashPassword("client1BSM"),
+            TestUtils.hashPassword("client1BSM"),
             "Client");
 
     User client2BSM =
@@ -209,7 +211,7 @@ public class TestDBUtils {
             "19104",
             false,
             "client2BSM",
-            TestDBUtils.hashPassword("client2BSM"),
+            TestUtils.hashPassword("client2BSM"),
             "Client");
 
     /** ******************** YMCA **************************** */
@@ -239,7 +241,7 @@ public class TestDBUtils {
             "19154",
             false,
             "adminYMCA",
-            TestDBUtils.hashPassword("adminYMCA"),
+            TestUtils.hashPassword("adminYMCA"),
             "Director");
 
     User workerFffYMCA =
@@ -256,7 +258,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workerfffYMCA",
-                TestDBUtils.hashPassword("workerfffYMCA"),
+                TestUtils.hashPassword("workerfffYMCA"),
                 "Worker")
             .setCanEdit(false)
             .setCanView(false)
@@ -276,7 +278,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workerfftYMCA",
-                TestDBUtils.hashPassword("workerfftYMCA"),
+                TestUtils.hashPassword("workerfftYMCA"),
                 "Worker")
             .setCanEdit(false)
             .setCanView(false)
@@ -296,7 +298,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workertffYMCA",
-                TestDBUtils.hashPassword("workertffYMCA"),
+                TestUtils.hashPassword("workertffYMCA"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(false)
@@ -316,7 +318,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workertftYMCA",
-                TestDBUtils.hashPassword("workertftYMCA"),
+                TestUtils.hashPassword("workertftYMCA"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(false)
@@ -336,7 +338,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workerttfYMCA",
-                TestDBUtils.hashPassword("workerttfYMCA"),
+                TestUtils.hashPassword("workerttfYMCA"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(true)
@@ -356,7 +358,7 @@ public class TestDBUtils {
                 "19154",
                 false,
                 "workertttYMCA",
-                TestDBUtils.hashPassword("workertttYMCA"),
+                TestUtils.hashPassword("workertttYMCA"),
                 "Worker")
             .setCanEdit(true)
             .setCanView(true)
@@ -376,7 +378,7 @@ public class TestDBUtils {
             "19154",
             false,
             "client1YMCA",
-            TestDBUtils.hashPassword("client1YMCA"),
+            TestUtils.hashPassword("client1YMCA"),
             "Client");
 
     User client2YMCA =
@@ -393,7 +395,7 @@ public class TestDBUtils {
             "19154",
             false,
             "client2YMCA",
-            TestDBUtils.hashPassword("client2YMCA"),
+            TestUtils.hashPassword("client2YMCA"),
             "Client");
 
     // Add the organization documents to the test database.
@@ -438,5 +440,31 @@ public class TestDBUtils {
       argon2.wipeArray(passwordArr);
     }
     return passwordHash;
+  }
+
+  public static JSONObject responseStringToJSON(String response) {
+    System.out.println("RESPONSE: " + response);
+
+    JSONObject json = new JSONObject();
+
+    String strippedResponse = response.substring(4);
+    strippedResponse = strippedResponse.substring(0, strippedResponse.length() - 4);
+
+    System.out.println("Stripped: " + strippedResponse);
+
+    String[] responseArr = strippedResponse.split(Pattern.quote("\\\",\\\""));
+
+    for (int i = 0; i < responseArr.length; i++) {
+      System.out.println("KVP: " + responseArr[i]);
+      String[] keyValPair = responseArr[i].split(Pattern.quote("\\\":\\\""));
+
+      String key = keyValPair[0];
+      String val = "";
+      if (keyValPair.length == 2) val = keyValPair[1];
+
+      json.put(key, val);
+    }
+
+    return json;
   }
 }

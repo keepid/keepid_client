@@ -40,8 +40,7 @@ public class UserController {
       ctx -> {
         ctx.req.getSession().invalidate();
 
-        System.out.println("FORM PARAM:" + ctx.formParam("username"));
-        System.out.println("Query Param:" + ctx.queryParam("username"));
+        System.out.println("BODY: " + ctx.body());
 
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
