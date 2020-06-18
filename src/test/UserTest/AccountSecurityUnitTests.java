@@ -1,43 +1,43 @@
 package UserTest;
 
-import User.User;
-import Validation.ValidationException;
-import org.json.JSONObject;
+import Config.MongoConfig;
+import Security.AccountSecurityController;
+import User.UserMessage;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import io.javalin.http.Context;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 public class AccountSecurityUnitTests {
+  Context ctx = mock(Context.class);
+  MongoClient client = MongoConfig.getMongoClient();
+  MongoDatabase db = client.getDatabase(MongoConfig.getDatabaseName());
+
+  // Make sure to enable .env file configurations for these tests
+
   @Test
-  public void correctToken2FATest() {
-    ValidationException ve =
-        assertThrows(
-            ValidationException.class,
-            () -> {
-              User user =
-                  new User(
-                      null,
-                      "Lastname",
-                      "12/14/1997",
-                      "email@email.com",
-                      "1234567890",
-                      "Broad Street Ministry",
-                      "311 Broad Street",
-                      "Philadelphia",
-                      "PA",
-                      "19104",
-                      true,
-                      "username",
-                      "password",
-                      "Director");
-            });
+  public void nonexistentUser2FATest() throws Exception {
+    String inputString = "{\"username\":\"fakeuser\",\"token\":\"123456\"}";
 
-    JSONObject expectedJSON =
-        new JSONObject("{\"message\":\"Invalid First Name\",\"status\":\"INVALID_PARAMETER\"}");
-    JSONObject actualJSON = new JSONObject(ve.getMessage());
+    when(ctx.body()).thenReturn(inputString);
 
-    assertEquals(expectedJSON.getString("message"), actualJSON.getString("message"));
-    assertEquals(expectedJSON.getString("status"), actualJSON.getString("status"));
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.twoFactorAuth.handle(ctx);
+
+    verify(ctx).json(UserMessage.USER_NOT_FOUND.toJSON());
+  }
+
+  @Test
+  public void incorrectToken2FATest() throws Exception {
+    String inputString = "{\"username\":\"danb\",\"token\":\"123456\"}";
+
+    when(ctx.body()).thenReturn(inputString);
+
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.twoFactorAuth.handle(ctx);
+
+    verify(ctx).json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
   }
 }
