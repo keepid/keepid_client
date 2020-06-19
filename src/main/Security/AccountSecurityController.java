@@ -56,7 +56,6 @@ public class AccountSecurityController {
   public Handler forgotPassword =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         String username = req.getString("username");
 
@@ -64,15 +63,13 @@ public class AccountSecurityController {
         User user = userCollection.find(eq("username", username)).first();
 
         if (user == null) {
-          ctx.json(res.put("status", UserMessage.USER_NOT_FOUND.toJSON()).toString());
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
           return;
         }
 
         String emailAddress = user.getEmail();
         if (emailAddress == null) {
-          ctx.json(
-              res.put("status", UserMessage.SERVER_ERROR.toJSON("Email not found for this user."))
-                  .toString());
+          ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user.").toString());
         }
 
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
@@ -89,7 +86,7 @@ public class AccountSecurityController {
         String emailJWT = getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
         EmailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
 
-        ctx.json(res.put("status", UserMessage.SUCCESS.toJSON()).toString());
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   // Changes the password of a logged in user.
@@ -104,21 +101,19 @@ public class AccountSecurityController {
 
         if (username == null) {
           ctx.json(
-              res.put(
-                      "status",
-                      UserMessage.SESSION_TOKEN_FAILURE.toJSON("Unauthorized to change password."))
+              UserMessage.SESSION_TOKEN_FAILURE
+                  .toJSON("Unauthorized to change password.")
                   .toString());
           return;
         }
 
         UserMessage changeStatus = changePassword(username, newPassword, oldPassword, db);
-        ctx.json(res.put("status", changeStatus.toJSON()).toString());
+        ctx.json(changeStatus.toJSON().toString());
       };
 
   public Handler changeAccountSetting =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         String password = req.getString("password");
         String key = req.getString("key");
@@ -128,14 +123,14 @@ public class AccountSecurityController {
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         User user = userCollection.find(eq("username", username)).first();
         if (user == null) {
-          ctx.json(res.put("status", UserMessage.USER_NOT_FOUND.toJSON()).toString());
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
           return;
         }
         char[] passwordChar = password.toCharArray();
         String hash = user.getPassword();
         if (!argon2.verify(hash, passwordChar)) {
           argon2.wipeArray(passwordChar);
-          ctx.json(res.put("status", UserMessage.AUTH_FAILURE.toJSON()).toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON().toString());
           return;
         }
         argon2.wipeArray(passwordChar);
@@ -143,98 +138,79 @@ public class AccountSecurityController {
         switch (key) {
           case "firstName":
             if (!ValidationUtils.isValidFirstName(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name").toString());
               return;
             }
             user.setFirstName(value);
             break;
           case "lastName":
             if (!ValidationUtils.isValidLastName(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Last Name").toString());
               return;
             }
             user.setLastName(value);
             break;
           case "birthDate":
             if (!ValidationUtils.isValidBirthDate(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Birth Date Name").toString());
               return;
             }
             user.setBirthDate(value);
             break;
           case "phone":
             if (!ValidationUtils.isValidPhoneNumber(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Phone Number").toString());
               return;
             }
             user.setPhone(value);
             break;
           case "email":
             if (!ValidationUtils.isValidEmail(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Email"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Email").toString());
               return;
             }
             user.setEmail(value);
             break;
           case "address":
             if (!ValidationUtils.isValidAddress(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Address"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Address").toString());
               return;
             }
             user.setAddress(value);
             break;
           case "city":
             if (!ValidationUtils.isValidCity(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid City Name").toString());
               return;
             }
             user.setCity(value);
             break;
           case "state":
             if (!ValidationUtils.isValidUSState(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid US State"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid US State").toString());
               return;
             }
             user.setState(value);
             break;
           case "zipcode":
             if (!ValidationUtils.isValidZipCode(value)) {
-              ctx.json(
-                  res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Zip Code"))
-                      .toString());
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Zip Code").toString());
               return;
             }
             user.setZipcode(value);
             break;
           default:
-            ctx.json(res.put("status", UserMessage.INVALID_PARAMETER.toJSON()).toString());
+            ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
             return;
         }
 
         userCollection.replaceOne(eq("username", user.getUsername()), user);
-        ctx.json(res.put("status", UserMessage.SUCCESS.toJSON()).toString());
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler change2FASetting =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = ctx.sessionAttribute("username");
@@ -246,29 +222,25 @@ public class AccountSecurityController {
         user.setTwoFactorOn(twoFactorOn);
 
         userCollection.replaceOne(eq("username", user.getUsername()), user);
-        ctx.json(res.put("status", UserMessage.SUCCESS.toJSON()).toString());
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler resetPassword =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         // Decode the JWT. If invalid, return AUTH_FAILURE.
         String jwt = req.getString("jwt");
         String newPassword = req.getString("newPassword");
         if (!ValidationUtils.isValidPassword(newPassword)) {
-          ctx.json(
-              res.put("status", UserMessage.INVALID_PARAMETER.toJSON("Invalid Password"))
-                  .toString());
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Password").toString());
           return;
         }
         Claims claim;
         try {
           claim = SecurityUtils.decodeJWT(jwt);
         } catch (Exception e) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Invalid reset link.")).toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link.").toString());
           return;
         }
 
@@ -278,7 +250,7 @@ public class AccountSecurityController {
 
         // Return USER_NOT_FOUND if the username does not exist.
         if (user == null) {
-          ctx.json(res.put("status", UserMessage.USER_NOT_FOUND.toJSON()).toString());
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
           return;
         }
 
@@ -287,8 +259,7 @@ public class AccountSecurityController {
         Date now = new Date(nowMillis);
 
         if (claim.getExpiration().compareTo(now) < 0) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Reset link expired.")).toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset link expired.").toString());
           return;
         }
 
@@ -296,24 +267,18 @@ public class AccountSecurityController {
         MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
         Tokens tokens = tokenCollection.find(eq("username", username)).first();
         if (tokens == null) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."))
-                  .toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
           return;
         }
 
         String storedJWT = tokens.getResetJwt();
         if (storedJWT == null) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user."))
-                  .toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
           return;
         }
 
         if (!storedJWT.equals(jwt)) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Invalid reset token."))
-                  .toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token.").toString());
           return;
         }
 
@@ -327,13 +292,12 @@ public class AccountSecurityController {
         }
 
         resetPassword(claim.getAudience(), newPassword, db);
-        ctx.json(res.put("status", UserMessage.SUCCESS.toJSON()).toString());
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler twoFactorAuth =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         String username = req.getString("username");
         String token = req.getString("token");
@@ -343,7 +307,7 @@ public class AccountSecurityController {
 
         // Return USER_NOT_FOUND if the username does not exist.
         if (user == null) {
-          ctx.json(res.put("status", UserMessage.USER_NOT_FOUND.toJSON()).toString());
+          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
           return;
         }
 
@@ -351,18 +315,14 @@ public class AccountSecurityController {
         MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
         Tokens tokens = tokenCollection.find(eq("username", username)).first();
         if (tokens == null) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."))
-                  .toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user.").toString());
           return;
         }
 
         String stored2faToken = tokens.getTwoFactorCode();
         Date stored2faExpiration = tokens.getTwoFactorExp();
         if (stored2faToken == null || stored2faExpiration == null) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."))
-                  .toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user.").toString());
           return;
         }
 
@@ -371,14 +331,12 @@ public class AccountSecurityController {
         Date now = new Date(nowMillis);
 
         if (stored2faExpiration.compareTo(now) < 0) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("2FA link expired.")).toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("2FA link expired.").toString());
           return;
         }
 
         if (!stored2faToken.equals(token)) {
-          ctx.json(
-              res.put("status", UserMessage.AUTH_FAILURE.toJSON("Invalid 2fa token.")).toString());
+          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid 2fa token.").toString());
           return;
         }
 
@@ -397,7 +355,7 @@ public class AccountSecurityController {
         ctx.sessionAttribute("orgName", user.getOrganization());
         ctx.sessionAttribute("username", username);
 
-        ctx.json(res.put("status", UserMessage.AUTH_SUCCESS.toJSON()).toString());
+        ctx.json(UserMessage.AUTH_SUCCESS.toJSON().toString());
       };
 
   public static String getVerificationCodeEmail(String verificationCode) {

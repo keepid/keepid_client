@@ -32,17 +32,17 @@ public enum OrgEnrollmentStatus {
     return this.errorMessage.split(":")[1];
   }
 
-  public String toJSON() {
+  public JSONObject toJSON() {
     JSONObject res = new JSONObject();
     res.put("status", getErrorName());
     res.put("message", getErrorDescription());
-    return res.toString();
+    return res;
   }
 
-  public String toJSON(String message) {
+  public JSONObject toJSON(String message) {
     JSONObject res = new JSONObject();
     res.put("status", getErrorName());
     res.put("message", message);
-    return res.toString();
+    return res;
   }
 }

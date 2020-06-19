@@ -36,8 +36,8 @@ public class UserControllerUnitTest {
             });
 
     JSONObject expectedJSON =
-        new JSONObject("{\"message\":\"Invalid First Name\",\"status\":\"INVALID_PARAMETER\"}");
-    JSONObject actualJSON = new JSONObject(ve.getMessage());
+        new JSONObject().put("message", "Invalid First Name").put("status", "INVALID_PARAMETER");
+    JSONObject actualJSON = ve.getJSON();
 
     assertEquals(expectedJSON.getString("message"), actualJSON.getString("message"));
     assertEquals(expectedJSON.getString("status"), actualJSON.getString("status"));
@@ -68,8 +68,8 @@ public class UserControllerUnitTest {
             });
 
     JSONObject expectedJSON =
-        new JSONObject("{\"message\":\"Invalid First Name\",\"status\":\"INVALID_PARAMETER\"}");
-    JSONObject actualJSON = new JSONObject(ve.getMessage());
+        new JSONObject().put("message", "Invalid First Name").put("status", "INVALID_PARAMETER");
+    JSONObject actualJSON = ve.getJSON();
 
     assertEquals(expectedJSON.getString("message"), actualJSON.getString("message"));
     assertEquals(expectedJSON.getString("status"), actualJSON.getString("status"));

@@ -1,15 +1,19 @@
 package Validation;
 
+import org.json.JSONObject;
+
 public class ValidationException extends Exception {
 
-  private String errorMessage;
+  private JSONObject messageJson;
 
-  public ValidationException(String errorMessage) {
-    super(errorMessage);
-    this.errorMessage = errorMessage;
+  // messageJson should contain a status and a message.
+  public ValidationException(JSONObject messageJson) {
+
+    super(messageJson.getString("message"));
+    this.messageJson = messageJson;
   }
 
-  public String getMessage() {
-    return this.errorMessage;
+  public JSONObject getJSON() {
+    return this.messageJson;
   }
 }

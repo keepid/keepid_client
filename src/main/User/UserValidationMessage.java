@@ -1,5 +1,7 @@
 package User;
 
+import org.json.JSONObject;
+
 public enum UserValidationMessage {
   INVALID_FIRSTNAME,
   INVALID_LASTNAME,
@@ -16,7 +18,7 @@ public enum UserValidationMessage {
   INVALID_USERTYPE,
   VALID;
 
-  public static String toUserMessageJSON(UserValidationMessage v) {
+  public static JSONObject toUserMessageJSON(UserValidationMessage v) {
     switch (v) {
       case INVALID_FIRSTNAME:
         return UserMessage.INVALID_PARAMETER.toJSON("Invalid First Name");
