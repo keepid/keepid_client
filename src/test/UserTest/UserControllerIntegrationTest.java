@@ -56,6 +56,8 @@ public class UserControllerIntegrationTest {
     assertThat(actualResponseJSON.getString("lastName")).isEqualTo("");
     assert (actualResponseJSON.has("organization"));
     assertThat(actualResponseJSON.getString("organization")).isEqualTo("");
+    assert (actualResponseJSON.has("userRole"));
+    assertThat(actualResponseJSON.getString("userRole")).isEqualTo("");
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
   }
