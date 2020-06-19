@@ -86,9 +86,9 @@ class LoginPage extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        const returnStatus = responseJSON.status;
+        const { status } = responseJSON;
 
-        if (returnStatus === 'AUTH_SUCCESS') {
+        if (status === 'AUTH_SUCCESS') {
           const role = () => {
             switch (this.state.userRole) {
               case 'Director': return Role.Director;
@@ -99,7 +99,7 @@ class LoginPage extends Component<Props, State> {
             }
           };
           logIn(role(), username, this.state.organization, this.state.firstName.concat(this.state.lastName));
-        } else if (returnStatus === 'AUTH_FAILURE') {
+        } else if (status === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect 2FA Token: Please Try Again');
           this.setState({ buttonState: '' });
         }
@@ -133,13 +133,15 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const { loginStatus } = responseJSON;
-          const { userRole } = responseJSON;
-          const { organization } = responseJSON;
-          const { firstName } = responseJSON;
-          const { lastName } = responseJSON;
+          const {
+            status,
+            userRole,
+            organization,
+            firstName,
+            lastName,
+          } = responseJSON;
 
-          if (loginStatus === 'AUTH_SUCCESS') {
+          if (status === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
                 case 'Director': return Role.Director;
@@ -150,7 +152,7 @@ class LoginPage extends Component<Props, State> {
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-          } else if (loginStatus === 'TOKEN_ISSUED') {
+          } else if (status === 'TOKEN_ISSUED') {
             this.setState({
               buttonState: '',
               twoFactorState: 'show',
@@ -159,10 +161,10 @@ class LoginPage extends Component<Props, State> {
               organization,
               userRole,
             });
-          } else if (loginStatus === 'AUTH_FAILURE') {
+          } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
-          } else if (loginStatus === 'USER_NOT_FOUND') {
+          } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username or Password');
             this.setState({ buttonState: '' });
           } else {

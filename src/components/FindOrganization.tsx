@@ -72,7 +72,9 @@ class FindOrganization extends Component<Props, State> {
       method: 'GET',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON.status === 'OK') {
+        const { status } = responseJSON;
+
+        if (status === 'OK') {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
           this.setState({
             displayMap: true,
