@@ -86,8 +86,6 @@ class LoginPage extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
-        //const returnStatus = responseJSON.status;
-        debugger;
         const { status } = responseJSON;
 
         if (status === 'AUTH_SUCCESS') {
@@ -135,11 +133,13 @@ class LoginPage extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const { status } = responseJSON;
-          const { userRole } = responseJSON;
-          const { organization } = responseJSON;
-          const { firstName } = responseJSON;
-          const { lastName } = responseJSON;
+          const {
+            status,
+            userRole,
+            organization,
+            firstName,
+            lastName,
+          } = responseJSON;
 
           if (status === 'AUTH_SUCCESS') {
             const role = () => {
