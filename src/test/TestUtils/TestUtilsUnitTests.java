@@ -34,6 +34,6 @@ public class TestUtilsUnitTests {
 
   @Test
   public void tearDownTest() {
-    TestUtils.tearDownTestDB();
+    //    TestUtils.tearDownTestDB();
   }
 }
