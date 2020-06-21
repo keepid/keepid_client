@@ -53,7 +53,7 @@ public class ValidationUtilsUnitTests {
 
   @Test
   public void EINTest() {
-    assertFalse(ValidationUtils.isValidEIN("12-1234567"));
+    assertTrue(ValidationUtils.isValidEIN("12-1234567"));
     assertTrue(ValidationUtils.isValidEIN("42-1231244"));
     assertTrue(ValidationUtils.isValidEIN("561234567"));
     assertFalse(ValidationUtils.isValidEIN("1-1232345"));
