@@ -48,7 +48,7 @@ public class TestUtils {
         new User(
             "Mike",
             "Dahl",
-            "06/16/1960",
+            "06-16-1960",
             "mikedahl@broadstreetministry.org",
             "1234567890",
             "Broad Street Ministry",
@@ -65,7 +65,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Fff",
-                "12/14/1997",
+                "12-14-1997",
                 "workerfff@broadstreetministry.org",
                 "2157354847",
                 "Broad Street Ministry",
@@ -85,7 +85,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Fft",
-                "09/04/1978",
+                "09-04-1978",
                 "workerfft@broadstreetministry.org",
                 "2152839504",
                 "Broad Street Ministry",
@@ -105,7 +105,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Tff",
-                "09/04/1978",
+                "09-04-1978",
                 "workertff@broadstreetministry.org",
                 "2152839504",
                 "Broad Street Ministry",
@@ -125,7 +125,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Tft",
-                "09/14/1978",
+                "09-14-1978",
                 "workertft@broadstreetministry.org",
                 "2152839204",
                 "Broad Street Ministry",
@@ -145,7 +145,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Ttf",
-                "09/14/1978",
+                "09-14-1978",
                 "workerttf@broadstreetministry.org",
                 "2152812204",
                 "Broad Street Ministry",
@@ -165,7 +165,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Ttt",
-                "09/14/1978",
+                "09-14-1978",
                 "workerttt@broadstreetministry.org",
                 "2152839204",
                 "Broad Street Ministry",
@@ -185,7 +185,7 @@ public class TestUtils {
         new User(
             "Client",
             "Bsm",
-            "09/14/1978",
+            "09-14-1978",
             "clien1@broadstreetministry.org",
             "2152839204",
             "Broad Street Ministry",
@@ -202,7 +202,7 @@ public class TestUtils {
         new User(
             "Steffen",
             "Cornwell",
-            "09/14/1997",
+            "09-14-1997",
             "steffen@broadstreetministry.org",
             "2152839204",
             "Broad Street Ministry",
@@ -232,7 +232,7 @@ public class TestUtils {
         new User(
             "Ym",
             "Ca",
-            "06/16/1960",
+            "06-16-1960",
             "info@ymca.net",
             "1234567890",
             "YMCA",
@@ -249,7 +249,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Fff",
-                "12/14/1997",
+                "12-14-1997",
                 "workerfff@ymca.net",
                 "2157354847",
                 "YMCA",
@@ -269,7 +269,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Fft",
-                "09/04/1978",
+                "09-04-1978",
                 "workerfft@ymca.net",
                 "2152839504",
                 "YMCA",
@@ -289,7 +289,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Tff",
-                "09/04/1978",
+                "09-04-1978",
                 "workertff@ymca.net",
                 "2152839504",
                 "YMCA",
@@ -309,7 +309,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Tft",
-                "09/14/1978",
+                "09-14-1978",
                 "workertft@ymca.net",
                 "2152839204",
                 "YMCA",
@@ -329,7 +329,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Ttf",
-                "09/14/1978",
+                "09-14-1978",
                 "workerttf@ymca.net",
                 "2152812204",
                 "YMCA",
@@ -349,7 +349,7 @@ public class TestUtils {
         new User(
                 "Worker",
                 "Ttt",
-                "09/14/1978",
+                "09-14-1978",
                 "workerttt@ymca.net",
                 "2152839204",
                 "YMCA",
@@ -369,7 +369,7 @@ public class TestUtils {
         new User(
             "Client",
             "Ymca",
-            "09/14/1978",
+            "09-14-1978",
             "clien1@ymca.net",
             "2152839204",
             "YMCA",
@@ -386,7 +386,7 @@ public class TestUtils {
         new User(
             "Steffen",
             "Cornwell",
-            "09/14/1997",
+            "09-14-1997",
             "steffen@ymca.net",
             "2152839204",
             "YMCA",
