@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 import PDFType from '../static/PDFType';
+import Role from '../static/Role';
 
 interface Props {
+  userRole: Role,
   documentId: string,
   documentName: string,
 }
@@ -23,15 +25,24 @@ class ViewDocument extends Component<Props, State> {
 
   componentDidMount() {
     const {
+      userRole,
       documentId,
       documentName,
     } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileID: documentId,
-        pdfType: PDFType.IDENTIFICATION,
+        pdfType,
       }),
     }).then((response) => response.blob())
       .then((response) => {

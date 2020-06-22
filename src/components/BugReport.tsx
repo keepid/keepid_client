@@ -68,8 +68,10 @@ class BugReport extends Component<Props, State, {}> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const submitStatus = responseJSON;
-          if (submitStatus === 'SUBMIT_SUCCESS') {
+          responseJSON = JSON.parse(responseJSON);
+          const { status } = responseJSON;
+
+          if (status === 'SUBMIT_SUCCESS') {
             this.setState({ buttonState: '' });
             this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
           } else {

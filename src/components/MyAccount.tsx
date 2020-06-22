@@ -563,7 +563,7 @@ class MyAccount extends Component<Props, State, {}> {
 
   handleChange2FA(twoFactorOn) {
     const data = {
-      twoFactorOn: twoFactorOn,
+      twoFactorOn,
     };
 
     fetch(`${getServerURL()}/change-two-factor-setting`, {
@@ -580,10 +580,10 @@ class MyAccount extends Component<Props, State, {}> {
         const { message } = responseJSON;
 
         if (status === 'SUCCESS') { // succesfully updated key and value
-          //alert.show(`Successfully set 2FA Value`);
+          // alert.show(`Successfully set 2FA Value`);
           this.setState({ twoFactorOn });
         }
-    });
+      });
   }
 
   render() {

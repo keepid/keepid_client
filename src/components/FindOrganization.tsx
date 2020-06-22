@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import MapComponent from './MapComponent';
 import { withAlert } from 'react-alert';
+import MapComponent from './MapComponent';
 
 interface Props {
   alert: any,
@@ -72,7 +72,9 @@ class FindOrganization extends Component<Props, State> {
       method: 'GET',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON.status === "OK") {
+        const { status } = responseJSON;
+
+        if (status === 'OK') {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
           this.setState({
             displayMap: true,
@@ -82,9 +84,9 @@ class FindOrganization extends Component<Props, State> {
           const {
             alert,
           } = this.props;
-          alert.show(`Invalid zip code`);
+          alert.show('Invalid zip code');
         }
-    });
+      });
   }
 
   render() {
@@ -102,7 +104,7 @@ class FindOrganization extends Component<Props, State> {
         </div>
         <form onSubmit={this.onSubmitZipcode}>
           <div className="input-group mb-3 mt-5">
-            <input type="text" className="form-control form-purple" placeholder="Enter your zipcode here" value={zipcodeSearch} onChange={this.onHandleChangeZipcode}/>
+            <input type="text" className="form-control form-purple" placeholder="Enter your zipcode here" value={zipcodeSearch} onChange={this.onHandleChangeZipcode} />
             <div className="input-group-append">
               <button className="btn btn-primary btn-primary-theme rounded-0" type="submit">Search</button>
             </div>
@@ -110,16 +112,16 @@ class FindOrganization extends Component<Props, State> {
         </form>
         {displayMap
           ? (
-              <MapComponent
-                organizations={organizations}
-                lat={zipcodeLatLng.lat}
-                lng={zipcodeLatLng.lng}
-                googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
-                loadingElement={<div style={{ height: `100%` }} />}
-                containerElement={<div style={{ height: `400px` }} />}
-                mapElement={<div style={{ height: `100%` }} />}
-              />
-            )
+            <MapComponent
+              organizations={organizations}
+              lat={zipcodeLatLng.lat}
+              lng={zipcodeLatLng.lng}
+              googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
+              loadingElement={<div style={{ height: '100%' }} />}
+              containerElement={<div style={{ height: '400px' }} />}
+              mapElement={<div style={{ height: '100%' }} />}
+            />
+          )
           : <div />}
       </div>
     );

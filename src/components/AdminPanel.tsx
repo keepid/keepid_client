@@ -214,7 +214,7 @@ class AdminPanel extends Component<Props, State> {
         <div className="card ml-5">
           <div className="card-body">
             <h5 className="card-title">
-              {currentWorker.firstName.concat(" ").concat(currentWorker.lastName).concat(": Worker Permissions")}
+              {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
             </h5>
             <p className="card-text">Set and Modify Permissions here</p>
           </div>

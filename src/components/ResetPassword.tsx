@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { useLocation, Link } from 'react-router-dom';
+import { CMapCompressionType } from 'pdfjs-dist';
 import ForgotPasswordSVG from '../static/images/forgot-password.svg';
 import getServerURL from '../serverOverride';
 import { reCaptchaKey } from '../configVars';
-import { useLocation, Link } from "react-router-dom";
-import { CMapCompressionType } from 'pdfjs-dist';
   
 interface State {
   newPassword: string,
@@ -48,7 +48,7 @@ class ResetPassword extends Component<Props, State> {
 
   handleChangeConfirmPassword(event: any) {
     this.setState({ confirmPassword: event.target.value });
-  } 
+  }
 
   handlePasswordJWTSubmit(event: any) {
     if(_reCaptchaRef && _reCaptchaRef.current){
@@ -61,7 +61,7 @@ class ResetPassword extends Component<Props, State> {
     if (newPassword.trim() === '') {
       this.props.alert.show('Please enter a valid password');
       this.setState({ buttonState: '' });
-    } else if(newPassword !== confirmPassword){
+    } else if (newPassword !== confirmPassword) {
       this.props.alert.show('Passwords do not match');
       this.setState({ buttonState: '' });
     } else if(!recaptchaLoaded || recaptchaExpired){
@@ -79,17 +79,17 @@ class ResetPassword extends Component<Props, State> {
       }).then((response) => response.json())
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
-          const {status} = responseJSON;
+          const { status } = responseJSON;
           if (status === 'SUCCESS') {
             this.props.alert.show('Successfully reset password');
-            this.setState({ buttonState: '', collapseState:'show' });
+            this.setState({ buttonState: '', collapseState: 'show' });
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
             this.setState({ buttonState: '' });
           } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show('Your reset token has expired. Please try to reset your password again');
             this.setState({ buttonState: '' });
-          }else {
+          } else {
             this.props.alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
           }
@@ -163,20 +163,19 @@ class ResetPassword extends Component<Props, State> {
 
                 {(this.state.collapseState !== 'show')
                   ? (
-                <div className="row pt-3">
-                  <div className="col-6">
-                    <button type="submit" onClick={this.handlePasswordJWTSubmit} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
-                      Submit
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  </div>
-                </div>
-                  ): <div/>
-                }
+                    <div className="row pt-3">
+                      <div className="col-6">
+                        <button type="submit" onClick={this.handlePasswordJWTSubmit} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                          Submit
+                          <div className="ld ld-ring ld-spin" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : <div />}
                 <div className={`mt-3 mb-3 collapse ${this.state.collapseState}`}>
                   <div className="font-weight-normal mb-3">You have successfully reset your password. Return to the login page in order to log in with your new password.</div>
-                  <Link to='/login-page'>
-                    <button type="submit" className='mt-2 btn btn-success loginButtonBackground w-100'>
+                  <Link to="/login-page">
+                    <button type="submit" className="mt-2 btn btn-success loginButtonBackground w-100">
                       Return to Login Page
                     </button>
                   </Link>

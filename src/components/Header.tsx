@@ -72,13 +72,13 @@ class Header extends Component<Props, State, {}> {
         .then((responseJSON) => {
           responseJSON = JSON.parse(responseJSON);
           const {
-            loginStatus,
+            status,
             userRole,
             organization,
             firstName,
             lastName,
           } = responseJSON;
-          if (loginStatus === 'AUTH_SUCCESS') {
+          if (status === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
                 case 'Admin': return Role.Admin;
@@ -88,10 +88,10 @@ class Header extends Component<Props, State, {}> {
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-          } else if (loginStatus === 'AUTH_FAILURE') {
+          } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Password');
             this.setState({ buttonState: '' });
-          } else if (loginStatus === 'USER_NOT_FOUND') {
+          } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
             this.setState({ buttonState: '' });
           } else {
