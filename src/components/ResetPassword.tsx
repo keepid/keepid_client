@@ -8,14 +8,17 @@ import { reCaptchaKey } from '../configVars';
 import { useLocation, Link } from "react-router-dom";
 import { CMapCompressionType } from 'pdfjs-dist';
   
-const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
-
 interface State {
   newPassword: string,
   confirmPassword: string,
   buttonState: string,
-  collapseState: string
+  collapseState: string,
+  recaptchaLoaded: boolean,
+  recaptchaPayload: string,
+  recaptchaExpired: boolean
 }
+
+const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
   alert: any,
@@ -28,7 +31,10 @@ class ResetPassword extends Component<Props, State> {
       newPassword: '',
       confirmPassword: '',
       buttonState: '',
-      collapseState: ''
+      collapseState: '',
+      recaptchaLoaded: false,
+      recaptchaPayload: '',
+      recaptchaExpired: false,
     };
     this.handlePasswordJWTSubmit = this.handlePasswordJWTSubmit.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -45,9 +51,12 @@ class ResetPassword extends Component<Props, State> {
   } 
 
   handlePasswordJWTSubmit(event: any) {
+    if(_reCaptchaRef && _reCaptchaRef.current){
+      _reCaptchaRef.current.execute()
+    }
     this.setState({ buttonState: 'running' });
     event.preventDefault();
-    const { newPassword, confirmPassword } = this.state;
+    const { newPassword, confirmPassword, recaptchaPayload, recaptchaLoaded, recaptchaExpired} = this.state;
     let jwt = this.getJWT();
     if (newPassword.trim() === '') {
       this.props.alert.show('Please enter a valid password');
@@ -55,13 +64,17 @@ class ResetPassword extends Component<Props, State> {
     } else if(newPassword !== confirmPassword){
       this.props.alert.show('Passwords do not match');
       this.setState({ buttonState: '' });
+    } else if(!recaptchaLoaded || recaptchaExpired){
+        this.props.alert.show('Recaptcha has expired. Please refresh the page');
+        this.setState({ buttonState: '' }); 
     } else {
       fetch(`${getServerURL()}/reset-password/`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
           newPassword,
-          jwt
+          jwt,
+          recaptchaPayload
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -87,13 +100,24 @@ class ResetPassword extends Component<Props, State> {
     }
   }
 
-  getJWT(){
+  getJWT(){  // fix this code later
     let splitParams = window.location.pathname.split('/');
     return splitParams[2];
   }
 
+  // RECAPTCHA CODE
+  componentDidMount() {
+    this.setState({recaptchaLoaded: true});
+  }
+
+  handleRecaptchaChange = recaptchaPayload => {
+    this.setState({ recaptchaPayload });
+    if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
+  };
+  // RECAPTCHA 
+
   render() {
-    const {newPassword, confirmPassword} = this.state;
+    const {newPassword, confirmPassword, recaptchaLoaded} = this.state;
     return (
       <div>
         <Helmet>
@@ -172,12 +196,15 @@ class ResetPassword extends Component<Props, State> {
             </div>
           </div>
         </div>
-
-        <ReCAPTCHA
-          sitekey={reCaptchaKey}
-          ref={recaptchaRef}
-          size="invisible"
-        />
+        {recaptchaLoaded && (
+          <ReCAPTCHA
+            theme="dark"
+            size="invisible"
+            ref={_reCaptchaRef}
+            sitekey={reCaptchaKey}
+            onChange={this.handleRecaptchaChange}
+          />
+        )}
       </div>
     );
   }

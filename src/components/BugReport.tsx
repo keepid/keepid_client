@@ -13,7 +13,10 @@ interface State {
   bugTitle: string,
   bugDescription: string,
   isCaptchaFilled: boolean,
-  buttonState: string
+  buttonState: string,
+  recaptchaLoaded: boolean,
+  recaptchaPayload: string,
+  recaptchaExpired: boolean
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -26,6 +29,9 @@ class BugReport extends Component<Props, State, {}> {
       bugDescription: '',
       isCaptchaFilled: false,
       buttonState: '',
+      recaptchaLoaded: false,
+      recaptchaPayload: '',
+      recaptchaExpired: false,
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.captchaVerify = this.captchaVerify.bind(this);
@@ -43,7 +49,9 @@ class BugReport extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
-    recaptchaRef.current.execute();
+    if(recaptchaRef && recaptchaRef.current){
+      recaptchaRef.current.execute()
+    }
     const {
       bugTitle,
       bugDescription,
