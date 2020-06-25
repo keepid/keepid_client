@@ -165,8 +165,6 @@ public class UserController {
 
   public Handler createUserValidator =
       ctx -> {
-        String sessionOrg = ctx.sessionAttribute("orgName");
-
         JSONObject req = new JSONObject(ctx.body());
 
         String firstName = req.getString("firstname").toUpperCase().strip();
@@ -204,7 +202,7 @@ public class UserController {
               birthDate,
               email,
               phone,
-              sessionOrg,
+              "",
               address,
               city,
               state,
@@ -224,9 +222,8 @@ public class UserController {
         JSONObject req = new JSONObject(ctx.body());
 
         UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
-        String sessionOrg = ctx.sessionAttribute("orgName");
 
-        if (sessionUserLevel == null || sessionOrg == null) {
+        if (sessionUserLevel == null) {
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
           return;
         }
@@ -260,7 +257,7 @@ public class UserController {
                   birthDate,
                   email,
                   phone,
-                  sessionOrg,
+                  "",
                   address,
                   city,
                   state,
