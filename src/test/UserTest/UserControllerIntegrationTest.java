@@ -40,15 +40,14 @@ public class UserControllerIntegrationTest {
     body.put("password", "pass");
     body.put("username", "");
 
-    HttpResponse actualResponse =
+    HttpResponse<String> actualResponse =
         Unirest.post("http://localhost:1234/login")
             .header("Accept", "*/*")
             .header("Content-Type", "text/plain")
             .body(body.toString())
             .asString();
 
-    JSONObject actualResponseJSON =
-        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
 
     assert (actualResponseJSON.has("firstName"));
     assertThat(actualResponseJSON.getString("firstName")).isEqualTo("");

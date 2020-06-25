@@ -29,17 +29,14 @@ public class PdfMongo {
 
     JSONObject res = new JSONObject();
     ObjectId id;
-    System.out.println(privilegeLevel);
 
     // Privilege Checking
-    if (pdfType == PDFType.APPLICATION && (privilegeLevel == UserType.Client)) {
-      id = mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
-      res.put("id", id);
-    } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
-      id = mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
-      res.put("id", id);
-    } else if (pdfType == PDFType.FORM
-        && (privilegeLevel == UserType.Admin || privilegeLevel == UserType.Director)) {
+    if ((pdfType == PDFType.APPLICATION
+            || pdfType == PDFType.IDENTIFICATION
+            || pdfType == PDFType.FORM)
+        && (privilegeLevel == UserType.Client
+            || privilegeLevel == UserType.Director
+            || privilegeLevel == UserType.Admin)) {
       id = mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
       res.put("id", id);
     } else {
@@ -51,7 +48,7 @@ public class PdfMongo {
       res.put("status", "success");
     }
     return res;
-  } // Add option user
+  }
 
   // Do not call method outside upload!
   private static ObjectId mongodbUpload(
@@ -70,11 +67,9 @@ public class PdfMongo {
                     .append("upload_date", String.valueOf(LocalDate.now()))
                     .append("uploader", uploader)
                     .append("organizationName", organizationName));
-    ObjectId id = gridBucket.uploadFromStream(filename, inputStream, options);
-    return id;
+    return gridBucket.uploadFromStream(filename, inputStream, options);
   }
 
-  // Secure Here!
   public static JSONObject getAllFiles(
       String uploader,
       String organizationName,
