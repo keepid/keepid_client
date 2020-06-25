@@ -69,7 +69,6 @@ public class PdfMongoTests {
     JSONObject body = new JSONObject();
     body.put("password", "adminBSM");
     body.put("username", "adminBSM");
-    Unirest.config().enableCookieManagement(true);
     HttpResponse<String> loginResponse =
         Unirest.post("http://localhost:1234/login").body(body.toString()).asString();
     //    String sessionID = loginResponse.getHeaders().get("Set-Cookie").get(0);
