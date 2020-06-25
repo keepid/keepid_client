@@ -1,5 +1,7 @@
 package Organization;
 
+import org.json.JSONObject;
+
 public enum OrganizationValidationMessage {
   INVALID_NAME,
   INVALID_WEBSITE,
@@ -12,7 +14,7 @@ public enum OrganizationValidationMessage {
   INVALID_ZIPCODE,
   VALID;
 
-  public static String toOrganizationMessageJSON(OrganizationValidationMessage v) {
+  public static JSONObject toOrganizationMessageJSON(OrganizationValidationMessage v) {
     switch (v) {
       case INVALID_NAME:
         return OrgEnrollmentStatus.INVALID_PARAMETER.toJSON("Invalid Organization Name");

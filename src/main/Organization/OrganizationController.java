@@ -2,6 +2,7 @@ package Organization;
 
 import User.User;
 import User.UserMessage;
+import User.UserType;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -23,6 +24,7 @@ public class OrganizationController {
   public Handler organizationSignupValidator =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+
         String orgName = req.getString("organizationName").strip();
         String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
         String orgEIN = req.getString("organizationEIN").strip();
@@ -32,6 +34,15 @@ public class OrganizationController {
         String orgZipcode = req.getString("organizationAddressZipcode").strip();
         String orgEmail = req.getString("organizationEmail").strip();
         String orgPhoneNumber = req.getString("organizationPhoneNumber").strip();
+
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        Organization existingOrg = orgCollection.find(eq("orgName", orgName)).first();
+
+        if (existingOrg != null) {
+          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON().toString());
+          return;
+        }
 
         try {
           new Organization(
@@ -46,15 +57,17 @@ public class OrganizationController {
               orgPhoneNumber);
           ctx.json(
               OrganizationValidationMessage.toOrganizationMessageJSON(
-                  OrganizationValidationMessage.VALID));
+                      OrganizationValidationMessage.VALID)
+                  .toString());
         } catch (ValidationException ve) {
-          ctx.json(ve.getMessage());
+          ctx.json(ve.getJSON().toString());
         }
       };
 
   public Handler enrollOrganization =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
+
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
         String birthDate = req.getString("birthDate").strip();
@@ -64,11 +77,10 @@ public class OrganizationController {
         String city = req.getString("city").toUpperCase().strip();
         String state = req.getString("state").toUpperCase().strip();
         String zipcode = req.getString("zipcode").strip();
-        System.out.println("2FA: " + req.getString("twoFactorOn"));
         Boolean twoFactorOn = req.getBoolean("twoFactorOn");
         String username = req.getString("username").strip();
         String password = req.getString("password").strip();
-        String userLevel = req.getString("personRole");
+        UserType userLevel = UserType.Admin;
 
         String orgName = req.getString("organizationName").strip();
         String orgWebsite = req.getString("organizationWebsite").toLowerCase().strip();
@@ -101,7 +113,7 @@ public class OrganizationController {
                   birthDate,
                   email,
                   phone,
-                  "",
+                  orgName,
                   address,
                   city,
                   state,
@@ -111,7 +123,7 @@ public class OrganizationController {
                   password,
                   userLevel);
         } catch (ValidationException ve) {
-          ctx.json(ve.getMessage());
+          ctx.json(ve.getJSON().toString());
           return;
         }
 
@@ -123,9 +135,9 @@ public class OrganizationController {
         User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
         if (existingOrg != null) {
-          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON());
+          ctx.json(OrgEnrollmentStatus.ORG_EXISTS.toJSON().toString());
         } else if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON());
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
         } else {
           Argon2 argon2 = Argon2Factory.create();
           char[] passwordArr = user.getPassword().toCharArray();
@@ -135,7 +147,7 @@ public class OrganizationController {
             argon2.wipeArray(passwordArr);
           } catch (Exception e) {
             argon2.wipeArray(passwordArr);
-            ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toJSON());
+            ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toJSON().toString());
             return;
           }
 
@@ -143,7 +155,7 @@ public class OrganizationController {
           userCollection.insertOne(user);
 
           orgCollection.insertOne(org);
-          ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON());
+          ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON().toString());
         }
       };
 }

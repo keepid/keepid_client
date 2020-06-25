@@ -16,6 +16,7 @@ public enum UserMessage {
   USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS:This username is taken."),
   SERVER_ERROR("SERVER_ERROR:There was an error with the server."),
   INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low."),
+  INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),
   SUCCESS("SUCCESS:Success."),
   TOKEN_ISSUED("TOKEN_ISSUED:Token issued.");
 
@@ -37,17 +38,17 @@ public enum UserMessage {
     return this.errorMessage.split(":")[1];
   }
 
-  public String toJSON() {
+  public JSONObject toJSON() {
     JSONObject res = new JSONObject();
     res.put("status", getErrorName());
     res.put("message", getErrorDescription());
-    return res.toString();
+    return res;
   }
 
-  public String toJSON(String message) {
+  public JSONObject toJSON(String message) {
     JSONObject res = new JSONObject();
     res.put("status", getErrorName());
     res.put("message", message);
-    return res.toString();
+    return res;
   }
 }

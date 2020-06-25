@@ -1,6 +1,7 @@
 package UserTest;
 
 import User.User;
+import User.UserType;
 import Validation.ValidationException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -31,12 +32,12 @@ public class UserControllerUnitTest {
                       true,
                       "username",
                       "password",
-                      "Director");
+                      UserType.Director);
             });
 
     JSONObject expectedJSON =
-        new JSONObject("{\"message\":\"Invalid First Name\",\"status\":\"INVALID_PARAMETER\"}");
-    JSONObject actualJSON = new JSONObject(ve.getMessage());
+        new JSONObject().put("message", "Invalid First Name").put("status", "INVALID_PARAMETER");
+    JSONObject actualJSON = ve.getJSON();
 
     assertEquals(expectedJSON.getString("message"), actualJSON.getString("message"));
     assertEquals(expectedJSON.getString("status"), actualJSON.getString("status"));
@@ -63,12 +64,12 @@ public class UserControllerUnitTest {
                       true,
                       "username",
                       "password",
-                      "Director");
+                      UserType.Director);
             });
 
     JSONObject expectedJSON =
-        new JSONObject("{\"message\":\"Invalid First Name\",\"status\":\"INVALID_PARAMETER\"}");
-    JSONObject actualJSON = new JSONObject(ve.getMessage());
+        new JSONObject().put("message", "Invalid First Name").put("status", "INVALID_PARAMETER");
+    JSONObject actualJSON = ve.getJSON();
 
     assertEquals(expectedJSON.getString("message"), actualJSON.getString("message"));
     assertEquals(expectedJSON.getString("status"), actualJSON.getString("status"));
