@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 
 public class AccountSecurityUnitTests {
   Context ctx = mock(Context.class);
-  MongoClient testClient = MongoConfig.getMongoTestClient();
+  MongoClient testClient = MongoConfig.getMongoClient();
   MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
 
   // Make sure to enable .env file configurations for these tests
