@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AccountSecurityIntegrationTests {
+public class TwoFactorHandlerIntegrationTests {
     private static Javalin app = Javalin.create();
 
     @BeforeClass
