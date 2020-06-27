@@ -6,6 +6,8 @@ import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 public class PdfUpload {
   MongoDatabase db;
 
@@ -18,16 +20,16 @@ public class PdfUpload {
         String username = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-        System.out.println(privilegeLevel);
         UploadedFile file = ctx.uploadedFile("file");
-        // Different actions?
-        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-        JSONObject res = new JSONObject();
+        PDFType pdfType =
+            PDFType.createFromString(Objects.requireNonNull(ctx.formParam("pdfType")));
+        JSONObject res;
         if (pdfType == null) {
-          res.put("status", "Invalid PDF Type");
+          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
         } else {
           if (file != null) {
-            if (file.getContentType().equals("application/pdf")) {
+            if (file.getContentType().equals("application/pdf")
+                || (file.getContentType().equals("application/octet-stream"))) {
               res =
                   PdfMongo.upload(
                       username,
@@ -38,10 +40,10 @@ public class PdfUpload {
                       file.getContent(),
                       this.db);
             } else {
-              res.put("status", "Not PDF");
+              res = PdfMessage.INVALID_PDF.toJSON();
             }
           } else {
-            res.put("status", "File is Null");
+            res = PdfMessage.INVALID_PDF.toJSON();
           }
         }
         ctx.json(res.toString());

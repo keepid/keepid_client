@@ -26,7 +26,6 @@ public class PdfSearch {
         } else {
           res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, db);
         }
-
         ctx.json(res.toString());
       };
 }

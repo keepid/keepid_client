@@ -21,9 +21,12 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Paths;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class PdfMongoTests {
+  static final int serverPort = 1234;
+  static final String serverURL = "http://localhost:" + serverPort;
   private static Javalin app = AppConfig.createJavalinApp();
   private static String currentPDFFolderPath =
       Paths.get("").toAbsolutePath().toString()
@@ -43,13 +46,16 @@ public class PdfMongoTests {
     PdfSearch pdfSearch = new PdfSearch(db);
     PdfDelete pdfDelete = new PdfDelete(db);
     UserController userController = new UserController(db);
-    app.start(1234);
+    app.start(serverPort);
     app.post("/login", userController.loginUser);
     app.post("/upload", pdfUpload.pdfUpload);
+    app.post("/search", pdfSearch.pdfSearch);
     app.post("/download", pdfDownload.pdfDownload);
-    app.post("/delete-document/", pdfDelete.pdfDelete);
+    app.post("/delete-document", pdfDelete.pdfDelete);
     app.post("/get-documents", pdfSearch.pdfSearch);
+    app.post("/logout", userController.logout);
     try {
+      TestUtils.tearDownTestDB();
       TestUtils.setUpTestDB();
     } catch (Exception e) {
       fail(e);
@@ -64,19 +70,88 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTest() {
+    login("adminBSM", "adminBSM");
+    uploadTestPDF();
+    logout();
+  }
+
+  @Test
+  public void uploadValidPDFTestExists() {
+    login("adminBSM", "adminBSM");
+    uploadTestPDF();
+    searchTestPDF();
+    logout();
+  }
+
+  @Test
+  public void uploadValidPDFTestExistsAndDelete() {
+    login("adminBSM", "adminBSM");
+    uploadTestPDF();
+    JSONObject allDocuments = searchTestPDF();
+    String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
+    delete(idString);
+    try {
+      searchTestPDF(); // should fail
+    } catch (AssertionError ignored) {
+      logout();
+      return;
+    }
+    fail("PDF still exists somehow after deletion");
+  }
+
+  public static void delete(String id) {
+    JSONObject body = new JSONObject();
+    body.put("pdfType", "APPLICATION");
+    body.put("fileId", id);
+    HttpResponse<String> deleteResponse =
+        Unirest.post(serverURL + "/delete-document").body(body.toString()).asString();
+    JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
+    assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void login(String username, String password) {
+    JSONObject body = new JSONObject();
+    body.put("password", username);
+    body.put("username", password);
+    HttpResponse<String> loginResponse =
+        Unirest.post(serverURL + "/login").body(body.toString()).asString();
+    JSONObject loginResponseJSON = TestUtils.responseStringToJSON(loginResponse.getBody());
+    assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
+  }
+
+  public static void logout() {
+    HttpResponse<String> logoutResponse = Unirest.post(serverURL + "/logout").asString();
+    System.out.println(logoutResponse.getBody());
+    JSONObject logoutResponseJSON = TestUtils.responseStringToJSON(logoutResponse.getBody());
+    assertThat(logoutResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void uploadTestPDF() {
     File examplePDF =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
-    JSONObject body = new JSONObject();
-    body.put("password", "adminBSM");
-    body.put("username", "adminBSM");
-    HttpResponse<String> loginResponse =
-        Unirest.post("http://localhost:1234/login").body(body.toString()).asString();
-    //    String sessionID = loginResponse.getHeaders().get("Set-Cookie").get(0);
-    System.out.println("BELOW");
-    System.out.println(TestUtils.responseStringToJSON(loginResponse.getBody()).toString());
+    HttpResponse<String> uploadResponse =
+        Unirest.post(serverURL + "/upload")
+            .field("pdfType", "APPLICATION")
+            .header("Content-Disposition", "attachment")
+            .field("file", examplePDF)
+            .asString();
+    //    assertEquals(actualResponse.);
+    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+    assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
 
-    //    HttpResponse<String> actualResponse =
-    //        Unirest.post("http://localhost:1234/upload").field("upload", examplePDF).asString();
-    //    System.out.println(actualResponse);
+  public static JSONObject searchTestPDF() {
+    JSONObject body = new JSONObject();
+    body.put("pdfType", "APPLICATION");
+    HttpResponse<String> getAllDocuments =
+        Unirest.post(serverURL + "/search").body(body.toString()).asString();
+    JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
+    assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
+    if (getAllDocumentsJSON.getJSONArray("documents").isEmpty()) {
+      fail();
+    }
+    assertThat(getAllDocumentsJSON.getJSONArray("documents").getJSONObject(0).getString("filename"))
+        .isEqualTo("CIS_401_Final_Progress_Report.pdf");
+    return getAllDocumentsJSON;
   }
 }
