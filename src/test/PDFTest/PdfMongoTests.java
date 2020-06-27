@@ -92,7 +92,7 @@ public class PdfMongoTests {
     delete(idString);
     try {
       searchTestPDF(); // should fail
-    } catch (AssertionError ignored) {
+    } catch (Exception ignored) {
       logout();
       return;
     }
@@ -147,9 +147,6 @@ public class PdfMongoTests {
         Unirest.post(serverURL + "/search").body(body.toString()).asString();
     JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
     assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
-    if (getAllDocumentsJSON.getJSONArray("documents").isEmpty()) {
-      fail();
-    }
     assertThat(getAllDocumentsJSON.getJSONArray("documents").getJSONObject(0).getString("filename"))
         .isEqualTo("CIS_401_Final_Progress_Report.pdf");
     return getAllDocumentsJSON;
