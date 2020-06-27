@@ -90,13 +90,6 @@ public class PdfMongoTests {
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
     delete(idString);
-    try {
-      searchTestPDF(); // should fail
-    } catch (Exception ignored) {
-      logout();
-      return;
-    }
-    fail("PDF still exists somehow after deletion");
   }
 
   public static void delete(String id) {
