@@ -10,6 +10,9 @@ import org.junit.Test;
 
 import static org.mockito.Mockito.*;
 
+/* These are old tests that are redone in TwoFactorHandlerIntegrationTests
+ *  This file has been preserved as an example of mocking contexts for tests */
+
 public class AccountSecurityUnitTests {
   Context ctx = mock(Context.class);
   MongoClient testClient = MongoConfig.getMongoClient();
