@@ -90,7 +90,7 @@ class UploadDocs extends React.Component<Props, State> {
             const {
               status,
             } = responseJSON;
-            if (status === 'success') {
+            if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
                 submitStatus: true,
