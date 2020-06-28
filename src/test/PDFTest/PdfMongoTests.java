@@ -90,6 +90,23 @@ public class PdfMongoTests {
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
     delete(idString);
+    logout();
+  }
+
+  @Test
+  public void uploadInvalidPDFTypeTest() {
+    login("adminBSM", "adminBSM");
+    File examplePDF =
+        new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
+    HttpResponse<String> uploadResponse =
+        Unirest.post(serverURL + "/upload")
+            .field("pdfType", "")
+            .header("Content-Disposition", "attachment")
+            .field("file", examplePDF)
+            .asString();
+    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+    assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF_TYPE");
+    logout();
   }
 
   public static void delete(String id) {
@@ -128,7 +145,6 @@ public class PdfMongoTests {
             .header("Content-Disposition", "attachment")
             .field("file", examplePDF)
             .asString();
-    //    assertEquals(actualResponse.);
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }

@@ -6,8 +6,6 @@ import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.json.JSONObject;
 
-import java.util.Objects;
-
 public class PdfUpload {
   MongoDatabase db;
 
@@ -21,8 +19,7 @@ public class PdfUpload {
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         UploadedFile file = ctx.uploadedFile("file");
-        PDFType pdfType =
-            PDFType.createFromString(Objects.requireNonNull(ctx.formParam("pdfType")));
+        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
         JSONObject res;
         if (pdfType == null) {
           res = PdfMessage.INVALID_PDF_TYPE.toJSON();

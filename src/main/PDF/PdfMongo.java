@@ -32,6 +32,7 @@ public class PdfMongo {
             || pdfType == PDFType.IDENTIFICATION
             || pdfType == PDFType.FORM)
         && (privilegeLevel == UserType.Client
+            || privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Admin)) {
       mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
@@ -41,7 +42,6 @@ public class PdfMongo {
     return PdfMessage.SUCCESS.toJSON();
   }
 
-  // Do not call method outside upload!
   private static void mongodbUpload(
       String uploader,
       String organizationName,
@@ -171,9 +171,6 @@ public class PdfMongo {
         && (privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Worker)) {
-      System.out.println("HERE");
-      System.out.println(grid_out.getMetadata().getString("organizationName"));
-      System.out.println(organizationName);
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS.toJSON();
