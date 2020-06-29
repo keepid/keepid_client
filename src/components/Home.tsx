@@ -158,33 +158,33 @@ class Home extends Component<Props, {}, {}> {
               <div className="row d-flex align-items-center">
                 <div className="col-md-6 ">
                   <h1 className="text-center font-weight-bold m-3 pb-5">
-                      The struggles of lack of identification for the homeless: 
+                    The struggles of lack of identification for the homeless:
                   </h1>
                 </div>
                 <div className="col-md-6">
                   <div className="row d-flex align-items-center">
-                      <div className="col-6 text-center">
-                        <h1 className="font-weight-bold statistic-text">54%</h1>
-                      </div>
-                      <div className="col-6">
-                        <span className="statistic-subtext">Denied access to shelters or adequate housing services</span>
-                      </div>
+                    <div className="col-6 text-center">
+                      <h1 className="font-weight-bold statistic-text">54%</h1>
+                    </div>
+                    <div className="col-6">
+                      <span className="statistic-subtext">Denied access to shelters or adequate housing services</span>
+                    </div>
                   </div>
                   <div className="row d-flex align-items-center">
-                      <div className="col-6 text-center">
-                        <h1 className="font-weight-bold statistic-text">53%</h1>
-                      </div>
-                      <div className="col-6">
-                        <span className="statistic-subtext">Denied access to food stamps</span>
-                      </div>
+                    <div className="col-6 text-center">
+                      <h1 className="font-weight-bold statistic-text">53%</h1>
+                    </div>
+                    <div className="col-6">
+                      <span className="statistic-subtext">Denied access to food stamps</span>
+                    </div>
                   </div>
                   <div className="row d-flex align-items-center">
-                      <div className="col-6 text-center">
-                        <h1 className="font-weight-bold statistic-text">45%</h1>
-                      </div>
-                      <div className="col-6">
-                        <span className="statistic-subtext">Denied access to Medicaid or other medical services</span>
-                      </div>
+                    <div className="col-6 text-center">
+                      <h1 className="font-weight-bold statistic-text">45%</h1>
+                    </div>
+                    <div className="col-6">
+                      <span className="statistic-subtext">Denied access to Medicaid or other medical services</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -203,21 +203,21 @@ class Home extends Component<Props, {}, {}> {
                     </div>
                     <div className="row mt-4">
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <img alt="security" src={SecureGraphic} className="home-svgs"/>                        
+                        <img alt="security" src={SecureGraphic} className="home-svgs" />
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <img alt="security" src={ConstantAvailabilityGraphic} className="home-svgs"/>
+                        <img alt="security" src={ConstantAvailabilityGraphic} className="home-svgs" />
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <img alt="security" src={DocTransferGraphic} className="home-svgs"/>
+                        <img alt="security" src={DocTransferGraphic} className="home-svgs" />
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <img alt="security" src={ControlGraphic} className="home-svgs"/>
+                        <img alt="security" src={ControlGraphic} className="home-svgs" />
                       </div>
                     </div>
                     <div className="row">
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <h3 className="text-center"> Secure Access</h3>                        
+                        <h3 className="text-center"> Secure Access</h3>
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
                         <h3 className="text-center"> Constant Availability</h3>
@@ -228,7 +228,7 @@ class Home extends Component<Props, {}, {}> {
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
                         <h3 className="text-center"> Ease of Use</h3>
                       </div>
-                    </div>                    
+                    </div>
                   </div>
                 </div>
               </div>
@@ -256,8 +256,8 @@ class Home extends Component<Props, {}, {}> {
                     <li className="home-text">Control over personal data</li>
                   </ul>
                 </div>
-              </div>      
-            </div> 
+              </div>
+            </div>
           </div>
         </div>
       </div>
