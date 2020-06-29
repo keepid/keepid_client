@@ -1,6 +1,7 @@
 package Validation;
 
 import User.UserType;
+import org.bson.types.ObjectId;
 
 import java.net.URL;
 import java.text.DateFormat;
@@ -101,6 +102,15 @@ public class ValidationUtils {
       return date.before(new Date());
     } catch (ParseException e) {
       return false;
+    }
+  }
+
+  public static boolean isValidObjectId(String input) {
+    if (input == null || input.strip().isBlank()) {
+      return false;
+    } else {
+      ObjectId id = new ObjectId(input);
+      return id.toString().equals(input);
     }
   }
 

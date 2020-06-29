@@ -2,10 +2,7 @@ package PDFTest;
 
 import Config.AppConfig;
 import Config.MongoConfig;
-import PDF.PdfDelete;
-import PDF.PdfDownload;
-import PDF.PdfSearch;
-import PDF.PdfUpload;
+import PDF.PdfController;
 import TestUtils.TestUtils;
 import User.UserController;
 import com.mongodb.client.MongoClient;
@@ -41,18 +38,14 @@ public class PdfMongoTests {
   public static void setUp() {
     MongoClient testClient = MongoConfig.getMongoTestClient();
     MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
-    PdfUpload pdfUpload = new PdfUpload(db);
-    PdfDownload pdfDownload = new PdfDownload(db);
-    PdfSearch pdfSearch = new PdfSearch(db);
-    PdfDelete pdfDelete = new PdfDelete(db);
+    PdfController pdfController = new PdfController(db);
     UserController userController = new UserController(db);
     app.start(serverPort);
     app.post("/login", userController.loginUser);
-    app.post("/upload", pdfUpload.pdfUpload);
-    app.post("/search", pdfSearch.pdfSearch);
-    app.post("/download", pdfDownload.pdfDownload);
-    app.post("/delete-document", pdfDelete.pdfDelete);
-    app.post("/get-documents", pdfSearch.pdfSearch);
+    app.post("/upload", pdfController.pdfUpload);
+    app.post("/download", pdfController.pdfDownload);
+    app.post("/delete-document", pdfController.pdfDelete);
+    app.post("/get-documents", pdfController.pdfGetAll);
     app.post("/logout", userController.logout);
     try {
       TestUtils.tearDownTestDB();

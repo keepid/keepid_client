@@ -26,8 +26,6 @@ public class PdfMongo {
       PDFType pdfType,
       InputStream inputStream,
       MongoDatabase db) {
-
-    // Privilege Checking
     if ((pdfType == PDFType.APPLICATION
             || pdfType == PDFType.IDENTIFICATION
             || pdfType == PDFType.FORM)
@@ -71,8 +69,6 @@ public class PdfMongo {
     try {
       Bson filter;
       JSONArray files;
-
-      // Privilege Checking
       if (pdfType == PDFType.APPLICATION
           && (privilegeLevel == UserType.Director
               || privilegeLevel == UserType.Admin
@@ -130,8 +126,6 @@ public class PdfMongo {
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;
     }
-
-    // Privilege Checking
     if (pdfType == PDFType.APPLICATION
         && (privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Admin
@@ -162,11 +156,9 @@ public class PdfMongo {
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
-
     if (grid_out == null || grid_out.getMetadata() == null) {
       return PdfMessage.NO_SUCH_FILE.toJSON();
     }
-    // Privilege Checking
     if (pdfType == PDFType.APPLICATION
         && (privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Director

@@ -2,7 +2,7 @@ import Config.AppConfig;
 import Config.MongoConfig;
 import Logger.LogFactory;
 import Organization.OrganizationController;
-import PDF.*;
+import PDF.PdfController;
 import Security.AccountSecurityController;
 import User.UserController;
 import com.mongodb.client.MongoClient;
@@ -30,11 +30,7 @@ public class App {
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
-    PdfApplication pdfApplication = new PdfApplication(db);
-    PdfUpload pdfUpload = new PdfUpload(db);
-    PdfDownload pdfDownload = new PdfDownload(db);
-    PdfSearch pdfSearch = new PdfSearch(db);
-    PdfDelete pdfDelete = new PdfDelete(db);
+    PdfController pdfController = new PdfController(db);
 
     /* -------------- BEFORE FILTERS ---------------------- */
     app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
@@ -43,13 +39,12 @@ public class App {
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
     /* -------------- FILE MANAGEMENT --------------------- */
-    app.post("/upload", pdfUpload.pdfUpload);
-    app.post("/download", pdfDownload.pdfDownload);
-    app.post("/delete-document/", pdfDelete.pdfDelete);
-    app.post("/get-documents", pdfSearch.pdfSearch);
-    app.post("/get-organization-members", userController.getMembers);
-    app.post("/get-application-questions", pdfApplication.getApplicationQuestions);
-    app.post("/fill-application", pdfApplication.fillPDFForm);
+    app.post("/upload", pdfController.pdfUpload);
+    app.post("/download", pdfController.pdfDownload);
+    app.post("/delete-document/", pdfController.pdfDelete);
+    app.post("/get-documents", pdfController.pdfGetAll);
+    app.post("/get-application-questions", pdfController.getApplicationQuestions);
+    app.post("/fill-application", pdfController.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
@@ -62,6 +57,7 @@ public class App {
     app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
+    app.post("/get-organization-members", userController.getMembers);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
