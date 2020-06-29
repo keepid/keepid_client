@@ -2,12 +2,20 @@ package UserTest;
 
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.SecurityUtils;
+import Security.Tokens;
 import User.User;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.ReplaceOptions;
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Context;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
+
+import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.mockito.Mockito.mock;
@@ -22,6 +30,7 @@ public class ResetPasswordIntegrationTests {
 
     @Test
     public void resetPasswordWithJWTTest() throws Exception {
+        String username = "password-reset-test";
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 7200000; // 2 hours
         String jwt =
@@ -35,7 +44,7 @@ public class ResetPasswordIntegrationTests {
                 new ReplaceOptions().upsert(true));
 
         String newPassword = RandomStringUtils.random(10, 48, 122, true, true, null, new SecureRandom());
-        String inputString = "{\"newPassword\":newPassword,\"jwt\":\"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJXVHF4VEZka2xtUHRTVjBUTG1MclgwUWdLIiwiaWF0IjoxNTkzNDU3NDQ1LCJzdWIiOiJQYXNzd29yZCBSZXNldCBDb25maXJtYXRpb24iLCJhdWQiOiJwYXNzd29yZC1yZXNldC10ZXN0IiwiaXNzIjoiS2VlcElEIiwiZXhwIjoxNTkzNDY0NjQ1fQ.jSN_wCFD-w7usS00ufwVivwEnySl-bHalGQN_GQxvbI\"}";
+        String inputString = "{\"newPassword\":" + newPassword + ",\"jwt\":" + jwt + "}";
 
         when(ctx.body()).thenReturn(inputString);
 
@@ -46,6 +55,11 @@ public class ResetPasswordIntegrationTests {
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         User user = userCollection.find(eq("username", "password-reset-test")).first();
 
-        assert(user.getPassword() == newPassword);
+        Argon2 argon2 = Argon2Factory.create();
+        char[] newPasswordArr = newPassword.toCharArray();
+
+        String passwordHash = user.getPassword();
+
+        assert(argon2.verify(passwordHash, newPasswordArr));
     }
 }
