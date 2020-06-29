@@ -21,7 +21,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     // Make sure to enable .env file configurations for these tests
 
     @Test
-    public void changeTwoFactorFromOffToOn() throws Exception {
+    public void changeTwoFactorFromOffToOnTest() throws Exception {
         String inputString = "{\"twoFactorOn\":true}";
 
         when(ctx.body()).thenReturn(inputString);
@@ -38,7 +38,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     }
 
     @Test
-    public void changeTwoFactorFromOnToOff() throws Exception {
+    public void changeTwoFactorFromOnToOffTest() throws Exception {
         String inputString = "{\"twoFactorOn\":false}";
 
         when(ctx.body()).thenReturn(inputString);
