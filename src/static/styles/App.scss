@@ -83,6 +83,7 @@ $theme-colors: (
 }
 
 .coreValues {
+.btn-primary-theme {
 	background: $primary-theme;
 	border-color: $primary-theme;
 }
@@ -140,6 +141,15 @@ thead {
 .form-purple {
 	border: 0.0625rem solid $primary-theme;
 	border-radius: 0;
+}
+
+.form-red {
+	border: 0.0625rem solid red;
+	border-radius: 0;
+}
+
+.text-primary-theme {
+	color: $primary-theme;
 }
 
 .seeTable {
@@ -389,3 +399,5 @@ thead {
 	color: $footer-color;
 	font-size: calc(.9rem + (4 * (100vw - 13rem)/ 624));
 }
+
+.react-datepicker-wrapper { width: 100% }

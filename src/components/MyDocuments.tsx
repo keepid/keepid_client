@@ -9,8 +9,10 @@ import PrintDocument from './PrintDocument';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../serverOverride';
 import PDFType from '../static/PDFType';
+import Role from '../static/Role';
 
 interface Props {
+  userRole: Role,
   username: string,
 }
 
@@ -60,11 +62,22 @@ class MyDocuments extends Component<Props, State> {
   }
 
   getDocumentData() {
+    const {
+      userRole,
+    } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.IDENTIFICATION,
+        pdfType,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
@@ -122,6 +135,9 @@ class MyDocuments extends Component<Props, State> {
 
   render() {
     const {
+      userRole,
+    } = this.props;
+    const {
       currentDocumentId,
       currentDocumentName,
       documentData,
@@ -162,7 +178,7 @@ class MyDocuments extends Component<Props, State> {
         </Route>
         <Route path="/my-documents/view">
           {currentDocumentId && currentDocumentName
-            ? <ViewDocument documentId={currentDocumentId} documentName={currentDocumentName} /> : <div />}
+            ? <ViewDocument userRole={userRole} documentId={currentDocumentId} documentName={currentDocumentName} /> : <div />}
         </Route>
         <Route path="/my-documents/print">
           <PrintDocument documentId={currentDocumentId} />

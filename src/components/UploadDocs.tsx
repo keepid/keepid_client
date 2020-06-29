@@ -4,14 +4,14 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
-
 import Role from '../static/Role';
 import PDFType from '../static/PDFType';
 
 
 interface Props {
-  userRole: Role,
   alert: any,
+  userRole: Role,
+  location: any,
 }
 
 interface State {
@@ -90,7 +90,7 @@ class UploadDocs extends React.Component<Props, State> {
             const {
               status,
             } = responseJSON;
-            if (status === 'success') {
+            if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
                 submitStatus: true,
@@ -107,6 +107,20 @@ class UploadDocs extends React.Component<Props, State> {
       alert.show('Please select a file');
       this.setState({ buttonState: '' });
     }
+  }
+
+  maxFilesExceeded(files, maxNumFiles) {
+    return files.length > maxNumFiles;
+  }
+
+  fileNamesUnique(files) {
+    const fileNames : string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const fileName = files[i].name;
+      fileNames.push(fileName);
+    }
+
+    return fileNames.length === new Set(fileNames).size;
   }
 
   handleChangeFileUpload(event: any) {
@@ -136,6 +150,10 @@ class UploadDocs extends React.Component<Props, State> {
       buttonState,
     } = this.state;
 
+    const {
+      location,
+    } = this.props;
+
     return (
       <div className="container">
         <Helmet>
@@ -143,7 +161,10 @@ class UploadDocs extends React.Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">Upload Document</h1>
+          <h1 className="display-4">
+            Upload Documents
+            {location.state ? ` for "${location.state.clientUsername}"` : null}
+          </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
             The name and a preview of the PDF will appear below the buttons.

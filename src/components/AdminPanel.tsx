@@ -214,10 +214,7 @@ class AdminPanel extends Component<Props, State> {
         <div className="card ml-5">
           <div className="card-body">
             <h5 className="card-title">
-              {currentWorker.firstName}
-              ` `
-              {currentWorker.lastName}
-              : Worker Permissions
+              {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
             </h5>
             <p className="card-text">Set and Modify Permissions here</p>
           </div>
@@ -334,7 +331,16 @@ class AdminPanel extends Component<Props, State> {
             </div>
             {workerPanel}
           </div>
-          <button><Link to="/upload-document">Upload Form</Link></button>
+          <div className="pr-3">
+            <Link to="/upload-document">
+              <button className="btn btn-primary">Upload Form</button>
+            </Link>
+          </div>
+          <div className="pl-3">
+            <Link to="/my-documents">
+              <button className="btn btn-primary">View Applications</button>
+            </Link>
+          </div>
         </div>
       </div>
     );
