@@ -82,6 +82,11 @@ $theme-colors: (
 	border-color: $primary-theme;
 }
 
+.coreValues {
+	background: $primary-theme;
+	border-color: $primary-theme;
+}
+
 .rectangle {
 	width: 20rem;
 	height: 15rem;
@@ -298,8 +303,8 @@ thead {
 }
 
 .home-svgs {
-	width: 8.75rem;
-	height: 8.75rem;
+	max-width: 8.75rem;
+	max-height: 8.75rem;
 }
 
 @media screen and (max-width: 48.125rem) { // small screens

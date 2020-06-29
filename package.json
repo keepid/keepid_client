@@ -14,6 +14,7 @@
     "@types/pdfjs-dist": "^2.1.4",
     "@types/react": "^16.9.35",
     "@types/react-router-dom": "^5.1.5",
+    "boostrap": "^2.0.0",
     "bootstrap": "^4.5.0",
     "file-loader": "5.0.2",
     "google-map-react": "^1.1.7",

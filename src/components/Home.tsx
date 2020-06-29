@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
 import Alert from 'react-bootstrap/Alert';
+import Card from 'react-bootstrap/Card';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
+import JobAppGraphic from '../static/images/job-app.svg';
+import SecureGraphic from '../static/images/security.svg';
+import ControlGraphic from '../static/images/control.svg';
+import DocTransferGraphic from '../static/images/doc-transfer.svg';
+import ConstantAvailabilityGraphic from '../static/images/constant-availability.svg';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -33,15 +39,15 @@ class Home extends Component<Props, {}, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
 
-        { autoLogout
+        {autoLogout
           ? (
             <Alert variant="warning">
               You were automatically logged out and redirected to this page.
             </Alert>
           )
-          : null }
+          : null}
 
-        <div className="row mt-5">
+        <div className="row mt-5 mx-n3">
           <div className="col-md-12">
             <div className="row">
               <div className="col-md-12" />
@@ -127,25 +133,131 @@ class Home extends Component<Props, {}, {}> {
                 </div>
               </div>
             </div>
-            <div className="container mt-4 mb-4 pt-5 pb-5 background">
-              <div className="row text-center">
-                <div className="col-md-4 flex-column ">
-                  <h1 className="font-weight-bold statistic-text">552,830</h1>
-                  <span className="statistic-subtext">Homeless Population in U.S.</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                </div>
-                <div className="col-md-4 flex-column">
-                  <h1 className="font-weight-bold statistic-text">5,800</h1>
-                  <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                </div>
-                <div className="col-md-4 flex-column">
-                  <h1 className="font-weight-bold statistic-text">6,583</h1>
-                  <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+            <div className="container-fluid mx-0 mt-4 mb-4 pt-5 pb-5 background">
+              <div className="container">
+                <div className="row text-center">
+                  <div className="col-md-4 flex-column ">
+                    <h1 className="font-weight-bold statistic-text">552,830</h1>
+                    <span className="statistic-subtext">Homeless Population in U.S.</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text">5,800</h1>
+                    <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text">6,583</h1>
+                    <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="container mt-4 mb-4 pt-5 pb-5">
+              <div className="row d-flex align-items-center">
+                <div className="col-md-6 ">
+                  <h1 className="text-center font-weight-bold m-3 pb-5">
+                      The struggles of lack of identification for the homeless: 
+                  </h1>
+                </div>
+                <div className="col-md-6">
+                  <div className="row d-flex align-items-center">
+                      <div className="col-6 text-center">
+                        <h1 className="font-weight-bold statistic-text">54%</h1>
+                      </div>
+                      <div className="col-6">
+                        <span className="statistic-subtext">Denied access to shelters or adequate housing services</span>
+                      </div>
+                  </div>
+                  <div className="row d-flex align-items-center">
+                      <div className="col-6 text-center">
+                        <h1 className="font-weight-bold statistic-text">53%</h1>
+                      </div>
+                      <div className="col-6">
+                        <span className="statistic-subtext">Denied access to food stamps</span>
+                      </div>
+                  </div>
+                  <div className="row d-flex align-items-center">
+                      <div className="col-6 text-center">
+                        <h1 className="font-weight-bold statistic-text">45%</h1>
+                      </div>
+                      <div className="col-6">
+                        <span className="statistic-subtext">Denied access to Medicaid or other medical services</span>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="fluid-container mt-4 mb-4 pt-5 pb-5 mx-0 background">
+              <div className="container">
+                <div className="row">
+                  {/* <div className="col-4 d-flex align-items-center">
+                    <h1 className="font-weight-bold text-center">We understand the need for secure and convenient document access.</h1>
+                  </div> */}
+                  <div className="col">
+                    <div className="row">
+                      <div className="col text-center d-flex justify-content-center">
+                        <h1 className="font-weight-bold">Our Core User Values:</h1>
+                      </div>
+                    </div>
+                    <div className="row mt-4">
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <img alt="security" src={SecureGraphic} className="home-svgs"/>                        
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <img alt="security" src={ConstantAvailabilityGraphic} className="home-svgs"/>
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <img alt="security" src={DocTransferGraphic} className="home-svgs"/>
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <img alt="security" src={ControlGraphic} className="home-svgs"/>
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <h3 className="text-center"> Secure Access</h3>                        
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <h3 className="text-center"> Constant Availability</h3>
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <h3 className="text-center"> Protected Document Transfer</h3>
+                      </div>
+                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                        <h3 className="text-center"> Ease of Use</h3>
+                      </div>
+                    </div>                    
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="container my-4 py-5">
+              <div className="row">
+                <div className="col-6">
+                  <h1 className="font-weight-bold">Benefiting Both Local Non-Profits and the Homeless</h1>
+                </div>
+              </div>
+              <div className="row mt-4">
+                <div className="col-6">
+                  <h3>Local nonprofits achieve exponentially faster service times</h3>
+                  <ul className="pl-4 mt-2">
+                    <li className="home-text">Stronger client relationships lead to greater touch profits</li>
+                    <li className="home-text">Greater audience reach</li>
+                    <li className="home-text">Higher efficiency with paperwork</li>
+                  </ul>
+                </div>
+                <div className="col-6">
+                  <h3>Homeless receive vital resources</h3>
+                  <ul className="pl-4 mt-2">
+                    <li className="home-text">Safe virtual document storage</li>
+                    <li className="home-text">Ease of applying for jobs and government aid</li>
+                    <li className="home-text">Control over personal data</li>
+                  </ul>
+                </div>
+              </div>      
+            </div> 
           </div>
         </div>
       </div>
