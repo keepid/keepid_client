@@ -82,8 +82,7 @@ $theme-colors: (
 	border-color: $primary-theme;
 }
 
-.coreValues {
-.btn-primary-theme {
+.coreValues,.btn-primary-theme {
 	background: $primary-theme;
 	border-color: $primary-theme;
 }
@@ -95,7 +94,6 @@ $theme-colors: (
 }
 
 // Landing
-
 .textLanding {
 	font-style: normal;
 	font-weight: bold;
