@@ -109,8 +109,12 @@ public class ValidationUtils {
     if (input == null || input.strip().isBlank()) {
       return false;
     } else {
-      ObjectId id = new ObjectId(input);
-      return id.toString().equals(input);
+      try {
+        ObjectId id = new ObjectId(input);
+        return id.toString().equals(input);
+      } catch (Exception e) {
+        return false;
+      }
     }
   }
 

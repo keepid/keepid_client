@@ -146,7 +146,7 @@ public class PdfMongoTests {
     JSONObject body = new JSONObject();
     body.put("pdfType", "APPLICATION");
     HttpResponse<String> getAllDocuments =
-        Unirest.post(serverURL + "/search").body(body.toString()).asString();
+        Unirest.post(serverURL + "/get-documents").body(body.toString()).asString();
     JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
     assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
     assertThat(getAllDocumentsJSON.getJSONArray("documents").getJSONObject(0).getString("filename"))

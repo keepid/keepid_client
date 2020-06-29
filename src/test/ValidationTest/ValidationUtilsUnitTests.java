@@ -192,4 +192,16 @@ public class ValidationUtilsUnitTests {
     assertFalse(ValidationUtils.isValidPassword(" "));
     assertFalse(ValidationUtils.isValidPassword(null));
   }
+
+  @Test
+  public void objectIdTest() {
+    assertTrue(ValidationUtils.isValidObjectId("507f191e810c19729de860ea"));
+    assertTrue(ValidationUtils.isValidObjectId("507f1f77bcf86cd799439011"));
+    assertFalse(ValidationUtils.isValidObjectId("asd\\"));
+    assertFalse(
+        ValidationUtils.isValidObjectId("507f1f77bcf86cd799439011507f1f77bcf86cd799439011"));
+    assertFalse(ValidationUtils.isValidObjectId("this is not a valid object id"));
+    assertFalse(ValidationUtils.isValidObjectId(" "));
+    assertFalse(ValidationUtils.isValidObjectId(null));
+  }
 }

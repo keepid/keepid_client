@@ -62,7 +62,7 @@ public class App {
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
 
-    /* -------------- ORGANIZATION SIGNUP ------------------ */
+    /* -------------- ORGANIZATION SIGN UP ------------------ */
     app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
 
