@@ -93,7 +93,6 @@ public class AccountSecurityController {
   public Handler changePasswordIn =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
 
         String oldPassword = req.getString("oldPassword");
         String newPassword = req.getString("newPassword");
