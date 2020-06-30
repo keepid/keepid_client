@@ -5,6 +5,7 @@ import Security.AccountSecurityController;
 import Security.SecurityUtils;
 import Security.Tokens;
 import User.User;
+import User.UserMessage;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -21,7 +22,7 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ResetPasswordIntegrationTests {
+public class ChangePasswordIntegrationTests {
     Context ctx = mock(Context.class);
     MongoClient testClient = MongoConfig.getMongoClient();
     MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
@@ -100,5 +101,26 @@ public class ResetPasswordIntegrationTests {
         asc.changePasswordIn.handle(ctx);
 
         assert(isCorrectPassword(username, newPassword));
+    }
+
+    @Test
+    public void changePasswordHelperTest() throws Exception {
+        String username = "password-reset-test";
+        String oldPassword = "";
+        String newPassword = "";
+
+        if (isCorrectPassword(username, password1)) {
+            oldPassword = password1;
+            newPassword = password2;
+        } else if (isCorrectPassword(username, password2)) {
+            oldPassword = password2;
+            newPassword = password1;
+        } else {
+            throw new Exception("Current test password doesn't match examples");
+        }
+
+        UserMessage result = AccountSecurityController.changePassword(username, newPassword, oldPassword, db);
+
+        assert(result == UserMessage.AUTH_SUCCESS);
     }
 }
