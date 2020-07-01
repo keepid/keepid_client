@@ -45,6 +45,38 @@ public class ChangePasswordIntegrationTests {
     }
 
     @Test
+    public void forgotPasswordCreatesTokenTest() throws Exception {
+        String username = "password-reset-test";
+        String newPassword = password2;
+
+        // If we are already using password2, switch to password1
+        if (isCorrectPassword(username, password2)) {
+            newPassword = password1;
+        }
+
+        String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+        int expirationTime = 7200000; // 2 hours
+        String jwt =
+                SecurityUtils.createJWT(
+                        id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+
+        MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
+        tokenCollection.replaceOne(
+                eq("username", username),
+                new Tokens().setUsername(username).setResetJwt(jwt),
+                new ReplaceOptions().upsert(true));
+
+        String inputString = "{\"newPassword\":" + newPassword + ",\"jwt\":" + jwt + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.resetPassword.handle(ctx);
+
+        assert(isCorrectPassword(username, newPassword));
+    }
+
+    @Test
     public void resetPasswordWithJWTTest() throws Exception {
         String username = "password-reset-test";
         String newPassword = password2;
