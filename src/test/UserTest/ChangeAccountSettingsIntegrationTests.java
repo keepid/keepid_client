@@ -57,7 +57,8 @@ public class ChangeAccountSettingsIntegrationTests {
                 return (currentState.equals(possibleValue));
             case "zipcode":
                 String currentZipcode = user.getZipcode();
-                return (currentZipcode.equals(possibleValue));
+                String currentZipcodeFormatted = "\"" + currentZipcode + "\"";
+                return (currentZipcodeFormatted.equals(possibleValue));
             default:
                 return false;
         }
@@ -111,5 +112,180 @@ public class ChangeAccountSettingsIntegrationTests {
         asc.changeAccountSetting.handle(ctx);
 
         assert(isCorrectAttribute(username, "lastName", newLastName));
+    }
+
+    @Test
+    public void changeBirthDateTest() throws Exception {
+        String birthDate1 = "01-25-1965";
+        String birthDate2 = "05-23-2002";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newBirthDate = birthDate2;
+
+        if (isCorrectAttribute(username, "birthDate", newBirthDate)) {
+            newBirthDate = birthDate1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"birthDate\",\"value\":" + newBirthDate + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "birthDate", newBirthDate));
+    }
+
+    @Test
+    public void changePhoneTest() throws Exception {
+        String phone1 = "215-123-4567";
+        String phone2 = "412-123-3456";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newPhone = phone2;
+
+        if (isCorrectAttribute(username, "phone", newPhone)) {
+            newPhone = phone1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"phone\",\"value\":" + newPhone + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "phone", newPhone));
+    }
+
+    @Test
+    public void changeEmailTest() throws Exception {
+        String email1 = "contact1@example.com";
+        String email2 = "contact2@example.com";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newEmail = email2;
+
+        if (isCorrectAttribute(username, "email", newEmail)) {
+            newEmail = email1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"email\",\"value\":" + newEmail + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "email", newEmail));
+    }
+
+    @Test
+    public void changeAddressTest() throws Exception {
+        String address1 = "123 SampleStreet";
+        String address2 = "321 RandomStreet";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newAddress = address2;
+
+        if (isCorrectAttribute(username, "address", newAddress)) {
+            newAddress = address1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"address\",\"value\":" + newAddress + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "address", newAddress));
+    }
+
+    @Test
+    public void changeCityTest() throws Exception {
+        String city1 = "SampleCity";
+        String city2 = "RandomCity";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newCity = city2;
+
+        if (isCorrectAttribute(username, "city", newCity)) {
+            newCity = city1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"city\",\"value\":" + newCity + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "city", newCity));
+    }
+
+    @Test
+    public void changeSateTest() throws Exception {
+        String state1 = "PA";
+        String state2 = "GA";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newState = state2;
+
+        if (isCorrectAttribute(username, "state", newState)) {
+            newState = state1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"state\",\"value\":" + newState + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "state", newState));
+    }
+
+    @Test
+    public void changeZipcodeTest() throws Exception {
+        String zipcode1 = "\"19091\"";
+        String zipcode2 = "\"19012\"";
+
+        String username = "account-settings-test";
+        String password = "account-settings-test";
+
+        String newZipcode = zipcode2;
+
+        if (isCorrectAttribute(username, "zipcode", newZipcode)) {
+            newZipcode = zipcode1;
+        }
+
+        String inputString = "{\"password\":" + password + ",\"key\":\"zipcode\",\"value\":" + newZipcode + "}";
+
+        when(ctx.body()).thenReturn(inputString);
+        when(ctx.sessionAttribute("username")).thenReturn(username);
+
+        AccountSecurityController asc = new AccountSecurityController(db);
+        asc.changeAccountSetting.handle(ctx);
+
+        assert(isCorrectAttribute(username, "zipcode", newZipcode));
     }
 }
