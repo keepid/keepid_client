@@ -20,6 +20,7 @@ public class AccountSecurityUnitTests {
 
   // Make sure to enable .env file configurations for these tests
 
+  /*
   @Test
   public void nonexistentUser2FATest() throws Exception {
     String inputString = "{\"username\":\"fakeuser\",\"token\":\"123456\"}";
@@ -43,4 +44,5 @@ public class AccountSecurityUnitTests {
 
     verify(ctx).json(UserMessage.AUTH_FAILURE.toJSON("2fa token not found for user."));
   }
+   */
 }
