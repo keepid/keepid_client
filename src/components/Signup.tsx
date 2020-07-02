@@ -303,7 +303,7 @@ class Signup extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
-          <div className="col-md-12">
+          <div className="w-100">
             <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
               <div className="container">
                 <h1 className="display-5 text-center font-weight-bold mb-3">
@@ -311,7 +311,7 @@ class Signup extends Component<Props, State, {}> {
                   {' '}
                   Signup Page
                 </h1>
-                <p className="lead">Please fill out the following form to proceed with setting up the Keep.id account.</p>
+                <p className="lead">Please fill out the following form to proceed with setting up your account.</p>
               </div>
             </div>
             <form onSubmit={this.handleContinue}>
@@ -522,7 +522,8 @@ class Signup extends Component<Props, State, {}> {
                   {!reaffirmStage
                     ? (
                       <div className="w-100">
-                        <div className="">
+                        <div className="mb-1">
+                          <p className="mb-1"><span className="red-star">*</span>Required Field.</p>
                           <span className="text-muted recaptcha-login-text">
                             This page is protected by reCAPTCHA, and subject to the Google
                             {' '}
@@ -566,14 +567,12 @@ class Signup extends Component<Props, State, {}> {
           </p>
         </div>
         <div className="row mt-0 mb-auto col-md-12">
-          <span className="border">
+          <div className="col-md-6 pr-0 pl-0 pb-3">
             <SignaturePad acceptEULA={acceptEULA} handleChangeAcceptEULA={this.handleChangeAcceptEULA} />
-          </span>
-        </div>
-        <div className="row mt-5">
+          </div>
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4">Back</button>
-            <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${buttonState}`}>
+            <button type="button" onClick={this.handleBack} className="btn btn-lg btn-danger mr-4">Back</button>
+            <button type="submit" onClick={this.handleSubmit} className={`btn btn-lg btn-success ld-ext-right ${buttonState}`}>
               {personRole === Role.Director ? 'Next' : 'Submit'}
               <div className="ld ld-ring ld-spin" />
             </button>

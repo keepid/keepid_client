@@ -93,6 +93,11 @@ $theme-colors: (
 	background: $secondary-theme;
 }
 
+.m-signature-pad--body canvas{
+	border: solid;
+	border-width: 1px;
+	border-color: $primary-theme;
+}
 // Landing
 
 .textLanding {

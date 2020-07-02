@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
-import { useLocation, Link } from 'react-router-dom';
-import { CMapCompressionType } from 'pdfjs-dist';
+import { Link } from 'react-router-dom';
 import ForgotPasswordSVG from '../static/images/forgot-password.svg';
 import getServerURL from '../serverOverride';
 import { reCaptchaKey } from '../configVars';
@@ -39,6 +38,7 @@ class ResetPassword extends Component<Props, State> {
     this.handlePasswordJWTSubmit = this.handlePasswordJWTSubmit.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleChangeConfirmPassword = this.handleChangeConfirmPassword.bind(this);
+    this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
     this.getJWT = this.getJWT.bind(this);
   }
 

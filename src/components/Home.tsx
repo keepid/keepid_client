@@ -27,7 +27,7 @@ class Home extends Component<Props, {}, {}> {
     } = this.props;
 
     return (
-      <div className="container-fluid">
+      <div className="">
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
@@ -43,10 +43,7 @@ class Home extends Component<Props, {}, {}> {
 
         <div className="row mt-5">
           <div className="col-md-12">
-            <div className="row">
-              <div className="col-md-12" />
-            </div>
-            <div className="row">
+            <div className="row container-fluid">
               <div className="col-md-6">
                 <div className="background ml-5 p-4 rounded mb-3 pb-5">
                   <div className="page-header">
@@ -127,22 +124,24 @@ class Home extends Component<Props, {}, {}> {
                 </div>
               </div>
             </div>
-            <div className="container mt-4 mb-4 pt-5 pb-5 background">
-              <div className="row text-center">
-                <div className="col-md-4 flex-column ">
-                  <h1 className="font-weight-bold statistic-text">552,830</h1>
-                  <span className="statistic-subtext">Homeless Population in U.S.</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                </div>
-                <div className="col-md-4 flex-column">
-                  <h1 className="font-weight-bold statistic-text">5,800</h1>
-                  <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                </div>
-                <div className="col-md-4 flex-column">
-                  <h1 className="font-weight-bold statistic-text">6,583</h1>
-                  <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
-                  <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+            <div className="background">
+              <div className="container mt-4 mb-4 pt-5 pb-5 ">
+                <div className="row text-center">
+                  <div className="col-md-4 flex-column ">
+                    <h1 className="font-weight-bold statistic-text">552,830</h1>
+                    <span className="statistic-subtext">Homeless Population in U.S.</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text">5,800</h1>
+                    <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text">6,583</h1>
+                    <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
                 </div>
               </div>
             </div>

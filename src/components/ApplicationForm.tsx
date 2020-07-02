@@ -4,7 +4,6 @@ import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
-import Role from '../static/Role';
 import PDFType from '../static/PDFType';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;

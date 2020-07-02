@@ -13,9 +13,6 @@ interface State {
 }
 
 class MapComponent extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-  }
 
   render() {
     const {

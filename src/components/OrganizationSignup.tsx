@@ -39,9 +39,12 @@ interface State {
   reaffirmStage: boolean,
   personSubmitted: boolean,
   submitSuccessful: boolean,
-  isCaptchaFilled: boolean,
-  buttonState: string
+  buttonState: string,
+  recaptchaLoaded: boolean,
+  recaptchaPayload: string,
+  recaptchaExpired: boolean
 }
+const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 class OrganizationSignup extends Component<Props, State, {}> {
   constructor(props: Props) {
@@ -70,9 +73,11 @@ class OrganizationSignup extends Component<Props, State, {}> {
       acceptEULA: false,
       reaffirmStage: false,
       personSubmitted: false,
-      isCaptchaFilled: false,
       submitSuccessful: false,
       buttonState: '',
+      recaptchaLoaded: false,
+      recaptchaPayload: '',
+      recaptchaExpired: false
     };
     this.handleBack = this.handleBack.bind(this);
     this.handleContinue = this.handleContinue.bind(this);
@@ -90,16 +95,24 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.handleChangeReaffirmStage = this.handleChangeReaffirmStage.bind(this);
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
     this.handleChangePersonSubmitted = this.handleChangePersonSubmitted.bind(this);
-    this.captchaVerify = this.captchaVerify.bind(this);
-  }
+    this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
 
-  captchaVerify(value) {
-    this.setState({ isCaptchaFilled: true });
   }
 
   handleBack(event: any) {
     this.setState({ reaffirmStage: false });
   }
+
+  // RECAPTCHA CODE
+  componentDidMount() {
+    this.setState({recaptchaLoaded: true});
+  }
+
+  handleRecaptchaChange = recaptchaPayload => {
+    this.setState({ recaptchaPayload });
+    if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
+  };
+  // RECAPTCHA 
 
   handleContinue(event: any) {
     event.preventDefault();
@@ -143,7 +156,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
       });
   }
 
-
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
     const {
@@ -168,14 +180,21 @@ class OrganizationSignup extends Component<Props, State, {}> {
       username,
       password,
       acceptEULA,
+      recaptchaPayload, 
+      recaptchaLoaded, 
+      recaptchaExpired
     } = this.state;
     if (!acceptEULA) {
       this.props.alert.show('You must read and accept the EULA before submitting the application');
       this.setState({ buttonState: '' });
-    } else if (process.env.NODE_ENV === 'production' && !this.state.isCaptchaFilled) {
-      this.props.alert.show('Please click the Recaptcha');
-      this.setState({ buttonState: '' });
+    } else if(!recaptchaLoaded || recaptchaExpired){
+      this.props.alert.show('Recaptcha has expired. Please refresh the page');
+      this.setState({ buttonState: '' }); 
     } else {
+      if(_reCaptchaRef && _reCaptchaRef.current){
+        _reCaptchaRef.current.execute()
+        console.log("executed")
+      }
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
         body: JSON.stringify({
@@ -201,12 +220,14 @@ class OrganizationSignup extends Component<Props, State, {}> {
           password,
           personRole: 'Director',
           twoFactorOn: false,
+          recaptchaPayload
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
           const {
             status,
             message,
+            recaptchaPayload
           } = JSON.parse(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
@@ -312,6 +333,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       personSubmitted,
       submitSuccessful,
       reaffirmStage,
+      recaptchaLoaded
     } = this.state;
 
     const organizationFormHeader = !reaffirmStage ? 'Organization Signup Form' : 'Finish Organization Signup';
@@ -325,7 +347,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col">
             <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
               <div className="container">
                 <h1 className="display-5 text-center font-weight-bold mb-3">{organizationFormHeader}</h1>
@@ -425,8 +447,22 @@ class OrganizationSignup extends Component<Props, State, {}> {
                 <div className="form-row">
                   {!reaffirmStage
                     ? (
-                      <div className="col mt-3 pl-5 pt-2">
-                        <input type="submit" className="btn btn-primary w-50" value="Continue" />
+                      <div className="w-100">
+                        <div>
+                          <p className="mb-1"><span className="red-star">*</span>Required Field.</p>
+                          <span className="text-muted recaptcha-login-text">
+                            This page is protected by reCAPTCHA, and subject to the Google
+                            {' '}
+                            <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                            and
+                            {' '}
+                            <a href="https://www.google.com/policies/terms/">Terms of service</a>
+                            .
+                          </span>
+                        </div>
+                        <div className="pr-3 mr-1">
+                          <input type="submit" className="btn btn-primary btn-lg float-right" value="Continue" />
+                        </div>
                       </div>
                     ) : <br />}
                 </div>
@@ -463,30 +499,27 @@ class OrganizationSignup extends Component<Props, State, {}> {
           </p>
         </div>
         <div className="row mt-0 mb-auto">
-          <span className="border">
+          <div className="col-md-6 pb-3 pl-0 pr-0">
             <SignaturePad acceptEULA={acceptEULA} handleChangeAcceptEULA={this.handleChangeAcceptEULA} />
-          </span>
-        </div>
-        <div className="row mt-5">
-          <div className="col-md-6">
-            <ReCAPTCHA
-              sitekey={reCaptchaKey}
-              onChange={this.captchaVerify}
-            />
-          </div>
-        </div>
-        <div className="row mt-5">
-          <div className="col-md-6 text-left">
-            <button type="button" onClick={this.handleChangePersonSubmitted} className="btn btn-danger">Redo Director Signup</button>
           </div>
           <div className="col-md-6 text-right">
-            <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4">Back</button>
+            <button type="button" onClick={this.handleChangePersonSubmitted} className="btn btn-warning mr-4 mb-4">Back to Director Signup</button>
+            <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4 mb-4">Back</button>
             <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
               Submit
               <div className="ld ld-ring ld-spin" />
             </button>
           </div>
         </div>
+        {recaptchaLoaded && (
+            <ReCAPTCHA
+              theme="dark"
+              size="invisible"
+              ref={_reCaptchaRef}
+              sitekey={reCaptchaKey}
+              onChange={this.handleRecaptchaChange}
+            />
+          )}
       </div>
     );
   }

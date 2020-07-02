@@ -8,8 +8,6 @@ import Role from '../static/Role';
 import LoginSVG from '../static/images/login-svg.svg';
 import { reCaptchaKey } from '../configVars';
 
-const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
-
 interface State {
   username: string,
   password: string,
@@ -19,8 +17,13 @@ interface State {
   userRole: string,
   firstName: string,
   lastName: string,
-  organization: string
+  organization: string,
+  recaptchaLoaded: boolean,
+  recaptchaPayload: string,
+  recaptchaExpired: boolean
 }
+
+const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
   logIn: (role: Role, username: string, organization: string, name: string) => void,
@@ -43,6 +46,9 @@ class LoginPage extends Component<Props, State> {
       firstName: '',
       lastName: '',
       organization: '',
+      recaptchaLoaded: false,
+      recaptchaPayload: '',
+      recaptchaExpired: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -51,8 +57,20 @@ class LoginPage extends Component<Props, State> {
     this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
     this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
     this.enterKeyPressed = this.enterKeyPressed.bind(this);
+    this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
 
+  // RECAPTCHA CODE
+  componentDidMount() {
+    this.setState({recaptchaLoaded: true});
+  }
+
+  handleRecaptchaChange = recaptchaPayload => {
+    this.setState({ recaptchaPayload });
+    if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
+  };
+  // RECAPTCHA 
+  
   handleChangePassword(event: any) {
     this.setState({ password: event.target.value });
   }
@@ -113,22 +131,32 @@ class LoginPage extends Component<Props, State> {
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
-      logIn,
+      logIn
     } = this.props;
     const {
       username,
       password,
+      recaptchaPayload, 
+      recaptchaLoaded, 
+      recaptchaExpired
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
+    } else if(!recaptchaLoaded || recaptchaExpired){
+      this.props.alert.show('Recaptcha has expired. Please refresh the page');
+      this.setState({ buttonState: '' }); 
     } else {
+      if(_reCaptchaRef && _reCaptchaRef.current){
+        _reCaptchaRef.current.execute()
+      }
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
           username,
           password,
+          recaptchaPayload
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -204,6 +232,7 @@ class LoginPage extends Component<Props, State> {
       username,
       password,
       verificationCode,
+      recaptchaLoaded
     } = this.state;
     return (
       <div>
@@ -344,12 +373,15 @@ class LoginPage extends Component<Props, State> {
             </div>
           </div>
         </div>
-
-        <ReCAPTCHA
-          sitekey={reCaptchaKey}
-          ref={recaptchaRef}
-          size="invisible"
-        />
+        {recaptchaLoaded && (
+          <ReCAPTCHA
+            theme="dark"
+            size="invisible"
+            ref={_reCaptchaRef}
+            sitekey={reCaptchaKey}
+            onChange={this.handleRecaptchaChange}
+          />
+        )}
       </div>
     );
   }
