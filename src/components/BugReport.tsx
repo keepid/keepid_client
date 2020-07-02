@@ -49,8 +49,8 @@ class BugReport extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
-    if(recaptchaRef && recaptchaRef.current){
-      recaptchaRef.current.execute()
+    if (recaptchaRef && recaptchaRef.current) {
+      recaptchaRef.current.execute();
     }
     const {
       bugTitle,
