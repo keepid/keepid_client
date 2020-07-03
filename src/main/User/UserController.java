@@ -222,6 +222,7 @@ public class UserController {
         JSONObject req = new JSONObject(ctx.body());
 
         UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
+        String organizationName = ctx.sessionAttribute("orgName");
 
         if (sessionUserLevel == null) {
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
@@ -257,7 +258,7 @@ public class UserController {
                   birthDate,
                   email,
                   phone,
-                  "",
+                  organizationName,
                   address,
                   city,
                   state,
