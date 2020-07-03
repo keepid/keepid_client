@@ -99,7 +99,7 @@ $theme-colors: (
 
 .m-signature-pad--body canvas{
 	border: solid;
-	border-width: 1px;
+	border-width: 0.0625 rem;
 	border-color: $primary-theme;
 }
 // Landing
