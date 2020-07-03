@@ -1,6 +1,6 @@
 package PDFTest;
 
-import PDF.PdfApplication;
+import PDF.PdfController;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -51,7 +51,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -68,7 +68,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
 
       // Is valid fieldType
-      Set<String> validFieldTypes = PdfApplication.validFieldTypes;
+      Set<String> validFieldTypes = PdfController.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
   }
@@ -79,7 +79,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/ss-5.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -96,7 +96,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
 
       // Is valid fieldType
-      Set<String> validFieldTypes = PdfApplication.validFieldTypes;
+      Set<String> validFieldTypes = PdfController.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
   }
@@ -107,7 +107,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/Application_for_a_Birth_Certificate.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -124,7 +124,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
 
       // Is valid fieldType
-      Set<String> validFieldTypes = PdfApplication.validFieldTypes;
+      Set<String> validFieldTypes = PdfController.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
   }
@@ -134,7 +134,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -170,7 +170,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -202,7 +202,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -234,7 +234,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -269,7 +269,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -301,7 +301,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -333,7 +333,7 @@ public class PDFApplicationUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfApplication.getFieldInformation(pdfDocument, fieldsJSON);
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
