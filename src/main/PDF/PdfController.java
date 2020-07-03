@@ -6,11 +6,9 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.bson.types.ObjectId;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,6 +28,11 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class PdfController {
   private MongoDatabase db;
@@ -38,6 +41,16 @@ public class PdfController {
     this.db = db;
   }
 
+  public static Set<String> validFieldTypes =
+      new HashSet<>(
+          Arrays.asList(
+              "CheckBox",
+              "PushButton",
+              "RadioButton",
+              "ComboBox",
+              "ListBox",
+              "TextField",
+              "SignatureField"));
   public Handler pdfDelete =
       ctx -> {
         String user = ctx.sessionAttribute("username");
@@ -137,40 +150,78 @@ public class PdfController {
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
-        List<String> fieldNames = new LinkedList<String>();
-        List<String> fieldQuestions = new LinkedList<String>();
-        PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
-        List<PDField> fields = acroForm.getFields();
-
-        while (!fields.isEmpty()) {
-          PDField field = fields.get(0);
-
-          // If the field has a child
-          if (field instanceof PDNonTerminalField) {
-            List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
-            fields.addAll(childrenFields);
-          } else {
-            // fieldNames.add(getFieldFullName(field));
-            fieldNames.add(field.getFullyQualifiedName());
-            fieldQuestions.add("Please Enter Your " + field.getPartialName());
-          }
-
-          fields.remove(0);
-        }
-
-        for (String fieldName : fieldNames) {
-          System.out.println(fieldName);
-        }
-        for (String fieldQuestion : fieldQuestions) {
-          System.out.println(fieldQuestion);
-        }
-
+        List<JSONObject> fieldsJSON = new LinkedList<>();
+        getFieldInformation(pdfDocument, fieldsJSON);
         pdfDocument.close();
-        JSONObject res = new JSONObject();
-        res.put("fieldNames", fieldNames);
-        res.put("fieldQuestions", fieldQuestions);
-        ctx.json(res.toString());
+
+        ctx.json(fieldsJSON);
       };
+
+  /*
+   @Param fieldsJSON is an empty List of JSON, pdfDocument is the document
+  */
+  public static void getFieldInformation(PDDocument pdfDocument, List<JSONObject> fieldsJSON) {
+    PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    List<PDField> fields = acroForm.getFields();
+    while (!fields.isEmpty()) {
+      PDField field = fields.get(0);
+      if (field instanceof PDNonTerminalField) {
+        // If the field has children
+        List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
+        fields.addAll(childrenFields);
+      } else {
+        JSONObject fieldJSON = new JSONObject();
+        String fieldType = "";
+        String fieldValueOptions = "[]";
+        if (field instanceof PDButton) {
+          if (field instanceof PDCheckBox) {
+            fieldType = "CheckBox";
+          } else if (field instanceof PDPushButton) {
+            fieldType = "PushButton";
+          } else if (field instanceof PDRadioButton) {
+            fieldType = "RadioButton";
+            PDRadioButton radioButtonField = (PDRadioButton) field;
+            JSONArray optionsJSONArray = new JSONArray();
+            for (String choice : radioButtonField.getOnValues()) {
+              optionsJSONArray.put(choice);
+            }
+            fieldValueOptions = optionsJSONArray.toString();
+          }
+        } else if (field instanceof PDVariableText) {
+          if (field instanceof PDChoice) {
+            if (field instanceof PDComboBox) {
+              fieldType = "ComboBox";
+            } else if (field instanceof PDListBox) {
+              fieldType = "ListBox";
+            }
+            PDChoice choiceField = (PDChoice) field;
+            JSONArray optionsJSONArray = new JSONArray();
+            for (String choice : choiceField.getOptions()) {
+              optionsJSONArray.put(choice);
+            }
+            fieldValueOptions = optionsJSONArray.toString();
+          } else if (field instanceof PDTextField) {
+            fieldType = "TextField";
+          }
+        } else if (field instanceof PDSignatureField) {
+          fieldType = "SignatureField";
+        }
+
+        // Not Editable
+        fieldJSON.put("fieldName", field.getFullyQualifiedName());
+        fieldJSON.put("fieldType", fieldType);
+        fieldJSON.put("fieldValueOptions", fieldValueOptions);
+
+        // Editable
+        fieldJSON.put("fieldQuestion", "Please Enter Your " + field.getPartialName());
+        fieldJSON.put("fieldMatchedDBVariable", "");
+        fieldJSON.put("fieldMatchedDBName", "");
+
+        fieldsJSON.add(fieldJSON);
+      }
+      fields.remove(0);
+    }
+  }
 
   public Handler fillPDFForm =
       ctx -> {
@@ -181,35 +232,16 @@ public class PdfController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject formAnswers = req.getJSONObject("formAnswers");
 
-        // File pdfInput = new File("/home/steffen/Downloads/intellectual_property_release.pdf");
         InputStream inputStream =
             PdfMongo.download(
-                username,
-                organizationName,
-                privilegeLevel,
-                applicationId,
-                PDFType.APPLICATION.FORM,
-                db);
+                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
-        // ImportXFDF importXFDFObject = new ImportXFDF();
-        // String xmlString = toXFDF(req);
-        // InputStream stream = new
-        // ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
-        // FDFDocument xfdfDocument = FDFDocument.loadXFDF(stream);
-        // importXFDFObject.importFDF(pdfDocument, xfdfDocument);
-
-        PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
-        for (String key : formAnswers.keySet()) {
-          String fieldName = key; // + "." + key;
-          System.out.println(fieldName);
-          PDField field = acroForm.getField(fieldName);
-          if (field instanceof PDTextField) {
-            System.out.println(field.getPartialName());
-            String value = formAnswers.getString(key);
-            field.setValue(value);
-          }
+        try {
+          fillFields(pdfDocument, formAnswers);
+        } catch (IOException exception) {
+          ctx.result("failure");
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -221,7 +253,20 @@ public class PdfController {
         ctx.result(outputFileStream);
       };
 
-  // unused helper methods
+  public static void fillFields(PDDocument pdfDocument, JSONObject formAnswers) throws IOException {
+    PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    for (String fieldName : formAnswers.keySet()) {
+      System.out.println(fieldName);
+      PDField field = acroForm.getField(fieldName);
+      if (field instanceof PDTextField) {
+        System.out.println(field.getPartialName());
+        String value = formAnswers.getString(fieldName);
+        field.setValue(value);
+      }
+    }
+  }
+
+  /*
   private String getFieldFullName(PDField field) {
     String fullName = field.getPartialName();
     while (field.getParent() != null) {
@@ -230,6 +275,12 @@ public class PdfController {
     }
     return fullName;
   }
+  // ImportXFDF importXFDFObject = new ImportXFDF();
+  // String xmlString = toXFDF(req);
+  // InputStream stream = new
+  // ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
+  // FDFDocument xfdfDocument = FDFDocument.loadXFDF(stream);
+  // importXFDFObject.importFDF(pdfDocument, xfdfDocument);
 
   private String toXFDF(JSONObject req)
       throws ParserConfigurationException, TransformerConfigurationException, TransformerException {
@@ -263,4 +314,5 @@ public class PdfController {
     String xmlString = stringWriter.toString();
     return (xmlString);
   }
+   */
 }
