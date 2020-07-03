@@ -1,25 +1,43 @@
 package PDF;
 
 import User.UserType;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import io.javalin.http.UploadedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.LinkedList;
+import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-public class PdfApplication {
+public class PdfController {
+  private MongoDatabase db;
 
-  MongoDatabase db;
-
-  public PdfApplication(MongoDatabase db) {
+  public PdfController(MongoDatabase db) {
     this.db = db;
   }
 
@@ -33,6 +51,91 @@ public class PdfApplication {
               "ListBox",
               "TextField",
               "SignatureField"));
+  public Handler pdfDelete =
+      ctx -> {
+        String user = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject req = new JSONObject(ctx.body());
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        String fileIDStr = req.getString("fileId");
+        if (!ValidationUtils.isValidObjectId(fileIDStr) || pdfType == null) {
+          ctx.json(PdfMessage.INVALID_PARAMETER.toJSON());
+          return;
+        }
+        ObjectId fileID = new ObjectId(fileIDStr);
+        JSONObject res =
+            PdfMongo.delete(user, organizationName, pdfType, privilegeLevel, fileID, db);
+        ctx.json(res.toString());
+      };
+
+  public Handler pdfDownload =
+      ctx -> {
+        String user = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject req = new JSONObject(ctx.body());
+        String fileIDStr = req.getString("fileID");
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        ObjectId fileID = new ObjectId(fileIDStr);
+        if (pdfType == null) {
+          ctx.result("Invalid PDFType");
+        } else {
+          InputStream stream =
+              PdfMongo.download(user, organizationName, privilegeLevel, fileID, pdfType, db);
+          if (stream != null) {
+            ctx.header("Content-Type", "application/pdf");
+            ctx.result(stream);
+          } else {
+            ctx.result("Error");
+          }
+        }
+      };
+  public Handler pdfGetAll =
+      ctx -> {
+        String user = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject req = new JSONObject(ctx.body());
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        JSONObject res = new JSONObject();
+
+        if (pdfType == null) {
+          res.put("status", "Invalid PDFType");
+        } else {
+          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, db);
+        }
+        ctx.json(res.toString());
+      };
+
+  public Handler pdfUpload =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        UploadedFile file = ctx.uploadedFile("file");
+        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+        JSONObject res;
+        if (pdfType == null) {
+          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
+        } else if (file == null) {
+          res = PdfMessage.INVALID_PDF.toJSON();
+        } else if (file.getContentType().equals("application/pdf")
+            || (file.getContentType().equals("application/octet-stream"))) {
+          res =
+              PdfMongo.upload(
+                  username,
+                  organizationName,
+                  privilegeLevel,
+                  file.getFilename(),
+                  pdfType,
+                  file.getContent(),
+                  this.db);
+        } else {
+          res = PdfMessage.INVALID_PDF.toJSON();
+        }
+        ctx.json(res.toString());
+      };
 
   public Handler getApplicationQuestions =
       ctx -> {
@@ -181,16 +284,13 @@ public class PdfApplication {
 
   private String toXFDF(JSONObject req)
       throws ParserConfigurationException, TransformerConfigurationException, TransformerException {
-
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
     Document doc = dBuilder.newDocument();
-
     Element rootElement = doc.createElement("xfdf");
     rootElement.setAttribute("xmlns", "http://ns.adobe.com/xfdf");
     rootElement.setAttribute("xml:space", "preserve");
     doc.appendChild(rootElement);
-
     Element fields = doc.createElement("fields");
     rootElement.appendChild(fields);
 

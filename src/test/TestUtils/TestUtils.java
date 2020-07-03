@@ -12,7 +12,6 @@ import de.mkammerer.argon2.Argon2Factory;
 import org.json.JSONObject;
 
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 public class TestUtils {
   private static MongoDatabase testDB =
@@ -444,23 +443,7 @@ public class TestUtils {
   }
 
   public static JSONObject responseStringToJSON(String response) {
-    JSONObject json = new JSONObject();
-
-    String strippedResponse = response.substring(4);
-    strippedResponse = strippedResponse.substring(0, strippedResponse.length() - 4);
-
-    String[] responseArr = strippedResponse.split(Pattern.quote("\\\",\\\""));
-
-    for (int i = 0; i < responseArr.length; i++) {
-      String[] keyValPair = responseArr[i].split(Pattern.quote("\\\":\\\""));
-
-      String key = keyValPair[0];
-      String val = "";
-      if (keyValPair.length == 2) val = keyValPair[1];
-
-      json.put(key, val);
-    }
-
-    return json;
+    String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
+    return new JSONObject(strippedResponse);
   }
 }

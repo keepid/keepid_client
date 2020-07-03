@@ -2,11 +2,11 @@ package PDF;
 
 import java.io.InputStream;
 
-public class PDFFile {
+public class PdfFile {
   private InputStream stream;
   private String filename;
 
-  public PDFFile(InputStream stream, String filename) {
+  public PdfFile(InputStream stream, String filename) {
     this.stream = stream;
     this.filename = filename;
   }

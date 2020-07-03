@@ -290,7 +290,6 @@ public class UserController {
 
         if (existingUser != null) {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
-          return;
         } else {
           Argon2 argon2 = Argon2Factory.create();
           char[] passwordArr = user.getPassword().toCharArray();
