@@ -33,7 +33,15 @@ public class App {
     PdfController pdfController = new PdfController(db);
 
     /* -------------- BEFORE FILTERS ---------------------- */
-    app.before(ctx -> ctx.header("Access-Control-Allow-Credentials", "true"));
+    app.before(
+        ctx -> {
+          ctx.header("Content-Security-Policy", "script-src 'self' 'unsafe-inline';");
+          ctx.header("X-Frame-Options", "SAMEORIGIN");
+          ctx.header("X-Xss-Protection", "1; mode=block");
+          ctx.header("X-Content-Type-Options", "nosniff");
+          ctx.header("Referrer-Policy", "no-referrer-when-downgrade");
+          ctx.header("Access-Control-Allow-Credentials", "true");
+        });
 
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
