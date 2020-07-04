@@ -4,8 +4,8 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import { Link } from 'react-router-dom';
-import TablePageSelector from './TablePageSelector';
-import getServerURL from '../serverOverride';
+import TablePageSelector from '../TablePageSelector';
+import getServerURL from '../../serverOverride';
 
 interface Props {
   username: string,

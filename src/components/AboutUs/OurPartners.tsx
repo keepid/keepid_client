@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import BSMJPG from '../static/images/bsm.jpg';
+import BSMJPG from '../../static/images/bsm.jpg';
 
 interface State {}
 

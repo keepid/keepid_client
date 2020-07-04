@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
-import ForgotPasswordSVG from '../static/images/forgot-password.svg';
-import getServerURL from '../serverOverride';
-import { reCaptchaKey } from '../configVars';
+import ForgotPasswordSVG from '../../static/images/forgot-password.svg';
+import getServerURL from '../../serverOverride';
+import { reCaptchaKey } from '../../configVars';
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 

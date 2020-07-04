@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import UploadSVG from '../static/images/uploading-files-to-the-cloud.svg';
-import RequestSVG from '../static/images/request.svg';
-import AppSVG from '../static/images/calendar.svg';
-import EmailSVG from '../static/images/email.svg';
-import AssistSVG from '../static/images/assistance.svg';
-import FileSVG from '../static/images/file.svg';
+import UploadSVG from '../../static/images/uploading-files-to-the-cloud.svg';
+import RequestSVG from '../../static/images/request.svg';
+import AppSVG from '../../static/images/calendar.svg';
+import EmailSVG from '../../static/images/email.svg';
+import AssistSVG from '../../static/images/assistance.svg';
+import FileSVG from '../../static/images/file.svg';
 
 interface State {
   show: boolean

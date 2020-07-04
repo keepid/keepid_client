@@ -71,7 +71,7 @@ class UploadDocs extends React.Component<Props, State> {
 
     if (pdfFiles) {
       // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i++) {
+      for (let i = 0; i < pdfFiles.length; i = i + 1) {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);

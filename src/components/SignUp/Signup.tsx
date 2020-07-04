@@ -3,11 +3,11 @@ import { Helmet } from 'react-helmet';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { withAlert } from 'react-alert';
-import SignaturePad from '../lib/react-typescript-signature-pad';
-import Role from '../static/Role';
-import USStates from '../static/data/states_titlecase.json';
-import getServerURL from '../serverOverride';
-import EULA_PDF from '../static/eula-template.pdf';
+import SignaturePad from '../../lib/react-typescript-signature-pad';
+import Role from '../../static/Role';
+import USStates from '../../static/data/states_titlecase.json';
+import getServerURL from '../../serverOverride';
+import EULA_PDF from '../../static/eula-template.pdf';
 
 interface Props {
   personRole: Role,
@@ -523,7 +523,10 @@ class Signup extends Component<Props, State, {}> {
                     ? (
                       <div className="w-100">
                         <div className="mb-1">
-                          <p className="mb-1"><span className="red-star">*</span>Required Field.</p>
+                          <p className="mb-1">
+                            <span className="red-star">*</span>
+                            Required Field.
+                          </p>
                           <span className="text-muted recaptcha-login-text">
                             This page is protected by reCAPTCHA, and subject to the Google
                             {' '}

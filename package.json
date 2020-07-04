@@ -61,6 +61,7 @@
     "copy-webpack-plugin": "^6.0.1",
     "cross-spawn": "4.0.2",
     "css-loader": "^3.5.3",
+    "cypress": "^4.9.0",
     "detect-port": "1.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",

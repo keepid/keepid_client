@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
-import DocumentViewer from './DocumentViewer';
-import getServerURL from '../serverOverride';
-import PDFType from '../static/PDFType';
+import DocumentViewer from '../DocumentViewer';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
 
 
 interface Props {

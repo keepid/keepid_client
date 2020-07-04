@@ -59,7 +59,7 @@ class Home extends Component<Props, {}, {}> {
                       </span>
                     </div>
                     <h4 className="pt-2 pb-2 brand-subtext">
-                      A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services. 
+                      A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
                     </h4>
                     <h2 className="mt-2 pt-2 pb-2">
                       <span className="home-subtext">For Those Experiencing Homelessness</span>
@@ -91,7 +91,11 @@ class Home extends Component<Props, {}, {}> {
               <div className="row d-flex align-items-center">
                 <div className="col-md-6 ">
                   <h1 className="text-center m-3 pb-5">
-                    The lack of <span className="text-primary-theme font-weight-bold">identification</span> is a serious struggle for those experiencing homelessness.
+                    The lack of
+                    {' '}
+                    <span className="text-primary-theme font-weight-bold">identification</span>
+                    {' '}
+                    is a serious struggle for those experiencing homelessness.
                   </h1>
                 </div>
                 <div className="col-md-6">
@@ -187,8 +191,8 @@ class Home extends Component<Props, {}, {}> {
                 </div>
               </div>
             </div>
-            
-            
+
+
             <div className="fluid-container mt-4 mb-4 pt-5 pb-5 mx-0 background">
               <div className="container">
                 <div className="row">

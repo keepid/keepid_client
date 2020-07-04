@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Link } from 'react-router-dom';
-import ForgotPasswordSVG from '../static/images/forgot-password.svg';
-import getServerURL from '../serverOverride';
-import { reCaptchaKey } from '../configVars';
+import ForgotPasswordSVG from '../../static/images/forgot-password.svg';
+import getServerURL from '../../serverOverride';
+import { reCaptchaKey } from '../../configVars';
 
 interface State {
   newPassword: string,

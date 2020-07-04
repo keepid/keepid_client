@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import Role from '../static/Role';
-import getServerURL from '../serverOverride';
+import Role from '../../static/Role';
+import getServerURL from '../../serverOverride';
 import Signup from './Signup';
 
 interface Props {

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import ConnorJPG from '../static/images/connor.jpg';
-import SteffenJPG from '../static/images/steffen.jpg';
-import GregJPG from '../static/images/greg.jpg';
-import JacksonJPG from '../static/images/jackson.jpg';
-import JackieJPG from '../static/images/jackie.jpg';
-import JohnJPG from '../static/images/john.jpg';
-import ChrisJPG from '../static/images/chris.jpg';
-import DanJPG from '../static/images/dan.jpg';
+import ConnorJPG from '../../static/images/connor.jpg';
+import SteffenJPG from '../../static/images/steffen.jpg';
+import GregJPG from '../../static/images/greg.jpg';
+import JacksonJPG from '../../static/images/jackson.jpg';
+import JackieJPG from '../../static/images/jackie.jpg';
+import JohnJPG from '../../static/images/john.jpg';
+import ChrisJPG from '../../static/images/chris.jpg';
+import DanJPG from '../../static/images/dan.jpg';
 
 interface State {}
 

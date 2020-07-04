@@ -13,7 +13,6 @@ interface State {
 }
 
 class MapComponent extends Component<Props, State> {
-
   render() {
     const {
       organizations,

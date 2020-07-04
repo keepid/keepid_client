@@ -3,11 +3,11 @@ import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
-import Role from '../static/Role';
-import USStates from '../static/data/states_titlecase.json';
-import SignaturePad from '../lib/react-typescript-signature-pad';
-import getServerURL from '../serverOverride';
-import { reCaptchaKey } from '../configVars';
+import Role from '../../static/Role';
+import USStates from '../../static/data/states_titlecase.json';
+import SignaturePad from '../../lib/react-typescript-signature-pad';
+import getServerURL from '../../serverOverride';
+import { reCaptchaKey } from '../../configVars';
 import Signup from './Signup';
 
 interface Props {
@@ -77,7 +77,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       buttonState: '',
       recaptchaLoaded: false,
       recaptchaPayload: '',
-      recaptchaExpired: false
+      recaptchaExpired: false,
     };
     this.handleBack = this.handleBack.bind(this);
     this.handleContinue = this.handleContinue.bind(this);
@@ -96,7 +96,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
     this.handleChangePersonSubmitted = this.handleChangePersonSubmitted.bind(this);
     this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
-
   }
 
   handleBack(event: any) {
@@ -105,14 +104,14 @@ class OrganizationSignup extends Component<Props, State, {}> {
 
   // RECAPTCHA CODE
   componentDidMount() {
-    this.setState({recaptchaLoaded: true});
+    this.setState({ recaptchaLoaded: true });
   }
 
-  handleRecaptchaChange = recaptchaPayload => {
+  handleRecaptchaChange = (recaptchaPayload) => {
     this.setState({ recaptchaPayload });
     if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
   };
-  // RECAPTCHA 
+  // RECAPTCHA
 
   handleContinue(event: any) {
     event.preventDefault();
@@ -180,20 +179,20 @@ class OrganizationSignup extends Component<Props, State, {}> {
       username,
       password,
       acceptEULA,
-      recaptchaPayload, 
-      recaptchaLoaded, 
-      recaptchaExpired
+      recaptchaPayload,
+      recaptchaLoaded,
+      recaptchaExpired,
     } = this.state;
     if (!acceptEULA) {
       this.props.alert.show('You must read and accept the EULA before submitting the application');
       this.setState({ buttonState: '' });
-    } else if(!recaptchaLoaded || recaptchaExpired){
+    } else if (!recaptchaLoaded || recaptchaExpired) {
       this.props.alert.show('Recaptcha has expired. Please refresh the page');
-      this.setState({ buttonState: '' }); 
+      this.setState({ buttonState: '' });
     } else {
-      if(_reCaptchaRef && _reCaptchaRef.current){
-        _reCaptchaRef.current.execute()
-        console.log("executed")
+      if (_reCaptchaRef && _reCaptchaRef.current) {
+        _reCaptchaRef.current.execute();
+        console.log('executed');
       }
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
@@ -220,14 +219,14 @@ class OrganizationSignup extends Component<Props, State, {}> {
           password,
           personRole: 'Director',
           twoFactorOn: false,
-          recaptchaPayload
+          recaptchaPayload,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
           const {
             status,
             message,
-            recaptchaPayload
+            recaptchaPayload,
           } = JSON.parse(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
@@ -333,7 +332,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       personSubmitted,
       submitSuccessful,
       reaffirmStage,
-      recaptchaLoaded
+      recaptchaLoaded,
     } = this.state;
 
     const organizationFormHeader = !reaffirmStage ? 'Organization Signup Form' : 'Finish Organization Signup';
@@ -449,7 +448,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
                     ? (
                       <div className="w-100">
                         <div>
-                          <p className="mb-1"><span className="red-star">*</span>Required Field.</p>
+                          <p className="mb-1">
+                            <span className="red-star">*</span>
+                            Required Field.
+                          </p>
                           <span className="text-muted recaptcha-login-text">
                             This page is protected by reCAPTCHA, and subject to the Google
                             {' '}
@@ -512,14 +514,14 @@ class OrganizationSignup extends Component<Props, State, {}> {
           </div>
         </div>
         {recaptchaLoaded && (
-            <ReCAPTCHA
-              theme="dark"
-              size="invisible"
-              ref={_reCaptchaRef}
-              sitekey={reCaptchaKey}
-              onChange={this.handleRecaptchaChange}
-            />
-          )}
+        <ReCAPTCHA
+          theme="dark"
+          size="invisible"
+          ref={_reCaptchaRef}
+          sitekey={reCaptchaKey}
+          onChange={this.handleRecaptchaChange}
+        />
+        )}
       </div>
     );
   }

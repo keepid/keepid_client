@@ -48,7 +48,7 @@ class LoginPage extends Component<Props, State> {
       organization: '',
       recaptchaLoaded: false,
       recaptchaPayload: '',
-      recaptchaExpired: false
+      recaptchaExpired: false,
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
@@ -62,15 +62,15 @@ class LoginPage extends Component<Props, State> {
 
   // RECAPTCHA CODE
   componentDidMount() {
-    this.setState({recaptchaLoaded: true});
+    this.setState({ recaptchaLoaded: true });
   }
 
-  handleRecaptchaChange = recaptchaPayload => {
+  handleRecaptchaChange = (recaptchaPayload) => {
     this.setState({ recaptchaPayload });
     if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
   };
-  // RECAPTCHA 
-  
+  // RECAPTCHA
+
   handleChangePassword(event: any) {
     this.setState({ password: event.target.value });
   }
@@ -131,24 +131,24 @@ class LoginPage extends Component<Props, State> {
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
-      logIn
+      logIn,
     } = this.props;
     const {
       username,
       password,
-      recaptchaPayload, 
-      recaptchaLoaded, 
-      recaptchaExpired
+      recaptchaPayload,
+      recaptchaLoaded,
+      recaptchaExpired,
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
-    } else if(!recaptchaLoaded || recaptchaExpired){
+    } else if (!recaptchaLoaded || recaptchaExpired) {
       this.props.alert.show('Recaptcha has expired. Please refresh the page');
-      this.setState({ buttonState: '' }); 
+      this.setState({ buttonState: '' });
     } else {
-      if(_reCaptchaRef && _reCaptchaRef.current){
-        _reCaptchaRef.current.execute()
+      if (_reCaptchaRef && _reCaptchaRef.current) {
+        _reCaptchaRef.current.execute();
       }
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
@@ -156,7 +156,7 @@ class LoginPage extends Component<Props, State> {
         body: JSON.stringify({
           username,
           password,
-          recaptchaPayload
+          recaptchaPayload,
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
@@ -232,7 +232,7 @@ class LoginPage extends Component<Props, State> {
       username,
       password,
       verificationCode,
-      recaptchaLoaded
+      recaptchaLoaded,
     } = this.state;
     return (
       <div>

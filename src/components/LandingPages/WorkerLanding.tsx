@@ -6,10 +6,10 @@ import makeAnimated from 'react-select/animated';
 import { withAlert } from 'react-alert';
 import { Redirect } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
-import Role from '../static/Role';
-import SearchSVG from '../static/images/search.svg';
-import getServerURL from '../serverOverride';
-import TablePageSelector from './TablePageSelector';
+import Role from '../../static/Role';
+import SearchSVG from '../../static/images/search.svg';
+import getServerURL from '../../serverOverride';
+import TablePageSelector from '../TablePageSelector';
 
 interface Props {
   username: string,
