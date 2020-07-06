@@ -295,9 +295,7 @@ class Home extends Component<Props, {}, {}> {
             </div>
             <div className="container my-4 py-5">
               <div className="row">
-                <div className="col-6">
-                  <h1 className="font-weight-bold">Benefiting Both Local Non-Profits and the Homeless</h1>
-                </div>
+                <h1 className="font-weight-bold">Benefiting Both Local Non-Profits and the Homeless</h1>
               </div>
               <div className="row mt-4">
                 <div className="col-6">
