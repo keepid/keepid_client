@@ -320,8 +320,8 @@ thead {
 }
 
 .home-svgs {
-	max-width: 8.75rem;
-	max-height: 8.75rem;
+	width: 8.75rem;
+	height: 8.75rem;
 }
 
 @media screen and (max-width: 48.125rem) { // small screens
@@ -408,3 +408,7 @@ thead {
 }
 
 .react-datepicker-wrapper { width: 100% }
+
+.carousel-item {
+	min-height: 23.125rem;
+}

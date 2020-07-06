@@ -8,11 +8,15 @@ import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
 import JobAppGraphic from '../static/images/job-app.svg';
+import SignUp from '../static/images/sign-up.svg';
+import SyncFiles from '../static/images/sync-files.svg';
 import SecureGraphic from '../static/images/security.svg';
 import ControlGraphic from '../static/images/control.svg';
 import DocTransferGraphic from '../static/images/doc-transfer.svg';
 import ConstantAvailabilityGraphic from '../static/images/constant-availability.svg';
-
+import Spreadsheet from '../static/images/spreadsheet.svg';
+import Access from '../static/images/access-data.svg';
+import FileCloud from '../static/images/file-cloud.svg';
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
   autoLogout: boolean,
@@ -192,8 +196,61 @@ class Home extends Component<Props, {}, {}> {
               </div>
             </div>
 
+            <div className="bg-secondary">
+              <div className="container">
+                <div className="jumbotron jumbotron-fluid bg-transparent text-center pb-2 mb-2">
+                  <h1 className="display-5 text-light">Meaningful Client Journeys</h1>
+                  <p className="lead text-white-50">Prioritizing the user experience and alleviating pain points.</p>
+                </div>
+                <div id="carouselExampleCaptions" className="carousel slide" data-ride="carousel">
+                  <ol className="carousel-indicators">
+                    <li data-target="#carouselExampleCaptions" data-slide-to="0" className="active"></li>
+                    <li data-target="#carouselExampleCaptions" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleCaptions" data-slide-to="2"></li>
+                    <li data-target="#carouselExampleCaptions" data-slide-to="3"></li>
+                    <li data-target="#carouselExampleCaptions" data-slide-to="4"></li>
+                    <li data-target="#carouselExampleCaptions" data-slide-to="5"></li>
+                  </ol>
+                  <div className="carousel-inner">
+                    <div className="carousel-item active">
+                      <img src={SignUp} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..."/>
+                      <h4 className="text-center text-light">Step #1: Registration</h4>
+                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Homeless create a Keep.id account at participating nonprofits. Nonprofits then help homeless obtain missing identification.</p>
+                    </div>
+                    <div className="carousel-item">
+                      <img src={SyncFiles} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..."/>
+                      <h4 className="text-center text-light">Step #2: Uploading</h4>
+                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Government identification, personal information, and prison health records are securely uploaded to our cloud databases. These documents are also cryptographically signed and encrypted.</p>
+                    </div>
+                    <div className="carousel-item">
+                      <img src={Access} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..."/>
+                      <h4 className="text-center text-light">Step #3: Access</h4>
+                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Those experiencing homelessness can access their documents at public or nonprofit computers.</p>
+                    </div>
+                    <div className="carousel-item">
+                      <img src={FileCloud} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..."/>
+                      <h4 className="text-center text-light">Step #4: Harnessing Data: Clients</h4>
+                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.</p>
+                    </div>
+                    <div className="carousel-item">
+                      <img src={Spreadsheet} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..."/>
+                      <h4 className="text-center text-light">Step #5: Harnessing Data: Nonprofits</h4>
+                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Nonprofits can utilize data to generate reports, create additional touch points for care, and streamline their filing operations.</p>
+                    </div>
+                  </div>
+                  <a className="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span className="sr-only">Previous</span>
+                  </a>
+                  <a className="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span className="sr-only">Next</span>
+                  </a>
+                </div>
+              </div>
+            </div>
 
-            <div className="fluid-container mt-4 mb-4 pt-5 pb-5 mx-0 background">
+            <div className="fluid-container mb-4 pt-5 pb-5 mx-0 background">
               <div className="container">
                 <div className="row">
                   {/* <div className="col-4 d-flex align-items-center">
