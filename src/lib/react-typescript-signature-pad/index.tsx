@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Button } from 'react-bootstrap';
 import Bezier from './bezier';
 import Point from './point';
 
@@ -493,7 +492,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
           <div className="m-signature-pad--body">
             <canvas style={customStyles} ref={this.canvasRef} />
           </div>
-          <Button onClick={this.clear}>Clear</Button>
+          <button className="btn btn-primary" onClick={this.clear}>Clear</button>
         </div>
       );
     }
