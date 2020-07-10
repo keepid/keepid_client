@@ -1,4 +1,4 @@
-package PDFTest;
+package PdfTest;
 
 import Config.AppConfig;
 import Config.MongoConfig;
@@ -32,7 +32,7 @@ public class PdfMongoTests {
           + File.separator
           + "test"
           + File.separator
-          + "PDFTest";
+          + "PdfTest";
 
   @BeforeClass
   public static void setUp() {

@@ -23,12 +23,12 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       String filename,
-      PDFType pdfType,
+      PdfType pdfType,
       InputStream inputStream,
       MongoDatabase db) {
-    if ((pdfType == PDFType.APPLICATION
-            || pdfType == PDFType.IDENTIFICATION
-            || pdfType == PDFType.FORM)
+    if ((pdfType == PdfType.APPLICATION
+            || pdfType == PdfType.IDENTIFICATION
+            || pdfType == PdfType.FORM)
         && (privilegeLevel == UserType.Client
             || privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Director
@@ -45,7 +45,7 @@ public class PdfMongo {
       String organizationName,
       String filename,
       InputStream inputStream,
-      PDFType pdfType,
+      PdfType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSUploadOptions options =
@@ -63,13 +63,13 @@ public class PdfMongo {
       String uploader,
       String organizationName,
       UserType privilegeLevel,
-      PDFType pdfType,
+      PdfType pdfType,
       MongoDatabase db) {
     JSONObject res;
     try {
       Bson filter;
       JSONArray files;
-      if (pdfType == PDFType.APPLICATION
+      if (pdfType == PdfType.APPLICATION
           && (privilegeLevel == UserType.Director
               || privilegeLevel == UserType.Admin
               || privilegeLevel == UserType.Worker)) {
@@ -77,12 +77,12 @@ public class PdfMongo {
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
-      } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
+      } else if (pdfType == PdfType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
         filter = Filters.eq("metadata.uploader", uploader);
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
-      } else if (pdfType == PDFType.FORM) {
+      } else if (pdfType == PdfType.FORM) {
         filter = Filters.eq("metadata.organizationName", organizationName);
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
@@ -97,7 +97,7 @@ public class PdfMongo {
     return res;
   }
 
-  private static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
+  private static JSONArray mongodbGetAllFiles(Bson filter, PdfType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     for (GridFSFile grid_out : gridBucket.find(filter)) {
@@ -119,25 +119,25 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       ObjectId id,
-      PDFType pdfType,
+      PdfType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;
     }
-    if (pdfType == PDFType.APPLICATION
+    if (pdfType == PdfType.APPLICATION
         && (privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         return gridBucket.openDownloadStream(id);
       }
-    } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
+    } else if (pdfType == PdfType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
         return gridBucket.openDownloadStream(id);
       }
-    } else if (pdfType == PDFType.FORM) {
+    } else if (pdfType == PdfType.FORM) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         return gridBucket.openDownloadStream(id);
       }
@@ -150,7 +150,7 @@ public class PdfMongo {
   public static JSONObject delete(
       String user,
       String organizationName,
-      PDFType pdfType,
+      PdfType pdfType,
       UserType privilegeLevel,
       ObjectId id,
       MongoDatabase db) {
@@ -159,7 +159,7 @@ public class PdfMongo {
     if (grid_out == null || grid_out.getMetadata() == null) {
       return PdfMessage.NO_SUCH_FILE.toJSON();
     }
-    if (pdfType == PDFType.APPLICATION
+    if (pdfType == PdfType.APPLICATION
         && (privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Worker)) {
@@ -167,12 +167,12 @@ public class PdfMongo {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS.toJSON();
       }
-    } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
+    } else if (pdfType == PdfType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS.toJSON();
       }
-    } else if (pdfType == PDFType.FORM) {
+    } else if (pdfType == PdfType.FORM) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS.toJSON();
