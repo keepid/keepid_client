@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import Alert from 'react-bootstrap/Alert';
-import Card from 'react-bootstrap/Card';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import HubLogo from '../static/images/hubs.svg';
@@ -45,9 +43,9 @@ class Home extends Component<Props, {}, {}> {
 
         {autoLogout
           ? (
-            <Alert variant="warning">
+            <div className="alert alert-warning" role="alert">
               You were automatically logged out and redirected to this page.
-            </Alert>
+            </div>
           )
           : null}
 

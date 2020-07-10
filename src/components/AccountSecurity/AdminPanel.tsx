@@ -164,7 +164,7 @@ class AdminPanel extends Component<Props, State> {
     } = this.state;
     const workerPanel = (currentWorker === undefined)
       ? (
-        <div className="card ml-5">
+        <div className="card">
           <div className="card-body">
             <h5 className="card-title">
               No Worker Selected
@@ -293,6 +293,18 @@ class AdminPanel extends Component<Props, State> {
               onChange={this.handleChangeSearchName}
             />
           </form>
+          <div className="row pt-3">
+            <div className="col-md-3 pb-3">
+              <Link to="/upload-document">
+                <button className="btn btn-lg btn-primary loginButtonBackground">Upload Form</button>
+              </Link>
+            </div>
+            <div className="col-md-3 pb-3">
+              <Link to="/my-documents">
+                <button className="btn btn-lg btn-primary loginButtonBackground">View Applications</button>
+              </Link>
+            </div>
+          </div>
           <div className="row ml-1 mt-2 mb-2">
             {numElements === 0 ? <div /> : tablePageSelector }
             {numElements === 0 ? <div />
@@ -311,8 +323,8 @@ class AdminPanel extends Component<Props, State> {
                 </div>
               )}
           </div>
-          <div className="d-flex flex-row bd-highlight mb-3 pt-5">
-            <div className="w-50 pd-3">
+          <div className="row bd-highlight mb-3 pt-5">
+            <div className="col-md-8 pb-3">
               <BootstrapTable
                 bootstrap4
                 keyField="username"
@@ -329,17 +341,9 @@ class AdminPanel extends Component<Props, State> {
                 noDataIndication="No Workers Found"
               />
             </div>
-            {workerPanel}
-          </div>
-          <div className="pr-3">
-            <Link to="/upload-document">
-              <button className="btn btn-primary">Upload Form</button>
-            </Link>
-          </div>
-          <div className="pl-3">
-            <Link to="/my-documents">
-              <button className="btn btn-primary">View Applications</button>
-            </Link>
+            <div className="col-md-4 pb-3">
+              {workerPanel}
+            </div>
           </div>
         </div>
       </div>
