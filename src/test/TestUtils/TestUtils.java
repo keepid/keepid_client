@@ -446,8 +446,28 @@ public class TestUtils {
                     TestUtils.hashPassword("tokentest-valid"),
                     UserType.Client);
 
+    User tokenTestExpired =
+            new User(
+                    "Token",
+                    "Test",
+                    "06-25-2020",
+                    "contact@example.com",
+                    "1234567890",
+                    "2FA Token Org",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    false,
+                    "tokentest-expired",
+                    TestUtils.hashPassword("tokentest-expired"),
+                    UserType.Client);
+
     // This valid token expires on Jan 1, 2090
     Tokens validToken = new Tokens().setUsername("tokentest-valid").setTwoFactorCode("444555").setTwoFactorExp(new Date(Long.valueOf("3786930000000")));
+
+    // This expired token expired on Jan 1, 1970
+    Tokens expiredToken = new Tokens().setUsername("tokentest-expired").setTwoFactorCode("123123").setTwoFactorExp(new Date(Long.valueOf("0")));
 
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
@@ -472,10 +492,13 @@ public class TestUtils {
             workerTftYMCA,
             workerTtfYMCA,
             workerTttYMCA,
-            tokenTestValid));
-  }
+            tokenTestValid,
+            tokenTestExpired));
 
-  // Add the 2FA tokens to the test database
+    // Add the 2FA tokens to the test database
+    MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
+    tokenCollection.insertMany(Arrays.asList(validToken, expiredToken));
+  }
 
   // Tears down the test database by clearing all collections.
   public static void tearDownTestDB() {

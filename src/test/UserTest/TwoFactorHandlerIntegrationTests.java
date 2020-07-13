@@ -100,25 +100,25 @@ public class TwoFactorHandlerIntegrationTests {
     assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
   }
 
-  //  @Test
-  //  public void verifyUserWithExpiredTokenTest() {
-  //    JSONObject body = new JSONObject();
-  //    body.put("username", "tokentest-expired");
-  //    body.put("token", "123123");
-  //
-  //    HttpResponse actualResponse =
-  //        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
-  //            .header("Accept", "*/*")
-  //            .header("Content-Type", "text/plain")
-  //            .body(body.toString())
-  //            .asString();
-  //
-  //    JSONObject actualResponseJSON =
-  //        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-  //
-  //    assert (actualResponseJSON.has("message"));
-  //    assertThat(actualResponseJSON.getString("message")).isEqualTo("2FA link expired.");
-  //    assert (actualResponseJSON.has("status"));
-  //    assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
-  //  }
+  @Test
+  public void verifyUserWithExpiredTokenTest() {
+    JSONObject body = new JSONObject();
+    body.put("username", "tokentest-expired");
+    body.put("token", "123123");
+
+    HttpResponse actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
+
+    JSONObject actualResponseJSON =
+        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+
+    assert (actualResponseJSON.has("message"));
+    assertThat(actualResponseJSON.getString("message")).isEqualTo("2FA link expired.");
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+  }
 }
