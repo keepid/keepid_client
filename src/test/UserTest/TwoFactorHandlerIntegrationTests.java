@@ -37,7 +37,7 @@ public class TwoFactorHandlerIntegrationTests {
     body.put("token", "000000");
 
     HttpResponse actualResponse =
-        Unirest.post("http://localhost:1234/two-factor")
+        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
             .header("Accept", "*/*")
             .header("Content-Type", "text/plain")
             .body(body.toString())
@@ -60,7 +60,7 @@ public class TwoFactorHandlerIntegrationTests {
     body.put("token", "000000");
 
     HttpResponse actualResponse =
-        Unirest.post("http://localhost:1234/two-factor")
+        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
             .header("Accept", "*/*")
             .header("Content-Type", "text/plain")
             .body(body.toString())
@@ -75,6 +75,9 @@ public class TwoFactorHandlerIntegrationTests {
     assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
   }
 
+  // TODO(DanBarychev): Load the test db with the proper tokens and users for these tests to be
+  // valid.
+
   //  @Test
   //  public void verifyUserWithIncorrectTokenTest() {
   //    JSONObject body = new JSONObject();
@@ -82,7 +85,7 @@ public class TwoFactorHandlerIntegrationTests {
   //    body.put("token", "000000");
   //
   //    HttpResponse actualResponse =
-  //        Unirest.post("http://localhost:1234/two-factor")
+  //        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
   //            .header("Accept", "*/*")
   //            .header("Content-Type", "text/plain")
   //            .body(body.toString())
@@ -104,7 +107,7 @@ public class TwoFactorHandlerIntegrationTests {
   //    body.put("token", "123123");
   //
   //    HttpResponse actualResponse =
-  //        Unirest.post("http://localhost:1234/two-factor")
+  //        Unirest.post(TestUtils.getServerUrl() + "/two-factor")
   //            .header("Accept", "*/*")
   //            .header("Content-Type", "text/plain")
   //            .body(body.toString())

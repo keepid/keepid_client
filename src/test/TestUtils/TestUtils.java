@@ -475,6 +475,10 @@ public class TestUtils {
     app.stop();
   }
 
+  public static String getServerUrl() {
+    return serverUrl;
+  }
+
   public static void login(String username, String password) {
     JSONObject body = new JSONObject();
     body.put("password", password);

@@ -1,7 +1,6 @@
 package UserTest;
 
 import TestUtils.TestUtils;
-import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
@@ -13,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class UserControllerIntegrationTest {
-  private static Javalin app = Javalin.create();
 
   @BeforeClass
   public static void setUp() {
@@ -39,7 +37,7 @@ public class UserControllerIntegrationTest {
     body.put("username", "");
 
     HttpResponse<String> actualResponse =
-        Unirest.post("http://localhost:1234/login")
+        Unirest.post(TestUtils.getServerUrl() + "/login")
             .header("Accept", "*/*")
             .header("Content-Type", "text/plain")
             .body(body.toString())

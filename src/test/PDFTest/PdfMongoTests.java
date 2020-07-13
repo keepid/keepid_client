@@ -15,8 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class PdfMongoTests {
-  static final int serverPort = 1234;
-  static final String serverURL = "http://localhost:" + serverPort;
   private static String currentPDFFolderPath =
       Paths.get("").toAbsolutePath().toString()
           + File.separator
@@ -74,7 +72,7 @@ public class PdfMongoTests {
     File examplePDF =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     HttpResponse<String> uploadResponse =
-        Unirest.post(serverURL + "/upload")
+        Unirest.post(TestUtils.getServerUrl() + "/upload")
             .field("pdfType", "")
             .header("Content-Disposition", "attachment")
             .field("file", examplePDF)
@@ -89,7 +87,9 @@ public class PdfMongoTests {
     body.put("pdfType", "APPLICATION");
     body.put("fileId", id);
     HttpResponse<String> deleteResponse =
-        Unirest.post(serverURL + "/delete-document").body(body.toString()).asString();
+        Unirest.post(TestUtils.getServerUrl() + "/delete-document")
+            .body(body.toString())
+            .asString();
     JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
@@ -98,7 +98,7 @@ public class PdfMongoTests {
     File examplePDF =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     HttpResponse<String> uploadResponse =
-        Unirest.post(serverURL + "/upload")
+        Unirest.post(TestUtils.getServerUrl() + "/upload")
             .field("pdfType", "APPLICATION")
             .header("Content-Disposition", "attachment")
             .field("file", examplePDF)
@@ -111,7 +111,7 @@ public class PdfMongoTests {
     JSONObject body = new JSONObject();
     body.put("pdfType", "APPLICATION");
     HttpResponse<String> getAllDocuments =
-        Unirest.post(serverURL + "/get-documents").body(body.toString()).asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-documents").body(body.toString()).asString();
     JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
     assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
     assertThat(getAllDocumentsJSON.getJSONArray("documents").getJSONObject(0).getString("filename"))
