@@ -75,9 +75,6 @@ public class TwoFactorHandlerIntegrationTests {
     assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
   }
 
-  // TODO(DanBarychev): Load the test db with the proper tokens and users for these tests to be
-  // valid.
-
   @Test
   public void verifyUserWithIncorrectTokenTest() {
     JSONObject body = new JSONObject();

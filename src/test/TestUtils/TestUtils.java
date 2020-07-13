@@ -469,10 +469,43 @@ public class TestUtils {
     // This expired token expired on Jan 1, 1970
     Tokens expiredToken = new Tokens().setUsername("tokentest-expired").setTwoFactorCode("123123").setTwoFactorExp(new Date(Long.valueOf("0")));
 
+    /* *********************** Account Settings Test Users ************************ */
+
+    Organization accountSettingsOrg =
+            new Organization(
+                    "Account Settings Org",
+                    "http://keep.id",
+                    "123456789",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    "contact@example.com",
+                    "1234567890");
+
+    User accountSettingsTest =
+            new User(
+                    "David",
+                    "Smith",
+                    "05-23-2002",
+                    "contact2@example.com",
+                    "412-123-3456",
+                    "Account Settings Org",
+                    "321 RandomStreet",
+                    "RandomCity",
+                    "GA",
+                    "19091",
+                    false,
+                    "account-settings-test",
+                    TestUtils.hashPassword("account-settings-test"),
+                    UserType.Client);
+
+    /* *********************** Password Reset Test Users ************************ */
+
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
         testDB.getCollection("organization", Organization.class);
-    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg));
+    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg, accountSettingsOrg));
 
     // Add the user documents to the test database.
     MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
@@ -493,7 +526,8 @@ public class TestUtils {
             workerTtfYMCA,
             workerTttYMCA,
             tokenTestValid,
-            tokenTestExpired));
+            tokenTestExpired,
+            accountSettingsTest));
 
     // Add the 2FA tokens to the test database
     MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
