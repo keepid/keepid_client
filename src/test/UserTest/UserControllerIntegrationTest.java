@@ -1,10 +1,6 @@
 package UserTest;
 
-import Config.MongoConfig;
 import TestUtils.TestUtils;
-import User.UserController;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -14,24 +10,26 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class UserControllerIntegrationTest {
   private static Javalin app = Javalin.create();
 
   @BeforeClass
   public static void setUp() {
-    MongoClient testClient = MongoConfig.getMongoClient();
-    MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
-
-    UserController userController = new UserController(db);
-
-    app.start(1234);
-    app.post("/login", userController.loginUser);
+    TestUtils.startServer();
+    TestUtils.tearDownTestDB();
+    try {
+      TestUtils.setUpTestDB();
+    } catch (Exception e) {
+      fail(e);
+    }
   }
 
   @AfterClass
   public static void tearDown() {
-    app.stop();
+    TestUtils.stopServer();
+    TestUtils.tearDownTestDB();
   }
 
   @Test

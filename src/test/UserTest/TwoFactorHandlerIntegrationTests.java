@@ -1,12 +1,6 @@
 package UserTest;
 
-import Config.MongoConfig;
-import Security.AccountSecurityController;
 import TestUtils.TestUtils;
-import User.UserController;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
-import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
@@ -17,109 +11,103 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TwoFactorHandlerIntegrationTests {
-    private static Javalin app = Javalin.create();
 
-    @BeforeClass
-    public static void setUp() {
-        MongoClient testClient = MongoConfig.getMongoClient();
-        MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+  @BeforeClass
+  public static void setUp() {
+    TestUtils.startServer();
+  }
 
-        AccountSecurityController asc = new AccountSecurityController(db);
+  @AfterClass
+  public static void tearDown() {
+    TestUtils.stopServer();
+  }
 
-        app.start(1234);
-        app.post("/two-factor", asc.twoFactorAuth);
-    }
+  @Test
+  public void verifyUserWithIncorrectUsernameTest() {
+    JSONObject body = new JSONObject();
+    body.put("username", "not-a-user");
+    body.put("token", "000000");
 
-    @AfterClass
-    public static void tearDown() {
-        app.stop();
-    }
+    HttpResponse actualResponse =
+        Unirest.post("http://localhost:1234/two-factor")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
 
-    @Test
-    public void verifyUserWithIncorrectUsernameTest() {
-        JSONObject body = new JSONObject();
-        body.put("username", "not-a-user");
-        body.put("token", "000000");
+    JSONObject actualResponseJSON =
+        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
-        HttpResponse actualResponse =
-                Unirest.post("http://localhost:1234/two-factor")
-                        .header("Accept", "*/*")
-                        .header("Content-Type", "text/plain")
-                        .body(body.toString())
-                        .asString();
+    assert (actualResponseJSON.has("message"));
+    assertThat(actualResponseJSON.getString("message"))
+        .isEqualTo("User does not exist in database.");
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("USER_NOT_FOUND");
+  }
 
-        JSONObject actualResponseJSON =
-                TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  @Test
+  public void verifyUserWithNoTokenTest() {
+    JSONObject body = new JSONObject();
+    body.put("username", "tokentest-notoken");
+    body.put("token", "000000");
 
-        assert (actualResponseJSON.has("message"));
-        assertThat(actualResponseJSON.getString("message")).isEqualTo("User does not exist in database.");
-        assert (actualResponseJSON.has("status"));
-        assertThat(actualResponseJSON.getString("status")).isEqualTo("USER_NOT_FOUND");
-    }
+    HttpResponse actualResponse =
+        Unirest.post("http://localhost:1234/two-factor")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
 
-    @Test
-    public void verifyUserWithNoTokenTest() {
-        JSONObject body = new JSONObject();
-        body.put("username", "tokentest-notoken");
-        body.put("token", "000000");
+    JSONObject actualResponseJSON =
+        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
-        HttpResponse actualResponse =
-                Unirest.post("http://localhost:1234/two-factor")
-                        .header("Accept", "*/*")
-                        .header("Content-Type", "text/plain")
-                        .body(body.toString())
-                        .asString();
+    assert (actualResponseJSON.has("message"));
+    assertThat(actualResponseJSON.getString("message")).isEqualTo("2fa token not found for user.");
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+  }
 
-        JSONObject actualResponseJSON =
-                TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  @Test
+  public void verifyUserWithIncorrectTokenTest() {
+    JSONObject body = new JSONObject();
+    body.put("username", "tokentest-valid");
+    body.put("token", "000000");
 
-        assert (actualResponseJSON.has("message"));
-        assertThat(actualResponseJSON.getString("message")).isEqualTo("2fa token not found for user.");
-        assert (actualResponseJSON.has("status"));
-        assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
-    }
+    HttpResponse actualResponse =
+        Unirest.post("http://localhost:1234/two-factor")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
 
-    @Test
-    public void verifyUserWithIncorrectTokenTest() {
-        JSONObject body = new JSONObject();
-        body.put("username", "tokentest-valid");
-        body.put("token", "000000");
+    JSONObject actualResponseJSON =
+        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
-        HttpResponse actualResponse =
-                Unirest.post("http://localhost:1234/two-factor")
-                        .header("Accept", "*/*")
-                        .header("Content-Type", "text/plain")
-                        .body(body.toString())
-                        .asString();
+    assert (actualResponseJSON.has("message"));
+    assertThat(actualResponseJSON.getString("message")).isEqualTo("Invalid 2fa token.");
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+  }
 
-        JSONObject actualResponseJSON =
-                TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  @Test
+  public void verifyUserWithExpiredTokenTest() {
+    JSONObject body = new JSONObject();
+    body.put("username", "tokentest-expired");
+    body.put("token", "123123");
 
-        assert (actualResponseJSON.has("message"));
-        assertThat(actualResponseJSON.getString("message")).isEqualTo("Invalid 2fa token.");
-        assert (actualResponseJSON.has("status"));
-        assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
-    }
+    HttpResponse actualResponse =
+        Unirest.post("http://localhost:1234/two-factor")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
 
-    @Test
-    public void verifyUserWithExpiredTokenTest() {
-        JSONObject body = new JSONObject();
-        body.put("username", "tokentest-expired");
-        body.put("token", "123123");
+    JSONObject actualResponseJSON =
+        TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
-        HttpResponse actualResponse =
-                Unirest.post("http://localhost:1234/two-factor")
-                        .header("Accept", "*/*")
-                        .header("Content-Type", "text/plain")
-                        .body(body.toString())
-                        .asString();
-
-        JSONObject actualResponseJSON =
-                TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-
-        assert (actualResponseJSON.has("message"));
-        assertThat(actualResponseJSON.getString("message")).isEqualTo("2FA link expired.");
-        assert (actualResponseJSON.has("status"));
-        assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
-    }
+    assert (actualResponseJSON.has("message"));
+    assertThat(actualResponseJSON.getString("message")).isEqualTo("2FA link expired.");
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+  }
 }

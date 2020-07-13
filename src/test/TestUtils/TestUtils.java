@@ -1,21 +1,34 @@
 package TestUtils;
 
+import Config.AppConfig;
 import Config.MongoConfig;
 import Organization.Organization;
+import PDF.PdfController;
+import Security.AccountSecurityController;
 import User.User;
+import User.UserController;
 import User.UserType;
 import Validation.ValidationException;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import io.javalin.Javalin;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestUtils {
   private static MongoDatabase testDB =
       MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
+  private static int serverPort = 1234;
+  private static String serverUrl = "http://localhost:" + serverPort;
+  private static Javalin app = AppConfig.createJavalinApp();
 
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
@@ -440,6 +453,44 @@ public class TestUtils {
       argon2.wipeArray(passwordArr);
     }
     return passwordHash;
+  }
+
+  public static void startServer() {
+    MongoClient testClient = MongoConfig.getMongoTestClient();
+    MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+    PdfController pdfController = new PdfController(db);
+    UserController userController = new UserController(db);
+    AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+    app.start(serverPort);
+    app.post("/login", userController.loginUser);
+    app.post("/upload", pdfController.pdfUpload);
+    app.post("/download", pdfController.pdfDownload);
+    app.post("/delete-document", pdfController.pdfDelete);
+    app.post("/get-documents", pdfController.pdfGetAll);
+    app.post("/logout", userController.logout);
+    app.post("/two-factor", accountSecurityController.twoFactorAuth);
+  }
+
+  public static void stopServer() {
+    app.stop();
+    app = AppConfig.createJavalinApp();
+  }
+
+  public static void login(String username, String password) {
+    JSONObject body = new JSONObject();
+    body.put("password", password);
+    body.put("username", username);
+    HttpResponse<String> loginResponse =
+        Unirest.post(serverUrl + "/login").body(body.toString()).asString();
+    JSONObject loginResponseJSON = TestUtils.responseStringToJSON(loginResponse.getBody());
+    assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
+  }
+
+  public static void logout() {
+    HttpResponse<String> logoutResponse = Unirest.post(serverUrl + "/logout").asString();
+    System.out.println(logoutResponse.getBody());
+    JSONObject logoutResponseJSON = TestUtils.responseStringToJSON(logoutResponse.getBody());
+    assertThat(logoutResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
 
   public static JSONObject responseStringToJSON(String response) {
