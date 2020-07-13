@@ -500,6 +500,23 @@ public class TestUtils {
                     TestUtils.hashPassword("account-settings-test"),
                     UserType.Client);
 
+    User settingsTest2FA =
+            new User(
+                    "Settings-Test",
+                    "TwoFactor",
+                    "06-25-2020",
+                    "contact@example.com",
+                    "1234567890",
+                    "Account Settings Org",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    false,
+                    "settings-test-2fa",
+                    TestUtils.hashPassword("settings-test-2fa"),
+                    UserType.Client);
+
     /* *********************** Password Reset Test Users ************************ */
 
     Organization passwordSettingsOrg =
@@ -558,6 +575,7 @@ public class TestUtils {
             tokenTestValid,
             tokenTestExpired,
             accountSettingsTest,
+            settingsTest2FA,
             passwordResetTest));
 
     // Add the 2FA tokens to the test database
