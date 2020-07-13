@@ -4,6 +4,7 @@ import Config.MongoConfig;
 import Organization.Organization;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.Tokens;
 import User.User;
 import User.UserController;
 import User.UserType;
@@ -18,7 +19,9 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,6 +37,8 @@ public class TestUtils {
    * Workers with all sets of permissions, labelled with flags denoting their permission level, i.e. fft denotes
    * permission levels set to false, false, true for canView, canEdit, canRegister.
    * 2 clients each.
+   *
+   * In addition, several test users for 2FA, password, and settings routes
    *
    * Passwords are the same as usernames.
    */
@@ -226,7 +231,7 @@ public class TestUtils {
             TestUtils.hashPassword("client2BSM"),
             UserType.Client);
 
-    /** ******************** YMCA **************************** */
+    /* ******************** YMCA **************************** */
     Organization ymca =
         new Organization(
             "YMCA",
@@ -410,10 +415,44 @@ public class TestUtils {
             TestUtils.hashPassword("client2YMCA"),
             UserType.Client);
 
+    /* *********************** 2FA Token Test Users ************************ */
+
+    Organization twoFactorTokenOrg =
+            new Organization(
+                    "2FA Token Org",
+                    "http://keep.id",
+                    "123456789",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    "contact@example.com",
+                    "1234567890");
+
+    User tokenTestValid =
+            new User(
+                    "Token",
+                    "Test",
+                    "06-25-2020",
+                    "contact@example.com",
+                    "1234567890",
+                    "2FA Token Org",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    false,
+                    "tokentest-valid",
+                    TestUtils.hashPassword("tokentest-valid"),
+                    UserType.Client);
+
+    // This valid token expires on Jan 1, 2090
+    Tokens validToken = new Tokens().setUsername("tokentest-valid").setTwoFactorCode("444555").setTwoFactorExp(new Date(Long.valueOf("3786930000000")));
+
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
         testDB.getCollection("organization", Organization.class);
-    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca));
+    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg));
 
     // Add the user documents to the test database.
     MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
@@ -432,8 +471,11 @@ public class TestUtils {
             workerTffYMCA,
             workerTftYMCA,
             workerTtfYMCA,
-            workerTttYMCA));
+            workerTttYMCA,
+            tokenTestValid));
   }
+
+  // Add the 2FA tokens to the test database
 
   // Tears down the test database by clearing all collections.
   public static void tearDownTestDB() {
