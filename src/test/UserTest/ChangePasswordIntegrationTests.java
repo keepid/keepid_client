@@ -4,6 +4,7 @@ import Config.MongoConfig;
 import Security.AccountSecurityController;
 import Security.SecurityUtils;
 import Security.Tokens;
+import TestUtils.TestUtils;
 import User.User;
 import User.UserMessage;
 import com.mongodb.client.MongoClient;
@@ -14,17 +15,37 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Context;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.eq;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangePasswordIntegrationTests {
+    @BeforeClass
+    public static void setUp() {
+        TestUtils.startServer();
+        TestUtils.tearDownTestDB();
+        try {
+            TestUtils.setUpTestDB();
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        TestUtils.stopServer();
+        TestUtils.tearDownTestDB();
+    }
+
     Context ctx = mock(Context.class);
-    MongoClient testClient = MongoConfig.getMongoClient();
+    MongoClient testClient = MongoConfig.getMongoTestClient();
     MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
 
     // Make sure to enable .env file configurations for these tests

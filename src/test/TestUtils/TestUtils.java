@@ -502,10 +502,40 @@ public class TestUtils {
 
     /* *********************** Password Reset Test Users ************************ */
 
+    Organization passwordSettingsOrg =
+            new Organization(
+                    "Password Settings Org",
+                    "http://keep.id",
+                    "123456789",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    "contact@example.com",
+                    "1234567890");
+
+    User passwordResetTest =
+            new User(
+                    "Password",
+                    "Reset",
+                    "06-25-2020",
+                    "contact@example.com",
+                    "1234567890",
+                    "Password Settings Org",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    false,
+                    "password-reset-test",
+                    TestUtils.hashPassword("a4d3jgHow0"),
+                    UserType.Client);
+
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
         testDB.getCollection("organization", Organization.class);
-    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg, accountSettingsOrg));
+    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg, accountSettingsOrg,
+            passwordSettingsOrg));
 
     // Add the user documents to the test database.
     MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
@@ -527,7 +557,8 @@ public class TestUtils {
             workerTttYMCA,
             tokenTestValid,
             tokenTestExpired,
-            accountSettingsTest));
+            accountSettingsTest,
+            passwordResetTest));
 
     // Add the 2FA tokens to the test database
     MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
