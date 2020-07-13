@@ -1,5 +1,7 @@
 package Security;
 
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -16,6 +18,12 @@ import java.util.Objects;
    Methods for handling JSON Web Tokens (JWTs)
 */
 public class SecurityUtils {
+
+  public enum PassHashEnum {
+    SUCCESS,
+    FAILURE,
+    ERROR;
+  }
 
   // JWT Creation Method
   public static String createJWT(
@@ -64,5 +72,24 @@ public class SecurityUtils {
             .parseClaimsJws(jwt)
             .getBody();
     return claims;
+  }
+
+  // Tests testPass against realPassHash, the hash of the real password.
+  public static PassHashEnum verifyPassword(String testPass, String realPassHash) {
+    Argon2 argon2 = Argon2Factory.create();
+    char[] passwordArr = testPass.toCharArray();
+    try {
+      if (argon2.verify(realPassHash, passwordArr)) { // Hash matches password
+        argon2.wipeArray(passwordArr);
+        return PassHashEnum.SUCCESS;
+      } else {
+        argon2.wipeArray(passwordArr);
+        return PassHashEnum.FAILURE;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      argon2.wipeArray(passwordArr);
+      return PassHashEnum.ERROR;
+    }
   }
 }
