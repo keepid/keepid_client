@@ -1,6 +1,5 @@
 package TestUtils;
 
-import Config.AppConfig;
 import Config.MongoConfig;
 import Organization.Organization;
 import PDF.PdfController;
@@ -28,7 +27,7 @@ public class TestUtils {
       MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
   private static int serverPort = 1234;
   private static String serverUrl = "http://localhost:" + serverPort;
-  private static Javalin app = AppConfig.createJavalinApp();
+  private static Javalin app = null;
 
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
@@ -461,6 +460,7 @@ public class TestUtils {
     PdfController pdfController = new PdfController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+    app = Javalin.create();
     app.start(serverPort);
     app.post("/login", userController.loginUser);
     app.post("/upload", pdfController.pdfUpload);
@@ -473,22 +473,22 @@ public class TestUtils {
 
   public static void stopServer() {
     app.stop();
-    app = AppConfig.createJavalinApp();
   }
 
   public static void login(String username, String password) {
     JSONObject body = new JSONObject();
     body.put("password", password);
     body.put("username", username);
+    System.out.println("SERVER URL: " + serverUrl);
     HttpResponse<String> loginResponse =
         Unirest.post(serverUrl + "/login").body(body.toString()).asString();
-    JSONObject loginResponseJSON = TestUtils.responseStringToJSON(loginResponse.getBody());
+    JSONObject loginResponseJSON =
+        TestUtils.responseStringToJSON(loginResponse.getBody().toString());
     assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }
 
   public static void logout() {
     HttpResponse<String> logoutResponse = Unirest.post(serverUrl + "/logout").asString();
-    System.out.println(logoutResponse.getBody());
     JSONObject logoutResponseJSON = TestUtils.responseStringToJSON(logoutResponse.getBody());
     assertThat(logoutResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
