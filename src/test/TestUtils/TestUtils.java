@@ -446,6 +446,23 @@ public class TestUtils {
                     TestUtils.hashPassword("tokentest-valid"),
                     UserType.Client);
 
+    User tokenTestNoToken =
+            new User(
+                    "Token",
+                    "Test",
+                    "06-25-2020",
+                    "contact@example.com",
+                    "1234567890",
+                    "2FA Token Org",
+                    "311 Broad Street",
+                    "Philadelphia",
+                    "PA",
+                    "19104",
+                    false,
+                    "tokentest-notoken",
+                    TestUtils.hashPassword("tokentest-notoken"),
+                    UserType.Client);
+
     User tokenTestExpired =
             new User(
                     "Token",
@@ -573,6 +590,7 @@ public class TestUtils {
             workerTtfYMCA,
             workerTttYMCA,
             tokenTestValid,
+            tokenTestNoToken,
             tokenTestExpired,
             accountSettingsTest,
             settingsTest2FA,

@@ -56,7 +56,7 @@ public class TwoFactorHandlerIntegrationTests {
   @Test
   public void verifyUserWithNoTokenTest() {
     JSONObject body = new JSONObject();
-    body.put("username", "adminBSM");
+    body.put("username", "tokentest-notoken");
     body.put("token", "000000");
 
     HttpResponse actualResponse =
