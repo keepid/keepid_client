@@ -75,7 +75,7 @@ public class SecurityUtils {
   }
 
   // Tests testPass against realPassHash, the hash of the real password.
-  public static PassHashEnum verifyPassword(String testPass, String realPassHash) {
+  public PassHashEnum verifyPassword(String testPass, String realPassHash) {
     Argon2 argon2 = Argon2Factory.create();
     char[] passwordArr = testPass.toCharArray();
     try {
@@ -95,7 +95,7 @@ public class SecurityUtils {
 
   // Hashes a password using Argon2.
   // Returns hashed password, or null if Argon2 fails.
-  public static String hashPassword(String plainText) {
+  public String hashPassword(String plainText) {
     Argon2 argon2 = Argon2Factory.create();
     char[] passwordArr = plainText.toCharArray();
     String passwordHash;

@@ -4,6 +4,7 @@ import Config.MongoConfig;
 import Organization.Organization;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.SecurityUtils;
 import User.User;
 import User.UserController;
 import User.UserType;
@@ -457,12 +458,18 @@ public class TestUtils {
   public static void startServer() {
     MongoClient testClient = MongoConfig.getMongoTestClient();
     MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+
+    /* Controllers */
     PdfController pdfController = new PdfController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+
+    /* Utils */
+    SecurityUtils securityUtils = new SecurityUtils();
+
     app = Javalin.create();
     app.start(serverPort);
-    app.post("/login", userController.loginUser);
+    app.post("/login", userController.loginUser(securityUtils));
     app.post("/upload", pdfController.pdfUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document", pdfController.pdfDelete);
