@@ -4,6 +4,7 @@ import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.UserController;
 import com.mongodb.client.MongoClient;
@@ -20,6 +21,7 @@ public class App {
 
     /* Utilities to pass to route handlers */
     SecurityUtils securityUtils = new SecurityUtils();
+    EmailUtil emailUtil = new EmailUtil();
 
     Javalin app = AppConfig.createJavalinApp();
     app.start(Integer.parseInt(System.getenv("PORT")));
@@ -59,12 +61,13 @@ public class App {
     app.post("/fill-application", pdfController.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
-    app.post("/login", userController.loginUser(securityUtils));
+    app.post("/login", userController.loginUser(securityUtils, emailUtil));
     app.post("/generate-username", userController.generateUniqueUsername);
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser(securityUtils));
     app.get("/logout", userController.logout);
-    app.post("/forgot-password", accountSecurityController.forgotPassword(securityUtils));
+    app.post(
+        "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
     app.post("/change-password", accountSecurityController.changePasswordIn);
     app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
     app.get("/get-user-info", userController.getUserInfo);

@@ -1,7 +1,6 @@
 package User;
 
 import Logger.LogFactory;
-import Security.AccountSecurityController;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import Security.Tokens;
@@ -35,7 +34,7 @@ public class UserController {
     logger = l.createLogger("UserController");
   }
 
-  public Handler loginUser(SecurityUtils securityUtils) {
+  public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
     return ctx -> {
       ctx.req.getSession().invalidate();
 
@@ -88,12 +87,12 @@ public class UserController {
         long nowMillis = System.currentTimeMillis();
         long expMillis = 300000;
         Date expDate = new Date(nowMillis + expMillis);
-        String emailContent = AccountSecurityController.getVerificationCodeEmail(randCode);
+        String emailContent = emailUtil.getVerificationCodeEmail(randCode);
         Thread emailThread =
             new Thread(
                 () -> {
                   try {
-                    EmailUtil.sendEmail(
+                    emailUtil.sendEmail(
                         "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
                     MongoCollection<Tokens> tokenCollection =

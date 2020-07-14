@@ -4,6 +4,7 @@ import Config.MongoConfig;
 import Organization.Organization;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.User;
 import User.UserController;
@@ -466,10 +467,11 @@ public class TestUtils {
 
     /* Utils */
     SecurityUtils securityUtils = new SecurityUtils();
+    EmailUtil emailUtil = new EmailUtil();
 
     app = Javalin.create();
     app.start(serverPort);
-    app.post("/login", userController.loginUser(securityUtils));
+    app.post("/login", userController.loginUser(securityUtils, emailUtil));
     app.post("/upload", pdfController.pdfUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document", pdfController.pdfDelete);

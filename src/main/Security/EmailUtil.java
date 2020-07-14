@@ -1,16 +1,44 @@
 package Security;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 
 public class EmailUtil {
-  public static void sendEmail(
-      String senderName, String recipientEmail, String subject, String message)
+  private static String verificationCodeEmailPath =
+      Paths.get("").toAbsolutePath().toString()
+          + File.separator
+          + "src"
+          + File.separator
+          + "main"
+          + File.separator
+          + "Security"
+          + File.separator
+          + "verificationCodeEmail.html";
+
+  private static String passwordResetLinkEmailPath =
+      Paths.get("").toAbsolutePath().toString()
+          + File.separator
+          + "src"
+          + File.separator
+          + "main"
+          + File.separator
+          + "Security"
+          + File.separator
+          + "passwordResetLinkEmail.html";
+
+  public void sendEmail(String senderName, String recipientEmail, String subject, String message)
       throws UnsupportedEncodingException {
 
     // Set SMTP server properties.
@@ -49,5 +77,31 @@ public class EmailUtil {
     } catch (MessagingException e) {
       e.printStackTrace();
     }
+  }
+
+  public String getVerificationCodeEmail(String verificationCode) {
+    File verificationCodeEmail = new File(verificationCodeEmailPath);
+    try {
+      Document htmlDoc = Jsoup.parse(verificationCodeEmail, "UTF-8");
+      Element targetElement = htmlDoc.getElementById("targetVerificationCode");
+      targetElement.text(verificationCode);
+      return htmlDoc.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public String getPasswordResetEmail(String jwt) {
+    File passwordResetEmail = new File(passwordResetLinkEmailPath);
+    try {
+      Document htmlDoc = Jsoup.parse(passwordResetEmail, "UTF-8");
+      Element targetElement = htmlDoc.getElementById("hrefTarget");
+      targetElement.attr("href", jwt);
+      return htmlDoc.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }
