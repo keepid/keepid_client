@@ -492,7 +492,6 @@ public class TestUtils {
     JSONObject body = new JSONObject();
     body.put("password", password);
     body.put("username", username);
-    System.out.println("SERVER URL: " + serverUrl);
     HttpResponse<String> loginResponse =
         Unirest.post(serverUrl + "/login").body(body.toString()).asString();
     JSONObject loginResponseJSON =
