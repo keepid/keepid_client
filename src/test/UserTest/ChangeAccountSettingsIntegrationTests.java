@@ -2,21 +2,16 @@ package UserTest;
 
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.SecurityUtils;
 import TestUtils.TestUtils;
 import User.User;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Context;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -24,289 +19,300 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangeAccountSettingsIntegrationTests {
-    @BeforeClass
-    public static void setUp() {
-        TestUtils.startServer();
-        TestUtils.tearDownTestDB();
-        try {
-            TestUtils.setUpTestDB();
-        } catch (Exception e) {
-            fail(e);
-        }
+
+  @BeforeClass
+  public static void setUp() {
+    TestUtils.startServer();
+    TestUtils.tearDownTestDB();
+    try {
+      TestUtils.setUpTestDB();
+    } catch (Exception e) {
+      fail(e);
+    }
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    TestUtils.stopServer();
+    TestUtils.tearDownTestDB();
+  }
+
+  Context ctx = mock(Context.class);
+  MongoClient testClient = MongoConfig.getMongoTestClient();
+  MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+
+  // Make sure to enable .env file configurations for these tests
+  // TODO: Swap new SecurityUtils() for a mock that correctly (or incorrectly hashes passwords.
+
+  private boolean isCorrectAttribute(String username, String attribute, String possibleValue) {
+    MongoCollection<User> userCollection = db.getCollection("user", User.class);
+    User user = userCollection.find(eq("username", username)).first();
+
+    switch (attribute) {
+      case "firstName":
+        String currentFirstName = user.getFirstName();
+        return (currentFirstName.equals(possibleValue));
+      case "lastName":
+        String currentLastName = user.getLastName();
+        return (currentLastName.equals(possibleValue));
+      case "birthDate":
+        String currentBirthDate = user.getBirthDate();
+        return (currentBirthDate.equals(possibleValue));
+      case "phone":
+        String currentPhone = user.getPhone();
+        return (currentPhone.equals(possibleValue));
+      case "email":
+        String currentEmail = user.getEmail();
+        return (currentEmail.equals(possibleValue));
+      case "address":
+        String currentAddress = user.getAddress();
+        return (currentAddress.equals(possibleValue));
+      case "city":
+        String currentCity = user.getCity();
+        return (currentCity.equals(possibleValue));
+      case "state":
+        String currentState = user.getState();
+        return (currentState.equals(possibleValue));
+      case "zipcode":
+        String currentZipcode = user.getZipcode();
+        String currentZipcodeFormatted = "\"" + currentZipcode + "\"";
+        return (currentZipcodeFormatted.equals(possibleValue));
+      default:
+        return false;
+    }
+  }
+
+  @Test
+  public void changeFirstNameTest() throws Exception {
+    String firstName1 = "David";
+    String firstName2 = "Sarah";
+
+    String username = "account-settings-test";
+    String password = "account-settings-test";
+
+    String newFirstName = firstName2;
+
+    if (isCorrectAttribute(username, "firstName", newFirstName)) {
+      newFirstName = firstName1;
     }
 
-    @AfterClass
-    public static void tearDown() {
-        TestUtils.stopServer();
-        TestUtils.tearDownTestDB();
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"firstName\",\"value\":" + newFirstName + "}";
+
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
+
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+
+    assert (isCorrectAttribute(username, "firstName", newFirstName));
+  }
+
+  @Test
+  public void changeLastNameTest() throws Exception {
+    String lastName1 = "Smith";
+    String lastName2 = "Jones";
+
+    String username = "account-settings-test";
+    String password = "account-settings-test";
+
+    String newLastName = lastName2;
+
+    if (isCorrectAttribute(username, "lastName", newLastName)) {
+      newLastName = lastName1;
     }
 
-    Context ctx = mock(Context.class);
-    MongoClient testClient = MongoConfig.getMongoTestClient();
-    MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"lastName\",\"value\":" + newLastName + "}";
 
-    // Make sure to enable .env file configurations for these tests
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    private boolean isCorrectAttribute(String username, String attribute, String possibleValue) {
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User user = userCollection.find(eq("username", username)).first();
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        switch (attribute) {
-            case "firstName":
-                String currentFirstName = user.getFirstName();
-                return (currentFirstName.equals(possibleValue));
-            case "lastName":
-                String currentLastName = user.getLastName();
-                return (currentLastName.equals(possibleValue));
-            case "birthDate":
-                String currentBirthDate = user.getBirthDate();
-                return (currentBirthDate.equals(possibleValue));
-            case "phone":
-                String currentPhone = user.getPhone();
-                return (currentPhone.equals(possibleValue));
-            case "email":
-                String currentEmail = user.getEmail();
-                return (currentEmail.equals(possibleValue));
-            case "address":
-                String currentAddress = user.getAddress();
-                return (currentAddress.equals(possibleValue));
-            case "city":
-                String currentCity = user.getCity();
-                return (currentCity.equals(possibleValue));
-            case "state":
-                String currentState = user.getState();
-                return (currentState.equals(possibleValue));
-            case "zipcode":
-                String currentZipcode = user.getZipcode();
-                String currentZipcodeFormatted = "\"" + currentZipcode + "\"";
-                return (currentZipcodeFormatted.equals(possibleValue));
-            default:
-                return false;
-        }
+    assert (isCorrectAttribute(username, "lastName", newLastName));
+  }
+
+  @Test
+  public void changeBirthDateTest() throws Exception {
+    String birthDate1 = "01-25-1965";
+    String birthDate2 = "05-23-2002";
+
+    String username = "account-settings-test";
+    String password = "account-settings-test";
+
+    String newBirthDate = birthDate2;
+
+    if (isCorrectAttribute(username, "birthDate", newBirthDate)) {
+      newBirthDate = birthDate1;
     }
 
-    @Test
-    public void changeFirstNameTest() throws Exception {
-        String firstName1 = "David";
-        String firstName2 = "Sarah";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"birthDate\",\"value\":" + newBirthDate + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newFirstName = firstName2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "firstName", newFirstName)) {
-            newFirstName = firstName1;
-        }
+    assert (isCorrectAttribute(username, "birthDate", newBirthDate));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"firstName\",\"value\":" + newFirstName + "}";
+  @Test
+  public void changePhoneTest() throws Exception {
+    String phone1 = "215-123-4567";
+    String phone2 = "412-123-3456";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newPhone = phone2;
 
-        assert(isCorrectAttribute(username, "firstName", newFirstName));
+    if (isCorrectAttribute(username, "phone", newPhone)) {
+      newPhone = phone1;
     }
 
-    @Test
-    public void changeLastNameTest() throws Exception {
-        String lastName1 = "Smith";
-        String lastName2 = "Jones";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"phone\",\"value\":" + newPhone + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newLastName = lastName2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "lastName", newLastName)) {
-            newLastName = lastName1;
-        }
+    assert (isCorrectAttribute(username, "phone", newPhone));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"lastName\",\"value\":" + newLastName + "}";
+  @Test
+  public void changeEmailTest() throws Exception {
+    String email1 = "contact1@example.com";
+    String email2 = "contact2@example.com";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newEmail = email2;
 
-        assert(isCorrectAttribute(username, "lastName", newLastName));
+    if (isCorrectAttribute(username, "email", newEmail)) {
+      newEmail = email1;
     }
 
-    @Test
-    public void changeBirthDateTest() throws Exception {
-        String birthDate1 = "01-25-1965";
-        String birthDate2 = "05-23-2002";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"email\",\"value\":" + newEmail + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newBirthDate = birthDate2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "birthDate", newBirthDate)) {
-            newBirthDate = birthDate1;
-        }
+    assert (isCorrectAttribute(username, "email", newEmail));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"birthDate\",\"value\":" + newBirthDate + "}";
+  @Test
+  public void changeAddressTest() throws Exception {
+    String address1 = "123 SampleStreet";
+    String address2 = "321 RandomStreet";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newAddress = address2;
 
-        assert(isCorrectAttribute(username, "birthDate", newBirthDate));
+    if (isCorrectAttribute(username, "address", newAddress)) {
+      newAddress = address1;
     }
 
-    @Test
-    public void changePhoneTest() throws Exception {
-        String phone1 = "215-123-4567";
-        String phone2 = "412-123-3456";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"address\",\"value\":" + newAddress + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newPhone = phone2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "phone", newPhone)) {
-            newPhone = phone1;
-        }
+    assert (isCorrectAttribute(username, "address", newAddress));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"phone\",\"value\":" + newPhone + "}";
+  @Test
+  public void changeCityTest() throws Exception {
+    String city1 = "SampleCity";
+    String city2 = "RandomCity";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newCity = city2;
 
-        assert(isCorrectAttribute(username, "phone", newPhone));
+    if (isCorrectAttribute(username, "city", newCity)) {
+      newCity = city1;
     }
 
-    @Test
-    public void changeEmailTest() throws Exception {
-        String email1 = "contact1@example.com";
-        String email2 = "contact2@example.com";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"city\",\"value\":" + newCity + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newEmail = email2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "email", newEmail)) {
-            newEmail = email1;
-        }
+    assert (isCorrectAttribute(username, "city", newCity));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"email\",\"value\":" + newEmail + "}";
+  @Test
+  public void changeSateTest() throws Exception {
+    String state1 = "PA";
+    String state2 = "GA";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newState = state2;
 
-        assert(isCorrectAttribute(username, "email", newEmail));
+    if (isCorrectAttribute(username, "state", newState)) {
+      newState = state1;
     }
 
-    @Test
-    public void changeAddressTest() throws Exception {
-        String address1 = "123 SampleStreet";
-        String address2 = "321 RandomStreet";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"state\",\"value\":" + newState + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newAddress = address2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "address", newAddress)) {
-            newAddress = address1;
-        }
+    assert (isCorrectAttribute(username, "state", newState));
+  }
 
-        String inputString = "{\"password\":" + password + ",\"key\":\"address\",\"value\":" + newAddress + "}";
+  @Test
+  public void changeZipcodeTest() throws Exception {
+    String zipcode1 = "\"19091\"";
+    String zipcode2 = "\"19012\"";
 
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
+    String username = "account-settings-test";
+    String password = "account-settings-test";
 
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
+    String newZipcode = zipcode2;
 
-        assert(isCorrectAttribute(username, "address", newAddress));
+    if (isCorrectAttribute(username, "zipcode", newZipcode)) {
+      newZipcode = zipcode1;
     }
 
-    @Test
-    public void changeCityTest() throws Exception {
-        String city1 = "SampleCity";
-        String city2 = "RandomCity";
+    String inputString =
+        "{\"password\":" + password + ",\"key\":\"zipcode\",\"value\":" + newZipcode + "}";
 
-        String username = "account-settings-test";
-        String password = "account-settings-test";
+    when(ctx.body()).thenReturn(inputString);
+    when(ctx.sessionAttribute("username")).thenReturn(username);
 
-        String newCity = city2;
+    AccountSecurityController asc = new AccountSecurityController(db);
+    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
-        if (isCorrectAttribute(username, "city", newCity)) {
-            newCity = city1;
-        }
-
-        String inputString = "{\"password\":" + password + ",\"key\":\"city\",\"value\":" + newCity + "}";
-
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
-
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
-
-        assert(isCorrectAttribute(username, "city", newCity));
-    }
-
-    @Test
-    public void changeSateTest() throws Exception {
-        String state1 = "PA";
-        String state2 = "GA";
-
-        String username = "account-settings-test";
-        String password = "account-settings-test";
-
-        String newState = state2;
-
-        if (isCorrectAttribute(username, "state", newState)) {
-            newState = state1;
-        }
-
-        String inputString = "{\"password\":" + password + ",\"key\":\"state\",\"value\":" + newState + "}";
-
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
-
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
-
-        assert(isCorrectAttribute(username, "state", newState));
-    }
-
-    @Test
-    public void changeZipcodeTest() throws Exception {
-        String zipcode1 = "\"19091\"";
-        String zipcode2 = "\"19012\"";
-
-        String username = "account-settings-test";
-        String password = "account-settings-test";
-
-        String newZipcode = zipcode2;
-
-        if (isCorrectAttribute(username, "zipcode", newZipcode)) {
-            newZipcode = zipcode1;
-        }
-
-        String inputString = "{\"password\":" + password + ",\"key\":\"zipcode\",\"value\":" + newZipcode + "}";
-
-        when(ctx.body()).thenReturn(inputString);
-        when(ctx.sessionAttribute("username")).thenReturn(username);
-
-        AccountSecurityController asc = new AccountSecurityController(db);
-        asc.changeAccountSetting.handle(ctx);
-
-        assert(isCorrectAttribute(username, "zipcode", newZipcode));
-    }
+    assert (isCorrectAttribute(username, "zipcode", newZipcode));
+  }
 }

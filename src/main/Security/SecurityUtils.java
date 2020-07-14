@@ -1,5 +1,7 @@
 package Security;
 
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -17,9 +19,15 @@ import java.util.Objects;
 */
 public class SecurityUtils {
 
+  public enum PassHashEnum {
+    SUCCESS,
+    FAILURE,
+    ERROR;
+  }
+
   // JWT Creation Method
-  public static String createJWT(
-      String id, String issuer, String user, String subject, long ttlMillis) throws IOException {
+  public String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
+      throws IOException {
 
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
@@ -54,7 +62,7 @@ public class SecurityUtils {
     return builder.compact();
   }
 
-  public static Claims decodeJWT(String jwt) throws IOException {
+  public Claims decodeJWT(String jwt) throws IOException {
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // This line will throw an exception if it is not a signed JWS (as expected)
@@ -64,5 +72,40 @@ public class SecurityUtils {
             .parseClaimsJws(jwt)
             .getBody();
     return claims;
+  }
+
+  // Tests testPass against realPassHash, the hash of the real password.
+  public PassHashEnum verifyPassword(String testPass, String realPassHash) {
+    Argon2 argon2 = Argon2Factory.create();
+    char[] passwordArr = testPass.toCharArray();
+    try {
+      if (argon2.verify(realPassHash, passwordArr)) { // Hash matches password
+        argon2.wipeArray(passwordArr);
+        return PassHashEnum.SUCCESS;
+      } else {
+        argon2.wipeArray(passwordArr);
+        return PassHashEnum.FAILURE;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      argon2.wipeArray(passwordArr);
+      return PassHashEnum.ERROR;
+    }
+  }
+
+  // Hashes a password using Argon2.
+  // Returns hashed password, or null if Argon2 fails.
+  public String hashPassword(String plainText) {
+    Argon2 argon2 = Argon2Factory.create();
+    char[] passwordArr = plainText.toCharArray();
+    String passwordHash;
+    try {
+      passwordHash = argon2.hash(10, 65536, 1, passwordArr);
+      argon2.wipeArray(passwordArr);
+      return passwordHash;
+    } catch (Exception e) {
+      argon2.wipeArray(passwordArr);
+      return null;
+    }
   }
 }

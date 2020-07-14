@@ -4,6 +4,8 @@ import Config.MongoConfig;
 import Organization.Organization;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.EmailUtil;
+import Security.SecurityUtils;
 import Security.Tokens;
 import User.User;
 import User.UserController;
@@ -19,7 +21,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -418,158 +419,167 @@ public class TestUtils {
     /* *********************** 2FA Token Test Users ************************ */
 
     Organization twoFactorTokenOrg =
-            new Organization(
-                    "2FA Token Org",
-                    "http://keep.id",
-                    "123456789",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    "contact@example.com",
-                    "1234567890");
+        new Organization(
+            "2FA Token Org",
+            "http://keep.id",
+            "123456789",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            "contact@example.com",
+            "1234567890");
 
     User tokenTestValid =
-            new User(
-                    "Token",
-                    "Test",
-                    "06-25-2020",
-                    "contact@example.com",
-                    "1234567890",
-                    "2FA Token Org",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    false,
-                    "tokentest-valid",
-                    TestUtils.hashPassword("tokentest-valid"),
-                    UserType.Client);
+        new User(
+            "Token",
+            "Test",
+            "06-25-2020",
+            "contact@example.com",
+            "1234567890",
+            "2FA Token Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "tokentest-valid",
+            TestUtils.hashPassword("tokentest-valid"),
+            UserType.Client);
 
     User tokenTestNoToken =
-            new User(
-                    "Token",
-                    "Test",
-                    "06-25-2020",
-                    "contact@example.com",
-                    "1234567890",
-                    "2FA Token Org",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    false,
-                    "tokentest-notoken",
-                    TestUtils.hashPassword("tokentest-notoken"),
-                    UserType.Client);
+        new User(
+            "Token",
+            "Test",
+            "06-25-2020",
+            "contact@example.com",
+            "1234567890",
+            "2FA Token Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "tokentest-notoken",
+            TestUtils.hashPassword("tokentest-notoken"),
+            UserType.Client);
 
     User tokenTestExpired =
-            new User(
-                    "Token",
-                    "Test",
-                    "06-25-2020",
-                    "contact@example.com",
-                    "1234567890",
-                    "2FA Token Org",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    false,
-                    "tokentest-expired",
-                    TestUtils.hashPassword("tokentest-expired"),
-                    UserType.Client);
+        new User(
+            "Token",
+            "Test",
+            "06-25-2020",
+            "contact@example.com",
+            "1234567890",
+            "2FA Token Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "tokentest-expired",
+            TestUtils.hashPassword("tokentest-expired"),
+            UserType.Client);
 
     // This valid token expires on Jan 1, 2090
-    Tokens validToken = new Tokens().setUsername("tokentest-valid").setTwoFactorCode("444555").setTwoFactorExp(new Date(Long.valueOf("3786930000000")));
+    Tokens validToken =
+        new Tokens()
+            .setUsername("tokentest-valid")
+            .setTwoFactorCode("444555")
+            .setTwoFactorExp(new Date(Long.valueOf("3786930000000")));
 
     // This expired token expired on Jan 1, 1970
-    Tokens expiredToken = new Tokens().setUsername("tokentest-expired").setTwoFactorCode("123123").setTwoFactorExp(new Date(Long.valueOf("0")));
+    Tokens expiredToken =
+        new Tokens()
+            .setUsername("tokentest-expired")
+            .setTwoFactorCode("123123")
+            .setTwoFactorExp(new Date(Long.valueOf("0")));
 
     /* *********************** Account Settings Test Users ************************ */
 
     Organization accountSettingsOrg =
-            new Organization(
-                    "Account Settings Org",
-                    "http://keep.id",
-                    "123456789",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    "contact@example.com",
-                    "1234567890");
+        new Organization(
+            "Account Settings Org",
+            "http://keep.id",
+            "123456789",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            "contact@example.com",
+            "1234567890");
 
     User accountSettingsTest =
-            new User(
-                    "David",
-                    "Smith",
-                    "05-23-2002",
-                    "contact2@example.com",
-                    "412-123-3456",
-                    "Account Settings Org",
-                    "321 RandomStreet",
-                    "RandomCity",
-                    "GA",
-                    "19091",
-                    false,
-                    "account-settings-test",
-                    TestUtils.hashPassword("account-settings-test"),
-                    UserType.Client);
+        new User(
+            "David",
+            "Smith",
+            "05-23-2002",
+            "contact2@example.com",
+            "412-123-3456",
+            "Account Settings Org",
+            "321 RandomStreet",
+            "RandomCity",
+            "GA",
+            "19091",
+            false,
+            "account-settings-test",
+            TestUtils.hashPassword("account-settings-test"),
+            UserType.Client);
 
     User settingsTest2FA =
-            new User(
-                    "Settings-Test",
-                    "TwoFactor",
-                    "06-25-2020",
-                    "contact@example.com",
-                    "1234567890",
-                    "Account Settings Org",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    false,
-                    "settings-test-2fa",
-                    TestUtils.hashPassword("settings-test-2fa"),
-                    UserType.Client);
+        new User(
+            "Settings-Test",
+            "TwoFactor",
+            "06-25-2020",
+            "contact@example.com",
+            "1234567890",
+            "Account Settings Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "settings-test-2fa",
+            TestUtils.hashPassword("settings-test-2fa"),
+            UserType.Client);
 
     /* *********************** Password Reset Test Users ************************ */
 
     Organization passwordSettingsOrg =
-            new Organization(
-                    "Password Settings Org",
-                    "http://keep.id",
-                    "123456789",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    "contact@example.com",
-                    "1234567890");
+        new Organization(
+            "Password Settings Org",
+            "http://keep.id",
+            "123456789",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            "contact@example.com",
+            "1234567890");
 
     User passwordResetTest =
-            new User(
-                    "Password",
-                    "Reset",
-                    "06-25-2020",
-                    "contact@example.com",
-                    "1234567890",
-                    "Password Settings Org",
-                    "311 Broad Street",
-                    "Philadelphia",
-                    "PA",
-                    "19104",
-                    false,
-                    "password-reset-test",
-                    TestUtils.hashPassword("a4d3jgHow0"),
-                    UserType.Client);
+        new User(
+            "Password",
+            "Reset",
+            "06-25-2020",
+            "contact@example.com",
+            "1234567890",
+            "Password Settings Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "password-reset-test",
+            TestUtils.hashPassword("a4d3jgHow0"),
+            UserType.Client);
 
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
         testDB.getCollection("organization", Organization.class);
-    organizationCollection.insertMany(Arrays.asList(broadStreetMinistry, ymca, twoFactorTokenOrg, accountSettingsOrg,
-            passwordSettingsOrg));
+    organizationCollection.insertMany(
+        Arrays.asList(
+            broadStreetMinistry, ymca, twoFactorTokenOrg, accountSettingsOrg, passwordSettingsOrg));
 
     // Add the user documents to the test database.
     MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
@@ -623,12 +633,19 @@ public class TestUtils {
   public static void startServer() {
     MongoClient testClient = MongoConfig.getMongoTestClient();
     MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+
+    /* Controllers */
     PdfController pdfController = new PdfController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+
+    /* Utils */
+    SecurityUtils securityUtils = new SecurityUtils();
+    EmailUtil emailUtil = new EmailUtil();
+
     app = Javalin.create();
     app.start(serverPort);
-    app.post("/login", userController.loginUser);
+    app.post("/login", userController.loginUser(securityUtils, emailUtil));
     app.post("/upload", pdfController.pdfUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document", pdfController.pdfDelete);
@@ -649,7 +666,6 @@ public class TestUtils {
     JSONObject body = new JSONObject();
     body.put("password", password);
     body.put("username", username);
-    System.out.println("SERVER URL: " + serverUrl);
     HttpResponse<String> loginResponse =
         Unirest.post(serverUrl + "/login").body(body.toString()).asString();
     JSONObject loginResponseJSON =
