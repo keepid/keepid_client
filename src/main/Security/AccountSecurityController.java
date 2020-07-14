@@ -53,41 +53,42 @@ public class AccountSecurityController {
           + File.separator
           + "passwordResetLinkEmail.html";
 
-  public Handler forgotPassword =
-      ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
+  public Handler forgotPassword(SecurityUtils securityUtils) {
+    return ctx -> {
+      JSONObject req = new JSONObject(ctx.body());
 
-        String username = req.getString("username");
+      String username = req.getString("username");
 
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User user = userCollection.find(eq("username", username)).first();
+      MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      User user = userCollection.find(eq("username", username)).first();
 
-        if (user == null) {
-          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
-          return;
-        }
+      if (user == null) {
+        ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
+        return;
+      }
 
-        String emailAddress = user.getEmail();
-        if (emailAddress == null) {
-          ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user.").toString());
-        }
+      String emailAddress = user.getEmail();
+      if (emailAddress == null) {
+        ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user.").toString());
+      }
 
-        String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-        int expirationTime = 7200000; // 2 hours
-        String jwt =
-            SecurityUtils.createJWT(
-                id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+      String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+      int expirationTime = 7200000; // 2 hours
+      String jwt =
+          securityUtils.createJWT(
+              id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
-        MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-        tokenCollection.replaceOne(
-            eq("username", username),
-            new Tokens().setUsername(username).setResetJwt(jwt),
-            new ReplaceOptions().upsert(true));
-        String emailJWT = getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
-        EmailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
+      MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
+      tokenCollection.replaceOne(
+          eq("username", username),
+          new Tokens().setUsername(username).setResetJwt(jwt),
+          new ReplaceOptions().upsert(true));
+      String emailJWT = getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
+      EmailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
 
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
-      };
+      ctx.json(UserMessage.SUCCESS.toJSON().toString());
+    };
+  }
 
   // Changes the password of a logged in user.
   public Handler changePasswordIn =
@@ -224,75 +225,76 @@ public class AccountSecurityController {
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
-  public Handler resetPassword =
-      ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
+  public Handler resetPassword(SecurityUtils securityUtils) {
+    return ctx -> {
+      JSONObject req = new JSONObject(ctx.body());
 
-        // Decode the JWT. If invalid, return AUTH_FAILURE.
-        String jwt = req.getString("jwt");
-        String newPassword = req.getString("newPassword");
-        if (!ValidationUtils.isValidPassword(newPassword)) {
-          ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Password").toString());
-          return;
-        }
-        Claims claim;
-        try {
-          claim = SecurityUtils.decodeJWT(jwt);
-        } catch (Exception e) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link.").toString());
-          return;
-        }
+      // Decode the JWT. If invalid, return AUTH_FAILURE.
+      String jwt = req.getString("jwt");
+      String newPassword = req.getString("newPassword");
+      if (!ValidationUtils.isValidPassword(newPassword)) {
+        ctx.json(UserMessage.INVALID_PARAMETER.toJSON("Invalid Password").toString());
+        return;
+      }
+      Claims claim;
+      try {
+        claim = securityUtils.decodeJWT(jwt);
+      } catch (Exception e) {
+        ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset link.").toString());
+        return;
+      }
 
-        String username = claim.getAudience();
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User user = userCollection.find(eq("username", username)).first();
+      String username = claim.getAudience();
+      MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      User user = userCollection.find(eq("username", username)).first();
 
-        // Return USER_NOT_FOUND if the username does not exist.
-        if (user == null) {
-          ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
-          return;
-        }
+      // Return USER_NOT_FOUND if the username does not exist.
+      if (user == null) {
+        ctx.json(UserMessage.USER_NOT_FOUND.toJSON().toString());
+        return;
+      }
 
-        // Check for expired reset link.
-        long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
+      // Check for expired reset link.
+      long nowMillis = System.currentTimeMillis();
+      Date now = new Date(nowMillis);
 
-        if (claim.getExpiration().compareTo(now) < 0) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset link expired.").toString());
-          return;
-        }
+      if (claim.getExpiration().compareTo(now) < 0) {
+        ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset link expired.").toString());
+        return;
+      }
 
-        // Check if reset token exists.
-        MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-        Tokens tokens = tokenCollection.find(eq("username", username)).first();
-        if (tokens == null) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
-          return;
-        }
+      // Check if reset token exists.
+      MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
+      Tokens tokens = tokenCollection.find(eq("username", username)).first();
+      if (tokens == null) {
+        ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
+        return;
+      }
 
-        String storedJWT = tokens.getResetJwt();
-        if (storedJWT == null) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
-          return;
-        }
+      String storedJWT = tokens.getResetJwt();
+      if (storedJWT == null) {
+        ctx.json(UserMessage.AUTH_FAILURE.toJSON("Reset token not found for user.").toString());
+        return;
+      }
 
-        if (!storedJWT.equals(jwt)) {
-          ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token.").toString());
-          return;
-        }
+      if (!storedJWT.equals(jwt)) {
+        ctx.json(UserMessage.AUTH_FAILURE.toJSON("Invalid reset token.").toString());
+        return;
+      }
 
-        // Remove the token entry if its last remaining key is the password-reset-token.
-        // Remove only the password reset token if there are other fields.
-        if (tokens.numTokens() == 1) {
-          tokenCollection.deleteOne(eq("username", username));
-        } else {
-          // Remove password-reset-jwt field from token.
-          tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
-        }
+      // Remove the token entry if its last remaining key is the password-reset-token.
+      // Remove only the password reset token if there are other fields.
+      if (tokens.numTokens() == 1) {
+        tokenCollection.deleteOne(eq("username", username));
+      } else {
+        // Remove password-reset-jwt field from token.
+        tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
+      }
 
-        resetPassword(claim.getAudience(), newPassword, db);
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
-      };
+      resetPassword(claim.getAudience(), newPassword, db);
+      ctx.json(UserMessage.SUCCESS.toJSON().toString());
+    };
+  }
 
   public Handler twoFactorAuth =
       ctx -> {

@@ -26,8 +26,8 @@ public class SecurityUtils {
   }
 
   // JWT Creation Method
-  public static String createJWT(
-      String id, String issuer, String user, String subject, long ttlMillis) throws IOException {
+  public String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
+      throws IOException {
 
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
@@ -62,7 +62,7 @@ public class SecurityUtils {
     return builder.compact();
   }
 
-  public static Claims decodeJWT(String jwt) throws IOException {
+  public Claims decodeJWT(String jwt) throws IOException {
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // This line will throw an exception if it is not a signed JWS (as expected)

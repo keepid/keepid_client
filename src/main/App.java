@@ -64,9 +64,9 @@ public class App {
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser(securityUtils));
     app.get("/logout", userController.logout);
-    app.post("/forgot-password", accountSecurityController.forgotPassword);
+    app.post("/forgot-password", accountSecurityController.forgotPassword(securityUtils));
     app.post("/change-password", accountSecurityController.changePasswordIn);
-    app.post("/reset-password", accountSecurityController.resetPassword);
+    app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
