@@ -131,7 +131,7 @@ public class ChangePasswordIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changePasswordIn.handle(ctx);
+    asc.changePasswordIn(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
   }
@@ -153,7 +153,8 @@ public class ChangePasswordIntegrationTests {
     }
 
     UserMessage result =
-        AccountSecurityController.changePassword(username, newPassword, oldPassword, db);
+        AccountSecurityController.changePassword(
+            username, newPassword, oldPassword, db, new SecurityUtils());
 
     assert (result == UserMessage.AUTH_SUCCESS);
   }

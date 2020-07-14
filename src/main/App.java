@@ -68,7 +68,7 @@ public class App {
     app.get("/logout", userController.logout);
     app.post(
         "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
-    app.post("/change-password", accountSecurityController.changePasswordIn);
+    app.post("/change-password", accountSecurityController.changePasswordIn(securityUtils));
     app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
@@ -82,7 +82,8 @@ public class App {
     app.post("/organization-signup", orgController.enrollOrganization(securityUtils));
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
-    app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
+    app.post(
+        "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
   }
 }
