@@ -51,7 +51,6 @@ const timeUntilWarn: number = 1000 * 60 * 120;
 const timeFromWarnToLogout: number = 1000 * 60;
 const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
-
 class App extends React.Component<{}, State, {}> {
   private idleTimerWarn;
 

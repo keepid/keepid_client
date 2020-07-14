@@ -39,7 +39,6 @@ const options = [
   { value: 'phoneNumber', label: 'Phone Number' },
 ];
 
-
 const listOptions = [
   { value: '2', label: '2' },
   { value: '5', label: '5' },
@@ -47,7 +46,6 @@ const listOptions = [
   { value: '25', label: '25' },
   { value: '50', label: '50' },
 ];
-
 
 const animatedComponents = makeAnimated();
 

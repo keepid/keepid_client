@@ -210,7 +210,6 @@ class Signup extends Component<Props, State, {}> {
     const personRoleString = this.personRoleString(personRole);
     const personBirthDateFormatted = this.birthDateString(personBirthDate);
 
-
     if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
     } else {

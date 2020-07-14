@@ -5,7 +5,6 @@ import DocumentViewer from '../DocumentViewer';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 
-
 interface Props {
   alert: any
 }

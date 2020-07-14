@@ -271,8 +271,10 @@ thead {
 }
 
 .member-card {
-	width: 20vw;
-	min-width: 18.75rem;
+	width: 16vw;
+	min-width: 16.75rem;
+	border-color: $primary-theme;
+	border-width: 0.0625 rem;
 }
 
 .partner-card {

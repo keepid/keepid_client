@@ -7,7 +7,6 @@ import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 import PDFType from '../static/PDFType';
 
-
 interface Props {
   alert: any,
   userRole: Role,
@@ -71,13 +70,13 @@ class UploadDocs extends React.Component<Props, State> {
 
     if (pdfFiles) {
       // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i = i + 1) {
+      for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
         if (userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION);
-        } 
+        }
         if (userRole === Role.Director || userRole === Role.Admin) {
           formData.append('pdfType', PDFType.FORM);
         }

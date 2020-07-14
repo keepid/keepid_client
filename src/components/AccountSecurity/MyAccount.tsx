@@ -270,7 +270,6 @@ class RenderInput extends Component<InputProps, InputState> {
   }
 }
 
-
 // modal for confirming password before updating information
 interface ConfirmPasswordModalProps {
   show: boolean,
@@ -365,7 +364,6 @@ class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmP
     );
   }
 }
-
 
 interface Props {
   alert: any,
