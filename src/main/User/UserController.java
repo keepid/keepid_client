@@ -11,8 +11,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
@@ -284,23 +282,18 @@ public class UserController {
 
         if (existingUser != null) {
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
-        } else {
-          Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = user.getPassword().toCharArray();
-          String passwordHash;
-          try {
-            passwordHash = argon2.hash(10, 65536, 1, passwordArr);
-            argon2.wipeArray(passwordArr);
-          } catch (Exception e) {
-            argon2.wipeArray(passwordArr);
-            ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
-            return;
-          }
-
-          user.setPassword(passwordHash);
-          userCollection.insertOne(user);
-          ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
+          return;
         }
+
+        String hash = SecurityUtils.hashPassword(password);
+        if (hash == null) {
+          ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
+          return;
+        }
+
+        user.setPassword(hash);
+        userCollection.insertOne(user);
+        ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
       };
 
   public Handler logout =
