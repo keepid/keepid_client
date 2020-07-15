@@ -37,6 +37,7 @@ import IdleTimeOutModal from './components/AccountSecurity/IdleTimeOutModal';
 import DeveloperLanding from './components/LandingPages/DeveloperLanding';
 import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
+import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 
 interface State {
   role: Role,
@@ -326,6 +327,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/our-mission">
                 <OurMission />
+              </Route>
+              <Route path="/privacy-policy">
+                <PrivacyPolicy />
               </Route>
               <Route path="/bug-report">
                 <BugReport />
