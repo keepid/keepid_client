@@ -1,9 +1,11 @@
 <h1>Client Side Application</h1> 
 <h3>Connor Chong, Steffen Cornwell, Gregory Kofman, Alexander Do, James Bigbee</h3>
 
-[![Build Status](https://travis-ci.com/crchong1/keepid_client.svg?token=ZfxxuGjvV4UyCBCswM7B&branch=master)](https://travis-ci.com/crchong1/keepid_client)
+[![Build Status](https://travis-ci.org/keepid/keepid_client.svg?branch=master)](https://travis-ci.org/keepid/keepid_client)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa3d458398184301aa386a953dda4286)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crchong1/keepid_client&amp;utm_campaign=Badge_Grade)
+
+https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/edit?usp=sharing 
 
 ## How to Install the Client
 After cloning, `cd client` and then do npm install
