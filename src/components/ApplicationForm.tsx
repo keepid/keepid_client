@@ -52,20 +52,10 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          fieldNames,
-          fieldQuestions,
-        } = JSON.parse(responseJSON);
-        const fieldNamesArray : string[] = fieldNames;
-        const fieldQuestionsArray : string[] = fieldQuestions;
-        console.log(responseJSON);
-        const numFields = fieldNamesArray.length;
-        const formQuestionsCombined : [string, string][] = new Array(numFields);
-        for (let j = 0; j < numFields; j += 1) {
-          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
-        }
-        this.setState({ formQuestions: formQuestionsCombined });
-        formQuestionsCombined.map((entry) => (formAnswers[entry[0]] = ''));
+        const fieldsJSON = JSON.parse(responseJSON);
+        console.log(fieldsJSON);
+        this.setState({ formQuestions: fieldsJSON });
+        fieldsJSON.map((entry) => (formAnswers[entry.fieldName] = ''));
         this.setState({ formAnswers });
       });
   }
@@ -74,8 +64,10 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    const { id } = event.target;
-    const { value } = event.target;
+    console.log(event.target);
+    const { id } = event.target.id;
+    const { value } = event.target.value;
+    console.log(value);
     formAnswers[id] = value;
     this.setState({ formAnswers });
   }
@@ -151,12 +143,12 @@ class ApplicationForm extends Component<Props, State> {
           {formQuestions.map(
             (entry) => (
               <div className="mt-2 mb-2">
-                <label htmlFor={entry[0]} className="w-100 font-weight-bold">
-                  {entry[1]}
+                <label htmlFor={entry["fieldName"]} className="w-100 font-weight-bold">
+                  {entry["fieldQuestion"]}
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
-                    id={entry[0]}
+                    id={entry["fieldName"]}
                     placeholder="Enter response here"
                     onChange={this.handleChangeFormValue}
                     required
