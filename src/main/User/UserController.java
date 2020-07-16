@@ -1,8 +1,8 @@
 package User;
 
 import Logger.LogFactory;
-import Security.AccountSecurityController;
 import Security.EmailUtil;
+import Security.SecurityUtils;
 import Security.Tokens;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
@@ -10,8 +10,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
@@ -36,116 +34,109 @@ public class UserController {
     logger = l.createLogger("UserController");
   }
 
-  public Handler loginUser =
-      ctx -> {
-        ctx.req.getSession().invalidate();
+  public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
+    return ctx -> {
+      ctx.req.getSession().invalidate();
 
-        System.out.println("BODY: " + ctx.body());
+      JSONObject req = new JSONObject(ctx.body());
+      JSONObject res = new JSONObject();
+      String username = req.getString("username");
+      String password = req.getString("password");
 
-        JSONObject req = new JSONObject(ctx.body());
-        JSONObject res = new JSONObject();
-        String username = req.getString("username");
-        String password = req.getString("password");
+      res.put("userRole", "");
+      res.put("organization", "");
+      res.put("firstName", "");
+      res.put("lastName", "");
 
-        res.put("userRole", "");
-        res.put("organization", "");
-        res.put("firstName", "");
-        res.put("lastName", "");
+      if (!ValidationUtils.isValidUsername(username)
+          || !ValidationUtils.isValidPassword(password)) {
+        res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
+        ctx.json(res.toString());
+        return;
+      }
 
-        if (!ValidationUtils.isValidUsername(username)
-            || !ValidationUtils.isValidPassword(password)) {
-          res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
-          ctx.json(res.toString());
-          return;
-        }
+      MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      User user = userCollection.find(eq("username", username)).first();
+      if (user == null) {
+        res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
+        ctx.json(res.toString());
+        return;
+      }
 
-        Argon2 argon2 = Argon2Factory.create();
-        char[] passwordArr = password.toCharArray();
-        try {
-          MongoCollection<User> userCollection = db.getCollection("user", User.class);
-          User user = userCollection.find(eq("username", username)).first();
-          if (user == null) { // Prevent Brute Force Attack
-            res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
-            ctx.json(res.toString());
-            argon2.wipeArray(passwordArr);
-            return;
-          }
-          String hash = user.getPassword();
-          if (argon2.verify(hash, passwordArr)) { // Hash matches password
+      SecurityUtils.PassHashEnum verifyPasswordStatus =
+          securityUtils.verifyPassword(password, user.getPassword());
 
-            UserType userLevel = user.getUserType();
-            Boolean twoFactorOn = user.getTwoFactorOn();
+      if (verifyPasswordStatus == SecurityUtils.PassHashEnum.ERROR) {
+        res.put("status", UserMessage.HASH_FAILURE.getErrorName());
+        ctx.json(res.toString());
+      } else if (verifyPasswordStatus == SecurityUtils.PassHashEnum.FAILURE) {
+        res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
+        ctx.json(res.toString());
+        return;
+      }
 
-            if (twoFactorOn
-                && (userLevel == UserType.Director
-                    || userLevel == UserType.Admin
-                    || userLevel == UserType.Worker)) {
+      UserType userLevel = user.getUserType();
+      Boolean twoFactorOn = user.getTwoFactorOn();
 
-              String randCode = String.format("%06d", new Random().nextInt(999999));
-              long nowMillis = System.currentTimeMillis();
-              long expMillis = 300000;
-              Date expDate = new Date(nowMillis + expMillis);
-              String emailContent = AccountSecurityController.getVerificationCodeEmail(randCode);
-              Thread emailThread =
-                  new Thread(
-                      () -> {
-                        try {
-                          EmailUtil.sendEmail(
-                              "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
+      if (twoFactorOn
+          && (userLevel == UserType.Director
+              || userLevel == UserType.Admin
+              || userLevel == UserType.Worker)) {
 
-                          MongoCollection<Tokens> tokenCollection =
-                              db.getCollection("tokens", Tokens.class);
-                          tokenCollection.replaceOne(
-                              eq("username", username),
-                              new Tokens()
-                                  .setUsername(username)
-                                  .setTwoFactorCode(randCode)
-                                  .setTwoFactorExp(expDate),
-                              new ReplaceOptions().upsert(true));
-                        } catch (UnsupportedEncodingException e) {
-                          e.printStackTrace();
-                          JSONObject serverErrorJSON =
-                              UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding");
-                          ctx.json(
-                              res.put("status", serverErrorJSON.getString("status")).toString());
-                          return;
-                        }
-                      });
-              emailThread.start();
+        String randCode = String.format("%06d", new Random().nextInt(999999));
+        long nowMillis = System.currentTimeMillis();
+        long expMillis = 300000;
+        Date expDate = new Date(nowMillis + expMillis);
+        String emailContent = emailUtil.getVerificationCodeEmail(randCode);
+        Thread emailThread =
+            new Thread(
+                () -> {
+                  try {
+                    emailUtil.sendEmail(
+                        "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
-              res.put("status", UserMessage.TOKEN_ISSUED.getErrorName());
-              res.put("userRole", user.getUserType());
-              res.put("organization", user.getOrganization());
-              res.put("firstName", user.getFirstName());
-              res.put("lastName", user.getLastName());
-              res.put("twoFactorOn", twoFactorOn);
-              ctx.json(res.toString());
-              return;
-            }
+                    MongoCollection<Tokens> tokenCollection =
+                        db.getCollection("tokens", Tokens.class);
+                    tokenCollection.replaceOne(
+                        eq("username", username),
+                        new Tokens()
+                            .setUsername(username)
+                            .setTwoFactorCode(randCode)
+                            .setTwoFactorExp(expDate),
+                        new ReplaceOptions().upsert(true));
+                  } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    JSONObject serverErrorJSON =
+                        UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding");
+                    ctx.json(res.put("status", serverErrorJSON.getString("status")).toString());
+                    return;
+                  }
+                });
+        emailThread.start();
 
-            ctx.sessionAttribute("privilegeLevel", user.getUserType());
-            ctx.sessionAttribute("orgName", user.getOrganization());
-            ctx.sessionAttribute("username", username);
+        res.put("status", UserMessage.TOKEN_ISSUED.getErrorName());
+        res.put("userRole", user.getUserType());
+        res.put("organization", user.getOrganization());
+        res.put("firstName", user.getFirstName());
+        res.put("lastName", user.getLastName());
+        res.put("twoFactorOn", twoFactorOn);
+        ctx.json(res.toString());
+        return;
+      }
 
-            res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
-            res.put("userRole", user.getUserType());
-            res.put("organization", user.getOrganization());
-            res.put("firstName", user.getFirstName());
-            res.put("lastName", user.getLastName());
-            res.put("twoFactorOn", twoFactorOn);
-            ctx.json(res.toString());
-          } else { // Hash doesn't match password
-            res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
-            ctx.json(res.toString());
-          }
-        } catch (Exception e) { // catch exceptions
-          e.printStackTrace();
-          res.put("status", UserMessage.HASH_FAILURE.getErrorName());
-          ctx.json(res.toString());
-        } finally {
-          argon2.wipeArray(passwordArr); // Wipe confidential data from cache
-        }
-      };
+      ctx.sessionAttribute("privilegeLevel", user.getUserType());
+      ctx.sessionAttribute("orgName", user.getOrganization());
+      ctx.sessionAttribute("username", username);
+
+      res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
+      res.put("userRole", user.getUserType());
+      res.put("organization", user.getOrganization());
+      res.put("firstName", user.getFirstName());
+      res.put("lastName", user.getLastName());
+      res.put("twoFactorOn", twoFactorOn);
+      ctx.json(res.toString());
+    };
+  }
 
   public Handler generateUniqueUsername =
       ctx -> {
@@ -217,98 +208,94 @@ public class UserController {
         }
       };
 
-  public Handler createNewUser =
-      ctx -> {
-        JSONObject req = new JSONObject(ctx.body());
+  public Handler createNewUser(SecurityUtils securityUtils) {
+    return ctx -> {
+      JSONObject req = new JSONObject(ctx.body());
 
-        UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
-        String organizationName = ctx.sessionAttribute("orgName");
+      UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
+      String organizationName = ctx.sessionAttribute("orgName");
 
-        if (sessionUserLevel == null) {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
-          return;
-        }
+      if (sessionUserLevel == null) {
+        ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
+        return;
+      }
 
-        String firstName = req.getString("firstname").toUpperCase().strip();
-        String lastName = req.getString("lastname").toUpperCase().strip();
-        String birthDate = req.getString("birthDate").strip();
-        String email = req.getString("email").toLowerCase().strip();
-        String phone = req.getString("phonenumber").strip();
-        String address = req.getString("address").toUpperCase().strip();
-        String city = req.getString("city").toUpperCase().strip();
-        String state = req.getString("state").toUpperCase().strip();
-        String zipcode = req.getString("zipcode").strip();
-        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
-        String username = req.getString("username").strip();
-        String password = req.getString("password").strip();
-        String userTypeString = req.getString("personRole").strip();
-        UserType userType = UserType.userTypeFromString(userTypeString);
+      String firstName = req.getString("firstname").toUpperCase().strip();
+      String lastName = req.getString("lastname").toUpperCase().strip();
+      String birthDate = req.getString("birthDate").strip();
+      String email = req.getString("email").toLowerCase().strip();
+      String phone = req.getString("phonenumber").strip();
+      String address = req.getString("address").toUpperCase().strip();
+      String city = req.getString("city").toUpperCase().strip();
+      String state = req.getString("state").toUpperCase().strip();
+      String zipcode = req.getString("zipcode").strip();
+      Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+      String username = req.getString("username").strip();
+      String password = req.getString("password").strip();
+      String userTypeString = req.getString("personRole").strip();
+      UserType userType = UserType.userTypeFromString(userTypeString);
 
-        if (userType == null) {
-          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
-          return;
-        }
+      if (userType == null) {
+        ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
+        return;
+      }
 
-        User user;
-        try {
-          user =
-              new User(
-                  firstName,
-                  lastName,
-                  birthDate,
-                  email,
-                  phone,
-                  organizationName,
-                  address,
-                  city,
-                  state,
-                  zipcode,
-                  twoFactorOn,
-                  username,
-                  password,
-                  userType);
-        } catch (ValidationException ve) {
-          ctx.json(ve.getJSON().toString());
-          return;
-        }
+      User user;
+      try {
+        user =
+            new User(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                organizationName,
+                address,
+                city,
+                state,
+                zipcode,
+                twoFactorOn,
+                username,
+                password,
+                userType);
+      } catch (ValidationException ve) {
+        ctx.json(ve.getJSON().toString());
+        return;
+      }
 
-        if ((user.getUserType() == UserType.Director
-                || user.getUserType() == UserType.Admin
-                || user.getUserType() == UserType.Worker)
-            && sessionUserLevel != UserType.Admin
-            && sessionUserLevel != UserType.Director) {
-          ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON().toString());
-          return;
-        }
+      if ((user.getUserType() == UserType.Director
+              || user.getUserType() == UserType.Admin
+              || user.getUserType() == UserType.Worker)
+          && sessionUserLevel != UserType.Admin
+          && sessionUserLevel != UserType.Director) {
+        ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON().toString());
+        return;
+      }
 
-        if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
-          ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON().toString());
-          return;
-        }
+      if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
+        ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON().toString());
+        return;
+      }
 
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User existingUser = userCollection.find(eq("username", user.getUsername())).first();
+      MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
-        if (existingUser != null) {
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
-        } else {
-          Argon2 argon2 = Argon2Factory.create();
-          char[] passwordArr = user.getPassword().toCharArray();
-          String passwordHash;
-          try {
-            passwordHash = argon2.hash(10, 65536, 1, passwordArr);
-            argon2.wipeArray(passwordArr);
-          } catch (Exception e) {
-            argon2.wipeArray(passwordArr);
-            ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
-            return;
-          }
+      if (existingUser != null) {
+        ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
+        return;
+      }
 
-          user.setPassword(passwordHash);
-          userCollection.insertOne(user);
-          ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
-        }
-      };
+      String hash = securityUtils.hashPassword(password);
+      if (hash == null) {
+        ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
+        return;
+      }
+
+      user.setPassword(hash);
+      userCollection.insertOne(user);
+      ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
+    };
+  }
 
   public Handler logout =
       ctx -> {
