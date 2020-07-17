@@ -7,7 +7,7 @@ import SignaturePad from '../../lib/react-typescript-signature-pad';
 import Role from '../../static/Role';
 import USStates from '../../static/data/states_titlecase.json';
 import getServerURL from '../../serverOverride';
-import EULA_PDF from '../../static/eula-template.pdf';
+import EULA_PDF from '../../static/EULA.pdf';
 
 interface Props {
   personRole: Role,
