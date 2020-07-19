@@ -38,6 +38,17 @@ public class EmailUtil {
           + File.separator
           + "passwordResetLinkEmail.html";
 
+  private static String organizationInviteEmailPath =
+      Paths.get("").toAbsolutePath().toString()
+          + File.separator
+          + "src"
+          + File.separator
+          + "main"
+          + File.separator
+          + "Security"
+          + File.separator
+          + "organizationInviteEmail.html";
+
   public void sendEmail(String senderName, String recipientEmail, String subject, String message)
       throws UnsupportedEncodingException {
 
@@ -98,6 +109,24 @@ public class EmailUtil {
       Document htmlDoc = Jsoup.parse(passwordResetEmail, "UTF-8");
       Element targetElement = htmlDoc.getElementById("hrefTarget");
       targetElement.attr("href", jwt);
+      return htmlDoc.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public String getOrganizationInviteEmail(String jwt, String inviter, String receiver) {
+    File organizationInviteEmail = new File(organizationInviteEmailPath);
+    try {
+      Document htmlDoc = Jsoup.parse(organizationInviteEmail, "UTF-8");
+      Element targetLink = htmlDoc.getElementById("hrefTarget");
+      targetLink.attr("href", jwt);
+      Element targetName = htmlDoc.getElementById("targetName");
+      targetName.text(receiver);
+      Element inviterName = htmlDoc.getElementById("inviterName");
+      inviterName.text(inviter);
+
       return htmlDoc.toString();
     } catch (IOException e) {
       e.printStackTrace();
