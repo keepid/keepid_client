@@ -179,8 +179,6 @@ public class OrganizationController {
       String sender = req.getString("senderName");
 
       for (int i = 0; i < people.length(); i++) {
-        // looping through data array
-        // Create JWT, send email (Adding token) userCollection.insertOne(user);
         JSONObject currInvite = people.getJSONObject(i);
 
         String email = currInvite.getString("email");
@@ -215,14 +213,11 @@ public class OrganizationController {
 
         String emailJWT =
             emailUtil.getOrganizationInviteEmail(
-                "https://keep.id/invite-user/" + jwt, sender, firstName + lastName);
+                "https://keep.id/invite-user/" + jwt, sender, firstName + " " + lastName);
         emailUtil.sendEmail(
             "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
-
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
-
-        // create new jwt generator for non-existing users createOrgJWT
       }
+      ctx.json(UserMessage.SUCCESS.toJSON().toString());
     };
   }
 }
