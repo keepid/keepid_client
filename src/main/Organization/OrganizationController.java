@@ -213,7 +213,9 @@ public class OrganizationController {
             securityUtils.createOrgJWT(
                 id, sender, firstName, lastName, role, "Invite User to Org", expirationTime);
 
-        String emailJWT = emailUtil.inviteOrgUsersEmail("https://keep.id/invite-user/" + jwt);
+        String emailJWT =
+            emailUtil.getOrganizationInviteEmail(
+                "https://keep.id/invite-user/" + jwt, sender, firstName + lastName);
         emailUtil.sendEmail(
             "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
 
