@@ -45,7 +45,7 @@
     <orderEntry type="library" name="Maven: de.mkammerer:argon2-jvm:2.6" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli:0.2.0" level="project" />
-    <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli-darwin-x86-amd64:0.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli-win32-x86-amd64:0.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.auth0:java-jwt:3.8.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: commons-codec:commons-codec:1.12" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20180813" level="project" />

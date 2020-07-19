@@ -81,6 +81,8 @@ public class App {
     app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization(securityUtils));
 
+    app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
+
     /* -------------- ACCOUNT SETTINGS ------------------ */
     app.post(
         "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
