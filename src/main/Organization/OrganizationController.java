@@ -161,12 +161,12 @@ public class OrganizationController {
 
   /*  Invite users through email under an organization with a JSON Object formatted as:
       {“senderName”: “senderName”,
-               data: [
+             "data": [
                       {
                           “firstName”:”exampleFirstName”,
                           “lastName”:”exampleLastName”,
-                          “email”:”exampleEmail”,
-                          “role”: “Worker”,
+                          “email”:”exampleEmail@gmail.com”,
+                          “role”: “Worker”
                       }
          ]
       }
