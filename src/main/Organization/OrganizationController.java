@@ -1,5 +1,6 @@
 package Organization;
 
+import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
@@ -8,7 +9,11 @@ import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -150,6 +155,71 @@ public class OrganizationController {
 
         orgCollection.insertOne(org);
         ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON().toString());
+      }
+    };
+  }
+
+  /*  Invite users through email under an organization with a JSON Object formatted as:
+      {“senderName”: “senderName”,
+               data: [
+                      {
+                          “firstName”:”exampleFirstName”,
+                          “lastName”:”exampleLastName”,
+                          “email”:”exampleEmail”,
+                          “role”: “Worker”,
+                      }
+         ]
+      }
+  */
+  public Handler inviteUsers(SecurityUtils securityUtils, EmailUtil emailUtil) {
+    return ctx -> {
+      JSONObject req = new JSONObject(ctx.body());
+      JSONArray people = req.getJSONArray("data");
+
+      String sender = req.getString("senderName");
+
+      for (int i = 0; i < people.length(); i++) {
+        // looping through data array
+        // Create JWT, send email (Adding token) userCollection.insertOne(user);
+        JSONObject currInvite = people.getJSONObject(i);
+
+        String email = currInvite.getString("email");
+        String firstName = currInvite.getString("firstName");
+        String lastName = currInvite.getString("lastName");
+        String role = currInvite.getString("role");
+
+        // Include checks for empty entries, could potentially include different error messages for
+        // each field.
+        if (email == null) {
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+        if (firstName == null) {
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+        if (lastName == null) {
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+        if (role == null) {
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+
+        String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
+        int expirationTime = 604800000; // 7 days
+        String jwt =
+            securityUtils.createOrgJWT(
+                id, sender, firstName, lastName, role, "Invite User to Org", expirationTime);
+
+        String emailJWT = emailUtil.inviteOrgUsersEmail("https://keep.id/invite-user/" + jwt);
+        emailUtil.sendEmail(
+            "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
+
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
+
+        // create new jwt generator for non-existing users createOrgJWT
       }
     };
   }
