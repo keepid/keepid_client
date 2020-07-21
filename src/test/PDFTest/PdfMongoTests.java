@@ -49,6 +49,13 @@ public class PdfMongoTests {
   }
 
   @Test
+  public void uploadValidPDFFormTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    uploadTestFormPDF();
+    TestUtils.logout();
+  }
+
+  @Test
   public void uploadValidPDFTestExists() {
     TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
@@ -105,6 +112,29 @@ public class PdfMongoTests {
             .asString();
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void uploadTestFormPDF() {
+    File examplePDF =
+        new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
+    HttpResponse<String> uploadResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/upload")
+            .field("pdfType", "FORM")
+            .header("Content-Disposition", "attachment")
+            .field("file", examplePDF)
+            .asString();
+    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+    assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    JSONObject body = new JSONObject();
+    body.put("pdfType", "FORM");
+    body.put("annotated", false);
+    HttpResponse<String> getForm =
+        Unirest.post(TestUtils.getServerUrl() + "/get-documents").body(body.toString()).asString();
+    JSONObject getFormJSON = TestUtils.responseStringToJSON(getForm.getBody());
+    // check that form has annotated = false in DB
+    assertThat(getFormJSON.getJSONArray("documents").getJSONObject(0).getBoolean("annotated"))
+        .isEqualTo(false);
   }
 
   public static JSONObject searchTestPDF() {

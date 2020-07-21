@@ -48,6 +48,20 @@ public class PdfMongo {
       PDFType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+    if (pdfType == PDFType.FORM) {
+      GridFSUploadOptions options =
+          new GridFSUploadOptions()
+              .chunkSizeBytes(100000)
+              .metadata(
+                  new Document("type", "pdf")
+                      .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("annotated", false)
+                      .append("uploader", uploader)
+                      .append("organizationName", organizationName));
+      gridBucket.uploadFromStream(filename, inputStream, options);
+      return;
+    }
+
     GridFSUploadOptions options =
         new GridFSUploadOptions()
             .chunkSizeBytes(100000)
@@ -64,6 +78,7 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       PDFType pdfType,
+      boolean annotated,
       MongoDatabase db) {
     JSONObject res;
     try {
@@ -83,7 +98,10 @@ public class PdfMongo {
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.FORM) {
-        filter = Filters.eq("metadata.organizationName", organizationName);
+        filter =
+            Filters.and(
+                Filters.eq("metadata.organizationName", organizationName),
+                Filters.eq("metadata.annotated", annotated));
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
@@ -97,18 +115,58 @@ public class PdfMongo {
     return res;
   }
 
+  public static JSONObject getAllUnannotatedForms(
+      String uploader,
+      String organizationName,
+      UserType privilegeLevel,
+      PDFType pdfType,
+      MongoDatabase db) {
+    JSONObject res;
+    try {
+      Bson filter;
+      JSONArray files;
+      // where does this annotated come from? the context?
+      // filter = Filters.eq("metadata.organizationName", organizationName);
+      filter =
+          Filters.and(
+              Filters.eq("metadata.organizationName", organizationName),
+              Filters.eq("metadata.annotated", false));
+      files = mongodbGetAllFiles(filter, pdfType, db);
+      res = PdfMessage.SUCCESS.toJSON();
+      res.put("documents", files);
+    } catch (Exception e) {
+      System.out.println(e.toString());
+      res = PdfMessage.INVALID_PARAMETER.toJSON();
+    }
+    return res;
+  }
+
   private static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    for (GridFSFile grid_out : gridBucket.find(filter)) {
-      assert grid_out.getMetadata() != null;
-      files.put(
-          new JSONObject()
-              .put("filename", grid_out.getFilename())
-              .put("uploader", grid_out.getMetadata().getString("uploader"))
-              .put("organizationName", grid_out.getMetadata().getString("organizationName"))
-              .put("id", grid_out.getId().asObjectId().getValue().toString())
-              .put("uploadDate", grid_out.getUploadDate().toString()));
+    if (pdfType.equals(PDFType.FORM)) {
+      for (GridFSFile grid_out : gridBucket.find(filter)) {
+        assert grid_out.getMetadata() != null;
+        files.put(
+            new JSONObject()
+                .put("filename", grid_out.getFilename())
+                .put("annotated", grid_out.getMetadata().getBoolean("annotated"))
+                .put("uploader", grid_out.getMetadata().getString("uploader"))
+                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
+                .put("id", grid_out.getId().asObjectId().getValue().toString())
+                .put("uploadDate", grid_out.getUploadDate().toString()));
+      }
+    } else {
+      for (GridFSFile grid_out : gridBucket.find(filter)) {
+        assert grid_out.getMetadata() != null;
+        files.put(
+            new JSONObject()
+                .put("filename", grid_out.getFilename())
+                .put("uploader", grid_out.getMetadata().getString("uploader"))
+                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
+                .put("id", grid_out.getId().asObjectId().getValue().toString())
+                .put("uploadDate", grid_out.getUploadDate().toString()));
+      }
     }
     return files;
   }

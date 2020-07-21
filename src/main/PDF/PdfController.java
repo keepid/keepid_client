@@ -10,24 +10,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.LinkedList;
-import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -91,6 +74,7 @@ public class PdfController {
           }
         }
       };
+
   public Handler pdfGetAll =
       ctx -> {
         String user = ctx.sessionAttribute("username");
@@ -102,8 +86,13 @@ public class PdfController {
 
         if (pdfType == null) {
           res.put("status", "Invalid PDFType");
+        } else if (pdfType == PDFType.FORM) {
+          boolean getUnannotatedForms = req.getBoolean("annotated");
+          res =
+              PdfMongo.getAllFiles(
+                  user, organizationName, privilegeLevel, pdfType, getUnannotatedForms, db);
         } else {
-          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, db);
+          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, false, db);
         }
         ctx.json(res.toString());
       };
