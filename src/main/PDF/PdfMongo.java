@@ -23,6 +23,7 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       String filename,
+      ObjectId fileID,
       PDFType pdfType,
       InputStream inputStream,
       MongoDatabase db) {
@@ -33,7 +34,12 @@ public class PdfMongo {
             || privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Admin)) {
-      mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
+      if ((pdfType == PDFType.FORM) && (fileID != null)) {
+        return mongodbUploadAnnotatedForm(
+            uploader, organizationName, filename, fileID, inputStream, pdfType, db);
+      } else {
+        mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
+      }
     } else {
       return PdfMessage.INSUFFICIENT_PRIVILEGE.toJSON();
     }
@@ -48,6 +54,7 @@ public class PdfMongo {
       PDFType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+
     if (pdfType == PDFType.FORM) {
       GridFSUploadOptions options =
           new GridFSUploadOptions()
@@ -61,7 +68,6 @@ public class PdfMongo {
       gridBucket.uploadFromStream(filename, inputStream, options);
       return;
     }
-
     GridFSUploadOptions options =
         new GridFSUploadOptions()
             .chunkSizeBytes(100000)
@@ -71,6 +77,37 @@ public class PdfMongo {
                     .append("uploader", uploader)
                     .append("organizationName", organizationName));
     gridBucket.uploadFromStream(filename, inputStream, options);
+  }
+
+  private static JSONObject mongodbUploadAnnotatedForm(
+      String uploader,
+      String organizationName,
+      String filename,
+      ObjectId fileID,
+      InputStream inputStream,
+      PDFType pdfType,
+      MongoDatabase db) {
+    GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+    GridFSFile grid_out = gridBucket.find(Filters.eq("_id", fileID)).first();
+
+    if (grid_out == null || grid_out.getMetadata() == null) {
+      return PdfMessage.NO_SUCH_FILE.toJSON();
+    }
+    if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
+      gridBucket.delete(fileID);
+    }
+
+    GridFSUploadOptions options =
+        new GridFSUploadOptions()
+            .chunkSizeBytes(100000)
+            .metadata(
+                new Document("type", "pdf")
+                    .append("upload_date", String.valueOf(LocalDate.now()))
+                    .append("annotated", true)
+                    .append("uploader", uploader)
+                    .append("organizationName", organizationName));
+    gridBucket.uploadFromStream(filename, inputStream, options);
+    return PdfMessage.SUCCESS.toJSON();
   }
 
   public static JSONObject getAllFiles(
@@ -108,32 +145,6 @@ public class PdfMongo {
       } else {
         res = PdfMessage.INSUFFICIENT_PRIVILEGE.toJSON();
       }
-    } catch (Exception e) {
-      System.out.println(e.toString());
-      res = PdfMessage.INVALID_PARAMETER.toJSON();
-    }
-    return res;
-  }
-
-  public static JSONObject getAllUnannotatedForms(
-      String uploader,
-      String organizationName,
-      UserType privilegeLevel,
-      PDFType pdfType,
-      MongoDatabase db) {
-    JSONObject res;
-    try {
-      Bson filter;
-      JSONArray files;
-      // where does this annotated come from? the context?
-      // filter = Filters.eq("metadata.organizationName", organizationName);
-      filter =
-          Filters.and(
-              Filters.eq("metadata.organizationName", organizationName),
-              Filters.eq("metadata.annotated", false));
-      files = mongodbGetAllFiles(filter, pdfType, db);
-      res = PdfMessage.SUCCESS.toJSON();
-      res.put("documents", files);
     } catch (Exception e) {
       System.out.println(e.toString());
       res = PdfMessage.INVALID_PARAMETER.toJSON();

@@ -104,19 +104,28 @@ public class PdfController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         UploadedFile file = ctx.uploadedFile("file");
         PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+        String fileIDStr = ctx.formParam("fileId");
         JSONObject res;
+        ObjectId fileID;
+
         if (pdfType == null) {
           res = PdfMessage.INVALID_PDF_TYPE.toJSON();
         } else if (file == null) {
           res = PdfMessage.INVALID_PDF.toJSON();
         } else if (file.getContentType().equals("application/pdf")
             || (file.getContentType().equals("application/octet-stream"))) {
+          if (fileIDStr != null) {
+            fileID = new ObjectId(fileIDStr);
+          } else {
+            fileID = null;
+          }
           res =
               PdfMongo.upload(
                   username,
                   organizationName,
                   privilegeLevel,
                   file.getFilename(),
+                  fileID,
                   pdfType,
                   file.getContent(),
                   this.db);
