@@ -221,9 +221,10 @@ public class OrganizationController {
             securityUtils.createOrgJWT(
                 id, sender, firstName, lastName, role, "Invite User to Org", expirationTime);
 
+        // NEED TO UPDATE URL IN JWT TO ORG INVITE WEBSITE
         String emailJWT =
             emailUtil.getOrganizationInviteEmail(
-                "https://keep.id/invite-user/" + jwt, sender, firstName + " " + lastName);
+                "https://keep.id/FILL_PATH_HERE/" + jwt, sender, firstName + " " + lastName);
         emailUtil.sendEmail(
             "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
       }

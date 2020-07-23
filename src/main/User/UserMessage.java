@@ -19,7 +19,7 @@ public enum UserMessage {
   INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),
   SUCCESS("SUCCESS:Success."),
   TOKEN_ISSUED("TOKEN_ISSUED:Token issued."),
-  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty");
+  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty.");
 
   private String errorMessage;
 
