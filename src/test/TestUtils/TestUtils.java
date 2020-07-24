@@ -652,6 +652,7 @@ public class TestUtils {
     app.post("/get-documents", pdfController.pdfGetAll);
     app.post("/logout", userController.logout);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
+    app.post("/get-questions", pdfController.getApplicationQuestions);
   }
 
   public static void stopServer() {

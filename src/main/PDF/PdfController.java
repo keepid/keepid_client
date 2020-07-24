@@ -34,6 +34,7 @@ public class PdfController {
               "ListBox",
               "TextField",
               "SignatureField"));
+
   public Handler pdfDelete =
       ctx -> {
         String user = ctx.sessionAttribute("username");
@@ -112,8 +113,7 @@ public class PdfController {
           res = PdfMessage.INVALID_PDF_TYPE.toJSON();
         } else if (file == null) {
           res = PdfMessage.INVALID_PDF.toJSON();
-        } else if (file.getContentType().equals("application/pdf")
-            || (file.getContentType().equals("application/octet-stream"))) {
+        } else if (file.getExtension().equals(".pdf")) {
           if (fileIDStr != null) {
             fileID = new ObjectId(fileIDStr);
           } else {
@@ -152,7 +152,9 @@ public class PdfController {
         getFieldInformation(pdfDocument, fieldsJSON);
         pdfDocument.close();
 
-        ctx.json(fieldsJSON);
+        JSONObject allFields = PdfMessage.SUCCESS.toJSON();
+        allFields.put("fields", fieldsJSON);
+        ctx.json(allFields.toString());
       };
 
   /*
@@ -208,7 +210,7 @@ public class PdfController {
         // Not Editable
         fieldJSON.put("fieldName", field.getFullyQualifiedName());
         fieldJSON.put("fieldType", fieldType);
-        fieldJSON.put("fieldValueOptions", fieldValueOptions);
+        fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
 
         // Editable
         fieldJSON.put("fieldQuestion", "Please Enter Your " + field.getPartialName());
