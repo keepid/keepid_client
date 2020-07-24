@@ -60,7 +60,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -88,7 +88,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -116,7 +116,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -161,7 +161,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -193,7 +194,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -225,7 +227,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -260,7 +263,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -287,12 +291,15 @@ public class PDFApplicationUnitTests {
     while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
       JSONObject field = testFieldsJSONIterator.next();
       JSONObject correctField = correctFieldIterator.next();
+      System.out.println(field.toString());
+      System.out.println(correctField.toString());
 
       // Change to equals for GSON
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -324,7 +331,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 
@@ -356,7 +364,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getString("fieldValueOptions"),
+          field.getJSONArray("fieldValueOptions").toString());
     }
   }
 }

@@ -162,6 +162,10 @@ public class PdfController {
   */
   public static void getFieldInformation(PDDocument pdfDocument, List<JSONObject> fieldsJSON) {
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    if (acroForm == null) {
+      // form with no fields
+      return;
+    }
     List<PDField> fields = acroForm.getFields();
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);

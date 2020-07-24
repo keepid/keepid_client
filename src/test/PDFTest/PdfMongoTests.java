@@ -336,6 +336,78 @@ public class PdfMongoTests {
   }
 
   @Test
+  public void getApplicationQuestionsMediaReleaseTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    // when running entire file, other documents interfere with retrieving the form.
+    reset();
+
+    File applicationPDF =
+        new File(resourcesFolderPath + File.separator + "Media_Release_fillable.pdf");
+    String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("applicationId", fileId);
+    HttpResponse<String> applicationsQuestionsResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-questions").body(body.toString()).asString();
+    JSONObject applicationsQuestionsResponseJSON =
+        TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
+
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    System.out.println(applicationsQuestionsResponseJSON.toString());
+
+    // comb through JSON for each field, to see if it is there.
+    LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
+    // each array has format {{fieldType}, {fieldName} {fieldValueOptions}}
+    String[][] street = {{"TextField"}, {"Production Title"}, {}};
+    fieldsToCheck.add(street);
+    checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
+  }
+
+  @Test
+  public void getApplicationQuestionsSS5Test() {
+    TestUtils.login("adminBSM", "adminBSM");
+    // when running entire file, other documents interfere with retrieving the form.
+    reset();
+
+    File applicationPDF = new File(resourcesFolderPath + File.separator + "ss-5.pdf");
+    String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("applicationId", fileId);
+    HttpResponse<String> applicationsQuestionsResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-questions").body(body.toString()).asString();
+    JSONObject applicationsQuestionsResponseJSON =
+        TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
+
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    System.out.println(applicationsQuestionsResponseJSON.toString());
+  }
+
+  @Test
+  public void getApplicationQuestionBlankPDFTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    // when running entire file, other documents interfere with retrieving the form.
+    reset();
+
+    File applicationDocx =
+        new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
+    String fileId = uploadFileAndGetFileId(applicationDocx, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("applicationId", fileId);
+    HttpResponse<String> applicationsQuestionsResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-questions").body(body.toString()).asString();
+    JSONObject applicationsQuestionsResponseJSON =
+        TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
+
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
+        .isEqualTo(new JSONArray().toString());
+  }
+
+  @Test
   public void fillApplicationQuestionsSimpleFormTest() {
     TestUtils.login("adminBSM", "adminBSM");
   }
