@@ -208,7 +208,7 @@ public class OrganizationController {
           ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
           return;
         }
-        if (ValidationUtils.isValidEmail(email)) {
+        if (!ValidationUtils.isValidEmail(email)) {
           ctx.json(
               EmailMessages.NOT_VALID_EMAIL
                   .toJSON(firstName + lastName + "'s email is not a valid address")

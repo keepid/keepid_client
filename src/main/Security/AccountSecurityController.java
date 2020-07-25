@@ -43,7 +43,7 @@ public class AccountSecurityController {
       if (emailAddress == null) {
         ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user.").toString());
       }
-      if (ValidationUtils.isValidEmail(emailAddress)) {
+      if (!ValidationUtils.isValidEmail(emailAddress)) {
         ctx.json(
             EmailMessages.NOT_VALID_EMAIL
                 .toJSON(
