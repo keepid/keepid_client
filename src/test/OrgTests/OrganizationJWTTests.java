@@ -117,7 +117,7 @@ public class OrganizationJWTTests {
     secUser.put("firstName", "Toph");
     secUser.put("lastName", "Beifong");
     secUser.put("email", "TophRocks@exampleCompany.com");
-    secUser.put("role", "MetalBender");
+    secUser.put("role", "Admin");
 
     dataArray.put(firstUser);
     dataArray.put(secUser);
