@@ -43,7 +43,14 @@ public class AccountSecurityController {
       if (emailAddress == null) {
         ctx.json(UserMessage.SERVER_ERROR.toJSON("Email not found for this user.").toString());
       }
-
+      if (ValidationUtils.isValidEmail(emailAddress)) {
+        ctx.json(
+            EmailMessages.NOT_VALID_EMAIL
+                .toJSON(
+                    user.getFirstName() + user.getLastName() + "'s email is not a valid address")
+                .toString());
+        return;
+      }
       String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
       int expirationTime = 7200000; // 2 hours
       String jwt =
@@ -55,8 +62,12 @@ public class AccountSecurityController {
           eq("username", username),
           new Tokens().setUsername(username).setResetJwt(jwt),
           new ReplaceOptions().upsert(true));
-      String emailJWT = emailUtil.getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
-      emailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
+      try {
+        String emailJWT = emailUtil.getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
+        emailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);
+      } catch (EmailExceptions e) {
+        ctx.json(e.toJSON().toString());
+      }
 
       ctx.json(UserMessage.SUCCESS.toJSON().toString());
     };

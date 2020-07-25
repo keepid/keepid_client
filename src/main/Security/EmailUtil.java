@@ -8,6 +8,7 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
@@ -90,44 +91,70 @@ public class EmailUtil {
     }
   }
 
-  public String getVerificationCodeEmail(String verificationCode) {
+  public String getVerificationCodeEmail(String verificationCode) throws EmailExceptions {
     File verificationCodeEmail = new File(verificationCodeEmailPath);
     try {
       Document htmlDoc = Jsoup.parse(verificationCodeEmail, "UTF-8");
       Element targetElement = htmlDoc.getElementById("targetVerificationCode");
-      targetElement.text(verificationCode);
+      if (targetElement != null) {
+        targetElement.text(verificationCode);
+      } else {
+        throw new EmailExceptions(EmailMessages.CODE_DOM_NOT_FOUND);
+      }
       return htmlDoc.toString();
+    } catch (FileNotFoundException e) {
+      throw new EmailExceptions(EmailMessages.HTML_NOT_FOUND);
     } catch (IOException e) {
       e.printStackTrace();
     }
     return null;
   }
 
-  public String getPasswordResetEmail(String jwt) {
+  public String getPasswordResetEmail(String jwt) throws EmailExceptions {
     File passwordResetEmail = new File(passwordResetLinkEmailPath);
     try {
       Document htmlDoc = Jsoup.parse(passwordResetEmail, "UTF-8");
       Element targetElement = htmlDoc.getElementById("hrefTarget");
-      targetElement.attr("href", jwt);
+      if (targetElement != null) {
+        targetElement.attr("href", jwt);
+      } else {
+        throw new EmailExceptions(EmailMessages.EMAIL_DOM_NOT_FOUND);
+      }
       return htmlDoc.toString();
+    } catch (FileNotFoundException e) {
+      throw new EmailExceptions(EmailMessages.HTML_NOT_FOUND);
     } catch (IOException e) {
       e.printStackTrace();
     }
     return null;
   }
 
-  public String getOrganizationInviteEmail(String jwt, String inviter, String receiver) {
-    File organizationInviteEmail = new File(organizationInviteEmailPath);
+  public String getOrganizationInviteEmail(String jwt, String inviter, String receiver)
+      throws EmailExceptions {
     try {
+      File organizationInviteEmail = new File(organizationInviteEmailPath);
       Document htmlDoc = Jsoup.parse(organizationInviteEmail, "UTF-8");
       Element targetLink = htmlDoc.getElementById("hrefTarget");
-      targetLink.attr("href", jwt);
+      if (targetLink != null) {
+        targetLink.attr("href", jwt);
+      } else {
+        throw new EmailExceptions(EmailMessages.EMAIL_DOM_NOT_FOUND);
+      }
       Element targetName = htmlDoc.getElementById("targetName");
-      targetName.text(receiver);
+      if (targetName != null) {
+        targetName.text(receiver);
+      } else {
+        throw new EmailExceptions(EmailMessages.RECEIVER_DOM_NOT_FOUND);
+      }
       Element inviterName = htmlDoc.getElementById("inviterName");
-      inviterName.text(inviter);
-
+      if (inviterName != null) {
+        inviterName.text(inviter);
+      } else {
+        throw new EmailExceptions(EmailMessages.INVITER_DOM_NOT_FOUND);
+      }
       return htmlDoc.toString();
+    } catch (FileNotFoundException e) {
+      throw new EmailExceptions(EmailMessages.HTML_NOT_FOUND);
     } catch (IOException e) {
       e.printStackTrace();
     }
