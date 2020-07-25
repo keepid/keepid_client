@@ -72,7 +72,7 @@ public class SecurityUtils {
       String subject,
       long ttlMillis)
       throws IOException {
-
+    // Using the PASSWORD_RESET_KEY for now
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // JWT signature algorithm to sign the token
