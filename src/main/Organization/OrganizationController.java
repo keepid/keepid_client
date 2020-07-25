@@ -213,6 +213,7 @@ public class OrganizationController {
               EmailMessages.NOT_VALID_EMAIL
                   .toJSON(firstName + lastName + "'s email is not a valid address")
                   .toString());
+          return;
         }
 
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
