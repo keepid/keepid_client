@@ -1,14 +1,12 @@
 package Organization;
 
 import Security.EmailExceptions;
-import Security.EmailMessages;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
@@ -181,50 +179,54 @@ public class OrganizationController {
 
       String sender = req.getString("senderName");
 
-      for (int i = 0; i < people.length(); i++) {
-        JSONObject currInvite = people.getJSONObject(i);
+      // Checking for any empty entries before sending out any emails
+      for (int u = 0; u < people.length(); u++) {
+        JSONObject currInvite = people.getJSONObject(u);
 
         String email = currInvite.getString("email");
-
         String firstName = currInvite.getString("firstName");
         String lastName = currInvite.getString("lastName");
         String role = currInvite.getString("role");
 
         // Include checks for empty entries, could potentially include different error messages for
         // each field.
-        if (email == null) {
+        if (email.isEmpty()) {
           ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
           return;
         }
-        if (firstName == null) {
+        if (firstName.isEmpty()) {
           ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
           return;
         }
-        if (lastName == null) {
+        if (lastName.isEmpty()) {
           ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
           return;
         }
-        if (role == null) {
+        if (role.isEmpty()) {
           ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
           return;
         }
-        if (!ValidationUtils.isValidEmail(email)) {
-          ctx.json(
-              EmailMessages.NOT_VALID_EMAIL
-                  .toJSON(firstName + lastName + "'s email is not a valid address")
-                  .toString());
-          return;
-        }
+      }
+
+      for (int i = 0; i < people.length(); i++) {
+        JSONObject currInvite = people.getJSONObject(i);
+
+        String email = currInvite.getString("email");
+        String firstName = currInvite.getString("firstName");
+        String lastName = currInvite.getString("lastName");
+        String role = currInvite.getString("role");
 
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 604800000; // 7 days
         String jwt =
             securityUtils.createOrgJWT(
                 id, sender, firstName, lastName, role, "Invite User to Org", expirationTime);
+
+        // NEED TO UPDATE URL IN JWT TO ORG INVITE WEBSITE
         try {
           String emailJWT =
               emailUtil.getOrganizationInviteEmail(
-                  "https://keep.id/invite-user/" + jwt, sender, firstName + " " + lastName);
+                  "https://keep.id/FILL_PATH_HERE/" + jwt, sender, firstName + " " + lastName);
           emailUtil.sendEmail(
               "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
         } catch (EmailExceptions e) {
