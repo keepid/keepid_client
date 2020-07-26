@@ -38,6 +38,7 @@ import DeveloperLanding from './components/LandingPages/DeveloperLanding';
 import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
+import EULA from './components/AboutUs/EULA';
 
 interface State {
   role: Role,
@@ -330,6 +331,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />
+              </Route>
+              <Route path="/eula">
+                <EULA />
               </Route>
               <Route path="/bug-report">
                 <BugReport />

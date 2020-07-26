@@ -38,7 +38,7 @@ class Home extends Component<Props, {}, {}> {
     return (
       <div className="">
         <Helmet>
-          <title>Login</title>
+          <title>Welcome</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
 

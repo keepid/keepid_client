@@ -492,7 +492,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
             <span>End User License Agreement</span>
           </p>
           <div className="embed-responsive embed-responsive-16by9">
-            <iframe className="embed-responsive-item" src="eula-template.pdf" title="EULA Agreement" />
+            <iframe className="embed-responsive-item" src="EULA.pdf" title="EULA Agreement" />
           </div>
         </div>
         <div className="row mt-5">
