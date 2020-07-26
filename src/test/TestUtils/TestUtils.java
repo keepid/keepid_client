@@ -653,6 +653,7 @@ public class TestUtils {
     app.post("/logout", userController.logout);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-questions", pdfController.getApplicationQuestions);
+    app.post("/fill-application", pdfController.fillPDFForm);
   }
 
   public static void stopServer() {

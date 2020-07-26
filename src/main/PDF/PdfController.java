@@ -257,19 +257,87 @@ public class PdfController {
         ctx.result(outputFileStream);
       };
 
-  public static void fillFields(PDDocument pdfDocument, JSONObject formAnswers) throws IOException {
+  public static void fillFields(PDDocument pdfDocument, JSONObject formAnswers)
+      throws IllegalArgumentException, IOException {
+    if (pdfDocument == null || formAnswers == null) {
+      throw new IllegalArgumentException();
+    }
+
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    if (acroForm == null) {
+      // if no fields present, exit method
+      return;
+    }
     for (String fieldName : formAnswers.keySet()) {
       System.out.println(fieldName);
       PDField field = acroForm.getField(fieldName);
-      if (field instanceof PDTextField) {
-        System.out.println(field.getPartialName());
-        String value = formAnswers.getString(fieldName);
-        field.setValue(value);
+      if (field instanceof PDButton) {
+        if (field instanceof PDCheckBox) {
+          PDCheckBox checkBoxField = (PDCheckBox) field;
+          boolean formAnswer = formAnswers.getBoolean(fieldName);
+          if (formAnswer) {
+            checkBoxField.check();
+          } else {
+            checkBoxField.unCheck();
+          }
+        } else if (field instanceof PDPushButton) {
+          // Do nothing. Maybe in the future make it clickable
+        } else if (field instanceof PDRadioButton) {
+
+          PDRadioButton radioButtonField = (PDRadioButton) field;
+          String formAnswer = formAnswers.getString(fieldName);
+          radioButtonField.setValue(formAnswer);
+        }
+      } else if (field instanceof PDVariableText) {
+        if (field instanceof PDChoice) {
+          if (field instanceof PDListBox) {
+            PDListBox comboBoxField = (PDListBox) field;
+            List<String> values = new LinkedList<>();
+
+            // Test that this throws an error when invalid values are passed
+            for (Object value : formAnswers.getJSONArray(fieldName)) {
+              String stringValue = (String) value;
+              values.add(stringValue);
+            }
+            comboBoxField.setValue(values);
+          } else if (field instanceof PDComboBox) {
+            PDComboBox listBoxField = (PDComboBox) field;
+            String formAnswer = formAnswers.getString(fieldName);
+            listBoxField.setValue(formAnswer);
+          }
+        } else if (field instanceof PDTextField) {
+          String value = formAnswers.getString(fieldName);
+          field.setValue(value);
+        }
+      } else if (field instanceof PDSignatureField) {
+        // Do nothing
       }
     }
   }
 
+  public static JSONObject getFieldValues(PDDocument pdfDocument) throws IOException {
+    JSONObject fieldValues = new JSONObject();
+    PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    if (acroForm == null) {
+      return fieldValues;
+    }
+
+    List<PDField> fields = acroForm.getFields();
+    while (!fields.isEmpty()) {
+      PDField field = fields.get(0);
+      if (field instanceof PDNonTerminalField) {
+        // If the field has children
+        List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
+        fields.addAll(childrenFields);
+      } else {
+        fieldValues.put(field.getFullyQualifiedName(), field.getValueAsString());
+      }
+
+      // Delete field just gotten so we do not infinite recurse
+      fields.remove(0);
+    }
+    return fieldValues;
+  }
   /*
   private String getFieldFullName(PDField field) {
     String fullName = field.getPartialName();

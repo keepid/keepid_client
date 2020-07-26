@@ -1,8 +1,11 @@
 package PDFTest;
 
+import PDF.PdfController;
 import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -10,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
@@ -122,11 +126,6 @@ public class PdfMongoTests {
     TestUtils.logout();
   }
 
-  // ALLOWS FOR .DOCX TO BE UPLOADED since it is an "octet-stream," but I think this happens for all
-  // files.
-  // What should be the behavior for upload? - we probably want to allow for different document
-  // types,
-  // so this test is likely not useful.
   @Test
   public void uploadDocxTest() {
     TestUtils.login("adminBSM", "adminBSM");
@@ -408,8 +407,110 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void fillApplicationQuestionsSimpleFormTest() {
+  public void fillApplicationQuestionsTestPDFTest() {
     TestUtils.login("adminBSM", "adminBSM");
+    reset();
+
+    File applicationPDF = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
+    String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("applicationId", fileId);
+    HttpResponse<String> applicationsQuestionsResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-questions").body(body.toString()).asString();
+    JSONObject applicationsQuestionsResponseJSON =
+        TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    System.out.println(applicationsQuestionsResponseJSON.toString());
+
+    JSONObject formAnswers = getFormAnswersTestPDFForm(applicationsQuestionsResponseJSON);
+    System.out.println(formAnswers.toString());
+
+    // fill out form
+    body = new JSONObject();
+    body.put("applicationId", fileId);
+    body.put("formAnswers", formAnswers);
+    HttpResponse<File> filledForm =
+        Unirest.post(TestUtils.getServerUrl() + "/fill-application")
+            .body(body.toString())
+            .asFile(resourcesFolderPath + File.separator + "testpdf_filled_out.pdf");
+    System.out.println(filledForm.getStatus());
+    assertThat(filledForm.getStatus()).isEqualTo(200);
+
+    // check if all fields are filled
+    JSONObject fieldValues = null;
+    try {
+      File filled_out_pdf =
+          new File(resourcesFolderPath + File.separator + "testpdf_filled_out.pdf");
+      PDDocument pdf = PDDocument.load(filled_out_pdf);
+      fieldValues = PdfController.getFieldValues(pdf);
+      System.out.println(fieldValues.toString());
+    } catch (IOException e) {
+      assertThat(false).isTrue();
+    }
+    assertThat(fieldValues).isNotNull();
+    checkFormAnswersTestPDFForm(fieldValues);
+  }
+
+  public static JSONObject getFormAnswersTestPDFForm(JSONObject responseJSON) {
+    JSONObject formAnswers = new JSONObject();
+    JSONArray fields = responseJSON.getJSONArray("fields");
+    for (int i = 0; i < fields.length(); i++) {
+      JSONObject field = fields.getJSONObject(i);
+      if (field.getString("fieldType").equals("TextField")) {
+        if (field.getString("fieldName").equals("currentdate_af_date")) {
+          formAnswers.put(field.getString("fieldName"), "7/14/20");
+        } else {
+          formAnswers.put(field.getString("fieldName"), "test");
+        }
+      } else if ((field.getString("fieldType").equals("CheckBox"))) {
+        if (field.getString("fieldName").equals("Ribeye Steaks")) {
+          formAnswers.put(field.getString("fieldName"), false);
+        } else {
+          formAnswers.put(field.getString("fieldName"), true);
+        }
+      } else if ((field.getString("fieldType").equals("PushButton"))) {
+        formAnswers.put(field.getString("fieldName"), true);
+      } else if ((field.getString("fieldType").equals("RadioButton"))) {
+        formAnswers.put(field.getString("fieldName"), "Yes");
+      } else if ((field.getString("fieldType").equals("ComboBox"))) {
+        formAnswers.put(field.getString("fieldName"), "Choice2");
+      } else if ((field.getString("fieldType").equals("ListBox"))) {
+        JSONArray l = new JSONArray();
+        l.put("Choice2");
+        formAnswers.put(field.getString("fieldName"), l);
+      } else if ((field.getString("fieldType").equals("SignatureField"))) {
+        formAnswers.put(field.getString("fieldName"), new PDSignature());
+      }
+    }
+    return formAnswers;
+  }
+
+  public static void checkFormAnswersTestPDFForm(JSONObject fieldValues) {
+    for (String s : fieldValues.keySet()) {
+      System.out.println(s);
+      String value = "";
+      if (s.equals("Signature") || s.equals("Submit")) {
+        value = "";
+      } else if (s.equals("Combobox") || s.equals("Dropdown")) {
+        value = "[Choice2]";
+      } else if (s.equals("Tomatoes")
+          || s.equals("Ribeye Steaks")
+          || s.equals("Chicken")
+          || s.equals("Vegetables")
+          || s.equals("Radiobuttons")) {
+        value = "Yes";
+        if (s.equals("Ribeye Steaks")) {
+          value = "Off";
+        }
+      } else if (s.equals("currentdate_af_date")) {
+        value = "7/14/20";
+      } else { // all text fields
+        value = "test";
+      }
+      assertThat(fieldValues.get(s)).isEqualTo(value);
+    }
   }
 
   public static String uploadFileAndGetFileId(File file, String pdfType) {
