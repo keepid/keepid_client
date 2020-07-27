@@ -35,6 +35,11 @@ public class PdfController {
               "TextField",
               "SignatureField"));
 
+  /*
+  REQUIRES JSON Body with:
+    - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
+    - "fileId": String giving id of file to be deleted
+  */
   public Handler pdfDelete =
       ctx -> {
         String user = ctx.sessionAttribute("username");
@@ -56,13 +61,18 @@ public class PdfController {
         ctx.json(res.toString());
       };
 
+  /*
+  REQUIRES JSON Body:
+    - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
+    - "fileId": String giving id of file to be downloaded
+  */
   public Handler pdfDownload =
       ctx -> {
         String user = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
-        String fileIDStr = req.getString("fileID");
+        String fileIDStr = req.getString("fileId");
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
         ObjectId fileID = new ObjectId(fileIDStr);
         if (pdfType == null) {
@@ -79,6 +89,13 @@ public class PdfController {
         }
       };
 
+  /*
+  REQUIRES JSON Body:
+    - Body
+      - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
+      - if "pdfType" is "FORM"
+        - "annotated": boolean for retrieving EITHER annotated forms OR unannotated forms
+  */
   public Handler pdfGetAll =
       ctx -> {
         String user = ctx.sessionAttribute("username");
@@ -101,6 +118,11 @@ public class PdfController {
         ctx.json(res.toString());
       };
 
+  /*
+  REQUIRES 2 fields in HTTP Request
+    - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
+    - "file": the PDF file to be uploaded
+   */
   public Handler pdfUpload =
       ctx -> {
         String username = ctx.sessionAttribute("username");
@@ -138,6 +160,10 @@ public class PdfController {
         ctx.json(res.toString());
       };
 
+  /*
+  REQUIRES JSON Body:
+    - "applicationId": String giving id of application to get questions from
+   */
   public Handler getApplicationQuestions =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
@@ -241,6 +267,16 @@ public class PdfController {
     }
   }
 
+  /*
+  REQUIRES JSON Body:
+    - "applicationId": String giving id of application to fill out
+    - "formAnswers": JSON with format
+      {
+        "Field1 Name": Field 1's Answer,
+        "Field2 Name": Field 2's Answer,
+        ...
+      }
+   */
   public Handler fillPDFForm =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());

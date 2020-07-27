@@ -68,7 +68,7 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void uploadValidPDFFormTest() {
+  public void uploadFormTest() {
     TestUtils.login("adminBSM", "adminBSM");
     uploadTestFormPDF();
     TestUtils.logout();
@@ -143,6 +143,36 @@ public class PdfMongoTests {
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
     TestUtils.logout();
+  }
+
+  @Test
+  public void downloadTestFormTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    File testPdf = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
+    String fileId = uploadFileAndGetFileId(testPdf, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("fileId", fileId);
+    body.put("pdfType", "FORM");
+    HttpResponse<File> downloadFileResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/download")
+            .body(body.toString())
+            .asFile(resourcesFolderPath + File.separator + "downloaded_form.pdf");
+    assertThat(downloadFileResponse.getStatus()).isEqualTo(200);
+  }
+
+  @Test
+  public void downloadPDFTypeNullTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    File testPdf = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
+    String fileId = uploadFileAndGetFileId(testPdf, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("fileId", fileId);
+    body.put("pdfType", (String) null);
+    HttpResponse downloadFileResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/download").body(body.toString()).asString();
+    assertThat(downloadFileResponse.getStatus()).isEqualTo(500);
   }
 
   @Test
