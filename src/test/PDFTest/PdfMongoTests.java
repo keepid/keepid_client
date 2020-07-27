@@ -20,6 +20,10 @@ import java.util.LinkedList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+// NOTE: Please delete file(s) uploaded at the end of your test or call clearAllDocuments() at the
+// beginning of a test case (right after logging in) to clear before running any assertions. Some
+// test cases rely on there only being one document in the database.
+
 public class PdfMongoTests {
   private static String currentPDFFolderPath =
       Paths.get("").toAbsolutePath().toString()
@@ -138,13 +142,14 @@ public class PdfMongoTests {
             .asString();
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
+    TestUtils.logout();
   }
 
   @Test
   public void getApplicationQuestionsIPFormTest() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationPDF =
         new File(
@@ -178,6 +183,7 @@ public class PdfMongoTests {
           .isEqualTo(fieldNames[i]);
     }
 
+    delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -185,7 +191,7 @@ public class PdfMongoTests {
   public void getApplicationQuestionsTestPDFTest() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationPDF = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
     String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
@@ -198,6 +204,8 @@ public class PdfMongoTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    System.out.println(applicationsQuestionsResponseJSON.toString());
 
     // comb through JSON for each field, to see if it is there.
     LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
@@ -230,6 +238,7 @@ public class PdfMongoTests {
 
     checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
 
+    delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -274,7 +283,7 @@ public class PdfMongoTests {
   public void getApplicationQuestionsBirthCertificateTest() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationPDF =
         new File(resourcesFolderPath + File.separator + "Application_for_a_Birth_Certificate.pdf");
@@ -288,6 +297,7 @@ public class PdfMongoTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    System.out.println(applicationsQuestionsResponseJSON.toString());
 
     // comb through JSON for each field, to see if it is there.
     LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
@@ -332,13 +342,14 @@ public class PdfMongoTests {
     fieldsToCheck.add(email_address);
     fieldsToCheck.add(relationship);
     checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
+    TestUtils.logout();
   }
 
   @Test
   public void getApplicationQuestionsMediaReleaseTest() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationPDF =
         new File(resourcesFolderPath + File.separator + "Media_Release_fillable.pdf");
@@ -361,13 +372,14 @@ public class PdfMongoTests {
     String[][] street = {{"TextField"}, {"Production Title"}, {}};
     fieldsToCheck.add(street);
     checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
+    TestUtils.logout();
   }
 
   @Test
   public void getApplicationQuestionsSS5Test() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationPDF = new File(resourcesFolderPath + File.separator + "ss-5.pdf");
     String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
@@ -382,13 +394,15 @@ public class PdfMongoTests {
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
     System.out.println(applicationsQuestionsResponseJSON.toString());
+    delete(fileId, "FORM");
+    TestUtils.logout();
   }
 
   @Test
   public void getApplicationQuestionBlankPDFTest() {
     TestUtils.login("adminBSM", "adminBSM");
     // when running entire file, other documents interfere with retrieving the form.
-    reset();
+    clearAllDocuments();
 
     File applicationDocx =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
@@ -404,12 +418,14 @@ public class PdfMongoTests {
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
         .isEqualTo(new JSONArray().toString());
+    delete(fileId, "FORM");
+    TestUtils.logout();
   }
 
   @Test
   public void fillApplicationQuestionsTestPDFTest() {
     TestUtils.login("adminBSM", "adminBSM");
-    reset();
+    clearAllDocuments();
 
     File applicationPDF = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
     String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
@@ -451,6 +467,53 @@ public class PdfMongoTests {
     }
     assertThat(fieldValues).isNotNull();
     checkFormAnswersTestPDFForm(fieldValues);
+    TestUtils.logout();
+  }
+
+  @Test
+  public void fillApplicationQuestionsSS5Test() {
+    TestUtils.login("adminBSM", "adminBSM");
+    clearAllDocuments();
+
+    File applicationPDF = new File(resourcesFolderPath + File.separator + "ss-5.pdf");
+    String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
+
+    JSONObject body = new JSONObject();
+    body.put("applicationId", fileId);
+    HttpResponse<String> applicationsQuestionsResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-questions").body(body.toString()).asString();
+    JSONObject applicationsQuestionsResponseJSON =
+        TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
+
+    System.out.println(applicationsQuestionsResponseJSON.toString());
+
+    JSONObject formAnswers = getFormAnswersTestPDFForm(applicationsQuestionsResponseJSON);
+    System.out.println(formAnswers.toString());
+
+    // fill out form
+    body = new JSONObject();
+    body.put("applicationId", fileId);
+    body.put("formAnswers", formAnswers);
+    HttpResponse<File> filledForm =
+        Unirest.post(TestUtils.getServerUrl() + "/fill-application")
+            .body(body.toString())
+            .asFile(resourcesFolderPath + File.separator + "ss-5_filled_out.pdf");
+    assertThat(filledForm.getStatus()).isEqualTo(200);
+
+    // check if all fields are filled
+    JSONObject fieldValues = null;
+    try {
+      File filled_out_pdf = new File(resourcesFolderPath + File.separator + "ss-5_filled_out.pdf");
+      PDDocument pdf = PDDocument.load(filled_out_pdf);
+      fieldValues = PdfController.getFieldValues(pdf);
+    } catch (IOException e) {
+      assertThat(false).isTrue();
+    }
+    assertThat(fieldValues).isNotNull();
+    checkFormAnswersSS5Form(fieldValues);
+    delete(fileId, "FORM");
+    TestUtils.logout();
   }
 
   public static JSONObject getFormAnswersTestPDFForm(JSONObject responseJSON) {
@@ -462,7 +525,7 @@ public class PdfMongoTests {
         if (field.getString("fieldName").equals("currentdate_af_date")) {
           formAnswers.put(field.getString("fieldName"), "7/14/20");
         } else {
-          formAnswers.put(field.getString("fieldName"), "test");
+          formAnswers.put(field.getString("fieldName"), "1");
         }
       } else if ((field.getString("fieldType").equals("CheckBox"))) {
         if (field.getString("fieldName").equals("Ribeye Steaks")) {
@@ -489,8 +552,33 @@ public class PdfMongoTests {
 
   public static void checkFormAnswersTestPDFForm(JSONObject fieldValues) {
     for (String s : fieldValues.keySet()) {
-      System.out.println(s);
       String value = "";
+      if (s.contains("Signature") || s.equals("Submit")) {
+        value = "";
+      } else if (s.equals("Combobox") || s.equals("Dropdown")) {
+        value = "[Choice2]";
+      } else if (s.equals("Tomatoes")
+          || s.equals("Ribeye Steaks")
+          || s.equals("Chicken")
+          || s.equals("Vegetables")
+          || s.equals("Radiobuttons")) {
+        value = "Yes";
+        if (s.equals("Ribeye Steaks")) {
+          value = "Off";
+        }
+      } else if (s.equals("currentdate_af_date")) {
+        value = "7/14/20";
+      } else { // all text fields
+        value = "1";
+      }
+      assertThat(fieldValues.get(s)).isEqualTo(value);
+    }
+  }
+
+  public static void checkFormAnswersSS5Form(JSONObject fieldValues) {
+    for (String s : fieldValues.keySet()) {
+      String value = "";
+      boolean isText = false;
       if (s.equals("Signature") || s.equals("Submit")) {
         value = "";
       } else if (s.equals("Combobox") || s.equals("Dropdown")) {
@@ -507,9 +595,14 @@ public class PdfMongoTests {
       } else if (s.equals("currentdate_af_date")) {
         value = "7/14/20";
       } else { // all text fields
-        value = "test";
+        value = "1";
+        isText = true;
       }
-      assertThat(fieldValues.get(s)).isEqualTo(value);
+      if (!isText) {
+        assertThat(fieldValues.get(s)).isEqualTo(value);
+      } else {
+        // do nothing. too many text fields that can't be any value.
+      }
     }
   }
 
@@ -536,15 +629,6 @@ public class PdfMongoTests {
     return fileId;
   }
 
-  public static void reset() {
-    try {
-      TestUtils.tearDownTestDB();
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
-  }
-
   public static void delete(String id) {
     JSONObject body = new JSONObject();
     body.put("pdfType", "APPLICATION");
@@ -555,6 +639,39 @@ public class PdfMongoTests {
             .asString();
     JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void delete(String id, String pdfType) {
+    JSONObject body = new JSONObject();
+    body.put("pdfType", pdfType);
+    body.put("fileId", id);
+    HttpResponse<String> deleteResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/delete-document")
+            .body(body.toString())
+            .asString();
+    JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
+    assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void clearAllDocuments() {
+    String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
+    boolean[] annotated = {false, true, false};
+    for (int j = 0; j < pdfTypes.length; j++) {
+      JSONObject body = new JSONObject();
+      body.put("pdfType", pdfTypes[j]);
+      body.put("annotated", annotated[j]);
+      HttpResponse<String> getAllDocuments =
+          Unirest.post(TestUtils.getServerUrl() + "/get-documents")
+              .body(body.toString())
+              .asString();
+      JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
+      assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
+      JSONArray arr = getAllDocumentsJSON.getJSONArray("documents");
+      for (int i = 0; i < arr.length(); i++) {
+        String fileId = arr.getJSONObject(i).getString("id");
+        delete(fileId, pdfTypes[j]);
+      }
+    }
   }
 
   public static void uploadTestPDF() {

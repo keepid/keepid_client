@@ -43,7 +43,10 @@ public class PdfController {
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
         String fileIDStr = req.getString("fileId");
-        if (!ValidationUtils.isValidObjectId(fileIDStr) || pdfType == null) {
+        if (pdfType == null) {
+          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
+          return;
+        } else if (!ValidationUtils.isValidObjectId(fileIDStr)) {
           ctx.json(PdfMessage.INVALID_PARAMETER.toJSON());
           return;
         }
@@ -83,10 +86,10 @@ public class PdfController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        JSONObject res = new JSONObject();
+        JSONObject res;
 
         if (pdfType == null) {
-          res.put("status", "Invalid PDFType");
+          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
         } else if (pdfType == PDFType.FORM) {
           boolean getUnannotatedForms = req.getBoolean("annotated");
           res =
@@ -153,7 +156,7 @@ public class PdfController {
         pdfDocument.close();
 
         JSONObject allFields = PdfMessage.SUCCESS.toJSON();
-        allFields.put("fields", fieldsJSON);
+        allFields.put("fields", new JSONArray(fieldsJSON));
         ctx.json(allFields.toString());
       };
 
@@ -177,13 +180,16 @@ public class PdfController {
         JSONObject fieldJSON = new JSONObject();
         String fieldType = "";
         String fieldValueOptions = "[]";
+        String fieldQuestion = "";
         if (field instanceof PDButton) {
           if (field instanceof PDCheckBox) {
             fieldType = "CheckBox";
+            fieldQuestion = "Please select an option for " + field.getPartialName();
           } else if (field instanceof PDPushButton) {
             fieldType = "PushButton";
           } else if (field instanceof PDRadioButton) {
             fieldType = "RadioButton";
+            fieldQuestion = "Please select one option for " + field.getPartialName();
             PDRadioButton radioButtonField = (PDRadioButton) field;
             JSONArray optionsJSONArray = new JSONArray();
             for (String choice : radioButtonField.getOnValues()) {
@@ -193,6 +199,11 @@ public class PdfController {
           }
         } else if (field instanceof PDVariableText) {
           if (field instanceof PDChoice) {
+            if (((PDChoice) field).isMultiSelect()) {
+              fieldQuestion = "Please Select Option(s) for " + field.getPartialName();
+            } else {
+              fieldQuestion = "Please Select an Option for " + field.getPartialName();
+            }
             if (field instanceof PDComboBox) {
               fieldType = "ComboBox";
             } else if (field instanceof PDListBox) {
@@ -206,9 +217,11 @@ public class PdfController {
             fieldValueOptions = optionsJSONArray.toString();
           } else if (field instanceof PDTextField) {
             fieldType = "TextField";
+            fieldQuestion = "Please Enter Your " + field.getPartialName();
           }
         } else if (field instanceof PDSignatureField) {
           fieldType = "SignatureField";
+          fieldQuestion = "Please sign here";
         }
 
         // Not Editable
@@ -217,7 +230,7 @@ public class PdfController {
         fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
 
         // Editable
-        fieldJSON.put("fieldQuestion", "Please Enter Your " + field.getPartialName());
+        fieldJSON.put("fieldQuestion", fieldQuestion);
         fieldJSON.put("fieldMatchedDBVariable", "");
         fieldJSON.put("fieldMatchedDBName", "");
 
