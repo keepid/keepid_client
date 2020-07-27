@@ -187,6 +187,7 @@ public class PdfController {
             fieldQuestion = "Please select an option for " + field.getPartialName();
           } else if (field instanceof PDPushButton) {
             fieldType = "PushButton";
+            fieldQuestion = "Select the Button If You Want To " + field.getPartialName();
           } else if (field instanceof PDRadioButton) {
             fieldType = "RadioButton";
             fieldQuestion = "Please select one option for " + field.getPartialName();
