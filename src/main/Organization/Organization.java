@@ -7,6 +7,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
+import java.util.Date;
 import java.util.Objects;
 
 public class Organization {
@@ -39,6 +40,9 @@ public class Organization {
   @BsonProperty(value = "phone")
   private String orgPhoneNumber;
 
+  @BsonProperty(value = "creationDate")
+  private Date creationDate;
+
   public Organization() {}
 
   public Organization(
@@ -68,6 +72,8 @@ public class Organization {
     if (ovm != OrganizationValidationMessage.VALID)
       throw new ValidationException(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
 
+    Date date = new Date();
+
     this.orgName = orgName;
     this.orgWebsite = orgWebsite;
     this.orgEIN = orgEIN;
@@ -77,6 +83,7 @@ public class Organization {
     this.orgZipcode = orgZipcode;
     this.orgEmail = orgEmail;
     this.orgPhoneNumber = orgPhoneNumber;
+    this.creationDate = date;
   }
 
   /** **************** GETTERS ********************* */
@@ -118,6 +125,10 @@ public class Organization {
 
   public String getOrgPhoneNumber() {
     return this.orgPhoneNumber;
+  }
+
+  public Date getCreationDate() {
+    return this.creationDate;
   }
 
   /** **************** SETTERS ********************* */
