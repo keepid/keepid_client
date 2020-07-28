@@ -47,7 +47,10 @@ public class AccountSecurityController {
         ctx.json(
             EmailMessages.NOT_VALID_EMAIL
                 .toJSON(
-                    user.getFirstName() + user.getLastName() + "'s email is not a valid address")
+                    user.getFirstName()
+                        + " "
+                        + user.getLastName()
+                        + "'s email is not a valid address")
                 .toString());
         return;
       }
@@ -68,7 +71,6 @@ public class AccountSecurityController {
       } catch (EmailExceptions e) {
         ctx.json(e.toJSON().toString());
       }
-
       ctx.json(UserMessage.SUCCESS.toJSON().toString());
     };
   }

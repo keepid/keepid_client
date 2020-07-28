@@ -1,5 +1,6 @@
 package Security;
 
+import Validation.ValidationUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -51,7 +52,7 @@ public class EmailUtil {
           + "organizationInviteEmail.html";
 
   public void sendEmail(String senderName, String recipientEmail, String subject, String message)
-      throws UnsupportedEncodingException {
+      throws EmailExceptions, UnsupportedEncodingException {
 
     // Set SMTP server properties.
     Properties properties = System.getProperties();
@@ -72,7 +73,9 @@ public class EmailUtil {
                         System.getenv("EMAIL_PASSWORD"))); // Specify the Username and the PassWord
               }
             });
-
+    if (!ValidationUtils.isValidEmail(recipientEmail)) {
+      throw new EmailExceptions(EmailMessages.NOT_VALID_EMAIL);
+    }
     // Creates a new Email message.
     try {
       Message msg = new MimeMessage(session);

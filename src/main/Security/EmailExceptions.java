@@ -6,7 +6,7 @@ public class EmailExceptions extends Exception {
 
   private EmailMessages emailMessage;
 
-  EmailExceptions(EmailMessages emailMessage) {
+  public EmailExceptions(EmailMessages emailMessage) {
     this.emailMessage = emailMessage;
   }
 
