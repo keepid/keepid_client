@@ -226,7 +226,7 @@ public class OrganizationController {
         try {
           String emailJWT =
               emailUtil.getOrganizationInviteEmail(
-                  "https://keep.id/FILL_PATH_HERE/" + jwt, sender, firstName + " " + lastName);
+                  "https://keep.id/create-user/" + jwt, sender, firstName + " " + lastName);
           emailUtil.sendEmail(
               "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
         } catch (EmailExceptions e) {
