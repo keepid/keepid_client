@@ -5,6 +5,7 @@ import Security.EmailUtil;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class EmailUtilTest {
 
@@ -16,7 +17,11 @@ public class EmailUtilTest {
       String actual = emailUtil.getOrganizationInviteEmail("ji", "Cat", "Kap");
       // System.out.println(actual);
     } catch (EmailExceptions e) {
-      System.out.print(e.toString());
+      Boolean a = e.toString().equals("INVITER_DOM_NOT_FOUND: Can't locate sender name in html");
+      Boolean b = e.toString().equals("RECEIVER_DOM_NOT_FOUND: Can't locate target name in html");
+      Boolean c = e.toString().equals("EMAIL_DOM_NOT_FOUND: Can't locate target email in html");
+      Boolean d = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
+      assertTrue(a || b || c || d);
     }
   }
 
@@ -26,7 +31,9 @@ public class EmailUtilTest {
       String actual = emailUtil.getVerificationCodeEmail("hiii");
       // System.out.println(actual);
     } catch (EmailExceptions e) {
-      System.out.print(e.toString());
+      Boolean a = e.toString().equals("CODE_DOM_NOT_FOUND: Can't locate verification code in html");
+      Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
+      assertTrue(a || b);
     }
   }
 
@@ -36,7 +43,9 @@ public class EmailUtilTest {
       String actual = emailUtil.getPasswordResetEmail("hiii");
       // System.out.println(actual);
     } catch (EmailExceptions e) {
-      System.out.print(e.toString());
+      Boolean a = e.toString().equals("EMAIL_DOM_NOT_FOUND: Can't locate target email in html");
+      Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
+      assertTrue(a || b);
     }
   }
 
