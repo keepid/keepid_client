@@ -39,6 +39,7 @@ import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import EULA from './components/AboutUs/EULA';
+import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 
 interface State {
   role: Role,
@@ -227,6 +228,9 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route path="/organization-signup">
                 <OrganizationSignup />
+              </Route>
+              <Route path="/new-signup">
+                <CompleteSignupFlow />
               </Route>
               <Route
                 path="/person-signup/:roleString"
