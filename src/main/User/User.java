@@ -7,6 +7,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
+import java.util.Date;
 import java.util.Objects;
 
 public class User {
@@ -63,6 +64,9 @@ public class User {
   @BsonProperty(value = "canRegister")
   private boolean canRegister;
 
+  @BsonProperty(value = "creationDate")
+  private Date creationDate;
+
   public User() {}
 
   public User(
@@ -101,6 +105,8 @@ public class User {
     if (validationMessage != UserValidationMessage.VALID)
       throw new ValidationException(UserValidationMessage.toUserMessageJSON(validationMessage));
 
+    Date date = new Date();
+
     this.id = new ObjectId();
     this.firstName = firstName;
     this.lastName = lastName;
@@ -116,6 +122,7 @@ public class User {
     this.username = username;
     this.password = password;
     this.userType = userType;
+    this.creationDate = date;
     this.calcPermissions();
   }
 
@@ -196,6 +203,10 @@ public class User {
 
   public boolean getCanRegister() {
     return this.canRegister;
+  }
+
+  public Date getCreationDate() {
+    return this.creationDate;
   }
 
   /** **************** SETTERS ********************* */
@@ -378,6 +389,7 @@ public class User {
     sb.append(", canEdit=").append(this.canEdit);
     sb.append(", canView=").append(this.canView);
     sb.append(", canRegister=").append(this.canRegister);
+    sb.append(", creationDate=").append(this.creationDate);
     sb.append("}");
     return sb.toString();
   }

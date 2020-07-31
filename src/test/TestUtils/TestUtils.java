@@ -2,6 +2,7 @@ package TestUtils;
 
 import Config.MongoConfig;
 import Organization.Organization;
+import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
 import Security.EmailUtil;
@@ -638,6 +639,7 @@ public class TestUtils {
     PdfController pdfController = new PdfController(db);
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+    OrganizationController orgController = new OrganizationController(db);
 
     /* Utils */
     SecurityUtils securityUtils = new SecurityUtils();
@@ -652,6 +654,7 @@ public class TestUtils {
     app.post("/get-documents", pdfController.pdfGetAll);
     app.post("/logout", userController.logout);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
+    app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
   }
 
   public static void stopServer() {

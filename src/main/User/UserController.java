@@ -1,6 +1,7 @@
 package User;
 
 import Logger.LogFactory;
+import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import Security.Tokens;
@@ -87,11 +88,11 @@ public class UserController {
         long nowMillis = System.currentTimeMillis();
         long expMillis = 300000;
         Date expDate = new Date(nowMillis + expMillis);
-        String emailContent = emailUtil.getVerificationCodeEmail(randCode);
         Thread emailThread =
             new Thread(
                 () -> {
                   try {
+                    String emailContent = emailUtil.getVerificationCodeEmail(randCode);
                     emailUtil.sendEmail(
                         "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
@@ -104,6 +105,9 @@ public class UserController {
                             .setTwoFactorCode(randCode)
                             .setTwoFactorExp(expDate),
                         new ReplaceOptions().upsert(true));
+                  } catch (EmailExceptions e) {
+                    ctx.json(e.toJSON().toString());
+                    return;
                   } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                     JSONObject serverErrorJSON =

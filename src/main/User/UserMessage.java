@@ -18,7 +18,8 @@ public enum UserMessage {
   INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low."),
   INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),
   SUCCESS("SUCCESS:Success."),
-  TOKEN_ISSUED("TOKEN_ISSUED:Token issued.");
+  TOKEN_ISSUED("TOKEN_ISSUED:Token issued."),
+  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty.");
 
   private String errorMessage;
 
