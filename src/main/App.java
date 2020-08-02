@@ -1,3 +1,4 @@
+import Bug.BugController;
 import Config.AppConfig;
 import Config.MongoConfig;
 import Logger.LogFactory;
@@ -37,6 +38,7 @@ public class App {
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
+    BugController bugController = new BugController(db);
 
     /* -------------- BEFORE FILTERS ---------------------- */
     app.before(
@@ -87,5 +89,8 @@ public class App {
     app.post(
         "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
+
+    /* -------------- SUBMIT BUG------------------ */
+    app.post("/submit-bug", bugController.submitBug);
   }
 }
