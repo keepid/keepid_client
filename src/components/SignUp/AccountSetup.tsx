@@ -4,10 +4,10 @@ import { withAlert } from 'react-alert';
 
 interface Props {
   username: string,
-  onChangeUsername: () => void,
   password: string,
-  onChangePassword: () => void,
   confirmPassword: string,
+  onChangeUsername: () => void,
+  onChangePassword: () => void,
   onChangeConfirmPassword: () => void,
   handleContinue: ()=> void,
   alert: any
@@ -27,6 +27,10 @@ class AccountSetup extends Component<Props, State, {}> {
       passwordValidator: '',
       confirmPasswordValidator: '',
     };
+  }
+
+  componentDidMount() {
+    window.scrollTo(0, 0);
   }
 
   colorToggle = (inputString: string): string => {
@@ -126,7 +130,6 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
-    e.preventDefault();
     const { username, password, confirmPassword } = this.props;
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (this.state.usernameValidator === 'true'
@@ -171,9 +174,9 @@ class AccountSetup extends Component<Props, State, {}> {
                 other works in the organization and for your clients.
               </span>
             </div>
-            <form>
+            <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
-                <label htmlFor="username" className="col-sm-3 col-form-label text-right ">Username</label>
+                <label htmlFor="username" className="col-sm-3 col-form-label text-sm-right ">Username</label>
                 <div className="col-sm-9">
                   <input
                     type="text"
@@ -183,13 +186,13 @@ class AccountSetup extends Component<Props, State, {}> {
                     value={username}
                     onChange={onChangeUsername}
                     onBlur={this.validateUsername}
-                    required
+
                   />
                   {this.usernameMessage()}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="password" className="col-sm-3 col-form-label text-right">Password</label>
+                <label htmlFor="password" className="col-sm-3 col-form-label text-sm-right">Password</label>
                 <div className="col-sm-9">
                   <input
                     type="password"
@@ -199,13 +202,13 @@ class AccountSetup extends Component<Props, State, {}> {
                     value={password}
                     onChange={onChangePassword}
                     onBlur={this.validatePassword}
-                    required
+
                   />
                   {this.passwordMessage()}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="confirmPassword" className="col-sm-3 col-form-label text-right">Confirm Password</label>
+                <label htmlFor="confirmPassword" className="col-sm-3 col-form-label text-sm-right">Confirm Password</label>
                 <div className="col-sm-9">
                   <input
                     type="password"
@@ -215,15 +218,15 @@ class AccountSetup extends Component<Props, State, {}> {
                     value={confirmPassword}
                     onChange={onChangeConfirmPassword}
                     onBlur={this.validateConfirmPassword}
-                    required
+
                   />
                   {this.confirmPasswordMessage()}
                 </div>
               </div>
+              <div className="d-flex justify-content-end">
+                <button type="submit" className="btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>
+              </div>
             </form>
-            <div className="d-flex justify-content-end">
-              <button type="button" className="btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
-            </div>
           </div>
         </div>
       </div>

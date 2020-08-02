@@ -14,6 +14,8 @@ import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AccountSetup from './AccountSetup';
 import PersonalInformation from './PersonalInformation';
 import OrganizationInformation from './OrganizationInformation';
+import SignUserAgreement from './SignUserAgreement';
+import ReviewSubmit from './ReviewSubmit';
 
 const { Step } = Steps;
 
@@ -44,11 +46,13 @@ interface State {
   city: string,
   state: string,
   zipcode: string,
+  hasSigned: boolean,
   personSubmitted: boolean,
   submitSuccessful: boolean,
   recaptchaLoaded: boolean,
   recaptchaPayload: string,
-  recaptchaExpired: boolean
+  recaptchaExpired: boolean,
+  buttonState: string
 }
 const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
@@ -56,7 +60,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      signupStage: 2,
+      signupStage: 0,
       organizationName: '',
       organizationWebsite: '',
       organizationEIN: '',
@@ -78,11 +82,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       username: '',
       password: '',
       confirmPassword: '',
+      hasSigned: false,
       personSubmitted: false,
       submitSuccessful: false,
       recaptchaLoaded: false,
       recaptchaPayload: '',
       recaptchaExpired: false,
+      buttonState: '',
     };
     this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
@@ -140,6 +146,8 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeOrgEmail = (e: { target: { value: string; }; }) => this.setState({ organizationEmail: e.target.value });
 
+  handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
+
   handleContinue = ():void => {
     this.setState({ signupStage: this.state.signupStage + 1 });
   };
@@ -149,8 +157,76 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   }
 
   handleFormSubmit = (): void => {
+    const {
+      username,
+      password,
+      firstname,
+      lastname,
+      birthDate,
+      address,
+      city,
+      state,
+      zipcode,
+      phonenumber,
+      email,
+      organizationName,
+      organizationWebsite,
+      organizationEIN,
+      organizationAddressStreet,
+      organizationAddressCity,
+      organizationAddressState,
+      organizationAddressZipcode,
+      organizationPhoneNumber,
+      organizationEmail,
+    } = this.state;
     // submit organization and director information
+    fetch(`${getServerURL()}/organization-signup`, {
+      method: 'POST',
+      body: JSON.stringify({
+        organizationWebsite,
+        organizationName,
+        organizationEIN,
+        organizationAddressStreet,
+        organizationAddressCity,
+        organizationAddressState,
+        organizationAddressZipcode,
+        organizationEmail,
+        organizationPhoneNumber,
+        firstname,
+        lastname,
+        birthDate,
+        email,
+        phonenumber,
+        address,
+        city,
+        state,
+        zipcode,
+        username,
+        password,
+        personRole: 'Director',
+        twoFactorOn: false,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+          message,
+          recaptchaPayload,
+        } = JSON.parse(responseJSON);
+        if (status === 'SUCCESSFUL_ENROLLMENT') {
+          this.setState({ buttonState: '' });
+          this.props.alert.show(message);
+        } else {
+          this.props.alert.show(message);
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+        this.setState({ buttonState: '' });
+      });
   }
+
+  handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender() {
     switch (this.state.signupStage) {
@@ -199,14 +275,14 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         return (
           <OrganizationInformation
             orgName={this.state.organizationName}
-            orgWebsite={this.state.lastname}
+            orgWebsite={this.state.organizationWebsite}
             ein={this.state.organizationEIN}
-            orgAddress={this.state.address}
-            orgCity={this.state.city}
-            orgState={this.state.state}
-            orgZipcode={this.state.zipcode}
-            orgPhoneNumber={this.state.phonenumber}
-            orgEmail={this.state.email}
+            orgAddress={this.state.organizationAddressStreet}
+            orgCity={this.state.organizationAddressCity}
+            orgState={this.state.organizationAddressState}
+            orgZipcode={this.state.organizationAddressZipcode}
+            orgPhoneNumber={this.state.organizationPhoneNumber}
+            orgEmail={this.state.organizationEmail}
             onChangeOrgName={this.handleChangeOrgName}
             onChangeOrgWebsite={this.handleChangeOrgWebsite}
             onChangeOrgEIN={this.handleChangeEIN}
@@ -223,9 +299,45 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         break;
       }
       case 3: {
+        return (
+          <SignUserAgreement
+            hasSigned={this.state.hasSigned}
+            handleChangeSignEULA={this.handleChangeSignEULA}
+            handleContinue={this.handleContinue}
+            handlePrevious={this.handlePrevious}
+          />
+        );
         break;
       }
       case 4: {
+        return (
+          <ReviewSubmit
+            username={this.state.username}
+            password={this.state.password}
+            firstname={this.state.firstname}
+            lastname={this.state.lastname}
+            birthDate={this.state.birthDate}
+            address={this.state.address}
+            city={this.state.city}
+            state={this.state.state}
+            zipcode={this.state.zipcode}
+            phonenumber={this.state.phonenumber}
+            email={this.state.email}
+            orgName={this.state.organizationName}
+            orgWebsite={this.state.lastname}
+            ein={this.state.organizationEIN}
+            orgAddress={this.state.address}
+            orgCity={this.state.city}
+            orgState={this.state.state}
+            orgZipcode={this.state.zipcode}
+            orgPhoneNumber={this.state.phonenumber}
+            orgEmail={this.state.email}
+            handleSubmit={this.handleFormSubmit}
+            handlePrevious={this.handlePrevious}
+            handleFormJumpTo={this.handleFormJumpTo}
+            buttonState={this.state.buttonState}
+          />
+        );
         break;
       }
       default: {
@@ -265,7 +377,14 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             </div>
           </div>
 
-          <Steps progressDot current={signupStage}>
+          <Steps className="d-none d-md-flex" progressDot current={signupStage}>
+            <Step title="Account Setup" description="" />
+            <Step title="Personal Information" description="" />
+            <Step title="Organization Information" description="" />
+            <Step title="Sign User Agreement" description="" />
+            <Step title="Review & Submit" description="" />
+          </Steps>
+          <Steps className="d-md-none" direction="vertical" current={signupStage}>
             <Step title="Account Setup" description="" />
             <Step title="Personal Information" description="" />
             <Step title="Organization Information" description="" />

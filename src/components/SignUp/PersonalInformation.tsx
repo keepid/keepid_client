@@ -69,9 +69,7 @@ class PersonalInformation extends Component<Props, State, {}> {
   generalMessage = (inputString:string): ReactElement<{}> => {
     if (inputString === 'true') {
       return (
-        <div className="valid-feedback">
-          Looks Great.
-        </div>
+        <div className="valid-feedback" />
       );
     } if (inputString === 'false') {
       return (
@@ -207,6 +205,10 @@ class PersonalInformation extends Component<Props, State, {}> {
     }
   }
 
+  componentDidMount() {
+    window.scrollTo(0, 0);
+  }
+
   render() {
     const {
       firstnameValidator,
@@ -251,9 +253,9 @@ class PersonalInformation extends Component<Props, State, {}> {
             <div className="text-center pb-4 mb-2">
               <h2><b>Next, tell us about yourself</b></h2>
             </div>
-            <form>
+            <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-right">Name</label>
+                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Name</label>
                 <div className="col-sm-4">
                   <label htmlFor="firstname" className="sr-only sr-only-focusable">First Name</label>
                   <input
@@ -264,11 +266,11 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={firstname}
                     onChange={onChangeFirstname}
                     onBlur={this.validateFirstname}
-                    required
+
                   />
                   {this.generalMessage(firstnameValidator)}
                 </div>
-                <div className="col-sm-4">
+                <div className="col-sm-5">
                   <label htmlFor="lastname" className="sr-only sr-only-focusable">Last Name</label>
                   <input
                     type="text"
@@ -278,13 +280,13 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={lastname}
                     onChange={onChangeLastname}
                     onBlur={this.validateLastname}
-                    required
+
                   />
                   {this.generalMessage(lastnameValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="birthDate" className="col-sm-3 col-form-label text-right">Birth Date</label>
+                <label htmlFor="birthDate" className="col-sm-3 col-form-label text-sm-right">Birth Date</label>
                 <div className="col-sm-9">
                   <DatePicker
                     id="birthDate"
@@ -292,12 +294,12 @@ class PersonalInformation extends Component<Props, State, {}> {
                     onBlur={this.validateBirthdate}
                     selected={birthDate}
                     className={`form-control form-purple ${this.colorToggle(birthDateValidator)}`}
-                    required
+
                   />
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-right">Mailing Address</label>
+                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Mailing Address</label>
                 <div className="col-sm-9">
                   <label htmlFor="streetAddress" className="sr-only sr-only-focusable">Street Address</label>
                   <input
@@ -308,7 +310,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={address}
                     onChange={onChangeAddress}
                     onBlur={this.validateAddress}
-                    required
+
                   />
                   {this.generalMessage(addressValidator)}
                 </div>
@@ -325,7 +327,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={city}
                     onChange={onChangeCity}
                     onBlur={this.validateCity}
-                    required
+
                   />
                   {this.generalMessage(cityValidator)}
                 </div>
@@ -337,7 +339,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={state}
                     onChange={onChangeState}
                     onBlur={this.validateState}
-                    required
+
                   >
                     {USStates.map((USState) => (<option key={USState.abbreviation}>{USState.abbreviation}</option>))}
                   </select>
@@ -346,20 +348,20 @@ class PersonalInformation extends Component<Props, State, {}> {
                 <div className="col-sm-3">
                   <label htmlFor="zipcode" className="sr-only sr-only-focusable">Zipcode</label>
                   <input
-                    type="text"
+                    type="number"
                     className={`form-control form-purple ${this.colorToggle(zipcodeValidator)}`}
                     id="zipcode"
                     placeholder="Zipcode"
                     value={zipcode}
                     onChange={onChangeZipcode}
                     onBlur={this.validateZipcode}
-                    required
+
                   />
                   {this.generalMessage(zipcodeValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="phonenumber" className="col-sm-3 col-form-label text-right">Phone number</label>
+                <label htmlFor="phonenumber" className="col-sm-3 col-form-label text-sm-right">Phone number</label>
                 <div className="col-sm-9">
                   <input
                     type="tel"
@@ -369,13 +371,13 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={phonenumber}
                     onChange={onChangePhoneNumber}
                     onBlur={this.validatePhonenumber}
-                    required
+
                   />
                   {this.generalMessage(phonenumberValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="email" className="col-sm-3 col-form-label text-right">Email address</label>
+                <label htmlFor="email" className="col-sm-3 col-form-label text-sm-right">Email address</label>
                 <div className="col-sm-9">
                   <input
                     type="email"
@@ -385,18 +387,17 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={email}
                     onChange={onChangeEmail}
                     onBlur={this.validateEmail}
-                    required
+
                   />
                   {this.generalMessage(emailValidator)}
                 </div>
               </div>
+
+              <div className="d-flex">
+                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="submit" className="ml-auto btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>
+              </div>
             </form>
-            <div className="d-flex">
-              <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
-
-              <button type="button" className="ml-auto btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
-            </div>
-
           </div>
         </div>
       </div>

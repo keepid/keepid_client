@@ -175,6 +175,10 @@ class OrganizationInformation extends Component<Props, State, {}> {
     }
   }
 
+  componentDidMount() {
+    window.scrollTo(0, 0);
+  }
+
   handleStepPrevious = (e) => {
     e.preventDefault();
     this.props.handlePrevious();
@@ -234,8 +238,6 @@ class OrganizationInformation extends Component<Props, State, {}> {
       onChangeOrgZipcode,
       onChangeOrgPhoneNumber,
       onChangeOrgEmail,
-      handleContinue,
-      handlePrevious,
     } = this.props;
     return (
       <div>
@@ -250,9 +252,9 @@ class OrganizationInformation extends Component<Props, State, {}> {
             <div className="text-center pb-4 mb-2">
               <h2><b>Next, tell us about your organization.</b></h2>
             </div>
-            <form>
+            <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-right">Organization name</label>
+                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Organization name</label>
                 <div className="col-sm-9">
                   <input
                     type="text"
@@ -262,45 +264,45 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgName}
                     onChange={onChangeOrgName}
                     onBlur={this.validateOrgName}
-                    required
+
                   />
                   {this.generalMessage(orgNameValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="orgWebsite" className="col-sm-3 col-form-label text-right">Organization website</label>
+                <label htmlFor="orgWebsite" className="col-sm-3 col-form-label text-sm-right">Organization website</label>
                 <div className="col-sm-9">
                   <input
-                    type="text"
+                    type="url"
                     className={`form-control form-purple ${this.colorToggle(orgWebsiteValidator)}`}
                     placeholder="Organization website"
                     id="orgWebsite"
                     value={orgWebsite}
                     onChange={onChangeOrgWebsite}
                     onBlur={this.validateOrgWebsite}
-                    required
+
                   />
                   {this.generalMessage(orgWebsiteValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="ein" className="col-sm-3 col-form-label text-right">Organization EIN</label>
+                <label htmlFor="ein" className="col-sm-3 col-form-label text-sm-right">Organization EIN</label>
                 <div className="col-sm-9">
                   <input
-                    type="text"
+                    type="number"
                     className={`form-control form-purple ${this.colorToggle(einValidator)}`}
                     placeholder="Organization EIN"
                     id="ein"
                     value={ein}
                     onChange={onChangeOrgEIN}
                     onBlur={this.validateEIN}
-                    required
+
                   />
                   {this.generalMessage(einValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-right">Organization Address</label>
+                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Organization Address</label>
                 <div className="col-sm-9">
                   <label htmlFor="streetAddress" className="sr-only sr-only-focusable">Street Address</label>
                   <input
@@ -311,7 +313,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgAddress}
                     onChange={onChangeOrgAddress}
                     onBlur={this.validateOrgAddress}
-                    required
+
                   />
                   {this.generalMessage(orgAddressValidator)}
                 </div>
@@ -328,7 +330,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgCity}
                     onChange={onChangeOrgCity}
                     onBlur={this.validateOrgCity}
-                    required
+
                   />
                   {this.generalMessage(orgCityValidator)}
                 </div>
@@ -340,7 +342,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgState}
                     onChange={onChangeOrgState}
                     onBlur={this.validateOrgState}
-                    required
+
                   >
                     {USStates.map((USState) => (<option key={USState.abbreviation}>{USState.abbreviation}</option>))}
                   </select>
@@ -349,20 +351,20 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <div className="col-sm-3">
                   <label htmlFor="zipcode" className="sr-only sr-only-focusable">Zipcode</label>
                   <input
-                    type="text"
+                    type="number"
                     className={`form-control form-purple ${this.colorToggle(orgZipcodeValidator)}`}
                     id="zipcode"
                     placeholder="Zipcode"
                     value={orgZipcode}
                     onChange={onChangeOrgZipcode}
                     onBlur={this.validateOrgZipcode}
-                    required
+
                   />
                   {this.generalMessage(orgZipcodeValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="phonenumber" className="col-sm-3 col-form-label text-right">Organization Phone number</label>
+                <label htmlFor="phonenumber" className="col-sm-3 col-form-label text-sm-right">Organization Phone number</label>
                 <div className="col-sm-9">
                   <input
                     type="tel"
@@ -372,13 +374,13 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgPhoneNumber}
                     onChange={onChangeOrgPhoneNumber}
                     onBlur={this.validateOrgPhoneNumber}
-                    required
+
                   />
                   {this.generalMessage(orgPhoneNumberValidator)}
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="email" className="col-sm-3 col-form-label text-right">Organization email address</label>
+                <label htmlFor="email" className="col-sm-3 col-form-label text-sm-right">Organization email address</label>
                 <div className="col-sm-9">
                   <input
                     type="email"
@@ -388,18 +390,17 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     value={orgEmail}
                     onChange={onChangeOrgEmail}
                     onBlur={this.validateOrgEmail}
-                    required
+
                   />
                   {this.generalMessage(orgEmailValidator)}
                 </div>
               </div>
+              <div className="d-flex">
+                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+
+                <button type="button" className="ml-auto btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
+              </div>
             </form>
-            <div className="d-flex">
-              <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
-
-              <button type="button" className="ml-auto btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
-            </div>
-
           </div>
         </div>
       </div>
