@@ -85,93 +85,93 @@ class PersonalInformation extends Component<Props, State, {}> {
     );
   }
 
-  validateFirstname = ():void => {
+  validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
     // ( if firstname is valid here)
     if (firstname) {
-      this.setState({ firstnameValidator: 'true' });
+      await new Promise((resolve) => this.setState({ firstnameValidator: 'true' }, resolve));
     } else {
-      this.setState({ firstnameValidator: 'false' });
+      await new Promise((resolve) => this.setState({ firstnameValidator: 'false' }, resolve));
     }
   }
 
-  validateLastname = ():void => {
+  validateLastname = async ():Promise<void> => {
     const { lastname } = this.props;
     // ( if lastname is valid here)
     if (lastname) {
-      this.setState({ lastnameValidator: 'true' });
+      await new Promise((resolve) => this.setState({ lastnameValidator: 'true' }, resolve));
     } else {
-      this.setState({ lastnameValidator: 'false' });
+      await new Promise((resolve) => this.setState({ lastnameValidator: 'false' }, resolve));
     }
   }
 
-  validateBirthdate = ():void => {
+  validateBirthdate = async ():Promise<void> => {
     const { birthDate } = this.props;
     // ( if birthDate is valid here)
     if (birthDate) {
-      this.setState({ birthDateValidator: 'true' });
+      await new Promise((resolve) => this.setState({ birthDateValidator: 'true' }, resolve));
     } else {
-      this.setState({ birthDateValidator: 'false' });
+      await new Promise((resolve) => this.setState({ birthDateValidator: 'false' }, resolve));
     }
   }
 
-  validateAddress = ():void => {
+  validateAddress = async ():Promise<void> => {
     const { address } = this.props;
     // ( if address is valid here)
     if (address) {
-      this.setState({ addressValidator: 'true' });
+      await new Promise((resolve) => this.setState({ addressValidator: 'true' }, resolve));
     } else {
-      this.setState({ addressValidator: 'false' });
+      await new Promise((resolve) => this.setState({ addressValidator: 'false' }, resolve));
     }
   }
 
-  validateCity = ():void => {
+  validateCity = async ():Promise<void> => {
     const { city } = this.props;
     // ( if password is valid here)
     if (city) {
-      this.setState({ cityValidator: 'true' });
+      await new Promise((resolve) => this.setState({ cityValidator: 'true' }, resolve));
     } else {
-      this.setState({ cityValidator: 'false' });
+      await new Promise((resolve) => this.setState({ cityValidator: 'false' }, resolve));
     }
   }
 
-  validateState = ():void => {
+  validateState = async ():Promise<void> => {
     const { state } = this.props;
     // ( if state is valid here)
     if (state) {
-      this.setState({ stateValidator: 'true' });
+      await new Promise((resolve) => this.setState({ stateValidator: 'true' }, resolve));
     } else {
-      this.setState({ stateValidator: 'false' });
+      await new Promise((resolve) => this.setState({ stateValidator: 'false' }, resolve));
     }
   }
 
-  validateZipcode = ():void => {
+  validateZipcode = async ():Promise<void> => {
     const { zipcode } = this.props;
     // ( if zipcode is valid here)
     if (zipcode) {
-      this.setState({ zipcodeValidator: 'true' });
+      await new Promise((resolve) => this.setState({ zipcodeValidator: 'true' }, resolve));
     } else {
-      this.setState({ zipcodeValidator: 'false' });
+      await new Promise((resolve) => this.setState({ zipcodeValidator: 'false' }, resolve));
     }
   }
 
-  validatePhonenumber = ():void => {
+  validatePhonenumber = async ():Promise<void> => {
     const { phonenumber } = this.props;
     // ( if phonenumber is valid here)
     if (phonenumber) {
-      this.setState({ phonenumberValidator: 'true' });
+      await new Promise((resolve) => this.setState({ phonenumberValidator: 'true' }, resolve));
     } else {
-      this.setState({ phonenumberValidator: 'false' });
+      await new Promise((resolve) => this.setState({ phonenumberValidator: 'false' }, resolve));
     }
   }
 
-  validateEmail = ():void => {
+  validateEmail = async ():Promise<void> => {
     const { email } = this.props;
     // ( if email is valid here)
     if (email) {
-      this.setState({ emailValidator: 'true' });
+      await new Promise((resolve) => this.setState({ emailValidator: 'true' }, resolve));
     } else {
-      this.setState({ emailValidator: 'false' });
+      await new Promise((resolve) => this.setState({ emailValidator: 'false' }, resolve));
     }
   }
 
@@ -185,18 +185,22 @@ class PersonalInformation extends Component<Props, State, {}> {
     this.props.handlePrevious();
   }
 
-  handleStepComplete = (e) => {
+  handleStepComplete = async (e) => {
     e.preventDefault();
-    // check if all elements are valid
-    if (this.state.firstnameValidator === 'true'
-      && this.state.lastnameValidator === 'true'
-      && this.state.birthDateValidator === 'true'
-      && this.state.addressValidator === 'true'
-      && this.state.cityValidator === 'true'
-      && this.state.stateValidator === 'true'
-      && this.state.zipcodeValidator === 'true'
-      && this.state.phonenumberValidator === 'true'
-      && this.state.emailValidator === 'true') {
+    await Promise.all([this.validateFirstname(), this.validateLastname(), this.validateEmail(), this.validateBirthdate(),
+      this.validateAddress(), this.validateCity(), this.validateState(), this.validateZipcode(), this.validatePhonenumber()]);
+    const {
+      firstnameValidator, lastnameValidator, birthDateValidator, addressValidator, cityValidator, stateValidator, zipcodeValidator, phonenumberValidator, emailValidator,
+    } = this.state;
+    if (firstnameValidator === 'true'
+        && lastnameValidator === 'true'
+        && birthDateValidator === 'true'
+        && addressValidator === 'true'
+        && cityValidator === 'true'
+        && stateValidator === 'true'
+        && zipcodeValidator === 'true'
+        && emailValidator === 'true'
+        && phonenumberValidator === 'true') {
       this.props.handleContinue();
     } else {
       this.props.alert.show('One or more fields are invalid');
@@ -227,7 +231,6 @@ class PersonalInformation extends Component<Props, State, {}> {
       email,
       onChangeFirstname,
       onChangeLastname,
-      onChangeBirthDate,
       onChangeAddress,
       onChangeCity,
       onChangeState,

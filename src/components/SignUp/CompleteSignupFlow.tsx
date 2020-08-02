@@ -13,6 +13,7 @@ import Logo from '../../static/images/logo.svg';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AccountSetup from './AccountSetup';
 import PersonalInformation from './PersonalInformation';
+import OrganizationInformation from './OrganizationInformation';
 
 const { Step } = Steps;
 
@@ -55,7 +56,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      signupStage: 1,
+      signupStage: 2,
       organizationName: '',
       organizationWebsite: '',
       organizationEIN: '',
@@ -111,7 +112,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
 
-  handleChangeUserCity = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
+  handleChangeUserCity = (e: { target: { value: string; }; }) => this.setState({ city: e.target.value });
 
   handleChangeUserState = (e: { target: { value: string; }; }) => this.setState({ state: e.target.value });
 
@@ -120,6 +121,24 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   handleChangeUserPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ phonenumber: e.target.value });
 
   handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
+
+  handleChangeOrgName = (e: { target: { value: string; }; }) => this.setState({ organizationName: e.target.value });
+
+  handleChangeOrgWebsite = (e: { target: { value: string; }; }) => this.setState({ organizationWebsite: e.target.value });
+
+  handleChangeEIN = (e: { target: { value: string; }; }) => this.setState({ organizationEIN: e.target.value });
+
+  handleChangeOrgAddress = (e: { target: { value: string; }; }) => this.setState({ organizationAddressStreet: e.target.value });
+
+  handleChangeOrgCity = (e: { target: { value: string; }; }) => this.setState({ organizationAddressCity: e.target.value });
+
+  handleChangeOrgState = (e: { target: { value: string; }; }) => this.setState({ organizationAddressState: e.target.value });
+
+  handleChangeOrgZipcode = (e: { target: { value: string; }; }) => this.setState({ organizationAddressZipcode: e.target.value });
+
+  handleChangeOrgPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ organizationPhoneNumber: e.target.value });
+
+  handleChangeOrgEmail = (e: { target: { value: string; }; }) => this.setState({ organizationEmail: e.target.value });
 
   handleContinue = ():void => {
     this.setState({ signupStage: this.state.signupStage + 1 });
@@ -130,7 +149,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   }
 
   handleFormSubmit = (): void => {
-
+    // submit organization and director information
   }
 
   handleSignupComponentRender() {
@@ -177,7 +196,30 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         break;
       }
       case 2: {
-        // statements;
+        return (
+          <OrganizationInformation
+            orgName={this.state.organizationName}
+            orgWebsite={this.state.lastname}
+            ein={this.state.organizationEIN}
+            orgAddress={this.state.address}
+            orgCity={this.state.city}
+            orgState={this.state.state}
+            orgZipcode={this.state.zipcode}
+            orgPhoneNumber={this.state.phonenumber}
+            orgEmail={this.state.email}
+            onChangeOrgName={this.handleChangeOrgName}
+            onChangeOrgWebsite={this.handleChangeOrgWebsite}
+            onChangeOrgEIN={this.handleChangeEIN}
+            onChangeOrgAddress={this.handleChangeOrgAddress}
+            onChangeOrgCity={this.handleChangeOrgCity}
+            onChangeOrgState={this.handleChangeOrgState}
+            onChangeOrgZipcode={this.handleChangeOrgZipcode}
+            onChangeOrgPhoneNumber={this.handleChangeOrgPhoneNumber}
+            onChangeOrgEmail={this.handleChangeOrgEmail}
+            handleContinue={this.handleContinue}
+            handlePrevious={this.handlePrevious}
+          />
+        );
         break;
       }
       case 3: {
@@ -196,29 +238,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   render() {
     const {
       signupStage,
-      organizationWebsite,
-      organizationName,
-      organizationEIN,
-      organizationAddressStreet,
-      organizationAddressCity,
-      organizationAddressState,
-      organizationAddressZipcode,
-      organizationEmail,
-      organizationPhoneNumber,
-      personSubmitted,
-      submitSuccessful,
       recaptchaLoaded,
-      firstname,
-      lastname,
-      birthDate,
-      email,
-      phonenumber,
-      address,
-      city,
-      state,
-      zipcode,
-      username,
-      password,
     } = this.state;
 
     return (
@@ -256,13 +276,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
           {this.handleSignupComponentRender()}
         </div>
         {recaptchaLoaded && (
-        <ReCAPTCHA
-          theme="dark"
-          size="invisible"
-          ref={_reCaptchaRef}
-          sitekey={reCaptchaKey}
-          onChange={this.handleRecaptchaChange}
-        />
+          <ReCAPTCHA
+            theme="dark"
+            size="invisible"
+            ref={_reCaptchaRef}
+            sitekey={reCaptchaKey}
+            onChange={this.handleRecaptchaChange}
+          />
         )}
       </div>
     );

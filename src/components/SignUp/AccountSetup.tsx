@@ -38,13 +38,13 @@ class AccountSetup extends Component<Props, State, {}> {
     return '';
   }
 
-  validateUsername = ():void => {
+  validateUsername = async ():Promise<void> => {
     const { username } = this.props;
     // ( if username is valid here and if username is taken)
     if (username) {
-      this.setState({ usernameValidator: 'true' });
+      await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
-      this.setState({ usernameValidator: 'false' });
+      await new Promise((resolve) => this.setState({ usernameValidator: 'false' }, resolve));
     }
   }
 
@@ -67,13 +67,13 @@ class AccountSetup extends Component<Props, State, {}> {
     );
   }
 
-  validatePassword = ():void => {
+  validatePassword = async (): Promise<void> => {
     const { password } = this.props;
     // ( if password is valid here)
     if (password) {
-      this.setState({ passwordValidator: 'true' });
+      await new Promise((resolve) => this.setState({ passwordValidator: 'true' }, resolve));
     } else {
-      this.setState({ passwordValidator: 'false' });
+      await new Promise((resolve) => this.setState({ passwordValidator: 'false' }, resolve));
     }
   }
 
@@ -96,13 +96,13 @@ class AccountSetup extends Component<Props, State, {}> {
     );
   }
 
-  validateConfirmPassword = (): void => {
+  validateConfirmPassword = async (): Promise<void> => {
     const { confirmPassword } = this.props;
     // ( if confirmed password is valid here)
     if (confirmPassword === this.props.password) {
-      this.setState({ confirmPasswordValidator: 'true' });
+      await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'true' }, resolve));
     } else {
-      this.setState({ confirmPasswordValidator: 'false' });
+      await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'false' }, resolve));
     }
   }
 
@@ -125,12 +125,13 @@ class AccountSetup extends Component<Props, State, {}> {
     );
   }
 
-  handleStepComplete = (e) => {
+  handleStepComplete = async (e) => {
     e.preventDefault();
-    // check if all elements are valid
+    const { username, password, confirmPassword } = this.props;
+    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (this.state.usernameValidator === 'true'
-      && this.state.passwordValidator === 'true'
-      && this.state.confirmPasswordValidator === 'true') {
+        && this.state.passwordValidator === 'true'
+        && this.state.confirmPasswordValidator === 'true') {
       this.props.handleContinue();
     } else {
       this.props.alert.show('One or more fields are invalid');
