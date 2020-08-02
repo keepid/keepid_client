@@ -1,5 +1,5 @@
 language: java
-jdk: oraclejdk13
+jdk: openjdk13
 before_install:
   - sudo apt-get update
   - sudo apt-get install libc6
