@@ -1,16 +1,37 @@
 package BugReport;
 
+import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class BugReportTest {
+  @BeforeClass
+  public static void setUp() {
+    TestUtils.startServer();
+    TestUtils.tearDownTestDB();
+    try {
+      TestUtils.setUpTestDB();
+    } catch (Exception e) {
+      fail(e);
+    }
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    TestUtils.stopServer();
+    TestUtils.tearDownTestDB();
+  }
+
   public static final String bugReportTestURL =
       Objects.requireNonNull(System.getenv("BUG_REPORT_TESTURL"));
 
@@ -33,25 +54,11 @@ public class BugReportTest {
     blocks.put(desJson);
     JSONObject input = new JSONObject();
     input.put("blocks", blocks);
-    HttpResponse<JsonNode> posted =
-        Unirest.post(bugReportTestURL)
+    HttpResponse posted =
+        Unirest.post(System.getenv("BUG_REPORT_TESTURL"))
             .header("accept", "application/json")
             .body(input.toString())
             .asEmpty();
     Assert.assertTrue(posted.isSuccess());
-  }
-
-  @Test
-  public void getEnvWorks() {
-    String testURL = System.getenv("BUG_REPORT_TESTURL");
-    Assert.assertEquals(
-        testURL, "https://hooks.slack.com/services/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");
-  }
-
-  @Test
-  public void getACTUALWorks() {
-    String testURL = System.getenv("BUG_REPORT_ACTUALURL");
-    Assert.assertEquals(
-        testURL, "https://hooks.slack.com/services/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");
   }
 }
