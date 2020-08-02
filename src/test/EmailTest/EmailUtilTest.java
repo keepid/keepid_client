@@ -2,10 +2,9 @@ package EmailTest;
 
 import Security.EmailExceptions;
 import Security.EmailUtil;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class EmailUtilTest {
 
@@ -21,7 +20,7 @@ public class EmailUtilTest {
       Boolean b = e.toString().equals("RECEIVER_DOM_NOT_FOUND: Can't locate target name in html");
       Boolean c = e.toString().equals("EMAIL_DOM_NOT_FOUND: Can't locate target email in html");
       Boolean d = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
-      assertTrue(a || b || c || d);
+      assert (a || b || c || d);
     }
   }
 
@@ -33,7 +32,7 @@ public class EmailUtilTest {
     } catch (EmailExceptions e) {
       Boolean a = e.toString().equals("CODE_DOM_NOT_FOUND: Can't locate verification code in html");
       Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
-      assertTrue(a || b);
+      assert (a || b);
     }
   }
 
@@ -45,7 +44,7 @@ public class EmailUtilTest {
     } catch (EmailExceptions e) {
       Boolean a = e.toString().equals("EMAIL_DOM_NOT_FOUND: Can't locate target email in html");
       Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
-      assertTrue(a || b);
+      assert (a || b);
     }
   }
 
@@ -60,7 +59,7 @@ public class EmailUtilTest {
     } catch (EmailExceptions e) {
       assertEquals(e.toString(), "NOT_VALID_EMAIL: The email address isn't valid");
       //    } catch (UnsupportedEncodingException e) {
-      //      Assert.assertFalse(true);
+      //     assert(true);
     }
   }
 }
