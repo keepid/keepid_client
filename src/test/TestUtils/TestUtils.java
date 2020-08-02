@@ -1,5 +1,6 @@
 package TestUtils;
 
+import Bug.BugController;
 import Config.MongoConfig;
 import Organization.Organization;
 import Organization.OrganizationController;
@@ -640,6 +641,7 @@ public class TestUtils {
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     OrganizationController orgController = new OrganizationController(db);
+    BugController bugController = new BugController(db);
 
     /* Utils */
     SecurityUtils securityUtils = new SecurityUtils();
@@ -655,6 +657,8 @@ public class TestUtils {
     app.post("/logout", userController.logout);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
+    app.post("/submit-bug", bugController.submitBug);
+    app.post("/find-bug", bugController.findBug);
   }
 
   public static void stopServer() {

@@ -9,6 +9,10 @@ import kong.unirest.Unirest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
+import static com.mongodb.client.model.Filters.eq;
+
 public class BugController {
   private MongoDatabase db;
 
@@ -16,7 +20,10 @@ public class BugController {
     this.db = db;
   }
 
-  public static final String bugReportActualURL = System.getenv("BUG_REPORT_ACTUALURL");
+  public static final String bugReportActualURL =
+      Objects.requireNonNull(System.getenv("BUG_REPORT_ACTUALURL"));
+  public static final String bugReportTestURL =
+      Objects.requireNonNull(System.getenv("BUG_REPORT_TESTURL"));
 
   public Handler submitBug =
       ctx -> {
@@ -64,6 +71,30 @@ public class BugController {
         }
         res.put("status", BugReportMessage.SUCCESS.getErrorName());
         res.put("message", BugReportMessage.SUCCESS.getErrorDescription());
+        ctx.json(res.toString());
+      };
+  // Exclusive for testing purposes.
+  public Handler findBug =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        JSONObject res = new JSONObject();
+        String title = req.getString("bugTitle");
+        if (null == title || "".equals(title)) {
+          res.put("bugTitle", "null");
+          res.put("bugDescription", "null");
+          ctx.json(res.toString());
+          return;
+        }
+        res.put("bugTitle", title);
+        MongoCollection<BugReport> bugReportCollection =
+            db.getCollection("BugReport", BugReport.class);
+        BugReport bugReport = bugReportCollection.find(eq("bugTitle", title)).first();
+        if (bugReport == null) {
+          res.put("bugDescription", "null");
+          ctx.json(res.toString());
+          return;
+        }
+        res.put("bugDescription", bugReport.getBugDescription());
         ctx.json(res.toString());
       };
 }

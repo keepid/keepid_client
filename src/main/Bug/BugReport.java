@@ -12,6 +12,8 @@ public class BugReport {
   @BsonProperty(value = "bugDescription")
   private String bugDescription;
 
+  public BugReport() {}
+
   public BugReport(String bugTitle, String bugDescription) {
     this.bugTitle = bugTitle;
     this.bugDescription = bugDescription;
