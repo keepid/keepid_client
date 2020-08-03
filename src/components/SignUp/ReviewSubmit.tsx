@@ -1,10 +1,7 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import ReCAPTCHA from 'react-google-recaptcha';
-import USStates from '../../static/data/states_titlecase.json';
 import { reCaptchaKey } from '../../configVars';
 
 interface Props {
@@ -41,10 +38,6 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 interface State {}
 
 class ReviewSubmit extends Component<Props, State, {}> {
-  constructor(props: Props) {
-    super(props);
-  }
-
   handleStepPrevious = (e) => {
     e.preventDefault();
     this.props.handlePrevious();

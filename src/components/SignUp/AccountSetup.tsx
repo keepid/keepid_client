@@ -130,7 +130,6 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
-    const { username, password, confirmPassword } = this.props;
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (this.state.usernameValidator === 'true'
         && this.state.passwordValidator === 'true'

@@ -9,7 +9,6 @@ import {
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import PersonSignup from './components/SignUp/PersonSignup';
-import OrganizationSignup from './components/SignUp/OrganizationSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -17,8 +16,6 @@ import Request from './components/Request';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
-import DocumentViewer from './components/DocumentViewer';
-import ViewDocument from './components/ViewDocument';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
@@ -52,7 +49,7 @@ interface State {
 
 const timeUntilWarn: number = 1000 * 60 * 120;
 const timeFromWarnToLogout: number = 1000 * 60;
-const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
+// const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 class App extends React.Component<{}, State, {}> {
   private idleTimerWarn;

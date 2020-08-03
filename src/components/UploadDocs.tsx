@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 import PDFType from '../static/PDFType';
+import uuid from 'react-uuid';
 
 interface Props {
   alert: any,
@@ -145,7 +145,6 @@ class UploadDocs extends React.Component<Props, State> {
 
   render() {
     const {
-      submitStatus,
       pdfFiles,
       buttonState,
     } = this.state;
@@ -174,7 +173,7 @@ class UploadDocs extends React.Component<Props, State> {
 
           <ul className="list-unstyled mt-5">
             {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={index} pdfFile={pdfFile} />) : null
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
               }
           </ul>
 

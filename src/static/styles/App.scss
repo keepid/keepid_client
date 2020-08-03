@@ -345,7 +345,10 @@ thead {
 }
 
 .alert-provider-custom div div {
-	background-color: $secondary-dark-theme !important;
+	background-color: $secondary-theme !important;
+	color: black !important;
+	border-radius: 1.5rem !important;
+
 }
 
 .alert-provider-custom span {

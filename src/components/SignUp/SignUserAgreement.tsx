@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import EULA from '../../static/EULA.pdf';
@@ -15,10 +15,6 @@ interface Props {
 interface State {}
 
 class SignUserAgreement extends Component<Props, State, {}> {
-  constructor(props: Props) {
-    super(props);
-  }
-
   handleStepPrevious = (e) => {
     e.preventDefault();
     this.props.handlePrevious();

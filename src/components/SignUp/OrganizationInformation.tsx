@@ -1,8 +1,6 @@
 import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import USStates from '../../static/data/states_titlecase.json';
 
 interface Props {

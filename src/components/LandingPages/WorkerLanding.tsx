@@ -221,7 +221,7 @@ class WorkerLanding extends Component<Props, State> {
   renderClients() {
     const { showClientAuthModal } = this.state;
     const clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
-      <div key={client} className="card mb-3">
+      <div key={client.username} className="card mb-3">
         <div className="card-body">
           <div className="d-flex flex-row">
             <div className="d-flex flex-column mr-4">
