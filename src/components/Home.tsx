@@ -16,6 +16,7 @@ import Access from '../static/images/access-data.svg';
 import FileCloud from '../static/images/file-cloud.svg';
 import Building from '../static/images/building.svg';
 import Profile from '../static/images/profile-pic.svg';
+import AnchorLink from 'react-anchor-link-smooth-scroll'
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -68,9 +69,9 @@ class Home extends Component<Props, {}, {}> {
                     <Link to="/organization-signup">
                       <button className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
-                    <Link to="/organization-signup">
+                    <AnchorLink offset='100' href="#info">
                       <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
-                    </Link>
+                    </AnchorLink>
                   </div>
                 </div>
                 <div className="col-md-6 custom-vertical-center">
@@ -83,7 +84,7 @@ class Home extends Component<Props, {}, {}> {
               </div>
             </div>
             <div className="container mt-4 mb-4 pt-5 pb-5">
-              <div className="row d-flex align-items-center">
+              <div id="info" className="row d-flex align-items-center">
                 <div className="col-md-6 ">
                   <h1 className="text-center m-3 pb-5">
                     The lack of

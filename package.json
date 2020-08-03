@@ -26,6 +26,7 @@
     "react": "^16.13.1",
     "react-alert": "^6.0.1",
     "react-alert-template-basic": "^1.0.0",
+    "react-anchor-link-smooth-scroll": "^1.0.12",
     "react-bootstrap": "^1.0.1",
     "react-bootstrap-table-next": "^3.3.5",
     "react-bootstrap-table2-editor": "^1.4.0",
