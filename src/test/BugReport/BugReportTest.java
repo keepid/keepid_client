@@ -63,26 +63,23 @@ public class BugReportTest {
   // I commented the test below as it would send a message in bug reports channel in slack when run.
   // If you wish to test
   // locally, please change the url in the BugController to bugReporttTestURL so this will only send
-  // message the test
-  // channel.
+  // message the test channel.
+  // If you are not sure which one to put, contact me @cathy chen on slack.
   @Test
   public void testMongo() {
-    //    JSONObject body = new JSONObject();
-    //    body.put("bugTitle", "mongo1");
-    //    body.put("bugDescription", "mongo2");
-    //    HttpResponse<String> submitResponse =
-    //        Unirest.post(TestUtils.getServerUrl() +
-    // "/submit-bug").body(body.toString()).asString();
-    //    assert ("SUCCESS"
-    //
-    // .equals(TestUtils.responseStringToJSON(submitResponse.getBody()).getString("status")));
-    //    body = new JSONObject();
-    //    body.put("bugTitle", "mongo1");
-    //    HttpResponse<String> findResponse =
-    //        Unirest.post(TestUtils.getServerUrl() + "/find-bug").body(body.toString()).asString();
-    //    assert ("mongo2"
-    //        .equals(
-    //
-    // TestUtils.responseStringToJSON(findResponse.getBody()).getString("bugDescription")));
+    JSONObject body = new JSONObject();
+    body.put("bugTitle", "mongo1");
+    body.put("bugDescription", "mongo2");
+    HttpResponse<String> submitResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/submit-bug").body(body.toString()).asString();
+    assert ("SUCCESS"
+        .equals(TestUtils.responseStringToJSON(submitResponse.getBody()).getString("status")));
+    body = new JSONObject();
+    body.put("bugTitle", "mongo1");
+    HttpResponse<String> findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/find-bug").body(body.toString()).asString();
+    assert ("mongo2"
+        .equals(
+            TestUtils.responseStringToJSON(findResponse.getBody()).getString("bugDescription")));
   }
 }

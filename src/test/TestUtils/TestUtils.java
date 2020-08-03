@@ -659,6 +659,7 @@ public class TestUtils {
     app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
     app.post("/submit-bug", bugController.submitBug);
     app.post("/find-bug", bugController.findBug);
+    app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
   }
 
   public static void stopServer() {

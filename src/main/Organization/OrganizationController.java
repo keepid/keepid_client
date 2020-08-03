@@ -1,5 +1,6 @@
 package Organization;
 
+import Bug.BugController;
 import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
@@ -10,17 +11,24 @@ import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
 public class OrganizationController {
 
   MongoDatabase db;
+  public static final String newOrgTestURL =
+      Objects.requireNonNull(System.getenv("NEW_ORG_TESTURL"));
+  public static final String newOrgActualURL =
+      Objects.requireNonNull(System.getenv("NEW_ORG_ACTUALURL"));
 
   public OrganizationController(MongoDatabase db) {
     this.db = db;
@@ -155,11 +163,46 @@ public class OrganizationController {
         userCollection.insertOne(user);
 
         orgCollection.insertOne(org);
+        HttpResponse posted = makeBotMessage(org);
+        if (!posted.isSuccess()) {
+          JSONObject body = new JSONObject();
+          body.put(
+              "text",
+              "You are receiving this because an new organization signed up but wasn't successfully "
+                  + "posted on Slack.");
+          Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+        }
         ctx.json(OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT.toJSON().toString());
       }
     };
   }
 
+  private HttpResponse makeBotMessage(Organization org) {
+    JSONArray blocks = new JSONArray();
+    JSONObject titleJson = new JSONObject();
+    JSONObject titleText = new JSONObject();
+    titleText.put("text", "*Organization Name: * " + org.getOrgName());
+    titleText.put("type", "mrkdwn");
+    titleJson.put("type", "section");
+    titleJson.put("text", titleText);
+    blocks.put(titleJson);
+    JSONObject desJson = new JSONObject();
+    JSONObject desText = new JSONObject();
+    desText.put("text", "*Orgnization Contact: * " + org.getOrgEmail());
+    desText.put("type", "mrkdwn");
+    desJson.put("text", desText);
+    desJson.put("type", "section");
+    blocks.put(desJson);
+    JSONObject input = new JSONObject();
+    input.put("blocks", blocks);
+
+    HttpResponse posted =
+        Unirest.post(newOrgActualURL)
+            .header("accept", "application/json")
+            .body(input.toString())
+            .asEmpty();
+    return posted;
+  }
   /*  Invite users through email under an organization with a JSON Object formatted as:
       {“senderName”: “senderName”,
                data: [

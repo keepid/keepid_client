@@ -4,7 +4,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,7 +53,7 @@ public class BugController {
         blocks.put(desJson);
         JSONObject input = new JSONObject();
         input.put("blocks", blocks);
-        HttpResponse<JsonNode> posted =
+        HttpResponse posted =
             Unirest.post(bugReportActualURL)
                 .header("accept", "application/json")
                 .body(input.toString())
