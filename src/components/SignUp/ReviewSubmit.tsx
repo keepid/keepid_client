@@ -3,7 +3,9 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ReCAPTCHA from 'react-google-recaptcha';
 import USStates from '../../static/data/states_titlecase.json';
+import { reCaptchaKey } from '../../configVars';
 
 interface Props {
   username: string,
@@ -30,8 +32,11 @@ interface Props {
   handlePrevious: ()=> void,
   handleFormJumpTo:(stageNumber: number)=> void,
   alert: any,
-  buttonState: string
+  buttonState: string,
+  handleChangeRecaptcha: (recaptchaValue: string) => void
 }
+
+const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface State {}
 
@@ -47,6 +52,11 @@ class ReviewSubmit extends Component<Props, State, {}> {
 
   handleStepComplete = async (e) => {
     e.preventDefault();
+  }
+
+  onSubmitWithReCAPTCHA = async () => {
+    const token = await recaptchaRef.current.executeAsync();
+    this.props.handleChangeRecaptcha(token);
   }
 
   passwordHider = (password: string) => '*'.repeat(password.length - 1)
@@ -73,8 +83,6 @@ class ReviewSubmit extends Component<Props, State, {}> {
       orgZipcode,
       orgPhoneNumber,
       orgEmail,
-      handleSubmit,
-      handlePrevious,
       handleFormJumpTo,
       buttonState,
     } = this.props;
@@ -86,142 +94,160 @@ class ReviewSubmit extends Component<Props, State, {}> {
           </title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="d-flex justify-content-center pt-5">
-          <div className="col-md-10">
-            <div className="text-center pb-4 mb-2">
-              <h2><b>Verify all information is correct before submitting.</b></h2>
+        <form>
+          <div className="d-flex justify-content-center pt-5">
+            <div className="col-md-10">
+              <div className="text-center pb-4 mb-2">
+                <h2><b>Verify all information is correct before submitting.</b></h2>
+              </div>
+              <table className="table mb-4">
+                <thead className="thead-light">
+                  <tr>
+                    <th className="w-25" scope="col">Account Setup</th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(0)}><a href="#">Edit</a></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Username</th>
+                    <td>{username}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Password</th>
+                    <td>{this.passwordHider(password)}</td>
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
+              <table className="table mb-4">
+                <thead className="thead-light">
+                  <tr>
+                    <th className="w-25" scope="col">Personal Information</th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(1)}><a href="#">Edit</a></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Name</th>
+                    <td>
+                      {firstname}
+                      {' '}
+                      {lastname}
+                    </td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Birthdate</th>
+                    <td>{birthDate.toLocaleDateString('en-US')}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Mailing address</th>
+                    <td>
+                      {address}
+                      {' '}
+                      {city}
+                      ,
+                      {' '}
+                      {state}
+                      {' '}
+                      {zipcode}
+                    </td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Phone number</th>
+                    <td>{phonenumber}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Email Address</th>
+                    <td>{email}</td>
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
+              <table className="table mb-4">
+                <thead className="thead-light">
+                  <tr>
+                    <th className="w-25" scope="col">Organization Information</th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(2)}><a href="#">Edit</a></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Organization name</th>
+                    <td>{orgName}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization website</th>
+                    <td>{orgWebsite}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization address</th>
+                    <td>
+                      {orgAddress}
+                      {' '}
+                      {orgCity}
+                      ,
+                      {' '}
+                      {orgState}
+                      {' '}
+                      {orgZipcode}
+                    </td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization EIN</th>
+                    <td>{ein}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization phone number</th>
+                    <td>{orgPhoneNumber}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization email address</th>
+                    <td>{orgEmail}</td>
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
+              <div className="mb-0">
+                <span className="text-muted recaptcha-login-text">
+                  This page is protected by reCAPTCHA, and subject to the Google
+                  {' '}
+                  <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                  and
+                  {' '}
+                  <a href="https://www.google.com/policies/terms/">Terms of service</a>
+                  .
+                </span>
+              </div>
+              <div className="d-flex">
+                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="button" onClick={this.onSubmitWithReCAPTCHA} className={`mt-5 ml-auto btn btn-primary ld-ext-right ${buttonState}`}>
+                  Submit
+                  <div className="ld ld-ring ld-spin" />
+                </button>
+                {/* <button type="button" className="ml-auto btn btn-primary mt-5" onClick={handleSubmit}>Submit</button> */}
+              </div>
             </div>
-            <table className="table mb-4">
-              <thead className="thead-light">
-                <tr>
-                  <th className="w-25" scope="col">Account Setup</th>
-                  <th className="w-75" scope="col" />
-                  <th scope="col" onClick={() => handleFormJumpTo(0)}><a href="#">Edit</a></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Username</th>
-                  <td>{username}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Password</th>
-                  <td>{password}</td>
-                  <td />
-                </tr>
-              </tbody>
-            </table>
-            <table className="table mb-4">
-              <thead className="thead-light">
-                <tr>
-                  <th className="w-25" scope="col">Personal Information</th>
-                  <th className="w-75" scope="col" />
-                  <th scope="col" onClick={() => handleFormJumpTo(1)}><a href="#">Edit</a></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Name</th>
-                  <td>
-                    {firstname}
-                    {' '}
-                    {lastname}
-                  </td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Birthdate</th>
-                  <td>{birthDate.toLocaleDateString('en-US')}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Mailing address</th>
-                  <td>
-                    {address}
-                    {' '}
-                    {city}
-                    ,
-                    {' '}
-                    {state}
-                    {' '}
-                    {zipcode}
-                  </td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Phone number</th>
-                  <td>{phonenumber}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Email Address</th>
-                  <td>{email}</td>
-                  <td />
-                </tr>
-              </tbody>
-            </table>
-            <table className="table mb-4">
-              <thead className="thead-light">
-                <tr>
-                  <th className="w-25" scope="col">Organization Information</th>
-                  <th className="w-75" scope="col" />
-                  <th scope="col" onClick={() => handleFormJumpTo(2)}><a href="#">Edit</a></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Organization name</th>
-                  <td>{orgName}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization website</th>
-                  <td>{orgWebsite}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization address</th>
-                  <td>
-                    {orgAddress}
-                    {' '}
-                    {orgCity}
-                    ,
-                    {' '}
-                    {orgState}
-                    {' '}
-                    {orgZipcode}
-                  </td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization EIN</th>
-                  <td>{ein}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization phone number</th>
-                  <td>{orgPhoneNumber}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization email address</th>
-                  <td>{orgEmail}</td>
-                  <td />
-                </tr>
-              </tbody>
-            </table>
-            <div className="d-flex">
-              <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
-              <button type="submit" onClick={handleSubmit} className={`mt-5 ml-auto btn btn-primary ld-ext-right ${buttonState}`}>
-                Submit
-                <div className="ld ld-ring ld-spin" />
-              </button>
-              {/* <button type="button" className="ml-auto btn btn-primary mt-5" onClick={handleSubmit}>Submit</button> */}
-            </div>
-
           </div>
-        </div>
+          <ReCAPTCHA
+            theme="dark"
+            size="invisible"
+            ref={recaptchaRef}
+            sitekey={reCaptchaKey}
+          />
+        </form>
       </div>
     );
   }

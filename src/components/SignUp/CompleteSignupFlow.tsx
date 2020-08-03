@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
 import { Steps } from 'antd';
-import DatePicker from 'react-datepicker';
-import Role from '../../static/Role';
-import USStates from '../../static/data/states_titlecase.json';
+import { ProgressBar } from 'react-bootstrap';
 import getServerURL from '../../serverOverride';
-import { reCaptchaKey } from '../../configVars';
 import Logo from '../../static/images/logo.svg';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AccountSetup from './AccountSetup';
@@ -16,6 +12,7 @@ import PersonalInformation from './PersonalInformation';
 import OrganizationInformation from './OrganizationInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmit from './ReviewSubmit';
+import USStates from '../../static/data/states_titlecase.json';
 
 const { Step } = Steps;
 
@@ -49,12 +46,10 @@ interface State {
   hasSigned: boolean,
   personSubmitted: boolean,
   submitSuccessful: boolean,
-  recaptchaLoaded: boolean,
   recaptchaPayload: string,
-  recaptchaExpired: boolean,
-  buttonState: string
+  buttonState: string,
+  redirectLogin: boolean
 }
-const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
@@ -85,24 +80,11 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       hasSigned: false,
       personSubmitted: false,
       submitSuccessful: false,
-      recaptchaLoaded: false,
       recaptchaPayload: '',
-      recaptchaExpired: false,
       buttonState: '',
+      redirectLogin: false,
     };
-    this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
-
-  // RECAPTCHA CODE
-  componentDidMount() {
-    this.setState({ recaptchaLoaded: true });
-  }
-
-  handleRecaptchaChange = (recaptchaPayload) => {
-    this.setState({ recaptchaPayload });
-    if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
-  };
-  // RECAPTCHA
 
   handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
 
@@ -148,6 +130,10 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
+  handleChangeRecaptcha = (recaptchaPayload: string) => {
+    this.setState({ recaptchaPayload }, this.handleFormSubmit);
+  }
+
   handleContinue = ():void => {
     this.setState({ signupStage: this.state.signupStage + 1 });
   };
@@ -178,7 +164,9 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationAddressZipcode,
       organizationPhoneNumber,
       organizationEmail,
+      recaptchaPayload,
     } = this.state;
+    const birthDateString = this.birthDateStringConverter(birthDate);
     // submit organization and director information
     fetch(`${getServerURL()}/organization-signup`, {
       method: 'POST',
@@ -194,7 +182,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         organizationPhoneNumber,
         firstname,
         lastname,
-        birthDate,
+        birthDate: birthDateString,
         email,
         phonenumber,
         address,
@@ -205,17 +193,18 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         password,
         personRole: 'Director',
         twoFactorOn: false,
+        recaptchaPayload,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         const {
           status,
           message,
-          recaptchaPayload,
         } = JSON.parse(responseJSON);
         if (status === 'SUCCESSFUL_ENROLLMENT') {
           this.setState({ buttonState: '' });
-          this.props.alert.show(message);
+          this.props.alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
+          this.setState({ redirectLogin: true });
         } else {
           this.props.alert.show(message);
           this.setState({ buttonState: '' });
@@ -224,6 +213,15 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         this.props.alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
+  }
+
+  birthDateStringConverter = (birthDate: Date) => {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
   }
 
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
@@ -324,7 +322,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             phonenumber={this.state.phonenumber}
             email={this.state.email}
             orgName={this.state.organizationName}
-            orgWebsite={this.state.lastname}
+            orgWebsite={this.state.organizationWebsite}
             ein={this.state.organizationEIN}
             orgAddress={this.state.address}
             orgCity={this.state.city}
@@ -336,6 +334,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             handlePrevious={this.handlePrevious}
             handleFormJumpTo={this.handleFormJumpTo}
             buttonState={this.state.buttonState}
+            handleChangeRecaptcha={this.handleChangeRecaptcha}
           />
         );
         break;
@@ -350,9 +349,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   render() {
     const {
       signupStage,
-      recaptchaLoaded,
+      redirectLogin,
     } = this.state;
-
+    if (redirectLogin) {
+      return (
+        <Redirect to="/login" />
+      );
+    }
     return (
       <div>
         <Helmet>
@@ -361,8 +364,8 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
           </title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="container">
-          <div className="row pt-5 pb-5">
+        <div className="container mt-5">
+          {/* <div className="row pt-5 pb-5">
             <div className="col-md-3">
               <button type="button" className="btn btn-outline-primary float-left">Back to Home</button>
             </div>
@@ -375,7 +378,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <div className="col-md-3">
               <button type="button" className="btn btn-outline-primary float-right">Log In</button>
             </div>
-          </div>
+          </div> */}
 
           <Steps className="d-none d-md-flex" progressDot current={signupStage}>
             <Step title="Account Setup" description="" />
@@ -384,25 +387,9 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <Steps className="d-md-none" direction="vertical" current={signupStage}>
-            <Step title="Account Setup" description="" />
-            <Step title="Personal Information" description="" />
-            <Step title="Organization Information" description="" />
-            <Step title="Sign User Agreement" description="" />
-            <Step title="Review & Submit" description="" />
-          </Steps>
-
+          <ProgressBar className="d-md-none" now={this.state.signupStage / 4 * 100} label={`${this.state.signupStage / 4 * 100}%`} />
           {this.handleSignupComponentRender()}
         </div>
-        {recaptchaLoaded && (
-          <ReCAPTCHA
-            theme="dark"
-            size="invisible"
-            ref={_reCaptchaRef}
-            sitekey={reCaptchaKey}
-            onChange={this.handleRecaptchaChange}
-          />
-        )}
       </div>
     );
   }

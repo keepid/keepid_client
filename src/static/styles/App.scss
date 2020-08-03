@@ -3,7 +3,7 @@
 @import "./loading.scss";
 
 $primary-theme: #7B81FF;
-$secondary-theme: rgba(123, 130, 255, 0.12);
+$secondary-theme: #FFBB7B;
 $secondary-dark-theme: #262867;
 $text-red: #F24D4D;
 $footer-color:#413f57;
@@ -12,16 +12,16 @@ $footer-text-color-accent: rgb(230, 230, 230);
 
 $theme-colors: (
 "primary-theme": $primary-theme,
-"secondary-theme": rgba(123, 130, 255, 0.12),
-"secondary-dark-theme": #262867
+"secondary-theme": $secondary-theme,
+"secondary-dark-theme": $secondary-dark-theme
 );
 
-// import open sans
-@import url('https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap');
+// import fonts
+@import url('https://fonts.googleapis.com/css?family=Inter&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
 
 .App {
-	font-family: 'Noto Sans', sans-serif;
+	font-family: 'Inter', sans-serif;
 	background-color: $footer-color;
 	min-height: 100vh;
 }
@@ -37,6 +37,15 @@ $theme-colors: (
 
 .brand-subtext {
 	color: $footer-color;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-family: Raleway;
+	font-weight: bold;
+}
+
+body {
+	overflow-x: hidden;
 }
 
 .navbar-brand {
@@ -60,7 +69,7 @@ $theme-colors: (
 }
 
 .background {
-	background: $secondary-theme;
+	background: #e8e9ff;;
 };
 
 .container-home-right {
@@ -79,10 +88,64 @@ $theme-colors: (
 	};
 }
 
+.section {
+	min-height: 72vh;
+}
+
+// Buttons
+
+.btn-primary {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}
 
 .loginButtonBackground {
 	background: $primary-theme;
 	border-color: $primary-theme;
+}
+
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary:visited, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+	color: white; 
+	background-color: #4B4F9A;
+	border-color: #4B4F9A;
+}
+
+.btn-outline-primary {
+	color: $primary-theme;
+	background-color: white;
+	border-color: $primary-theme;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary:visited, .btn-outline-primary.active, .open>.dropdown-toggle.btn-outline-primary {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}
+
+.btn-secondary {
+	color: #000000;
+	background-color: $secondary-theme;
+	border-color: $secondary-theme;
+}
+
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active, .btn-secondary:visited, .btn-secondary.active, .open>.dropdown-toggle.btn-secondary {
+	color: #000000;
+	background-color: #D79E68;
+	border-color: #D79E68;
+}
+
+.btn-outline-secondary {
+	border-color: $secondary-theme;
+	color: #000000;
+	background-color: white;
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus, .btn-outline-secondary:active, .btn-outline-secondary:visited, .btn-outline-secondary.active, .open>.dropdown-toggle.btn-outline-secondary {
+	color: #000000;
+	background-color: $secondary-theme;
+	border-color: $secondary-theme;
 }
 
 .coreValues,.btn-primary-theme {
@@ -322,6 +385,10 @@ thead {
 .home-svgs {
 	width: 8.75rem;
 	height: 8.75rem;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+	color: white;
 }
 
 @media screen and (max-width: 48.125rem) { // small screens

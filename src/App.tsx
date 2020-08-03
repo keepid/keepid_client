@@ -219,17 +219,17 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (<FindOrganization />)}
               />
               <Route
-                path="/login-page"
+                path="/login"
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
                     : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
                 )}
               />
-              <Route path="/organization-signup">
+              {/* <Route path="/organization-signup">
                 <OrganizationSignup />
-              </Route>
-              <Route path="/new-signup">
+              </Route> */}
+              <Route path="/organization-signup">
                 <CompleteSignupFlow />
               </Route>
               <Route

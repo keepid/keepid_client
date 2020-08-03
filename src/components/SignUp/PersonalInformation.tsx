@@ -249,7 +249,7 @@ class PersonalInformation extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="d-flex justify-content-center pt-5">
-          <div className="col-md-8">
+          <div className="col-md-10">
             <div className="text-center pb-4 mb-2">
               <h2><b>Next, tell us about yourself</b></h2>
             </div>

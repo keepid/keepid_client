@@ -2,33 +2,33 @@ import React, { Component } from 'react';
 import { Marker, InfoWindow } from 'react-google-maps';
 
 interface Props {
-	lat: number,
-	lng: number,
-	orgName: string,
-	address: string,
-	phone: string,
-	email: string,
+  lat: number,
+  lng: number,
+  orgName: string,
+  address: string,
+  phone: string,
+  email: string,
 }
 
 interface State {
-	open: boolean,
+  open: boolean,
 }
 
 class OrganizationMarker extends Component<Props, State> {
   constructor(props: Props) {
-    	super(props);
-    	this.state = {
-    		open: false,
-    	};
-    	this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
-  	}
+      super(props);
+      this.state = {
+        open: false,
+      };
+      this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
+    }
 
-  	handleOpenInfoWindow() {
-  		const { open } = this.state;
-  		this.setState({
-  			open: !open,
-  		});
-  	}
+    handleOpenInfoWindow() {
+      const { open } = this.state;
+      this.setState({
+        open: !open,
+      });
+    }
 
   render() {
     const {
@@ -51,7 +51,7 @@ class OrganizationMarker extends Component<Props, State> {
           onClick={this.handleOpenInfoWindow}
         >
           {open
-			  			&& (
+              && (
 <InfoWindow
   onCloseClick={this.handleOpenInfoWindow}
   position={{ lat, lng }}
@@ -63,7 +63,7 @@ class OrganizationMarker extends Component<Props, State> {
     <p>{email}</p>
   </div>
 </InfoWindow>
-			  			)}
+              )}
         </Marker>
       </div>
     );
