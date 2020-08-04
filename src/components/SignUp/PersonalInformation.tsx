@@ -256,7 +256,7 @@ class PersonalInformation extends Component<Props, State, {}> {
             <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Name</label>
-                <div className="col-sm-4">
+                <div className="col-sm-4 pb-2">
                   <label htmlFor="firstname" className="sr-only sr-only-focusable">First Name</label>
                   <input
                     type="text"
@@ -266,7 +266,6 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={firstname}
                     onChange={onChangeFirstname}
                     onBlur={this.validateFirstname}
-
                   />
                   {this.generalMessage(firstnameValidator)}
                 </div>
@@ -280,7 +279,6 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={lastname}
                     onChange={onChangeLastname}
                     onBlur={this.validateLastname}
-
                   />
                   {this.generalMessage(lastnameValidator)}
                 </div>
@@ -317,7 +315,7 @@ class PersonalInformation extends Component<Props, State, {}> {
               </div>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label invisible" />
-                <div className="col-sm-3">
+                <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input
                     type="text"
@@ -331,7 +329,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                   />
                   {this.generalMessage(cityValidator)}
                 </div>
-                <div className="col-sm-3">
+                <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="state" className="sr-only sr-only-focusable">State</label>
                   <select
                     className={`form-control form-purple ${this.colorToggle(stateValidator)}`}

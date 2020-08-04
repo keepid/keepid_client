@@ -318,7 +318,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
               </div>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label invisible" />
-                <div className="col-sm-3">
+                <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input
                     type="text"
@@ -332,7 +332,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                   />
                   {this.generalMessage(orgCityValidator)}
                 </div>
-                <div className="col-sm-3">
+                <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="state" className="sr-only sr-only-focusable">State</label>
                   <select
                     className={`form-control form-purple ${this.colorToggle(orgStateValidator)}`}
