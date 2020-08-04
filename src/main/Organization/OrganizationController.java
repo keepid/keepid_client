@@ -162,6 +162,7 @@ public class OrganizationController {
 
   /*  Invite users through email under an organization with a JSON Object formatted as:
       {“senderName”: “senderName”,
+       "organization": "orgName",
                data: [
                       {
                           “firstName”:”exampleFirstName”,
@@ -178,6 +179,12 @@ public class OrganizationController {
       JSONArray people = req.getJSONArray("data");
 
       String sender = req.getString("senderName");
+      String org = req.getString("organization");
+
+      if (org.isEmpty()) {
+        ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+        return;
+      }
 
       // Checking for any empty entries before sending out any emails
       for (int u = 0; u < people.length(); u++) {
@@ -220,7 +227,7 @@ public class OrganizationController {
         int expirationTime = 604800000; // 7 days
         String jwt =
             securityUtils.createOrgJWT(
-                id, sender, firstName, lastName, role, "Invite User to Org", expirationTime);
+                id, sender, firstName, lastName, role, "Invite User to Org", org, expirationTime);
 
         // NEED TO UPDATE URL IN JWT TO ORG INVITE WEBSITE
         try {

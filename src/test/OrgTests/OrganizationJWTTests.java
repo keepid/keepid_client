@@ -45,10 +45,11 @@ public class OrganizationJWTTests {
     String firstName = "First";
     String lastName = "Last";
     String role = "Worker";
+    String org = "testOrg";
     int time = 72000;
 
     String orgJWT =
-        securityUtils.createOrgJWT(id, issuer, firstName, lastName, role, subject, time);
+        securityUtils.createOrgJWT(id, issuer, firstName, lastName, role, subject, org, time);
 
     Claims decodedClaims = securityUtils.decodeJWT(orgJWT);
 
@@ -83,6 +84,7 @@ public class OrganizationJWTTests {
     dataArray.put(secUser);
 
     body.put("senderName", "Test Sender");
+    body.put("organization", "Test Org");
     body.put("data", dataArray);
 
     HttpResponse actualResponse =
@@ -123,6 +125,7 @@ public class OrganizationJWTTests {
     dataArray.put(secUser);
 
     body.put("senderName", "Test Sender");
+    body.put("organization", "Test Org");
     body.put("data", dataArray);
 
     HttpResponse actualResponse =
