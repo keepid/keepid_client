@@ -151,7 +151,7 @@ class Header extends Component<Props, State, {}> {
                 <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
                   <Link className="nav-link" to="/my-organization">My Organization</Link>
                 </li>
-                <div className="col-auto my-1 flex-fill">
+                <div className="my-1 flex-fill">
                   <Link to="/home">
                     <button type="button" onClick={this.handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
                   </Link>
@@ -187,10 +187,24 @@ class Header extends Component<Props, State, {}> {
                 <Link className="nav-link" to="/">For Organizations</Link>
               </li> */}
             </ul>
-            <div className="col-auto my-1">
-              <Link to="/login-page">
-                <button type="submit" className="btn btn-dark-custom">
-                  Sign In
+            <ul className="navbar-nav ml-auto mt-2 mt-lg-0 ">
+              <li className="nav-item my-1 mr-2 ml-2">
+                <Link className="nav-link" to="/">Home</Link>
+              </li>
+              <li className="nav-item my-1 mr-2 ml-2">
+                <Link className="nav-link" to="/find-organization">Find Organizations</Link>
+              </li>
+              <li className="nav-item my-1 mr-2 ml-2">
+                <Link className="nav-link" to="/our-mission">About</Link>
+              </li>
+              <li className="nav-item my-1 mr-3 ml-2">
+                <Link className="nav-link" to="/login">Log in</Link>
+              </li>
+            </ul>
+            <div className="my-1">
+              <Link to="/organization-signup">
+                <button type="submit" className="btn btn-secondary w-40 mr-2">
+                  Sign Up
                 </button>
               </Link>
             </div>

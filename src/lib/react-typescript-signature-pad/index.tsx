@@ -492,7 +492,9 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
           <div className="m-signature-pad--body">
             <canvas style={customStyles} ref={this.canvasRef} />
           </div>
-          <button className="btn btn-primary" onClick={this.clear}>Clear</button>
+          <div className="d-flex justify-content-end">
+            <button className="btn btn-outline-primary" onClick={this.clear}>Clear Signature</button>
+          </div>
         </div>
       );
     }

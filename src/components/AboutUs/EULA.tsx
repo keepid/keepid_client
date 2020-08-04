@@ -1,6 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import EULA_PDF from '../../static/EULA.pdf';
 
 interface State {}
 

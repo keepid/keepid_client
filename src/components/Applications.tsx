@@ -150,9 +150,6 @@ class Applications extends Component<Props, State, {}> {
   onChangeViewPermission(event: any) {
     const {
       currentUser,
-      username,
-      adminName,
-      organization,
     } = this.state;
     currentUser.viewPermission = event.target.ischecked;
     this.setState({ currentUser }, this.getDocuments);

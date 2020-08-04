@@ -9,7 +9,6 @@ import {
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import PersonSignup from './components/SignUp/PersonSignup';
-import OrganizationSignup from './components/SignUp/OrganizationSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -17,8 +16,6 @@ import Request from './components/Request';
 import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
-import DocumentViewer from './components/DocumentViewer';
-import ViewDocument from './components/ViewDocument';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
@@ -39,6 +36,7 @@ import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import EULA from './components/AboutUs/EULA';
+import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 
 interface State {
   role: Role,
@@ -51,7 +49,7 @@ interface State {
 
 const timeUntilWarn: number = 1000 * 60 * 120;
 const timeFromWarnToLogout: number = 1000 * 60;
-const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
+// const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
 
 class App extends React.Component<{}, State, {}> {
   private idleTimerWarn;
@@ -218,15 +216,18 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (<FindOrganization />)}
               />
               <Route
-                path="/login-page"
+                path="/login"
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
                     : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
                 )}
               />
-              <Route path="/organization-signup">
+              {/* <Route path="/organization-signup">
                 <OrganizationSignup />
+              </Route> */}
+              <Route path="/organization-signup">
+                <CompleteSignupFlow />
               </Route>
               <Route
                 path="/person-signup/:roleString"

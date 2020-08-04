@@ -27,7 +27,6 @@ class Error extends React.Component<Props, State> {
 
   // manually redirect - clear timer
   componentWillUnmount() {
-    const { redirect } = this.state;
     if (this.redirectTimeout) {
       clearTimeout(this.redirectTimeout);
     }

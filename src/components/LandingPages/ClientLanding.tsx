@@ -29,9 +29,6 @@ class ClientLanding extends Component<{}, State, {}> {
   }
 
   render() {
-    const {
-      show,
-    } = this.state;
     return (
       <div id="Buttons" className="container pt-5">
         <Helmet>
