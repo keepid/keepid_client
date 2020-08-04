@@ -7,7 +7,7 @@ public enum EmailMessages {
   HTML_NOT_FOUND("HTML_NOT_FOUND: Can't locate html needed for email"),
   RECEIVER_DOM_NOT_FOUND("RECEIVER_DOM_NOT_FOUND: Can't locate target name in html"),
   INVITER_DOM_NOT_FOUND("INVITER_DOM_NOT_FOUND: Can't locate sender name in html"),
-  CODE_DOM_NOT_FOUND("INVITER_DOM_NOT_FOUND: Can't locate sender name in html"),
+  CODE_DOM_NOT_FOUND("CODE_DOM_NOT_FOUND: Can't locate verification code in html"),
   NOT_VALID_EMAIL("NOT_VALID_EMAIL: The email address isn't valid"),
   SUCCESS("SUCCESS:Success.");
 
