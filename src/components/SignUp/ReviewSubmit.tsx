@@ -48,8 +48,10 @@ class ReviewSubmit extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
-    const token = await recaptchaRef.current.executeAsync();
-    this.props.handleChangeRecaptcha(token);
+    if(recaptchaRef !== null && recaptchaRef.current !== null){
+      const token = await recaptchaRef.current.executeAsync();
+      this.props.handleChangeRecaptcha(token);
+    }
   }
 
   passwordHider = (password: string) => '*'.repeat(password.length - 1)
