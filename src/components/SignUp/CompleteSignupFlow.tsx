@@ -382,7 +382,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage / 4 * 100} label={`${this.state.signupStage / 4 * 100}%`} />
+          <ProgressBar className="d-md-none" now={this.state.signupStage / 4 * 100} label={`Step ${this.state.signupStage + 1} out of 5`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
-import OrganizationMarker from './OrganizationMarker';
 import uuid from 'react-uuid';
+import OrganizationMarker from './OrganizationMarker';
 
 interface Props {
   organizations: any,

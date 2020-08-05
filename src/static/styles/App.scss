@@ -495,3 +495,27 @@ thead {
 .ant-steps-item-finish .ant-steps-item-container .ant-steps-item-tail::after {
 	background-color: $primary-theme !important;
 }
+
+.branch-card {
+	border-color: white;
+	border-width: .125rem;
+	border-radius: .5rem;
+	box-shadow: 0rem 0.4475rem 0.85rem 0rem rgba(0, 0, 0, 0.2); 
+}
+
+.branch-card:hover {
+	border-color: $primary-theme;
+	border-width: .125rem;
+	border-radius: .5rem;
+	box-shadow: 0rem 0.4475rem 0.85rem 0rem rgba(0, 0, 0, 0.2); 
+}
+
+.no-link-style {
+	color: inherit;
+	text-decoration: none;
+}
+
+.no-link-style:hover {
+	color: inherit;
+	text-decoration: none;
+}

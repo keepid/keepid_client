@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import AnchorLink from 'react-anchor-link-smooth-scroll';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
@@ -16,7 +17,6 @@ import Access from '../static/images/access-data.svg';
 import FileCloud from '../static/images/file-cloud.svg';
 import Building from '../static/images/building.svg';
 import Profile from '../static/images/profile-pic.svg';
-import AnchorLink from 'react-anchor-link-smooth-scroll'
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -66,10 +66,10 @@ class Home extends Component<Props, {}, {}> {
                     <p className="pt-2 pb-2 home-subtext">
                       A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
                     </p>
-                    <Link to="/organization-signup">
+                    <Link to="/signup-branch">
                       <button className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
-                    <AnchorLink offset='100' href="#info">
+                    <AnchorLink offset="100" href="#info">
                       <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
                     </AnchorLink>
                   </div>

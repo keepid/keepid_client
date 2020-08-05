@@ -63,7 +63,7 @@ class SignUserAgreement extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="d-flex">
-              <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+              <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
               <button type="button" className="ml-auto btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
             </div>
           </div>

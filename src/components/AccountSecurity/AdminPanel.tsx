@@ -103,7 +103,7 @@ class AdminPanel extends Component<Props, State> {
 
   onChangeViewPermission(event: any) {
     const {
-      currentWorker
+      currentWorker,
     } = this.state;
     currentWorker.viewPermission = event.target.ischecked;
     this.setState({ currentWorker });

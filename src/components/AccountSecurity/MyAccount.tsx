@@ -5,9 +5,9 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
+import uuid from 'react-uuid';
 import USStates from '../../static/data/states_titlecase.json';
 import getServerURL from '../../serverOverride';
-import uuid from 'react-uuid';
 
 enum PasswordError {
   OldPasswordWrong = 1,

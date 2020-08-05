@@ -202,7 +202,7 @@ class Header extends Component<Props, State, {}> {
               </li>
             </ul>
             <div className="my-1">
-              <Link to="/organization-signup">
+              <Link to="/signup-branch">
                 <button type="submit" className="btn btn-secondary w-40 mr-2">
                   Sign Up
                 </button>

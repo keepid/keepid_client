@@ -16,19 +16,19 @@ interface State {
 
 class OrganizationMarker extends Component<Props, State> {
   constructor(props: Props) {
-      super(props);
-      this.state = {
-        open: false,
-      };
-      this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
-    }
+    super(props);
+    this.state = {
+      open: false,
+    };
+    this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
+  }
 
-    handleOpenInfoWindow() {
-      const { open } = this.state;
-      this.setState({
-        open: !open,
-      });
-    }
+  handleOpenInfoWindow() {
+    const { open } = this.state;
+    this.setState({
+      open: !open,
+    });
+  }
 
   render() {
     const {
@@ -52,17 +52,17 @@ class OrganizationMarker extends Component<Props, State> {
         >
           {open
               && (
-<InfoWindow
-  onCloseClick={this.handleOpenInfoWindow}
-  position={{ lat, lng }}
->
-  <div>
-    <p className="font-weight-bold">{orgName}</p>
-    <p>{address}</p>
-    <p>{phone}</p>
-    <p>{email}</p>
-  </div>
-</InfoWindow>
+              <InfoWindow
+                onCloseClick={this.handleOpenInfoWindow}
+                position={{ lat, lng }}
+              >
+                <div>
+                  <p className="font-weight-bold">{orgName}</p>
+                  <p>{address}</p>
+                  <p>{phone}</p>
+                  <p>{email}</p>
+                </div>
+              </InfoWindow>
               )}
         </Marker>
       </div>

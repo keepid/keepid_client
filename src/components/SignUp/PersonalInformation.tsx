@@ -392,7 +392,7 @@ class PersonalInformation extends Component<Props, State, {}> {
               </div>
 
               <div className="d-flex">
-                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
                 <button type="submit" className="ml-auto btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>
               </div>
             </form>
