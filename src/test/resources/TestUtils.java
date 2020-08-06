@@ -28,11 +28,9 @@ import java.util.Date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUtils {
-  private static MongoDatabase testDB =
-      MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
   private static int serverPort = 1234;
   private static String serverUrl = "http://localhost:" + serverPort;
-  private static Javalin app = null;
+  private static Javalin app;
 
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
@@ -46,8 +44,8 @@ public class TestUtils {
    */
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
-    MongoConfig.getMongoTestClient();
-
+    MongoDatabase testDB =
+            MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
     /* *********************** Broad Street Ministry ************************ */
     Organization broadStreetMinistry =
         new Organization(

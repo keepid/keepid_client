@@ -3,10 +3,10 @@ jdk: openjdk13
 before_install:
   - sudo apt-get update
   - sudo apt-get install libc6
-dist: bionic
+dist: focal
 install: true
 script:
-  - mvn test -B
+  - mvn clean test -B
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
