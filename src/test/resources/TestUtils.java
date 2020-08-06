@@ -1,4 +1,4 @@
-package TestUtils;
+package resources;
 
 import Config.MongoConfig;
 import Organization.Organization;
@@ -46,7 +46,6 @@ public class TestUtils {
    */
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
-    TestUtils.tearDownTestDB();
     MongoConfig.getMongoTestClient();
 
     /* *********************** Broad Street Ministry ************************ */

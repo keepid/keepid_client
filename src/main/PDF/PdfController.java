@@ -256,10 +256,8 @@ public class PdfController {
   public static void fillFields(PDDocument pdfDocument, JSONObject formAnswers) throws IOException {
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     for (String fieldName : formAnswers.keySet()) {
-      System.out.println(fieldName);
       PDField field = acroForm.getField(fieldName);
       if (field instanceof PDTextField) {
-        System.out.println(field.getPartialName());
         String value = formAnswers.getString(fieldName);
         field.setValue(value);
       }
