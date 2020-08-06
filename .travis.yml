@@ -6,7 +6,7 @@ before_install:
 dist: focal
 install: true
 script:
-  - mvn clean test -B
+  - mvn test -B
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
