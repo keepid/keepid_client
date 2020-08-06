@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import uuid from 'react-uuid';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 import PDFType from '../static/PDFType';
-import uuid from 'react-uuid';
 
 interface Props {
   alert: any,

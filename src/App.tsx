@@ -359,7 +359,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/my-organization"
                 render={() => {
                   if (role === Role.Director || role === Role.Admin) {
-                    return <MyOrganization/>;
+                    return <MyOrganization />;
                   }
                   return <Redirect to="/error" />;
                 }}

@@ -48,7 +48,7 @@ class ReviewSubmit extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
-    if(recaptchaRef !== null && recaptchaRef.current !== null){
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
       const token = await recaptchaRef.current.executeAsync();
       this.props.handleChangeRecaptcha(token);
     }
