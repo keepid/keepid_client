@@ -53,6 +53,7 @@ public class App {
     app.post("/get-documents", pdfController.pdfGetAll);
     app.post("/get-application-questions", pdfController.getApplicationQuestions);
     app.post("/fill-application", pdfController.fillPDFForm);
+    app.post("/upload-pdf-signed", pdfController.pdfSignedUpload);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);

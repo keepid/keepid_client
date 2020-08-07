@@ -165,6 +165,35 @@ public class PdfControllerUnitTests {
   }
 
   @Test
+  // NOTE: We need to fix the file so that the buttons are radio
+  public void getFieldInformationValidValuesTest4() throws IOException {
+    File pdfInput = new File("src/test/resources/intellectual_property_release_fillable.pdf");
+    PDDocument pdfDocument = PDDocument.load(pdfInput);
+    List<JSONObject> fieldsJSON = new LinkedList<>();
+    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+
+    // Make sure field names are correct
+    for (JSONObject field : fieldsJSON) {
+      System.out.println(field.toString());
+
+      // Not Editable
+      Assert.assertNotEquals("", field.getString("fieldName"));
+      Assert.assertNotEquals("", field.getString("fieldType"));
+      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+
+      // Editable
+      Assert.assertNotEquals("", field.getString("fieldQuestion"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
+
+      // Is valid fieldType
+      Set<String> validFieldTypes = PdfController.validFieldTypes;
+      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
+    }
+    pdfDocument.close();
+  }
+
+  @Test
   public void getFieldInformationTextFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
