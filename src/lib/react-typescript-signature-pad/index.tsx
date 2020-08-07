@@ -12,8 +12,8 @@ interface ISignaturePadProps extends React.Props<any> {
     onEnd?: (event: any, data: string) => void;
     onBegin?: () => void;
     clearButton?: boolean;
-    handleChangeAcceptEULA: (accept: boolean) => void;
-    acceptEULA: boolean;
+    handleChangeAcceptEULA?: (accept: boolean) => void;
+    acceptEULA?: boolean;
     minDistance?: number;
 }
 
@@ -89,7 +89,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.onEnd = onEnd;
       this.onBegin = onBegin;
       this.minDistance = minDistance || 5;
-      this.handleChangeAcceptEULA = handleChangeAcceptEULA;
+      this.handleChangeAcceptEULA = handleChangeAcceptEULA || ((accept) => {});
       this.data = [];
       this.handleChangeAcceptEULA(false);
       this.clear = this.clear.bind(this);
@@ -124,7 +124,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
 
     toDataURL(imageType?: any, quality?: any, ...rest: any[]) {
       const { canvas } = this;
-      return canvas.toDataURL(canvas, ...rest);
+      return canvas.toDataURL('image/png', canvas, ...rest);
     }
 
     fromDataURL(dataUrl: any) {
