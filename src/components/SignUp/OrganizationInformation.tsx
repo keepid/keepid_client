@@ -2,7 +2,7 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
-import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
+import {isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
   isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
 interface Props {
   orgName: string,
@@ -97,7 +97,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgWebsite = async ():Promise<void> => {
     const { orgWebsite } = this.props;
     // ( if orgWebsite is valid here)
-    if (orgWebsite) {
+    if (isValidOrgWebsite(orgWebsite)) {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'false' }, resolve));
@@ -127,7 +127,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgCity = async ():Promise<void> => {
     const { orgCity } = this.props;
     // ( if orgCity is valid here)
-    if (orgCity) {
+    if (isValidCity(orgCity)) {
       await new Promise((resolve) => this.setState({ orgCityValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgCityValidator: 'false' }, resolve));
@@ -137,7 +137,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgState = async ():Promise<void> => {
     const { orgState } = this.props;
     // ( if orgState is valid here)
-    if (orgState) {
+    if (isValidUSState(orgState)) {
       await new Promise((resolve) => this.setState({ orgStateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgStateValidator: 'false' }, resolve));
@@ -147,7 +147,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgZipcode = async ():Promise<void> => {
     const { orgZipcode } = this.props;
     // ( if orgZipcode is valid here)
-    if (orgZipcode) {
+    if (isValidZipCode(orgZipcode)) {
       await new Promise((resolve) => this.setState({ orgZipcodeValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgZipcodeValidator: 'false' }, resolve));
@@ -157,7 +157,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgPhoneNumber = async ():Promise<void> => {
     const { orgPhoneNumber } = this.props;
     // ( if orgPhonenumber is valid here)
-    if (orgPhoneNumber) {
+    if (isValidPhoneNumber(orgPhoneNumber)) {
       await new Promise((resolve) => this.setState({ orgPhoneNumberValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgPhoneNumberValidator: 'false' }, resolve));
@@ -167,7 +167,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgEmail = async ():Promise<void> => {
     const { orgEmail } = this.props;
     // ( if orgEmail is valid here)
-    if (orgEmail) {
+    if (isValidEmail(orgEmail)) {
       await new Promise((resolve) => this.setState({ orgEmailValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgEmailValidator: 'false' }, resolve));
