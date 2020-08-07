@@ -5,6 +5,7 @@ import { withAlert } from 'react-alert';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../static/PDFType';
+import SignaturePad from "../lib/react-typescript-signature-pad";
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
@@ -23,6 +24,8 @@ interface State {
 }
 
 class ApplicationForm extends Component<Props, State> {
+  signaturePad: any;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -113,9 +116,13 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
     if (pdfApplication) {
       const formData = new FormData();
-      formData.append('file', pdfApplication, pdfApplication.name);
+      console.log(pdfApplication);
+      formData.append('file', pdfApplication);
+      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+      // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
+      formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
-      fetch(`${getServerURL()}/upload`, {
+      fetch(`${getServerURL()}/upload-pdf-signed`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -127,12 +134,25 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
+  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+  dataURLtoBlob(dataurl) {
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type: 'image/png'});
+  }
+
   render() {
     const {
       pdfApplication,
       formQuestions,
       submitSuccessful,
     } = this.state;
+
+    //const signaturePad = new SignaturePad({});
+    //this.signaturePad = signaturePad;
 
     if (submitSuccessful) {
       return (<Redirect to="/home" />);
@@ -143,6 +163,7 @@ class ApplicationForm extends Component<Props, State> {
       bodyElement = (
         <div>
           <DocumentViewer pdfFile={pdfApplication} />
+          <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
           <button onClick={this.onSubmitPdfApplication} type="button">Submit Final Application</button>
         </div>
       );
