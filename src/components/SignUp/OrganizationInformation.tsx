@@ -4,6 +4,7 @@ import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
 import {isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
   isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
+  
 interface Props {
   orgName: string,
   orgWebsite: string,
