@@ -2,7 +2,8 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
-
+import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
+  isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
 interface Props {
   orgName: string,
   orgWebsite: string,
@@ -116,7 +117,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgAddress = async ():Promise<void> => {
     const { orgAddress } = this.props;
     // ( if orgAddress is valid here)
-    if (orgAddress) {
+    if (isValidAddress(orgAddress)) {
       await new Promise((resolve) => this.setState({ orgAddressValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgAddressValidator: 'false' }, resolve));
