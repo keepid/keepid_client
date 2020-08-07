@@ -23,7 +23,7 @@ class MyOrganization extends Component<Props, State> {
 
 onSubmit = (e) => {
   e.preventDefault();
-  // console.log(this.state);
+  //console.log(this.state);
 }
 
 render() {
@@ -31,8 +31,9 @@ render() {
     <div>
       <h1 className="brand-text">Invite New Team Members</h1>
 
-      <form className="form-inline">
-        <div className="form-group col-xs-4">
+      <form>
+      <div className="form-row">
+        <div className="form-group col">
           <label>Name</label>
           <input
             placeholder="Full Name Here"
@@ -42,8 +43,8 @@ render() {
             value={this.state.personName}
             onChange={(e) => this.setState({ personName: e.target.value })}
           />
-        </div>
-        <div className="form-group col-xs-4">
+          </div>
+        <div className="form-group col">
           <label>Email address</label>
           <input
             placeholder="Enter Valid Email Address"
@@ -61,7 +62,8 @@ render() {
             <option>Worker</option>
           </select>
         </div>
-        <button type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+        <button className="btn btn-primary btn-sm" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+        </div>
       </form>
     </div>
   );
