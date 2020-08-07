@@ -1,6 +1,6 @@
-// // import Validations from '../../lib/Validations/Validations';
-// import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-//     isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
+// import Validations from '../../lib/Validations/Validations';
+import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
+    isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
 
 // // const isValidOrgWebsite = require('../../lib/Validations/Validations');
 // // const isValidEmail = require('../../lib/Validations/Validations');
@@ -12,17 +12,17 @@
 // // const isValidBirthDate = require('../../lib/Validations/Validations');
 
 
-// test('valid website test',() => {
-//     expect(isValidOrgWebsite("https://example.com")).toBe(true);
-//     expect(isValidOrgWebsite("https://www.example.com")).toBe(true);
-//     expect(isValidOrgWebsite("https://www.example.org/somethinghere")).toBe(true);
-//     expect(isValidOrgWebsite("")).toBe(false);
-//     expect(isValidOrgWebsite("not_localhost")).toBe(false);
-//     expect(isValidOrgWebsite("not a website")).toBe(false);
-//     expect(isValidOrgWebsite("111.22.1.2")).toBe(false);
-//     expect(isValidOrgWebsite("    ")).toBe(false);
-//     expect(isValidOrgWebsite(null)).toBe(false);
-// })
+test('valid website test',() => {
+    expect(isValidOrgWebsite("https://example.com")).toBe(true);
+    expect(isValidOrgWebsite("https://www.example.com")).toBe(true);
+    expect(isValidOrgWebsite("https://www.example.org/somethinghere")).toBe(true);
+    expect(isValidOrgWebsite("")).toBe(false);
+    expect(isValidOrgWebsite("not_localhost")).toBe(false);
+    expect(isValidOrgWebsite("not a website")).toBe(false);
+    expect(isValidOrgWebsite("111.22.1.2")).toBe(false);
+    expect(isValidOrgWebsite("    ")).toBe(false);
+    expect(isValidOrgWebsite(null)).toBe(false);
+})
  
 // test('valid email test', () => {
 //     expect(isValidEmail("myemail@email.com")).toBe(true);
