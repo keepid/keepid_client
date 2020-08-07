@@ -1,5 +1,9 @@
 [
     {
+        "name": "No State Selected",
+        "abbreviation": "No State Selected"
+    },
+    {
         "name": "Alabama",
         "abbreviation": "AL"
     },

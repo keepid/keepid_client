@@ -7,6 +7,7 @@ import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import USStates from '../../static/data/states_titlecase.json';
 import getServerURL from '../../serverOverride';
+import uuid from 'react-uuid';
 
 enum PasswordError {
   OldPasswordWrong = 1,
@@ -95,7 +96,6 @@ class RenderInput extends Component<InputProps, InputState> {
     this.setState({
       readOnly: true,
     });
-    const { name } = event.target;
     const {
       originalInput,
     } = this.state;
@@ -123,7 +123,6 @@ class RenderInput extends Component<InputProps, InputState> {
     }
     const { target } = event;
     const { value } = target;
-    const { name } = target;
     this.setState({
       input: value,
     });
@@ -239,7 +238,7 @@ class RenderInput extends Component<InputProps, InputState> {
                 onChange={this.handleInputChange}
                 disabled={readOnly}
               >
-                {USStates.map((USState, index) => (<option key={index}>{USState.abbreviation}</option>))}
+                {USStates.map((USState) => (<option key={uuid()}>{USState.abbreviation}</option>))}
               </select>
             ) : null}
           { inputType === 'text' || inputType === 'tel'
@@ -299,7 +298,6 @@ class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmP
   handlePasswordInput(event) {
     const { target } = event;
     const enteredPasswordInModal = target.value;
-    const { name } = target;
     this.setState({
       enteredPasswordInModal,
     });
@@ -313,7 +311,6 @@ class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmP
     } = this.state;
 
     const {
-      section,
       handleSaveInfo,
     } = this.props;
 
@@ -335,10 +332,8 @@ class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmP
   render() {
     const {
       show,
-      section,
       buttonState,
       wrongPasswordInModal,
-      handleClosePasswordConfirm,
     } = this.props;
 
     return (
@@ -534,8 +529,6 @@ class MyAccount extends Component<Props, State, {}> {
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
         const { status } = responseJSON;
-        const { message } = responseJSON;
-
         // old passwrod entered correctly
         if (status === 'AUTH_SUCCESS') {
           // new password is the same as the old password
@@ -575,8 +568,6 @@ class MyAccount extends Component<Props, State, {}> {
       .then((responseJSON) => {
         responseJSON = JSON.parse(responseJSON);
         const { status } = responseJSON;
-        const { message } = responseJSON;
-
         if (status === 'SUCCESS') { // succesfully updated key and value
           // alert.show(`Successfully set 2FA Value`);
           this.setState({ twoFactorOn });
@@ -596,7 +587,6 @@ class MyAccount extends Component<Props, State, {}> {
       city,
       state,
       zipcode,
-      twoFactorOn,
       passwordChangeReadOnly,
       enteredPassword,
       newPassword,

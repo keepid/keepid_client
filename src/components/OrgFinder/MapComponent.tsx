@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import OrganizationMarker from './OrganizationMarker';
+import uuid from 'react-uuid';
 
 interface Props {
   organizations: any,
@@ -31,7 +32,7 @@ class MapComponent extends Component<Props, State> {
         {organizations.map(
           (organization, index) => (
             <OrganizationMarker
-              key={index}
+              key={uuid()}
               lat={organization.lat}
               lng={organization.lng}
               orgName={organization.orgName}

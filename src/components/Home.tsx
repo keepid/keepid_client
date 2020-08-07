@@ -5,7 +5,6 @@ import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
 import HomeForm from '../static/images/home-forms.svg';
-import JobAppGraphic from '../static/images/job-app.svg';
 import SignUp from '../static/images/sign-up.svg';
 import SyncFiles from '../static/images/sync-files.svg';
 import SecureGraphic from '../static/images/security.svg';
@@ -15,6 +14,9 @@ import ConstantAvailabilityGraphic from '../static/images/constant-availability.
 import Spreadsheet from '../static/images/spreadsheet.svg';
 import Access from '../static/images/access-data.svg';
 import FileCloud from '../static/images/file-cloud.svg';
+import Building from '../static/images/building.svg';
+import Profile from '../static/images/profile-pic.svg';
+import AnchorLink from 'react-anchor-link-smooth-scroll'
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -52,32 +54,24 @@ class Home extends Component<Props, {}, {}> {
 
         <div className="">
           <div className="">
-            <div className="container-fluid">
-              <div className="row mt-4">
+            <div className="container-fluid my-auto">
+              <div className="row mt-4 section align-items-center">
                 <div className="col-md-6">
-                  <div className="background ml-5 p-4 rounded mb-3 pb-5">
+                  <div className="ml-5 p-4 rounded mb-3 pb-5">
                     <div className="page-header">
                       <span className="brand-text">
-                        Safeguarding Identities of Those Experiencing Homelessness
+                        Safeguarding identities of those experiencing homelessness
                       </span>
                     </div>
-                    <h4 className="pt-2 pb-2 brand-subtext">
+                    <p className="pt-2 pb-2 home-subtext">
                       A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
-                    </h4>
-                    <h2 className="mt-2 pt-2 pb-2">
-                      <span className="home-subtext">For Those Experiencing Homelessness</span>
-                    </h2>
-                    <h5>Find a nearby registered organization that can help get you started</h5>
-                    <Link to="/find-organization">
-                      <button className="btn btn-primary btn-lg loginButtonBackground w-50">Find Organizations</button>
-                    </Link>
-                    <h2 className="mt-4">
-                      <span className="home-subtext">For Organizations: Partner with Us</span>
-                    </h2>
-                    <h5>Start your free three-month trial to empower clients you serve</h5>
+                    </p>
                     <Link to="/organization-signup">
-                      <button className="btn btn-primary btn-lg loginButtonBackground w-50">Try Keep.id for Free</button>
+                      <button className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
+                    <AnchorLink offset='100' href="#info">
+                      <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
+                    </AnchorLink>
                   </div>
                 </div>
                 <div className="col-md-6 custom-vertical-center">
@@ -85,13 +79,12 @@ class Home extends Component<Props, {}, {}> {
                     <div>
                       <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
                     </div>
-
                   </div>
                 </div>
               </div>
             </div>
             <div className="container mt-4 mb-4 pt-5 pb-5">
-              <div className="row d-flex align-items-center">
+              <div id="info" className="row d-flex align-items-center">
                 <div className="col-md-6 ">
                   <h1 className="text-center m-3 pb-5">
                     The lack of
@@ -199,7 +192,7 @@ class Home extends Component<Props, {}, {}> {
               <div className="container">
                 <div className="jumbotron jumbotron-fluid bg-transparent text-center pb-2 mb-2">
                   <h1 className="display-5 text-light">Meaningful Client Journeys</h1>
-                  <p className="lead text-white-50">Prioritizing the user experience and alleviating pain points.</p>
+                  <p className="lead text-light">Prioritizing the user experience and alleviating pain points.</p>
                 </div>
                 <div id="carouselExampleCaptions" className="carousel slide" data-ride="carousel">
                   <ol className="carousel-indicators">
@@ -212,28 +205,28 @@ class Home extends Component<Props, {}, {}> {
                   <div className="carousel-inner">
                     <div className="carousel-item active">
                       <img src={SignUp} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-                      <h4 className="text-center text-light">Step #1: Registration</h4>
-                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Homeless create a Keep.id account at participating nonprofits. Nonprofits then help homeless obtain missing identification.</p>
+                      <h4 className="text-center text-white">Step #1: Registration</h4>
+                      <p className="text-center text-light pb-5 w-50 mx-auto">Homeless create a Keep.id account at participating nonprofits. Nonprofits then help homeless obtain missing identification.</p>
                     </div>
                     <div className="carousel-item">
                       <img src={SyncFiles} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-                      <h4 className="text-center text-light">Step #2: Uploading</h4>
-                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Government identification, personal information, and prison health records are securely uploaded to our cloud databases. These documents are also cryptographically signed and encrypted.</p>
+                      <h4 className="text-center text-white">Step #2: Uploading</h4>
+                      <p className="text-center text-light pb-5 w-50 mx-auto">Government identification, personal information, and prison health records are securely uploaded to our cloud databases. These documents are also cryptographically signed and encrypted.</p>
                     </div>
                     <div className="carousel-item">
                       <img src={Access} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-                      <h4 className="text-center text-light">Step #3: Access</h4>
-                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Those experiencing homelessness can access their documents at public or nonprofit computers.</p>
+                      <h4 className="text-center text-white">Step #3: Access</h4>
+                      <p className="text-center text-light pb-5 w-50 mx-auto">Those experiencing homelessness can access their documents at public or nonprofit computers.</p>
                     </div>
                     <div className="carousel-item">
                       <img src={FileCloud} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-                      <h4 className="text-center text-light">Step #4: Harnessing Data: Clients</h4>
-                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.</p>
+                      <h4 className="text-center text-white">Step #4: Harnessing Data: Clients</h4>
+                      <p className="text-center text-light pb-5 w-50 mx-auto">Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.</p>
                     </div>
                     <div className="carousel-item">
                       <img src={Spreadsheet} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-                      <h4 className="text-center text-light">Step #5: Harnessing Data: Nonprofits</h4>
-                      <p className="text-center text-white-50 pb-5 w-50 mx-auto">Nonprofits can utilize data to generate reports, create additional touch points for care, and streamline their filing operations.</p>
+                      <h4 className="text-center text-white">Step #5: Harnessing Data: Nonprofits</h4>
+                      <p className="text-center text-light pb-5 w-50 mx-auto">Nonprofits can utilize data to generate reports, create additional touch points for care, and streamline their filing operations.</p>
                     </div>
                   </div>
                   <a className="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
@@ -276,42 +269,64 @@ class Home extends Component<Props, {}, {}> {
                     </div>
                     <div className="row">
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <h3 className="text-center"> Secure Access</h3>
+                        <h4 className="text-center"> Secure Access</h4>
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <h3 className="text-center"> Constant Availability</h3>
+                        <h4 className="text-center"> Constant Availability</h4>
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <h3 className="text-center"> Protected Document Transfer</h3>
+                        <h4 className="text-center"> Protected Document Transfer</h4>
                       </div>
                       <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
-                        <h3 className="text-center"> Ease of Use</h3>
+                        <h4 className="text-center"> Ease of Use</h4>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="container my-4 py-5">
-              <div className="row">
-                <h1 className="font-weight-bold">Benefiting Both Local Non-Profits and the Homeless</h1>
-              </div>
-              <div className="row mt-4">
-                <div className="col-6">
-                  <h3>Local nonprofits achieve exponentially faster service times</h3>
-                  <ul className="pl-4 mt-2">
-                    <li className="home-text">Stronger client relationships lead to greater touch profits</li>
-                    <li className="home-text">Greater audience reach</li>
-                    <li className="home-text">Higher efficiency with paperwork</li>
-                  </ul>
+            <div className="row">
+              <div className="container py-2 my-auto">
+                <div className="row mt-4 mx-4 text-center d-flex justify-content-center">
+                  <h1 className="font-weight-bold">Benefiting both local non-profits and the homeless</h1>
                 </div>
-                <div className="col-6">
-                  <h3>Homeless receive vital resources</h3>
-                  <ul className="pl-4 mt-2">
-                    <li className="home-text">Safe virtual document storage</li>
-                    <li className="home-text">Ease of applying for jobs and government aid</li>
-                    <li className="home-text">Control over personal data</li>
-                  </ul>
+              </div>
+              <div className="container py-2 my-auto">
+                <div className="row mt-4 mx-4 align-items-center">
+                  <div className="col-lg-5">
+                    <img
+                      className="img-fluid rounded mb-4 mb-lg-0"
+                      src={Building}
+                      alt="building"
+                    />
+                  </div>
+                  <div className="col-lg-7">
+                    <h3>Local nonprofits achieve exponentially faster service times</h3>
+                    <ul className="pl-4 mt-2">
+                      <li className="home-text">Stronger client relationships lead to greater touch profits</li>
+                      <li className="home-text">Greater audience reach</li>
+                      <li className="home-text">Higher efficiency with paperwork</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="container py-2 my-auto">
+                <div className="row mt-4 mx-4 align-items-center">
+                  <div className="col-lg-5 d-flex content-justify-center">
+                    <img
+                      className="img-fluid rounded mx-auto mb-4 "
+                      src={Profile}
+                      alt="profile pic"
+                    />
+                  </div>
+                  <div className="col-lg-7">
+                    <h3>Homeless receive vital resources</h3>
+                    <ul className="pl-4 mt-2">
+                      <li className="home-text">Safe virtual document storage</li>
+                      <li className="home-text">Ease of applying for jobs and government aid</li>
+                      <li className="home-text">Control over personal data</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

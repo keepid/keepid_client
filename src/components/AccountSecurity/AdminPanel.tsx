@@ -103,22 +103,18 @@ class AdminPanel extends Component<Props, State> {
 
   onChangeViewPermission(event: any) {
     const {
-      currentWorker,
-      username,
-      adminName,
-      organization,
-      workers,
+      currentWorker
     } = this.state;
     currentWorker.viewPermission = event.target.ischecked;
     this.setState({ currentWorker });
   }
 
   onChangeEditPermission(event: any) {
-    const thisCopy = this;
+    // const thisCopy = this;
   }
 
   onChangeRegisterPermission(event: any) {
-    const thisCopy = this;
+    // const thisCopy = this;
   }
 
   getAdminWorkers() {
@@ -157,7 +153,6 @@ class AdminPanel extends Component<Props, State> {
       currentPage,
       itemsPerPageSelected,
       numElements,
-      username,
       adminName,
       organization,
       workers,
