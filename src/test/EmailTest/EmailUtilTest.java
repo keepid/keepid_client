@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 public class EmailUtilTest {
 
-  private EmailUtil emailUtil = new EmailUtil();
+  EmailUtil emailUtil = new EmailUtil();
 
   @Test
   public void checkOrgInvite() {
