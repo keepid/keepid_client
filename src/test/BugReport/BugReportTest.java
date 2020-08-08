@@ -1,12 +1,12 @@
 package BugReport;
 
-import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import resources.TestUtils;
 
 import java.util.Objects;
 

@@ -1,6 +1,6 @@
 package OrgTests;
 
-import TestUtils.TestUtils;
+import resources.TestUtils;
 import kong.unirest.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
