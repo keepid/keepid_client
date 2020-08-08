@@ -55,8 +55,6 @@ public class PDFApplicationUnitTests {
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
@@ -83,8 +81,6 @@ public class PDFApplicationUnitTests {
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
@@ -111,8 +107,6 @@ public class PDFApplicationUnitTests {
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));

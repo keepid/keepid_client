@@ -1,7 +1,7 @@
 package OrgTests;
 
 import Security.SecurityUtils;
-import TestUtils.TestUtils;
+import resources.TestUtils;
 import io.jsonwebtoken.Claims;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;

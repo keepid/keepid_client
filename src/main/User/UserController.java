@@ -514,8 +514,6 @@ public class UserController {
       for (int i = pageStartIndex; i < pageEndIndex; i++) {
         page.put(elements.get(i));
       }
-    } else {
-      System.out.println("ERROR: Invalid Start Index");
     }
     return page;
   }

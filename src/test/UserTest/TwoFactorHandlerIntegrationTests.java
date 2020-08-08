@@ -1,6 +1,6 @@
 package UserTest;
 
-import TestUtils.TestUtils;
+import resources.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
