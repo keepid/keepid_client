@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 public class EmailUtilTest {
 
-  private EmailUtil emailUtil = new EmailUtil();
+  EmailUtil emailUtil = new EmailUtil();
 
   @Test
   public void checkOrgInvite() {
