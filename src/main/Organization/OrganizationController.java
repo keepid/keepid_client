@@ -185,8 +185,10 @@ public class OrganizationController {
         userCollection.insertOne(user);
 
         orgCollection.insertOne(org);
+        logger.info("Notifying Slack about new org");
         HttpResponse posted = makeBotMessage(org);
         if (!posted.isSuccess()) {
+          logger.error("Failed to notify Slack about new org");
           JSONObject body = new JSONObject();
           body.put(
               "text",
