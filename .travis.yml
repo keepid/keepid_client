@@ -3,7 +3,7 @@ jdk: openjdk13
 before_install:
   - sudo apt-get update
   - sudo apt-get install libc6
-dist: focal
+dist: bionic
 install: true
 script:
   - mvn test -B
