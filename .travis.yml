@@ -5,8 +5,9 @@ before_install:
   - sudo apt-get install libc6
 dist: focal
 install: true
-before_cache:
-  - rm -f $HOME/.m2
+cache:
+  directories:
+    - $HOME/.m2
 script:
   - mvn clean test -B
 after_success:
