@@ -543,7 +543,7 @@ public class TestUtils {
             "settings-test-2fa",
             TestUtils.hashPassword("settings-test-2fa"),
             UserType.Client);
-
+    System.out.println(settingsTest2FA);
     /* *********************** Password Reset Test Users ************************ */
 
     Organization passwordSettingsOrg =
