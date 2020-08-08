@@ -54,7 +54,6 @@ public class ChangeTwoFactorSettingIntegrationTests {
     // Check that setting was changed
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", "settings-test-2fa")).first();
-    System.out.println(user);
 
     assert (user.getTwoFactorOn() == true);
   }
