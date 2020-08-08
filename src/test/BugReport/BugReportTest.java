@@ -4,6 +4,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import resources.TestUtils;
@@ -27,11 +28,11 @@ public class BugReportTest {
     }
   }
 
-  //  @AfterClass
-  //  public static void tearDown() {
-  //    TestUtils.stopServer();
-  //    TestUtils.tearDownTestDB();
-  //  }
+  @AfterClass
+  public static void tearDown() {
+    TestUtils.stopServer();
+    TestUtils.tearDownTestDB();
+  }
 
   @Test
   public void testBlocks() {
