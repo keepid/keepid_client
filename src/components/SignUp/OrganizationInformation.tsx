@@ -3,7 +3,8 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
 import {isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
-  isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
+  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
+  isValidEIN} from '../../lib/Validations/Validations';
   
 interface Props {
   orgName: string,
@@ -88,7 +89,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgName = async ():Promise<void> => {
     const { orgName } = this.props;
     // ( if orgName is valid here)
-    if (orgName) {
+    if (isValidOrgName(orgName)) {
       await new Promise((resolve) => this.setState({ orgNameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgNameValidator: 'false' }, resolve));
@@ -108,7 +109,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateEIN = async ():Promise<void> => {
     const { ein } = this.props;
     // ( if ein is valid here)
-    if (ein) {
+    if (isValidEIN(ein)) {
       await new Promise((resolve) => this.setState({ einValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ einValidator: 'false' }, resolve));

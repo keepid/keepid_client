@@ -4,8 +4,9 @@ import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import USStates from '../../static/data/states_titlecase.json';
-import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-  isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
+import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, 
+  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidFirstName,
+  isValidLastName} from '../../lib/Validations/Validations';
 
 interface Props {
   firstname: string,
@@ -88,7 +89,7 @@ class PersonalInformation extends Component<Props, State, {}> {
   validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
     // ( if firstname is valid here)
-    if (firstname) {
+    if (isValidFirstName(firstname)) {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'false' }, resolve));
@@ -98,7 +99,7 @@ class PersonalInformation extends Component<Props, State, {}> {
   validateLastname = async ():Promise<void> => {
     const { lastname } = this.props;
     // ( if lastname is valid here)
-    if (lastname) {
+    if (isValidLastName(lastname)) {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'false' }, resolve));
