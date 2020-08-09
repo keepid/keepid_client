@@ -23,7 +23,7 @@ interface State {
   recaptchaExpired: boolean
 }
 
-const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+const reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
   logIn: (role: Role, username: string, organization: string, name: string) => void,
@@ -56,7 +56,6 @@ class LoginPage extends Component<Props, State> {
     this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
     this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
     this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
-    this.enterKeyPressed = this.enterKeyPressed.bind(this);
     this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
 
@@ -103,8 +102,8 @@ class LoginPage extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
-        const { status } = responseJSON;
+        const responseObject = JSON.parse(responseJSON);
+        const { status } = responseObject;
 
         if (status === 'AUTH_SUCCESS') {
           const role = () => {
@@ -147,8 +146,8 @@ class LoginPage extends Component<Props, State> {
       this.props.alert.show('Recaptcha has expired. Please refresh the page');
       this.setState({ buttonState: '' });
     } else {
-      if (_reCaptchaRef && _reCaptchaRef.current) {
-        _reCaptchaRef.current.execute();
+      if (reCaptchaRef && reCaptchaRef.current) {
+        reCaptchaRef.current.execute();
       }
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
@@ -160,14 +159,14 @@ class LoginPage extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          responseJSON = JSON.parse(responseJSON);
+          const responseObject = JSON.parse(responseJSON);
           const {
             status,
             userRole,
             organization,
             firstName,
             lastName,
-          } = responseJSON;
+          } = responseObject;
 
           if (status === 'AUTH_SUCCESS') {
             const role = () => {
@@ -221,7 +220,7 @@ class LoginPage extends Component<Props, State> {
     });
   }
 
-  enterKeyPressed(event, funct) {
+  static enterKeyPressed(event, funct) {
     if (event.key === 'Enter') {
       funct();
     }
@@ -310,7 +309,7 @@ class LoginPage extends Component<Props, State> {
                           </button>
                         </div>
                         <div className="col-6 pl-0">
-                          <button type="submit" onKeyDown={(e) => this.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                          <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                             Sign In
                             <div className="ld ld-ring ld-spin" />
                           </button>
@@ -332,7 +331,7 @@ class LoginPage extends Component<Props, State> {
                   {(this.state.twoFactorState !== 'show')
                     ? (
                       <div className="col-6">
-                        <button type="submit" onKeyDown={(e) => this.enterKeyPressed(e, this.handleLogin)} onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                        <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleLogin)} onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
                           Sign In
                           <div className="ld ld-ring ld-spin" />
                         </button>
@@ -347,7 +346,7 @@ class LoginPage extends Component<Props, State> {
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                    Don't have an account?
+                    Don&apos;t have an account?
                   </span>
                 </div>
                 <div className="row pl-3">
@@ -377,7 +376,7 @@ class LoginPage extends Component<Props, State> {
           <ReCAPTCHA
             theme="dark"
             size="invisible"
-            ref={_reCaptchaRef}
+            ref={reCaptchaRef}
             sitekey={reCaptchaKey}
             onChange={this.handleRecaptchaChange}
           />

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import { withAlert } from 'react-alert';
-import { Redirect } from 'react-router-dom';
+
 import Modal from 'react-bootstrap/Modal';
 import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
@@ -23,7 +23,6 @@ interface State {
   clients: any,
   numClients: number,
   searchName: string,
-  redirect: boolean,
   redirectLink: string,
   clientUsername: string,
   clientPassword: string,
@@ -55,7 +54,6 @@ class WorkerLanding extends Component<Props, State> {
     this.state = {
       searchName: '',
       redirectLink: '',
-      redirect: false,
       clientUsername: '',
       clientPassword: '',
       numClients: 0,
@@ -89,13 +87,6 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients();
   }
 
-  handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-      currentPage: 0,
-    }, this.getClients);
-  }
-
   changeCurrentPage(newCurrentPage: number) {
     this.setState({ currentPage: newCurrentPage }, this.getClients);
   }
@@ -113,7 +104,7 @@ class WorkerLanding extends Component<Props, State> {
       currentPage,
       itemsPerPageSelected,
     } = this.state;
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
@@ -126,11 +117,11 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
+        const responseObject = JSON.parse(responseJSON);
         const {
           people,
           numPeople,
-        } = responseJSON;
+        } = responseObject;
         if (people) {
           this.setState({
             numClients: numPeople,
@@ -138,6 +129,13 @@ class WorkerLanding extends Component<Props, State> {
           });
         }
       });
+  }
+
+  handleChangeSearchName(event: any) {
+    this.setState({
+      searchName: event.target.value,
+      currentPage: 0,
+    }, this.getClients);
   }
 
   handleClickClose(event: any) {
@@ -163,8 +161,8 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
-        const { loginStatus } = responseJSON;
+        const responseObject = JSON.parse(responseJSON);
+        const { loginStatus } = responseObject;
         if (loginStatus === 'AUTH_SUCCESS') {
           // Allow worker privileges
           this.setState({
@@ -252,9 +250,9 @@ class WorkerLanding extends Component<Props, State> {
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 1" on "example date 1"</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 2" on "example date 2"</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded "Document 3" on "example date 3"</h6>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 1&quot; on &quot;example date 1&quot;</h6>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 2&quot; on &quot;example date 2&quot;</h6>
+              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 3&quot; on &quot;example date 3&quot;</h6>
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
@@ -356,7 +354,7 @@ class WorkerLanding extends Component<Props, State> {
       clientCredentialsCorrect,
       clientUsername,
     } = this.state;
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
 
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (

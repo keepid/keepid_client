@@ -45,7 +45,7 @@ class Footer extends Component<{}, {}> {
                   <span className="footer-link pb-1">Report a Bug</span>
                 </Link>
               </ul>
-              <span className="text-muted pb-2">&copy;	2020 Keep.id</span>
+              <span className="text-muted pb-2">&copy; 2020 Keep.id</span>
             </div>
             <div className="p-2 bd-highlight col-12 col-md-4 col-lg-3 mb-4">
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">About Us</h6>

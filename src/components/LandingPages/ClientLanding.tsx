@@ -5,29 +5,9 @@ import UploadSVG from '../../static/images/uploading-files-to-the-cloud.svg';
 import RequestSVG from '../../static/images/request.svg';
 import AppSVG from '../../static/images/calendar.svg';
 import EmailSVG from '../../static/images/email.svg';
-import AssistSVG from '../../static/images/assistance.svg';
 import FileSVG from '../../static/images/file.svg';
 
-interface State {
-  show: boolean
-}
-
-class ClientLanding extends Component<{}, State, {}> {
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      show: false,
-    };
-  }
-
-  showModal = () => {
-    this.setState({ show: true });
-  }
-
-  hideModal = () => {
-    this.setState({ show: false });
-  }
-
+class ClientLanding extends Component<{}, {}, {}> {
   render() {
     return (
       <div id="Buttons" className="container pt-5">
@@ -80,14 +60,6 @@ class ClientLanding extends Component<{}, State, {}> {
                 <p className="textLanding mt-5">Send an Email</p>
               </div>
             </Link>
-          </div>
-          <div className="d-flex p-3">
-            <button type="button" className="btn btn-assist" onClick={this.showModal}>
-              <div className="rectangle pt-2">
-                <img className="normalImage" src={AssistSVG} alt="Assistance" />
-                <p className="textLanding mt-5">Need Assistance?</p>
-              </div>
-            </button>
           </div>
         </div>
       </div>

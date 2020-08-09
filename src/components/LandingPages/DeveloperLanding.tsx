@@ -11,7 +11,6 @@ interface Props {
 }
 
 interface State {
-  submitStatus: boolean,
   pdfFiles: FileList | undefined,
   buttonState: string
 }
@@ -42,7 +41,6 @@ class DeveloperLanding extends React.Component<Props, State> {
     this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
     this.state = {
-      submitStatus: false,
       pdfFiles: undefined,
       buttonState: '',
     };
@@ -63,7 +61,7 @@ class DeveloperLanding extends React.Component<Props, State> {
 
     if (pdfFiles) {
       // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i++) {
+      for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
@@ -74,14 +72,13 @@ class DeveloperLanding extends React.Component<Props, State> {
           body: formData,
         }).then((response) => response.json())
           .then((responseJSON) => {
-            responseJSON = JSON.parse(responseJSON);
+            const responseObject = JSON.parse(responseJSON);
             const {
               status,
-            } = responseJSON;
+            } = responseObject;
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
-                submitStatus: true,
                 buttonState: '',
                 pdfFiles: undefined,
               });
@@ -106,6 +103,7 @@ class DeveloperLanding extends React.Component<Props, State> {
 
     // check that the number of files uploaded doesn't exceed the maximum
     if (files.length > MAX_NUM_OF_FILES) {
+      // eslint-disable-next-line no-param-reassign
       event.target.value = null; // discard selected files
       alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
       return;

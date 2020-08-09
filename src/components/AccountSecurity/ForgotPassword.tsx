@@ -49,12 +49,11 @@ class ForgotPassword extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          responseJSON = JSON.parse(responseJSON);
-          const { status } = responseJSON;
+          const { status } = JSON.parse(responseJSON);
           if (status === 'SUCCESS') {
             this.props.alert.show('A reset code has been sent to your email. Check your inbox.');
             this.setState({ buttonState: '' });
-          } else if (responseJSON === 'USER_NOT_FOUND') {
+          } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
             this.setState({ buttonState: '' });
           } else {

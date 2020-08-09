@@ -22,16 +22,24 @@
         "react",
         "@typescript-eslint"
     ],
+    // rules: 1 is warning, 2 is error, off is ignore
     "rules": {
         "import/extensions": "off",
         "react/jsx-filename-extension": "off",
-        "no-alert": "off",
-        "no-unused-vars": "off",
-        "import/no-duplicates": "off",
+        "no-alert": 1,
+        "no-unused-vars": 1,
+        "import/no-duplicates": 1,
         "import/no-unresolved": "off",
         "max-len": "off",
-        "react/prefer-stateless-function": "off",
-        "jsx-a11y/label-has-associated-control": "off",
-        "react/destructuring-assignment": "off"
+        "react/prefer-stateless-function": 1,
+        "react/sort-comp": 1,
+        "jsx-a11y/label-has-associated-control": 1,
+        "react/destructuring-assignment": 1,
+        "jsx-a11y/control-has-associated-label": 1,
+        "jsx-a11y/click-events-have-key-events": 1,
+        "jsx-a11y/no-static-element-interactions": 1,
+        "jsx-a11y/anchor-is-valid": 1,
+        "react/no-did-update-set-state": "off",
+        "max-classes-per-file": 1
     }
 }

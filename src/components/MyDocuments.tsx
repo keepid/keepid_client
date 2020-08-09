@@ -56,7 +56,7 @@ class MyDocuments extends Component<Props, State> {
     fetch(`${getServerURL()}/delete-document/${fileId}`, {
       method: 'GET',
       credentials: 'include',
-    }).then((response) => {
+    }).then(() => {
       this.getDocumentData();
     });
   }
@@ -81,10 +81,10 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
+        const responseObject = JSON.parse(responseJSON);
         const {
           documents,
-        } = responseJSON;
+        } = responseObject;
         this.setState({ documentData: documents });
       });
   }

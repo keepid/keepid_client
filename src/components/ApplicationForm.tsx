@@ -65,7 +65,8 @@ class ApplicationForm extends Component<Props, State> {
           formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
         }
         this.setState({ formQuestions: formQuestionsCombined });
-        formQuestionsCombined.map((entry) => (formAnswers[entry[0]] = ''));
+        // eslint-disable-next-line
+        formQuestionsCombined.map((entry) => { formAnswers[entry[0]] = ''; });
         this.setState({ formAnswers });
       });
   }

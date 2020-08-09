@@ -17,7 +17,7 @@ interface State {
   recaptchaExpired: boolean
 }
 
-const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+const reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
   alert: any,
@@ -39,7 +39,6 @@ class ResetPassword extends Component<Props, State> {
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleChangeConfirmPassword = this.handleChangeConfirmPassword.bind(this);
     this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
-    this.getJWT = this.getJWT.bind(this);
   }
 
   handleChangePassword(event: any) {
@@ -51,15 +50,15 @@ class ResetPassword extends Component<Props, State> {
   }
 
   handlePasswordJWTSubmit(event: any) {
-    if (_reCaptchaRef && _reCaptchaRef.current) {
-      _reCaptchaRef.current.execute();
+    if (reCaptchaRef && reCaptchaRef.current) {
+      reCaptchaRef.current.execute();
     }
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
       newPassword, confirmPassword, recaptchaPayload, recaptchaLoaded, recaptchaExpired,
     } = this.state;
-    const jwt = this.getJWT();
+    const jwt = ResetPassword.getJWT();
     if (newPassword.trim() === '') {
       this.props.alert.show('Please enter a valid password');
       this.setState({ buttonState: '' });
@@ -80,8 +79,7 @@ class ResetPassword extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          responseJSON = JSON.parse(responseJSON);
-          const { status } = responseJSON;
+          const { status } = JSON.parse(responseJSON);
           if (status === 'SUCCESS') {
             this.props.alert.show('Successfully reset password');
             this.setState({ buttonState: '', collapseState: 'show' });
@@ -102,7 +100,7 @@ class ResetPassword extends Component<Props, State> {
     }
   }
 
-  getJWT() { // fix this code later
+  static getJWT() { // fix this code later
     const splitParams = window.location.pathname.split('/');
     return splitParams[2];
   }
@@ -201,7 +199,7 @@ class ResetPassword extends Component<Props, State> {
           <ReCAPTCHA
             theme="dark"
             size="invisible"
-            ref={_reCaptchaRef}
+            ref={reCaptchaRef}
             sitekey={reCaptchaKey}
             onChange={this.handleRecaptchaChange}
           />

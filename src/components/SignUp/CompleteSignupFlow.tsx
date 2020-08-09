@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ReactComponentElement } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
@@ -44,8 +44,6 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
-  personSubmitted: boolean,
-  submitSuccessful: boolean,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean
@@ -78,8 +76,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
-      personSubmitted: false,
-      submitSuccessful: false,
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
@@ -135,11 +131,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   }
 
   handleContinue = ():void => {
-    this.setState({ signupStage: this.state.signupStage + 1 });
+    this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
+    // this.setState({ signupStage: this.state.signupStage + 1 });
   };
 
   handlePrevious = (): void => {
-    this.setState({ signupStage: this.state.signupStage - 1 });
+    this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
+    // this.setState({ signupStage: this.state.signupStage - 1 });
   }
 
   handleFormSubmit = (): void => {
@@ -226,7 +224,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
-  handleSignupComponentRender() {
+  handleSignupComponentRender = () => {
     switch (this.state.signupStage) {
       case 0: {
         return (
@@ -335,8 +333,9 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         );
       }
       default: {
-        // statements;
-        break;
+        return (
+          <div />
+        );
       }
     }
   }
@@ -382,7 +381,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage / 4 * 100} label={`Step ${this.state.signupStage + 1} out of 5`} />
+          <ProgressBar className="d-md-none" now={this.state.signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 5`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>

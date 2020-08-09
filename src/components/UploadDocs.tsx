@@ -10,11 +10,9 @@ import PDFType from '../static/PDFType';
 interface Props {
   alert: any,
   userRole: Role,
-  location: any,
 }
 
 interface State {
-  submitStatus: boolean,
   pdfFiles: FileList | undefined,
   buttonState: string
 }
@@ -45,7 +43,6 @@ class UploadDocs extends React.Component<Props, State> {
     this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
     this.state = {
-      submitStatus: false,
       pdfFiles: undefined,
       buttonState: '',
     };
@@ -86,14 +83,12 @@ class UploadDocs extends React.Component<Props, State> {
           body: formData,
         }).then((response) => response.json())
           .then((responseJSON) => {
-            responseJSON = JSON.parse(responseJSON);
             const {
               status,
-            } = responseJSON;
+            } = JSON.parse(responseJSON);
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
-                submitStatus: true,
                 buttonState: '',
                 pdfFiles: undefined,
               });
@@ -109,13 +104,13 @@ class UploadDocs extends React.Component<Props, State> {
     }
   }
 
-  maxFilesExceeded(files, maxNumFiles) {
+  static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }
 
-  fileNamesUnique(files) {
+  static fileNamesUnique(files) {
     const fileNames : string[] = [];
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < files.length; i += 1) {
       const fileName = files[i].name;
       fileNames.push(fileName);
     }
@@ -132,6 +127,7 @@ class UploadDocs extends React.Component<Props, State> {
 
     // check that the number of files uploaded doesn't exceed the maximum
     if (files.length > MAX_NUM_OF_FILES) {
+      // eslint-disable-next-line no-param-reassign
       event.target.value = null; // discard selected files
       alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
       return;
@@ -149,10 +145,6 @@ class UploadDocs extends React.Component<Props, State> {
       buttonState,
     } = this.state;
 
-    const {
-      location,
-    } = this.props;
-
     return (
       <div className="container">
         <Helmet>
@@ -162,7 +154,7 @@ class UploadDocs extends React.Component<Props, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">
             Upload Documents
-            {location.state ? ` for "${location.state.clientUsername}"` : null}
+            {/* {location.state ? ` for "${location.state.clientUsername}"` : null} */}
           </h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
