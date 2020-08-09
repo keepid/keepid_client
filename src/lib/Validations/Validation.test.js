@@ -1,6 +1,6 @@
 // import Validations from '../../lib/Validations/Validations';
 import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-    isValidPhoneNumber, isValidUSState, isValidZipCode} from '../../lib/Validations/Validations';
+    isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword} from '../../lib/Validations/Validations';
 
 test('valid website test',() => {
     expect(isValidOrgWebsite("https://example.com")).toBe(true);
@@ -106,4 +106,28 @@ test('valid birthdate test', () => {
     expect(isValidBirthDate("hullo")).toBe(false);
     expect(isValidBirthDate(" ")).toBe(false);
     expect(isValidBirthDate(null)).toBe(false);
+})
+
+test('valid username test', () => {
+    expect(isValidUsername("samuel")).toBe(true);
+    expect(isValidUsername("JoeHi")).toBe(true);
+    expect(isValidUsername("KAYLA-REMMINGTON12")).toBe(true);
+    expect(isValidUsername("/")).toBe(false);
+    expect(isValidUsername("S#Rena")).toBe(false);
+    expect(isValidUsername("123 Test")).toBe(false);
+    expect(isValidUsername("1234%")).toBe(false);
+    expect(isValidUsername(" ")).toBe(false);
+    expect(isValidUsername(null)).toBe(false);
+})
+
+test('valid password test', () => {
+    expect(isValidPassword("thispasswordissufficientlylong")).toBe(true);
+    expect(isValidPassword("12345678")).toBe(true);
+    expect(isValidPassword("123Passwordasdkjfhasdkfhafhjask.dfjhasdfjlasdkjfhaslkdjfh*()")).toBe(true);
+    expect(isValidPassword("asd\\")).toBe(false);
+    expect(isValidPassword("asdkll/")).toBe(false);
+    expect(isValidPassword("aslf;")).toBe(false);
+    expect(isValidPassword("thisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpassword")).toBe(false);
+    expect(isValidPassword(" ")).toBe(false);
+    expect(isValidPassword(null)).toBe(false);
 })
