@@ -27,6 +27,10 @@ const streetPattern: RegExp =
     new RegExp("^[" + validCharacters + ", .'\\-0-9]{1,150}$");
 const usernamePattern: RegExp = 
     new RegExp("^[-" + validCharacters + "_0-9]{1,150}$");
+const orgEINPattern: RegExp = 
+    new RegExp("^([0-9]{2}(-)?[0-9]{7})$");
+const namePattern: RegExp = 
+    new RegExp("^[" + validCharacters + ", .'-]{1,150}$");
 
 let isValidEmail = (input: string): boolean => {
     return input !== null 
@@ -97,5 +101,30 @@ let isValidPassword = (input: string): boolean => {
     && input.length < MAX_PASSWORD_LENGTH;
 }
 
+let isValidOrgName = (input: string): boolean => {
+    return input !== null
+    && !(input.trim() === "")
+    && streetPattern.test(input);
+}
+
+let isValidEIN = (input: string): boolean => {
+    return input !== null
+    && !(input.trim() === "")
+    && orgEINPattern.test(input);
+}
+
+let isValidFirstName = (input: string): boolean => {
+    return input !== null
+    && !(input.trim() === "")
+    && namePattern.test(input);
+}
+
+let isValidLastName = (input: string): boolean => {
+    return input !== null
+    && !(input.trim() === "")
+    && namePattern.test(input);
+}
+
 export {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-    isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword};
+    isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword,
+    isValidOrgName, isValidEIN, isValidFirstName, isValidLastName};

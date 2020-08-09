@@ -1,6 +1,7 @@
 // import Validations from '../../lib/Validations/Validations';
 import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-    isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword} from '../../lib/Validations/Validations';
+    isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword,
+    isValidOrgName, isValidEIN, isValidFirstName, isValidLastName} from '../../lib/Validations/Validations';
 
 test('valid website test',() => {
     expect(isValidOrgWebsite("https://example.com")).toBe(true);
@@ -130,4 +131,45 @@ test('valid password test', () => {
     expect(isValidPassword("thisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpasswordthisisareallylongpassword")).toBe(false);
     expect(isValidPassword(" ")).toBe(false);
     expect(isValidPassword(null)).toBe(false);
+})
+
+test('valid name test', () => {
+    expect(isValidFirstName("valid name here")).toBe(true);
+    expect(isValidFirstName("Bob")).toBe(true);
+    expect(isValidFirstName("O'Neal")).toBe(true);
+    expect(isValidFirstName("invalid name 123")).toBe(false);
+    expect(isValidFirstName("<script>hello</script>")).toBe(false);
+    expect(isValidFirstName("    ")).toBe(false);
+    expect(isValidFirstName("")).toBe(false);
+    expect(isValidFirstName(null)).toBe(false);
+
+    expect(isValidLastName("valid name here")).toBe(true);
+    expect(isValidLastName("Bob")).toBe(true);
+    expect(isValidLastName("O'Neal")).toBe(true);
+    expect(isValidLastName("invalid name 123")).toBe(false);
+    expect(isValidLastName("<script>hello</script>")).toBe(false);
+    expect(isValidLastName("    ")).toBe(false);
+    expect(isValidLastName("")).toBe(false);
+    expect(isValidLastName(null)).toBe(false);
+
+    expect(isValidOrgName("valid name here")).toBe(true);
+    expect(isValidOrgName("Bob")).toBe(true);
+    expect(isValidOrgName("O'Neal")).toBe(true);
+    expect(isValidOrgName("Valid name 123")).toBe(true);
+    expect(isValidOrgName("<script>hello</script>")).toBe(false);
+    expect(isValidOrgName("    ")).toBe(false);
+    expect(isValidOrgName("")).toBe(false);
+    expect(isValidOrgName(null)).toBe(false);
+})
+
+test('valid EIN test', () => {
+    expect(isValidEIN("12-1234567")).toBe(true);
+    expect(isValidEIN("42-1231244")).toBe(true);
+    expect(isValidEIN("561234567")).toBe(true);
+    expect(isValidEIN("1-1232345")).toBe(false);
+    expect(isValidEIN(null)).toBe(false);
+    expect(isValidEIN("12-1")).toBe(false);
+    expect(isValidEIN(" ")).toBe(false);
+    expect(isValidEIN("794-35344534")).toBe(false);
+    expect(isValidEIN("jsa")).toBe(false);
 })
