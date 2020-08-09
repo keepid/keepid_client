@@ -303,7 +303,7 @@ class Home extends Component<Props, {}, {}> {
                   <div className="col-lg-7">
                     <h3>Local nonprofits achieve exponentially faster service times</h3>
                     <ul className="pl-4 mt-2">
-                      <li className="home-text">Stronger client relationships lead to greater touch profits</li>
+                      <li className="home-text">Stronger client relationships lead to greater touch points</li>
                       <li className="home-text">Greater audience reach</li>
                       <li className="home-text">Higher efficiency with paperwork</li>
                     </ul>

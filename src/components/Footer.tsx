@@ -53,9 +53,9 @@ class Footer extends Component<{}, {}> {
                 <li className="mb-3">
                   <Link to="/our-team" className="footer-link">Our Team</Link>
                 </li>
-                <li className="mb-3">
+                {/* <li className="mb-3">
                   <Link to="/our-partners" className="footer-link">Our Partners</Link>
-                </li>
+                </li> */}
                 <li className="mb-3">
                   <Link to="/our-mission" className="footer-link">Our Mission</Link>
                 </li>
@@ -67,21 +67,21 @@ class Footer extends Component<{}, {}> {
             <div className="p-2 bd-highlight col-12 col-md-4 col-lg-3">
               <h6 className="font-weight-bold text-uppercase footer-text-header mb-3">Legal</h6>
               <ul className="list-unstyled text-muted mb-6 mb-md-8 mb-lg-0">
-                <li className="mb-3">
+                {/* <li className="mb-3">
                   <Link to="/organization-policies" className="footer-link">Organization Policies</Link>
-                </li>
-                <li className="mb-3">
+                </li> */}
+                {/* <li className="mb-3">
                   <Link to="/terms-of-use" className="footer-link">Terms of Use</Link>
-                </li>
+                </li> */}
                 <li className="mb-3">
                   <Link to="/eula" className="footer-link">End User License Agreements</Link>
                 </li>
                 <li className="mb-3">
                   <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
                 </li>
-                <li className="mb-3">
+                {/* <li className="mb-3">
                   <Link to="/copyright-policy" className="footer-link">Copyright Policy</Link>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>
