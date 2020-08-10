@@ -15,6 +15,8 @@ import ReviewSubmit from './ReviewSubmit';
 import USStates from '../../static/data/states_titlecase.json';
 
 const { Step } = Steps;
+const urlPattern: RegExp = 
+    new RegExp("^(http:\/\/www\.)|(https:\/\/www\.)|(http:\/\/(.*)|https:\/\/)(.*)$");
 
 interface Props {
   alert: any
@@ -52,6 +54,7 @@ interface State {
 }
 
 class CompleteSignupFlow extends Component<Props, State, {}> {
+  
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -142,6 +145,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     this.setState({ signupStage: this.state.signupStage - 1 });
   }
 
+  static addHttp = (url: string) => {
+    if(!urlPattern.test(url)) {
+      return url = "http://" + url;
+    }
+      return url;
+  }
+
   handleFormSubmit = (): void => {
     const {
       username,
@@ -167,11 +177,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       recaptchaPayload,
     } = this.state;
     const birthDateString = this.birthDateStringConverter(birthDate);
+    const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
+    
     // submit organization and director information
     fetch(`${getServerURL()}/organization-signup`, {
       method: 'POST',
       body: JSON.stringify({
-        organizationWebsite,
+        organizationWebsite: revisedURL,
         organizationName,
         organizationEIN,
         organizationAddressStreet,
@@ -390,4 +402,5 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   }
 }
 
+export const addHttp = CompleteSignupFlow.addHttp;
 export default withAlert()(CompleteSignupFlow);
