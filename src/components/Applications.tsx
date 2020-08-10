@@ -94,6 +94,7 @@ class Applications extends Component<Props, State, {}> {
       credentials: 'include',
       body: JSON.stringify({
         pdfType: PDFType.FORM,
+        annotated: false,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {

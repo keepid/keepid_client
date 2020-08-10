@@ -2,24 +2,35 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
+import { useState } from 'react';
+import MultiSelect from 'react-multi-select-component';
+import { OptionType } from 'antd/lib/select';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../static/PDFType';
+import Dropdown from './dropdown';
+
+import './style.css';
+import dropdown from './dropdownmenu/Dropdown';
+
+import 'react-dropdown/style.css';
+
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
 interface Props {
-    alert: any,
-    applicationId: string,
-    applicationFilename: string,
+  alert: any,
+  applicationId: string,
+  applicationFilename: string,
 }
 
 interface State {
-    formQuestions: [string, string][] | undefined,
-    formAnswers: any,
-    pdfApplication: File | undefined,
-    buttonState: string,
-    submitSuccessful: boolean,
+  formQuestions: any[] | undefined,
+  formAnswers: any,
+  pdfApplication: File | undefined,
+  buttonState: string,
+  submitSuccessful: boolean,
+
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -52,21 +63,11 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          fieldNames,
-          fieldQuestions,
-        } = JSON.parse(responseJSON);
-        const fieldNamesArray : string[] = fieldNames;
-        const fieldQuestionsArray : string[] = fieldQuestions;
-        console.log(responseJSON);
-        const numFields = fieldNamesArray.length;
-        const formQuestionsCombined : [string, string][] = new Array(numFields);
-        for (let j = 0; j < numFields; j += 1) {
-          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
-        }
-        this.setState({ formQuestions: formQuestionsCombined });
-        formQuestionsCombined.map((entry) => (formAnswers[entry[0]] = ''));
-        this.setState({ formAnswers });
+        const ResponseJsonParse = JSON.parse(responseJSON);
+
+        const formQuestions = ResponseJsonParse.fields;
+        console.log(formQuestions);
+        this.setState({ formQuestions });
       });
   }
 
@@ -89,6 +90,7 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
+    console.log(formAnswers);
 
     this.setState({ buttonState: 'running' });
 
@@ -150,18 +152,121 @@ class ApplicationForm extends Component<Props, State> {
         <form onSubmit={this.onSubmitFormQuestions}>
           {formQuestions.map(
             (entry) => (
+
               <div className="mt-2 mb-2">
-                <label htmlFor={entry[0]} className="w-100 font-weight-bold">
-                  {entry[1]}
-                  <input
-                    type="text"
-                    className="form-control form-purple mt-1"
-                    id={entry[0]}
-                    placeholder="Enter response here"
-                    onChange={this.handleChangeFormValue}
-                    required
-                  />
-                </label>
+                {
+                  (() => {
+                    if (entry.fieldType == 'TextField') {
+                      return (
+                        <div className="mt-2 mb-2">
+                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                            {entry.fieldQuestion}
+                            <input
+                              type="text"
+                              className="form-control form-purple mt-1"
+                              id={entry.fieldName}
+                              placeholder={entry.fieldName}
+                              onChange={this.handleChangeFormValue}
+                              required
+                            />
+                          </label>
+                        </div>
+                      );
+                    }
+
+                    if (entry.fieldType == 'RadioButton') {
+                      const temp = JSON.parse(entry.fieldValueOptions);
+                      return (
+                        <div className="mt-2 mb-2">
+                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                            {entry.fieldQuestion}
+                          </label>
+                          {temp.map((value, index) => (
+                            <div className="mt-2 mb-2">
+                              <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                                "
+                                {value}
+                                "
+                                <input
+                                  placeholder={value}
+                                  type="radio"
+                                  className="form-control form-purple mt-1"
+                                  id={entry.fieldName}
+                                  value={value}
+                                  onChange={this.handleChangeFormValue}
+                                  required
+                                />
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    if (entry.fieldType == 'ComboBox') {
+                      const temp = JSON.parse(entry.fieldValueOptions);
+                      return (
+                        <div className="dropdown">
+                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                            <button className="dropbtn">{entry.fieldQuestion}</button>
+
+                            {temp.map((value, index) => (
+                              <div className="mt-2 mb-2">
+                                <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+
+                                  <div className="dropdown-content">
+                                    {entry.fieldname}
+                                    <input
+                                      placeholder={value}
+                                      type="checkbox"
+                                      className="dropdown"
+                                      id={entry.fieldName}
+                                      value={value}
+                                      onChange={this.handleChangeFormValue}
+                                    />
+                                    {value}
+
+                                  </div>
+                                </label>
+                              </div>
+                            ))}
+
+                          </label>
+                        </div>
+                      );
+                    }
+
+                    if (entry.fieldType == 'CheckBox') {
+                      const temp = JSON.parse(entry.fieldValueOptions);
+                      return (
+                        <div className="mt-2 mb-2">
+                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                            {entry.fieldQuestion}
+                          </label>
+
+                          <div className="mt-2 mb-2">
+                            <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                              <input
+                                type="checkbox"
+                                id={entry.fieldname}
+                                name={entry.fieldName}
+                                value="true"
+                                onChange={this.handleChangeFormValue}
+                                required
+                              />
+                              <label>
+                                {' '}
+                                {entry.fieldName}
+                              </label>
+                              <br />
+                            </label>
+                          </div>
+
+                        </div>
+                      );
+                    }
+                  })()
+                }
               </div>
             ),
           )}
