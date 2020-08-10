@@ -207,13 +207,16 @@ public class PdfController {
         String fieldType = "";
         String fieldValueOptions = "[]";
         String fieldQuestion = "";
+        int numLines = -1;
         if (field instanceof PDButton) {
           if (field instanceof PDCheckBox) {
             fieldType = "CheckBox";
             fieldQuestion = "Please select an option for " + field.getPartialName();
+            numLines = 3;
           } else if (field instanceof PDPushButton) {
             fieldType = "PushButton";
             fieldQuestion = "Select the Button If You Want To " + field.getPartialName();
+            numLines = 3;
           } else if (field instanceof PDRadioButton) {
             fieldType = "RadioButton";
             fieldQuestion = "Please select one option for " + field.getPartialName();
@@ -223,6 +226,7 @@ public class PdfController {
               optionsJSONArray.put(choice);
             }
             fieldValueOptions = optionsJSONArray.toString();
+            numLines = 2 + optionsJSONArray.length();
           }
         } else if (field instanceof PDVariableText) {
           if (field instanceof PDChoice) {
@@ -242,19 +246,23 @@ public class PdfController {
               optionsJSONArray.put(choice);
             }
             fieldValueOptions = optionsJSONArray.toString();
+            numLines = optionsJSONArray.length() + 2;
           } else if (field instanceof PDTextField) {
             fieldType = "TextField";
             fieldQuestion = "Please Enter Your " + field.getPartialName();
+            numLines = 3;
           }
         } else if (field instanceof PDSignatureField) {
           fieldType = "SignatureField";
           fieldQuestion = "Please sign here";
+          numLines = 4;
         }
 
         // Not Editable
         fieldJSON.put("fieldName", field.getFullyQualifiedName());
         fieldJSON.put("fieldType", fieldType);
         fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
+        fieldJSON.put("numLines", numLines);
 
         // Editable
         fieldJSON.put("fieldQuestion", fieldQuestion);
