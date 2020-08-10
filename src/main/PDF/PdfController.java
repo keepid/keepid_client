@@ -240,9 +240,11 @@ public class PdfController {
         for (JSONObject field : fieldsJSON) {
           returnArray.put(field);
         }
+        JSONObject response = new JSONObject();
+        response.put("fields", returnArray);
         pdfDocument.close();
 
-        ctx.json(returnArray.toString());
+        ctx.json(response.toString());
       };
 
   /*

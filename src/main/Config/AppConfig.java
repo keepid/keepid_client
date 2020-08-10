@@ -1,8 +1,6 @@
 package Config;
 
 import io.javalin.Javalin;
-import io.javalin.core.compression.Brotli;
-import io.javalin.core.compression.Gzip;
 
 public class AppConfig {
   public static Long ASYNC_TIME_OUT = 10L;
@@ -13,8 +11,7 @@ public class AppConfig {
           config.asyncRequestTimeout =
               ASYNC_TIME_OUT; // timeout for async requests (default is 0, no timeout)
           config.autogenerateEtags = false; // auto generate etags (default is false)
-          config.compressionStrategy(
-              new Brotli(4), new Gzip(6)); // set the compression strategy and levels - since 3.2.0
+
           config.contextPath = "/"; // context path for the http servlet (default is "/")
           config.defaultContentType =
               "text/plain"; // content type to use if no content type is set (default is
