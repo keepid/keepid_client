@@ -56,7 +56,6 @@ class Signup extends Component<Props, State, {}> {
       reaffirmStage: false,
     };
 
-    this.birthDateString = this.birthDateString.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangePersonFirstName = this.handleChangePersonFirstName.bind(this);
     this.handleChangePersonLastName = this.handleChangePersonLastName.bind(this);
@@ -76,7 +75,7 @@ class Signup extends Component<Props, State, {}> {
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
   }
 
-  birthDateString(birthDate: Date) {
+  static birthDateString(birthDate: Date) {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
@@ -110,8 +109,8 @@ class Signup extends Component<Props, State, {}> {
     } else if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
     } else {
-      const personRoleStringVar = this.personRoleString(personRole);
-      const personBirthDateFormatted = this.birthDateString(personBirthDate);
+      const personRoleStringVar = Signup.personRoleString(personRole);
+      const personBirthDateFormatted = Signup.birthDateString(personBirthDate);
 
       this.props.onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
         personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
@@ -207,8 +206,8 @@ class Signup extends Component<Props, State, {}> {
       personConfirmPassword,
     } = this.state;
 
-    const personRoleString = this.personRoleString(personRole);
-    const personBirthDateFormatted = this.birthDateString(personBirthDate);
+    const personRoleString = Signup.personRoleString(personRole);
+    const personBirthDateFormatted = Signup.birthDateString(personBirthDate);
 
     if (personPassword !== personConfirmPassword) {
       this.props.alert.show('Your passwords are not identical');
@@ -256,7 +255,7 @@ class Signup extends Component<Props, State, {}> {
     this.setState({ acceptEULA });
   }
 
-  personRoleString(personRole: Role) {
+  static personRoleString(personRole: Role) {
     switch (personRole) {
       case Role.Director: return 'Director';
       case Role.Admin: return 'Admin';
@@ -290,7 +289,7 @@ class Signup extends Component<Props, State, {}> {
       reaffirmStage,
     } = this.state;
 
-    const personFormHeader = this.personRoleString(personRole);
+    const personFormHeader = Signup.personRoleString(personRole);
     const signupForm = (
       <div className="container">
         <Helmet>

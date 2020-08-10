@@ -227,7 +227,7 @@ class ReviewSubmit extends Component<Props, State, {}> {
                 </span>
               </div>
               <div className="d-flex">
-                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
                 <button type="button" onClick={this.onSubmitWithReCAPTCHA} className={`mt-5 ml-auto btn btn-primary ld-ext-right ${buttonState}`}>
                   Submit
                   <div className="ld ld-ring ld-spin" />

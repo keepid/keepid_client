@@ -66,11 +66,15 @@ class Home extends Component<Props, {}, {}> {
                     <p className="pt-2 pb-2 home-subtext">
                       A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
                     </p>
-                    <Link to="/organization-signup">
-                      <button className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
+                    <Link to="/signup-branch">
+                      <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
                     <AnchorLink offset="100" href="#info">
+
                       <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
+
+                      <button type="button" className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
+
                     </AnchorLink>
                   </div>
                 </div>
@@ -303,7 +307,7 @@ class Home extends Component<Props, {}, {}> {
                   <div className="col-lg-7">
                     <h3>Local nonprofits achieve exponentially faster service times</h3>
                     <ul className="pl-4 mt-2">
-                      <li className="home-text">Stronger client relationships lead to greater touch profits</li>
+                      <li className="home-text">Stronger client relationships lead to greater touch points</li>
                       <li className="home-text">Greater audience reach</li>
                       <li className="home-text">Higher efficiency with paperwork</li>
                     </ul>

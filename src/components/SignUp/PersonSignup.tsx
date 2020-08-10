@@ -12,7 +12,6 @@ interface Props {
 
 interface State {
   buttonState: string,
-  reaffirmStage: boolean,
   submitSuccessful: boolean,
 }
 
@@ -22,7 +21,6 @@ class PersonSignup extends Component<Props, State, {}> {
 
     this.state = {
       buttonState: '',
-      reaffirmStage: false,
       submitSuccessful: false,
     };
 
