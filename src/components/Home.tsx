@@ -5,7 +5,7 @@ import AnchorLink from 'react-anchor-link-smooth-scroll';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
-import HomeForm from '../static/images/home-forms.svg';
+// import HomeForm from '../static/images/home-forms.svg';
 import SignUp from '../static/images/sign-up.svg';
 import SyncFiles from '../static/images/sync-files.svg';
 import SecureGraphic from '../static/images/security.svg';
@@ -17,6 +17,7 @@ import Access from '../static/images/access-data.svg';
 import FileCloud from '../static/images/file-cloud.svg';
 import Building from '../static/images/building.svg';
 import Profile from '../static/images/profile-pic.svg';
+import HomepageGraphic from '../static/images/homepage_graphic.svg';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -77,7 +78,7 @@ class Home extends Component<Props, {}, {}> {
                 <div className="col-md-6 custom-vertical-center">
                   <div className="mr-5 p-4 container-home-right">
                     <div>
-                      <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
+                      <img alt="Hubs" src={HomepageGraphic} className="home-form-svg text-left" />
                     </div>
                   </div>
                 </div>

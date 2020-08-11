@@ -4,9 +4,11 @@ import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import USStates from '../../static/data/states_titlecase.json';
-import {isValidAddress, isValidBirthDate, isValidCity, isValidEmail, 
+import {
+  isValidAddress, isValidBirthDate, isValidCity, isValidEmail,
   isValidPhoneNumber, isValidUSState, isValidZipCode, isValidFirstName,
-  isValidLastName} from '../../lib/Validations/Validations';
+  isValidLastName,
+} from '../../lib/Validations/Validations';
 
 interface Props {
   firstname: string,

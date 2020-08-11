@@ -1,7 +1,7 @@
 import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
-import {isValidUsername, isValidPassword} from '../../lib/Validations/Validations';
+import { isValidUsername, isValidPassword } from '../../lib/Validations/Validations';
 
 interface Props {
   username: string,

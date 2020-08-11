@@ -1,5 +1,3 @@
-import React from "react";
-import DatePicker from "react-datepicker";
 import validUrl from "valid-url";
 
 const MIN_PASSWORD_LENGTH: number = 8;

@@ -2,11 +2,13 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
-import {isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
+import {
+  isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
   isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
-  isValidEIN} from '../../lib/Validations/Validations';
+  isValidEIN,
+} from '../../lib/Validations/Validations';
 import CompleteSignupFlow from './CompleteSignupFlow';
-  
+
 interface Props {
   orgName: string,
   orgWebsite: string,
