@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/keepid/keepid_client.svg?branch=master)](https://travis-ci.org/keepid/keepid_client)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa3d458398184301aa386a953dda4286)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crchong1/keepid_client&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/221a45023c4747208db0d505163aab9e)](https://www.codacy.com/gh/keepid/keepid_client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=keepid/keepid_client&amp;utm_campaign=Badge_Grade)
 
 https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/edit?usp=sharing 
 
