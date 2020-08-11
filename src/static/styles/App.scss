@@ -88,9 +88,14 @@ body {
 	};
 }
 
-.section {
-	min-height: 100vh;
+.section1 {
+	min-height: 60vh;
 }
+
+.section2 {
+	min-height: 21vh;
+}
+
 
 // Buttons
 
@@ -469,12 +474,12 @@ thead {
 
 .statistic-text {
 	color: $secondary-dark-theme;
-	font-size: calc(3rem + (16 * (100vw - 50rem)/ 624));
+	font-size: calc(2.5rem + (16 * (100vw - 50rem)/ 624));
 }
 
 .statistic-subtext {
 	color: $footer-color;
-	font-size: calc(.9rem + (4 * (100vw - 13rem)/ 624));
+	font-size: calc(.8rem + (4 * (100vw - 13rem)/ 624));
 }
 
 .react-datepicker-wrapper { width: 100% }
