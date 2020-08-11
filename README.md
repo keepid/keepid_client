@@ -1,6 +1,6 @@
 # keepid_server
 [![Build Status](https://travis-ci.org/keepid/keepid_server.svg?branch=master)](https://travis-ci.org/keepid/keepid_server)[![codecov](https://codecov.io/gh/crchong1/keepid_server/branch/master/graph/badge.svg?token=4wI4QFPmQv)](https://codecov.io/gh/crchong1/keepid_server)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/eb02eb23b27240d4a95c0d0d97a6504d)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crchong1/keepid_server&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/aed15cbdd0a249a69a0439fd7784cb1d)](https://www.codacy.com/gh/keepid/keepid_server?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=keepid/keepid_server&amp;utm_campaign=Badge_Grade)
 
 Keep.id Server Application. Built with Java and Kotlin, this application serves to empower organizations fighting homelessness with tools to help with document storage and other aid.
 

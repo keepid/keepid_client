@@ -5,6 +5,9 @@ before_install:
   - sudo apt-get install libc6
 dist: focal
 install: true
+cache:
+  directories:
+    - $HOME/.m2
 script:
   - mvn test -B
 after_success:
@@ -13,4 +16,4 @@ notifications:
   slack: keepid:dSU1H1ttrbqa2CuH1d2CVui3
 env:
   global:
-    - CODECOV_TOKEN=4b9c6987-3c19-46a7-b4cc-0b8a1aabfd7b
+    - CODECOV_TOKEN="6ede0adf-a688-47e1-9221-0553d6d07654"

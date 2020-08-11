@@ -44,6 +44,8 @@ public class UserController {
       String username = req.getString("username");
       String password = req.getString("password");
 
+      logger.info("Attempting to login" + username);
+
       res.put("userRole", "");
       res.put("organization", "");
       res.put("firstName", "");
@@ -51,6 +53,7 @@ public class UserController {
 
       if (!ValidationUtils.isValidUsername(username)
           || !ValidationUtils.isValidPassword(password)) {
+        logger.error("Invalid username and/or password");
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -59,6 +62,7 @@ public class UserController {
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
       User user = userCollection.find(eq("username", username)).first();
       if (user == null) {
+        logger.error("Could not find user, " + username);
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -68,9 +72,11 @@ public class UserController {
           securityUtils.verifyPassword(password, user.getPassword());
 
       if (verifyPasswordStatus == SecurityUtils.PassHashEnum.ERROR) {
+        logger.error("Failed to hash password");
         res.put("status", UserMessage.HASH_FAILURE.getErrorName());
         ctx.json(res.toString());
       } else if (verifyPasswordStatus == SecurityUtils.PassHashEnum.FAILURE) {
+        logger.error("Incorrect password");
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -83,7 +89,7 @@ public class UserController {
           && (userLevel == UserType.Director
               || userLevel == UserType.Admin
               || userLevel == UserType.Worker)) {
-
+        logger.info("Two factor authentication process");
         String randCode = String.format("%06d", new Random().nextInt(999999));
         long nowMillis = System.currentTimeMillis();
         long expMillis = 300000;
@@ -106,9 +112,11 @@ public class UserController {
                             .setTwoFactorExp(expDate),
                         new ReplaceOptions().upsert(true));
                   } catch (EmailExceptions e) {
+                    logger.error("Could not send email");
                     ctx.json(e.toJSON().toString());
                     return;
                   } catch (UnsupportedEncodingException e) {
+                    logger.error("Unsupported encoding");
                     e.printStackTrace();
                     JSONObject serverErrorJSON =
                         UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding");
@@ -125,6 +133,7 @@ public class UserController {
         res.put("lastName", user.getLastName());
         res.put("twoFactorOn", twoFactorOn);
         ctx.json(res.toString());
+        logger.info("Two Factor email sent to " + user.getEmail());
         return;
       }
 
@@ -139,11 +148,13 @@ public class UserController {
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
       ctx.json(res.toString());
+      logger.info("Login Successful!");
     };
   }
 
   public Handler generateUniqueUsername =
       ctx -> {
+        logger.info("Starting generateUniqueUsername Handler");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
 
@@ -156,10 +167,12 @@ public class UserController {
           candidateUsername = username + "-" + i;
         }
         ctx.json(res.put("username", candidateUsername).toString());
+        logger.info("Username successfully generated");
       };
 
   public Handler createUserValidator =
       ctx -> {
+        logger.info("Starting createUserValidator handler");
         JSONObject req = new JSONObject(ctx.body());
 
         String firstName = req.getString("firstname").toUpperCase().strip();
@@ -178,6 +191,7 @@ public class UserController {
         UserType userType = UserType.userTypeFromString(userTypeString);
 
         if (userType == null) {
+          logger.error("userType is null");
           ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
           return;
         }
@@ -186,11 +200,13 @@ public class UserController {
         User existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingUser != null) {
+          logger.error("Username already exists");
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
           return;
         }
 
         try {
+          logger.info("Attempting to validate user");
           new User(
               firstName,
               lastName,
@@ -206,20 +222,24 @@ public class UserController {
               username,
               password,
               userType);
+          logger.info("Validating user success");
           ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
         } catch (ValidationException ve) {
+          logger.error("Validation exception");
           ctx.json(ve.getJSON().toString());
         }
       };
 
   public Handler createNewUser(SecurityUtils securityUtils) {
     return ctx -> {
+      logger.info("Starting createNewUser handler");
       JSONObject req = new JSONObject(ctx.body());
 
       UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
       String organizationName = ctx.sessionAttribute("orgName");
 
       if (sessionUserLevel == null) {
+        logger.error("Token failure");
         ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
         return;
       }
@@ -240,6 +260,7 @@ public class UserController {
       UserType userType = UserType.userTypeFromString(userTypeString);
 
       if (userType == null) {
+        logger.error("Invalid privilege type");
         ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
         return;
       }
@@ -263,6 +284,7 @@ public class UserController {
                 password,
                 userType);
       } catch (ValidationException ve) {
+        logger.error("Validation exception");
         ctx.json(ve.getJSON().toString());
         return;
       }
@@ -272,11 +294,13 @@ public class UserController {
               || user.getUserType() == UserType.Worker)
           && sessionUserLevel != UserType.Admin
           && sessionUserLevel != UserType.Director) {
+        logger.error("Cannot enroll ADMIN/DIRECTOR as NON-ADMIN/NON-DIRECTOR");
         ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON().toString());
         return;
       }
 
       if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
+        logger.error("Cannot enroll CLIENT as CLIENT");
         ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON().toString());
         return;
       }
@@ -285,12 +309,14 @@ public class UserController {
       User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
       if (existingUser != null) {
+        logger.error("Username already exists");
         ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
         return;
       }
 
       String hash = securityUtils.hashPassword(password);
       if (hash == null) {
+        logger.error("Could not has password");
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
         return;
       }
@@ -298,6 +324,7 @@ public class UserController {
       user.setPassword(hash);
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
+      logger.info("Successfully created user, " + user.getUsername());
     };
   }
 
@@ -305,10 +332,12 @@ public class UserController {
       ctx -> {
         ctx.req.getSession().invalidate();
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
+        logger.info("Signed out");
       };
 
   public Handler getUserInfo =
       ctx -> {
+        logger.info("Started getUserInfo handler");
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
@@ -329,13 +358,16 @@ public class UserController {
           res.put("username", username);
           res.put("status", UserMessage.SUCCESS.getErrorName());
           ctx.json(res.toString());
+          logger.info("Successfully got user info");
         } else {
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
+          logger.error("Session Token Failure");
         }
       };
 
   public Handler getMembers =
       ctx -> {
+        logger.info("Started getMembers handler");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
 
@@ -351,6 +383,7 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         if (privilegeLevel == null || orgName == null) {
+          logger.error("Session Token Failure");
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
           return;
         }
@@ -394,6 +427,7 @@ public class UserController {
 
           UserType userType = user.getUserType();
 
+          logger.info("Getting member information");
           if (userType == UserType.Director
               || userType == UserType.Admin
               || userType == UserType.Worker) {
@@ -420,6 +454,7 @@ public class UserController {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
+          logger.error("Insufficient Privilege, Could not return member info");
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
           return;
         }
@@ -429,10 +464,12 @@ public class UserController {
         res.put("people", returnElements);
         res.put("numPeople", numReturnElements);
         ctx.json(res.toString());
+        logger.info("Successfully returned member information");
       };
 
   public Handler modifyPermissions =
       ctx -> {
+        logger.info("Starting modifyPermissions handler");
         String username = ctx.sessionAttribute("username");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
@@ -440,11 +477,13 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         if (username == null || privilegeLevel == null || orgName == null) {
+          logger.error("Session token failure");
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
           return;
         }
 
         if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
+          logger.error("Insufficient privilege");
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
           return;
         }
@@ -462,6 +501,7 @@ public class UserController {
         Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
         userCollection.findOneAndUpdate(filter, updates);
 
+        logger.info("Successfully modified permissions for " + username);
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
