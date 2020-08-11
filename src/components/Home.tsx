@@ -70,11 +70,7 @@ class Home extends Component<Props, {}, {}> {
                       <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
                     <AnchorLink offset="100" href="#info">
-
-                      <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
-
                       <button type="button" className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
-
                     </AnchorLink>
                   </div>
                 </div>
