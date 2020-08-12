@@ -111,7 +111,7 @@ class Header extends Component<Props, State, {}> {
                 <Link className="nav-link" to="/">Home</Link>
               </li>
               <li className="nav-item my-1 mr-2 ml-2">
-                <Link className="nav-link" to="/find-organization">Find Organizations</Link>
+                <Link className="nav-link" to="/find-organizations">Find Organizations</Link>
               </li>
               <li className="nav-item my-1 mr-2 ml-2">
                 <Link className="nav-link" to="/our-mission">About</Link>
