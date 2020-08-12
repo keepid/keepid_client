@@ -2,7 +2,16 @@
 <h3>Team Keep</h3>
 
 [![Build Status](https://travis-ci.org/keepid/keepid_client.svg?branch=master)](https://travis-ci.org/keepid/keepid_client)
-
+![Mozilla HTTP Observatory Grade](https://img.shields.io/mozilla-observatory/grade/keep.id?publish)
+![Chromium HSTS preload](https://img.shields.io/hsts/preload/keep.id)
+![Security Headers](https://img.shields.io/security-headers?url=https%3A%2F%2Fkeep.id)
+![David](https://img.shields.io/david/keepid/keepid_client)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/keepid/keepid_client)
+![GitHub issues](https://img.shields.io/github/issues/keepid/keepid_client)
+![GitHub](https://img.shields.io/github/license/keepid/keepid_client)
+![GitHub stars](https://img.shields.io/github/stars/keepid/keepid_client?style=social)
+![Uptime Robot ratio (30 days)](https://img.shields.io/uptimerobot/ratio/m785737803-13eb53d3107f345dc1b40864)
+![Uptime Robot status](https://img.shields.io/uptimerobot/status/m785737803-13eb53d3107f345dc1b40864)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/221a45023c4747208db0d505163aab9e)](https://www.codacy.com/gh/keepid/keepid_client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=keepid/keepid_client&amp;utm_campaign=Badge_Grade)
 
 https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/edit?usp=sharing 
