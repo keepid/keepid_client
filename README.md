@@ -13,6 +13,7 @@
 ![Uptime Robot ratio (30 days)](https://img.shields.io/uptimerobot/ratio/m785737803-13eb53d3107f345dc1b40864)
 ![Uptime Robot status](https://img.shields.io/uptimerobot/status/m785737803-13eb53d3107f345dc1b40864)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/221a45023c4747208db0d505163aab9e)](https://www.codacy.com/gh/keepid/keepid_client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=keepid/keepid_client&amp;utm_campaign=Badge_Grade)
+![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/keepid/keepid_client)
 
 https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/edit?usp=sharing 
 
