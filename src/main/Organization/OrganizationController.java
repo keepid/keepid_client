@@ -279,4 +279,19 @@ public class OrganizationController {
       logger.info("Done with inviteUsers");
     };
   }
+
+  public Handler dashboard =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+
+        if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
+          logger.error("Privilege level not high enough (MUST BE ADMIN!)");
+          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
+          return;
+        }
+
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      };
 }

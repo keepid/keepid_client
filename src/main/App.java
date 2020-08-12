@@ -87,5 +87,8 @@ public class App {
     app.post(
         "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
+
+    /* -------------- ADMIN DASHBOARD ------------------ */
+    app.post("/dashboard", orgController.dashboard);
   }
 }
