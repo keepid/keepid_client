@@ -39,6 +39,7 @@ import EULA from './components/AboutUs/EULA';
 import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
+import AdminDashboard from './components/AdminDashboard';
 
 interface State {
   role: Role,
@@ -337,6 +338,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/eula">
                 <EULA />
+              </Route>
+              <Route path="/dashboard-test">
+                <AdminDashboard />
               </Route>
               <Route path="/careers">
                 <Careers />

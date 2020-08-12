@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@mikecousins/react-pdf": "^5.5.1",
+    "@nivo/line": "^0.62.0",
+    "@nivo/pie": "^0.62.0",
     "@pdftron/pdfnet-node": "^7.1.1-1",
     "@pdftron/webviewer": "^6.3.1",
     "@types/jest": "^24.9.1",
@@ -19,6 +21,7 @@
     "file-loader": "5.0.2",
     "jquery": "^3.5.1",
     "lint-staged": "^9.4.2",
+    "nivo": "^0.31.0",
     "node-sass": "^4.14.1",
     "normalize.css": "^8.0.1",
     "pdf-lib": "^1.6.1",
