@@ -117,11 +117,11 @@ class AdminDashboard extends Component<Props, State, {}> {
     <ResponsiveLine
       data={lineData}
       margin={{
-        top: 50, right: 50, bottom: 150, left: 50,
+        top: 50, right: 50, bottom: 50, left: 50,
       }}
       xScale={{ type: 'linear' }}
       yScale={{
-        type: 'linear', stacked: true, min: 0, max: 60,
+        type: 'linear', stacked: true, min: 0, max: 50,
       }}
       curve="monotoneX"
       colors={(d) => d.color}
@@ -156,7 +156,7 @@ class AdminDashboard extends Component<Props, State, {}> {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: 'Applications',
+        legend: 'Number of Applications',
         legendOffset: -40,
         legendPosition: 'middle',
       }}
@@ -168,6 +168,9 @@ class AdminDashboard extends Component<Props, State, {}> {
       pointBorderColor={{ from: 'serieColor' }}
       enablePointLabel={false}
       useMesh
+      theme={{
+        fontSize: '14',
+      }}
       gridXValues={[0, 1, 2, 3, 4, 5, 6, 7]}
       gridYValues={[0, 10, 20, 30, 40, 50, 60]}
       legends={[
