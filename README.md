@@ -1,6 +1,12 @@
 # keepid_server
 [![Build Status](https://travis-ci.org/keepid/keepid_server.svg?branch=master)](https://travis-ci.org/keepid/keepid_server)[![codecov](https://codecov.io/gh/crchong1/keepid_server/branch/master/graph/badge.svg?token=4wI4QFPmQv)](https://codecov.io/gh/crchong1/keepid_server)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/aed15cbdd0a249a69a0439fd7784cb1d)](https://www.codacy.com/gh/keepid/keepid_server?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=keepid/keepid_server&amp;utm_campaign=Badge_Grade)
+![Uptime Robot ratio (30 days)](https://img.shields.io/uptimerobot/ratio/m785737816-1b614ce058ee62b1c5d2b6a0)
+![Uptime Robot status](https://img.shields.io/uptimerobot/status/m785737816-1b614ce058ee62b1c5d2b6a0)
+![GitHub issues](https://img.shields.io/github/issues/keepid/keepid_server)
+![Mozilla HTTP Observatory Grade](https://img.shields.io/mozilla-observatory/grade-score/server.keep.id?publish)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/keepid/keepid_server)
+![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/keepid/keepid_server)
 
 Keep.id Server Application. Built with Java and Kotlin, this application serves to empower organizations fighting homelessness with tools to help with document storage and other aid.
 
