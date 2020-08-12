@@ -8,12 +8,6 @@ import { OptionType } from 'antd/lib/select';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../static/PDFType';
-import Dropdown from './dropdown';
-
-import './style.css';
-import dropdown from './dropdownmenu/Dropdown';
-
-import 'react-dropdown/style.css';
 
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
@@ -44,6 +38,7 @@ class ApplicationForm extends Component<Props, State> {
       submitSuccessful: false,
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
+    this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
     this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
     this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
@@ -75,8 +70,21 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
+    console.log(event.target.value);
+    console.log(formAnswers);
     const { id } = event.target;
     const { value } = event.target;
+    formAnswers[id] = value;
+    this.setState({ formAnswers });
+  }
+
+  handleChangeFormValueCheckBox(event: any) {
+    const {
+      formAnswers,
+    } = this.state;
+    console.log(event.target.checked);
+    const { id } = event.target;
+    const value = event.target.checked;
     formAnswers[id] = value;
     this.setState({ formAnswers });
   }
@@ -132,6 +140,7 @@ class ApplicationForm extends Component<Props, State> {
     const {
       pdfApplication,
       formQuestions,
+      formAnswers,
       submitSuccessful,
     } = this.state;
 
@@ -156,10 +165,10 @@ class ApplicationForm extends Component<Props, State> {
               <div className="mt-2 mb-2">
                 {
                   (() => {
-                    if (entry.fieldType == 'TextField') {
+                    if (entry.fieldType === 'TextField') {
                       return (
                         <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                             {entry.fieldQuestion}
                             <input
                               type="text"
@@ -174,24 +183,52 @@ class ApplicationForm extends Component<Props, State> {
                       );
                     }
 
-                    if (entry.fieldType == 'RadioButton') {
+                    if (entry.fieldType === 'CheckBox') {
                       const temp = JSON.parse(entry.fieldValueOptions);
                       return (
                         <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                             {entry.fieldQuestion}
                           </label>
-                          {temp.map((value, index) => (
+
+                          <div className="mt-2 mb-2">
+                            <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                              <input
+                                type="checkbox"
+                                id={entry.fieldName}
+                                name={entry.fieldName}
+                                onChange={this.handleChangeFormValueCheckBox}
+                              />
+                              <label>
+                                {' '}
+                                {temp[0]}
+                              </label>
+                              <br />
+                            </label>
+                          </div>
+
+                        </div>
+                      );
+                    }
+
+                    if (entry.fieldType === 'RadioButton') {
+                      const temp = JSON.parse(entry.fieldValueOptions);
+                      return (
+                        <div className="mt-2 mb-2">
+                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                            {entry.fieldQuestion}
+                          </label>
+                          {temp.map((value) => (
                             <div className="mt-2 mb-2">
-                              <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                                 "
                                 {value}
                                 "
                                 <input
-                                  placeholder={value}
                                   type="radio"
                                   className="form-control form-purple mt-1"
                                   id={entry.fieldName}
+                                  checked={formAnswers[entry.fieldName] === value}
                                   value={value}
                                   onChange={this.handleChangeFormValue}
                                   required
@@ -203,65 +240,19 @@ class ApplicationForm extends Component<Props, State> {
                       );
                     }
 
-                    if (entry.fieldType == 'ComboBox') {
+                    if (entry.fieldType === 'ComboBox') {
                       const temp = JSON.parse(entry.fieldValueOptions);
                       return (
                         <div className="dropdown">
-                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
-                            <button className="dropbtn">{entry.fieldQuestion}</button>
-
-                            {temp.map((value, index) => (
-                              <div className="mt-2 mb-2">
-                                <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
-
-                                  <div className="dropdown-content">
-                                    {entry.fieldname}
-                                    <input
-                                      placeholder={value}
-                                      type="checkbox"
-                                      className="dropdown"
-                                      id={entry.fieldName}
-                                      value={value}
-                                      onChange={this.handleChangeFormValue}
-                                    />
-                                    {value}
-
-                                  </div>
-                                </label>
-                              </div>
-                            ))}
-
-                          </label>
-                        </div>
-                      );
-                    }
-
-                    if (entry.fieldType == 'CheckBox') {
-                      const temp = JSON.parse(entry.fieldValueOptions);
-                      return (
-                        <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
+                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                             {entry.fieldQuestion}
+                            <br />
+                            <select id={entry.fieldName} onChange={this.handleChangeFormValue}>
+                              {temp.map((value) => (
+                                <option value={value}>{value}</option>
+                              ))}
+                            </select>
                           </label>
-
-                          <div className="mt-2 mb-2">
-                            <label htmlFor={entry.fieldname} className="w-100 font-weight-bold">
-                              <input
-                                type="checkbox"
-                                id={entry.fieldname}
-                                name={entry.fieldName}
-                                value="true"
-                                onChange={this.handleChangeFormValue}
-                                required
-                              />
-                              <label>
-                                {' '}
-                                {entry.fieldName}
-                              </label>
-                              <br />
-                            </label>
-                          </div>
-
                         </div>
                       );
                     }
