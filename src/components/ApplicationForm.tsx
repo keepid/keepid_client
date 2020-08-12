@@ -2,13 +2,10 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import { useState } from 'react';
-import MultiSelect from 'react-multi-select-component';
-import { OptionType } from 'antd/lib/select';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../static/PDFType';
-
+import SignaturePad from '../lib/react-typescript-signature-pad';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
@@ -28,6 +25,8 @@ interface State {
 }
 
 class ApplicationForm extends Component<Props, State> {
+  signaturePad: any;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -58,11 +57,10 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const ResponseJsonParse = JSON.parse(responseJSON);
-
-        const formQuestions = ResponseJsonParse.fields;
-        console.log(formQuestions);
-        this.setState({ formQuestions });
+        const { fields } = JSON.parse(responseJSON);
+        this.setState({ formQuestions: fields });
+        fields.map((entry) => (formAnswers[entry.fieldName] = ''));
+        this.setState({ formAnswers });
       });
   }
 
@@ -70,8 +68,6 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    console.log(event.target.value);
-    console.log(formAnswers);
     const { id } = event.target;
     const { value } = event.target;
     formAnswers[id] = value;
@@ -98,7 +94,6 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    console.log(formAnswers);
 
     this.setState({ buttonState: 'running' });
 
@@ -122,9 +117,13 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
     if (pdfApplication) {
       const formData = new FormData();
-      formData.append('file', pdfApplication, pdfApplication.name);
+      console.log(pdfApplication);
+      formData.append('file', pdfApplication);
+      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+      // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
+      formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
-      fetch(`${getServerURL()}/upload`, {
+      fetch(`${getServerURL()}/upload-pdf-signed`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -134,6 +133,17 @@ class ApplicationForm extends Component<Props, State> {
           this.props.alert.show('Successfully Submitted Application');
         });
     }
+  }
+
+  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+  dataURLtoBlob(dataurl) {
+    const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]); let n = bstr.length; const
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: 'image/png' });
   }
 
   render() {
@@ -153,6 +163,7 @@ class ApplicationForm extends Component<Props, State> {
       bodyElement = (
         <div>
           <DocumentViewer pdfFile={pdfApplication} />
+          <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
           <button onClick={this.onSubmitPdfApplication} type="button">Submit Final Application</button>
         </div>
       );
@@ -161,7 +172,6 @@ class ApplicationForm extends Component<Props, State> {
         <form onSubmit={this.onSubmitFormQuestions}>
           {formQuestions.map(
             (entry) => (
-
               <div className="mt-2 mb-2">
                 {
                   (() => {
