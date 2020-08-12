@@ -12,7 +12,6 @@ interface Props{
 interface State {
   bugTitle: string,
   bugDescription: string,
-  isCaptchaFilled: boolean,
   buttonState: string,
 }
 
@@ -24,17 +23,11 @@ class BugReport extends Component<Props, State, {}> {
     this.state = {
       bugTitle: '',
       bugDescription: '',
-      isCaptchaFilled: false,
       buttonState: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.captchaVerify = this.captchaVerify.bind(this);
     this.handleChangeBugTitle = this.handleChangeBugTitle.bind(this);
     this.handleChangeBugDescription = this.handleChangeBugDescription.bind(this);
-  }
-
-  captchaVerify(value) {
-    this.setState({ isCaptchaFilled: true });
   }
 
   componentDidMount() {
@@ -43,14 +36,11 @@ class BugReport extends Component<Props, State, {}> {
 
   handleSubmit(event: any) {
     this.setState({ buttonState: 'running' });
-    if (recaptchaRef && recaptchaRef.current) {
-      recaptchaRef.current.execute();
-    }
     const {
       bugTitle,
       bugDescription,
     } = this.state;
-    if (process.env.NODE_ENV === 'production' && !this.state.isCaptchaFilled) {
+    if (process.env.NODE_ENV === 'production') {
       this.props.alert.show('Please click the Recaptcha');
       this.setState({ buttonState: '' });
     } else {
@@ -142,12 +132,6 @@ class BugReport extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row mt-2">
                   <div className="col-md-8">
-                    <ReCAPTCHA
-                      ref={recaptchaRef}
-                      size="invisible"
-                      sitekey={reCaptchaKey}
-                      onChange={this.captchaVerify}
-                    />
                     <span className="text-muted recaptcha-login-text">
                       This page is protected by reCAPTCHA, and subject to the Google
                       {' '}
