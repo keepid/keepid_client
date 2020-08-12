@@ -271,6 +271,10 @@ public class PdfController {
         if (field instanceof PDButton) {
           if (field instanceof PDCheckBox) {
             fieldType = "CheckBox";
+            JSONArray optionsJSONArray = new JSONArray();
+            PDCheckBox checkBoxField = (PDCheckBox) field;
+            optionsJSONArray.put(checkBoxField.getOnValue());
+            fieldValueOptions = optionsJSONArray.toString();
           } else if (field instanceof PDPushButton) {
             fieldType = "PushButton";
           } else if (field instanceof PDRadioButton) {
