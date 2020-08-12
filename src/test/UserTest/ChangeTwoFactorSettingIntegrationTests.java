@@ -2,7 +2,7 @@ package UserTest;
 
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import TestUtils.TestUtils;
+import resources.TestUtils;
 import User.User;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;

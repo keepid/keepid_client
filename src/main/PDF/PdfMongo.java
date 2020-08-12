@@ -91,7 +91,6 @@ public class PdfMongo {
         res = PdfMessage.INSUFFICIENT_PRIVILEGE.toJSON();
       }
     } catch (Exception e) {
-      System.out.println(e.toString());
       res = PdfMessage.INVALID_PARAMETER.toJSON();
     }
     return res;

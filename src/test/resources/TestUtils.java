@@ -1,5 +1,6 @@
-package TestUtils;
+package resources;
 
+import Bug.BugController;
 import Config.MongoConfig;
 import Organization.Organization;
 import Organization.OrganizationController;
@@ -28,11 +29,9 @@ import java.util.Date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUtils {
-  private static MongoDatabase testDB =
-      MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
   private static int serverPort = 1234;
   private static String serverUrl = "http://localhost:" + serverPort;
-  private static Javalin app = null;
+  private static Javalin app;
 
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
@@ -46,9 +45,8 @@ public class TestUtils {
    */
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
-    TestUtils.tearDownTestDB();
-    MongoConfig.getMongoTestClient();
-
+    MongoDatabase testDB =
+            MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
     /* *********************** Broad Street Ministry ************************ */
     Organization broadStreetMinistry =
         new Organization(
@@ -640,6 +638,7 @@ public class TestUtils {
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     OrganizationController orgController = new OrganizationController(db);
+    BugController bugController = new BugController(db);
 
     /* Utils */
     SecurityUtils securityUtils = new SecurityUtils();
@@ -655,6 +654,9 @@ public class TestUtils {
     app.post("/logout", userController.logout);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
+    app.post("/submit-bug", bugController.submitBug);
+    app.post("/find-bug", bugController.findBug);
+    app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
   }
 
   public static void stopServer() {

@@ -4,7 +4,7 @@ import Config.MongoConfig;
 import Security.AccountSecurityController;
 import Security.SecurityUtils;
 import Security.Tokens;
-import TestUtils.TestUtils;
+import resources.TestUtils;
 import User.User;
 import User.UserMessage;
 import com.mongodb.client.MongoClient;

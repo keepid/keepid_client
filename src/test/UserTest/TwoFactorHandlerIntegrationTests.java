@@ -1,8 +1,8 @@
 package UserTest;
 
-import TestUtils.TestUtils;
-import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import resources.TestUtils;
+import kong.unirest.HttpResponse;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
