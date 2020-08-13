@@ -10,6 +10,7 @@ import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import kong.unirest.HttpResponse;
@@ -327,16 +328,43 @@ public class OrganizationController {
 
   public Handler dashboard =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
 
         if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
-          logger.error("Privilege level not high enough (MUST BE ADMIN!)");
+          logger.error("Privilege level not high enough (MUST BE ADMIN OR HIGHER!)");
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
           return;
         }
 
+        JSONObject ret = new JSONObject();
+
+        logger.info("Counting workers and clients of " + organizationName);
+        int workerCount = 0;
+        int clientCount = 0;
+
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        MongoCursor<User> listOfMembers =
+            userCollection.find(eq("organization", organizationName)).iterator();
+
+        while (listOfMembers.hasNext()) {
+          User user = listOfMembers.next();
+          UserType userType = user.getUserType();
+
+          if (userType == UserType.Director
+              || userType == UserType.Admin
+              || userType == UserType.Worker) {
+            workerCount++;
+          } else if (userType == UserType.Client) {
+            clientCount++;
+          }
+        }
+
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+        ret.put("workerCount", workerCount);
+        ret.put("clientCount", clientCount);
+        logger.info("Successfully returned member information");
+        ctx.json(ret.toString());
       };
 }

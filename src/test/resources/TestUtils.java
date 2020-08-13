@@ -46,7 +46,7 @@ public class TestUtils {
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB =
-            MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
+        MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
     /* *********************** Broad Street Ministry ************************ */
     Organization broadStreetMinistry =
         new Organization(
@@ -657,6 +657,7 @@ public class TestUtils {
     app.post("/submit-bug", bugController.submitBug);
     app.post("/find-bug", bugController.findBug);
     app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
+    app.post("/dashboard", orgController.dashboard);
   }
 
   public static void stopServer() {

@@ -1,15 +1,15 @@
 package OrgTests;
 
 import Security.SecurityUtils;
-import kong.unirest.Unirest;
-import resources.TestUtils;
 import io.jsonwebtoken.Claims;
 import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import resources.TestUtils;
 
 import java.io.IOException;
 
@@ -142,5 +142,19 @@ public class OrganizationJWTTests {
     assertThat(actualResponseJSON.getString("message")).isEqualTo("Cannot be empty.");
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("EMPTY_FIELD");
+  }
+
+  @Test
+  public void adminDashboardTest() {
+    TestUtils.login("adminBSM", "adminBSM");
+    HttpResponse actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/dashboard")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .asString();
+
+    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+    System.out.println(resp);
+    TestUtils.logout();
   }
 }
