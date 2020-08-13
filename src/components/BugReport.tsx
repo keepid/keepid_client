@@ -42,9 +42,6 @@ class BugReport extends Component<Props, State, {}> {
       bugDescription,
     } = this.state;
     if (process.env.NODE_ENV === 'production') {
-      this.props.alert.show('Please click the Recaptcha');
-      this.setState({ buttonState: '' });
-    } else {
       fetch(`${getServerURL()}/submit-bug`, {
         method: 'POST',
         body: JSON.stringify({
