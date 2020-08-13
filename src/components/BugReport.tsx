@@ -41,30 +41,28 @@ class BugReport extends Component<Props, State, {}> {
       bugTitle,
       bugDescription,
     } = this.state;
-    if (process.env.NODE_ENV === 'production') {
-      fetch(`${getServerURL()}/submit-bug`, {
-        method: 'POST',
-        body: JSON.stringify({
-          bugTitle,
-          bugDescription,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const responseObject = JSON.parse(responseJSON);
-          const { status } = responseObject;
+    fetch(`${getServerURL()}/submit-bug`, {
+      method: 'POST',
+      body: JSON.stringify({
+        bugTitle,
+        bugDescription,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = JSON.parse(responseJSON);
+        const { status } = responseObject;
 
-          if (status === 'SUCCESS') {
-            this.setState({ buttonState: '' });
-            this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
-          } else {
-            this.props.alert.show('Submit Failure');
-            this.setState({ buttonState: '' });
-          }
-        }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
+        if (status === 'SUCCESS') {
           this.setState({ buttonState: '' });
-        });
-    }
+          this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
+        } else {
+          this.props.alert.show('Submit Failure');
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+        this.setState({ buttonState: '' });
+      });
   }
 
   handleChangeBugTitle(event: any) {
