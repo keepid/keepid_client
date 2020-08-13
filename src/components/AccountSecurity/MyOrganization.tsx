@@ -13,6 +13,7 @@ interface State {
  editedPersonName: string,
  editedPersonRole: any,
  memberArr: any,
+ id:any,
 }
 
 class MyOrganization extends Component<Props, State> {
@@ -27,8 +28,8 @@ class MyOrganization extends Component<Props, State> {
       editedPersonName: '',
       editedPersonRole: '',
       memberArr: [],
+      id: 0,
     };
-
     this.editButtonToggle = this.editButtonToggle.bind(this);
     this.changeEditMode = this.changeEditMode.bind(this);
     this.getEmailCell = this.getEmailCell.bind(this);
@@ -39,64 +40,84 @@ class MyOrganization extends Component<Props, State> {
     this.handleChangeRole = this.handleChangeRole.bind(this);
     this.saveEdits = this.saveEdits.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
+    this.deleteMember = this.deleteMember.bind(this);
   }
 
-onSubmit(e){
+  onSubmit(e) {
+    this.setState((prevState) => ({ id: prevState.id + 1 }));
 
-  if (this.state.personName!==""){
-    let newMember = {
-      name: this.state.personName,
-      key: Date.now()
-    };
+    if (this.state.personName !== '') {
+      const newMember = {
+        name: this.state.personName,
+        email: this.state.personEmail,
+        role: this.state.personRole,
+        editMode: this.state.isInEditMode,
+        key: Date.now(),
+        id: this.state.id,
+      };
 
-  this.setState((prevState)=>{
-    return{
-      memberArr: prevState.memberArr.concat(newMember),
-      personName: ""
+      this.setState((prevState) => ({
+        memberArr: prevState.memberArr.concat(newMember),
+        personName: '',
+        personEmail: '',
+        personRole: '',
+      }));
     }
-  });
+    e.preventDefault();
   }
 
-  console.log(this.state.memberArr);
-  e.preventDefault();
-}
-
-renderTableContents(){
-  return(
-    <tbody>
-      <tr>
-        <td>{this.getNameCell()}</td>
-        <td>{this.getEmailCell()}</td>
-        <td>{this.editButtonToggle()}</td>
-        <td>{this.getRoleDropDown()}</td>
-        <td><button type="button" className="close" aria-label="Close">
-        <span aria-hidden="true" className="mx-auto">&times;</span>
-        </button>
-        </td>
+  renderTableContents() {
+    const row = this.state.memberArr.map((member, i) => (
+      <tbody>
+        <tr key={member.key}>
+          <td>{this.getNameCell(member)}</td>
+          <td>{this.getEmailCell(member.id)}</td>
+          <td>{this.editButtonToggle(member.id)}</td>
+          <td>{this.getRoleDropDown(member)}</td>
+          <td>
+            <button type="button" className="close" aria-label="Close" onClick={() => this.deleteMember(i)}>
+              <span aria-hidden="true" className="mx-auto">&times;</span>
+            </button>
+          </td>
         </tr>
-    </tbody>
-  )
+      </tbody>
+    ));
+    return row;
+  }
+
+deleteMember=(i) => {
+  const members = Object.assign([], this.state.memberArr);
+  members.splice(i, 1);
+  this.setState({ memberArr: members });
 }
 
-saveEdits() {
+saveEdits(id) {
+  const index = this.state.memberArr.findIndex((member) => member.id === id);
+  const member = { ...this.state.memberArr[index] };
+  const members = Object.assign([], this.state.memberArr);
+  member.email = this.state.editedPersonEmail;
+  member.name = this.state.editedPersonName;
+  member.role = this.state.editedPersonRole;
+  member.editMode = !member.editMode;
+  members[index] = member;
   this.setState({
-    personEmail: this.state.editedPersonEmail,
-    personName: this.state.editedPersonName,
-    personRole: this.state.editedPersonRole,
-  }, this.changeEditMode);
-}
-
-changeEditMode() {
-  this.setState((prevState) => ({
-    isInEditMode: !prevState.isInEditMode,
-  }));
-}
-
-/*
-  this.setState({
-    isInEditMode: !this.state.isInEditMode
+    memberArr: members,
   });
-*/
+}
+
+changeEditMode(id) {
+  const index = this.state.memberArr.findIndex((member) => member.id === id);
+  const member = { ...this.state.memberArr[index] };
+  member.editMode = !member.editMode;
+  const members = Object.assign([], this.state.memberArr);
+  members[index] = member;
+  this.setState({
+    memberArr: members,
+    editedPersonEmail: member.email,
+    editedPersonName: member.name,
+    editedPersonRole: member.role,
+  });
+}
 
 handleChangeEmail(event:any) {
   this.setState({
@@ -116,10 +137,18 @@ handleChangeRole(event:any) {
   });
 }
 
-editButtonToggle = () => {
-  if (this.state.isInEditMode) {
+updateMemberValuesForEditing(member) {
+  this.setState({ editedPersonEmail: member.email });
+}
+
+editButtonToggle = (id) => {
+  const index = this.state.memberArr.findIndex((member) => member.id === id);
+  const member = { ...this.state.memberArr[index] };
+  const members = Object.assign([], this.state.memberArr);
+
+  if (member.editMode) {
     return (
-      <button type="button" onClick={this.saveEdits}>
+      <button type="button" onClick={() => this.saveEdits(id)}>
         <img
           alt="search"
           src={CheckSVG}
@@ -132,12 +161,12 @@ editButtonToggle = () => {
   }
 
   return (
-    <button type="button" className="border-0 text-primary bg-transparent" onClick={this.changeEditMode}>Edit</button>
+    <button type="button" className="border-0 text-primary bg-transparent" onClick={() => this.changeEditMode(id)}>Edit</button>
   );
 }
 
-getNameCell = () => {
-  if (this.state.isInEditMode) {
+getNameCell(member) {
+  if (member.editMode) {
     return (
       <input
         type="text"
@@ -149,31 +178,33 @@ getNameCell = () => {
   }
 
   return (
-    <div>{this.state.personName}</div>
+    <div>{member.name}</div>
   );
 }
 
-getEmailCell = () => {
-  if (this.state.isInEditMode) {
+getEmailCell = (id) => {
+  const index = this.state.memberArr.findIndex((member) => member.id === id);
+  const member = { ...this.state.memberArr[index] };
+  const members = { ...this.state.memberArr };
+  // members[index] = member;
+  // this.setState({memberArr:members})
+
+  if (member.editMode) {
+    console.log(`editing: ${id}MEBER:${member.email}`);
     return (
       <input
         type="text"
-        defaultValue={this.state.personEmail}
-        onChange={this.handleChangeEmail}
         value={this.state.editedPersonEmail}
+        onChange={this.handleChangeEmail}
       />
     );
   }
 
-  return (
-    <div>
-      {this.state.personEmail}
-    </div>
-  );
+  return (<div>{member.email}</div>);
 }
 
-getRoleDropDown = () => {
-  if (this.state.isInEditMode) {
+getRoleDropDown = (member) => {
+  if (member.editMode) {
     return (
       <div>
         <select placeholder="Role" id="role2" className="form-control form-purple" value={this.state.editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
@@ -186,7 +217,7 @@ getRoleDropDown = () => {
   }
 
   return (
-    <div>{this.state.personRole}</div>
+    <div>{member.role}</div>
   );
 }
 
@@ -241,7 +272,7 @@ render() {
             <th scope="col" />
           </tr>
         </thead>
-        {this.renderTableContents}
+        {this.renderTableContents()}
       </table>
     </div>
   );
