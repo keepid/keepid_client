@@ -95,5 +95,8 @@ public class App {
 
     /* -------------- SUBMIT BUG------------------ */
     app.post("/submit-bug", bugController.submitBug);
+
+    /* --------------- SEARCH FUNCTIONALITY ------------- */
+    app.post("/all-orgs", orgController.listOrgs);
   }
 }

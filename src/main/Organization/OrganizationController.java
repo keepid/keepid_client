@@ -367,4 +367,28 @@ public class OrganizationController {
         logger.info("Successfully returned member information");
         ctx.json(ret.toString());
       };
+
+  public Handler listOrgs =
+      ctx -> {
+        JSONObject ret = new JSONObject();
+        JSONArray orgs = new JSONArray();
+
+        logger.info("Querying organizations from Mongo");
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        MongoCursor<Organization> orgCursor = orgCollection.find().iterator();
+
+        while (orgCursor.hasNext()) {
+          JSONObject curr = new JSONObject(orgCursor.next());
+          orgs.put(curr);
+        }
+
+        logger.info("Done creating JSON array of organizations");
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+        ret.put("organizations", orgs);
+
+        logger.info("Done with listOrgs");
+        ctx.json(ret.toString());
+      };
 }

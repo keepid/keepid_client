@@ -1,6 +1,7 @@
 package OrgTests;
 
 import Security.SecurityUtils;
+import Validation.ValidationException;
 import io.jsonwebtoken.Claims;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import resources.TestUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -154,7 +156,109 @@ public class OrganizationJWTTests {
             .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-    System.out.println(resp);
+
     TestUtils.logout();
+
+    assert (resp.has("message"));
+    assertThat(resp.getString("message")).isEqualTo("Success.");
+    assert (resp.has("status"));
+    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
+    assert (resp.has("workerCount"));
+    assertThat(resp.getInt("workerCount")).isEqualTo(7);
+    assert (resp.has("clientCount"));
+    assertThat(resp.getInt("clientCount")).isEqualTo(0);
+  }
+
+  @Test
+  public void findAllOrgs() throws ValidationException {
+    HttpResponse actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/all-orgs")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .asString();
+
+    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+
+    //    Organization broadStreetMinistry =
+    //        new Organization(
+    //            "Broad Street Ministry",
+    //            "http://www.broadstreetministry.org",
+    //            "123456789",
+    //            "311 Broad Street",
+    //            "Philadelphia",
+    //            "PA",
+    //            "19104",
+    //            "mikedahl@broadstreetministry.org",
+    //            "1234567890");
+    //
+    //    Organization ymca =
+    //        new Organization(
+    //            "YMCA",
+    //            "http://www.ymca.net",
+    //            "987654321",
+    //            "11088 Knights Rd",
+    //            "Philadelphia",
+    //            "PA",
+    //            "19154",
+    //            "info@ymca.net",
+    //            "1234567890");
+    //
+    //    Organization twoFactorTokenOrg =
+    //        new Organization(
+    //            "2FA Token Org",
+    //            "http://keep.id",
+    //            "123456789",
+    //            "311 Broad Street",
+    //            "Philadelphia",
+    //            "PA",
+    //            "19104",
+    //            "contact@example.com",
+    //            "1234567890");
+    //
+    //    Organization accountSettingsOrg =
+    //        new Organization(
+    //            "Account Settings Org",
+    //            "http://keep.id",
+    //            "123456789",
+    //            "311 Broad Street",
+    //            "Philadelphia",
+    //            "PA",
+    //            "19104",
+    //            "contact@example.com",
+    //            "1234567890");
+    //
+    //    Organization passwordSettingsOrg =
+    //        new Organization(
+    //            "Password Settings Org",
+    //            "http://keep.id",
+    //            "123456789",
+    //            "311 Broad Street",
+    //            "Philadelphia",
+    //            "PA",
+    //            "19104",
+    //            "contact@example.com",
+    //            "1234567890");
+
+    String testOrgs[] = {
+      "Broad Street Ministry",
+      "YMCA",
+      "2FA Token Org",
+      "Account Settings Org",
+      "Password Settings Org"
+    };
+
+    JSONArray orgs = resp.getJSONArray("organizations");
+
+    assert (resp.has("message"));
+    assertThat(resp.getString("message")).isEqualTo("Success.");
+    assert (resp.has("status"));
+    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
+    assert (resp.has("organizations"));
+
+    for (int i = 0; i < orgs.length(); i++) {
+      JSONObject currOrg = orgs.getJSONObject(i);
+      String orgName = currOrg.getString("orgName");
+      assert (Arrays.asList(testOrgs).contains(orgName));
+    }
   }
 }
