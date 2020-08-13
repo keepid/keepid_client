@@ -35,6 +35,7 @@ class BugReport extends Component<Props, State, {}> {
   }
 
   handleSubmit(event: any) {
+    event.preventDefault();
     this.setState({ buttonState: 'running' });
     const {
       bugTitle,
@@ -55,7 +56,7 @@ class BugReport extends Component<Props, State, {}> {
           const responseObject = JSON.parse(responseJSON);
           const { status } = responseObject;
 
-          if (status === 'SUBMIT_SUCCESS') {
+          if (status === 'SUCCESS') {
             this.setState({ buttonState: '' });
             this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
           } else {
