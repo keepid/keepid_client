@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import CheckSVG from '../../static/images/check.svg';
+import Alert from 'react-bootstrap/Alert';
 
 interface Props {
 }
@@ -14,6 +15,8 @@ interface State {
  editedPersonRole: any,
  memberArr: any,
  id:any,
+ showPopUp: boolean,
+ numInvitesSent: any
 }
 
 class MyOrganization extends Component<Props, State> {
@@ -29,6 +32,8 @@ class MyOrganization extends Component<Props, State> {
       editedPersonRole: '',
       memberArr: [],
       id: 0,
+      showPopUp: false,
+      numInvitesSent: 0
     };
     this.editButtonToggle = this.editButtonToggle.bind(this);
     this.changeEditMode = this.changeEditMode.bind(this);
@@ -41,6 +46,8 @@ class MyOrganization extends Component<Props, State> {
     this.saveEdits = this.saveEdits.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.deleteMember = this.deleteMember.bind(this);
+    this.handleSendInvites = this.handleSendInvites.bind(this);
+    this.renderPopUp = this.renderPopUp.bind(this);
   }
 
   onSubmit(e) {
@@ -67,6 +74,15 @@ class MyOrganization extends Component<Props, State> {
   }
 
   renderTableContents() {
+    if(this.state.memberArr.length==0){
+      return(
+        <tbody>
+          <tr>
+            <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
+          </tr>
+        </tbody>
+      )
+    }
     const row = this.state.memberArr.map((member, i) => (
       <tbody>
         <tr key={member.key}>
@@ -221,10 +237,29 @@ getRoleDropDown = (member) => {
   );
 }
 
+handleSendInvites(){
+  this.setState({
+    numInvitesSent: this.state.memberArr.length,
+    memberArr:[], 
+    showPopUp:true
+  });
+}
+
+renderPopUp(){
+  return(
+    <div>
+      <Alert variant="success" dismissible onClose={()=>(this.setState({showPopUp:false}))}>
+        <p>Congrats! You successfully invited {this.state.numInvitesSent} new members to your team! Head to your Admin Panel to see them</p>
+      </Alert>
+    </div>
+  );
+}
+
 render() {
   return (
     <div className="container">
-      <h1 className="brand-text font-weight-bold">Invite New Team Members</h1>
+      {this.state.showPopUp===true && this.renderPopUp()}
+      <p className="font-weight-bold brand-text text-dark mb-2">Invite New Team Members</p>
       <form>
         <div className="form-row">
           <div className="form-group col required">
@@ -257,11 +292,11 @@ render() {
             </select>
           </div>
           <div className="col">
-            <button className="btn btn-primary mt-3" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+            <button className="btn btn-primary mt-4" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
           </div>
         </div>
       </form>
-      <h2 className="brand-text font-weight-bold">Recently Invited</h2>
+      <p className="brand-text font-weight-bold text-dark mb-2">Recently Invited</p>
       <table className="table table-striped table-bordered">
         <thead>
           <tr>
@@ -274,9 +309,9 @@ render() {
         </thead>
         {this.renderTableContents()}
       </table>
+      <button className="btn btn-primary mt-1 float-right" onClick={this.handleSendInvites}>Send Invites</button>
     </div>
   );
 }
 }
-
 export default MyOrganization;
