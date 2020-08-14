@@ -75,6 +75,7 @@ public class App {
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
+    app.post("/get-login-history", userController.getLogInHistory);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);

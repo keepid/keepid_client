@@ -46,7 +46,7 @@ public class TestUtils {
   public static void setUpTestDB() throws ValidationException {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB =
-            MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
+        MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
     /* *********************** Broad Street Ministry ************************ */
     Organization broadStreetMinistry =
         new Organization(
@@ -573,6 +573,23 @@ public class TestUtils {
             TestUtils.hashPassword("a4d3jgHow0"),
             UserType.Client);
 
+    /* *********************** Login History Test Users ************************ */
+    User logInHistoryTest =
+        new User(
+            "Cathy",
+            "Chen",
+            "07-14-2020",
+            "contact@example.com",
+            "1234567890",
+            "login history Org",
+            "311 Broad Street",
+            "Philadelphia",
+            "PA",
+            "19104",
+            false,
+            "login-history-test",
+            TestUtils.hashPassword("login-history-test"),
+            UserType.Client);
     // Add the organization documents to the test database.
     MongoCollection<Organization> organizationCollection =
         testDB.getCollection("organization", Organization.class);
@@ -603,7 +620,8 @@ public class TestUtils {
             tokenTestExpired,
             accountSettingsTest,
             settingsTest2FA,
-            passwordResetTest));
+            passwordResetTest,
+            logInHistoryTest));
 
     // Add the 2FA tokens to the test database
     MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
@@ -656,6 +674,7 @@ public class TestUtils {
     app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
     app.post("/submit-bug", bugController.submitBug);
     app.post("/find-bug", bugController.findBug);
+    app.post("/get-login-history", userController.getLogInHistory);
     app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
   }
 
