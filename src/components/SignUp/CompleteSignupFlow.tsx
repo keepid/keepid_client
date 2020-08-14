@@ -93,7 +93,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
 
-  handleChangeBirthdate = (date: Date) => this.setState({ birthDate: date });
+  handleChangeBirthdate = (date: Date, callback) => this.setState({ birthDate: date }, callback);
 
   handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
 
@@ -172,7 +172,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationEmail,
       recaptchaPayload,
     } = this.state;
-    const birthDateString = this.birthDateStringConverter(birthDate);
+    const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
     const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
 
     // submit organization and director information
@@ -223,7 +223,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  birthDateStringConverter = (birthDate: Date) => {
+  static birthDateStringConverter = (birthDate: Date) => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
@@ -398,6 +398,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     );
   }
 }
-
+export const { birthDateStringConverter } = CompleteSignupFlow;
 export const { addHttp } = CompleteSignupFlow;
 export default withAlert()(CompleteSignupFlow);
