@@ -1,4 +1,4 @@
-package PDFTest;
+package PdfTest;
 
 import PDF.PdfController;
 import TestUtils.TestUtils;
@@ -32,7 +32,7 @@ public class PdfMongoTests {
           + File.separator
           + "test"
           + File.separator
-          + "PDFTest";
+          + "PdfTest";
 
   private static String resourcesFolderPath =
       Paths.get("").toAbsolutePath().toString()

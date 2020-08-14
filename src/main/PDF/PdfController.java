@@ -6,6 +6,10 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSignDesigner;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
@@ -34,6 +38,7 @@ public class PdfController {
               "ListBox",
               "TextField",
               "SignatureField"));
+
 
   /*
   REQUIRES JSON Body with:
@@ -160,6 +165,102 @@ public class PdfController {
         ctx.json(res.toString());
       };
 
+  public Handler pdfSignedUpload =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+
+        // Params
+        UploadedFile file = ctx.uploadedFile("file");
+        UploadedFile signature = ctx.uploadedFile("signature");
+        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+
+        JSONObject res;
+        if (pdfType == null) {
+          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
+        } else if (file == null) {
+          res = PdfMessage.INVALID_PDF.toJSON();
+        } else if (file.getContentType().equals("application/pdf")
+            || (file.getContentType().equals("application/octet-stream"))) {
+
+          InputStream pdfSigned = signPDF(username, file.getContent(), signature.getContent());
+          res =
+              PdfMongo.upload(
+                  username,
+                  organizationName,
+                  privilegeLevel,
+                  file.getFilename(),
+                  pdfType,
+                  pdfSigned,
+                  this.db);
+        } else {
+          res = PdfMessage.INVALID_PDF.toJSON();
+        }
+        ctx.json(res.toString());
+      };
+
+  public static InputStream signPDF(
+      String username, InputStream pdfInputStream, InputStream imageInputStream)
+      throws IOException {
+    PDDocument pdfDocument = PDDocument.load(pdfInputStream);
+
+    PDVisibleSignDesigner visibleSignDesigner = new PDVisibleSignDesigner(imageInputStream);
+    visibleSignDesigner.zoom(0);
+    PDVisibleSigProperties visibleSigProperties =
+        new PDVisibleSigProperties()
+            .visualSignEnabled(true)
+            .setPdVisibleSignature(visibleSignDesigner);
+    visibleSigProperties.buildSignature();
+
+    SignatureOptions signatureOptions = new SignatureOptions();
+    signatureOptions.setVisualSignature(visibleSigProperties.getVisibleSignature());
+
+    PDSignature signature = new PDSignature();
+    signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+    signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+    signature.setName(username);
+    // signature.setLocation("Philadelphia, PA");
+    // signature.setReason("Application");
+    signature.setSignDate(Calendar.getInstance());
+
+    List<PDSignatureField> signatureFields = findSignatureFields(pdfDocument);
+    for (PDSignatureField signatureField : signatureFields) {
+      signatureField.setValue(signature);
+    }
+
+    pdfDocument.addSignature(signature, signatureOptions);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    pdfDocument.save(outputStream);
+    pdfDocument.close();
+
+    InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+    return inputStream;
+  }
+
+  // Make it so that it can handle different signers
+  public static List<PDSignatureField> findSignatureFields(PDDocument pdfDocument) {
+    List<PDSignatureField> signatureFields = new LinkedList<>();
+    List<PDField> fields = new LinkedList<>();
+    fields.addAll(pdfDocument.getDocumentCatalog().getAcroForm().getFields());
+    while (!fields.isEmpty()) {
+      PDField field = fields.get(0);
+      if (field instanceof PDNonTerminalField) {
+        List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
+        fields.addAll(childrenFields);
+      } else {
+        if (field instanceof PDSignatureField) {
+          signatureFields.add((PDSignatureField) field);
+        }
+      }
+
+      // Remove field just gotten so we do not get it again
+      fields.remove(0);
+    }
+    return signatureFields;
+  }
+
   /*
   REQUIRES JSON Body:
     - "applicationId": String giving id of application to get questions from
@@ -190,12 +291,17 @@ public class PdfController {
    @Param fieldsJSON is an empty List of JSON, pdfDocument is the document
   */
   public static void getFieldInformation(PDDocument pdfDocument, List<JSONObject> fieldsJSON) {
+    if (pdfDocument == null || fieldsJSON == null) {
+      throw new IllegalArgumentException();
+    }
+
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     if (acroForm == null) {
       // form with no fields
       return;
     }
     List<PDField> fields = acroForm.getFields();
+    fields.addAll(acroForm.getFields());
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);
       if (field instanceof PDNonTerminalField) {
@@ -213,6 +319,10 @@ public class PdfController {
             fieldType = "CheckBox";
             fieldQuestion = "Please select an option for " + field.getPartialName();
             numLines = 3;
+            JSONArray optionsJSONArray = new JSONArray();
+            PDCheckBox checkBoxField = (PDCheckBox) field;
+            optionsJSONArray.put(checkBoxField.getOnValue());
+            fieldValueOptions = optionsJSONArray.toString();
           } else if (field instanceof PDPushButton) {
             fieldType = "PushButton";
             fieldQuestion = "Select the Button If You Want To " + field.getPartialName();
@@ -271,6 +381,8 @@ public class PdfController {
 
         fieldsJSON.add(fieldJSON);
       }
+
+      // Delete field just gotten so we do not infinite recurse
       fields.remove(0);
     }
   }
@@ -349,7 +461,7 @@ public class PdfController {
       } else if (field instanceof PDVariableText) {
         if (field instanceof PDChoice) {
           if (field instanceof PDListBox) {
-            PDListBox comboBoxField = (PDListBox) field;
+            PDListBox listBoxField = (PDListBox) field;
             List<String> values = new LinkedList<>();
 
             // Test that this throws an error when invalid values are passed
@@ -357,7 +469,7 @@ public class PdfController {
               String stringValue = (String) value;
               values.add(stringValue);
             }
-            comboBoxField.setValue(values);
+            listBoxField.setValue(values);
           } else if (field instanceof PDComboBox) {
             PDComboBox listBoxField = (PDComboBox) field;
             String formAnswer = formAnswers.getString(fieldName);
@@ -376,10 +488,6 @@ public class PdfController {
   public static JSONObject getFieldValues(PDDocument pdfDocument) throws IOException {
     JSONObject fieldValues = new JSONObject();
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
-    if (acroForm == null) {
-      return fieldValues;
-    }
-
     List<PDField> fields = acroForm.getFields();
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);
@@ -397,14 +505,6 @@ public class PdfController {
     return fieldValues;
   }
   /*
-  private String getFieldFullName(PDField field) {
-    String fullName = field.getPartialName();
-    while (field.getParent() != null) {
-      field = field.getParent();
-      fullName = field.getPartialName() + "." + fullName;
-    }
-    return fullName;
-  }
   // ImportXFDF importXFDFObject = new ImportXFDF();
   // String xmlString = toXFDF(req);
   // InputStream stream = new

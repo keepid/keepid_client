@@ -67,16 +67,17 @@ public class PdfMongo {
                       .append("organizationName", organizationName));
       gridBucket.uploadFromStream(filename, inputStream, options);
       return;
-    }
-    GridFSUploadOptions options =
-        new GridFSUploadOptions()
-            .chunkSizeBytes(100000)
-            .metadata(
-                new Document("type", "pdf")
-                    .append("upload_date", String.valueOf(LocalDate.now()))
-                    .append("uploader", uploader)
-                    .append("organizationName", organizationName));
-    gridBucket.uploadFromStream(filename, inputStream, options);
+    } else {
+      GridFSUploadOptions options =
+          new GridFSUploadOptions()
+              .chunkSizeBytes(100000)
+              .metadata(
+                  new Document("type", "pdf")
+                      .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("uploader", uploader)
+                      .append("organizationName", organizationName));
+      gridBucket.uploadFromStream(filename, inputStream, options);
+      }
   }
 
   private static JSONObject mongodbUploadAnnotatedForm(
