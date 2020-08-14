@@ -384,7 +384,7 @@ public class PdfController {
       } else if (field instanceof PDVariableText) {
         if (field instanceof PDChoice) {
           if (field instanceof PDListBox) {
-            PDListBox comboBoxField = (PDListBox) field;
+            PDListBox listBoxField = (PDListBox) field;
             List<String> values = new LinkedList<>();
 
             // Test that this throws an error when invalid values are passed
@@ -392,7 +392,7 @@ public class PdfController {
               String stringValue = (String) value;
               values.add(stringValue);
             }
-            comboBoxField.setValue(values);
+            listBoxField.setValue(values);
           } else if (field instanceof PDComboBox) {
             PDComboBox listBoxField = (PDComboBox) field;
             String formAnswer = formAnswers.getString(fieldName);
