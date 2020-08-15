@@ -513,7 +513,7 @@ public class UserController {
               "history": [
                      {
                          “datetime”:”month/day/year, hour:min, timezone”, (let me know if we need the timezone)
-                         “device”:”Mobile” or "Desktop",
+                         “device”:”Mobile” or "Computer",
                          “IP”:”exampleIP”,
                          “location”: “Postal, City”,
                      }
@@ -552,7 +552,7 @@ public class UserController {
             if (login.getBoolean("device")) {
               oneLog.put("device", "Mobile");
             } else {
-              oneLog.put("device", "Desktop");
+              oneLog.put("device", "Computer");
             }
             res.put(oneLog);
           }
