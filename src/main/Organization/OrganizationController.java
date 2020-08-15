@@ -21,8 +21,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 public class OrganizationController {
@@ -326,44 +329,102 @@ public class OrganizationController {
     };
   }
 
-  public Handler dashboard =
+  // Takes in a json object specifying usertypes and orgnames
+  //
+  //  {userTypes : [],
+  //  organizations : []}
+  public Handler findMembersOfOrgs =
       ctx -> {
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-
-        if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
-          logger.error("Privilege level not high enough (MUST BE ADMIN OR HIGHER!)");
-          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
-          return;
-        }
-
         JSONObject ret = new JSONObject();
 
-        logger.info("Counting workers and clients of " + organizationName);
-        int workerCount = 0;
-        int clientCount = 0;
-
+        JSONObject req = new JSONObject(ctx.body());
+        JSONArray userTypes = req.getJSONArray("userTypes");
+        JSONArray orgs = req.getJSONArray("organizations");
+        if (userTypes.isEmpty()) {
+          logger.error("userTypes cannot be empty");
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        MongoCursor<User> listOfMembers =
-            userCollection.find(eq("organization", organizationName)).iterator();
 
-        while (listOfMembers.hasNext()) {
-          User user = listOfMembers.next();
-          UserType userType = user.getUserType();
+        logger.info("Counting usertypes");
+        if (orgs.isEmpty()) {
+          for (int i = 0; i < userTypes.length(); i++) {
+            String currType = userTypes.getString(i);
+            if (currType.equals("client")) {
+              long client = userCollection.countDocuments(eq("privilegeLevel", "Client"));
+              ret.put("clients", client);
 
-          if (userType == UserType.Director
-              || userType == UserType.Admin
-              || userType == UserType.Worker) {
-            workerCount++;
-          } else if (userType == UserType.Client) {
-            clientCount++;
+            } else if (currType.equals("worker")) {
+              long worker = userCollection.countDocuments(eq("privilegeLevel", "Worker"));
+              ret.put("workers", worker);
+
+            } else if (currType.equals("admin")) {
+              long admin = userCollection.countDocuments(eq("privilegeLevel", "Admin"));
+              ret.put("admins", admin);
+
+            } else if (currType.equals("director")) {
+              long director = userCollection.countDocuments(eq("privilegeLevel", "Director"));
+              ret.put("directors", director);
+
+            } else {
+              logger.error(currType + " is an invalid usertype");
+              ctx.json("Invalid User Type(s)");
+              return;
+            }
+          }
+        } else {
+          List<String> typesList = new ArrayList<String>();
+          long client = 0;
+          long worker = 0;
+          long admin = 0;
+          long director = 0;
+          for (int i = 0; i < orgs.length(); i++) {
+            for (int u = 0; u < userTypes.length(); u++) {
+              String currType = userTypes.getString(u);
+              String currOrg = orgs.getString(i);
+              typesList.add(currType);
+              if (currType.equals("client")) {
+                client +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Client")));
+              } else if (currType.equals("worker")) {
+                worker +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Worker")));
+              } else if (currType.equals("admin")) {
+                admin +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Admin")));
+              } else if (currType.equals("director")) {
+                director +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Director")));
+              } else {
+                logger.error(currType + " is an invalid usertype");
+                ctx.json("Invalid User Type(s)");
+                return;
+              }
+            }
+          }
+
+          if (typesList.contains("client")) {
+            ret.put("clients", client);
+          }
+          if (typesList.contains("worker")) {
+            ret.put("workers", worker);
+          }
+          if (typesList.contains("admin")) {
+            ret.put("admins", admin);
+          }
+          if (typesList.contains("director")) {
+            ret.put("directors", director);
           }
         }
 
         ret.put("status", UserMessage.SUCCESS.getErrorName());
         ret.put("message", UserMessage.SUCCESS.getErrorDescription());
-        ret.put("workerCount", workerCount);
-        ret.put("clientCount", clientCount);
+
         logger.info("Successfully returned member information");
         ctx.json(ret.toString());
       };

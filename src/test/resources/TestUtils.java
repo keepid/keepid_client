@@ -657,8 +657,8 @@ public class TestUtils {
     app.post("/submit-bug", bugController.submitBug);
     app.post("/find-bug", bugController.findBug);
     app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
-    app.post("/dashboard", orgController.dashboard);
-    app.post("/all-orgs", orgController.listOrgs);
+    app.post("/get-usertype-count", orgController.findMembersOfOrgs);
+    app.post("/get-all-orgs", orgController.listOrgs);
   }
 
   public static void stopServer() {

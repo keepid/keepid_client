@@ -91,12 +91,12 @@ public class App {
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- ADMIN DASHBOARD ------------------ */
-    app.post("/dashboard", orgController.dashboard);
+    app.post("/get-usertype-count", orgController.findMembersOfOrgs);
 
     /* -------------- SUBMIT BUG------------------ */
     app.post("/submit-bug", bugController.submitBug);
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
-    app.post("/all-orgs", orgController.listOrgs);
+    app.post("/get-all-orgs", orgController.listOrgs);
   }
 }
