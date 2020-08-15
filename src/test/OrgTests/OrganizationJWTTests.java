@@ -172,6 +172,32 @@ public class OrganizationJWTTests {
     assertThat(resp.getString("status")).isEqualTo("EMPTY_FIELD");
   }
 
+  @Test
+  public void invalidUserType() {
+    JSONObject body = new JSONObject();
+    JSONArray orgs = new JSONArray();
+    JSONArray userTypes = new JSONArray();
+
+    userTypes.put("invalid");
+    userTypes.put("director");
+    body.put("userTypes", userTypes);
+    body.put("organizations", orgs);
+
+    HttpResponse actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(body.toString())
+            .asString();
+
+    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+
+    assert (resp.has("message"));
+    assertThat(resp.getString("message")).isEqualTo("Please check your parameter");
+    assert (resp.has("status"));
+    assertThat(resp.getString("status")).isEqualTo("INVALID_PARAMETER");
+  }
+
   //  {userTypes : ["worker", "director"],
   //  organizations : []}
   @Test

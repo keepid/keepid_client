@@ -369,7 +369,7 @@ public class OrganizationController {
 
             } else {
               logger.error(currType + " is an invalid usertype");
-              ctx.json("Invalid User Type(s)");
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
               return;
             }
           }
@@ -402,7 +402,7 @@ public class OrganizationController {
                         and(eq("organization", currOrg), eq("privilegeLevel", "Director")));
               } else {
                 logger.error(currType + " is an invalid usertype");
-                ctx.json("Invalid User Type(s)");
+                ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
                 return;
               }
             }
