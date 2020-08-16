@@ -39,7 +39,6 @@ public class PdfController {
               "TextField",
               "SignatureField"));
 
-
   /*
   REQUIRES JSON Body with:
     - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
@@ -191,6 +190,7 @@ public class PdfController {
                   organizationName,
                   privilegeLevel,
                   file.getFilename(),
+                  null,
                   pdfType,
                   pdfSigned,
                   this.db);

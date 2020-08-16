@@ -1,13 +1,13 @@
 package PDF;
 
-public enum PdfType {
+public enum PDFType {
   APPLICATION("application"),
   IDENTIFICATION("identification"),
   FORM("form");
 
   private String pdfType;
 
-  PdfType(String pdfType) {
+  PDFType(String pdfType) {
     this.pdfType = pdfType;
   }
 
@@ -15,14 +15,14 @@ public enum PdfType {
     return this.pdfType;
   }
 
-  public static PdfType createFromString(String pdfTypeString) {
+  public static PDFType createFromString(String pdfTypeString) {
     switch (pdfTypeString) {
       case "APPLICATION":
-        return PdfType.APPLICATION;
+        return PDFType.APPLICATION;
       case "IDENTIFICATION":
-        return PdfType.IDENTIFICATION;
+        return PDFType.IDENTIFICATION;
       case "FORM":
-        return PdfType.FORM;
+        return PDFType.FORM;
       default:
         return null;
     }
