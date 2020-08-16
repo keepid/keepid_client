@@ -4,5 +4,3 @@ node_js:
 cache: npm
 notifications:
   slack: keepid:dSU1H1ttrbqa2CuH1d2CVui3
-env: 
-  - INLINE_RUNTIME_CHUNK=false
