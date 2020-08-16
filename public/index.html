@@ -31,6 +31,22 @@
     <meta name="twitter:image" content="https://keep.id/fb-sharing-logo.png">
     <meta name="twitter:card" content="summary">
 
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://ajax.cloudflare.com/cdn-cgi/scripts/7089c43e/cloudflare-static/rocket-loader.min.js https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js https://code.jquery.com/jquery-3.4.1.slim.min.js https://maps.googleapis.com/maps/api/js https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js https://www.google.com/recaptcha/api.js https://www.gstatic.com/recaptcha/releases/TPiWapjoyMdQOtxLT9_b4n2W/recaptcha__en.js;
+    style-src 'self' https://fonts.googleapis.com 'unsafe-inline';
+    object-src data:;
+    base-uri 'self';
+    connect-src 'self' https://maps.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    frame-src 'self' https://www.google.com;
+    img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com;
+    manifest-src 'self';
+    media-src 'self';
+    worker-src 'none';
+    frame-ancestors 'self'"/>
+
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico/v2" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -1,0 +1,13 @@
+{
+    "root": "build/",
+    "routes": {
+      "/**": "index.html"
+    },
+    "https_only": true,
+    "headers": {
+        "/**": {
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block"
+        }
+      }
+  }
