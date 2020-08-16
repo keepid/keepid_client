@@ -94,6 +94,130 @@ public class OrganizationController {
         logger.info("Done with organizationSignupValidator");
       };
 
+  // Takes in a json object specifying usertypes and orgnames
+  //
+  //  {userTypes : [],
+  //  organizations : []}
+  public Handler findMembersOfOrgs =
+      ctx -> {
+        JSONObject ret = new JSONObject();
+
+        JSONObject req = new JSONObject(ctx.body());
+        JSONArray userTypes = req.getJSONArray("userTypes");
+        JSONArray orgs = req.getJSONArray("organizations");
+        if (userTypes.isEmpty()) {
+          logger.error("userTypes cannot be empty");
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+
+        logger.info("Counting usertypes");
+        if (orgs.isEmpty()) {
+          for (int i = 0; i < userTypes.length(); i++) {
+            String currType = userTypes.getString(i);
+            if (currType.equals("client")) {
+              long client = userCollection.countDocuments(eq("privilegeLevel", "Client"));
+              ret.put("clients", client);
+
+            } else if (currType.equals("worker")) {
+              long worker = userCollection.countDocuments(eq("privilegeLevel", "Worker"));
+              ret.put("workers", worker);
+
+            } else if (currType.equals("admin")) {
+              long admin = userCollection.countDocuments(eq("privilegeLevel", "Admin"));
+              ret.put("admins", admin);
+
+            } else if (currType.equals("director")) {
+              long director = userCollection.countDocuments(eq("privilegeLevel", "Director"));
+              ret.put("directors", director);
+
+            } else {
+              logger.error(currType + " is an invalid usertype");
+              ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
+              return;
+            }
+          }
+        } else {
+          List<String> typesList = new ArrayList<String>();
+          long client = 0;
+          long worker = 0;
+          long admin = 0;
+          long director = 0;
+          for (int i = 0; i < orgs.length(); i++) {
+            for (int u = 0; u < userTypes.length(); u++) {
+              String currType = userTypes.getString(u);
+              String currOrg = orgs.getString(i);
+              typesList.add(currType);
+              if (currType.equals("client")) {
+                client +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Client")));
+              } else if (currType.equals("worker")) {
+                worker +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Worker")));
+              } else if (currType.equals("admin")) {
+                admin +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Admin")));
+              } else if (currType.equals("director")) {
+                director +=
+                    userCollection.countDocuments(
+                        and(eq("organization", currOrg), eq("privilegeLevel", "Director")));
+              } else {
+                logger.error(currType + " is an invalid usertype");
+                ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
+                return;
+              }
+            }
+          }
+
+          if (typesList.contains("client")) {
+            ret.put("clients", client);
+          }
+          if (typesList.contains("worker")) {
+            ret.put("workers", worker);
+          }
+          if (typesList.contains("admin")) {
+            ret.put("admins", admin);
+          }
+          if (typesList.contains("director")) {
+            ret.put("directors", director);
+          }
+        }
+
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+
+        logger.info("Successfully returned member information");
+        ctx.json(ret.toString());
+      };
+
+  public Handler listOrgs =
+      ctx -> {
+        JSONObject ret = new JSONObject();
+        JSONArray orgs = new JSONArray();
+
+        logger.info("Querying organizations from Mongo");
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        MongoCursor<Organization> orgCursor = orgCollection.find().iterator();
+
+        while (orgCursor.hasNext()) {
+          JSONObject curr = new JSONObject(orgCursor.next());
+          orgs.put(curr);
+        }
+
+        logger.info("Done creating JSON array of organizations");
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+        ret.put("organizations", orgs);
+
+        logger.info("Done with listOrgs");
+        ctx.json(ret.toString());
+      };
+
   public Handler enrollOrganization(SecurityUtils securityUtils) {
     return ctx -> {
       logger.info("Starting enrollOrganization handler");
@@ -328,128 +452,4 @@ public class OrganizationController {
       logger.info("Done with inviteUsers");
     };
   }
-
-  // Takes in a json object specifying usertypes and orgnames
-  //
-  //  {userTypes : [],
-  //  organizations : []}
-  public Handler findMembersOfOrgs =
-      ctx -> {
-        JSONObject ret = new JSONObject();
-
-        JSONObject req = new JSONObject(ctx.body());
-        JSONArray userTypes = req.getJSONArray("userTypes");
-        JSONArray orgs = req.getJSONArray("organizations");
-        if (userTypes.isEmpty()) {
-          logger.error("userTypes cannot be empty");
-          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
-          return;
-        }
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-
-        logger.info("Counting usertypes");
-        if (orgs.isEmpty()) {
-          for (int i = 0; i < userTypes.length(); i++) {
-            String currType = userTypes.getString(i);
-            if (currType.equals("client")) {
-              long client = userCollection.countDocuments(eq("privilegeLevel", "Client"));
-              ret.put("clients", client);
-
-            } else if (currType.equals("worker")) {
-              long worker = userCollection.countDocuments(eq("privilegeLevel", "Worker"));
-              ret.put("workers", worker);
-
-            } else if (currType.equals("admin")) {
-              long admin = userCollection.countDocuments(eq("privilegeLevel", "Admin"));
-              ret.put("admins", admin);
-
-            } else if (currType.equals("director")) {
-              long director = userCollection.countDocuments(eq("privilegeLevel", "Director"));
-              ret.put("directors", director);
-
-            } else {
-              logger.error(currType + " is an invalid usertype");
-              ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
-              return;
-            }
-          }
-        } else {
-          List<String> typesList = new ArrayList<String>();
-          long client = 0;
-          long worker = 0;
-          long admin = 0;
-          long director = 0;
-          for (int i = 0; i < orgs.length(); i++) {
-            for (int u = 0; u < userTypes.length(); u++) {
-              String currType = userTypes.getString(u);
-              String currOrg = orgs.getString(i);
-              typesList.add(currType);
-              if (currType.equals("client")) {
-                client +=
-                    userCollection.countDocuments(
-                        and(eq("organization", currOrg), eq("privilegeLevel", "Client")));
-              } else if (currType.equals("worker")) {
-                worker +=
-                    userCollection.countDocuments(
-                        and(eq("organization", currOrg), eq("privilegeLevel", "Worker")));
-              } else if (currType.equals("admin")) {
-                admin +=
-                    userCollection.countDocuments(
-                        and(eq("organization", currOrg), eq("privilegeLevel", "Admin")));
-              } else if (currType.equals("director")) {
-                director +=
-                    userCollection.countDocuments(
-                        and(eq("organization", currOrg), eq("privilegeLevel", "Director")));
-              } else {
-                logger.error(currType + " is an invalid usertype");
-                ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
-                return;
-              }
-            }
-          }
-
-          if (typesList.contains("client")) {
-            ret.put("clients", client);
-          }
-          if (typesList.contains("worker")) {
-            ret.put("workers", worker);
-          }
-          if (typesList.contains("admin")) {
-            ret.put("admins", admin);
-          }
-          if (typesList.contains("director")) {
-            ret.put("directors", director);
-          }
-        }
-
-        ret.put("status", UserMessage.SUCCESS.getErrorName());
-        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
-
-        logger.info("Successfully returned member information");
-        ctx.json(ret.toString());
-      };
-
-  public Handler listOrgs =
-      ctx -> {
-        JSONObject ret = new JSONObject();
-        JSONArray orgs = new JSONArray();
-
-        logger.info("Querying organizations from Mongo");
-        MongoCollection<Organization> orgCollection =
-            db.getCollection("organization", Organization.class);
-        MongoCursor<Organization> orgCursor = orgCollection.find().iterator();
-
-        while (orgCursor.hasNext()) {
-          JSONObject curr = new JSONObject(orgCursor.next());
-          orgs.put(curr);
-        }
-
-        logger.info("Done creating JSON array of organizations");
-        ret.put("status", UserMessage.SUCCESS.getErrorName());
-        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
-        ret.put("organizations", orgs);
-
-        logger.info("Done with listOrgs");
-        ctx.json(ret.toString());
-      };
 }
