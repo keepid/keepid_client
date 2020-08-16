@@ -24,5 +24,8 @@ const Root = () => (
 it('renders without crashing', () => {
   const div = document.createElement('div');
   ReactDOM.render(<Root />, div);
+  widget = mount(<Root/>);
+  widget.find('[id="brand-header"]').text().contains('Safeguarding identities of those experiencing homelessness')
   ReactDOM.unmountComponentAtNode(div);
 });
+

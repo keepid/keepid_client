@@ -60,7 +60,7 @@ class Home extends Component<Props, {}, {}> {
                 <div className="col-md-6">
                   <div className="ml-5 p-4 rounded mb-3 pb-5">
                     <div className="page-header">
-                      <span className="brand-text">
+                      <span className="brand-text" id="brand-header">
                         Safeguarding identities of those experiencing homelessness
                       </span>
                     </div>
