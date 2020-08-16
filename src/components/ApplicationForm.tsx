@@ -184,7 +184,7 @@ class ApplicationForm extends Component<Props, State> {
                     }
 
                     if (entry.fieldType === 'CheckBox') {
-                      const temp = JSON.parse(entry.fieldValueOptions);
+                      const temp = entry.fieldValueOptions;
                       return (
                         <div className="mt-2 mb-2">
                           <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -212,7 +212,7 @@ class ApplicationForm extends Component<Props, State> {
                     }
 
                     if (entry.fieldType === 'RadioButton') {
-                      const temp = JSON.parse(entry.fieldValueOptions);
+                      const temp = entry.fieldValueOptions;
                       return (
                         <div className="mt-2 mb-2">
                           <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -241,13 +241,34 @@ class ApplicationForm extends Component<Props, State> {
                     }
 
                     if (entry.fieldType === 'ComboBox') {
-                      const temp = JSON.parse(entry.fieldValueOptions);
+                      const temp = entry.fieldValueOptions;
                       return (
                         <div className="dropdown">
                           <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                             {entry.fieldQuestion}
                             <br />
                             <select id={entry.fieldName} onChange={this.handleChangeFormValue}>
+                              {temp.map((value) => (
+                                <option value={value}>{value}</option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      );
+                    }
+
+                    if (entry.fieldType === 'ListBox') {
+                      const temp = entry.fieldValueOptions;
+                      return (
+                        <div className="dropdown">
+                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                            {entry.fieldQuestion}
+                            <br />
+                            <select
+                              id={entry.fieldName}
+                              onChange={this.handleChangeFormValue}
+                              multiple
+                            >
                               {temp.map((value) => (
                                 <option value={value}>{value}</option>
                               ))}
