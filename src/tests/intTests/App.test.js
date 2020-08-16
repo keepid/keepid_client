@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import App from '../../App';
 import { transitions, Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import renderer from'react-test-renderer';
 
 const options = {
   position: 'top right',
@@ -24,8 +25,6 @@ const Root = () => (
 it('renders without crashing', () => {
   const div = document.createElement('div');
   ReactDOM.render(<Root />, div);
-  widget = mount(<Root/>);
-  widget.find('[id="brand-header"]').text().contains('Safeguarding identities of those experiencing homelessness')
   ReactDOM.unmountComponentAtNode(div);
 });
 
