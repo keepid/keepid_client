@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import CheckSVG from '../../static/images/check.svg';
 import Alert from 'react-bootstrap/Alert';
+import CheckSVG from '../../static/images/check.svg';
+import getServerURL from '../../serverOverride';
 
 interface Props {
+  name: string,
+  organization: string,
 }
 
 interface State {
@@ -33,7 +36,7 @@ class MyOrganization extends Component<Props, State> {
       memberArr: [],
       id: 0,
       showPopUp: false,
-      numInvitesSent: 0
+      numInvitesSent: 0,
     };
     this.editButtonToggle = this.editButtonToggle.bind(this);
     this.changeEditMode = this.changeEditMode.bind(this);
@@ -48,6 +51,7 @@ class MyOrganization extends Component<Props, State> {
     this.deleteMember = this.deleteMember.bind(this);
     this.handleSendInvites = this.handleSendInvites.bind(this);
     this.renderPopUp = this.renderPopUp.bind(this);
+    this.saveMembersBackend = this.saveMembersBackend.bind(this);
   }
 
   onSubmit(e) {
@@ -59,8 +63,7 @@ class MyOrganization extends Component<Props, State> {
         email: this.state.personEmail,
         role: this.state.personRole,
         editMode: this.state.isInEditMode,
-        key: Date.now(),
-        id: this.state.id,
+        id: Date.now(),
       };
 
       this.setState((prevState) => ({
@@ -74,20 +77,20 @@ class MyOrganization extends Component<Props, State> {
   }
 
   renderTableContents() {
-    if(this.state.memberArr.length==0){
-      return(
+    if (this.state.memberArr < 1) {
+      return (
         <tbody>
           <tr>
             <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
           </tr>
         </tbody>
-      )
+      );
     }
     const row = this.state.memberArr.map((member, i) => (
-      <tbody>
-        <tr key={member.key}>
+      <tbody key={member.id}>
+        <tr>
           <td>{this.getNameCell(member)}</td>
-          <td>{this.getEmailCell(member.id)}</td>
+          <td>{this.getEmailCell(member)}</td>
           <td>{this.editButtonToggle(member.id)}</td>
           <td>{this.getRoleDropDown(member)}</td>
           <td>
@@ -102,22 +105,24 @@ class MyOrganization extends Component<Props, State> {
   }
 
 deleteMember=(i) => {
-  const members = Object.assign([], this.state.memberArr);
-  members.splice(i, 1);
-  this.setState({ memberArr: members });
+  this.setState((prevState) => {
+    const members = prevState.memberArr.slice();
+    members.splice(i, 1);
+    return { memberArr: members };
+  });
 }
 
 saveEdits(id) {
   const index = this.state.memberArr.findIndex((member) => member.id === id);
   const member = { ...this.state.memberArr[index] };
-  const members = Object.assign([], this.state.memberArr);
   member.email = this.state.editedPersonEmail;
   member.name = this.state.editedPersonName;
   member.role = this.state.editedPersonRole;
   member.editMode = !member.editMode;
-  members[index] = member;
-  this.setState({
-    memberArr: members,
+  this.setState((prevState) => {
+    const members = prevState.memberArr.slice();
+    members[index] = member;
+    return { memberArr: members };
   });
 }
 
@@ -125,13 +130,16 @@ changeEditMode(id) {
   const index = this.state.memberArr.findIndex((member) => member.id === id);
   const member = { ...this.state.memberArr[index] };
   member.editMode = !member.editMode;
-  const members = Object.assign([], this.state.memberArr);
-  members[index] = member;
-  this.setState({
-    memberArr: members,
-    editedPersonEmail: member.email,
-    editedPersonName: member.name,
-    editedPersonRole: member.role,
+
+  this.setState((prevState) => {
+    const members = prevState.memberArr.slice();
+    members[index] = member;
+    return {
+      memberArr: members,
+      editedPersonEmail: member.email,
+      editedPersonName: member.name,
+      editedPersonRole: member.role,
+    };
   });
 }
 
@@ -164,7 +172,7 @@ editButtonToggle = (id) => {
 
   if (member.editMode) {
     return (
-      <button type="button" onClick={() => this.saveEdits(id)}>
+      <button type="button" className="btn btn-sm m-0 p-1 btn-outline-*" onClick={() => this.saveEdits(id)}>
         <img
           alt="search"
           src={CheckSVG}
@@ -177,7 +185,7 @@ editButtonToggle = (id) => {
   }
 
   return (
-    <button type="button" className="border-0 text-primary bg-transparent" onClick={() => this.changeEditMode(id)}>Edit</button>
+    <button type="button" className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent" onClick={() => this.changeEditMode(id)}>Edit</button>
   );
 }
 
@@ -185,8 +193,8 @@ getNameCell(member) {
   if (member.editMode) {
     return (
       <input
+        className="form-purple form-control input-sm"
         type="text"
-        defaultValue={this.state.personName}
         onChange={this.handleChangeName}
         value={this.state.editedPersonName}
       />
@@ -198,24 +206,17 @@ getNameCell(member) {
   );
 }
 
-getEmailCell = (id) => {
-  const index = this.state.memberArr.findIndex((member) => member.id === id);
-  const member = { ...this.state.memberArr[index] };
-  const members = { ...this.state.memberArr };
-  // members[index] = member;
-  // this.setState({memberArr:members})
-
+getEmailCell = (member) => {
   if (member.editMode) {
-    console.log(`editing: ${id}MEBER:${member.email}`);
     return (
       <input
+        className="form-purple form-control input-sm"
         type="text"
         value={this.state.editedPersonEmail}
         onChange={this.handleChangeEmail}
       />
     );
   }
-
   return (<div>{member.email}</div>);
 }
 
@@ -237,32 +238,62 @@ getRoleDropDown = (member) => {
   );
 }
 
-handleSendInvites(){
-  this.setState({
-    numInvitesSent: this.state.memberArr.length,
-    memberArr:[], 
-    showPopUp:true
-  });
+handleSendInvites() {
+  this.saveMembersBackend();
+  this.setState((prevState) => ({
+    numInvitesSent: prevState.memberArr.length,
+    memberArr: [],
+    showPopUp: true,
+  }));
 }
 
-renderPopUp(){
-  return(
+renderPopUp() {
+  return (
     <div>
-      <Alert variant="success" dismissible onClose={()=>(this.setState({showPopUp:false}))}>
-        <p>Congrats! You successfully invited {this.state.numInvitesSent} new members to your team! Head to your Admin Panel to see them</p>
+      <Alert variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
+        <p>
+          Congrats! You successfully invited
+          {' '}
+          {this.state.numInvitesSent}
+          {' '}
+          new members to your team! Head to your Admin Panel to see them
+        </p>
       </Alert>
     </div>
   );
 }
 
+saveMembersBackend() {
+  const members = Object.assign([], this.state.memberArr);
+  let x;
+  Object.keys(members).forEach((key) => {
+    const { name } = members[key];
+    const firstname = name.substr(0, name.indexOf(' '));
+    const lastname = name.substr(name.indexOf(' ') + 1);
+    members[key].firstName = firstname;
+    members[key].lastName = lastname;
+    delete members[key].id;
+    delete members[key].editMode;
+    delete members[key].name;
+  });
+  fetch(`${getServerURL()}/invite-user`, {
+    method: 'POST',
+    body: JSON.stringify({
+      senderName: this.props.name,
+      organization: this.props.organization,
+      data: members,
+    }),
+  });
+}
+
 render() {
   return (
     <div className="container">
-      {this.state.showPopUp===true && this.renderPopUp()}
+      {this.state.showPopUp === true && this.renderPopUp()}
       <p className="font-weight-bold brand-text text-dark mb-2">Invite New Team Members</p>
       <form>
         <div className="form-row">
-          <div className="form-group col required">
+          <div className="form-group col-xs required">
             <label>Name</label>
             <input
               placeholder="Full Name Here"
@@ -273,7 +304,7 @@ render() {
               onChange={(e) => this.setState({ personName: e.target.value })}
             />
           </div>
-          <div className="form-group col required">
+          <div className="form-group col-xs required">
             <label>Email address</label>
             <input
               placeholder="Enter Valid Email Address"
@@ -291,7 +322,7 @@ render() {
               <option>Worker</option>
             </select>
           </div>
-          <div className="col">
+          <div className="col-xs">
             <button className="btn btn-primary mt-4" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
           </div>
         </div>
@@ -309,7 +340,7 @@ render() {
         </thead>
         {this.renderTableContents()}
       </table>
-      <button className="btn btn-primary mt-1 float-right" onClick={this.handleSendInvites}>Send Invites</button>
+      <button type="button" className="btn btn-primary mt-1 float-right" onClick={this.handleSendInvites}>Send Invites</button>
     </div>
   );
 }
