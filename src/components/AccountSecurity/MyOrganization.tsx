@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Alert from 'react-bootstrap/Alert';
+import { withAlert } from 'react-alert';
 import CheckSVG from '../../static/images/check.svg';
 import getServerURL from '../../serverOverride';
 
 interface Props {
   name: string,
   organization: string,
+  alert: any
 }
 
 interface State {
@@ -57,7 +59,7 @@ class MyOrganization extends Component<Props, State> {
   onSubmit(e) {
     this.setState((prevState) => ({ id: prevState.id + 1 }));
 
-    if (this.state.personName !== '') {
+    if (this.state.personName !== '' && this.state.personEmail !== '' && this.state.personRole !== '') {
       const newMember = {
         name: this.state.personName,
         email: this.state.personEmail,
@@ -72,6 +74,8 @@ class MyOrganization extends Component<Props, State> {
         personEmail: '',
         personRole: '',
       }));
+    } else {
+      this.props.alert.show('missing field. name, email, and role are required');
     }
     e.preventDefault();
   }
@@ -79,27 +83,27 @@ class MyOrganization extends Component<Props, State> {
   renderTableContents() {
     if (this.state.memberArr < 1) {
       return (
-        <tbody>
-          <tr>
-            <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
-          </tr>
-        </tbody>
+
+        <tr>
+          <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
+        </tr>
+
       );
     }
     const row = this.state.memberArr.map((member, i) => (
-      <tbody key={member.id}>
-        <tr>
-          <td>{this.getNameCell(member)}</td>
-          <td>{this.getEmailCell(member)}</td>
-          <td>{this.editButtonToggle(member.id)}</td>
-          <td>{this.getRoleDropDown(member)}</td>
-          <td>
-            <button type="button" className="close" aria-label="Close" onClick={() => this.deleteMember(i)}>
-              <span aria-hidden="true" className="mx-auto">&times;</span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
+
+      <tr key={member.id}>
+        <td>{this.getNameCell(member)}</td>
+        <td>{this.getEmailCell(member)}</td>
+        <td>{this.editButtonToggle(member.id)}</td>
+        <td>{this.getRoleDropDown(member)}</td>
+        <td>
+          <button type="button" className="close" aria-label="Close" onClick={() => this.deleteMember(i)}>
+            <span aria-hidden="true" className="mx-auto">&times;</span>
+          </button>
+        </td>
+      </tr>
+
     ));
     return row;
   }
@@ -243,7 +247,6 @@ handleSendInvites() {
   this.setState((prevState) => ({
     numInvitesSent: prevState.memberArr.length,
     memberArr: [],
-    showPopUp: true,
   }));
 }
 
@@ -283,7 +286,18 @@ saveMembersBackend() {
       organization: this.props.organization,
       data: members,
     }),
-  });
+  }).then((response) => response.json())
+    .then((responseJSON) => {
+      const responseObject = JSON.parse(responseJSON);
+      const { status } = responseObject;
+      if (status === 'SUCCESS') {
+        this.setState({ showPopUp: true });
+      } else if (status === 'EMPTY_FIELD') {
+        this.props.alert.show('Missing field. Make sure to include first name, last name, email, AND role)');
+      }
+    }).catch((error) => {
+      this.props.alert.show('Network Failure: Check Server Connection.');
+    });
 }
 
 render() {
@@ -328,21 +342,23 @@ render() {
         </div>
       </form>
       <p className="brand-text font-weight-bold text-dark mb-2">Recently Invited</p>
-      <table className="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Role</th>
-            <th scope="col" />
-          </tr>
-        </thead>
-        {this.renderTableContents()}
-      </table>
+      <div style={{ maxHeight: '250px', overflow: 'scroll' }}>
+        <table className="table table-striped table-bordered">
+          <thead className="position-sticky" style={{ top: '0' }}>
+            <tr>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Name</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Email</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Edit</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Role</th>
+              <th scope="col" style={{ top: '0', zIndex: 999 }} className="position-sticky bg-white border" />
+            </tr>
+          </thead>
+          <tbody className="table-striped">{this.renderTableContents()}</tbody>
+        </table>
+      </div>
       <button type="button" className="btn btn-primary mt-1 float-right" onClick={this.handleSendInvites}>Send Invites</button>
     </div>
   );
 }
 }
-export default MyOrganization;
+export default withAlert()(MyOrganization);
