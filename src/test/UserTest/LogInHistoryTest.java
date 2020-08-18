@@ -59,8 +59,9 @@ public class LogInHistoryTest {
     //    JSONArray history = res.getJSONArray("history");
     //    assert (history.length() == 4);
     //    JSONObject lastLogin = history.getJSONObject(3);
-    //    assert (lastLogin.get("date").toString().contains("8/14/2020"));
-    //    assert (lastLogin.get("device").toString().contains("Desktop"));
+    //    System.out.println(lastLogin.toString());
+    //    assert (lastLogin.get("date").toString().contains("8/19/2020"));
+    //    assert (lastLogin.get("device").toString().contains("Computer"));
     TestUtils.logout();
   }
 }

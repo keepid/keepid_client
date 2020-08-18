@@ -176,8 +176,7 @@ public class UserController {
               + d.getHour()
               + ":"
               + d.getMinute()
-              + ", "
-              + d.getZone().toString();
+              + " Local Time";
       thisLogin.put("date", formattedDate);
       thisLogin.put("IP", ip);
       String device = ctx.userAgent();
@@ -535,7 +534,9 @@ public class UserController {
             String ip = login.getString("IP");
             try {
               IPResponse response = ipInfo.lookupIP(ip);
-              oneLog.put("location", response.getPostal() + ", " + response.getCity());
+              oneLog.put(
+                  "location",
+                  response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
               oneLog.put("IP", ip);
             } catch (RateLimitedException ex) {
               logger.error("Failed to retrieve login history due to limited rates for IPInfo.com");
