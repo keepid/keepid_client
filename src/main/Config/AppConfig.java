@@ -132,7 +132,6 @@ public class AppConfig {
               config.showJavalinBanner = false;
               config.prefer405over404 =
                       false; // send a 405 if handlers exist for different verb on the same path
-              config.addStaticFiles("/");
               // (default is false)
               config.sessionHandler(
                       () -> {
