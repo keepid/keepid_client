@@ -7,11 +7,12 @@ import kong.unirest.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import resources.TestUtils;
+import TestUtils.TestUtils;
 
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class BugReportTest {
   public static final String bugReportTestURL =
@@ -20,18 +21,13 @@ public class BugReportTest {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    TestUtils.tearDownTestDB();
-    try {
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
+    TestUtils.stopServer();
   }
 
   @Test

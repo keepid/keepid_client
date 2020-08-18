@@ -1,6 +1,6 @@
 package PDFTest;
 
-import resources.TestUtils;
+import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class PdfMongoTests {
   private static String currentPDFFolderPath =
@@ -27,18 +28,13 @@ public class PdfMongoTests {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    try {
-      TestUtils.tearDownTestDB();
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
+    TestUtils.stopServer();
   }
 
   @Test
