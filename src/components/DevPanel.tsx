@@ -5,13 +5,13 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
+import { withAlert } from 'react-alert';
 import ApplicationForm from './ApplicationForm';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
 import PDFType from '../static/PDFType';
 import DocumentViewer from './DocumentViewer';
 import Role from '../static/Role';
-import { withAlert } from 'react-alert';
 
 interface Props {
   alert: any,
@@ -62,15 +62,14 @@ class DevPanel extends Component<Props, State, {}> {
   }
 
   handleFileChange(rowIndex: number) {
-    
     const {
       alert,
     } = this.props;
 
-    if (this.state.pdfFiles === undefined) throw new Error("Must upload a file");
+    if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
     const pdfFile = this.state.pdfFiles[0];
-    if (pdfFile === null) throw new Error("Must upload a file");
-    
+    if (pdfFile === null) throw new Error('Must upload a file');
+
     const formData = new FormData();
     formData.append('file', pdfFile, pdfFile.name);
     if (this.props.userRole === Role.Client) {
@@ -79,28 +78,28 @@ class DevPanel extends Component<Props, State, {}> {
     if (this.props.userRole === Role.Director || this.props.userRole === Role.Admin) {
       formData.append('pdfType', PDFType.FORM);
     }
-    formData.append('fileId', this.state.documents[rowIndex]['id'])
+    formData.append('fileId', this.state.documents[rowIndex].id);
 
     fetch(`${getServerURL()}/upload`, {
       method: 'POST',
       credentials: 'include',
       body: formData,
     }).then((response) => response.json())
-    .then((responseJSON) => {
-      const {
-        status,
-      } = JSON.parse(responseJSON);
-      if (status === 'SUCCESS') {
-        alert.show(`Successfully uploaded ${pdfFile.name}`);
-        this.setState({
-          buttonState: '',
-          pdfFiles: undefined,
-        }, () => this.getDocuments());
-      } else {
-        alert.show(`Failure to upload ${pdfFile.name}`);
-        this.setState({ buttonState: '' });
-      }
-    });
+      .then((responseJSON) => {
+        const {
+          status,
+        } = JSON.parse(responseJSON);
+        if (status === 'SUCCESS') {
+          alert.show(`Successfully uploaded ${pdfFile.name}`);
+          this.setState({
+            buttonState: '',
+            pdfFiles: undefined,
+          }, () => this.getDocuments());
+        } else {
+          alert.show(`Failure to upload ${pdfFile.name}`);
+          this.setState({ buttonState: '' });
+        }
+      });
   }
 
   handleChangeFileDownload(event: any, rowIndex: number) {
@@ -120,8 +119,8 @@ class DevPanel extends Component<Props, State, {}> {
       userRole,
     } = this.props;
 
-    const documentId = this.state.documents[rowIndex]['id'];
-    const documentName = this.state.documents[rowIndex]['filename'];
+    const documentId = this.state.documents[rowIndex].id;
+    const documentName = this.state.documents[rowIndex].filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -143,13 +142,13 @@ class DevPanel extends Component<Props, State, {}> {
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         console.log(pdfFile);
-        
-        var url = window.URL.createObjectURL(response);
-        var a = document.createElement('a');
+
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
         a.href = url;
         a.download = documentName;
-        document.body.appendChild(a); 
-        a.click();    
+        document.body.appendChild(a);
+        a.click();
         a.remove();
       }).catch((error) => {
         alert('Error Fetching File');
@@ -159,11 +158,11 @@ class DevPanel extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
     <div>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
-        {'Re-Upload'}
+        Re-Upload
         <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={(event) => this.handleChangeFileUpload(event, rowIndex)} hidden />
       </label>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
-        {'Download'}
+        Download
         <button onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
       </label>
     </div>
@@ -218,7 +217,7 @@ class DevPanel extends Component<Props, State, {}> {
       credentials: 'include',
       body: JSON.stringify({
         pdfType: PDFType.FORM,
-        annotated: false
+        annotated: false,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
