@@ -40,14 +40,14 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTest() {
-    login("adminBSM", "adminBSM");
+    TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadValidPDFTestExists() {
-    login("adminBSM", "adminBSM");
+    TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
     searchTestPDF();
     TestUtils.logout();
@@ -55,7 +55,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTestExistsAndDelete() {
-    login("adminBSM", "adminBSM");
+    TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
@@ -65,7 +65,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadInvalidPDFTypeTest() {
-    login("adminBSM", "adminBSM");
+    TestUtils.login("adminBSM", "adminBSM");
     File examplePDF =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     HttpResponse<String> uploadResponse =
@@ -77,17 +77,6 @@ public class PdfMongoTests {
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF_TYPE");
     TestUtils.logout();
-  }
-
-  public static void login(String username, String password) {
-    JSONObject body = new JSONObject();
-    body.put("password", password);
-    body.put("username", username);
-    HttpResponse<String> loginResponse =
-            Unirest.post(TestUtils.getServerUrl() + "/login").body(body.toString()).asString();
-    JSONObject loginResponseJSON =
-            TestUtils.responseStringToJSON(loginResponse.getBody());
-    assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }
 
   public static void delete(String id) {
