@@ -23,7 +23,6 @@ public class TwoFactorHandlerIntegrationTests {
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 
   @Test

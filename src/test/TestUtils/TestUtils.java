@@ -27,11 +27,9 @@ public class TestUtils {
   private static Javalin app;
 
   public static void startServer() {
-    app = AppConfig.appFactory(DeploymentLevel.TEST);
-  }
-
-  public static void stopServer() {
-    app.stop();
+    if(app == null){
+      app = AppConfig.appFactory(DeploymentLevel.TEST);
+    }
   }
 
   public static String getServerUrl() {
@@ -645,7 +643,7 @@ public class TestUtils {
     HttpResponse<String> loginResponse =
         Unirest.post(SERVER_TEST_URL + "/login").body(body.toString()).asString();
     JSONObject loginResponseJSON =
-        TestUtils.responseStringToJSON(loginResponse.getBody().toString());
+        TestUtils.responseStringToJSON(loginResponse.getBody());
     assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }
 

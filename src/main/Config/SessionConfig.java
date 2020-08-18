@@ -4,9 +4,11 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import org.eclipse.jetty.nosql.mongodb.MongoSessionDataStoreFactory;
 import org.eclipse.jetty.server.session.DefaultSessionCache;
+import org.eclipse.jetty.server.session.FileSessionDataStore;
 import org.eclipse.jetty.server.session.SessionCache;
 import org.eclipse.jetty.server.session.SessionHandler;
 
+import java.io.File;
 import java.util.Objects;
 
 public class SessionConfig {

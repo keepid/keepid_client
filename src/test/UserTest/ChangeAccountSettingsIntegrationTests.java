@@ -29,7 +29,6 @@ public class ChangeAccountSettingsIntegrationTests {
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 
   Context ctx = mock(Context.class);

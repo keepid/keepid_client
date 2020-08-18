@@ -10,13 +10,13 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 public class OrganizationJWTTests {
   private SecurityUtils securityUtils = new SecurityUtils();
@@ -30,7 +30,6 @@ public class OrganizationJWTTests {
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 
   @Test

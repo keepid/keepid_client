@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class TestUtilsUnitTests {
 
   @Test
-  public void setUpTest() {
+  public void setUpAndTeardownTest() {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
     MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
@@ -27,11 +27,6 @@ public class TestUtilsUnitTests {
         Objects.requireNonNull(
                 orgCollection.find(Filters.eq("orgName", "Broad Street Ministry")).first())
             .getOrgStreetAddress());
-  }
-
-  @Test
-  public void tearDownTest() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 }

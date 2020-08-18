@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -23,7 +25,7 @@ public class PdfMongoTests {
           + File.separator
           + "test"
           + File.separator
-          + "PDFTest";
+          + "resources";
 
   @BeforeClass
   public static void setUp() {
@@ -34,19 +36,18 @@ public class PdfMongoTests {
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 
   @Test
   public void uploadValidPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    login("adminBSM", "adminBSM");
     uploadTestPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadValidPDFTestExists() {
-    TestUtils.login("adminBSM", "adminBSM");
+    login("adminBSM", "adminBSM");
     uploadTestPDF();
     searchTestPDF();
     TestUtils.logout();
@@ -54,7 +55,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTestExistsAndDelete() {
-    TestUtils.login("adminBSM", "adminBSM");
+    login("adminBSM", "adminBSM");
     uploadTestPDF();
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
@@ -64,7 +65,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadInvalidPDFTypeTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    login("adminBSM", "adminBSM");
     File examplePDF =
         new File(currentPDFFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     HttpResponse<String> uploadResponse =
@@ -76,6 +77,17 @@ public class PdfMongoTests {
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF_TYPE");
     TestUtils.logout();
+  }
+
+  public static void login(String username, String password) {
+    JSONObject body = new JSONObject();
+    body.put("password", password);
+    body.put("username", username);
+    HttpResponse<String> loginResponse =
+            Unirest.post(TestUtils.getServerUrl() + "/login").body(body.toString()).asString();
+    JSONObject loginResponseJSON =
+            TestUtils.responseStringToJSON(loginResponse.getBody());
+    assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }
 
   public static void delete(String id) {

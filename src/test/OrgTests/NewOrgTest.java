@@ -19,7 +19,6 @@ public class NewOrgTest {
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    TestUtils.stopServer();
   }
 
   // Again, I commented out the part below as it would notify the slack channel about the new
