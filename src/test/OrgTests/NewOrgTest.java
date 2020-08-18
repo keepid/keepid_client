@@ -1,28 +1,23 @@
 package OrgTests;
 
-import resources.TestUtils;
+import TestUtils.TestUtils;
 import kong.unirest.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class NewOrgTest {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    TestUtils.tearDownTestDB();
-    try {
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
   }
 

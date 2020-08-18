@@ -48,7 +48,6 @@ public class UserController {
   public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
     return ctx -> {
       ctx.req.getSession().invalidate();
-
       JSONObject req = new JSONObject(ctx.body());
       JSONObject res = new JSONObject();
       String username = req.getString("username");
@@ -371,8 +370,8 @@ public class UserController {
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
         logger.info("Signed out");
+        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler getUserInfo =

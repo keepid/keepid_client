@@ -1,18 +1,21 @@
 package PDFTest;
 
-import resources.TestUtils;
+import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class PdfMongoTests {
   private static String currentPDFFolderPath =
@@ -22,22 +25,16 @@ public class PdfMongoTests {
           + File.separator
           + "test"
           + File.separator
-          + "PDFTest";
+          + "resources";
 
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    try {
-      TestUtils.tearDownTestDB();
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
   }
 

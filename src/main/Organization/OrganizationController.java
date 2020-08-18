@@ -247,6 +247,7 @@ public class OrganizationController {
       JSONObject req = new JSONObject(ctx.body());
       JSONArray people = req.getJSONArray("data");
 
+//    do a database query to get the request name and org
       String sender = req.getString("senderName");
       String org = req.getString("organization");
 
