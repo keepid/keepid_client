@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
+import { useParams } from 'react-router';
 import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
@@ -40,6 +41,7 @@ import EULA from './components/AboutUs/EULA';
 import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
+import InviteSignupFlow from './components/SignUp/InviteSignupFlow';
 
 interface State {
   role: Role,
@@ -52,7 +54,22 @@ interface State {
 
 const timeUntilWarn: number = 1000 * 60 * 120;
 const timeFromWarnToLogout: number = 1000 * 60;
+const jwtDecode = require('jwt-decode');
 // const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
+
+function InviteSignupJWT() {
+  const { jwt } = useParams();
+  try {
+    const decoded = jwtDecode(jwt);
+    const currentTime = Date.now() / 1000;
+    if (decoded.exp > currentTime) {
+      return <InviteSignupFlow organization={decoded.organization} />;
+    }
+  } catch (err) {
+    return <Redirect to="/error" />;
+  }
+  return <Redirect to="/error" />;
+}
 
 class App extends React.Component<{}, State, {}> {
   private idleTimerWarn;
@@ -369,6 +386,9 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <Route path="/create-user/:jwt">
+                <InviteSignupJWT />
+              </Route>
               <Route path="/error">
                 <Error />
               </Route>
