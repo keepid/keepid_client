@@ -3,7 +3,6 @@ import { withAlert } from 'react-alert';
 import MapComponent from './MapComponent';
 import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
 
-
 interface Props {
   alert: any,
 }
@@ -106,14 +105,14 @@ class FindOrganization extends Component<Props, State> {
         </div>
         <form onSubmit={this.onSubmitZipcode}>
           <div className="input-group w-50 mb-3 mt-5 mx-auto">
-              <input type="text" className="form-control form-purple" placeholder="Search by zipcode..." value={zipcodeSearch} onChange={this.onHandleChangeZipcode} />
-              <div className="input-group-append">
-                <button className="btn btn-info btn-primary-theme" type="submit">Search</button>
+            <input type="text" className="form-control form-purple" placeholder="Search by zipcode..." value={zipcodeSearch} onChange={this.onHandleChangeZipcode} />
+            <div className="input-group-append">
+              <button className="btn btn-info btn-primary-theme" type="submit">Search</button>
             </div>
           </div>
         </form>
         <div className="text-center mb-3 mt-5">
-          <img src={FindOrgIcon} className="img-fluid" alt="Responsive image"></img>
+          <img src={FindOrgIcon} className="img-fluid" alt="Responsive image" />
         </div>
         {displayMap
           ? (
