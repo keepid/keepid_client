@@ -1,6 +1,7 @@
 import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import Role from '../../static/Role';
 
 interface Props {
   username: string,
@@ -10,7 +11,8 @@ interface Props {
   onChangePassword: () => void,
   onChangeConfirmPassword: () => void,
   handleContinue: ()=> void,
-  alert: any
+  alert: any,
+  role: Role
 }
 
 interface State {
@@ -167,10 +169,25 @@ class AccountSetup extends Component<Props, State, {}> {
             <div className="text-center pb-4 mb-2">
               <h2><b>First, set up your account information</b></h2>
               <span>
-                You will be the admin of your organization. As the admin, you can set up accounts for
-                <br />
+                You will be the
                 {' '}
-                other works in the organization and for your clients.
+                {this.props.role}
+                {' '}
+                of your organization. As the
+                {' '}
+                {this.props.role}
+                ,
+                {this.props.role === Role.Admin
+                  ? (
+                    <div>
+                      you can set up accounts for
+                      <br />
+                      {' '}
+                      other workers in the organization and for your clients.
+                      {' '}
+                    </div>
+                  )
+                  : <div>you can set up accounts for clients</div>}
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>

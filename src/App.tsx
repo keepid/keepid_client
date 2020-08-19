@@ -62,8 +62,9 @@ function InviteSignupJWT() {
   try {
     const decoded = jwtDecode(jwt);
     const currentTime = Date.now() / 1000;
+    console.log(decoded);
     if (decoded.exp > currentTime) {
-      return <InviteSignupFlow organization={decoded.organization} />;
+      return <InviteSignupFlow organization={decoded.organization} role={decoded.role} />;
     }
   } catch (err) {
     return <Redirect to="/error" />;
@@ -247,7 +248,7 @@ class App extends React.Component<{}, State, {}> {
                 <SignupBrancher />
               </Route>
               <Route path="/organization-signup">
-                <CompleteSignupFlow />
+                <CompleteSignupFlow role={Role.Admin} />
               </Route>
               <Route
                 path="/person-signup/:roleString"

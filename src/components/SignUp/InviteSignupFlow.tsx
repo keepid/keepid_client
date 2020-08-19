@@ -13,12 +13,14 @@ import PersonalInformation from './PersonalInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import USStates from '../../static/data/states_titlecase.json';
+import Role from '../../static/Role';
 
 const { Step } = Steps;
 
 interface Props {
   alert: any,
-  organization: any
+  organization: any,
+  role: Role
 }
 
 interface State {
@@ -118,7 +120,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       email,
       recaptchaPayload,
     } = this.state;
-    // const organization = this.props.organization
+    const personRole = this.props.role;
     const birthDateString = this.birthDateStringConverter(birthDate);
     // submit user information
 
@@ -137,7 +139,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         twoFactorOn: false,
         username,
         password,
-        personRole: 'Director',
+        personRole,
         recaptchaPayload,
       }),
     }).then((response) => response.json())
@@ -183,6 +185,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
+            role={this.props.role}
           />
         );
       }
@@ -196,7 +199,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             city={this.state.city}
             state={this.state.state}
             zipcode={this.state.zipcode}
-            phone={this.state.phonenumber}
+            phonenumber={this.state.phonenumber}
             email={this.state.email}
             onChangeFirstname={this.handleChangeFirstname}
             onChangeLastname={this.handleChangeLastname}
@@ -205,7 +208,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             onChangeCity={this.handleChangeUserCity}
             onChangeState={this.handleChangeUserState}
             onChangeZipcode={this.handleChangeUserZipcode}
-            onChangePhone={this.handleChangeUserPhoneNumber}
+            onChangePhoneNumber={this.handleChangeUserPhoneNumber}
             onChangeEmail={this.handleChangeUserEmail}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
