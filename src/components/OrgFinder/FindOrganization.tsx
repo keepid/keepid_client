@@ -3,7 +3,6 @@ import { withAlert } from 'react-alert';
 import MapComponent from './MapComponent';
 import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
 import InvalidZipcodeIcon from '../../static/images/InvalidZipcodeIcon.svg';
-import { isValidZipCode } from '../../lib/Validations/Validations';
 
 interface Props {
   alert: any,
@@ -85,6 +84,7 @@ class FindOrganization extends Component<Props, State> {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
           this.setState({
             displayMap: true,
+            displayIcon: false,
             displayError: false,
             zipcodeLatLng,
           });
