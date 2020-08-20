@@ -1,21 +1,13 @@
 package User;
 
-import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.bson.types.ObjectId;
-
 public class IpObject {
-  private ObjectId id;
 
-  @BsonProperty(value = "ip")
   private String ip;
 
-  @BsonProperty(value = "location")
   private String location;
 
-  @BsonProperty(value = "date")
   private String date;
 
-  @BsonProperty(value = "device")
   private String device;
 
   public IpObject() {}

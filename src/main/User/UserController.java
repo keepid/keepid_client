@@ -187,7 +187,6 @@ public class UserController {
             "You are receiving this because we have arrived at maximum amount of IP "
                 + "lookups we are allowed for our free plan.");
         Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
-        ctx.json("Failed to retrieve login histories.");
       }
       loginList.add(thisLogin);
       Bson filter = eq("username", username);
