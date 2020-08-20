@@ -2,6 +2,8 @@ package OrgTests;
 
 import Security.SecurityUtils;
 import Validation.ValidationException;
+import kong.unirest.Unirest;
+import TestUtils.TestUtils;
 import io.jsonwebtoken.Claims;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -11,13 +13,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import resources.TestUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class OrganizationJWTTests {
   private SecurityUtils securityUtils = new SecurityUtils();
@@ -25,17 +28,11 @@ public class OrganizationJWTTests {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    TestUtils.tearDownTestDB();
-    try {
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
   }
 
@@ -153,7 +150,6 @@ public class OrganizationJWTTests {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("EMPTY_FIELD");
   }
-
   //  {userTypes : ["worker", "director"],
   //  organizations : []}
   @Test
@@ -166,11 +162,11 @@ public class OrganizationJWTTests {
     body.put("organizations", orgs);
 
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .body(body.toString())
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -192,11 +188,11 @@ public class OrganizationJWTTests {
     body.put("organizations", orgs);
 
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .body(body.toString())
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -220,11 +216,11 @@ public class OrganizationJWTTests {
     body.put("organizations", orgs);
 
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .body(body.toString())
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -253,11 +249,11 @@ public class OrganizationJWTTests {
     body.put("organizations", orgs);
 
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .body(body.toString())
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -287,11 +283,11 @@ public class OrganizationJWTTests {
     body.put("organizations", orgs);
 
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .body(body.toString())
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -308,10 +304,10 @@ public class OrganizationJWTTests {
   @Test
   public void findAllOrgs() throws ValidationException {
     HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-orgs")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .asString();
+            Unirest.post(TestUtils.getServerUrl() + "/get-all-orgs")
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "text/plain")
+                    .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
 
@@ -376,11 +372,11 @@ public class OrganizationJWTTests {
     //            "1234567890");
 
     String testOrgs[] = {
-      "Broad Street Ministry",
-      "YMCA",
-      "2FA Token Org",
-      "Account Settings Org",
-      "Password Settings Org"
+            "Broad Street Ministry",
+            "YMCA",
+            "2FA Token Org",
+            "Account Settings Org",
+            "Password Settings Org"
     };
 
     JSONArray orgs = resp.getJSONArray("organizations");

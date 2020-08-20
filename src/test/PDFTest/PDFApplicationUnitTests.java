@@ -69,6 +69,7 @@ public class PDFApplicationUnitTests {
       Set<String> validFieldTypes = PdfController.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -121,6 +122,7 @@ public class PDFApplicationUnitTests {
       Set<String> validFieldTypes = PdfController.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -157,6 +159,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -189,6 +192,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -221,6 +225,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -256,6 +261,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -288,6 +294,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -320,6 +327,7 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 
   @Test
@@ -352,5 +360,6 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(
           correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
     }
+    pdfDocument.close();
   }
 }

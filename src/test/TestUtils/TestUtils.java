@@ -1,19 +1,12 @@
-package resources;
+package TestUtils;
 
-import Bug.BugController;
+import Config.AppConfig;
+import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
-import Organization.OrganizationController;
-import PDF.PdfController;
-import Security.AccountSecurityController;
-import Security.EmailUtil;
-import Security.SecurityUtils;
 import Security.Tokens;
 import User.User;
-import User.UserController;
 import User.UserType;
-import Validation.ValidationException;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.mkammerer.argon2.Argon2;
@@ -29,10 +22,19 @@ import java.util.Date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUtils {
-  private static int serverPort = 1234;
-  private static String serverUrl = "http://localhost:" + serverPort;
+  private final static int SERVER_TEST_PORT = Integer.parseInt(System.getenv("TEST_PORT"));
+  private final static String SERVER_TEST_URL = "http://localhost:" + SERVER_TEST_PORT;
   private static Javalin app;
 
+  public static void startServer() {
+    if(app == null){
+      app = AppConfig.appFactory(DeploymentLevel.TEST);
+    }
+  }
+
+  public static String getServerUrl() {
+    return SERVER_TEST_URL;
+  }
   /* Load the test database with:
    * Admins of Broad Street Ministry and YMCA
    * Workers with all sets of permissions, labelled with flags denoting their permission level, i.e. fft denotes
@@ -43,10 +45,10 @@ public class TestUtils {
    *
    * Passwords are the same as usernames.
    */
-  public static void setUpTestDB() throws ValidationException {
+  public static void setUpTestDB() {
     // If there are entries in the database, they should be cleared before more are added.
-    MongoDatabase testDB =
-        MongoConfig.getMongoTestClient().getDatabase(MongoConfig.getDatabaseName());
+    MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
+    try{
     /* *********************** Broad Street Ministry ************************ */
     Organization broadStreetMinistry =
         new Organization(
@@ -608,11 +610,14 @@ public class TestUtils {
     // Add the 2FA tokens to the test database
     MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
     tokenCollection.insertMany(Arrays.asList(validToken, expiredToken));
+    } catch (Exception e){
+      System.out.println(e);
+    }
   }
 
   // Tears down the test database by clearing all collections.
   public static void tearDownTestDB() {
-    MongoConfig.cleanTestDatabase();
+    MongoConfig.dropDatabase(DeploymentLevel.TEST);
   }
 
   // A private method for hashing passwords.
@@ -629,59 +634,21 @@ public class TestUtils {
     return passwordHash;
   }
 
-  public static void startServer() {
-    MongoClient testClient = MongoConfig.getMongoTestClient();
-    MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
 
-    /* Controllers */
-    PdfController pdfController = new PdfController(db);
-    UserController userController = new UserController(db);
-    AccountSecurityController accountSecurityController = new AccountSecurityController(db);
-    OrganizationController orgController = new OrganizationController(db);
-    BugController bugController = new BugController(db);
-
-    /* Utils */
-    SecurityUtils securityUtils = new SecurityUtils();
-    EmailUtil emailUtil = new EmailUtil();
-
-    app = Javalin.create();
-    app.start(serverPort);
-    app.post("/login", userController.loginUser(securityUtils, emailUtil));
-    app.post("/upload", pdfController.pdfUpload);
-    app.post("/download", pdfController.pdfDownload);
-    app.post("/delete-document", pdfController.pdfDelete);
-    app.post("/get-documents", pdfController.pdfGetAll);
-    app.post("/logout", userController.logout);
-    app.post("/two-factor", accountSecurityController.twoFactorAuth);
-    app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
-    app.post("/submit-bug", bugController.submitBug);
-    app.post("/find-bug", bugController.findBug);
-    app.post("/organization-sign-up", orgController.enrollOrganization(securityUtils));
-    app.post("/get-usertype-count", orgController.findMembersOfOrgs);
-    app.post("/get-all-orgs", orgController.listOrgs);
-  }
-
-  public static void stopServer() {
-    app.stop();
-  }
-
-  public static String getServerUrl() {
-    return serverUrl;
-  }
 
   public static void login(String username, String password) {
     JSONObject body = new JSONObject();
     body.put("password", password);
     body.put("username", username);
     HttpResponse<String> loginResponse =
-        Unirest.post(serverUrl + "/login").body(body.toString()).asString();
+        Unirest.post(SERVER_TEST_URL + "/login").body(body.toString()).asString();
     JSONObject loginResponseJSON =
-        TestUtils.responseStringToJSON(loginResponse.getBody().toString());
+        TestUtils.responseStringToJSON(loginResponse.getBody());
     assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }
 
   public static void logout() {
-    HttpResponse<String> logoutResponse = Unirest.post(serverUrl + "/logout").asString();
+    HttpResponse<String> logoutResponse = Unirest.get(SERVER_TEST_URL + "/logout").asString();
     JSONObject logoutResponseJSON = TestUtils.responseStringToJSON(logoutResponse.getBody());
     assertThat(logoutResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }

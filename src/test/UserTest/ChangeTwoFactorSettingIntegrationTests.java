@@ -1,10 +1,10 @@
 package UserTest;
 
+import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import resources.TestUtils;
+import TestUtils.TestUtils;
 import User.User;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
@@ -21,23 +21,16 @@ public class ChangeTwoFactorSettingIntegrationTests {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-    TestUtils.tearDownTestDB();
-    try {
-      TestUtils.setUpTestDB();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
   }
 
   @AfterClass
   public static void tearDown() {
-    TestUtils.stopServer();
     TestUtils.tearDownTestDB();
   }
 
   Context ctx = mock(Context.class);
-  MongoClient testClient = MongoConfig.getMongoTestClient();
-  MongoDatabase db = testClient.getDatabase(MongoConfig.getDatabaseName());
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
 
