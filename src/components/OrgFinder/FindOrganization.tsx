@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import MapComponent from './MapComponent';
 import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
+import InvalidZipcodeIcon from '../../static/images/InvalidZipcodeIcon.svg';
+import { isValidZipCode } from '../../lib/Validations/Validations';
 
 interface Props {
   alert: any,
@@ -10,6 +12,8 @@ interface Props {
 interface State {
   organizations: any,
   displayMap: boolean,
+  displayError: boolean,
+  displayIcon: boolean,
   zipcodeSearch: string,
   zipcodeLatLng: any,
 }
@@ -22,6 +26,8 @@ class FindOrganization extends Component<Props, State> {
     this.state = {
       organizations: [],
       displayMap: false,
+      displayError: false,
+      displayIcon: true,
       zipcodeSearch: '',
       zipcodeLatLng: {},
     };
@@ -79,13 +85,19 @@ class FindOrganization extends Component<Props, State> {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
           this.setState({
             displayMap: true,
+            displayError: false,
             zipcodeLatLng,
           });
         } else {
-          const {
-            alert,
-          } = this.props;
-          alert.show('Invalid zip code');
+          // const {
+          //   alert,
+          // } = this.props;
+          // alert.show('Invalid zip code');
+          this.setState({
+            displayMap: false,
+            displayError: true,
+            displayIcon: false,
+          });
         }
       });
   }
@@ -93,6 +105,8 @@ class FindOrganization extends Component<Props, State> {
   render() {
     const {
       displayMap,
+      displayError,
+      displayIcon,
       zipcodeSearch,
       organizations,
       zipcodeLatLng,
@@ -100,20 +114,33 @@ class FindOrganization extends Component<Props, State> {
 
     return (
       <div className="container">
+        
         <div className="jumbotron-fluid mt-5">
           <h1 className="text-center"><b>Find Organizations Near You</b></h1>
         </div>
         <form onSubmit={this.onSubmitZipcode}>
           <div className="input-group w-50 mb-3 mt-5 mx-auto">
-            <input type="text" className="form-control form-purple" placeholder="Search by zipcode..." value={zipcodeSearch} onChange={this.onHandleChangeZipcode} />
+            <input 
+              type="text" 
+              className="form-control form-purple" 
+              placeholder="Search by zipcode..." 
+              value={zipcodeSearch} 
+              onChange={this.onHandleChangeZipcode} 
+            />
             <div className="input-group-append">
               <button className="btn btn-info btn-primary-theme" type="submit">Search</button>
             </div>
           </div>
         </form>
-        <div className="text-center mb-3 mt-5">
-          <img src={FindOrgIcon} className="img-fluid" alt="Responsive image" />
-        </div>
+
+        {displayIcon
+          ? (
+            <div className="text-center mb-3 mt-5">
+              <img src={FindOrgIcon} className="img-fluid" alt="Girl with Magnifying Glass" />
+            </div>
+          )
+          : <div />}
+
         {displayMap
           ? (
             <MapComponent
@@ -125,6 +152,16 @@ class FindOrganization extends Component<Props, State> {
               containerElement={<div style={{ height: '400px' }} />}
               mapElement={<div style={{ height: '100%' }} />}
             />
+          )
+          : <div />}
+
+        {displayError
+          ? (
+            <div className="text-center">
+              <p className="text-red">No results found. Make sure you are searching for a valid zipcode.</p>
+              <br></br>
+              <img src={InvalidZipcodeIcon} className="img-fluid" alt="Guy looking into void" />
+            </div>
           )
           : <div />}
       </div>
