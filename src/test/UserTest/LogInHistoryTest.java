@@ -1,9 +1,16 @@
 package UserTest;
 
 import TestUtils.TestUtils;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class LogInHistoryTest {
   @BeforeClass
@@ -33,17 +40,19 @@ public class LogInHistoryTest {
     TestUtils.login("login-history-test", "login-history-test");
     TestUtils.logout();
     TestUtils.login("login-history-test", "login-history-test");
-    //    HttpResponse<String> actualResponse =
-    //        Unirest.post(TestUtils.getServerUrl() + "/get-login-history")
-    //            .header("Accept", "*/*")
-    //            .header("Content-Type", "text/plain")
-    //            .asString();
-    //    JSONObject res = TestUtils.responseStringToJSON(actualResponse.getBody());
-    //    JSONArray history = res.getJSONArray("history");
-    //    assert (history.length() == 4);
-    //    JSONObject lastLogin = history.getJSONObject(3);
-    //    assert (lastLogin.get("date").toString().contains("8/18/2020"));
-    //    assert (lastLogin.get("device").toString().contains("Computer"));
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-login-history")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .asString();
+    JSONObject res = TestUtils.responseStringToJSON(actualResponse.getBody());
+    JSONArray history = res.getJSONArray("history");
+    assert (history.length() == 4);
+    JSONObject lastLogin = history.getJSONObject(3);
+    ZonedDateTime time = ZonedDateTime.now();
+    String date = time.format(DateTimeFormatter.ofPattern("MM/dd/YYYY"));
+    assert (lastLogin.get("date").toString().split(",")[0].equals(date));
+    assert (lastLogin.get("device").toString().contains("Computer"));
     TestUtils.logout();
   }
 }

@@ -8,7 +8,6 @@ import Security.SecurityUtils;
 import Security.Tokens;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -156,35 +156,44 @@ public class UserController {
       res.put("firstName", user.getFirstName());
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
-      List<BasicDBObject> login = user.getLogInHistory();
-      if (null == login) {
-        login = new ArrayList<BasicDBObject>(1000);
+      List<IpObject> loginList = user.getLogInHistory();
+      if (null == loginList) {
+        loginList = new ArrayList<IpObject>(1000);
       }
-      if (login.size() >= 1000) {
-        login.remove(0);
+      if (loginList.size() >= 1000) {
+        loginList.remove(0);
       }
-      BasicDBObject thisLogin = new BasicDBObject();
+      logger.info("Trying to add login to login history");
+      IpObject thisLogin = new IpObject();
       ZonedDateTime d = ZonedDateTime.now();
       String formattedDate =
-          d.getMonth().getValue()
-              + "/"
-              + d.getDayOfMonth()
-              + "/"
-              + d.getYear()
-              + ", "
-              + d.getHour()
-              + ":"
-              + d.getMinute()
-              + " Local Time";
-      thisLogin.put("date", formattedDate);
-      thisLogin.put("IP", ip);
-      String device = ctx.userAgent();
-      Boolean isMobile = device.contains("Mobi");
-      thisLogin.put("device", isMobile);
-      login.add(thisLogin);
+          d.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
+      thisLogin.setDate(formattedDate);
+      thisLogin.setIp(ip);
+      Boolean isMobile = ctx.userAgent().contains("Mobi");
+      String device = isMobile ? "Mobile" : "Computer";
+      thisLogin.setDevice(device);
+      IPInfo ipInfo = IPInfo.builder().setToken(System.getenv("IPINFO_TOKEN")).build();
+      try {
+        IPResponse response = ipInfo.lookupIP(ip);
+        thisLogin.setLocation(
+            response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
+      } catch (RateLimitedException ex) {
+        logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
+        thisLogin.setLocation("Unknown");
+        JSONObject body = new JSONObject();
+        body.put(
+            "text",
+            "You are receiving this because we have arrived at maximum amount of IP "
+                + "lookups we are allowed for our free plan.");
+        Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+        ctx.json("Failed to retrieve login histories.");
+      }
+      loginList.add(thisLogin);
       Bson filter = eq("username", username);
-      Bson update = set("logInHistory", login);
+      Bson update = set("logInHistory", loginList);
       userCollection.updateOne(filter, update);
+      logger.info("Added login to login history");
       ctx.json(res.toString());
       logger.info("Login Successful!");
     };
@@ -358,7 +367,7 @@ public class UserController {
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
         return;
       }
-      List<BasicDBObject> logInInfo = new ArrayList<BasicDBObject>(1000);
+      List<IpObject> logInInfo = new ArrayList<IpObject>(1000);
       user.setLogInHistory(logInInfo);
       user.setPassword(hash);
       userCollection.insertOne(user);
@@ -510,12 +519,12 @@ public class UserController {
        {“username”: “username”,
               "history": [
                      {
-                         “datetime”:”month/day/year, hour:min, timezone”, (let me know if we need the timezone)
+                         “date”:”month/day/year, hour:min, Local Time”,
                          “device”:”Mobile” or "Computer",
                          “IP”:”exampleIP”,
                          “location”: “Postal, City”,
                      }
-        ]
+        ]08/233/2020dorm
      }
   */
   public Handler getLogInHistory =
@@ -526,34 +535,13 @@ public class UserController {
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         User user = userCollection.find(eq("username", username)).first();
         if (user != null) {
-          List<BasicDBObject> logIns = user.getLogInHistory();
-          IPInfo ipInfo = IPInfo.builder().setToken(System.getenv("IPINFO_TOKEN")).build();
-          for (BasicDBObject login : logIns) {
+          List<IpObject> logIns = user.getLogInHistory();
+          for (IpObject login : logIns) {
             JSONObject oneLog = new JSONObject();
-            String ip = login.getString("IP");
-            try {
-              IPResponse response = ipInfo.lookupIP(ip);
-              oneLog.put(
-                  "location",
-                  response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
-              oneLog.put("IP", ip);
-            } catch (RateLimitedException ex) {
-              logger.error("Failed to retrieve login history due to limited rates for IPInfo.com");
-              JSONObject body = new JSONObject();
-              body.put(
-                  "text",
-                  "You are receiving this because we have arrived at maximum amount of IP "
-                      + "lookups we are allowed for our free plan.");
-              Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
-              ctx.json("Failed to retrieve login histories.");
-              return;
-            }
-            oneLog.put("date", login.get("date"));
-            if (login.getBoolean("device")) {
-              oneLog.put("device", "Mobile");
-            } else {
-              oneLog.put("device", "Computer");
-            }
+            oneLog.put("IP", login.getIp());
+            oneLog.put("date", login.getDate());
+            oneLog.put("location", login.getLocation());
+            oneLog.put("device", login.getDevice());
             res.put(oneLog);
           }
           JSONObject actual = new JSONObject();

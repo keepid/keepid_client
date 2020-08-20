@@ -3,7 +3,6 @@ package User;
 import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
-import com.mongodb.BasicDBObject;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -70,7 +69,7 @@ public class User {
   private Date creationDate;
 
   @BsonProperty(value = "logInHistory")
-  private List<BasicDBObject> logInHistory;
+  private List<IpObject> logInHistory;
 
   public User() {}
 
@@ -214,7 +213,7 @@ public class User {
     return this.creationDate;
   }
 
-  public List<BasicDBObject> getLogInHistory() {
+  public List<IpObject> getLogInHistory() {
     return this.logInHistory;
   }
 
@@ -304,7 +303,7 @@ public class User {
     return this;
   }
 
-  public User setLogInHistory(List<BasicDBObject> logInHistory) {
+  public User setLogInHistory(List<IpObject> logInHistory) {
     this.logInHistory = logInHistory;
     return this;
   }
