@@ -50,7 +50,6 @@ public class LogInHistoryTest {
     JSONObject res = TestUtils.responseStringToJSON(actualResponse.getBody());
     JSONArray history = res.getJSONArray("history");
     assert (history.length() == 4);
-    System.out.println(history);
     JSONObject first = history.getJSONObject(0);
     JSONObject second = history.getJSONObject(1);
     JSONObject penultimate = history.getJSONObject(2);
