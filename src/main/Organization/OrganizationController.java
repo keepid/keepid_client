@@ -381,7 +381,7 @@ public class OrganizationController {
       String sender = ctx.sessionAttribute("firstName");
       sender += " ";
       sender += ctx.sessionAttribute("lastName");
-      String org = ctx.sessionAttribute("organization");
+      String org = ctx.sessionAttribute("orgName");
 
       if (org.isEmpty()) {
         logger.error("Empty organization field");
