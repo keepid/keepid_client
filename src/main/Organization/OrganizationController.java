@@ -375,8 +375,13 @@ public class OrganizationController {
       JSONObject req = new JSONObject(ctx.body());
       JSONArray people = req.getJSONArray("data");
 
-      String sender = req.getString("senderName");
-      String org = req.getString("organization");
+      //      String sender = req.getString("senderName");
+      //      String org = req.getString("organization");
+
+      String sender = ctx.sessionAttribute("firstName");
+      sender += " ";
+      sender += ctx.sessionAttribute("lastName");
+      String org = ctx.sessionAttribute("organization");
 
       if (org.isEmpty()) {
         logger.error("Empty organization field");

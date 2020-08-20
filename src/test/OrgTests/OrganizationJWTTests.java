@@ -85,9 +85,11 @@ public class OrganizationJWTTests {
     dataArray.put(firstUser);
     dataArray.put(secUser);
 
-    body.put("senderName", "Test Sender");
-    body.put("organization", "Test Org");
+    //    body.put("senderName", "Test Sender");
+    //    body.put("organization", "Test Org");
     body.put("data", dataArray);
+
+    TestUtils.login("adminBSM", "adminBSM");
 
     HttpResponse actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/invite-user")
@@ -98,6 +100,8 @@ public class OrganizationJWTTests {
 
     JSONObject actualResponseJSON =
         TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+
+    TestUtils.logout();
 
     assert (actualResponseJSON.has("message"));
     assertThat(actualResponseJSON.getString("message")).isEqualTo("Success.");
@@ -126,9 +130,11 @@ public class OrganizationJWTTests {
     dataArray.put(firstUser);
     dataArray.put(secUser);
 
-    body.put("senderName", "Test Sender");
-    body.put("organization", "Test Org");
+    //    body.put("senderName", "Test Sender");
+    //    body.put("organization", "Test Org");
     body.put("data", dataArray);
+
+    TestUtils.login("adminBSM", "adminBSM");
 
     HttpResponse actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/invite-user")
@@ -136,6 +142,8 @@ public class OrganizationJWTTests {
             .header("Content-Type", "text/plain")
             .body(body.toString())
             .asString();
+
+    TestUtils.logout();
 
     JSONObject actualResponseJSON =
         TestUtils.responseStringToJSON(actualResponse.getBody().toString());

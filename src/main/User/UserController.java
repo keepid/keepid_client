@@ -140,6 +140,8 @@ public class UserController {
       ctx.sessionAttribute("privilegeLevel", user.getUserType());
       ctx.sessionAttribute("orgName", user.getOrganization());
       ctx.sessionAttribute("username", username);
+      ctx.sessionAttribute("firstName", user.getFirstName());
+      ctx.sessionAttribute("lastName", user.getLastName());
 
       res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
       res.put("userRole", user.getUserType());
