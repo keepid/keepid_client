@@ -592,6 +592,41 @@ public class TestUtils {
               "login-history-test",
               TestUtils.hashPassword("login-history-test"),
               UserType.Client);
+      /* *********************** Activity Test Users ************************ */
+      User createAdminOwner =
+          new User(
+              "Cathy",
+              "Chen",
+              "07-14-2020",
+              "contact@example.com",
+              "1234567890",
+              "login history Org",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "createAdminOwner",
+              TestUtils.hashPassword("login-history-test"),
+              UserType.Director);
+
+      User createdAdmin =
+          new User(
+              "Cathy",
+              "Chen",
+              "07-14-2020",
+              "contact@example.com",
+              "1234567890",
+              "login history Org",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "createdAdmin",
+              TestUtils.hashPassword("login-history-test"),
+              UserType.Admin);
+
       // Add the organization documents to the test database.
       MongoCollection<Organization> organizationCollection =
           testDB.getCollection("organization", Organization.class);
@@ -627,7 +662,9 @@ public class TestUtils {
               accountSettingsTest,
               settingsTest2FA,
               passwordResetTest,
-              logInHistoryTest));
+              logInHistoryTest,
+              createAdminOwner,
+              createdAdmin));
 
       // Add the 2FA tokens to the test database
       MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
