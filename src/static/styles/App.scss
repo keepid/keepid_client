@@ -6,6 +6,7 @@ $primary-theme: #7B81FF;
 $secondary-theme: #FFBB7B;
 $secondary-dark-theme: #262867;
 $text-red: #F24D4D;
+$text-green: #00FF00; 
 $footer-color:#413f57;
 $footer-text-color: rgb(183, 183, 192);
 $footer-text-color-accent: rgb(230, 230, 230);
@@ -227,6 +228,10 @@ thead {
 
 .text-red {
 	color: $text-red;
+}
+
+.text-green {
+	color: $text-green;
 }
 
 .seeTable {
