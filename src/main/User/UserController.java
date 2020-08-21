@@ -136,11 +136,11 @@ public class UserController {
         return;
       }
 
+      String fullName = user.getFirstName() + " " + user.getLastName();
       ctx.sessionAttribute("privilegeLevel", user.getUserType());
       ctx.sessionAttribute("orgName", user.getOrganization());
       ctx.sessionAttribute("username", username);
-      ctx.sessionAttribute("firstName", user.getFirstName());
-      ctx.sessionAttribute("lastName", user.getLastName());
+      ctx.sessionAttribute("fullName", fullName);
 
       res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
       res.put("userRole", user.getUserType());

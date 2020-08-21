@@ -78,8 +78,6 @@ public class OrganizationJWTTests {
     dataArray.put(firstUser);
     dataArray.put(secUser);
 
-    //    body.put("senderName", "Test Sender");
-    //    body.put("organization", "Test Org");
     body.put("data", dataArray);
 
     TestUtils.login("adminBSM", "adminBSM");
@@ -123,8 +121,6 @@ public class OrganizationJWTTests {
     dataArray.put(firstUser);
     dataArray.put(secUser);
 
-    //    body.put("senderName", "Test Sender");
-    //    body.put("organization", "Test Org");
     body.put("data", dataArray);
 
     TestUtils.login("adminBSM", "adminBSM");
@@ -306,66 +302,6 @@ public class OrganizationJWTTests {
             .asString();
 
     JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-
-    //    Organization broadStreetMinistry =
-    //        new Organization(
-    //            "Broad Street Ministry",
-    //            "http://www.broadstreetministry.org",
-    //            "123456789",
-    //            "311 Broad Street",
-    //            "Philadelphia",
-    //            "PA",
-    //            "19104",
-    //            "mikedahl@broadstreetministry.org",
-    //            "1234567890");
-    //
-    //    Organization ymca =
-    //        new Organization(
-    //            "YMCA",
-    //            "http://www.ymca.net",
-    //            "987654321",
-    //            "11088 Knights Rd",
-    //            "Philadelphia",
-    //            "PA",
-    //            "19154",
-    //            "info@ymca.net",
-    //            "1234567890");
-    //
-    //    Organization twoFactorTokenOrg =
-    //        new Organization(
-    //            "2FA Token Org",
-    //            "http://keep.id",
-    //            "123456789",
-    //            "311 Broad Street",
-    //            "Philadelphia",
-    //            "PA",
-    //            "19104",
-    //            "contact@example.com",
-    //            "1234567890");
-    //
-    //    Organization accountSettingsOrg =
-    //        new Organization(
-    //            "Account Settings Org",
-    //            "http://keep.id",
-    //            "123456789",
-    //            "311 Broad Street",
-    //            "Philadelphia",
-    //            "PA",
-    //            "19104",
-    //            "contact@example.com",
-    //            "1234567890");
-    //
-    //    Organization passwordSettingsOrg =
-    //        new Organization(
-    //            "Password Settings Org",
-    //            "http://keep.id",
-    //            "123456789",
-    //            "311 Broad Street",
-    //            "Philadelphia",
-    //            "PA",
-    //            "19104",
-    //            "contact@example.com",
-    //            "1234567890");
 
     String testOrgs[] = {
       "Broad Street Ministry",
