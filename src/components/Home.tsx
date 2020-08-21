@@ -268,16 +268,16 @@ class Home extends Component<Props, {}, {}> {
                       </div>
                     </div>
                     <div className="row">
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Secure Access</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Constant Availability</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Protected Document Transfer</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Ease of Use</h4>
                       </div>
                     </div>
