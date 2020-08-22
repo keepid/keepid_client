@@ -12,7 +12,6 @@ interface Props{
 interface State {
   bugTitle: string,
   bugDescription: string,
-  isCaptchaFilled: boolean,
   buttonState: string,
 }
 
@@ -24,17 +23,11 @@ class BugReport extends Component<Props, State, {}> {
     this.state = {
       bugTitle: '',
       bugDescription: '',
-      isCaptchaFilled: false,
       buttonState: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.captchaVerify = this.captchaVerify.bind(this);
     this.handleChangeBugTitle = this.handleChangeBugTitle.bind(this);
     this.handleChangeBugDescription = this.handleChangeBugDescription.bind(this);
-  }
-
-  captchaVerify(value) {
-    this.setState({ isCaptchaFilled: true });
   }
 
   componentDidMount() {
@@ -42,41 +35,34 @@ class BugReport extends Component<Props, State, {}> {
   }
 
   handleSubmit(event: any) {
+    event.preventDefault();
     this.setState({ buttonState: 'running' });
-    if (recaptchaRef && recaptchaRef.current) {
-      recaptchaRef.current.execute();
-    }
     const {
       bugTitle,
       bugDescription,
     } = this.state;
-    if (process.env.NODE_ENV === 'production' && !this.state.isCaptchaFilled) {
-      this.props.alert.show('Please click the Recaptcha');
-      this.setState({ buttonState: '' });
-    } else {
-      fetch(`${getServerURL()}/submit-bug`, {
-        method: 'POST',
-        body: JSON.stringify({
-          bugTitle,
-          bugDescription,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const responseObject = JSON.parse(responseJSON);
-          const { status } = responseObject;
+    fetch(`${getServerURL()}/submit-bug`, {
+      method: 'POST',
+      body: JSON.stringify({
+        bugTitle,
+        bugDescription,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = JSON.parse(responseJSON);
+        const { status } = responseObject;
 
-          if (status === 'SUBMIT_SUCCESS') {
-            this.setState({ buttonState: '' });
-            this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
-          } else {
-            this.props.alert.show('Submit Failure');
-            this.setState({ buttonState: '' });
-          }
-        }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
+        if (status === 'SUCCESS') {
           this.setState({ buttonState: '' });
-        });
-    }
+          this.props.alert.show('Thank you for Submitting. We will look into this issue as soon as possible');
+        } else {
+          this.props.alert.show('Submit Failure');
+          this.setState({ buttonState: '' });
+        }
+      }).catch((error) => {
+        this.props.alert.show(`Server Failure: ${error}`);
+        this.setState({ buttonState: '' });
+      });
   }
 
   handleChangeBugTitle(event: any) {
@@ -142,12 +128,6 @@ class BugReport extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row mt-2">
                   <div className="col-md-8">
-                    <ReCAPTCHA
-                      ref={recaptchaRef}
-                      size="invisible"
-                      sitekey={reCaptchaKey}
-                      onChange={this.captchaVerify}
-                    />
                     <span className="text-muted recaptcha-login-text">
                       This page is protected by reCAPTCHA, and subject to the Google
                       {' '}

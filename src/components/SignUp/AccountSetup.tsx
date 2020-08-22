@@ -2,6 +2,7 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import Role from '../../static/Role';
+import { isValidUsername, isValidPassword } from '../../lib/Validations/Validations';
 
 interface Props {
   username: string,
@@ -47,7 +48,7 @@ class AccountSetup extends Component<Props, State, {}> {
   validateUsername = async ():Promise<void> => {
     const { username } = this.props;
     // ( if username is valid here and if username is taken)
-    if (username) {
+    if (isValidUsername(username)) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ usernameValidator: 'false' }, resolve));
@@ -76,7 +77,7 @@ class AccountSetup extends Component<Props, State, {}> {
   validatePassword = async (): Promise<void> => {
     const { password } = this.props;
     // ( if password is valid here)
-    if (password) {
+    if (isValidPassword(password)) {
       await new Promise((resolve) => this.setState({ passwordValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ passwordValidator: 'false' }, resolve));

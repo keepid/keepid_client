@@ -98,7 +98,7 @@ class MyOrganization extends Component<Props, State> {
         <td>{this.editButtonToggle(member.id)}</td>
         <td>{this.getRoleDropDown(member)}</td>
         <td>
-          <button type="button" className="close" aria-label="Close" onClick={() => this.deleteMember(i)}>
+          <button type="button" className="close float-left" aria-label="Close" onClick={() => this.deleteMember(i)}>
             <span aria-hidden="true" className="mx-auto">&times;</span>
           </button>
         </td>
@@ -336,13 +336,13 @@ render() {
               <option>Worker</option>
             </select>
           </div>
-          <div className="col-xs">
-            <button className="btn btn-primary mt-4" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+          <div className="col-xs mt-4">
+            <button className="btn btn-primary" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
           </div>
         </div>
       </form>
       <p className="brand-text font-weight-bold text-dark mb-2">Recently Invited</p>
-      <div style={{ maxHeight: '250px', overflow: 'scroll' }}>
+      <div style={{ maxHeight: '15.625rem', overflow: 'scroll', scrollbarColor: '#7B81FF' }}>
         <table className="table table-striped table-bordered">
           <thead className="position-sticky" style={{ top: '0' }}>
             <tr>

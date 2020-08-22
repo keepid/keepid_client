@@ -42,6 +42,7 @@ import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import InviteSignupFlow from './components/SignUp/InviteSignupFlow';
+import AdminDashboard from './components/AdminDashboard';
 
 interface State {
   role: Role,
@@ -64,7 +65,7 @@ function InviteSignupJWT() {
     const currentTime = Date.now() / 1000;
     console.log(decoded);
     if (decoded.exp > currentTime) {
-      return <InviteSignupFlow organization={decoded.organization} role={decoded.role} />;
+      return <InviteSignupFlow orgName={decoded.organization} role={decoded.role} />;
     }
   } catch (err) {
     return <Redirect to="/error" />;
@@ -356,6 +357,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/eula">
                 <EULA />
+              </Route>
+              <Route path="/dashboard-test">
+                <AdminDashboard />
               </Route>
               <Route path="/careers">
                 <Careers />

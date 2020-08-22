@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { reCaptchaKey } from '../../configVars';
+import Role from '../../static/Role';
 
 interface Props {
   username: string,
@@ -21,7 +22,9 @@ interface Props {
   handleFormJumpTo:(stageNumber: number)=> void,
   alert: any,
   buttonState: string,
-  handleChangeRecaptcha: (recaptchaValue: string) => void
+  handleChangeRecaptcha: (recaptchaValue: string) => void,
+  privilegeLevel: Role,
+  orgName: string
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();

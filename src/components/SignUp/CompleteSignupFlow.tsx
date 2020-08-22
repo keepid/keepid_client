@@ -16,6 +16,7 @@ import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
 
 const { Step } = Steps;
+const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
 interface Props {
   alert: any
@@ -94,7 +95,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
 
-  handleChangeBirthdate = (date: Date) => this.setState({ birthDate: date });
+  handleChangeBirthdate = (date: Date, callback) => this.setState({ birthDate: date }, callback);
 
   handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
 
@@ -142,6 +143,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     // this.setState({ signupStage: this.state.signupStage - 1 });
   }
 
+  static addHttp = (url: string) => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
   handleFormSubmit = (): void => {
     const {
       username,
@@ -166,12 +174,14 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationEmail,
       recaptchaPayload,
     } = this.state;
-    const birthDateString = this.birthDateStringConverter(birthDate);
+    const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
+    const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
+
     // submit organization and director information
     fetch(`${getServerURL()}/organization-signup`, {
       method: 'POST',
       body: JSON.stringify({
-        organizationWebsite,
+        organizationWebsite: revisedURL,
         organizationName,
         organizationEIN,
         organizationAddressStreet,
@@ -215,7 +225,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  birthDateStringConverter = (birthDate: Date) => {
+  static birthDateStringConverter = (birthDate: Date) => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
@@ -391,5 +401,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     );
   }
 }
-
+export const { birthDateStringConverter } = CompleteSignupFlow;
+export const { addHttp } = CompleteSignupFlow;
 export default withAlert()(CompleteSignupFlow);

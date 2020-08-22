@@ -88,9 +88,14 @@ body {
 	};
 }
 
-.section {
-	min-height: 72vh;
+.section1 {
+	min-height: 60vh;
 }
+
+.section2 {
+	min-height: 21vh;
+}
+
 
 // Buttons
 
@@ -118,7 +123,7 @@ body {
 	border-color: $primary-theme;
 }
 
-.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary:visited, .btn-outline-primary.active, .open>.dropdown-toggle.btn-outline-primary {
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open>.dropdown-toggle.btn-outline-primary {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
@@ -469,12 +474,12 @@ thead {
 
 .statistic-text {
 	color: $secondary-dark-theme;
-	font-size: calc(3rem + (16 * (100vw - 50rem)/ 624));
+	font-size: calc(2.5rem + (16 * (100vw - 50rem)/ 624));
 }
 
 .statistic-subtext {
 	color: $footer-color;
-	font-size: calc(.9rem + (4 * (100vw - 13rem)/ 624));
+	font-size: calc(.8rem + (4 * (100vw - 13rem)/ 624));
 }
 
 .react-datepicker-wrapper { width: 100% }
@@ -518,4 +523,22 @@ thead {
 .no-link-style:hover {
 	color: inherit;
 	text-decoration: none;
+}
+
+.pie-chart-dimensions {
+	height: 40vh;
+	width: 40vh;
+	min-width: 12.5rem;
+	min-height: 12.5rem;
+}
+
+.icon-svg {
+	height: 1.5rem;
+	width: 1.5rem;
+}
+
+.primary-color-border {
+	border-color: $primary-theme;
+	border-radius: 0.25rem;
+	border-width: 0.0625rem;
 }

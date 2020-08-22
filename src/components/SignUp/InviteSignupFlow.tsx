@@ -19,7 +19,7 @@ const { Step } = Steps;
 
 interface Props {
   alert: any,
-  organization: any,
+  orgName: string,
   role: Role
 }
 
@@ -121,6 +121,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       recaptchaPayload,
     } = this.state;
     const personRole = this.props.role;
+    const { orgName } = this.props;
     const birthDateString = this.birthDateStringConverter(birthDate);
     // submit user information
 

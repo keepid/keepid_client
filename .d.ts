@@ -21,3 +21,5 @@ declare module 'react-dom';
 declare module 'react-helmet';
 declare module 'react-select';
 declare module 'react-select/animated';
+declare module '@nivo/line';
+declare module '@nivo/pie';
