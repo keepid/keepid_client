@@ -338,7 +338,7 @@ render() {
             </select>
           </div>
           <div className="col-xs mt-4">
-            <button className="btn btn-primary" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+            <button className="btn btn-primary mt-1" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
           </div>
         </div>
       </form>
