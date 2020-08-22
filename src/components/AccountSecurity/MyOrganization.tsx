@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+// import './static/styles/App.scss';
 import Alert from 'react-bootstrap/Alert';
 import { withAlert } from 'react-alert';
 import CheckSVG from '../../static/images/check.svg';
@@ -342,15 +343,15 @@ render() {
         </div>
       </form>
       <p className="brand-text font-weight-bold text-dark mb-2">Recently Invited</p>
-      <div style={{ maxHeight: '15.625rem', overflow: 'scroll', scrollbarColor: '#7B81FF' }}>
+      <div className="scrollbar" style={{ maxHeight: '15.625rem', overflow: 'scroll', scrollbarColor: '#7B81FF' }}>
         <table className="table table-striped table-bordered">
-          <thead className="position-sticky" style={{ top: '0' }}>
+          <thead className="position-sticky border" style={{ top: '0' }}>
             <tr>
-              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Name</th>
-              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Email</th>
-              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Edit</th>
-              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border">Role</th>
-              <th scope="col" style={{ top: '0', zIndex: 999 }} className="position-sticky bg-white border" />
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Name</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Email</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Edit</th>
+              <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Role</th>
+              <th scope="col" style={{ top: '0', zIndex: 999 }} className="position-sticky bg-white border shadow-sm" />
             </tr>
           </thead>
           <tbody className="table-striped">{this.renderTableContents()}</tbody>
