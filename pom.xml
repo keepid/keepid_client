@@ -240,5 +240,15 @@
             <version>4.5.7</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.crypto.tink</groupId>
+            <artifactId>tink</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.crypto.tink</groupId>
+            <artifactId>tink-gcpkms</artifactId>
+            <version>1.4.0</version>
+        </dependency>
     </dependencies>
 </project>
