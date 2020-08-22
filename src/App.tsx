@@ -63,7 +63,6 @@ function InviteSignupJWT() {
   try {
     const decoded = jwtDecode(jwt);
     const currentTime = Date.now() / 1000;
-    console.log(decoded);
     if (decoded.exp > currentTime) {
       return <InviteSignupFlow orgName={decoded.organization} role={decoded.role} />;
     }
