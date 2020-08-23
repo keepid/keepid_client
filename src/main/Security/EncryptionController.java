@@ -4,6 +4,7 @@ import Logger.LogFactory;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.JsonKeysetReader;
 import com.google.crypto.tink.KeysetHandle;
+import com.google.crypto.tink.config.TinkConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
@@ -33,13 +35,16 @@ public class EncryptionController {
   public EncryptionController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
-    logger = l.createLogger("OrgController");
+    logger = l.createLogger("EncryptionController");
   }
 
   public Aead generateAead() throws GeneralSecurityException, IOException {
+    TinkConfig.register();
     logger.info("Generating Aead");
+
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
     Document keyDocument = keyHandles.find(eq("keyType", "encryption")).first();
+
     keyDocument.remove("_id");
     keyDocument.remove("keyType");
 
@@ -49,6 +54,7 @@ public class EncryptionController {
         KeysetHandle.read(
             JsonKeysetReader.withJsonObject(keyJson),
             new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
+
     logger.info("KeysetHandle Successfully Generated");
 
     Aead aead = keysetHandle.getPrimitive(Aead.class);
@@ -56,40 +62,41 @@ public class EncryptionController {
     return aead;
   }
 
-  public byte[] getEncrypted(byte[] data, byte[] aad) {
+  public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException, IOException {
     logger.info("Attempting to encrypt");
     try {
       Aead aead = generateAead();
       byte[] ciphertext = aead.encrypt(data, aad);
+
       logger.info("Encryption done");
       return ciphertext;
 
     } catch (GeneralSecurityException | IOException e) {
       logger.error("General Security Exception thrown, encrpytion unsuccessful");
-      return new byte[0];
+      throw e;
     }
   }
 
-  public byte[] getDecrypted(byte[] ciphertext, byte[] aad) {
+  public byte[] getDecrypted(byte[] ciphertext, byte[] aad)
+      throws GeneralSecurityException, IOException {
     logger.info("Attempting to decrypt");
 
-    if (ciphertext == new byte[0]) {
-      logger.error("Invalid ciphertext, check encryption");
-      return new byte[0];
-    }
     try {
       Aead aead = generateAead();
       byte[] decrypted = aead.decrypt(ciphertext, aad);
+
       logger.info("Decryption Done");
       return decrypted;
     } catch (GeneralSecurityException | IOException e) {
       logger.error("Decryption Unsuccessful, double check aead");
-      return new byte[0];
+      throw e;
     }
   }
 
-  public byte[] encryptString(String inputString, String username) {
+  public byte[] encryptString(String inputString, String username)
+      throws GeneralSecurityException, IOException {
     logger.info("Encrypting " + inputString);
+
     byte[] stringBytes = inputString.getBytes();
     byte[] aad = username.getBytes();
 
@@ -97,8 +104,9 @@ public class EncryptionController {
     return encryptedString;
   }
 
-  public byte[] encryptFile(File file, String username) {
-    logger.info("Encrypting file " + file.toString());
+  public byte[] encryptFile(File file, String username)
+      throws IOException, GeneralSecurityException {
+    logger.info("Encrypting file " + file.getName());
     try {
       InputStream fileStream = new FileInputStream(file);
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
@@ -107,20 +115,25 @@ public class EncryptionController {
       byte[] encryptedFile = getEncrypted(fileBytes, aad);
       return encryptedFile;
 
-    } catch (IOException e) {
+    } catch (IOException | GeneralSecurityException e) {
       logger.error("Could not find file, or could not turn file into Byte Array");
-      return new byte[0];
+      throw e;
     }
   }
 
-  public String decryptString(byte[] encryptedString, String username) {
+  public String decryptString(byte[] encryptedString, String username)
+      throws GeneralSecurityException, IOException {
     logger.info("Decrypting String");
+
     byte[] aad = username.getBytes();
     byte[] decryptedString = getDecrypted(encryptedString, aad);
-    return decryptedString.toString();
+
+    String result = new String(decryptedString, StandardCharsets.UTF_8);
+    return result;
   }
 
-  public byte[] decryptFile(byte[] encryptedFile, String username) {
+  public byte[] decryptFile(byte[] encryptedFile, String username)
+      throws GeneralSecurityException, IOException {
     logger.info("Decrypting File");
     byte[] aad = username.getBytes();
 
