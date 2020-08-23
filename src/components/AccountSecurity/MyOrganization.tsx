@@ -22,7 +22,8 @@ interface State {
  memberArr: any,
  id:any,
  showPopUp: boolean,
- numInvitesSent: any
+ numInvitesSent: any,
+ numInEditMode: any,
 }
 
 class MyOrganization extends Component<Props, State> {
@@ -40,15 +41,12 @@ class MyOrganization extends Component<Props, State> {
       id: 0,
       showPopUp: false,
       numInvitesSent: 0,
+      numInEditMode: 0,
     };
     this.editButtonToggle = this.editButtonToggle.bind(this);
-    this.changeEditMode = this.changeEditMode.bind(this);
     this.getEmailCell = this.getEmailCell.bind(this);
-    this.handleChangeEmail = this.handleChangeEmail.bind(this);
     this.getNameCell = this.getNameCell.bind(this);
-    this.handleChangeName = this.handleChangeName.bind(this);
     this.getRoleDropDown = this.getRoleDropDown.bind(this);
-    this.handleChangeRole = this.handleChangeRole.bind(this);
     this.saveEdits = this.saveEdits.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.deleteMember = this.deleteMember.bind(this);
@@ -127,47 +125,11 @@ saveEdits(id) {
   this.setState((prevState) => {
     const members = prevState.memberArr.slice();
     members[index] = member;
-    return { memberArr: members };
-  });
-}
-
-changeEditMode(id) {
-  const index = this.state.memberArr.findIndex((member) => member.id === id);
-  const member = { ...this.state.memberArr[index] };
-  member.editMode = !member.editMode;
-
-  this.setState((prevState) => {
-    const members = prevState.memberArr.slice();
-    members[index] = member;
     return {
       memberArr: members,
-      editedPersonEmail: member.email,
-      editedPersonName: member.name,
-      editedPersonRole: member.role,
+      numInEditMode: prevState.numInEditMode - 1,
     };
   });
-}
-
-handleChangeEmail(event:any) {
-  this.setState({
-    editedPersonEmail: event.target.value,
-  });
-}
-
-handleChangeName(event:any) {
-  this.setState({
-    editedPersonName: event.target.value,
-  });
-}
-
-handleChangeRole(event:any) {
-  this.setState({
-    personRole: event.target.value,
-  });
-}
-
-updateMemberValuesForEditing(member) {
-  this.setState({ editedPersonEmail: member.email });
 }
 
 editButtonToggle = (id) => {
@@ -190,7 +152,26 @@ editButtonToggle = (id) => {
   }
 
   return (
-    <button type="button" className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent" onClick={() => this.changeEditMode(id)}>Edit</button>
+    <button
+      type="button"
+      className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent"
+      onClick={() => {
+        console.log(this.state.numInEditMode);
+        if (this.state.numInEditMode === 0) {
+          member.editMode = !member.editMode;
+          members[index] = member;
+          this.setState((prevState) => ({
+            numInEditMode: prevState.numInEditMode + 1,
+            memberArr: members,
+            editedPersonEmail: member.email,
+            editedPersonName: member.name,
+            editedPersonRole: member.role,
+          }));
+        }
+      }}
+    >
+      Edit
+    </button>
   );
 }
 
@@ -200,7 +181,7 @@ getNameCell(member) {
       <input
         className="form-purple form-control input-sm"
         type="text"
-        onChange={this.handleChangeName}
+        onChange={(e) => this.setState({ editedPersonName: e.target.value })}
         value={this.state.editedPersonName}
       />
     );
@@ -218,7 +199,7 @@ getEmailCell = (member) => {
         className="form-purple form-control input-sm"
         type="text"
         value={this.state.editedPersonEmail}
-        onChange={this.handleChangeEmail}
+        onChange={(e) => this.setState({ editedPersonEmail: e.target.value })}
       />
     );
   }
@@ -269,7 +250,7 @@ renderPopUp() {
 
 saveMembersBackend() {
   const members = Object.assign([], this.state.memberArr);
-  let x;
+  // let x;
   Object.keys(members).forEach((key) => {
     const { name } = members[key];
     const firstname = name.substr(0, name.indexOf(' '));
