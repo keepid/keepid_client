@@ -38,6 +38,7 @@ public class EncryptionController {
     logger = l.createLogger("EncryptionController");
   }
 
+  // Generates an AEAD Object through Google Tink for encryption and decryption
   public Aead generateAead() throws GeneralSecurityException, IOException {
     TinkConfig.register();
     logger.info("Generating Aead");
