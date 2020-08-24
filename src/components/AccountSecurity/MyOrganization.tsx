@@ -22,6 +22,7 @@ interface State {
  showPopUp: boolean,
  numInvitesSent: any,
  numInEditMode: any,
+ buttonLoadingState: boolean,
 }
 
 class MyOrganization extends Component<Props, State> {
@@ -39,19 +40,20 @@ class MyOrganization extends Component<Props, State> {
       showPopUp: false,
       numInvitesSent: 0,
       numInEditMode: 0,
+      buttonLoadingState: false,
     };
     this.editButtonToggle = this.editButtonToggle.bind(this);
     this.getEmailCell = this.getEmailCell.bind(this);
     this.getNameCell = this.getNameCell.bind(this);
     this.getRoleDropDown = this.getRoleDropDown.bind(this);
     this.saveEdits = this.saveEdits.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    this.addMember = this.addMember.bind(this);
     this.deleteMember = this.deleteMember.bind(this);
-    this.renderPopUp = this.renderPopUp.bind(this);
+    this.renderSuccessPopUp = this.renderSuccessPopUp.bind(this);
     this.saveMembersBackend = this.saveMembersBackend.bind(this);
   }
 
-  onSubmit(e) {
+  addMember(e) {
     if (this.state.personName !== '' && this.state.personEmail !== '' && this.state.personRole !== '') {
       const {
         personName,
@@ -103,10 +105,10 @@ class MyOrganization extends Component<Props, State> {
     return row;
   }
 
-deleteMember=(i) => {
+deleteMember = (userIndex: number):void => {
   this.setState((prevState) => {
     const members = prevState.memberArr.slice();
-    members.splice(i, 1);
+    members.splice(userIndex, 1);
     return { memberArr: members };
   });
 }
@@ -222,7 +224,7 @@ getRoleDropDown = (member) => {
   );
 }
 
-renderPopUp() {
+renderSuccessPopUp() {
   return (
     <div>
       <Alert variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
@@ -253,7 +255,7 @@ saveMembersBackend(e) {
   } catch (error) {
     console.log(error);
   }
-
+  this.setState({ buttonLoadingState: true });
   fetch(`${getServerURL()}/invite-user`, {
     method: 'POST',
     body: JSON.stringify({
@@ -270,19 +272,22 @@ saveMembersBackend(e) {
           showPopUp: true,
           numInvitesSent: prevState.memberArr.length,
           memberArr: [],
+          buttonLoadingState: false,
         }));
       } else if (status === 'EMPTY_FIELD') {
         this.props.alert.show('Missing field. Make sure to include first name, last name, email, AND role)');
+        this.setState({ buttonLoadingState: false });
       }
     }).catch((error) => {
       this.props.alert.show('Network Failure: Check Server Connection.');
+      this.setState({ buttonLoadingState: false });
     });
 }
 
 render() {
   return (
     <div className="container">
-      {this.state.showPopUp === true && this.renderPopUp()}
+      {this.state.showPopUp === true && this.renderSuccessPopUp()}
       <p className="font-weight-bold brand-text text-dark mb-2">Invite New Team Members</p>
       <form>
         <div className="form-row">
@@ -316,7 +321,7 @@ render() {
             </select>
           </div>
           <div className="col-xs mt-4">
-            <button className="btn btn-primary mt-1" type="submit" onClick={(e) => this.onSubmit(e)}>Add Member</button>
+            <button className="btn btn-primary mt-1" type="submit" onClick={(e) => this.addMember(e)}>Add Member</button>
           </div>
         </div>
       </form>
@@ -335,7 +340,7 @@ render() {
           <tbody className="table-striped">{this.renderTableContents()}</tbody>
         </table>
       </div>
-      <button type="button" className="btn btn-primary mt-1 float-right" onClick={(e) => this.saveMembersBackend(e)}>Send Invites</button>
+      <button type="button" className="btn btn-primary mt-1 float-right" onClick={(e) => this.saveMembersBackend(e)}>{this.state.buttonLoadingState ? <div className="ld ld-ring ld-spin" /> : <div>Send Invites</div>}</button>
     </div>
   );
 }
