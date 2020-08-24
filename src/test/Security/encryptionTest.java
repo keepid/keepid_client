@@ -7,9 +7,7 @@ import com.mongodb.client.MongoDatabase;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 
@@ -53,7 +51,6 @@ public class encryptionTest {
                 + "resources"
                 + File.separator
                 + "Application_for_a_Birth_Certificate.pdf");
-    InputStream fileStream = new FileInputStream(file);
 
     byte[] encryptedFile = encryptionController.encryptFile(file, username);
     byte[] decryptedFile = encryptionController.decryptFile(encryptedFile, username);

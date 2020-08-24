@@ -42,13 +42,16 @@ public class EncryptionController {
     TinkConfig.register();
     logger.info("Generating Aead");
 
+    logger.info("Generating Credentials");
+    GoogleCredentials.generateCredentials();
+
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
     Document keyDocument = keyHandles.find(eq("keyType", "encryption")).first();
 
     keyDocument.remove("_id");
     keyDocument.remove("keyType");
 
-    JSONObject keyJson = new JSONObject(keyDocument.toJson());
+    JSONObject keyJson = new JSONObject(keyDocument);
 
     KeysetHandle keysetHandle =
         KeysetHandle.read(
@@ -56,6 +59,8 @@ public class EncryptionController {
             new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
 
     logger.info("KeysetHandle Successfully Generated");
+    logger.info("Deleting Credential File");
+    GoogleCredentials.deleteCredentials();
 
     Aead aead = keysetHandle.getPrimitive(Aead.class);
 
