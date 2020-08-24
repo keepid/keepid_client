@@ -62,9 +62,7 @@ public class EncryptionController {
     logger.info("Deleting Credential File");
     GoogleCredentials.deleteCredentials();
 
-    Aead aead = keysetHandle.getPrimitive(Aead.class);
-
-    return aead;
+    return keysetHandle.getPrimitive(Aead.class);
   }
 
   public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException, IOException {
@@ -105,8 +103,7 @@ public class EncryptionController {
     byte[] stringBytes = inputString.getBytes();
     byte[] aad = username.getBytes();
 
-    byte[] encryptedString = getEncrypted(stringBytes, aad);
-    return encryptedString;
+    return getEncrypted(stringBytes, aad);
   }
 
   public byte[] encryptFile(File file, String username)
@@ -117,8 +114,7 @@ public class EncryptionController {
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
       byte[] aad = username.getBytes();
 
-      byte[] encryptedFile = getEncrypted(fileBytes, aad);
-      return encryptedFile;
+      return getEncrypted(fileBytes, aad);
 
     } catch (IOException | GeneralSecurityException e) {
       logger.error("Could not find file, or could not turn file into Byte Array");
@@ -133,8 +129,7 @@ public class EncryptionController {
     byte[] aad = username.getBytes();
     byte[] decryptedString = getDecrypted(encryptedString, aad);
 
-    String result = new String(decryptedString, StandardCharsets.UTF_8);
-    return result;
+    return new String(decryptedString, StandardCharsets.UTF_8);
   }
 
   public byte[] decryptFile(byte[] encryptedFile, String username)
@@ -142,7 +137,6 @@ public class EncryptionController {
     logger.info("Decrypting File");
     byte[] aad = username.getBytes();
 
-    byte[] decryptedFile = getDecrypted(encryptedFile, aad);
-    return decryptedFile;
+    return getDecrypted(encryptedFile, aad);
   }
 }
