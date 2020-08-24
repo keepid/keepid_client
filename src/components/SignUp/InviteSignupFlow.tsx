@@ -16,7 +16,6 @@ import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
 
 const { Step } = Steps;
-const birthDatePattern = /\d\d[-]\d\d[-]\d\d\d\d/;
 
 interface Props {
   alert: any,
@@ -170,9 +169,6 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     const personBirthDay = birthDate.getDate();
     const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    if (!birthDatePattern.test(personBirthDateFormatted)) {
-      return ('00-00-0000');
-    }
     return personBirthDateFormatted;
   }
 
