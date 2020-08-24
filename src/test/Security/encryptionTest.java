@@ -7,7 +7,9 @@ import com.mongodb.client.MongoDatabase;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 
@@ -22,15 +24,15 @@ public class encryptionTest {
 
   @Test
   public void encryptDecryptStringTest() throws GeneralSecurityException, IOException {
-    String string1 = "Hello World";
-    String username = "avwu";
+    String string1 = "Hello World 12345 9908";
+    String username = "username";
 
-    byte[] encrypted = encryptionController.encryptString(string1, username);
+    String encrypted = encryptionController.encryptString(string1, username);
 
     String decrypted = encryptionController.decryptString(encrypted, username);
 
     System.out.println("Encrypting: " + string1);
-    System.out.println("Encrypted Result: " + encrypted.toString());
+    System.out.println("Encrypted Result: " + encrypted);
     System.out.println("Decrypted Result: " + decrypted);
 
     assertEquals(string1, decrypted);
@@ -38,7 +40,7 @@ public class encryptionTest {
 
   @Test
   public void encryptDecryptFileTest() throws IOException, GeneralSecurityException {
-    String username = "avwu";
+    String username = "username";
 
     File file =
         new File(
@@ -52,8 +54,10 @@ public class encryptionTest {
                 + File.separator
                 + "Application_for_a_Birth_Certificate.pdf");
 
-    byte[] encryptedFile = encryptionController.encryptFile(file, username);
-    byte[] decryptedFile = encryptionController.decryptFile(encryptedFile, username);
+    InputStream fileStream = new FileInputStream(file);
+
+    InputStream encryptedFile = encryptionController.encryptFile(fileStream, username);
+    InputStream decryptedFile = encryptionController.decryptFile(encryptedFile, username);
 
     File returnFile =
         new File(
@@ -67,7 +71,7 @@ public class encryptionTest {
                 + File.separator
                 + "TESTRETURNBIRTHCERT.pdf");
 
-    Files.write(decryptedFile, returnFile);
+    Files.write(decryptedFile.readAllBytes(), returnFile);
 
     boolean isEqualTo = Files.equal(returnFile, file);
     assertEquals(isEqualTo, true);

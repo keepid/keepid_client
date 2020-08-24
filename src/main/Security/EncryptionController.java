@@ -13,8 +13,7 @@ import org.bson.Document;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -97,25 +96,40 @@ public class EncryptionController {
     }
   }
 
-  public byte[] encryptString(String inputString, String username)
+  public String encryptString(String inputString, String username)
       throws GeneralSecurityException, IOException {
     logger.info("Encrypting " + inputString);
 
-    byte[] stringBytes = inputString.getBytes();
+    byte[] stringBytes = inputString.getBytes(StandardCharsets.ISO_8859_1);
     byte[] aad = username.getBytes();
 
-    return getEncrypted(stringBytes, aad);
+    return new String(getEncrypted(stringBytes, aad), StandardCharsets.ISO_8859_1);
   }
 
-  public byte[] encryptFile(File file, String username)
+  public String decryptString(String encryptedString, String username)
+      throws GeneralSecurityException, IOException {
+    logger.info("Decrypting String");
+    System.out.println(encryptedString);
+
+    byte[] aad = username.getBytes();
+    byte[] encryptedBytes = encryptedString.getBytes(StandardCharsets.ISO_8859_1);
+
+    byte[] decryptedString = getDecrypted(encryptedBytes, aad);
+
+    return new String(decryptedString, StandardCharsets.ISO_8859_1);
+  }
+
+  public InputStream encryptFile(InputStream fileStream, String username)
       throws IOException, GeneralSecurityException {
-    logger.info("Encrypting file " + file.getName());
+    logger.info("Encrypting file");
     try {
-      InputStream fileStream = new FileInputStream(file);
+      // InputStream fileStream = new FileInputStream(file);
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
       byte[] aad = username.getBytes();
 
-      return getEncrypted(fileBytes, aad);
+      InputStream encryptedStream = new ByteArrayInputStream(getEncrypted(fileBytes, aad));
+
+      return encryptedStream;
 
     } catch (IOException | GeneralSecurityException e) {
       logger.error("Could not find file, or could not turn file into Byte Array");
@@ -123,21 +137,14 @@ public class EncryptionController {
     }
   }
 
-  public String decryptString(byte[] encryptedString, String username)
-      throws GeneralSecurityException, IOException {
-    logger.info("Decrypting String");
-
-    byte[] aad = username.getBytes();
-    byte[] decryptedString = getDecrypted(encryptedString, aad);
-
-    return new String(decryptedString, StandardCharsets.UTF_8);
-  }
-
-  public byte[] decryptFile(byte[] encryptedFile, String username)
+  public InputStream decryptFile(InputStream encryptedFile, String username)
       throws GeneralSecurityException, IOException {
     logger.info("Decrypting File");
     byte[] aad = username.getBytes();
+    byte[] encryptedBytes = encryptedFile.readAllBytes();
 
-    return getDecrypted(encryptedFile, aad);
+    InputStream decryptedFileStream = new ByteArrayInputStream(getDecrypted(encryptedBytes, aad));
+
+    return decryptedFileStream;
   }
 }
