@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-// import './static/styles/App.scss';
 import Alert from 'react-bootstrap/Alert';
 import { withAlert } from 'react-alert';
 import CheckSVG from '../../static/images/check.svg';
@@ -20,7 +19,6 @@ interface State {
  editedPersonName: string,
  editedPersonRole: any,
  memberArr: any,
- id:any,
  showPopUp: boolean,
  numInvitesSent: any,
  numInEditMode: any,
@@ -38,7 +36,6 @@ class MyOrganization extends Component<Props, State> {
       editedPersonName: '',
       editedPersonRole: '',
       memberArr: [],
-      id: 0,
       showPopUp: false,
       numInvitesSent: 0,
       numInEditMode: 0,
@@ -50,21 +47,22 @@ class MyOrganization extends Component<Props, State> {
     this.saveEdits = this.saveEdits.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.deleteMember = this.deleteMember.bind(this);
-    this.handleSendInvites = this.handleSendInvites.bind(this);
     this.renderPopUp = this.renderPopUp.bind(this);
     this.saveMembersBackend = this.saveMembersBackend.bind(this);
   }
 
   onSubmit(e) {
-    this.setState((prevState) => ({ id: prevState.id + 1 }));
-
     if (this.state.personName !== '' && this.state.personEmail !== '' && this.state.personRole !== '') {
+      const {
+        personName,
+        personEmail,
+        personRole,
+        isInEditMode,
+      } = this.state;
+
+      const dateID = Date.now();
       const newMember = {
-        name: this.state.personName,
-        email: this.state.personEmail,
-        role: this.state.personRole,
-        editMode: this.state.isInEditMode,
-        id: Date.now(),
+        name: personName, email: personEmail, role: personRole, isInEditMode, dateID,
       };
 
       this.setState((prevState) => ({
@@ -80,21 +78,19 @@ class MyOrganization extends Component<Props, State> {
   }
 
   renderTableContents() {
-    if (this.state.memberArr < 1) {
+    if (!this.state.memberArr.length) {
       return (
-
         <tr>
           <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
         </tr>
-
       );
     }
     const row = this.state.memberArr.map((member, i) => (
 
-      <tr key={member.id}>
+      <tr key={member.dateID}>
         <td>{this.getNameCell(member)}</td>
         <td>{this.getEmailCell(member)}</td>
-        <td>{this.editButtonToggle(member.id)}</td>
+        <td>{this.editButtonToggle(member.dateID)}</td>
         <td>{this.getRoleDropDown(member)}</td>
         <td>
           <button type="button" className="close float-left" aria-label="Close" onClick={() => this.deleteMember(i)}>
@@ -115,13 +111,18 @@ deleteMember=(i) => {
   });
 }
 
-saveEdits(id) {
-  const index = this.state.memberArr.findIndex((member) => member.id === id);
+saveEdits(dateID) {
+  const index = this.state.memberArr.findIndex((member) => member.dateID === dateID);
   const member = { ...this.state.memberArr[index] };
-  member.email = this.state.editedPersonEmail;
-  member.name = this.state.editedPersonName;
-  member.role = this.state.editedPersonRole;
-  member.editMode = !member.editMode;
+  const {
+    editedPersonEmail,
+    editedPersonName,
+    editedPersonRole,
+  } = this.state;
+  member.email = editedPersonEmail;
+  member.name = editedPersonName;
+  member.role = editedPersonRole;
+  member.isInEditMode = !member.isInEditMode;
   this.setState((prevState) => {
     const members = prevState.memberArr.slice();
     members[index] = member;
@@ -132,14 +133,14 @@ saveEdits(id) {
   });
 }
 
-editButtonToggle = (id) => {
-  const index = this.state.memberArr.findIndex((member) => member.id === id);
+editButtonToggle = (dateID) => {
+  const index = this.state.memberArr.findIndex((member) => member.dateID === dateID);
   const member = { ...this.state.memberArr[index] };
   const members = Object.assign([], this.state.memberArr);
 
-  if (member.editMode) {
+  if (member.isInEditMode) {
     return (
-      <button type="button" className="btn btn-sm m-0 p-1 btn-outline-*" onClick={() => this.saveEdits(id)}>
+      <button type="button" className="btn btn-sm m-0 p-1 btn-outline-*" onClick={() => this.saveEdits(dateID)}>
         <img
           alt="search"
           src={CheckSVG}
@@ -156,9 +157,8 @@ editButtonToggle = (id) => {
       type="button"
       className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent"
       onClick={() => {
-        console.log(this.state.numInEditMode);
         if (this.state.numInEditMode === 0) {
-          member.editMode = !member.editMode;
+          member.isInEditMode = !member.isInEditMode;
           members[index] = member;
           this.setState((prevState) => ({
             numInEditMode: prevState.numInEditMode + 1,
@@ -175,25 +175,24 @@ editButtonToggle = (id) => {
   );
 }
 
-getNameCell(member) {
-  if (member.editMode) {
+getNameCell = (member) => {
+  if (member.isInEditMode) {
     return (
       <input
         className="form-purple form-control input-sm"
         type="text"
-        onChange={(e) => this.setState({ editedPersonName: e.target.value })}
         value={this.state.editedPersonName}
+        onChange={(e) => this.setState({ editedPersonName: e.target.value })}
       />
     );
   }
-
   return (
     <div>{member.name}</div>
   );
 }
 
 getEmailCell = (member) => {
-  if (member.editMode) {
+  if (member.isInEditMode) {
     return (
       <input
         className="form-purple form-control input-sm"
@@ -207,7 +206,7 @@ getEmailCell = (member) => {
 }
 
 getRoleDropDown = (member) => {
-  if (member.editMode) {
+  if (member.isInEditMode) {
     return (
       <div>
         <select placeholder="Role" id="role2" className="form-control form-purple" value={this.state.editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
@@ -218,18 +217,9 @@ getRoleDropDown = (member) => {
       </div>
     );
   }
-
   return (
     <div>{member.role}</div>
   );
-}
-
-handleSendInvites() {
-  this.saveMembersBackend();
-  this.setState((prevState) => ({
-    numInvitesSent: prevState.memberArr.length,
-    memberArr: [],
-  }));
 }
 
 renderPopUp() {
@@ -248,19 +238,22 @@ renderPopUp() {
   );
 }
 
-saveMembersBackend() {
+saveMembersBackend(e) {
+  e.preventDefault();
   const members = Object.assign([], this.state.memberArr);
-  // let x;
-  Object.keys(members).forEach((key) => {
-    const { name } = members[key];
-    const firstname = name.substr(0, name.indexOf(' '));
-    const lastname = name.substr(name.indexOf(' ') + 1);
-    members[key].firstName = firstname;
-    members[key].lastName = lastname;
-    delete members[key].id;
-    delete members[key].editMode;
-    delete members[key].name;
-  });
+  try {
+    Object.keys(members).forEach((key) => {
+      const fullName = members[key].name;
+      const firstname = fullName.substr(0, fullName.indexOf(' '));
+      let lastname = fullName.substr(fullName.indexOf(' ') + 1);
+      lastname = lastname.trim();
+      members[key].firstName = firstname;
+      members[key].lastName = lastname;
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
   fetch(`${getServerURL()}/invite-user`, {
     method: 'POST',
     body: JSON.stringify({
@@ -273,7 +266,11 @@ saveMembersBackend() {
       const responseObject = JSON.parse(responseJSON);
       const { status } = responseObject;
       if (status === 'SUCCESS') {
-        this.setState({ showPopUp: true });
+        this.setState((prevState) => ({
+          showPopUp: true,
+          numInvitesSent: prevState.memberArr.length,
+          memberArr: [],
+        }));
       } else if (status === 'EMPTY_FIELD') {
         this.props.alert.show('Missing field. Make sure to include first name, last name, email, AND role)');
       }
@@ -338,7 +335,7 @@ render() {
           <tbody className="table-striped">{this.renderTableContents()}</tbody>
         </table>
       </div>
-      <button type="button" className="btn btn-primary mt-1 float-right" onClick={this.handleSendInvites}>Send Invites</button>
+      <button type="button" className="btn btn-primary mt-1 float-right" onClick={(e) => this.saveMembersBackend(e)}>Send Invites</button>
     </div>
   );
 }

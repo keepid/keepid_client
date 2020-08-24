@@ -16,6 +16,7 @@ import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
 
 const { Step } = Steps;
+const birthDatePattern = /\d\d[-]\d\d[-]\d\d\d\d/;
 
 interface Props {
   alert: any,
@@ -122,7 +123,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     } = this.state;
     const personRole = this.props.role;
     const { orgName } = this.props;
-    const birthDateString = this.birthDateStringConverter(birthDate);
+    const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
     // submit user information
 
     fetch(`${getServerURL()}/create-user`, {
@@ -163,25 +164,45 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  birthDateStringConverter = (birthDate: Date) => {
+  static birthDateStringConverter = (birthDate: Date) => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
     const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    if (!birthDatePattern.test(personBirthDateFormatted)) {
+      return ('00-00-0000');
+    }
     return personBirthDateFormatted;
   }
 
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
+    const {
+      username,
+      password,
+      confirmPassword,
+      firstname,
+      lastname,
+      birthDate,
+      address,
+      city,
+      state,
+      zipcode,
+      phonenumber,
+      email,
+      hasSigned,
+      buttonState,
+    } = this.state;
+
     switch (this.state.signupStage) {
       case 0: {
         return (
           <AccountSetup
-            username={this.state.username}
-            password={this.state.password}
-            confirmPassword={this.state.confirmPassword}
+            username={username}
+            password={password}
+            confirmPassword={confirmPassword}
             onChangeUsername={this.handleChangeUsername}
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
@@ -193,15 +214,15 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       case 1: {
         return (
           <PersonalInformation
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
             onChangeFirstname={this.handleChangeFirstname}
             onChangeLastname={this.handleChangeLastname}
             onChangeBirthDate={this.handleChangeBirthdate}
@@ -219,7 +240,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       case 2: {
         return (
           <SignUserAgreement
-            hasSigned={this.state.hasSigned}
+            hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
@@ -229,21 +250,21 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       case 3: {
         return (
           <ReviewSubmitInviteSignupVersion
-            username={this.state.username}
-            password={this.state.password}
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
+            username={username}
+            password={password}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
             handleSubmit={this.handleFormSubmit}
             handlePrevious={this.handlePrevious}
             handleFormJumpTo={this.handleFormJumpTo}
-            buttonState={this.state.buttonState}
+            buttonState={buttonState}
             handleChangeRecaptcha={this.handleChangeRecaptcha}
           />
         );
@@ -290,4 +311,5 @@ class InviteSignupFlow extends Component<Props, State, {}> {
   }
 }
 
+export const { birthDateStringConverter } = InviteSignupFlow;
 export default withAlert()(InviteSignupFlow);
