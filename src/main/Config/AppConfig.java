@@ -62,6 +62,7 @@ public class AppConfig {
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
+    app.post("/get-login-history", userController.getLogInHistory);
 
     /* -------------- AUTHORIZATION  ----------------------- */
     app.post("/modify-permissions", userController.modifyPermissions);
@@ -127,7 +128,9 @@ public class AppConfig {
               config.defaultContentType =
                   "text/plain"; // content type to use if no content type is set (default is
               // "text/plain")
-              //              config.enableCorsForAllOrigins(); // enable cors for all origins
+
+              config.enableCorsForAllOrigins(); // enable cors for all origins
+
               //              config.enableDevLogging(); // enable extensive development logging for
               // http and
               // websocket
