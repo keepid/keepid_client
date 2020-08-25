@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class User {
@@ -66,6 +67,9 @@ public class User {
 
   @BsonProperty(value = "creationDate")
   private Date creationDate;
+
+  @BsonProperty(value = "logInHistory")
+  private List<IpObject> logInHistory;
 
   public User() {}
 
@@ -209,6 +213,10 @@ public class User {
     return this.creationDate;
   }
 
+  public List<IpObject> getLogInHistory() {
+    return this.logInHistory;
+  }
+
   /** **************** SETTERS ********************* */
   public User setFirstName(String firstName) {
     this.firstName = firstName;
@@ -292,6 +300,11 @@ public class User {
 
   public User setCanRegister(boolean canRegister) {
     this.canRegister = canRegister;
+    return this;
+  }
+
+  public User setLogInHistory(List<IpObject> logInHistory) {
+    this.logInHistory = logInHistory;
     return this;
   }
 
