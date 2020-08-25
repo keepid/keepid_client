@@ -53,7 +53,7 @@ public class UserController {
       String username = req.getString("username");
       String password = req.getString("password");
       String ip = ctx.ip();
-      logger.info("Attempting to login" + username);
+      logger.info("Attempting to login " + username);
 
       res.put("userRole", "");
       res.put("organization", "");
