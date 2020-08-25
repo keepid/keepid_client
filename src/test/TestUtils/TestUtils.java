@@ -31,6 +31,7 @@ import org.json.simple.parser.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Date;
@@ -715,6 +716,31 @@ public class TestUtils {
     HttpResponse<String> logoutResponse = Unirest.get(SERVER_TEST_URL + "/logout").asString();
     JSONObject logoutResponseJSON = TestUtils.responseStringToJSON(logoutResponse.getBody());
     assertThat(logoutResponseJSON.getString("status")).isEqualTo("SUCCESS");
+  }
+
+  public static void uploadFile(String username, String password, String filename) {
+    login(username, password);
+    String filePath =
+        Paths.get("").toAbsolutePath().toString()
+            + File.separator
+            + "src"
+            + File.separator
+            + "test"
+            + File.separator
+            + "resources"
+            + File.separator
+            + filename;
+
+    File file = new File(filePath);
+    HttpResponse<String> uploadResponse =
+        Unirest.post(getServerUrl() + "/upload")
+            .field("pdfType", "FORM")
+            .header("Content-Disposition", "attachment")
+            .field("file", file)
+            .asString();
+    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+    assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    logout();
   }
 
   public static JSONObject responseStringToJSON(String response) {
