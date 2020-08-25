@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@mikecousins/react-pdf": "^5.5.1",
+    "@nivo/bar": "^0.62.0",
     "@nivo/line": "^0.62.0",
     "@nivo/pie": "^0.62.0",
     "@pdftron/pdfnet-node": "^7.1.1-1",

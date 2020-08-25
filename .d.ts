@@ -23,3 +23,4 @@ declare module 'react-select';
 declare module 'react-select/animated';
 declare module '@nivo/line';
 declare module '@nivo/pie';
+declare module '@nivo/bar';

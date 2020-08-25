@@ -172,6 +172,7 @@ class App extends React.Component<{}, State, {}> {
             <Helmet>
               <title>Keep.id</title>
               <meta name="description" content="Securely Combating Homelessness" />
+              <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/8293567.js" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
 
