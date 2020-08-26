@@ -163,7 +163,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  static birthDateStringConverter = (birthDate: Date) => {
+  static birthDateStringConverter = (birthDate: Date):string => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
