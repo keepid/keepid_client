@@ -300,7 +300,7 @@ public class PdfController {
       // form with no fields
       return;
     }
-    List<PDField> fields = acroForm.getFields();
+    List<PDField> fields = new LinkedList<>();
     fields.addAll(acroForm.getFields());
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);
@@ -488,7 +488,8 @@ public class PdfController {
   public static JSONObject getFieldValues(PDDocument pdfDocument) throws IOException {
     JSONObject fieldValues = new JSONObject();
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
-    List<PDField> fields = acroForm.getFields();
+    List<PDField> fields = new LinkedList<>();
+    fields.addAll(acroForm.getFields());
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);
       if (field instanceof PDNonTerminalField) {

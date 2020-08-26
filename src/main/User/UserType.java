@@ -4,7 +4,8 @@ public enum UserType {
   Director,
   Admin,
   Worker,
-  Client;
+  Client,
+  Developer;
 
   public static UserType userTypeFromString(String s) {
     s = s.toLowerCase();
@@ -17,6 +18,8 @@ public enum UserType {
         return Worker;
       case "client":
         return Client;
+      case "developer":
+        return Developer;
       default:
         return null;
     }

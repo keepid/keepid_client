@@ -33,7 +33,8 @@ public class PdfMongo {
         && (privilegeLevel == UserType.Client
             || privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Director
-            || privilegeLevel == UserType.Admin)) {
+            || privilegeLevel == UserType.Admin
+            || privilegeLevel == UserType.Developer)) {
       if ((pdfType == PDFType.FORM) && (fileID != null)) {
         return mongodbUploadAnnotatedForm(
             uploader, organizationName, filename, fileID, inputStream, pdfType, db);
@@ -77,7 +78,7 @@ public class PdfMongo {
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
       gridBucket.uploadFromStream(filename, inputStream, options);
-      }
+    }
   }
 
   private static JSONObject mongodbUploadAnnotatedForm(
