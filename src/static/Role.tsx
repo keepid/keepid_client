@@ -4,6 +4,7 @@ enum Role {
     Worker,
     Volunteer,
     Client,
+    Developer,
     LoggedOut,
 }
 

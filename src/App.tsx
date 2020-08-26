@@ -32,7 +32,6 @@ import LoginPage from './components/LoginPage';
 import ForgotPassword from './components/AccountSecurity/ForgotPassword';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import IdleTimeOutModal from './components/AccountSecurity/IdleTimeOutModal';
-import DeveloperLanding from './components/LandingPages/DeveloperLanding';
 import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
@@ -210,6 +209,9 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Client) {
                     return (<ClientLanding />);
                   }
+                  if (role === Role.Developer) {
+                    return (<DevPanel name={name} organization={organization} username={username} role={role} />);
+                  }
                   return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />;
                 }}
               />
@@ -319,15 +321,6 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (role === Role.Client) {
                     return <Email />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
-              <Route
-                path="/developer-landing"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <DeveloperLanding />;
                   }
                   return <Redirect to="/error" />;
                 }}

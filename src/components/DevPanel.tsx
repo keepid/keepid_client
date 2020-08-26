@@ -72,12 +72,7 @@ class DevPanel extends Component<Props, State, {}> {
 
     const formData = new FormData();
     formData.append('file', pdfFile, pdfFile.name);
-    if (this.props.userRole === Role.Client) {
-      formData.append('pdfType', PDFType.IDENTIFICATION);
-    }
-    if (this.props.userRole === Role.Director || this.props.userRole === Role.Admin) {
-      formData.append('pdfType', PDFType.FORM);
-    }
+    formData.append('pdfType', PDFType.FORM);
     formData.append('fileId', this.state.documents[rowIndex].id);
 
     fetch(`${getServerURL()}/upload`, {
@@ -212,22 +207,7 @@ class DevPanel extends Component<Props, State, {}> {
   }
 
   componentDidMount() {
-    fetch(`${getServerURL()}/get-documents `, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        pdfType: PDFType.FORM,
-        annotated: false,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          documents,
-        } = JSON.parse(responseJSON);
-        this.setState({
-          documents,
-        });
-      });
+    this.getDocuments();
   }
 
   onClickWorker(event: any) {
@@ -285,7 +265,22 @@ class DevPanel extends Component<Props, State, {}> {
       itemsPerPageSelected,
     } = this.state;
     const itemsPerPage = Number(itemsPerPageSelected.value);
-    // fetch call here to get all the current Documents to fill
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+        annotated: false,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = JSON.parse(responseJSON);
+        this.setState({
+          documents,
+        });
+      });
   }
 
   render() {
@@ -311,70 +306,61 @@ class DevPanel extends Component<Props, State, {}> {
     });
 
     return (
-      <Switch>
-        <Route exact path="/dev-panel">
-          <div className="container-fluid">
-            <Helmet>
-              <title>Developer Panel</title>
-              <meta name="description" content="Keep.id" />
-            </Helmet>
-            <div className="jumbotron jumbotron-fluid bg-white pb-0">
-              <div className="container">
-                <h1 className="display-4">My Un-Annotated Forms</h1>
-                <p className="lead">See all of your un-annotated forms. Check the category of each of your forms here (TBI).</p>
-              </div>
-            </div>
-            <div className="container">
-              <form className="form-inline my-2 my-lg-0">
-                <input
-                  className="form-control mr-sm-2 w-50"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  onChange={this.handleChangeSearchName}
-                />
-              </form>
-              <div className="row ml-1 mt-2 mb-2">
-                {numElements === 0 ? <div /> : tablePageSelector }
-                {numElements === 0 ? <div />
-                  : (
-                    <div className="w-25">
-                      <div className="card card-body mt-0 mb-4 border-0 p-0">
-                        <h5 className="card-text h6"># Items per page</h5>
-                        <Select
-                          options={listOptions}
-                          autoFocus
-                          closeMenuOnSelect={false}
-                          onChange={this.handleChangeItemsPerPage}
-                          value={itemsPerPageSelected}
-                        />
-                      </div>
-                    </div>
-                  )}
-              </div>
-              <div className="d-flex flex-row bd-highlight mb-3 pt-5">
-                <div className="w-100 pd-3">
-                  <BootstrapTable
-                    bootstrap4
-                    keyField="id"
-                    data={documents}
-                    hover
-                    striped
-                    noDataIndication="No Forms Present"
-                    columns={this.tableCols}
-                    pagination={paginationFactory()}
-                  />
+      <div className="container-fluid">
+        <Helmet>
+          <title>Developer Panel</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron jumbotron-fluid bg-white pb-0">
+          <div className="container">
+            <h1 className="display-4">My Un-Annotated Forms</h1>
+            <p className="lead">See all of your un-annotated forms. Check the category of each of your forms here (TBI).</p>
+          </div>
+        </div>
+        <div className="container">
+          <form className="form-inline my-2 my-lg-0">
+            <input
+              className="form-control mr-sm-2 w-50"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+              onChange={this.handleChangeSearchName}
+            />
+          </form>
+          <div className="row ml-1 mt-2 mb-2">
+            {numElements === 0 ? <div /> : tablePageSelector }
+            {numElements === 0 ? <div />
+              : (
+                <div className="w-25">
+                  <div className="card card-body mt-0 mb-4 border-0 p-0">
+                    <h5 className="card-text h6"># Items per page</h5>
+                    <Select
+                      options={listOptions}
+                      autoFocus
+                      closeMenuOnSelect={false}
+                      onChange={this.handleChangeItemsPerPage}
+                      value={itemsPerPageSelected}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+          </div>
+          <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+            <div className="w-100 pd-3">
+              <BootstrapTable
+                bootstrap4
+                keyField="id"
+                data={documents}
+                hover
+                striped
+                noDataIndication="No Forms Present"
+                columns={this.tableCols}
+                pagination={paginationFactory()}
+              />
             </div>
           </div>
-        </Route>
-        <Route path="/dev-panel/send">
-          {currentApplicationId && currentApplicationFilename
-            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
-            : <div />}
-        </Route>
-      </Switch>
+        </div>
+      </div>
     );
   }
 }
