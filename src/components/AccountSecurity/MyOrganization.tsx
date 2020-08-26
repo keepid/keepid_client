@@ -80,7 +80,7 @@ class MyOrganization extends Component<Props, State> {
   }
 
   renderTableContents() {
-    if (!this.state.memberArr.length) {
+    if (this.state.memberArr.length === 0) {
       return (
         <tr>
           <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
