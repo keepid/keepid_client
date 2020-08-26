@@ -1,5 +1,6 @@
 package User;
 
+import Bug.BugController;
 import Logger.LogFactory;
 import Security.EmailExceptions;
 import Security.EmailUtil;
@@ -11,14 +12,22 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
+import io.ipinfo.api.IPInfo;
+import io.ipinfo.api.errors.RateLimitedException;
+import io.ipinfo.api.model.IPResponse;
 import io.javalin.http.Handler;
+import kong.unirest.Unirest;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import static com.mongodb.client.model.Filters.*;
@@ -28,6 +37,7 @@ import static com.mongodb.client.model.Updates.set;
 public class UserController {
   Logger logger;
   MongoDatabase db;
+  BugController bugController = new BugController(db);
 
   public UserController(MongoDatabase db) {
     this.db = db;
@@ -42,7 +52,7 @@ public class UserController {
       JSONObject res = new JSONObject();
       String username = req.getString("username");
       String password = req.getString("password");
-
+      String ip = ctx.ip();
       logger.info("Attempting to login" + username);
 
       res.put("userRole", "");
@@ -146,6 +156,43 @@ public class UserController {
       res.put("firstName", user.getFirstName());
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
+      List<IpObject> loginList = user.getLogInHistory();
+      if (null == loginList) {
+        loginList = new ArrayList<IpObject>(1000);
+      }
+      if (loginList.size() >= 1000) {
+        loginList.remove(0);
+      }
+      logger.info("Trying to add login to login history");
+      IpObject thisLogin = new IpObject();
+      ZonedDateTime d = ZonedDateTime.now();
+      String formattedDate =
+          d.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
+      thisLogin.setDate(formattedDate);
+      thisLogin.setIp(ip);
+      Boolean isMobile = ctx.userAgent().contains("Mobi");
+      String device = isMobile ? "Mobile" : "Computer";
+      thisLogin.setDevice(device);
+      IPInfo ipInfo = IPInfo.builder().setToken(System.getenv("IPINFO_TOKEN")).build();
+      try {
+        IPResponse response = ipInfo.lookupIP(ip);
+        thisLogin.setLocation(
+            response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
+      } catch (RateLimitedException ex) {
+        logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
+        thisLogin.setLocation("Unknown");
+        JSONObject body = new JSONObject();
+        body.put(
+            "text",
+            "You are receiving this because we have arrived at maximum amount of IP "
+                + "lookups we are allowed for our free plan.");
+        Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+      }
+      loginList.add(thisLogin);
+      Bson filter = eq("username", username);
+      Bson update = set("logInHistory", loginList);
+      userCollection.updateOne(filter, update);
+      logger.info("Added login to login history");
       ctx.json(res.toString());
       logger.info("Login Successful!");
     };
@@ -319,7 +366,8 @@ public class UserController {
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
         return;
       }
-
+      List<IpObject> logInInfo = new ArrayList<IpObject>(1000);
+      user.setLogInHistory(logInInfo);
       user.setPassword(hash);
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
@@ -464,6 +512,46 @@ public class UserController {
         res.put("numPeople", numReturnElements);
         ctx.json(res.toString());
         logger.info("Successfully returned member information");
+      };
+  /*
+   Returned JSON format:
+       {“username”: “username”,
+              "history": [
+                     {
+                         “date”:”month/day/year, hour:min, Local Time”,
+                         “device”:”Mobile” or "Computer",
+                         “IP”:”exampleIP”,
+                         “location”: “Postal, City”,
+                     }
+        ]08/233/2020dorm
+     }
+  */
+  public Handler getLogInHistory =
+      ctx -> {
+        logger.info("Started getLogInHistory handler");
+        JSONArray res = new JSONArray();
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+        if (user != null) {
+          List<IpObject> logIns = user.getLogInHistory();
+          for (IpObject login : logIns) {
+            JSONObject oneLog = new JSONObject();
+            oneLog.put("IP", login.getIp());
+            oneLog.put("date", login.getDate());
+            oneLog.put("location", login.getLocation());
+            oneLog.put("device", login.getDevice());
+            res.put(oneLog);
+          }
+          JSONObject actual = new JSONObject();
+          actual.put("username", username);
+          actual.put("history", res);
+          ctx.json(actual.toString());
+          logger.info("Retrieved login history successfully");
+        } else {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
+          logger.error("Session Token Failure");
+        }
       };
 
   public Handler modifyPermissions =
