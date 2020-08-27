@@ -224,7 +224,7 @@ class MyOrganization extends Component<Props, State> {
     );
   }
 
-  renderSuccessPopUp = () => (
+  renderSuccessPopUp = ():JSX.Element => (
     <div>
       <Alert variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
         <p>
