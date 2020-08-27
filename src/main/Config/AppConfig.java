@@ -81,6 +81,12 @@ public class AppConfig {
     /* -------------- SUBMIT BUG------------------ */
     app.post("/submit-bug", bugController.submitBug);
 
+    /* -------------- ADMIN DASHBOARD ------------------ */
+    app.post("/get-usertype-count", orgController.findMembersOfOrgs);
+
+    /* --------------- SEARCH FUNCTIONALITY ------------- */
+    app.post("/get-all-orgs", orgController.listOrgs);
+
     return app;
   }
 
@@ -122,7 +128,9 @@ public class AppConfig {
               config.defaultContentType =
                   "text/plain"; // content type to use if no content type is set (default is
               // "text/plain")
+
               config.enableCorsForAllOrigins(); // enable cors for all origins
+
               //              config.enableDevLogging(); // enable extensive development logging for
               // http and
               // websocket
