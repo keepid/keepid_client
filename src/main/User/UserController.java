@@ -53,7 +53,7 @@ public class UserController {
       String username = req.getString("username");
       String password = req.getString("password");
       String ip = ctx.ip();
-      logger.info("Attempting to login" + username);
+      logger.info("Attempting to login " + username);
 
       res.put("userRole", "");
       res.put("organization", "");
@@ -146,9 +146,11 @@ public class UserController {
         return;
       }
 
+      String fullName = user.getFirstName() + " " + user.getLastName();
       ctx.sessionAttribute("privilegeLevel", user.getUserType());
       ctx.sessionAttribute("orgName", user.getOrganization());
       ctx.sessionAttribute("username", username);
+      ctx.sessionAttribute("fullName", fullName);
 
       res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
       res.put("userRole", user.getUserType());

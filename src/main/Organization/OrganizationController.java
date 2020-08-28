@@ -10,6 +10,7 @@ import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import kong.unirest.HttpResponse;
@@ -20,8 +21,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 public class OrganizationController {
@@ -88,6 +92,158 @@ public class OrganizationController {
           ctx.json(ve.getJSON().toString());
         }
         logger.info("Done with organizationSignupValidator");
+      };
+
+  // Takes in a json object specifying usertypes and orgnames
+  //
+  //  {userTypes : [],
+  //  organizations : []}
+  public Handler findMembersOfOrgs =
+      ctx -> {
+        JSONObject ret = new JSONObject();
+
+        JSONObject req = new JSONObject(ctx.body());
+        JSONArray userTypes = req.getJSONArray("userTypes");
+        JSONArray orgs = req.getJSONArray("organizations");
+        if (userTypes.isEmpty()) {
+          logger.error("userTypes cannot be empty");
+          ctx.json(UserMessage.EMPTY_FIELD.toJSON().toString());
+          return;
+        }
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+
+        logger.info("Counting usertypes");
+        if (orgs.isEmpty()) {
+          ret = emptyOrgCountMembers(userTypes, userCollection);
+
+        } else {
+          ret = numOrgCountMembers(userTypes, orgs, userCollection);
+        }
+        if (ret.has("fail")) {
+          String invalidType = ret.getString("invalidType");
+          logger.error("Invalid Usertype: " + invalidType);
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
+          return;
+        }
+
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+
+        logger.info("Successfully returned member information");
+        ctx.json(ret.toString());
+      };
+
+  private static JSONObject emptyOrgCountMembers(
+      JSONArray userTypes, MongoCollection<User> userCollection) {
+    JSONObject ret = new JSONObject();
+    for (int i = 0; i < userTypes.length(); i++) {
+      String currType = userTypes.getString(i);
+      switch (currType) {
+        case "client":
+          long client = userCollection.countDocuments(eq("privilegeLevel", "Client"));
+          ret.put("clients", client);
+          break;
+        case "worker":
+          long worker = userCollection.countDocuments(eq("privilegeLevel", "Worker"));
+          ret.put("workers", worker);
+          break;
+        case "admin":
+          long admin = userCollection.countDocuments(eq("privilegeLevel", "Admin"));
+          ret.put("admins", admin);
+          break;
+        case "director":
+          long director = userCollection.countDocuments(eq("privilegeLevel", "Director"));
+          ret.put("directors", director);
+          break;
+        default:
+          ret.put("fail", "True");
+          ret.put("invalidType", currType);
+          return ret;
+      }
+    }
+    return ret;
+  }
+
+  private static JSONObject numOrgCountMembers(
+      JSONArray userTypes, JSONArray orgs, MongoCollection<User> userCollection) {
+    JSONObject ret = new JSONObject();
+    List<String> typesList = new ArrayList<String>();
+    long client = 0;
+    long worker = 0;
+    long admin = 0;
+    long director = 0;
+    for (int i = 0; i < orgs.length(); i++) {
+      for (int u = 0; u < userTypes.length(); u++) {
+        String currType = userTypes.getString(u);
+        String currOrg = orgs.getString(i);
+        typesList.add(currType);
+        switch (currType) {
+          case "client":
+            client +=
+                userCollection.countDocuments(
+                    and(eq("organization", currOrg), eq("privilegeLevel", "Client")));
+            break;
+          case "worker":
+            worker +=
+                userCollection.countDocuments(
+                    and(eq("organization", currOrg), eq("privilegeLevel", "Worker")));
+            break;
+          case "admin":
+            admin +=
+                userCollection.countDocuments(
+                    and(eq("organization", currOrg), eq("privilegeLevel", "Admin")));
+            break;
+          case "director":
+            director +=
+                userCollection.countDocuments(
+                    and(eq("organization", currOrg), eq("privilegeLevel", "Director")));
+            break;
+          default:
+            ret.put("fail", "True");
+            ret.put("invalidType", currType);
+            return ret;
+        }
+      }
+    }
+
+    if (typesList.contains("client")) {
+      ret.put("clients", client);
+    }
+    if (typesList.contains("worker")) {
+      ret.put("workers", worker);
+    }
+    if (typesList.contains("admin")) {
+      ret.put("admins", admin);
+    }
+    if (typesList.contains("director")) {
+      ret.put("directors", director);
+    }
+
+    return ret;
+  }
+
+  public Handler listOrgs =
+      ctx -> {
+        JSONObject ret = new JSONObject();
+        JSONArray orgs = new JSONArray();
+
+        logger.info("Querying organizations from Mongo");
+        MongoCollection<Organization> orgCollection =
+            db.getCollection("organization", Organization.class);
+        MongoCursor<Organization> orgCursor = orgCollection.find().iterator();
+
+        while (orgCursor.hasNext()) {
+          JSONObject curr = new JSONObject(orgCursor.next());
+          orgs.put(curr);
+        }
+
+        logger.info("Done creating JSON array of organizations");
+        ret.put("status", UserMessage.SUCCESS.getErrorName());
+        ret.put("message", UserMessage.SUCCESS.getErrorDescription());
+        ret.put("organizations", orgs);
+
+        logger.info("Done with listOrgs");
+        ctx.json(ret.toString());
       };
 
   public Handler enrollOrganization(SecurityUtils securityUtils) {
@@ -247,9 +403,8 @@ public class OrganizationController {
       JSONObject req = new JSONObject(ctx.body());
       JSONArray people = req.getJSONArray("data");
 
-//    do a database query to get the request name and org
-      String sender = req.getString("senderName");
-      String org = req.getString("organization");
+      String sender = ctx.sessionAttribute("fullName");
+      String org = ctx.sessionAttribute("orgName");
 
       if (org.isEmpty()) {
         logger.error("Empty organization field");
