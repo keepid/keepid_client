@@ -179,7 +179,7 @@ public class PdfControllerUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -308,7 +308,7 @@ public class PdfControllerUnitTests {
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
-    String[] fieldValueOptions = {};
+    String[] fieldValueOptions = {"Yes"};
     correctFieldsJSON.add(createFieldJSON("Chicken", "CheckBox", fieldValueOptions));
     correctFieldsJSON.add(createFieldJSON("Vegetables", "CheckBox", fieldValueOptions));
     correctFieldsJSON.add(createFieldJSON("Ribeye Steaks", "CheckBox", fieldValueOptions));
