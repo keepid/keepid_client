@@ -1,10 +1,7 @@
 package User;
 
 import Logger.LogFactory;
-import Security.EmailExceptions;
-import Security.EmailUtil;
-import Security.SecurityUtils;
-import Security.Tokens;
+import Security.*;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
@@ -28,11 +25,13 @@ import static com.mongodb.client.model.Updates.set;
 public class UserController {
   Logger logger;
   MongoDatabase db;
+  EncryptionObjectController encryptionObjectController;
 
   public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
+    this.encryptionObjectController = new EncryptionObjectController(db);
   }
 
   public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
@@ -321,6 +320,8 @@ public class UserController {
       }
 
       user.setPassword(hash);
+
+      encryptionObjectController.encryptUser(user);
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
       logger.info("Successfully created user, " + user.getUsername());
@@ -341,7 +342,9 @@ public class UserController {
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
         User user = userCollection.find(eq("username", username)).first();
+
         if (user != null) {
+          encryptionObjectController.decryptUser(user);
           res.put("userRole", user.getUserType());
           res.put("organization", user.getOrganization());
           res.put("firstName", user.getFirstName());
@@ -411,6 +414,7 @@ public class UserController {
         int numMembers = 0;
         while (cursor.hasNext()) {
           User user = cursor.next();
+          encryptionObjectController.decryptUser(user);
 
           JSONObject userJSON = new JSONObject();
           userJSON.put("username", user.getUsername());
