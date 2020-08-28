@@ -23,6 +23,7 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       String filename,
+      ObjectId fileID,
       PDFType pdfType,
       InputStream inputStream,
       MongoDatabase db) {
@@ -32,8 +33,14 @@ public class PdfMongo {
         && (privilegeLevel == UserType.Client
             || privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Director
-            || privilegeLevel == UserType.Admin)) {
-      mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
+            || privilegeLevel == UserType.Admin
+            || privilegeLevel == UserType.Developer)) {
+      if ((pdfType == PDFType.FORM) && (fileID != null)) {
+        return mongodbUploadAnnotatedForm(
+            uploader, organizationName, filename, fileID, inputStream, pdfType, db);
+      } else {
+        mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
+      }
     } else {
       return PdfMessage.INSUFFICIENT_PRIVILEGE.toJSON();
     }
@@ -48,15 +55,61 @@ public class PdfMongo {
       PDFType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+
+    if (pdfType == PDFType.FORM) {
+      GridFSUploadOptions options =
+          new GridFSUploadOptions()
+              .chunkSizeBytes(100000)
+              .metadata(
+                  new Document("type", "pdf")
+                      .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("annotated", false)
+                      .append("uploader", uploader)
+                      .append("organizationName", organizationName));
+      gridBucket.uploadFromStream(filename, inputStream, options);
+      return;
+    } else {
+      GridFSUploadOptions options =
+          new GridFSUploadOptions()
+              .chunkSizeBytes(100000)
+              .metadata(
+                  new Document("type", "pdf")
+                      .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("uploader", uploader)
+                      .append("organizationName", organizationName));
+      gridBucket.uploadFromStream(filename, inputStream, options);
+    }
+  }
+
+  private static JSONObject mongodbUploadAnnotatedForm(
+      String uploader,
+      String organizationName,
+      String filename,
+      ObjectId fileID,
+      InputStream inputStream,
+      PDFType pdfType,
+      MongoDatabase db) {
+    GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+    GridFSFile grid_out = gridBucket.find(Filters.eq("_id", fileID)).first();
+
+    if (grid_out == null || grid_out.getMetadata() == null) {
+      return PdfMessage.NO_SUCH_FILE.toJSON();
+    }
+    if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
+      gridBucket.delete(fileID);
+    }
+
     GridFSUploadOptions options =
         new GridFSUploadOptions()
             .chunkSizeBytes(100000)
             .metadata(
                 new Document("type", "pdf")
                     .append("upload_date", String.valueOf(LocalDate.now()))
+                    .append("annotated", true)
                     .append("uploader", uploader)
                     .append("organizationName", organizationName));
     gridBucket.uploadFromStream(filename, inputStream, options);
+    return PdfMessage.SUCCESS.toJSON();
   }
 
   public static JSONObject getAllFiles(
@@ -64,6 +117,7 @@ public class PdfMongo {
       String organizationName,
       UserType privilegeLevel,
       PDFType pdfType,
+      boolean annotated,
       MongoDatabase db) {
     JSONObject res;
     try {
@@ -83,7 +137,10 @@ public class PdfMongo {
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.FORM) {
-        filter = Filters.eq("metadata.organizationName", organizationName);
+        filter =
+            Filters.and(
+                Filters.eq("metadata.organizationName", organizationName),
+                Filters.eq("metadata.annotated", annotated));
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
@@ -99,15 +156,29 @@ public class PdfMongo {
   private static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    for (GridFSFile grid_out : gridBucket.find(filter)) {
-      assert grid_out.getMetadata() != null;
-      files.put(
-          new JSONObject()
-              .put("filename", grid_out.getFilename())
-              .put("uploader", grid_out.getMetadata().getString("uploader"))
-              .put("organizationName", grid_out.getMetadata().getString("organizationName"))
-              .put("id", grid_out.getId().asObjectId().getValue().toString())
-              .put("uploadDate", grid_out.getUploadDate().toString()));
+    if (pdfType.equals(PDFType.FORM)) {
+      for (GridFSFile grid_out : gridBucket.find(filter)) {
+        assert grid_out.getMetadata() != null;
+        files.put(
+            new JSONObject()
+                .put("filename", grid_out.getFilename())
+                .put("annotated", grid_out.getMetadata().getBoolean("annotated"))
+                .put("uploader", grid_out.getMetadata().getString("uploader"))
+                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
+                .put("id", grid_out.getId().asObjectId().getValue().toString())
+                .put("uploadDate", grid_out.getUploadDate().toString()));
+      }
+    } else {
+      for (GridFSFile grid_out : gridBucket.find(filter)) {
+        assert grid_out.getMetadata() != null;
+        files.put(
+            new JSONObject()
+                .put("filename", grid_out.getFilename())
+                .put("uploader", grid_out.getMetadata().getString("uploader"))
+                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
+                .put("id", grid_out.getId().asObjectId().getValue().toString())
+                .put("uploadDate", grid_out.getUploadDate().toString()));
+      }
     }
     return files;
   }
