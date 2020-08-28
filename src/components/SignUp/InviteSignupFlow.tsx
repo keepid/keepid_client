@@ -125,7 +125,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
     // submit user information
 
-    fetch(`${getServerURL()}/create-user`, {
+    fetch(`${getServerURL()}/create-invited-user`, {
       method: 'POST',
       body: JSON.stringify({
         firstname,
@@ -141,6 +141,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         username,
         password,
         personRole,
+        orgName,
         recaptchaPayload,
       }),
     }).then((response) => response.json())
