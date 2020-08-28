@@ -22,7 +22,7 @@ public class ValRegex {
   // https://stackoverflow.com/questions/42104546/java-regular-expressions-to-validate-phone-numbers
   public static final Pattern phoneNumberPattern =
       Pattern.compile(
-          "(\\+)?\\(?(1)?\\)?(-)?(\\d{10}|(?:\\d{3}-){2}\\d{4}|\\(\\d{3}\\)(-)?\\d{3}-?\\d{4})");
+          "^(\\+)?\\(?(1)?\\)?(-)?(\\d{10}|(?:\\d{3}-){2}\\d{4}|\\(\\d{3}\\)(-)?\\d{3}-?\\d{4})$");
 
   public static final Pattern zipCodePattern = Pattern.compile("^([0-9]{5}(?:-[0-9]{4})?)$");
 

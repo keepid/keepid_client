@@ -1,6 +1,8 @@
 package User;
 
+import Bug.BugController;
 import Logger.LogFactory;
+import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import Security.Tokens;
@@ -10,14 +12,22 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
+import io.ipinfo.api.IPInfo;
+import io.ipinfo.api.errors.RateLimitedException;
+import io.ipinfo.api.model.IPResponse;
 import io.javalin.http.Handler;
+import kong.unirest.Unirest;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import static com.mongodb.client.model.Filters.*;
@@ -27,6 +37,7 @@ import static com.mongodb.client.model.Updates.set;
 public class UserController {
   Logger logger;
   MongoDatabase db;
+  BugController bugController = new BugController(db);
 
   public UserController(MongoDatabase db) {
     this.db = db;
@@ -37,11 +48,12 @@ public class UserController {
   public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
     return ctx -> {
       ctx.req.getSession().invalidate();
-
       JSONObject req = new JSONObject(ctx.body());
       JSONObject res = new JSONObject();
       String username = req.getString("username");
       String password = req.getString("password");
+      String ip = ctx.ip();
+      logger.info("Attempting to login " + username);
 
       res.put("userRole", "");
       res.put("organization", "");
@@ -50,6 +62,7 @@ public class UserController {
 
       if (!ValidationUtils.isValidUsername(username)
           || !ValidationUtils.isValidPassword(password)) {
+        logger.error("Invalid username and/or password");
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -58,6 +71,7 @@ public class UserController {
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
       User user = userCollection.find(eq("username", username)).first();
       if (user == null) {
+        logger.error("Could not find user, " + username);
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -67,9 +81,11 @@ public class UserController {
           securityUtils.verifyPassword(password, user.getPassword());
 
       if (verifyPasswordStatus == SecurityUtils.PassHashEnum.ERROR) {
+        logger.error("Failed to hash password");
         res.put("status", UserMessage.HASH_FAILURE.getErrorName());
         ctx.json(res.toString());
       } else if (verifyPasswordStatus == SecurityUtils.PassHashEnum.FAILURE) {
+        logger.error("Incorrect password");
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
@@ -82,16 +98,16 @@ public class UserController {
           && (userLevel == UserType.Director
               || userLevel == UserType.Admin
               || userLevel == UserType.Worker)) {
-
+        logger.info("Two factor authentication process");
         String randCode = String.format("%06d", new Random().nextInt(999999));
         long nowMillis = System.currentTimeMillis();
         long expMillis = 300000;
         Date expDate = new Date(nowMillis + expMillis);
-        String emailContent = emailUtil.getVerificationCodeEmail(randCode);
         Thread emailThread =
             new Thread(
                 () -> {
                   try {
+                    String emailContent = emailUtil.getVerificationCodeEmail(randCode);
                     emailUtil.sendEmail(
                         "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
@@ -104,7 +120,12 @@ public class UserController {
                             .setTwoFactorCode(randCode)
                             .setTwoFactorExp(expDate),
                         new ReplaceOptions().upsert(true));
+                  } catch (EmailExceptions e) {
+                    logger.error("Could not send email");
+                    ctx.json(e.toJSON().toString());
+                    return;
                   } catch (UnsupportedEncodingException e) {
+                    logger.error("Unsupported encoding");
                     e.printStackTrace();
                     JSONObject serverErrorJSON =
                         UserMessage.SERVER_ERROR.toJSON("Unsupported email encoding");
@@ -121,12 +142,15 @@ public class UserController {
         res.put("lastName", user.getLastName());
         res.put("twoFactorOn", twoFactorOn);
         ctx.json(res.toString());
+        logger.info("Two Factor email sent to " + user.getEmail());
         return;
       }
 
+      String fullName = user.getFirstName() + " " + user.getLastName();
       ctx.sessionAttribute("privilegeLevel", user.getUserType());
       ctx.sessionAttribute("orgName", user.getOrganization());
       ctx.sessionAttribute("username", username);
+      ctx.sessionAttribute("fullName", fullName);
 
       res.put("status", UserMessage.AUTH_SUCCESS.getErrorName());
       res.put("userRole", user.getUserType());
@@ -134,12 +158,51 @@ public class UserController {
       res.put("firstName", user.getFirstName());
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
+      List<IpObject> loginList = user.getLogInHistory();
+      if (null == loginList) {
+        loginList = new ArrayList<IpObject>(1000);
+      }
+      if (loginList.size() >= 1000) {
+        loginList.remove(0);
+      }
+      logger.info("Trying to add login to login history");
+      IpObject thisLogin = new IpObject();
+      ZonedDateTime d = ZonedDateTime.now();
+      String formattedDate =
+          d.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
+      thisLogin.setDate(formattedDate);
+      thisLogin.setIp(ip);
+      Boolean isMobile = ctx.userAgent().contains("Mobi");
+      String device = isMobile ? "Mobile" : "Computer";
+      thisLogin.setDevice(device);
+      IPInfo ipInfo = IPInfo.builder().setToken(System.getenv("IPINFO_TOKEN")).build();
+      try {
+        IPResponse response = ipInfo.lookupIP(ip);
+        thisLogin.setLocation(
+            response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
+      } catch (RateLimitedException ex) {
+        logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
+        thisLogin.setLocation("Unknown");
+        JSONObject body = new JSONObject();
+        body.put(
+            "text",
+            "You are receiving this because we have arrived at maximum amount of IP "
+                + "lookups we are allowed for our free plan.");
+        Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+      }
+      loginList.add(thisLogin);
+      Bson filter = eq("username", username);
+      Bson update = set("logInHistory", loginList);
+      userCollection.updateOne(filter, update);
+      logger.info("Added login to login history");
       ctx.json(res.toString());
+      logger.info("Login Successful!");
     };
   }
 
   public Handler generateUniqueUsername =
       ctx -> {
+        logger.info("Starting generateUniqueUsername Handler");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
 
@@ -152,10 +215,12 @@ public class UserController {
           candidateUsername = username + "-" + i;
         }
         ctx.json(res.put("username", candidateUsername).toString());
+        logger.info("Username successfully generated");
       };
 
   public Handler createUserValidator =
       ctx -> {
+        logger.info("Starting createUserValidator handler");
         JSONObject req = new JSONObject(ctx.body());
 
         String firstName = req.getString("firstname").toUpperCase().strip();
@@ -174,6 +239,7 @@ public class UserController {
         UserType userType = UserType.userTypeFromString(userTypeString);
 
         if (userType == null) {
+          logger.error("userType is null");
           ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
           return;
         }
@@ -182,11 +248,13 @@ public class UserController {
         User existingUser = userCollection.find(eq("username", username)).first();
 
         if (existingUser != null) {
+          logger.error("Username already exists");
           ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
           return;
         }
 
         try {
+          logger.info("Attempting to validate user");
           new User(
               firstName,
               lastName,
@@ -202,20 +270,24 @@ public class UserController {
               username,
               password,
               userType);
+          logger.info("Validating user success");
           ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
         } catch (ValidationException ve) {
+          logger.error("Validation exception");
           ctx.json(ve.getJSON().toString());
         }
       };
 
   public Handler createNewUser(SecurityUtils securityUtils) {
     return ctx -> {
+      logger.info("Starting createNewUser handler");
       JSONObject req = new JSONObject(ctx.body());
 
       UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
       String organizationName = ctx.sessionAttribute("orgName");
 
       if (sessionUserLevel == null) {
+        logger.error("Token failure");
         ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
         return;
       }
@@ -236,6 +308,7 @@ public class UserController {
       UserType userType = UserType.userTypeFromString(userTypeString);
 
       if (userType == null) {
+        logger.error("Invalid privilege type");
         ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
         return;
       }
@@ -259,6 +332,7 @@ public class UserController {
                 password,
                 userType);
       } catch (ValidationException ve) {
+        logger.error("Validation exception");
         ctx.json(ve.getJSON().toString());
         return;
       }
@@ -268,11 +342,13 @@ public class UserController {
               || user.getUserType() == UserType.Worker)
           && sessionUserLevel != UserType.Admin
           && sessionUserLevel != UserType.Director) {
+        logger.error("Cannot enroll ADMIN/DIRECTOR as NON-ADMIN/NON-DIRECTOR");
         ctx.json(UserMessage.NONADMIN_ENROLL_ADMIN.toJSON().toString());
         return;
       }
 
       if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
+        logger.error("Cannot enroll CLIENT as CLIENT");
         ctx.json(UserMessage.CLIENT_ENROLL_CLIENT.toJSON().toString());
         return;
       }
@@ -281,30 +357,36 @@ public class UserController {
       User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
       if (existingUser != null) {
+        logger.error("Username already exists");
         ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
         return;
       }
 
       String hash = securityUtils.hashPassword(password);
       if (hash == null) {
+        logger.error("Could not has password");
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
         return;
       }
-
+      List<IpObject> logInInfo = new ArrayList<IpObject>(1000);
+      user.setLogInHistory(logInInfo);
       user.setPassword(hash);
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
+      logger.info("Successfully created user, " + user.getUsername());
     };
   }
 
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
+        logger.info("Signed out");
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler getUserInfo =
       ctx -> {
+        logger.info("Started getUserInfo handler");
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> userCollection = db.getCollection("user", User.class);
@@ -325,13 +407,16 @@ public class UserController {
           res.put("username", username);
           res.put("status", UserMessage.SUCCESS.getErrorName());
           ctx.json(res.toString());
+          logger.info("Successfully got user info");
         } else {
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
+          logger.error("Session Token Failure");
         }
       };
 
   public Handler getMembers =
       ctx -> {
+        logger.info("Started getMembers handler");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
 
@@ -347,6 +432,7 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         if (privilegeLevel == null || orgName == null) {
+          logger.error("Session Token Failure");
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
           return;
         }
@@ -390,6 +476,7 @@ public class UserController {
 
           UserType userType = user.getUserType();
 
+          logger.info("Getting member information");
           if (userType == UserType.Director
               || userType == UserType.Admin
               || userType == UserType.Worker) {
@@ -416,6 +503,7 @@ public class UserController {
           returnElements = getPage(members, startIndex, endIndex);
           numReturnElements = members.length();
         } else {
+          logger.error("Insufficient Privilege, Could not return member info");
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
           return;
         }
@@ -425,10 +513,52 @@ public class UserController {
         res.put("people", returnElements);
         res.put("numPeople", numReturnElements);
         ctx.json(res.toString());
+        logger.info("Successfully returned member information");
+      };
+  /*
+   Returned JSON format:
+       {“username”: “username”,
+              "history": [
+                     {
+                         “date”:”month/day/year, hour:min, Local Time”,
+                         “device”:”Mobile” or "Computer",
+                         “IP”:”exampleIP”,
+                         “location”: “Postal, City”,
+                     }
+        ]08/233/2020dorm
+     }
+  */
+  public Handler getLogInHistory =
+      ctx -> {
+        logger.info("Started getLogInHistory handler");
+        JSONArray res = new JSONArray();
+        String username = ctx.sessionAttribute("username");
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+        if (user != null) {
+          List<IpObject> logIns = user.getLogInHistory();
+          for (IpObject login : logIns) {
+            JSONObject oneLog = new JSONObject();
+            oneLog.put("IP", login.getIp());
+            oneLog.put("date", login.getDate());
+            oneLog.put("location", login.getLocation());
+            oneLog.put("device", login.getDevice());
+            res.put(oneLog);
+          }
+          JSONObject actual = new JSONObject();
+          actual.put("username", username);
+          actual.put("history", res);
+          ctx.json(actual.toString());
+          logger.info("Retrieved login history successfully");
+        } else {
+          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
+          logger.error("Session Token Failure");
+        }
       };
 
   public Handler modifyPermissions =
       ctx -> {
+        logger.info("Starting modifyPermissions handler");
         String username = ctx.sessionAttribute("username");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String orgName = ctx.sessionAttribute("orgName");
@@ -436,11 +566,13 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         if (username == null || privilegeLevel == null || orgName == null) {
+          logger.error("Session token failure");
           ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
           return;
         }
 
         if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
+          logger.error("Insufficient privilege");
           ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
           return;
         }
@@ -458,6 +590,7 @@ public class UserController {
         Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
         userCollection.findOneAndUpdate(filter, updates);
 
+        logger.info("Successfully modified permissions for " + username);
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
@@ -470,8 +603,6 @@ public class UserController {
       for (int i = pageStartIndex; i < pageEndIndex; i++) {
         page.put(elements.get(i));
       }
-    } else {
-      System.out.println("ERROR: Invalid Start Index");
     }
     return page;
   }

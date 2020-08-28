@@ -25,7 +25,7 @@ public class SecurityUtils {
     ERROR;
   }
 
-  // JWT Creation Method
+  // JWT Creation Method for password reset
   public String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
       throws IOException {
 
@@ -49,6 +49,54 @@ public class SecurityUtils {
             .setSubject(subject)
             .setAudience(user)
             .setIssuer(issuer)
+            .signWith(signatureAlgorithm, signingKey);
+
+    // Set the Expiration
+    if (ttlMillis >= 0) {
+      long expMillis = nowMillis + ttlMillis;
+      Date exp = new Date(expMillis);
+      builder.setExpiration(exp);
+    }
+
+    // Build the JWT and serialize it to a URL-safe string
+    return builder.compact();
+  }
+
+  // JWT Creation Method for non-existing users (Organization invite users)
+  public String createOrgJWT(
+      String id,
+      String issuer,
+      String firstName,
+      String lastName,
+      String role,
+      String subject,
+      String org,
+      long ttlMillis)
+      throws IOException {
+    // Using the PASSWORD_RESET_KEY for now
+    String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
+
+    // JWT signature algorithm to sign the token
+    SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
+    long nowMillis = System.currentTimeMillis();
+    Date now = new Date(nowMillis);
+
+    // JWT signed with ApiKey secret
+    byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
+    Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+
+    // JWT Claims
+    JwtBuilder builder =
+        Jwts.builder()
+            .setId(id)
+            .setIssuedAt(now)
+            .setSubject(subject)
+            .setIssuer(issuer)
+            .claim("firstName", firstName)
+            .claim("lastName", lastName)
+            .claim("role", role)
+            .claim("organization", org)
             .signWith(signatureAlgorithm, signingKey);
 
     // Set the Expiration
