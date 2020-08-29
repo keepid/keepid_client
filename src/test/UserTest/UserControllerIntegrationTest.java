@@ -9,8 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 public class UserControllerIntegrationTest {
 
@@ -50,5 +48,35 @@ public class UserControllerIntegrationTest {
     assertThat(actualResponseJSON.getString("userRole")).isEqualTo("");
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+  }
+
+  @Test
+  public void createUserWithNullOrgNameTest() {
+    JSONObject body = new JSONObject();
+    body.put("firstname", "mel");
+    body.put("lastname", "car");
+    body.put("birthDate", "02-16-1998");
+    body.put("email", "email@email");
+    body.put("phonenumber", "1234567890");
+    body.put("address", "123 park ave");
+    body.put("city", "new york");
+    body.put("state", "NY");
+    body.put("zipcode", "10003");
+    body.put("twoFactorOn", false);
+    body.put("username", "testUser123");
+    body.put("password", "testUser123");
+    body.put("personRole", "Worker");
+    body.put("orgName", "");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/create-invited-user")
+            .body(body.toString())
+            .asString();
+
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+    System.out.println(actualResponseJSON);
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("INVALID_PARAMETER");
   }
 }
