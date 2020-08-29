@@ -1,5 +1,6 @@
 package PDF;
 
+import Security.EncryptionController;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -13,7 +14,9 @@ import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 
 public class PdfMongo {
@@ -26,7 +29,9 @@ public class PdfMongo {
       ObjectId fileID,
       PDFType pdfType,
       InputStream inputStream,
-      MongoDatabase db) {
+      MongoDatabase db,
+      EncryptionController encryptionController)
+      throws GeneralSecurityException, IOException {
     if ((pdfType == PDFType.APPLICATION
             || pdfType == PDFType.IDENTIFICATION
             || pdfType == PDFType.FORM)
@@ -39,7 +44,8 @@ public class PdfMongo {
         return mongodbUploadAnnotatedForm(
             uploader, organizationName, filename, fileID, inputStream, pdfType, db);
       } else {
-        mongodbUpload(uploader, organizationName, filename, inputStream, pdfType, db);
+        mongodbUpload(
+            uploader, organizationName, filename, inputStream, pdfType, db, encryptionController);
       }
     } else {
       return PdfMessage.INSUFFICIENT_PRIVILEGE.toJSON();
@@ -53,7 +59,9 @@ public class PdfMongo {
       String filename,
       InputStream inputStream,
       PDFType pdfType,
-      MongoDatabase db) {
+      MongoDatabase db,
+      EncryptionController encryptionController)
+      throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
 
     if (pdfType == PDFType.FORM) {
@@ -67,7 +75,6 @@ public class PdfMongo {
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
       gridBucket.uploadFromStream(filename, inputStream, options);
-      return;
     } else {
       GridFSUploadOptions options =
           new GridFSUploadOptions()
@@ -77,7 +84,10 @@ public class PdfMongo {
                       .append("upload_date", String.valueOf(LocalDate.now()))
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
-      gridBucket.uploadFromStream(filename, inputStream, options);
+      gridBucket.uploadFromStream(
+          encryptionController.encryptString(filename, uploader),
+          encryptionController.encryptFile(inputStream, uploader),
+          options);
     }
   }
 
@@ -190,7 +200,9 @@ public class PdfMongo {
       UserType privilegeLevel,
       ObjectId id,
       PDFType pdfType,
-      MongoDatabase db) {
+      MongoDatabase db,
+      EncryptionController encryptionController)
+      throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
@@ -201,11 +213,11 @@ public class PdfMongo {
             || privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
-        return gridBucket.openDownloadStream(id);
+        return encryptionController.decryptFile(gridBucket.openDownloadStream(id), user);
       }
     } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
-        return gridBucket.openDownloadStream(id);
+        return encryptionController.decryptFile(gridBucket.openDownloadStream(id), user);
       }
     } else if (pdfType == PDFType.FORM) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {

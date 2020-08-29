@@ -1,5 +1,6 @@
 package PDF;
 
+import Security.EncryptionController;
 import User.UserType;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
@@ -23,9 +24,11 @@ import java.util.*;
 
 public class PdfController {
   private MongoDatabase db;
+  private EncryptionController encryptionController;
 
   public PdfController(MongoDatabase db) {
     this.db = db;
+    this.encryptionController = new EncryptionController(db);
   }
 
   public static Set<String> validFieldTypes =
@@ -83,7 +86,14 @@ public class PdfController {
           ctx.result("Invalid PDFType");
         } else {
           InputStream stream =
-              PdfMongo.download(user, organizationName, privilegeLevel, fileID, pdfType, db);
+              PdfMongo.download(
+                  user,
+                  organizationName,
+                  privilegeLevel,
+                  fileID,
+                  pdfType,
+                  db,
+                  encryptionController);
           if (stream != null) {
             ctx.header("Content-Type", "application/pdf");
             ctx.result(stream);
@@ -157,7 +167,8 @@ public class PdfController {
                   fileID,
                   pdfType,
                   file.getContent(),
-                  this.db);
+                  this.db,
+                  encryptionController);
         } else {
           res = PdfMessage.INVALID_PDF.toJSON();
         }
@@ -193,7 +204,8 @@ public class PdfController {
                   null,
                   pdfType,
                   pdfSigned,
-                  this.db);
+                  this.db,
+                  encryptionController);
         } else {
           res = PdfMessage.INVALID_PDF.toJSON();
         }
@@ -274,7 +286,13 @@ public class PdfController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         InputStream inputStream =
             PdfMongo.download(
-                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
+                username,
+                organizationName,
+                privilegeLevel,
+                applicationId,
+                PDFType.FORM,
+                db,
+                encryptionController);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
@@ -408,7 +426,13 @@ public class PdfController {
 
         InputStream inputStream =
             PdfMongo.download(
-                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
+                username,
+                organizationName,
+                privilegeLevel,
+                applicationId,
+                PDFType.FORM,
+                db,
+                encryptionController);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 

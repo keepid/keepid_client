@@ -14,6 +14,9 @@
     <orderEntry type="library" name="Maven: io.ipinfo:ipinfo-api:1.0" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.9.0" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
+    <orderEntry type="library" name="Maven: io.ipinfo:ipinfo-api:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
     <orderEntry type="library" name="Maven: io.jsonwebtoken:jjwt:0.9.1" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.8.1" level="project" />
@@ -88,5 +91,30 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.7" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.11" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.crypto.tink:tink:1.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:3.11.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.crypto.tink:tink-gcpkms:1.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9" level="project" />
+    <orderEntry type="library" name="Maven: com.google.api-client:google-api-client:1.29.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.oauth-client:google-oauth-client:1.29.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.http-client:google-http-client:1.29.1" level="project" />
+    <orderEntry type="library" name="Maven: io.opencensus:opencensus-api:0.19.2" level="project" />
+    <orderEntry type="library" name="Maven: io.grpc:grpc-context:1.18.0" level="project" />
+    <orderEntry type="library" name="Maven: io.opencensus:opencensus-contrib-http-util:0.19.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.http-client:google-http-client-jackson2:1.29.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.apis:google-api-services-cloudkms:v1-rev88-1.25.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:27.1-jre" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.checkerframework:checker-qual:2.5.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.j2objc:j2objc-annotations:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.17" level="project" />
+    <orderEntry type="library" name="Maven: com.google.auto.service:auto-service:1.0-rc5" level="project" />
+    <orderEntry type="library" name="Maven: com.google.auto.service:auto-service-annotations:1.0-rc5" level="project" />
+    <orderEntry type="library" name="Maven: com.google.auto:auto-common:0.10" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-text:1.9" level="project" />
   </component>
 </module>

@@ -2,10 +2,7 @@ package User;
 
 import Bug.BugController;
 import Logger.LogFactory;
-import Security.EmailExceptions;
-import Security.EmailUtil;
-import Security.SecurityUtils;
-import Security.Tokens;
+import Security.*;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
@@ -53,7 +50,7 @@ public class UserController {
       JSONObject res = new JSONObject();
       String username = req.getString("username");
       String password = req.getString("password");
-
+      String ip = ctx.ip();
       logger.info("Attempting to login" + username);
 
       res.put("userRole", "");
