@@ -84,8 +84,8 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 <thead className="thead-light">
                   <tr>
                     <th className="w-25" scope="col">Account Setup</th>
-                    <th className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(0)}><a href="#">Edit</a></th>
+                    <th aria-label="Your Account Information" className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(0)}><button type="button" className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0">Edit</button></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -105,8 +105,8 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 <thead className="thead-light">
                   <tr>
                     <th className="w-25" scope="col">Personal Information</th>
-                    <th className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(1)}><a href="#">Edit</a></th>
+                    <th aria-label="Your Personal Information" className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(1)}><button type="button" className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0">Edit</button></th>
                   </tr>
                 </thead>
                 <tbody>

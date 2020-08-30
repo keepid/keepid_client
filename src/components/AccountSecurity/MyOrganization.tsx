@@ -219,8 +219,8 @@ class MyOrganization extends Component<Props, State> {
     if (member.isInEditMode) {
       return (
         <div>
-          <select placeholder="Role" id="role2" className="form-control form-purple" value={editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
-            <option defaultValue="" disabled hidden aria-labelledby="role2" />
+          <select placeholder="Role" id="role" className="form-control form-purple" value={editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
+            <option defaultValue="" disabled hidden aria-labelledby="role" />
             <option value="Admin">Admin</option>
             <option value="Worker">Worker</option>
           </select>
@@ -305,10 +305,10 @@ class MyOrganization extends Component<Props, State> {
     return (
       <div className="container">
         {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
-        <p className="font-weight-bold brand-text text-dark mb-2">Invite New Team Members</p>
+        <p className="font-weight-bold text-dark my-3 h3">Invite New Team Members</p>
         <form>
           <div className="form-row">
-            <div className="form-group col-xs required">
+            <div className="form-group required col-xs">
               <label htmlFor="exampleName">
                 Name
                 <input
@@ -321,7 +321,7 @@ class MyOrganization extends Component<Props, State> {
                 />
               </label>
             </div>
-            <div className="form-group col-xs required">
+            <div className="form-group required col-xs">
               <label htmlFor="exampleEmail">
                 Email address
                 <input
@@ -334,7 +334,7 @@ class MyOrganization extends Component<Props, State> {
                 />
               </label>
             </div>
-            <div className="form-group col-xs-4 required">
+            <div className="form-group required col-xs-4">
               <label htmlFor="exampleRole">
                 Role
                 <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
@@ -349,7 +349,7 @@ class MyOrganization extends Component<Props, State> {
             </div>
           </div>
         </form>
-        <p className="brand-text font-weight-bold text-dark mb-2">Recently Invited</p>
+        <p className="font-weight-bold text-dark mb-2 h3">Recently Invited</p>
         <div className="scrollbar" style={{ maxHeight: '15.625rem', overflow: 'scroll', scrollbarColor: '#7B81FF' }}>
           <table className="table table-striped table-bordered">
             <thead className="position-sticky border" style={{ top: '0' }}>

@@ -11,7 +11,6 @@ import AccountSetup from './AccountSetup';
 import PersonalInformation from './PersonalInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
-import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
 
 const { Step } = Steps;
@@ -43,6 +42,15 @@ interface State {
 }
 
 class InviteSignupFlow extends Component<Props, State, {}> {
+  static birthDateStringConverter = (birthDate: Date):string => {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -102,15 +110,6 @@ class InviteSignupFlow extends Component<Props, State, {}> {
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-  }
-
-  static birthDateStringConverter = (birthDate: Date):string => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
   }
 
   handleFormSubmit = (): void => {
@@ -194,13 +193,14 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       email,
       hasSigned,
       buttonState,
+      signupStage,
     } = this.state;
 
     const {
       personRole,
     } = this.props;
 
-    switch (this.state.signupStage) {
+    switch (signupStage) {
       case 0: {
         return (
           <AccountSetup
