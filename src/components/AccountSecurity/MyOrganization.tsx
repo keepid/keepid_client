@@ -20,8 +20,8 @@ interface State {
  editedPersonRole: any,
  memberArr: any,
  showPopUp: boolean,
- numInvitesSent: any,
- numInEditMode: any,
+ numInvitesSent: number,
+ numInEditMode: number,
  buttonLoadingState: boolean,
 }
 
@@ -74,20 +74,22 @@ class MyOrganization extends Component<Props, State> {
         personRole: '',
       }));
     } else {
-      this.props.alert.show('missing field. name, email, and role are required');
+      const { alert } = this.props;
+      alert.show('missing field. name, email, and role are required');
     }
     e.preventDefault();
   }
 
   renderTableContents = ():JSX.Element => {
-    if (this.state.memberArr.length === 0) {
+    const { memberArr } = this.state;
+    if (memberArr.length === 0) {
       return (
         <tr>
           <td colSpan={5} className="bg-white brand-text text-secondary py-5">No new members</td>
         </tr>
       );
     }
-    const row = this.state.memberArr.map((member, i) => (
+    const row = memberArr.map((member, i) => (
 
       <tr key={member.dateID}>
         <td>{this.getNameCell(member)}</td>
@@ -114,8 +116,9 @@ class MyOrganization extends Component<Props, State> {
   }
 
   saveEdits = (dateID: Date):void => {
-    const index = this.state.memberArr.findIndex((member) => member.dateID === dateID);
-    const member = { ...this.state.memberArr[index] };
+    const { memberArr } = this.state;
+    const index = memberArr.findIndex((member) => member.dateID === dateID);
+    const member = { ...memberArr[index] };
     const {
       editedPersonEmail,
       editedPersonName,
@@ -136,9 +139,10 @@ class MyOrganization extends Component<Props, State> {
   }
 
   editButtonToggle = (dateID: Date):JSX.Element => {
-    const index = this.state.memberArr.findIndex((member) => member.dateID === dateID);
-    const member = { ...this.state.memberArr[index] };
-    const members = Object.assign([], this.state.memberArr);
+    const { memberArr } = this.state;
+    const index = memberArr.findIndex((member) => member.dateID === dateID);
+    const member = { ...memberArr[index] };
+    const members = Object.assign([], memberArr);
 
     if (member.isInEditMode) {
       return (
@@ -224,13 +228,13 @@ class MyOrganization extends Component<Props, State> {
     );
   }
 
-  renderSuccessPopUp = ():JSX.Element => (
+  renderSuccessPopUp = (numInvitesSent:number):JSX.Element => (
     <div>
       <Alert variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
         <p>
           Congrats! You successfully invited
           {' '}
-          {this.state.numInvitesSent}
+          {numInvitesSent}
           {' '}
           new members to your team! Head to your Admin Panel to see them
         </p>
@@ -240,6 +244,11 @@ class MyOrganization extends Component<Props, State> {
 
   saveMembersBackend = (e:React.MouseEvent<HTMLElement>):void => {
     e.preventDefault();
+    const {
+      alert,
+      name,
+      organization,
+    } = this.props;
     const members = Object.assign([], this.state.memberArr);
     try {
       Object.keys(members).forEach((key) => {
@@ -251,7 +260,7 @@ class MyOrganization extends Component<Props, State> {
         members[key].lastName = lastname;
       });
     } catch (error) {
-      console.log(error);
+      alert.show(`Error Parsing Name : ${error}`);
     }
 
     this.setState({ buttonLoadingState: true });
@@ -259,8 +268,8 @@ class MyOrganization extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        senderName: this.props.name,
-        organization: this.props.organization,
+        senderName: name,
+        organization,
         data: members,
       }),
     }).then((response) => response.json())
@@ -275,24 +284,25 @@ class MyOrganization extends Component<Props, State> {
             buttonLoadingState: false,
           }));
         } else if (status === 'EMPTY_FIELD') {
-          this.props.alert.show('Missing field. Make sure to include first name, last name, email, AND role)');
+          alert.show('Missing field. Make sure to include first name, last name, email, AND role)');
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        this.props.alert.show('Network Failure: Check Server Connection.');
+        alert.show(`Network Failure: ${error}`);
         this.setState({ buttonLoadingState: false });
       });
   }
 
   render() {
+    const { showPopUp, numInvitesSent } = this.state;
     return (
       <div className="container">
-        {this.state.showPopUp === true && this.renderSuccessPopUp()}
+        {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
         <p className="font-weight-bold brand-text text-dark mb-2">Invite New Team Members</p>
         <form>
           <div className="form-row">
             <div className="form-group col-xs required">
-              <label>Name</label>
+              <label htmlFor="exampleName">Name</label>
               <input
                 placeholder="Full Name Here"
                 type="name"
@@ -303,19 +313,20 @@ class MyOrganization extends Component<Props, State> {
               />
             </div>
             <div className="form-group col-xs required">
-              <label>Email address</label>
+              <label htmlFor="exampleEmail">Email address</label>
               <input
                 placeholder="Enter Valid Email Address"
                 type="email"
+                id="exampleEmail"
                 className="form-control form-purple"
                 value={this.state.personEmail}
                 onChange={(e) => this.setState({ personEmail: e.target.value })}
               />
             </div>
             <div className="form-group col-xs-4 required">
-              <label>Role</label>
-              <select placeholder="Role" id="role1" className="form-control form-purple" value={this.state.personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
-                <option defaultValue="" disabled hidden aria-labelledby="role1" />
+              <label htmlFor="exampleRole">Role</label>
+              <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={this.state.personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
+                <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
                 <option>Admin</option>
                 <option>Worker</option>
               </select>
@@ -330,11 +341,11 @@ class MyOrganization extends Component<Props, State> {
           <table className="table table-striped table-bordered">
             <thead className="position-sticky border" style={{ top: '0' }}>
               <tr>
-                <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Name</th>
-                <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Email</th>
-                <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Edit</th>
-                <th scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Role</th>
-                <th scope="col" style={{ top: '0', zIndex: 999 }} className="position-sticky bg-white border shadow-sm" />
+                <th aria-label="Name Column" scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Name</th>
+                <th aria-label="Email Column" scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Email</th>
+                <th aria-label="Edit Button Column" scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Edit</th>
+                <th aria-label="Role Column" scope="col" style={{ top: '0' }} className="position-sticky bg-white border shadow-sm">Role</th>
+                <th aria-label="Delete Button Column" scope="col" style={{ top: '0', zIndex: 999 }} className="position-sticky bg-white border shadow-sm" />
               </tr>
             </thead>
             <tbody className="table-striped">{this.renderTableContents()}</tbody>

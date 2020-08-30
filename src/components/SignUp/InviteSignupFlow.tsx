@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import { Steps } from 'antd';
 import { ProgressBar } from 'react-bootstrap';
-import { useParams } from 'react-router';
 import getServerURL from '../../serverOverride';
 // import Logo from '../../static/images/logo.svg';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
@@ -20,7 +19,7 @@ const { Step } = Steps;
 interface Props {
   alert: any,
   orgName: string,
-  role: Role
+  personRole: Role,
 }
 
 interface State {
@@ -105,6 +104,15 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
   }
 
+  static birthDateStringConverter = (birthDate: Date):string => {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
+  }
+
   handleFormSubmit = (): void => {
     const {
       username,
@@ -120,8 +128,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       email,
       recaptchaPayload,
     } = this.state;
-    const personRole = this.props.role;
-    const { orgName } = this.props;
+    const { orgName, alert, personRole } = this.props;
     const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
     // submit user information
 
@@ -151,32 +158,22 @@ class InviteSignupFlow extends Component<Props, State, {}> {
           status,
           message,
         } = JSON.parse(responseJSON);
-        console.log(responseJSON);
+
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          this.props.alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
+          alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
-          this.props.alert.show('No organization found for this link. Try again with different link');
+          alert.show('No organization found for this link. Try again with different link');
         } else {
-          this.props.alert.show(message);
+          alert.show(message);
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
-        console.log(error);
-        this.props.alert.show(`Server Failure: ${error}`);
+        alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
-  }
-
-  static birthDateStringConverter = (birthDate: Date):string => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
   }
 
   handleFormJumpTo = (pageNumber:number):void => this.setState({ signupStage: pageNumber });
@@ -199,6 +196,10 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       buttonState,
     } = this.state;
 
+    const {
+      personRole,
+    } = this.props;
+
     switch (this.state.signupStage) {
       case 0: {
         return (
@@ -210,7 +211,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
-            role={this.props.role}
+            role={personRole}
           />
         );
       }
@@ -306,7 +307,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 4`} />
+          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 4`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>
