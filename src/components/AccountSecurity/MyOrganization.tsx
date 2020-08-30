@@ -53,7 +53,7 @@ class MyOrganization extends Component<Props, State> {
     this.saveMembersBackend = this.saveMembersBackend.bind(this);
   }
 
-  addMember = (e):void => {
+  addMember = (e:React.MouseEvent<HTMLElement>):void => {
     if (this.state.personName !== '' && this.state.personEmail !== '' && this.state.personRole !== '') {
       const {
         personName,
@@ -79,7 +79,7 @@ class MyOrganization extends Component<Props, State> {
     e.preventDefault();
   }
 
-  renderTableContents = () => {
+  renderTableContents = ():JSX.Element => {
     if (this.state.memberArr.length === 0) {
       return (
         <tr>
@@ -135,7 +135,7 @@ class MyOrganization extends Component<Props, State> {
     });
   }
 
-  editButtonToggle = (dateID: Date) => {
+  editButtonToggle = (dateID: Date):JSX.Element => {
     const index = this.state.memberArr.findIndex((member) => member.dateID === dateID);
     const member = { ...this.state.memberArr[index] };
     const members = Object.assign([], this.state.memberArr);
@@ -177,7 +177,7 @@ class MyOrganization extends Component<Props, State> {
     );
   }
 
-  getNameCell = (member) => {
+  getNameCell = (member):JSX.Element => {
     if (member.isInEditMode) {
       return (
         <input
@@ -193,7 +193,7 @@ class MyOrganization extends Component<Props, State> {
     );
   }
 
-  getEmailCell = (member) => {
+  getEmailCell = (member):JSX.Element => {
     if (member.isInEditMode) {
       return (
         <input
@@ -207,7 +207,7 @@ class MyOrganization extends Component<Props, State> {
     return (<div>{member.email}</div>);
   }
 
-  getRoleDropDown = (member) => {
+  getRoleDropDown = (member):JSX.Element => {
     if (member.isInEditMode) {
       return (
         <div>
@@ -238,7 +238,7 @@ class MyOrganization extends Component<Props, State> {
     </div>
   )
 
-  saveMembersBackend = (e):void => {
+  saveMembersBackend = (e:React.MouseEvent<HTMLElement>):void => {
     e.preventDefault();
     const members = Object.assign([], this.state.memberArr);
     try {
@@ -253,9 +253,11 @@ class MyOrganization extends Component<Props, State> {
     } catch (error) {
       console.log(error);
     }
+    console.log(members);
     this.setState({ buttonLoadingState: true });
     fetch(`${getServerURL()}/invite-user`, {
       method: 'POST',
+      credentials: 'include',
       body: JSON.stringify({
         senderName: this.props.name,
         organization: this.props.organization,
@@ -277,6 +279,7 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
+        console.log(error);
         this.props.alert.show('Network Failure: Check Server Connection.');
         this.setState({ buttonLoadingState: false });
       });

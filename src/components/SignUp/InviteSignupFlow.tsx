@@ -127,6 +127,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/create-invited-user`, {
       method: 'POST',
+      credentials: 'include',
       body: JSON.stringify({
         firstname,
         lastname,
@@ -150,15 +151,20 @@ class InviteSignupFlow extends Component<Props, State, {}> {
           status,
           message,
         } = JSON.parse(responseJSON);
-        if (status === 'SUCCESSFUL_ENROLLMENT') {
+        console.log(responseJSON);
+        if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
           this.props.alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
           this.setState({ redirectLogin: true });
+        } else if (status === 'INVALID_PARAMETER') {
+          this.setState({ buttonState: '' });
+          this.props.alert.show('No organization found for this link. Try again with different link');
         } else {
           this.props.alert.show(message);
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
+        console.log(error);
         this.props.alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
@@ -173,9 +179,9 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     return personBirthDateFormatted;
   }
 
-  handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber:number):void => this.setState({ signupStage: pageNumber });
 
-  handleSignupComponentRender = () => {
+  handleSignupComponentRender = ():JSX.Element => {
     const {
       username,
       password,
