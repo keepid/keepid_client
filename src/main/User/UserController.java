@@ -38,12 +38,14 @@ import static com.mongodb.client.model.Updates.set;
 public class UserController {
   Logger logger;
   MongoDatabase db;
-  BugController bugController = new BugController(db);
-  ActivityController activityController = new ActivityController(db);
+  BugController bugController;
+  ActivityController activityController;
 
   public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
+    this.bugController = new BugController(db);
+    this.activityController = new ActivityController(db);
     logger = l.createLogger("UserController");
   }
 
@@ -160,7 +162,7 @@ public class UserController {
       res.put("firstName", user.getFirstName());
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
-      LoginActivity log = new LoginActivity(user);
+      LoginActivity log = new LoginActivity(user, twoFactorOn);
       activityController.addActivity(log);
       List<IpObject> loginList = user.getLogInHistory();
       if (null == loginList) {

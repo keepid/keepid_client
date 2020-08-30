@@ -1,6 +1,7 @@
 package Activity;
 
 import User.User;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,14 @@ public class LoginActivity extends AuthenticateActivity {
     return a;
   }
 
+  @BsonProperty(value = "isTwoFactor")
   private boolean isTwoFactor;
 
   public LoginActivity() {}
 
-  public LoginActivity(User user) {
+  public LoginActivity(User user, Boolean isTwoFactor) {
     super(user);
+    this.isTwoFactor = isTwoFactor;
   }
 
   public boolean isTwoFactor() {
