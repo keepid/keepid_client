@@ -253,7 +253,7 @@ class MyOrganization extends Component<Props, State> {
     } catch (error) {
       console.log(error);
     }
-    console.log(members);
+
     this.setState({ buttonLoadingState: true });
     fetch(`${getServerURL()}/invite-user`, {
       method: 'POST',
@@ -279,7 +279,6 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        console.log(error);
         this.props.alert.show('Network Failure: Check Server Connection.');
         this.setState({ buttonLoadingState: false });
       });
