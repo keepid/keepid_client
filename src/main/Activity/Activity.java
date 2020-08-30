@@ -5,10 +5,10 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Activity {
+public class Activity {
   private ObjectId id;
 
   @BsonProperty(value = "occuredAt")
@@ -31,7 +31,9 @@ public abstract class Activity {
   }
 
   List<String> construct() {
-    return Collections.emptyList();
+    List<String> a = new ArrayList<>();
+    a.add(Activity.class.getSimpleName());
+    return a;
   }
 
   public List<String> getType() {

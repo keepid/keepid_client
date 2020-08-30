@@ -3,23 +3,34 @@ package Activity;
 import User.User;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CreateUserActivity extends Activity {
 
   @BsonProperty(value = "created")
-  private String created;
+  private User created;
 
   public CreateUserActivity() {}
 
-  public CreateUserActivity(User user, String created) {
+  @Override
+  List<String> construct() {
+    List<String> a = new ArrayList<>();
+    a.add(Activity.class.getSimpleName());
+    a.add(CreateUserActivity.class.getSimpleName());
+    return a;
+  }
+
+  public CreateUserActivity(User user, User created) {
     super(user);
     this.created = created;
   }
 
-  public String getCreated() {
+  public User getCreated() {
     return created;
   }
 
-  public void setCreated(String created) {
+  public void setCreated(User created) {
     this.created = created;
   }
 }

@@ -2,15 +2,32 @@ package Activity;
 
 import User.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PasswordRecoveryActivity extends AuthenticateActivity {
   private String oldPasswordHash;
   private String newPasswordHash;
   private String recoveryEmail;
 
+  @Override
+  List<String> construct() {
+    List<String> a = new ArrayList<>();
+    a.add(Activity.class.getSimpleName());
+    a.add(UserActivity.class.getSimpleName());
+    a.add(AuthenticateActivity.class.getSimpleName());
+    a.add(PasswordRecoveryActivity.class.getSimpleName());
+    return a;
+  }
+
   public PasswordRecoveryActivity() {}
 
-  public PasswordRecoveryActivity(User user) {
+  public PasswordRecoveryActivity(
+      User user, String oldPasswordHash, String newPasswordHash, String recoveryEmail) {
     super(user);
+    this.oldPasswordHash = oldPasswordHash;
+    this.newPasswordHash = newPasswordHash;
+    this.recoveryEmail = recoveryEmail;
   }
 
   public String getOldPasswordHash() {

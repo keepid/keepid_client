@@ -9,7 +9,8 @@ public class UserActivity extends Activity {
   @Override
   List<String> construct() {
     List<String> a = new ArrayList<>();
-    a.add("activity");
+    a.add(Activity.class.getSimpleName());
+    a.add(UserActivity.class.getSimpleName());
     return a;
   }
 

@@ -2,10 +2,24 @@ package Activity;
 
 import User.User;
 
-public class CreateDirectorActivity extends CreateUserActivity {
-  public CreateDirectorActivity() {}
+import java.util.ArrayList;
+import java.util.List;
 
-  public CreateDirectorActivity(User owner, String created) {
+public class CreateDirectorActivity extends CreateUserActivity {
+  @Override
+  List<String> construct() {
+    List<String> a = new ArrayList<>();
+    a.add(Activity.class.getSimpleName());
+    a.add(CreateUserActivity.class.getSimpleName());
+    a.add(CreateDirectorActivity.class.getSimpleName());
+    return a;
+  }
+
+  public CreateDirectorActivity() {
+    super();
+  }
+
+  public CreateDirectorActivity(User owner, User created) {
     super(owner, created);
   }
 }

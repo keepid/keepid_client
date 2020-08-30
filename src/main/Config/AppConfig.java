@@ -8,13 +8,10 @@ import Security.AccountSecurityController;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.UserController;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
-import io.javalin.core.JavalinServer;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
-import org.slf4j.Logger;
 
 public class AppConfig {
   public static Long ASYNC_TIME_OUT = 10L;
@@ -59,7 +56,7 @@ public class AppConfig {
     app.post("/create-user", userController.createNewUser(securityUtils));
     app.get("/logout", userController.logout);
     app.post(
-            "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
+        "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
     app.post("/change-password", accountSecurityController.changePasswordIn(securityUtils));
     app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
     app.get("/get-user-info", userController.getUserInfo);

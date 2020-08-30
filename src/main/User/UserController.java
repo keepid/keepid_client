@@ -1,5 +1,6 @@
 package User;
 
+import Activity.*;
 import Bug.BugController;
 import Logger.LogFactory;
 import Security.EmailExceptions;
@@ -38,6 +39,7 @@ public class UserController {
   Logger logger;
   MongoDatabase db;
   BugController bugController = new BugController(db);
+  ActivityController activityController = new ActivityController(db);
 
   public UserController(MongoDatabase db) {
     this.db = db;
@@ -158,6 +160,8 @@ public class UserController {
       res.put("firstName", user.getFirstName());
       res.put("lastName", user.getLastName());
       res.put("twoFactorOn", twoFactorOn);
+      LoginActivity log = new LoginActivity(user);
+      activityController.addActivity(log);
       List<IpObject> loginList = user.getLogInHistory();
       if (null == loginList) {
         loginList = new ArrayList<IpObject>(1000);
@@ -285,7 +289,7 @@ public class UserController {
 
       UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
       String organizationName = ctx.sessionAttribute("orgName");
-
+      String sessionUsername = ctx.sessionAttribute("username");
       if (sessionUserLevel == null) {
         logger.error("Token failure");
         ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
@@ -355,7 +359,7 @@ public class UserController {
 
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
       User existingUser = userCollection.find(eq("username", user.getUsername())).first();
-
+      User owner = userCollection.find(eq("username", sessionUsername)).first();
       if (existingUser != null) {
         logger.error("Username already exists");
         ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
@@ -364,7 +368,7 @@ public class UserController {
 
       String hash = securityUtils.hashPassword(password);
       if (hash == null) {
-        logger.error("Could not has password");
+        logger.error("Could not hash password");
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
         return;
       }
@@ -372,6 +376,24 @@ public class UserController {
       user.setLogInHistory(logInInfo);
       user.setPassword(hash);
       userCollection.insertOne(user);
+      switch (user.getUserType()) {
+        case Worker:
+          CreateWorkerActivity act = new CreateWorkerActivity(owner, user);
+          activityController.addActivity(act);
+          break;
+        case Director:
+          CreateDirectorActivity dir = new CreateDirectorActivity(owner, user);
+          activityController.addActivity(dir);
+          break;
+        case Admin:
+          CreateAdminActivity adm = new CreateAdminActivity(owner, user);
+          activityController.addActivity(adm);
+          break;
+        case Client:
+          CreateClientActivity cli = new CreateClientActivity(owner, user);
+          activityController.addActivity(cli);
+          break;
+      }
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
       logger.info("Successfully created user, " + user.getUsername());
     };

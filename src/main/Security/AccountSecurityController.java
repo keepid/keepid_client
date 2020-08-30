@@ -1,5 +1,8 @@
 package Security;
 
+import Activity.ActivityController;
+import Activity.ChangeUserAttributesActivity;
+import Activity.PasswordRecoveryActivity;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
@@ -11,12 +14,14 @@ import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Handler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.bson.Document;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.*;
 
 public class AccountSecurityController {
   private MongoDatabase db;
@@ -123,7 +128,16 @@ public class AccountSecurityController {
         ctx.json(UserMessage.AUTH_FAILURE.toJSON().toString());
         return;
       }
-
+      MongoCollection col = db.getCollection("user");
+      Document d =
+          (Document)
+              col.find(eq("username", username))
+                  .projection(fields(include(key), excludeId()))
+                  .first();
+      String old = d.get(key).toString();
+      ActivityController activityController = new ActivityController(db);
+      ChangeUserAttributesActivity act = new ChangeUserAttributesActivity(user, key, old, value);
+      activityController.addActivity(act);
       switch (key) {
         case "firstName":
           if (!ValidationUtils.isValidFirstName(value)) {
@@ -210,10 +224,21 @@ public class AccountSecurityController {
         // No current way to validate this boolean
 
         user.setTwoFactorOn(twoFactorOn);
-
+        String old = BoolToString(!twoFactorOn);
+        String n = BoolToString(twoFactorOn);
+        ChangeUserAttributesActivity act =
+            new ChangeUserAttributesActivity(user, "twoFactorOn", old, n);
         userCollection.replaceOne(eq("username", user.getUsername()), user);
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
+
+  private String BoolToString(Boolean bool) {
+    if (bool) {
+      return "True";
+    } else {
+      return "False";
+    }
+  }
 
   public Handler resetPassword(SecurityUtils securityUtils) {
     return ctx -> {
@@ -280,8 +305,8 @@ public class AccountSecurityController {
         // Remove password-reset-jwt field from token.
         tokenCollection.replaceOne(eq("username", username), tokens.setResetJwt(null));
       }
-
-      resetPassword(claim.getAudience(), newPassword, db);
+      resetPassword(
+          claim.getAudience(), newPassword, db, PasswordRecoveryActivity.class.getSimpleName());
       ctx.json(UserMessage.SUCCESS.toJSON().toString());
     };
   }
@@ -370,20 +395,37 @@ public class AccountSecurityController {
     } else if (hashStatus == SecurityUtils.PassHashEnum.FAILURE) {
       return UserMessage.AUTH_FAILURE;
     } else {
-      resetPassword(username, newPassword, db);
+      resetPassword(username, newPassword, db, ChangeUserAttributesActivity.class.getSimpleName());
       return UserMessage.AUTH_SUCCESS;
     }
   }
 
-  private static void resetPassword(String username, String newPassword, MongoDatabase db) {
+  private static String resetPassword(
+      String username, String newPassword, MongoDatabase db, String c) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", username)).first();
-
+    String old = user.getPassword();
     Argon2 argon2 = Argon2Factory.create();
     char[] newPasswordArr = newPassword.toCharArray();
     String passwordHash = argon2.hash(10, 65536, 1, newPasswordArr);
 
     userCollection.replaceOne(eq("username", username), user.setPassword(passwordHash));
     argon2.wipeArray(newPasswordArr);
+
+    ActivityController activityController = new ActivityController(db);
+    switch (c) {
+      case "PasswordRecoveryActivity":
+        PasswordRecoveryActivity pas =
+            new PasswordRecoveryActivity(user, old, passwordHash, user.getEmail());
+        activityController.addActivity(pas);
+        break;
+      case "ChangeUserAttributesActivity":
+        ChangeUserAttributesActivity cha =
+            new ChangeUserAttributesActivity(user, "password", old, passwordHash);
+        activityController.addActivity(cha);
+      default:
+        throw new IllegalStateException("Unexpected value: " + c);
+    }
+    return passwordHash;
   }
 }

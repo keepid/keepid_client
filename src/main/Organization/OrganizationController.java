@@ -1,10 +1,13 @@
 package Organization;
 
+import Activity.ActivityController;
+import Activity.CreateOrgActivity;
 import Bug.BugController;
 import Logger.LogFactory;
 import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
+import User.IpObject;
 import User.User;
 import User.UserMessage;
 import User.UserType;
@@ -32,6 +35,9 @@ public class OrganizationController {
 
   Logger logger;
   MongoDatabase db;
+
+  private ActivityController activityController = new ActivityController(db);
+
   public static final String newOrgTestURL =
       Objects.requireNonNull(System.getenv("NEW_ORG_TESTURL"));
   public static final String newOrgActualURL =
@@ -308,6 +314,8 @@ public class OrganizationController {
                 username,
                 password,
                 userLevel);
+        CreateOrgActivity createOrgActivity = new CreateOrgActivity(user, org);
+        activityController.addActivity(createOrgActivity);
       } catch (ValidationException ve) {
         logger.error("Could not create user and/or org");
         ctx.json(ve.getJSON().toString());
@@ -338,8 +346,10 @@ public class OrganizationController {
 
         logger.info("Setting password and inserting user and org into Mongo");
         user.setPassword(passwordHash);
-        userCollection.insertOne(user);
 
+        List<IpObject> logInInfo = new ArrayList<IpObject>(1000);
+        user.setLogInHistory(logInInfo);
+        userCollection.insertOne(user);
         orgCollection.insertOne(org);
         logger.info("Notifying Slack about new org");
         HttpResponse posted = makeBotMessage(org);
@@ -469,6 +479,13 @@ public class OrganizationController {
                   "https://keep.id/create-user/" + jwt, sender, firstName + " " + lastName);
           emailUtil.sendEmail(
               "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
+          //          switch (role) {
+          //            case: "Worker":
+          //              CreateWorkerActivity c = new CreateWorkerActivity()
+          //              break;
+          //            default:
+          //              throw new IllegalStateException("Unexpected value: " + role);
+          //          }
         } catch (EmailExceptions e) {
           logger.error("Email exception caught");
           ctx.json(e.toJSON().toString());
