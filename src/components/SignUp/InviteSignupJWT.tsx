@@ -1,11 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import {
-  BrowserRouter as Router,
-  Route,
-  Redirect,
-  Switch,
-} from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import InviteSignupFlow from './InviteSignupFlow';
 
 const jwtDecode = require('jwt-decode');

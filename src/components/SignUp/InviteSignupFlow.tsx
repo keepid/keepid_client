@@ -307,7 +307,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 4`} />
+          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 4`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>

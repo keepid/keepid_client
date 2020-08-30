@@ -54,14 +54,14 @@ class MyOrganization extends Component<Props, State> {
   }
 
   addMember = (e:React.MouseEvent<HTMLElement>):void => {
-    if (this.state.personName !== '' && this.state.personEmail !== '' && this.state.personRole !== '') {
-      const {
-        personName,
-        personEmail,
-        personRole,
-        isInEditMode,
-      } = this.state;
+    const {
+      personName,
+      personEmail,
+      personRole,
+      isInEditMode,
+    } = this.state;
 
+    if (personName !== '' && personEmail !== '' && personRole !== '') {
       const dateID = Date.now();
       const newMember = {
         name: personName, email: personEmail, role: personRole, isInEditMode, dateID,
@@ -163,7 +163,8 @@ class MyOrganization extends Component<Props, State> {
         type="button"
         className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent"
         onClick={() => {
-          if (this.state.numInEditMode === 0) {
+          const { numInEditMode } = this.state;
+          if (numInEditMode === 0) {
             member.isInEditMode = !member.isInEditMode;
             members[index] = member;
             this.setState((prevState) => ({
@@ -249,7 +250,8 @@ class MyOrganization extends Component<Props, State> {
       name,
       organization,
     } = this.props;
-    const members = Object.assign([], this.state.memberArr);
+    const { memberArr } = this.state;
+    const members = Object.assign([], memberArr);
     try {
       Object.keys(members).forEach((key) => {
         const fullName = members[key].name;
@@ -302,36 +304,42 @@ class MyOrganization extends Component<Props, State> {
         <form>
           <div className="form-row">
             <div className="form-group col-xs required">
-              <label htmlFor="exampleName">Name</label>
-              <input
-                placeholder="Full Name Here"
-                type="name"
-                className="form-control form-purple"
-                id="exampleName"
-                value={this.state.personName}
-                onChange={(e) => this.setState({ personName: e.target.value })}
-              />
+              <label htmlFor="exampleName">
+                Name
+                <input
+                  placeholder="Full Name Here"
+                  type="name"
+                  className="form-control form-purple"
+                  id="exampleName"
+                  value={this.state.personName}
+                  onChange={(e) => this.setState({ personName: e.target.value })}
+                />
+              </label>
             </div>
             <div className="form-group col-xs required">
-              <label htmlFor="exampleEmail">Email address</label>
-              <input
-                placeholder="Enter Valid Email Address"
-                type="email"
-                id="exampleEmail"
-                className="form-control form-purple"
-                value={this.state.personEmail}
-                onChange={(e) => this.setState({ personEmail: e.target.value })}
-              />
+              <label htmlFor="exampleEmail">
+                Email address
+                <input
+                  placeholder="Enter Valid Email Address"
+                  type="email"
+                  id="exampleEmail"
+                  className="form-control form-purple"
+                  value={this.state.personEmail}
+                  onChange={(e) => this.setState({ personEmail: e.target.value })}
+                />
+              </label>
             </div>
             <div className="form-group col-xs-4 required">
-              <label htmlFor="exampleRole">Role</label>
-              <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={this.state.personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
-                <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
-                <option>Admin</option>
-                <option>Worker</option>
-              </select>
+              <label htmlFor="exampleRole">
+                Role
+                <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={this.state.personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
+                  <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
+                  <option>Admin</option>
+                  <option>Worker</option>
+                </select>
+              </label>
             </div>
-            <div className="col-xs mt-4">
+            <div className="col-xs mt-3">
               <button className="btn btn-primary mt-1" type="submit" onClick={(e) => this.addMember(e)}>Add Member</button>
             </div>
           </div>
