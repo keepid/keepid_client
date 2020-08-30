@@ -183,12 +183,13 @@ class MyOrganization extends Component<Props, State> {
   }
 
   getNameCell = (member):JSX.Element => {
+    const { editedPersonName } = this.state;
     if (member.isInEditMode) {
       return (
         <input
           className="form-purple form-control input-sm"
           type="text"
-          value={this.state.editedPersonName}
+          value={editedPersonName}
           onChange={(e) => this.setState({ editedPersonName: e.target.value })}
         />
       );
@@ -199,12 +200,13 @@ class MyOrganization extends Component<Props, State> {
   }
 
   getEmailCell = (member):JSX.Element => {
+    const { editedPersonEmail } = this.state;
     if (member.isInEditMode) {
       return (
         <input
           className="form-purple form-control input-sm"
           type="text"
-          value={this.state.editedPersonEmail}
+          value={editedPersonEmail}
           onChange={(e) => this.setState({ editedPersonEmail: e.target.value })}
         />
       );
@@ -213,10 +215,11 @@ class MyOrganization extends Component<Props, State> {
   }
 
   getRoleDropDown = (member):JSX.Element => {
+    const { editedPersonRole } = this.state;
     if (member.isInEditMode) {
       return (
         <div>
-          <select placeholder="Role" id="role2" className="form-control form-purple" value={this.state.editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
+          <select placeholder="Role" id="role2" className="form-control form-purple" value={editedPersonRole} onChange={(e) => this.setState({ editedPersonRole: e.target.value })}>
             <option defaultValue="" disabled hidden aria-labelledby="role2" />
             <option value="Admin">Admin</option>
             <option value="Worker">Worker</option>
@@ -296,7 +299,9 @@ class MyOrganization extends Component<Props, State> {
   }
 
   render() {
-    const { showPopUp, numInvitesSent } = this.state;
+    const {
+      showPopUp, numInvitesSent, personRole, personName, personEmail, buttonLoadingState,
+    } = this.state;
     return (
       <div className="container">
         {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
@@ -311,7 +316,7 @@ class MyOrganization extends Component<Props, State> {
                   type="name"
                   className="form-control form-purple"
                   id="exampleName"
-                  value={this.state.personName}
+                  value={personName}
                   onChange={(e) => this.setState({ personName: e.target.value })}
                 />
               </label>
@@ -324,7 +329,7 @@ class MyOrganization extends Component<Props, State> {
                   type="email"
                   id="exampleEmail"
                   className="form-control form-purple"
-                  value={this.state.personEmail}
+                  value={personEmail}
                   onChange={(e) => this.setState({ personEmail: e.target.value })}
                 />
               </label>
@@ -332,7 +337,7 @@ class MyOrganization extends Component<Props, State> {
             <div className="form-group col-xs-4 required">
               <label htmlFor="exampleRole">
                 Role
-                <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={this.state.personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
+                <select placeholder="Role" id="exampleRole" className="form-control form-purple" value={personRole} onChange={(e) => this.setState({ personRole: e.target.value })}>
                   <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
                   <option>Admin</option>
                   <option>Worker</option>
@@ -359,7 +364,7 @@ class MyOrganization extends Component<Props, State> {
             <tbody className="table-striped">{this.renderTableContents()}</tbody>
           </table>
         </div>
-        <button type="button" className="btn btn-primary mt-1 float-right" onClick={(e) => this.saveMembersBackend(e)}>{this.state.buttonLoadingState ? <div className="ld ld-ring ld-spin" /> : <div>Send Invites</div>}</button>
+        <button type="button" className="btn btn-primary mt-1 float-right" onClick={(e) => this.saveMembersBackend(e)}>{buttonLoadingState ? <div className="ld ld-ring ld-spin" /> : <div>Send Invites</div>}</button>
       </div>
     );
   }
