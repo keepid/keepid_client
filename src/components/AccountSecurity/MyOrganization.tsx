@@ -325,7 +325,7 @@ class MyOrganization extends Component<Props, State> {
               <label htmlFor="exampleEmail">
                 Email address
                 <input
-                  placeholder="Enter Valid Email Address"
+                  placeholder="Enter Valid Email"
                   type="email"
                   id="exampleEmail"
                   className="form-control form-purple"
