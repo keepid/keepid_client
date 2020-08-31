@@ -542,3 +542,30 @@ thead {
 	border-radius: 0.25rem;
 	border-width: 0.0625rem;
 }
+
+@mixin scrollbars($size, $front-color, $back-color) {
+	// For Google Chrome
+	&::-webkit-scrollbar {
+		width: $size;
+		height: $size;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: $front-color;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: $back-color;
+	}
+
+	// For Internet Explorer
+	& {
+		scrollbar-face-color: $front-color;
+		scrollbar-track-color: $back-color;
+	}
+}
+
+div.scrollbar {
+	@include scrollbars(0.75rem, $primary-theme, #ffffff);
+}
+
