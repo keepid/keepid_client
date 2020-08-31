@@ -34,7 +34,8 @@ interface State {}
 class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
     e.preventDefault();
-    this.props.handlePrevious();
+    const { handlePrevious } = this.props;
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
