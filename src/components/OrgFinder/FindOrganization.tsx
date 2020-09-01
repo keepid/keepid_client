@@ -3,6 +3,7 @@ import { withAlert } from 'react-alert';
 import MapComponent from './MapComponent';
 import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
 import InvalidZipcodeIcon from '../../static/images/InvalidZipcodeIcon.svg';
+import Coordinate from './Coordinate';
 
 interface Props {
   alert: any,
