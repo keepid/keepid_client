@@ -26,7 +26,7 @@ public class SecurityUtils {
   }
 
   // JWT Creation Method for password reset
-  public String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
+  public static String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
       throws IOException {
 
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
@@ -63,7 +63,7 @@ public class SecurityUtils {
   }
 
   // JWT Creation Method for non-existing users (Organization invite users)
-  public String createOrgJWT(
+  public static String createOrgJWT(
       String id,
       String issuer,
       String firstName,
@@ -110,7 +110,7 @@ public class SecurityUtils {
     return builder.compact();
   }
 
-  public Claims decodeJWT(String jwt) throws IOException {
+  public static Claims decodeJWT(String jwt) throws IOException {
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 
     // This line will throw an exception if it is not a signed JWS (as expected)
@@ -123,7 +123,7 @@ public class SecurityUtils {
   }
 
   // Tests testPass against realPassHash, the hash of the real password.
-  public PassHashEnum verifyPassword(String testPass, String realPassHash) {
+  public static PassHashEnum verifyPassword(String testPass, String realPassHash) {
     Argon2 argon2 = Argon2Factory.create();
     char[] passwordArr = testPass.toCharArray();
     try {
@@ -143,7 +143,7 @@ public class SecurityUtils {
 
   // Hashes a password using Argon2.
   // Returns hashed password, or null if Argon2 fails.
-  public String hashPassword(String plainText) {
+  public static String hashPassword(String plainText) {
     Argon2 argon2 = Argon2Factory.create();
     char[] passwordArr = plainText.toCharArray();
     String passwordHash;

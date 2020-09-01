@@ -50,7 +50,7 @@ public class OrganizationController {
   }
 
   public Handler organizationSignupValidator =
-      ctx -> {
+        ctx -> {
         logger.info("Starting organizationSignupValidator");
         JSONObject req = new JSONObject(ctx.body());
 
@@ -252,8 +252,7 @@ public class OrganizationController {
         ctx.json(ret.toString());
       };
 
-  public Handler enrollOrganization(SecurityUtils securityUtils) {
-    return ctx -> {
+  public Handler enrollOrganization = ctx -> {
       logger.info("Starting enrollOrganization handler");
       JSONObject req = new JSONObject(ctx.body());
 
@@ -338,7 +337,7 @@ public class OrganizationController {
         ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
       } else {
         logger.info("Org and User are OK, hashing password");
-        String passwordHash = securityUtils.hashPassword(password);
+        String passwordHash = SecurityUtils.hashPassword(password);
         if (passwordHash == null) {
           ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toJSON().toString());
           return;
@@ -366,7 +365,6 @@ public class OrganizationController {
         logger.info("Done with enrollOrganization");
       }
     };
-  }
 
   private HttpResponse makeBotMessage(Organization org) {
     JSONArray blocks = new JSONArray();
@@ -407,8 +405,7 @@ public class OrganizationController {
          ]
       }
   */
-  public Handler inviteUsers(SecurityUtils securityUtils, EmailUtil emailUtil) {
-    return ctx -> {
+  public Handler inviteUsers = ctx -> {
       logger.info("Starting inviteUsers handler");
       JSONObject req = new JSONObject(ctx.body());
       JSONArray people = req.getJSONArray("data");
@@ -469,15 +466,15 @@ public class OrganizationController {
         String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
         int expirationTime = 604800000; // 7 days
         String jwt =
-            securityUtils.createOrgJWT(
+            SecurityUtils.createOrgJWT(
                 id, sender, firstName, lastName, role, "Invite User to Org", org, expirationTime);
 
         // NEED TO UPDATE URL IN JWT TO ORG INVITE WEBSITE
         try {
           String emailJWT =
-              emailUtil.getOrganizationInviteEmail(
+              EmailUtil.getOrganizationInviteEmail(
                   "https://keep.id/create-user/" + jwt, sender, firstName + " " + lastName);
-          emailUtil.sendEmail(
+          EmailUtil.sendEmail(
               "Keep ID", email, sender + " has Invited you to Join their Organization", emailJWT);
           //          switch (role) {
           //            case: "Worker":
@@ -497,4 +494,3 @@ public class OrganizationController {
       logger.info("Done with inviteUsers");
     };
   }
-}

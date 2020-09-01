@@ -49,8 +49,8 @@ public class UserController {
     logger = l.createLogger("UserController");
   }
 
-  public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
-    return ctx -> {
+  public Handler loginUser =
+    ctx -> {
       ctx.req.getSession().invalidate();
       JSONObject req = new JSONObject(ctx.body());
       JSONObject res = new JSONObject();
@@ -82,7 +82,7 @@ public class UserController {
       }
 
       SecurityUtils.PassHashEnum verifyPasswordStatus =
-          securityUtils.verifyPassword(password, user.getPassword());
+              SecurityUtils.verifyPassword(password, user.getPassword());
 
       if (verifyPasswordStatus == SecurityUtils.PassHashEnum.ERROR) {
         logger.error("Failed to hash password");
@@ -111,8 +111,8 @@ public class UserController {
             new Thread(
                 () -> {
                   try {
-                    String emailContent = emailUtil.getVerificationCodeEmail(randCode);
-                    emailUtil.sendEmail(
+                    String emailContent = EmailUtil.getVerificationCodeEmail(randCode);
+                    EmailUtil.sendEmail(
                         "Keep Id", user.getEmail(), "Keepid Verification Code", emailContent);
 
                     MongoCollection<Tokens> tokenCollection =
@@ -204,7 +204,6 @@ public class UserController {
       ctx.json(res.toString());
       logger.info("Login Successful!");
     };
-  }
 
   public Handler generateUniqueUsername =
       ctx -> {
@@ -284,8 +283,8 @@ public class UserController {
         }
       };
 
-  public Handler createNewUser(SecurityUtils securityUtils) {
-    return ctx -> {
+  public Handler createNewUser =
+    ctx -> {
       logger.info("Starting createNewUser handler");
       JSONObject req = new JSONObject(ctx.body());
 
@@ -368,7 +367,7 @@ public class UserController {
         return;
       }
 
-      String hash = securityUtils.hashPassword(password);
+      String hash = SecurityUtils.hashPassword(password);
       if (hash == null) {
         logger.error("Could not hash password");
         ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
@@ -399,7 +398,6 @@ public class UserController {
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
       logger.info("Successfully created user, " + user.getUsername());
     };
-  }
 
   public Handler logout =
       ctx -> {
@@ -618,7 +616,7 @@ public class UserController {
         ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
-  private JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
+  private static JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
     JSONArray page = new JSONArray();
     if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
       if (pageEndIndex > elements.length()) {

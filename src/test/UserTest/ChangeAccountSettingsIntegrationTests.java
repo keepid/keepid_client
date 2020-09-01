@@ -96,7 +96,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "firstName", newFirstName));
   }
@@ -122,7 +122,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "lastName", newLastName));
   }
@@ -148,7 +148,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "birthDate", newBirthDate));
   }
@@ -174,7 +174,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "phone", newPhone));
   }
@@ -200,7 +200,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "email", newEmail));
   }
@@ -226,7 +226,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "address", newAddress));
   }
@@ -252,7 +252,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "city", newCity));
   }
@@ -278,7 +278,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "state", newState));
   }
@@ -304,7 +304,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "zipcode", newZipcode));
   }
