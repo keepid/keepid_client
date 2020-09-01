@@ -1,4 +1,4 @@
-package PdfTest;
+package PDFTest;
 
 import PDF.PdfController;
 import org.apache.pdfbox.cos.COSName;

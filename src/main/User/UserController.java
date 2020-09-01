@@ -68,6 +68,7 @@ public class UserController {
 
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
       User user = userCollection.find(eq("username", username)).first();
+      encryptionObjectController.decryptUser(user);
       if (user == null) {
         logger.error("Could not find user, " + username);
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
@@ -522,7 +523,7 @@ public class UserController {
        {“username”: “username”,
               "history": [
                      {
-                         “date”:”month/day/year, hour:min, Local Time”,
+                         “date”:”month/day/year, hour:min, Local Time”
                          “device”:”Mobile” or "Computer",
                          “IP”:”exampleIP”,
                          “location”: “Postal, City”,
