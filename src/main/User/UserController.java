@@ -2,6 +2,7 @@ package User;
 
 import Activity.*;
 import Bug.BugController;
+import Config.Message;
 import Logger.LogFactory;
 import Security.EmailExceptions;
 import Security.EmailUtil;
@@ -12,24 +13,13 @@ import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.ReplaceOptions;
-import io.ipinfo.api.IPInfo;
-import io.ipinfo.api.errors.RateLimitedException;
-import io.ipinfo.api.model.IPResponse;
 import io.javalin.http.Handler;
-import kong.unirest.Unirest;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.UnsupportedEncodingException;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.combine;
@@ -51,7 +41,6 @@ public class UserController {
     ctx -> {
       ctx.req.getSession().invalidate();
       JSONObject req = new JSONObject(ctx.body());
-      JSONObject res = new JSONObject();
       String username = req.getString("username");
       String password = req.getString("password");
       String ip = ctx.ip();
@@ -59,21 +48,21 @@ public class UserController {
       logger.info("Attempting to login " + username);
 
       LoginService loginService = new LoginService(db, logger, username, password, ip, userAgent);
-      loginService.execute();
-      res.put("status", loginService.getResponse());
-      if(loginService.getResponse() == UserMessage.SUCCESS){
-        res.put("userRole", loginService.getUserRole());
-        res.put("organization", loginService.getOrganization());
-        res.put("firstName", loginService.getFirstName());
-        res.put("lastName", loginService.getLastName());
-        res.put("twoFactorOn", loginService.isTwoFactorOn());
+      Message response = loginService.executeAndGetResponse();
+      JSONObject responseJSON = response.toJSON();
+      if(response == UserMessage.SUCCESS){
+        responseJSON.put("userRole", loginService.getUserRole());
+        responseJSON.put("organization", loginService.getOrganization());
+        responseJSON.put("firstName", loginService.getFirstName());
+        responseJSON.put("lastName", loginService.getLastName());
+        responseJSON.put("twoFactorOn", loginService.isTwoFactorOn());
 
         ctx.sessionAttribute("privilegeLevel", loginService.getUserRole());
         ctx.sessionAttribute("orgName", loginService.getOrganization());
         ctx.sessionAttribute("username", loginService.getUsername());
         ctx.sessionAttribute("fullName", loginService.getFullName());
       }
-      ctx.json(res.toString());
+      ctx.json(responseJSON);
     };
 
 //  UNUSED
@@ -159,8 +148,6 @@ public class UserController {
     ctx -> {
       logger.info("Starting createNewUser handler");
       JSONObject req = new JSONObject(ctx.body());
-      JSONObject res = new JSONObject();
-
       UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
       String organizationName = ctx.sessionAttribute("orgName");
       String sessionUsername = ctx.sessionAttribute("username");
@@ -182,9 +169,8 @@ public class UserController {
       CreateUserService createUserService = new CreateUserService(db, logger, sessionUserLevel, organizationName,
               sessionUsername, firstName, lastName, birthDate, email, phone, address, city, state, zipcode,
               twoFactorOn, username, password, userType);
-      createUserService.execute();
-      res.put("status", createUserService.getResponse());
-      ctx.json(res.toString());
+      Message response = createUserService.executeAndGetResponse();
+      ctx.json(response.toJSON());
     };
 
   public Handler logout =
@@ -199,30 +185,24 @@ public class UserController {
         logger.info("Started getUserInfo handler");
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User user = userCollection.find(eq("username", username)).first();
-        if (user != null) {
-          res.put("userRole", user.getUserType());
-          res.put("organization", user.getOrganization());
-          res.put("firstName", user.getFirstName());
-          res.put("lastName", user.getLastName());
-          res.put("birthDate", user.getBirthDate());
-          res.put("address", user.getAddress());
-          res.put("city", user.getCity());
-          res.put("state", user.getState());
-          res.put("zipcode", user.getZipcode());
-          res.put("email", user.getEmail());
-          res.put("phone", user.getPhone());
-          res.put("twoFactorOn", user.getTwoFactorOn());
-          res.put("username", username);
-          res.put("status", UserMessage.SUCCESS.getErrorName());
-          ctx.json(res.toString());
-          logger.info("Successfully got user info");
+        GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
+        Message response = infoService.executeAndGetResponse();
+        if(response != UserMessage.SUCCESS){ // if fail return
+          ctx.json(response.toJSON());
         } else {
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
-          logger.error("Session Token Failure");
+          JSONObject userInfo = infoService.getUserFields(); // get user info here
+          JSONObject mergedInfo = mergeJSON(response.toJSON(), userInfo);
+          ctx.json(mergedInfo);
         }
       };
+
+  private JSONObject mergeJSON(JSONObject object1, JSONObject object2){ // helper function to merge 2 json objects
+    JSONObject merged = new JSONObject(object1, JSONObject.getNames(object1));
+    for(String key : JSONObject.getNames(object2)) {
+      merged.put(key, object2.get(key));
+    }
+    return merged;
+  }
 
   public Handler getMembers =
       ctx -> {

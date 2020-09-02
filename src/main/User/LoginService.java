@@ -35,7 +35,6 @@ public class LoginService implements Service {
   private MongoDatabase db;
   private String username;
   private String password;
-  private Message response;
   private User user;
   private String ip;
   private String userAgent;
@@ -53,39 +52,35 @@ public class LoginService implements Service {
   }
 
   // the execute function will handle all business logic
-  public void execute() {
+  public Message executeAndGetResponse() {
     // validation
     if (!ValidationUtils.isValidUsername(this.username)
             || !ValidationUtils.isValidPassword(this.password)) {
       logger.info("Invalid username and/or password");
-      response = UserMessage.AUTH_FAILURE;
-      return;
+      return UserMessage.AUTH_FAILURE;
     }
     // get user
     User user = findUser(this.username);
     if(user == null){
-      response = UserMessage.AUTH_FAILURE;
-      return;
+      return UserMessage.AUTH_FAILURE;
     }
     Objects.requireNonNull(user);
     this.user = user;
     // verify password
     if(!verifyPassword(this.password, user.getPassword())){
-      return;
+      return UserMessage.AUTH_FAILURE;
     }
+    recordActivityLogin(); // record login activity
+    getLocationOfLogin(user, ip, userAgent); // get ip location
+    logger.info("Login Successful!");
     // if two factor is on, run 2fa
     if(user.getTwoFactorOn() &&
             (user.getUserType() == UserType.Director ||
                     user.getUserType() == UserType.Admin ||
                     user.getUserType() == UserType.Worker)) {
-      perform2FA(user.getEmail());
+      return perform2FA(user.getEmail());
     }
-    if(response == null){
-      response = UserMessage.SUCCESS;
-    }
-    recordActivityLogin(); // record login activity
-    getLocationOfLogin(user, ip, userAgent); // get ip location
-    logger.info("Login Successful!");
+    return UserMessage.SUCCESS;
   }
 
   public void recordActivityLogin(){
@@ -141,28 +136,22 @@ public class LoginService implements Service {
     logger.info("Added login to login history");
   }
 
-  public void perform2FA(String email){
+  public Message perform2FA(String email){
     String randCode = String.format("%06d", new Random().nextInt(999999));
     Date expDate = new Date(System.currentTimeMillis() + JWT_EXPIRATION_IN_MILI);
-    response = UserMessage.TOKEN_ISSUED;
-    Thread emailThread =
-            new Thread(
-                    () -> {
-                      try {
-                        String emailContent = EmailUtil.getVerificationCodeEmail(randCode);
-                        EmailUtil.sendEmail(
-                                "Keep Id", email, "Keepid Verification Code", emailContent);
-                        saveJWTToDb(randCode, expDate);
-                      } catch (EmailExceptions e) {
-                        logger.error("Could not send email");
-                        response = e;
-                      } catch (UnsupportedEncodingException e) {
-                        logger.error("Unsupported encoding");
-                        e.printStackTrace();
-                        response = UserMessage.SERVER_ERROR;
-                      }
-                    });
-    emailThread.start();
+    try {
+      String emailContent = EmailUtil.getVerificationCodeEmail(randCode);
+      EmailUtil.sendEmail(
+              "Keep Id", email, "Keepid Verification Code", emailContent);
+      saveJWTToDb(randCode, expDate);
+    } catch (EmailExceptions emailException) {
+      logger.error("Could not send email");
+      return emailException;
+    } catch (UnsupportedEncodingException e) {
+      logger.error("Unsupported encoding");
+      return UserMessage.SERVER_ERROR;
+    }
+    return UserMessage.TOKEN_ISSUED;
   }
 
   public void saveJWTToDb(String randomCode, Date expirationDate) {
@@ -184,12 +173,10 @@ public class LoginService implements Service {
       case SUCCESS: return true;
       case ERROR: {
         logger.error("Failed to hash password");
-        response = UserMessage.HASH_FAILURE;
         return false;
       }
       case FAILURE: {
         logger.info("Incorrect password");
-        response = UserMessage.AUTH_FAILURE;
         return false;
       }
     }
@@ -199,14 +186,6 @@ public class LoginService implements Service {
   public User findUser(String username) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     return userCollection.find(eq("username", username)).first();
-  }
-
-  @Override
-  public Message getResponse(){
-    if(this.response == null){
-      throw new IllegalStateException("please run execute before getResponse()");
-    }
-    return this.response;
   }
 
   public UserType getUserRole(){

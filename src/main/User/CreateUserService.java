@@ -61,18 +61,36 @@ public class CreateUserService implements Service {
     activityController = new ActivityController(db);
   }
 
+  // for testing
+  CreateUserService(MongoDatabase db, Logger logger, User user, String sessionUsername, UserType sessionUserLevel){
+    this.sessionUserLevel = sessionUserLevel;
+    this.organizationName = user.getOrganization();
+    this.sessionUsername = sessionUsername;
+    this.firstName = user.getFirstName();
+    this.lastName = user.getLastName();
+    this.birthDate = user.getBirthDate();
+    this.email = user.getEmail();
+    this.phone = user.getPhone();
+    this.address = user.getAddress();
+    this.city = user.getCity();
+    this.state = user.getState();
+    this.zipcode = user.getZipcode();
+    this.twoFactorOn = user.getTwoFactorOn();
+    this.username = user.getUsername();
+    this.password = user.getPassword();
+    this.userType = user.getUserType();
+  }
+
   @Override
-  public void execute() {
+  public Message executeAndGetResponse() {
     // validations
     if (sessionUserLevel == null || organizationName == null || sessionUsername == null) {
       logger.info("Token failure");
-      response = UserMessage.SESSION_TOKEN_FAILURE;
-      return;
+      return UserMessage.SESSION_TOKEN_FAILURE;
     }
     if (userType == null) {
       logger.info("Invalid privilege type");
-      response = UserMessage.INVALID_PRIVILEGE_TYPE;
-      return;
+      return UserMessage.INVALID_PRIVILEGE_TYPE;
     }
     // create user object
     User user;
@@ -94,8 +112,7 @@ public class CreateUserService implements Service {
                       userType);
     } catch (ValidationException ve) {
       logger.error("Validation exception");
-      response = ve;
-      return;
+      return ve;
     }
     // check some conditions
     if ((user.getUserType() == UserType.Director
@@ -104,14 +121,12 @@ public class CreateUserService implements Service {
             && sessionUserLevel != UserType.Admin
             && sessionUserLevel != UserType.Director) {
       logger.error("Cannot enroll ADMIN/DIRECTOR as NON-ADMIN/NON-DIRECTOR");
-      response = UserMessage.NONADMIN_ENROLL_ADMIN;
-      return;
+      return UserMessage.NONADMIN_ENROLL_ADMIN;
     }
 
     if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
       logger.error("Cannot enroll CLIENT as CLIENT");
-      response = UserMessage.CLIENT_ENROLL_CLIENT;
-      return;
+      return UserMessage.CLIENT_ENROLL_CLIENT;
     }
 
     // add to database
@@ -119,16 +134,14 @@ public class CreateUserService implements Service {
     User existingUser = userCollection.find(eq("username", user.getUsername())).first();
     if (existingUser != null) {
       logger.info("Username already exists");
-      response = UserMessage.USERNAME_ALREADY_EXISTS;
-      return;
+      return UserMessage.USERNAME_ALREADY_EXISTS;
     }
 
     // create password hash
     String hash = SecurityUtils.hashPassword(password);
     if (hash == null) {
       logger.error("Could not hash password");
-      response = UserMessage.HASH_FAILURE;
-      return;
+      return UserMessage.HASH_FAILURE;
     }
     user.setPassword(hash);
 
@@ -159,15 +172,7 @@ public class CreateUserService implements Service {
         activityController.addActivity(cli);
         break;
     }
-    response = UserMessage.ENROLL_SUCCESS;
     logger.info("Successfully created user, " + user.getUsername());
-  }
-
-  @Override
-  public Message getResponse() {
-    if(response == null){
-      throw new IllegalStateException("run execute before getResponse()");
-    }
-    return response;
+    return UserMessage.ENROLL_SUCCESS;
   }
 }
