@@ -1,8 +1,9 @@
 package PDF;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum PdfMessage {
+public enum PdfMessage implements Message {
   INVALID_PDF_TYPE("INVALID_PDF_TYPE:Invalid PDF Type."),
   INVALID_PDF("INVALID_PDF:File is not a valid pdf"),
   INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),

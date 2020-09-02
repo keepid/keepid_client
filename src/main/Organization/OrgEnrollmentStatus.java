@@ -1,8 +1,9 @@
 package Organization;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum OrgEnrollmentStatus {
+public enum OrgEnrollmentStatus implements Message {
   ORG_EXISTS("ORG_EXISTS: Organization Exists Already"),
   SUCCESSFUL_ENROLLMENT("SUCCESSFUL_ENROLLMENT: Please Wait 1-3 Business Days For Response"),
   PASS_HASH_FAILURE("PASS_HASH_FAILURE: Server Password Failure, Please Try Again"),

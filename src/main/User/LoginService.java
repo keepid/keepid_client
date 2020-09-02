@@ -1,8 +1,246 @@
 package User;
 
-public class LoginService {
+import Activity.ActivityController;
+import Activity.LoginActivity;
+import Bug.BugController;
+import Config.Message;
+import Config.Service;
+import Security.EmailExceptions;
+import Security.EmailUtil;
+import Security.SecurityUtils;
+import Security.Tokens;
+import Validation.ValidationUtils;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.ReplaceOptions;
+import io.ipinfo.api.IPInfo;
+import io.ipinfo.api.errors.RateLimitedException;
+import io.ipinfo.api.model.IPResponse;
+import kong.unirest.Unirest;
+import org.bson.conversions.Bson;
+import org.json.JSONObject;
+import org.slf4j.Logger;
 
-  public LoginService() {
+import java.io.UnsupportedEncodingException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
+
+public class LoginService implements Service {
+  public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));
+  private Logger logger;
+  private MongoDatabase db;
+  private String username;
+  private String password;
+  private Message response;
+  private User user;
+  private String ip;
+  private String userAgent;
+  private ActivityController activityController;
+  public static final long JWT_EXPIRATION_IN_MILI = 300000;
+
+  public LoginService(MongoDatabase db, Logger logger, String username, String password, String ip, String userAgent) {
+    this.db = db;
+    this.logger = logger;
+    this.username = username;
+    this.password = password;
+    this.ip = ip;
+    this.userAgent = userAgent;
+    activityController = new ActivityController(db);
+  }
+
+  // the execute function will handle all business logic
+  public void execute() {
+    // validation
+    if (!ValidationUtils.isValidUsername(this.username)
+            || !ValidationUtils.isValidPassword(this.password)) {
+      logger.info("Invalid username and/or password");
+      response = UserMessage.AUTH_FAILURE;
+      return;
+    }
+    // get user
+    User user = findUser(this.username);
+    if(user == null){
+      response = UserMessage.AUTH_FAILURE;
+      return;
+    }
+    Objects.requireNonNull(user);
+    this.user = user;
+    // verify password
+    if(!verifyPassword(this.password, user.getPassword())){
+      return;
+    }
+    // if two factor is on, run 2fa
+    if(user.getTwoFactorOn() &&
+            (user.getUserType() == UserType.Director ||
+                    user.getUserType() == UserType.Admin ||
+                    user.getUserType() == UserType.Worker)) {
+      perform2FA(user.getEmail());
+    }
+    if(response == null){
+      response = UserMessage.SUCCESS;
+    }
+    recordActivityLogin(); // record login activity
+    getLocationOfLogin(user, ip, userAgent); // get ip location
+    logger.info("Login Successful!");
+  }
+
+  public void recordActivityLogin(){
+    LoginActivity log = new LoginActivity(user, user.getTwoFactorOn());
+    activityController.addActivity(log);
+  }
+
+  public void getLocationOfLogin(User user, String ip, String userAgent) {
+    List<IpObject> loginList = user.getLogInHistory();
+    if (loginList == null) {
+      loginList = new ArrayList<IpObject>(1000);
+    }
+    if (loginList.size() >= 1000) {
+      loginList.remove(0);
+    }
+    logger.info("Trying to add login to login history");
+
+    IpObject thisLogin = new IpObject();
+    ZonedDateTime currentTime = ZonedDateTime.now();
+    String formattedDate =
+            currentTime.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
+    boolean isMobile = userAgent.contains("Mobi");
+    String device = isMobile ? "Mobile" : "Computer";
+
+    thisLogin.setDate(formattedDate);
+    thisLogin.setIp(ip);
+    thisLogin.setDevice(device);
+
+    IPInfo ipInfo = IPInfo.builder().setToken(IP_INFO_TOKEN).build();
+    try {
+      IPResponse response = ipInfo.lookupIP(ip);
+      thisLogin.setLocation(
+              response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
+    } catch (RateLimitedException ex) {
+      logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
+      thisLogin.setLocation("Unknown");
+      JSONObject body = new JSONObject();
+      body.put(
+              "text",
+              "You are receiving this because we have arrived at maximum amount of IP "
+                      + "lookups we are allowed for our free plan.");
+      Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+    }
+    loginList.add(thisLogin);
+    addLoginHistoryToDB(loginList);
+  }
+
+  public void addLoginHistoryToDB(List<IpObject> loginList) {
+    MongoCollection<User> userCollection = db.getCollection("user", User.class);
+    Bson filter = eq("username", username);
+    Bson update = set("logInHistory", loginList);
+    userCollection.updateOne(filter, update);
+    logger.info("Added login to login history");
+  }
+
+  public void perform2FA(String email){
+    String randCode = String.format("%06d", new Random().nextInt(999999));
+    Date expDate = new Date(System.currentTimeMillis() + JWT_EXPIRATION_IN_MILI);
+    response = UserMessage.TOKEN_ISSUED;
+    Thread emailThread =
+            new Thread(
+                    () -> {
+                      try {
+                        String emailContent = EmailUtil.getVerificationCodeEmail(randCode);
+                        EmailUtil.sendEmail(
+                                "Keep Id", email, "Keepid Verification Code", emailContent);
+                        saveJWTToDb(randCode, expDate);
+                      } catch (EmailExceptions e) {
+                        logger.error("Could not send email");
+                        response = e;
+                      } catch (UnsupportedEncodingException e) {
+                        logger.error("Unsupported encoding");
+                        e.printStackTrace();
+                        response = UserMessage.SERVER_ERROR;
+                      }
+                    });
+    emailThread.start();
+  }
+
+  public void saveJWTToDb(String randomCode, Date expirationDate) {
+    MongoCollection<Tokens> tokenCollection =
+            db.getCollection("tokens", Tokens.class);
+    tokenCollection.replaceOne(
+            eq("username", username),
+            new Tokens()
+                    .setUsername(username)
+                    .setTwoFactorCode(randomCode)
+                    .setTwoFactorExp(expirationDate),
+            new ReplaceOptions().upsert(true));
+  }
+
+  public boolean verifyPassword(String inputPassword, String userHash) {
+    SecurityUtils.PassHashEnum verifyPasswordStatus =
+            SecurityUtils.verifyPassword(inputPassword, userHash);
+    switch (verifyPasswordStatus) {
+      case SUCCESS: return true;
+      case ERROR: {
+        logger.error("Failed to hash password");
+        response = UserMessage.HASH_FAILURE;
+        return false;
+      }
+      case FAILURE: {
+        logger.info("Incorrect password");
+        response = UserMessage.AUTH_FAILURE;
+        return false;
+      }
+    }
+    return false;
+  }
+
+  public User findUser(String username) {
+    MongoCollection<User> userCollection = db.getCollection("user", User.class);
+    return userCollection.find(eq("username", username)).first();
+  }
+
+  @Override
+  public Message getResponse(){
+    if(this.response == null){
+      throw new IllegalStateException("please run execute before getResponse()");
+    }
+    return this.response;
+  }
+
+  public UserType getUserRole(){
+    Objects.requireNonNull(user);
+    return user.getUserType();
+  }
+
+  public String getOrganization(){
+    Objects.requireNonNull(user);
+    return user.getOrganization();
+  }
+
+  public String getUsername(){
+    Objects.requireNonNull(user);
+    return user.getUsername();
+  }
+
+  public String getFirstName(){
+    Objects.requireNonNull(user);
+    return user.getFirstName();
+  }
+
+  public String getLastName(){
+    Objects.requireNonNull(user);
+    return user.getLastName();
+  }
+
+  public String getFullName(){
+    Objects.requireNonNull(user);
+    return user.getFirstName() + " " + user.getLastName();
+  }
+
+  public boolean isTwoFactorOn(){
+    Objects.requireNonNull(user);
+    return user.getTwoFactorOn();
   }
 }

@@ -1,8 +1,9 @@
 package User;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum UserMessage {
+public enum UserMessage implements Message {
   AUTH_SUCCESS("AUTH_SUCCESS:Successfully Authenticated User"),
   ENROLL_SUCCESS("ENROLL_SUCCESS:Successfully enrolled User."),
   AUTH_FAILURE("AUTH_FAILURE:Wrong Credentials"),

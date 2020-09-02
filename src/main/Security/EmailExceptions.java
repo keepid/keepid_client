@@ -1,8 +1,9 @@
 package Security;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public class EmailExceptions extends Exception {
+public class EmailExceptions extends Exception implements Message {
 
   private EmailMessages emailMessage;
 

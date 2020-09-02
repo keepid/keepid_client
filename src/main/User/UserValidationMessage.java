@@ -1,8 +1,9 @@
 package User;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum UserValidationMessage {
+public enum UserValidationMessage implements Message {
   INVALID_FIRSTNAME,
   INVALID_LASTNAME,
   INVALID_BIRTHDATE,
@@ -51,5 +52,25 @@ public enum UserValidationMessage {
       default:
         return UserMessage.INVALID_PARAMETER.toJSON();
     }
+  }
+
+  @Override
+  public JSONObject toJSON() {
+    return null;
+  }
+
+  @Override
+  public JSONObject toJSON(String message) {
+    return null;
+  }
+
+  @Override
+  public String getErrorName() {
+    return null;
+  }
+
+  @Override
+  public String getErrorDescription() {
+    return null;
   }
 }
