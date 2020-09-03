@@ -80,7 +80,7 @@ public class LoginService implements Service {
                     user.getUserType() == UserType.Worker)) {
       return perform2FA(user.getEmail());
     }
-    return UserMessage.SUCCESS;
+    return UserMessage.AUTH_SUCCESS;
   }
 
   public void recordActivityLogin(){

@@ -51,7 +51,7 @@ public class UserController {
       Message response = loginService.executeAndGetResponse();
       logger.info(response.toString() + response.getErrorDescription());
       JSONObject responseJSON = response.toJSON();
-      if(response == UserMessage.SUCCESS){
+      if(response == UserMessage.AUTH_SUCCESS){
         responseJSON.put("userRole", loginService.getUserRole());
         responseJSON.put("organization", loginService.getOrganization());
         responseJSON.put("firstName", loginService.getFirstName());
@@ -113,7 +113,7 @@ public class UserController {
 
         if (userType == null) {
           logger.error("userType is null");
-          ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
+          ctx.result(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
           return;
         }
 
@@ -122,7 +122,7 @@ public class UserController {
 
         if (existingUser != null) {
           logger.error("Username already exists");
-          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
+          ctx.result(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
           return;
         }
 
@@ -144,10 +144,10 @@ public class UserController {
               password,
               userType);
           logger.info("Validating user success");
-          ctx.json(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
+          ctx.result(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
         } catch (ValidationException ve) {
           logger.error("Validation exception");
-          ctx.json(ve.getJSON().toString());
+          ctx.result(ve.getJSON().toString());
         }
       };
 
@@ -177,14 +177,14 @@ public class UserController {
               sessionUsername, firstName, lastName, birthDate, email, phone, address, city, state, zipcode,
               twoFactorOn, username, password, userType);
       Message response = createUserService.executeAndGetResponse();
-      ctx.json(response.toJSON());
+      ctx.result(response.toJSON().toString());
     };
 
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
         logger.info("Signed out");
-        ctx.json(UserMessage.SUCCESS.toJSON());
+        ctx.result(UserMessage.SUCCESS.toJSON().toString());
       };
 
   public Handler getUserInfo =
@@ -195,11 +195,11 @@ public class UserController {
         GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
         Message response = infoService.executeAndGetResponse();
         if(response != UserMessage.SUCCESS){ // if fail return
-          ctx.json(response.toJSON());
+          ctx.result(response.toJSON().toString());
         } else {
           JSONObject userInfo = infoService.getUserFields(); // get user info here
           JSONObject mergedInfo = mergeJSON(response.toJSON(), userInfo);
-          ctx.json(mergedInfo);
+          ctx.result(mergedInfo.toString());
         }
       };
 
