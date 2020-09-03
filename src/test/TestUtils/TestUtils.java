@@ -710,7 +710,10 @@ public class TestUtils {
   }
 
   public static JSONObject responseStringToJSON(String response) {
-    String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
-    return new JSONObject(strippedResponse);
+    if(response.charAt(0) == '"'){
+      String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
+      return new JSONObject(strippedResponse);
+    }
+    return new JSONObject(response);
   }
 }

@@ -49,6 +49,7 @@ public class UserController {
 
       LoginService loginService = new LoginService(db, logger, username, password, ip, userAgent);
       Message response = loginService.executeAndGetResponse();
+      logger.info(response.toString() + response.getErrorDescription());
       JSONObject responseJSON = response.toJSON();
       if(response == UserMessage.SUCCESS){
         responseJSON.put("userRole", loginService.getUserRole());
@@ -61,8 +62,14 @@ public class UserController {
         ctx.sessionAttribute("orgName", loginService.getOrganization());
         ctx.sessionAttribute("username", loginService.getUsername());
         ctx.sessionAttribute("fullName", loginService.getFullName());
+      } else {
+        responseJSON.put("userRole", "");
+        responseJSON.put("organization", "");
+        responseJSON.put("firstName", "");
+        responseJSON.put("lastName", "");
+        responseJSON.put("twoFactorOn", "");
       }
-      ctx.json(responseJSON);
+      ctx.result(responseJSON.toString());
     };
 
 //  UNUSED
@@ -177,7 +184,7 @@ public class UserController {
       ctx -> {
         ctx.req.getSession().invalidate();
         logger.info("Signed out");
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
+        ctx.json(UserMessage.SUCCESS.toJSON());
       };
 
   public Handler getUserInfo =
