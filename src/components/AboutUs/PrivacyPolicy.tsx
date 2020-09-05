@@ -19,7 +19,7 @@ class PrivacyPolicy extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-5">Privacy Policy</h1>
           <p className="lead pt-3">
-            We need your identification information to help you gain access to services and keep your identity safe. See
+            When you use Keep.id, you’ll be uploading identification documents that by nature will contain information about you. It will always be your choice to upload these documents and to use the application. Keep.id will be storing them on the secure cloud, able to be accessed with the Internet and only by you and those with permitted access. With your identification documents stored on Keep.id, you’ll be able to gain access to government and aid services and have a reliable location for storing your identification. See
             {' '}
             <Link to="/our-mission">Our Mission.</Link>
           </p>
@@ -27,7 +27,10 @@ class PrivacyPolicy extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-5">The Information You Give Us</h1>
           <p className="pt-3">
-            When you fill out your forms that you’ll upload to the website, you might put in your name, email, phone number, EIN, address, zip code, birthdate, etc. This is completely voluntary and only according to the forms of identification or government/agency applications you’ll be filling out. On our end, we also collect your IP address and page visits to ensure you’re a real person (i.e. not a bot) and record login attempts, which helps us keep the product secure.
+            When you fill out your forms that you’ll upload to the website, you might put in your name, email, phone number, EIN, address, zip code, birthdate, etc. This is completely voluntary and only according to the forms of identification or government/agency applications you’ll be filling out. On our end, we collect your IP address and page visits to ensure you’re a real person (i.e. not a bot) and record login attempts, which help us keep the product secure.
+            <p className="pt-2">
+              Your information is stored by secure cloud providers, that is, on remote servers. As of now we will store it indefinitely or until further notice.
+            </p>
           </p>
           <p className="pt-2">
             We obtain the IP address from the HTTP request headers; the voluntary release information is collected through the forms and uploads.
@@ -44,24 +47,20 @@ class PrivacyPolicy extends React.Component<{}, State> {
               The first tier is application information. This includes login attempts, logged actions, and a database of all users, organizations, and encrypted documents. This tier is only accessible to employees of Team Keep. We protect this tier with rigorous security measures including access control and two-factor authentication.
             </li>
             <li className="pt-2">
-              The second tier is user-shared information. Third-party organizations such as nonprofits and municipal agencies will have access to the PDF documents users upload as well as user ID (name, License ID #, etc.). At this tier, organizations have access to the personal information of various users, but only under signed consensual agreement between the user and an individual worker at the organization. In other words, not all of the workers at the organization will have access.
+              The second tier is user-shared information. Third-party organizations such as nonprofits and municipal agencies will have access to the PDF documents users upload as well as user ID (name, License ID#, etc.). At this tier, organizations have access to the personal information of various users, but only under signed consensual agreement between each user and an individual worker at the organization. In other words, not all of the workers at the organization will have access.
             </li>
             <li className="pt-2">
-              The third tier is user-specific information. Users are able to see all of their own personal information and cannot see the information of other users. The secure storage of this information as well as its secure transmission to nonprofits and other partners is the purpose of Keep.id.
+              The third tier is user-specific information. Users are able to see all of their own personal information and cannot see the information of other users. The secure storage of this information as well as its secure transmission over the Internet to nonprofits and other partners is the purpose of Keep.id.
             </li>
             <li className="pt-2">
-              The final tier is HTTP request information, which is metadata attached to the information sent from the application in the first tier. We share this information with Google as a third-party service in the form of ReCaptcha, which helps prevent bots.
+              The final tier is HTTP request information, which is metadata attached to the information sent from the application in the first tier to Keep.id’s server. We share this information with Google as a third-party service in the form of ReCaptcha, which helps to prevent bots.
             </li>
           </ul>
-          <p className="pt-2">
-            We obtain the IP address from the HTTP request headers; the voluntary release information is collected through the forms and uploads.
-            Your information is stored by secure cloud providers; as of now, we will store it indefinitely or until further notice.
-          </p>
         </div>
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-5">Safeguarding Your Information</h1>
           <p className="pt-3">
-            Your identification information is protected by secure encryption – HTTPS, firewalls, whitelisting, access control, transport-level security, strong username and password, HMAC, etc. We place a strong emphasis on information security and have installed strict access control around the three tiers of accessible information. Integrations with Cloudflare serve as our DNS and DDoS protection.
+            Your identification information is protected by secure encryption – HTTPS, firewalls, whitelisting, access control, transport-level security, strong username and password, HMAC, etc. We place a strong emphasis on information security and have installed strict access control around the three tiers of accessible information. Integrations with Cloudflare serve as our DNS and DDoS protection. With server logging we keep track of activity and audit the application. In addition, we have installed automatic logoff so that if you leave the application open and unattended for some time, you will be automatically signed out.
           </p>
           <p className="pt-2">
             In the event that we change or update this privacy policy, visitors will be notified via site interactions.
@@ -77,29 +76,22 @@ class PrivacyPolicy extends React.Component<{}, State> {
           </p>
         </div>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-5">Additional Context</h1>
-          <h3>Gaining Access to Help Services</h3>
-          <p className="pt-3">
-            Let’s say you go to a local nonprofit or government agency to apply for food stamps or fill out a job application, and you need to provide proof of identification beyond what information you can recall or say from knowledge. Proof can often only exist on a piece of paper or document stored on a computer or online. If you don’t have such proof of identification on your person, you can use Keep.id to easily access your identification from a computer and then be able to apply for services.
-          </p>
-          <h3>Keeping Track of Homeless Individuals</h3>
-          <p className="pt-2">
-            If you’re a nonprofit and are seeking to register the homeless persons in your region or area of coverage, keeping multiple users’ documents together for your file can be very valuable in your outreach to a certain city or district. We can help you cover all the homeless in your area that may need assistance with help services, job applications, etc.
-          </p>
-        </div>
-        <div className="jumbotron-fluid mt-5">
           <h1 className="display-5">Key Terms</h1>
           <p className="pt-3">
-            Bot: Sometimes non-human programs may attempt to access or log into websites. By using your IP address, and recaptcha, we can prevent bots from disrupting Keep.id.
+            Bot: Sometimes non-human programs may attempt to access or log into websites. By using your IP address and ReCaptcha, we can prevent bots from disrupting Keep.id.
+
           </p>
           <p className="pt-2">
-            Cloud Database: Our cloud databases store data on geographically distributed servers on existing computing infrastructure such as Amazon Web Services.
+            Cloud Database: Our cloud databases store data on geographically distributed servers on existing computing infrastructure such as Amazon Web Services and MongoDB Atlas.
           </p>
           <p className="pt-2">
             DNS/DDoS protection: DNS stands for Domain Name System, and DDoS stands for Distributed Denial of Service. Our protection prevents attackers from targeting our DNS and servers.
           </p>
           <p className="pt-2">
             EIN: Employee Identification Number.
+          </p>
+          <p className="pt-2">
+            HTTP: Hypertext Transfer Protocol. A foundational procedure that establishes communication between a client and server in loading a website. HTTPS (Hypertext Transfer Protocol Secure) is an extension of HTTP that adds protection across the channel of communication.
           </p>
           <p className="pt-2">
             IP Address: Internet Protocol Address. An IP address is given to any piece of hardware that accesses the Internet. These addresses contain geographic information in many cases, and therefore can be used to track users.
