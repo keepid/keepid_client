@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
+import ReactGA from 'react-ga';
 import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
@@ -40,6 +41,10 @@ import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
+import Hubspot from './components/AboutUs/Hubspot';
+
+ReactGA.initialize('UA-176859431-1');
+ReactGA.pageview(window.location.pathname + window.location.search);
 
 interface State {
   role: Role,
@@ -333,6 +338,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/our-mission">
                 <OurMission />
+              </Route>
+              <Route path="/hubspot">
+                <Hubspot />
               </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />
