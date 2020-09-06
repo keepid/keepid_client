@@ -18,6 +18,7 @@ import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
+import MyOrganization from './components/AccountSecurity/MyOrganization';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
 import Role from './static/Role';
@@ -42,6 +43,7 @@ import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
+import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -179,7 +181,6 @@ class App extends React.Component<{}, State, {}> {
             <Helmet>
               <title>Keep.id</title>
               <meta name="description" content="Securely Combating Homelessness" />
-              <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/8293567.js" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
 
@@ -238,7 +239,7 @@ class App extends React.Component<{}, State, {}> {
                 <SignupBrancher />
               </Route>
               <Route path="/organization-signup">
-                <CompleteSignupFlow />
+                <CompleteSignupFlow role={Role.Admin} />
               </Route>
               <Route
                 path="/person-signup/:roleString"
@@ -374,6 +375,18 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <Route
+                path="/my-organization"
+                render={() => {
+                  if (role === Role.Director || role === Role.Admin) {
+                    return (<MyOrganization name={name} organization={organization} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route path="/create-user/:jwt">
+                <InviteSignupJWT />
+              </Route>
               <Route path="/error">
                 <Error />
               </Route>
