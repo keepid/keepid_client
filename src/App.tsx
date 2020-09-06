@@ -43,8 +43,10 @@ import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 
-ReactGA.initialize('UA-176859431-1');
-ReactGA.pageview(window.location.pathname + window.location.search);
+window.onload = () => {
+  ReactGA.initialize('UA-176859431-1');
+  ReactGA.pageview(window.location.pathname + window.location.search);
+};
 
 interface State {
   role: Role,
