@@ -19,6 +19,7 @@ interface State {
   zipcodeLng: any,
   zipcodeLatLang: any,
   results: any,
+  orgsWithinRadius: any,
 }
 
 const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
@@ -36,18 +37,19 @@ class FindOrganization extends Component<Props, State> {
       zipcodeLng: {},
       zipcodeLatLang: {},
       results: [],
+      orgsWithinRadius: [],
     };
-    this.getOrganizations = this.getOrganizations.bind(this);
-    this.geocodeZipcode = this.geocodeZipcode.bind(this);
+    this.getAllOrganizations = this.getAllOrganizations.bind(this);
+    // this.geocodeZipcode = this.geocodeZipcode.bind(this);
     this.onHandleChangeZipcode = this.onHandleChangeZipcode.bind(this);
     this.onSubmitZipcode = this.onSubmitZipcode.bind(this);
   }
 
   componentDidMount() {
-    this.getOrganizations();
+    this.getAllOrganizations();
   }
 
-  getOrganizations() {
+  getAllOrganizations() {
     const count = 0;
     const organizations = [
       {
@@ -55,11 +57,13 @@ class FindOrganization extends Component<Props, State> {
         lat: 39.9460872,
         lng: -75.1644793,
         address: '315 S Broad St, Philadelphia, PA 19107',
+        zipcode: 19107,
         phone: '',
         email: '',
         count,
       },
     ];
+    return organizations;
     this.setState({ organizations });
   }
 
@@ -69,32 +73,33 @@ class FindOrganization extends Component<Props, State> {
 
   onSubmitZipcode(event: any) {
     event.preventDefault();
-    this.geocodeZipcode();
+    // this.geocodeZipcode();
+    this.calculateOrganizationsWithinDistance(event.target.value);
   }
 
-  geocodeZipcode() {
-    const {
-      zipcodeSearch,
-      results,
-    } = this.state;
-    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); // Do in OrganizationSignup
-    const search = `postal_code:${zipcodeSearch}`;
-    const urlParams = {
-      components: search,
-      key: APIKey,
-    };
-    Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
-    fetch(url.toString(), {
-      method: 'GET',
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
+  // geocodeZipcode() {
+  //   const {
+  //     zipcodeSearch,
+  //     results,
+  //   } = this.state;
+  //   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); // Do in OrganizationSignup
+  //   const search = `postal_code:${zipcodeSearch}`;
+  //   const urlParams = {
+  //     components: search,
+  //     key: APIKey,
+  //   };
+  //   Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
+  //   fetch(url.toString(), {
+  //     method: 'GET',
+  //   }).then((response) => response.json())
+  //     .then((responseJSON) => {
+  //       const { status } = responseJSON;
 
-        // if valid zipcode
-        if (status === 'OK') {
-          const zipcodeLatLng = responseJSON.results[0].geometry.location;
-          const zipcodeLat = responseJSON.results[0].geometry.location.lat;
-          const zipcodeLng = responseJSON.results[0].geometry.location.lng;
+  //       // if valid zipcode
+  //       if (status === 'OK') {
+  //         const zipcodeLatLng = responseJSON.results[0].geometry.location;
+  //         const zipcodeLat = responseJSON.results[0].geometry.location.lat;
+  //         const zipcodeLng = responseJSON.results[0].geometry.location.lng;
 
           // if within radius, post results
           // this.withinDistance(zipcodeLat, zipcodeLng);
@@ -116,18 +121,71 @@ class FindOrganization extends Component<Props, State> {
           //     zipcodeLng,
           //   });
           // }
-          this.setState({
-            displayMap: true,
-            displayIcon: false,
-            displayError: false,
-            zipcodeLat,
-            zipcodeLng,
-          });
+  //         this.setState({
+  //           displayMap: true,
+  //           displayIcon: false,
+  //           displayError: false,
+  //           zipcodeLat,
+  //           zipcodeLng,
+  //         });
+  //       } else {
+  //         // const {
+  //         //   alert,
+  //         // } = this.props;
+  //         // alert.show('Invalid zip code');
+  //         this.setState({
+  //           displayMap: false,
+  //           displayError: true,
+  //           displayIcon: false,
+  //         });
+  //       }
+  //     });
+  // }
+
+  calculateOrganizationsWithinDistance(zipcode: number) {
+    const {
+      orgsWithinRadius,
+    } = this.state;
+    const searchCoordinate = this.getCoordinateFromZipcode(zipcode);
+    const allOrgs = this.getAllOrganizations;
+    for (var i = 0; i < allOrgs.length; i++) {
+      const orgCoordinate = this.getCoordinateFromZipcode(allOrgs[i].zipcode);
+      const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
+      if (distBetween <= 10) {
+        orgsWithinRadius.push(allOrgs[i]);
+      }
+    }
+    this.setState(orgsWithinRadius);
+  }
+
+  getCoordinateFromZipcode(zipcode: number) {
+    // const {
+    //   zipcodeSearch,
+    // } = this.state;
+    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); 
+    const search = `postal_code:${zipcode}`;
+    const urlParams = {
+      components: search,
+      key: APIKey,
+    };
+    Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
+    fetch(url.toString(), {
+      method: 'GET',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const { status } = responseJSON;
+
+        // if valid zipcode
+        if (status === 'OK') {
+          const zipcodeLat = responseJSON.results[0].geometry.location.lat;
+          const zipcodeLng = responseJSON.results[0].geometry.location.lng;
+          const coordinateProps = {
+            lat: zipcodeLat,
+            lng: zipcodeLng,
+          }
+          const coordinate = new Coordinate(coordinateProps);
+          return coordinate;
         } else {
-          // const {
-          //   alert,
-          // } = this.props;
-          // alert.show('Invalid zip code');
           this.setState({
             displayMap: false,
             displayError: true,
@@ -135,27 +193,32 @@ class FindOrganization extends Component<Props, State> {
           });
         }
       });
+    return;
   }
 
-  withinDistance(zipcodeLat, zipcodeLng) {
-    const {
-      organizations,
-      results,
-    } = this.state;
-    // convert lat and lng to kilometers
-    const searchLatKilo = zipcodeLat / 110.574;
-    const searchLngKilo = zipcodeLng / (111.320 * Math.cos(searchLatKilo * Math.PI / 180));
-    for (let i = 0; i < organizations.length; i++) {
-      const orgLatKilo = organizations[i].lat / 110.574;
-      const orgLngKilo = organizations[i].lng / (111.320 * Math.cos(orgLatKilo * Math.PI / 180));
-      // check if org is within 10 miles
-      if ((Math.abs(searchLatKilo - orgLatKilo) < 10000)
-          && (Math.abs(searchLngKilo - orgLngKilo) < 10000)) {
-        results.add(organizations[i]);
-      }
-    }
+  // haversine formula
+  getDistanceInKM(coordinate1, coordinate2): number {
+    let lat1 = coordinate1.lat;
+    let lat2 = coordinate2.lat;
+    let lng1 = coordinate1.lng;
+    let lng2 = coordinate2.lng;
+    const avgEarthRadiusInKM = 6371;
+    var radLat = this.degToRad(lat2-lat1);
+    var radLng = this.degToRad(lng2-lng1);
+    var a = 
+      Math.sin(radLat/2) * Math.sin(radLat/2) + 
+      Math.cos(this.degToRad(lat1)) * Math.cos(this.degToRad(lat2)) *
+      Math.sin(radLng/2) * Math.sin(radLng/2)
+      ;
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var distInKM = avgEarthRadiusInKM * c;
+    return distInKM;
   }
 
+  // helper function to convert degree to radian
+  degToRad(degree: number ): number {
+    return degree * (Math.PI/180);
+  }
   render() {
     const {
       displayMap,
@@ -291,7 +354,7 @@ class FindOrganization extends Component<Props, State> {
                 {displayMap
                   ? (
                     <MapComponent
-                      organizations={organizations}
+                      organizations={this.state.orgsWithinRadius}
                       lat={zipcodeLat}
                       lng={zipcodeLng}
                       googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
