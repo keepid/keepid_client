@@ -397,6 +397,12 @@ public class UserController {
       UserType userType = UserType.userTypeFromString(userTypeString);
       String organizationName = req.getString("orgName").strip();
 
+      if (userTypeString == null || userTypeString.length() == 0) {
+        logger.error("Invalid privilege type");
+        ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
+        return;
+      }
+
       User user;
       try {
         user =
