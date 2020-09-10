@@ -144,25 +144,22 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
     this.setState({
       username: '',
       name: '',
       organization: '',
       showModal: false,
+      role: Role.LoggedOut,
     });
-
-    // clear the logout timeout
-    if (this.logoutTimeout) {
-      clearTimeout(this.logoutTimeout);
-    }
 
     fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
-    }).then((response) => {
-      this.setState({ role: Role.LoggedOut });
     });
-    return <Redirect to="login" />;
   }
 
   render() {
@@ -183,7 +180,6 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-
             {role !== Role.LoggedOut ? (
               <div>
                 <IdleTimer
@@ -201,8 +197,7 @@ class App extends React.Component<{}, State, {}> {
                   handleLogout={this.logOut}
                 />
               </div>
-            ) : null}
-
+            ) : <div />}
             <Switch>
               <Route
                 exact
