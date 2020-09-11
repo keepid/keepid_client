@@ -80,8 +80,7 @@ public class OrganizationJWTTests {
 
     body.put("data", dataArray);
 
-    // TestUtils.login("adminBSM", "adminBSM");
-    TestUtils.login("testDirector2", "testDirector2");
+    TestUtils.login("adminBSM", "adminBSM");
 
     HttpResponse actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/invite-user")
@@ -124,8 +123,7 @@ public class OrganizationJWTTests {
 
     body.put("data", dataArray);
 
-    // TestUtils.login("adminBSM", "adminBSM");
-    TestUtils.login("testDirector2", "testDirector2");
+    TestUtils.login("adminBSM", "adminBSM");
 
     HttpResponse actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/invite-user")
@@ -225,7 +223,7 @@ public class OrganizationJWTTests {
     assert (resp.has("workers"));
     // assertThat(resp.getInt("workers")).isEqualTo(12);
     assert (resp.has("directors"));
-    // assertThat(resp.getInt("directors")).isEqualTo(2);
+    assertThat(resp.getInt("directors")).isEqualTo(2);
   }
 
   //  {userTypes : ["worker", "director"],
@@ -292,7 +290,7 @@ public class OrganizationJWTTests {
     assert (resp.has("workers"));
     // assertThat(resp.getInt("workers")).isEqualTo(12);
     assert (resp.has("directors"));
-    // assertThat(resp.getInt("directors")).isEqualTo(2);
+    assertThat(resp.getInt("directors")).isEqualTo(2);
   }
 
   @Test

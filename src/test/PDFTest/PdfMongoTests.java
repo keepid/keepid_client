@@ -7,11 +7,15 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class PdfMongoTests {
   private static String currentPDFFolderPath =
@@ -36,16 +40,14 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTest() {
-    // TestUtils.login("adminBSM", "adminBSM");
-    TestUtils.login("testDirector2", "testDirector2");
+    TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadValidPDFTestExists() {
-    // TestUtils.login("adminBSM", "adminBSM");
-    TestUtils.login("testDirector2", "testDirector2");
+    TestUtils.login("adminBSM", "adminBSM");
     uploadTestPDF();
     searchTestPDF();
     TestUtils.logout();
