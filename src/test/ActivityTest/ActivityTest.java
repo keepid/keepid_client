@@ -106,7 +106,7 @@ public class ActivityTest {
     TestUtils.login("createAdminOwner", "login-history-test");
     HttpResponse<String> findResponse =
         Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
-    System.out.print("find" + findResponse.getBody());
+    System.out.print("find" + findResponse.getBody().toString());
     TestUtils.logout();
   }
 
@@ -119,7 +119,7 @@ public class ActivityTest {
     TestUtils.login("createAdminOwner", "login-history-test");
     MongoCollection a = db.getCollection("activity");
     MongoCursor c = a.find(eq("owner", user1)).iterator();
-    System.out.print(c.next().toString());
+    //    System.out.print(c.next().toString());
     assert (c.hasNext());
     TestUtils.logout();
   }

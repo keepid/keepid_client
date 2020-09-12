@@ -41,35 +41,38 @@ public class ActivityController {
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> user = db.getCollection("user", User.class);
-        User user1 = user.find(eq("username", username)).first();
+        User curr = user.find(eq("username", username)).first();
         MongoCollection a = db.getCollection("activity");
-        MongoCursor c = a.find(eq("owner", user1)).iterator();
         MongoCursor cu = a.find().iterator();
         JSONArray allAct = new JSONArray();
-        while (c.hasNext()) {
-          Document total = (Document) c.next();
-          List<String> temp = total.getList("type", String.class);
-          String t = temp.get(temp.size() - 1);
-          JSONObject activity = new JSONObject();
-          activity.append("type", t);
-          String info = total.toJson();
-          activity.append("info", info);
-          allAct.put(activity);
+        while (cu.hasNext()) {
+          Document total = (Document) cu.next();
+          Document owner = (Document) total.get("owner");
+          if (username.equals(owner.get("username"))) {
+            List<String> temp = total.getList("type", String.class);
+            String t = temp.get(temp.size() - 1);
+            JSONObject activity = new JSONObject();
+            activity.append("type", t);
+            String info = total.toJson();
+            activity.append("info", info);
+            allAct.put(activity);
+          }
         }
+        res.put("allActivities", allAct);
         ctx.json(res.toString());
       };
   /*
    Request body should contain the type of activity you are looking for. Message me for a complete list.
   */
-  public Handler findMyActivitiesByType =
-      ctx -> {
-        JSONObject res = new JSONObject();
-        JSONObject req = new JSONObject(ctx.body());
-        String key = req.getString("type");
-        String username = ctx.sessionAttribute("username");
-        MongoCollection<User> users = db.getCollection("user", User.class);
-        User curr = users.find(eq("username", username)).first();
-        MongoCollection act = db.getCollection("activity");
+//  public Handler findMyActivitiesByType =
+//      ctx -> {
+//        JSONObject res = new JSONObject();
+//        JSONObject req = new JSONObject(ctx.body());
+//        String key = req.getString("type");
+//        String username = ctx.sessionAttribute("username");
+//        MongoCollection<User> users = db.getCollection("user", User.class);
+//        User curr = users.find(eq("username", username)).first();
+//        MongoCollection act = db.getCollection("activity");
         MongoCursor cursor =
             act.find(and((eq("owner", curr)), eq("type", key)))
                 .sort(orderBy(descending("occuredAt")))

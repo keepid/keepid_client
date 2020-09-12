@@ -35,8 +35,7 @@ public class OrganizationController {
 
   Logger logger;
   MongoDatabase db;
-
-  private ActivityController activityController = new ActivityController(db);
+  ActivityController activityController;
 
   public static final String newOrgTestURL =
       Objects.requireNonNull(System.getenv("NEW_ORG_TESTURL"));
@@ -46,6 +45,7 @@ public class OrganizationController {
   public OrganizationController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
+    activityController = new ActivityController(db);
     logger = l.createLogger("OrgController");
   }
 
@@ -100,7 +100,8 @@ public class OrganizationController {
         logger.info("Done with organizationSignupValidator");
       };
 
-  // Takes in a json object specifying usertypes and orgnames
+  // Takes in a json object specifying
+  // s and orgnames
   //
   //  {userTypes : [],
   //  organizations : []}
