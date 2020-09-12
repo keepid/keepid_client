@@ -13,10 +13,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Sorts.descending;
-import static com.mongodb.client.model.Sorts.orderBy;
 
 public class ActivityController {
   Logger logger;
@@ -64,31 +61,31 @@ public class ActivityController {
   /*
    Request body should contain the type of activity you are looking for. Message me for a complete list.
   */
-//  public Handler findMyActivitiesByType =
-//      ctx -> {
-//        JSONObject res = new JSONObject();
-//        JSONObject req = new JSONObject(ctx.body());
-//        String key = req.getString("type");
-//        String username = ctx.sessionAttribute("username");
-//        MongoCollection<User> users = db.getCollection("user", User.class);
-//        User curr = users.find(eq("username", username)).first();
-//        MongoCollection act = db.getCollection("activity");
-        MongoCursor cursor =
-            act.find(and((eq("owner", curr)), eq("type", key)))
-                .sort(orderBy(descending("occuredAt")))
-                .iterator();
-        JSONArray allAct = new JSONArray();
-        while (cursor.hasNext()) {
-          Document total = (Document) cursor.next();
-          Document type = (Document) total.get("type");
-          List<String> temp = type.getList("type", String.class);
-          String t = temp.get(temp.size() - 1);
-          JSONObject activity = new JSONObject();
-          activity.append("type", t);
-          String info = total.toJson();
-          activity.append("info", info);
-          allAct.put(activity);
-        }
-        ctx.json(res.toString());
-      };
+  //  public Handler findMyActivitiesByType =
+  //      ctx -> {
+  //        JSONObject res = new JSONObject();
+  //        JSONObject req = new JSONObject(ctx.body());
+  //        String key = req.getString("type");
+  //        String username = ctx.sessionAttribute("username");
+  //        MongoCollection<User> users = db.getCollection("user", User.class);
+  //        User curr = users.find(eq("username", username)).first();
+  //        MongoCollection act = db.getCollection("activity");
+  //        MongoCursor cursor =
+  //            act.find(and((eq("owner", curr)), eq("type", key)))
+  //                .sort(orderBy(descending("occuredAt")))
+  //                .iterator();
+  //        JSONArray allAct = new JSONArray();
+  //        while (cursor.hasNext()) {
+  //          Document total = (Document) cursor.next();
+  //          Document type = (Document) total.get("type");
+  //          List<String> temp = type.getList("type", String.class);
+  //          String t = temp.get(temp.size() - 1);
+  //          JSONObject activity = new JSONObject();
+  //          activity.append("type", t);
+  //          String info = total.toJson();
+  //          activity.append("info", info);
+  //          allAct.put(activity);
+  //        }
+  //        ctx.json(res.toString());
+  //      };
 }
