@@ -22,7 +22,7 @@ public class ActivityController {
   public ActivityController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
-    logger = l.createLogger("OrgController");
+    logger = l.createLogger("ActivityController");
   }
 
   public void addActivity(Activity activity) {
