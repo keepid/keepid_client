@@ -29,7 +29,7 @@ class SignupBrancher extends Component<{}, {}, {}> {
                         <div className="card-body">
                           <h2 className="card-title font-weight-bold">Social Organization</h2>
                           <p className="card-text">I am an organization that is looking to serve those experiencing homelessness.</p>
-                          <button className="btn btn-primary">Try for Free</button>
+                          <button type="button" className="btn btn-primary">Try for Free</button>
                         </div>
                       </div>
                     </Link>
@@ -43,7 +43,7 @@ class SignupBrancher extends Component<{}, {}, {}> {
                         <div className="card-body">
                           <h2 className="card-title font-weight-bold">Individual</h2>
                           <p className="card-text">I am experiencing homelessness or require secure identification storage.</p>
-                          <button className="btn btn-primary">Find Organizations Near Me</button>
+                          <button type="button" className="btn btn-primary">Find Organizations Near Me</button>
                         </div>
                       </div>
                     </Link>

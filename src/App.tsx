@@ -38,6 +38,8 @@ import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import EULA from './components/AboutUs/EULA';
 import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
+import Careers from './components/AboutUs/Careers';
+import AdminDashboard from './components/AdminDashboard';
 
 interface State {
   role: Role,
@@ -170,6 +172,7 @@ class App extends React.Component<{}, State, {}> {
             <Helmet>
               <title>Keep.id</title>
               <meta name="description" content="Securely Combating Homelessness" />
+              <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/8293567.js" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
 
@@ -282,9 +285,9 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/upload-document"
-                render={(props) => {
+                render={() => {
                   if (role === Role.Client || role === Role.Admin || role === Role.Director) {
-                    return <UploadDocs {...props} userRole={role} />;
+                    return <UploadDocs userRole={role} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -339,6 +342,12 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/eula">
                 <EULA />
+              </Route>
+              <Route path="/dashboard-test">
+                <AdminDashboard />
+              </Route>
+              <Route path="/careers">
+                <Careers />
               </Route>
               <Route path="/bug-report">
                 <BugReport />

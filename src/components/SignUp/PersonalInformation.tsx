@@ -4,6 +4,12 @@ import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import USStates from '../../static/data/states_titlecase.json';
+import {
+  isValidAddress, isValidBirthDate, isValidCity, isValidEmail,
+  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidFirstName,
+  isValidLastName,
+} from '../../lib/Validations/Validations';
+import { birthDateStringConverter } from './CompleteSignupFlow';
 
 interface Props {
   firstname: string,
@@ -17,7 +23,7 @@ interface Props {
   email: string,
   onChangeFirstname: () => void,
   onChangeLastname: () => void,
-  onChangeBirthDate: (e) => void,
+  onChangeBirthDate: (e: Date, callback) => void,
   onChangeAddress: () => void,
   onChangeCity: () => void,
   onChangeState: () => void,
@@ -85,8 +91,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
-    // ( if firstname is valid here)
-    if (firstname) {
+    if (isValidFirstName(firstname)) {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'false' }, resolve));
@@ -95,8 +100,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateLastname = async ():Promise<void> => {
     const { lastname } = this.props;
-    // ( if lastname is valid here)
-    if (lastname) {
+    if (isValidLastName(lastname)) {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'false' }, resolve));
@@ -105,8 +109,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateBirthdate = async ():Promise<void> => {
     const { birthDate } = this.props;
-    // ( if birthDate is valid here)
-    if (birthDate) {
+    if (isValidBirthDate(birthDateStringConverter(birthDate))) {
       await new Promise((resolve) => this.setState({ birthDateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ birthDateValidator: 'false' }, resolve));
@@ -115,8 +118,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateAddress = async ():Promise<void> => {
     const { address } = this.props;
-    // ( if address is valid here)
-    if (address) {
+    if (isValidAddress(address)) {
       await new Promise((resolve) => this.setState({ addressValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ addressValidator: 'false' }, resolve));
@@ -125,8 +127,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateCity = async ():Promise<void> => {
     const { city } = this.props;
-    // ( if password is valid here)
-    if (city) {
+    if (isValidCity(city)) {
       await new Promise((resolve) => this.setState({ cityValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ cityValidator: 'false' }, resolve));
@@ -135,8 +136,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateState = async ():Promise<void> => {
     const { state } = this.props;
-    // ( if state is valid here)
-    if (state) {
+    if (isValidUSState(state)) {
       await new Promise((resolve) => this.setState({ stateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ stateValidator: 'false' }, resolve));
@@ -145,8 +145,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateZipcode = async ():Promise<void> => {
     const { zipcode } = this.props;
-    // ( if zipcode is valid here)
-    if (zipcode) {
+    if (isValidZipCode(zipcode)) {
       await new Promise((resolve) => this.setState({ zipcodeValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ zipcodeValidator: 'false' }, resolve));
@@ -155,8 +154,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validatePhonenumber = async ():Promise<void> => {
     const { phonenumber } = this.props;
-    // ( if phonenumber is valid here)
-    if (phonenumber) {
+    if (isValidPhoneNumber(phonenumber)) {
       await new Promise((resolve) => this.setState({ phonenumberValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ phonenumberValidator: 'false' }, resolve));
@@ -165,8 +163,7 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateEmail = async ():Promise<void> => {
     const { email } = this.props;
-    // ( if email is valid here)
-    if (email) {
+    if (isValidEmail(email)) {
       await new Promise((resolve) => this.setState({ emailValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ emailValidator: 'false' }, resolve));
@@ -174,8 +171,9 @@ class PersonalInformation extends Component<Props, State, {}> {
   }
 
   customOnChangeBirthDate = (e) => {
-    this.props.onChangeBirthDate(e);
-    this.validateBirthdate();
+    this.props.onChangeBirthDate(e, () => {
+      this.validateBirthdate();
+    });
   }
 
   handleStepPrevious = (e) => {
@@ -292,7 +290,6 @@ class PersonalInformation extends Component<Props, State, {}> {
                     onBlur={this.validateBirthdate}
                     selected={birthDate}
                     className={`form-control form-purple ${this.colorToggle(birthDateValidator)}`}
-
                   />
                 </div>
               </div>

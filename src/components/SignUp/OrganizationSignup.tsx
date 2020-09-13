@@ -44,7 +44,7 @@ interface State {
   recaptchaPayload: string,
   recaptchaExpired: boolean
 }
-const _reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+const reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 class OrganizationSignup extends Component<Props, State, {}> {
   constructor(props: Props) {
@@ -190,9 +190,8 @@ class OrganizationSignup extends Component<Props, State, {}> {
       this.props.alert.show('Recaptcha has expired. Please refresh the page');
       this.setState({ buttonState: '' });
     } else {
-      if (_reCaptchaRef && _reCaptchaRef.current) {
-        _reCaptchaRef.current.execute();
-        console.log('executed');
+      if (reCaptchaRef && reCaptchaRef.current) {
+        reCaptchaRef.current.execute();
       }
       fetch(`${getServerURL()}/organization-signup`, {
         method: 'POST',
@@ -226,7 +225,6 @@ class OrganizationSignup extends Component<Props, State, {}> {
           const {
             status,
             message,
-            recaptchaPayload,
           } = JSON.parse(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
@@ -517,7 +515,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
         <ReCAPTCHA
           theme="dark"
           size="invisible"
-          ref={_reCaptchaRef}
+          ref={reCaptchaRef}
           sitekey={reCaptchaKey}
           onChange={this.handleRecaptchaChange}
         />

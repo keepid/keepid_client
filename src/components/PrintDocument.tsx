@@ -16,7 +16,6 @@ class ViewDocument extends Component<Props, State> {
     this.state = {
       pdfFile: undefined,
     };
-    this.printDocument = this.printDocument.bind(this);
   }
 
   componentDidMount() {
@@ -35,7 +34,7 @@ class ViewDocument extends Component<Props, State> {
       });
   }
 
-  printDocument() {
+  static printDocument() {
     // window.frames[0].print();
   }
 
@@ -51,7 +50,7 @@ class ViewDocument extends Component<Props, State> {
             Back
           </button>
         </Link>
-        <button onClick={this.printDocument} type="button">Print</button>
+        <button onClick={ViewDocument.printDocument} type="button">Print</button>
       </div>
     );
   }

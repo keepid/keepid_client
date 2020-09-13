@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route, Link } from 'react-router-dom';
-import ApplicationForm from './ApplicationForm';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
+import ApplicationForm from './ApplicationForm';
 import TablePageSelector from './TablePageSelector';
 import getServerURL from '../serverOverride';
 import PDFType from '../static/PDFType';
@@ -101,7 +101,6 @@ class Applications extends Component<Props, State, {}> {
         const {
           documents,
         } = JSON.parse(responseJSON);
-        console.log(responseJSON);
         this.setState({
           documents,
         });
@@ -162,7 +161,7 @@ class Applications extends Component<Props, State, {}> {
       currentPage,
       itemsPerPageSelected,
     } = this.state;
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
     // fetch call here to get all the current Documents to fill
   }
 
@@ -180,7 +179,7 @@ class Applications extends Component<Props, State, {}> {
       documents,
     } = this.state;
 
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
     const tablePageSelector = TablePageSelector({
       currentPage,
       itemsPerPage,

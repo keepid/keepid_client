@@ -5,7 +5,7 @@ import AnchorLink from 'react-anchor-link-smooth-scroll';
 import HubLogo from '../static/images/hubs.svg';
 import DatabaseLogo from '../static/images/database.svg';
 import AidPlatLogo from '../static/images/aidplatform.svg';
-import HomeForm from '../static/images/home-forms.svg';
+// import HomeForm from '../static/images/home-forms.svg';
 import SignUp from '../static/images/sign-up.svg';
 import SyncFiles from '../static/images/sync-files.svg';
 import SecureGraphic from '../static/images/security.svg';
@@ -17,6 +17,7 @@ import Access from '../static/images/access-data.svg';
 import FileCloud from '../static/images/file-cloud.svg';
 import Building from '../static/images/building.svg';
 import Profile from '../static/images/profile-pic.svg';
+import HomepageGraphic from '../static/images/homepage_graphic.svg';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page
@@ -55,11 +56,11 @@ class Home extends Component<Props, {}, {}> {
         <div className="">
           <div className="">
             <div className="container-fluid my-auto">
-              <div className="row mt-4 section align-items-center">
+              <div className="row mt-5 section1 align-items-center">
                 <div className="col-md-6">
                   <div className="ml-5 p-4 rounded mb-3 pb-5">
                     <div className="page-header">
-                      <span className="brand-text">
+                      <span className="brand-text" id="brand-header">
                         Safeguarding identities of those experiencing homelessness
                       </span>
                     </div>
@@ -67,18 +68,39 @@ class Home extends Component<Props, {}, {}> {
                       A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
                     </p>
                     <Link to="/signup-branch">
-                      <button className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
+                      <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
                     </Link>
                     <AnchorLink offset="100" href="#info">
-                      <button className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
+                      <button type="button" className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
                     </AnchorLink>
                   </div>
                 </div>
                 <div className="col-md-6 custom-vertical-center">
                   <div className="mr-5 p-4 container-home-right">
                     <div>
-                      <img alt="Hubs" src={HomeForm} className="home-form-svg text-left" />
+                      <img alt="Hubs" src={HomepageGraphic} className="home-form-svg text-left" />
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="container-fluid mx-0 pt-5 pb-4  background">
+              <div className="container section2">
+                <div className="row text-center">
+                  <div className="col-md-4 flex-column ">
+                    <h1 className="font-weight-bold statistic-text mb-2">552,830</h1>
+                    <span className="statistic-subtext">Homeless Population in U.S.</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text mb-2">5,800</h1>
+                    <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+                  </div>
+                  <div className="col-md-4 flex-column">
+                    <h1 className="font-weight-bold statistic-text mb-2">6,583</h1>
+                    <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
+                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
                   </div>
                 </div>
               </div>
@@ -122,72 +144,6 @@ class Home extends Component<Props, {}, {}> {
                 </div>
               </div>
             </div>
-            <div className="container-fluid mx-0 mt-4 mb-4 pt-5 pb-5 background">
-              <div className="container">
-                <div className="row text-center">
-                  <div className="col-md-4 flex-column ">
-                    <h1 className="font-weight-bold statistic-text">552,830</h1>
-                    <span className="statistic-subtext">Homeless Population in U.S.</span>
-                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                  </div>
-                  <div className="col-md-4 flex-column">
-                    <h1 className="font-weight-bold statistic-text">5,800</h1>
-                    <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
-                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                  </div>
-                  <div className="col-md-4 flex-column">
-                    <h1 className="font-weight-bold statistic-text">6,583</h1>
-                    <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
-                    <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="container mt-5 mb-3">
-              <div className="row">
-                <div className="col-md-6 custom-vertical-center">
-                  <h1 className="text-center font-weight-bold m-3 pb-5">
-                    We partner with aid organizations, leveraging existing resources and programming.
-                  </h1>
-                </div>
-                <div className="col-md-6">
-                  <div className="row pb-5">
-                    <div className="col-md-4 mb-2">
-                      <img alt="Hubs" src={HubLogo} className="home-svgs float-right" />
-                    </div>
-                    <div className="col-md-8 d-flex flex-column home-text">
-                      <h3>Non-profit Focused</h3>
-                      <span>
-                        Local nonprofits against homelessness become hubs for Keep.id services
-                      </span>
-                    </div>
-                  </div>
-                  <div className="row pb-5">
-                    <div className="col-md-4 mb-2">
-                      <img alt="Database" src={DatabaseLogo} className="home-svgs float-right" />
-                    </div>
-                    <div className="col-md-8 d-flex flex-column home-text">
-                      <h3>Security First</h3>
-                      <span>
-                        Keep.id securely stores documents and records for those experiencing homelessness
-                      </span>
-                    </div>
-                  </div>
-                  <div className="row pb-5">
-                    <div className="col-md-4 mb-2">
-                      <img alt="Aid platform" src={AidPlatLogo} className="home-svgs float-right" />
-                    </div>
-                    <div className="col-md-8 d-flex flex-column home-text">
-                      <h3>Efficient and Relational</h3>
-                      <span className="home-text">
-                        Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="bg-secondary">
               <div className="container">
                 <div className="jumbotron jumbotron-fluid bg-transparent text-center pb-2 mb-2">
@@ -240,6 +196,50 @@ class Home extends Component<Props, {}, {}> {
                 </div>
               </div>
             </div>
+            <div className="container mt-5 mb-3">
+              <div className="row">
+                <div className="col-md-6 custom-vertical-center">
+                  <h1 className="text-center font-weight-bold m-3 pb-5">
+                    We partner with aid organizations, leveraging existing resources and programming.
+                  </h1>
+                </div>
+                <div className="col-md-6">
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
+                      <img alt="Hubs" src={HubLogo} className="home-svgs float-right" />
+                    </div>
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Non-profit Focused</h3>
+                      <span>
+                        Local nonprofits against homelessness become hubs for Keep.id services
+                      </span>
+                    </div>
+                  </div>
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
+                      <img alt="Database" src={DatabaseLogo} className="home-svgs float-right" />
+                    </div>
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Security First</h3>
+                      <span>
+                        Keep.id securely stores documents and records for those experiencing homelessness
+                      </span>
+                    </div>
+                  </div>
+                  <div className="row pb-5">
+                    <div className="col-md-4 mb-2">
+                      <img alt="Aid platform" src={AidPlatLogo} className="home-svgs float-right" />
+                    </div>
+                    <div className="col-md-8 d-flex flex-column home-text">
+                      <h3>Efficient and Relational</h3>
+                      <span className="home-text">
+                        Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="fluid-container mb-4 pt-5 pb-5 mx-0 background">
               <div className="container">
@@ -268,16 +268,16 @@ class Home extends Component<Props, {}, {}> {
                       </div>
                     </div>
                     <div className="row">
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Secure Access</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Constant Availability</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Protected Document Transfer</h4>
                       </div>
-                      <div className="col-3 mt-4 d-flex align-items-center justify-content-center">
+                      <div className="col-md-3 mt-4 d-flex align-items-center justify-content-center">
                         <h4 className="text-center"> Ease of Use</h4>
                       </div>
                     </div>
@@ -303,7 +303,7 @@ class Home extends Component<Props, {}, {}> {
                   <div className="col-lg-7">
                     <h3>Local nonprofits achieve exponentially faster service times</h3>
                     <ul className="pl-4 mt-2">
-                      <li className="home-text">Stronger client relationships lead to greater touch profits</li>
+                      <li className="home-text">Stronger client relationships lead to greater touch points</li>
                       <li className="home-text">Greater audience reach</li>
                       <li className="home-text">Higher efficiency with paperwork</li>
                     </ul>

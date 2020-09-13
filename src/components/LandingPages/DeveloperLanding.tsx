@@ -1,15 +1,14 @@
+
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import uuid from 'react-uuid';
-import DocumentViewer from './DocumentViewer';
-import getServerURL from '../serverOverride';
-import Role from '../static/Role';
-import PDFType from '../static/PDFType';
+import DocumentViewer from '../DocumentViewer';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
 
 interface Props {
-  alert: any,
-  userRole: Role,
+  alert: any
 }
 
 interface State {
@@ -37,7 +36,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class UploadDocs extends React.Component<Props, State> {
+class DeveloperLanding extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -51,10 +50,6 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
@@ -71,21 +66,17 @@ class UploadDocs extends React.Component<Props, State> {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
-        }
-        if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.FORM);
-        }
+        formData.append('pdfType', PDFType.FORM);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
           body: formData,
         }).then((response) => response.json())
           .then((responseJSON) => {
+            const responseObject = JSON.parse(responseJSON);
             const {
               status,
-            } = JSON.parse(responseJSON);
+            } = responseObject;
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
@@ -102,20 +93,6 @@ class UploadDocs extends React.Component<Props, State> {
       alert.show('Please select a file');
       this.setState({ buttonState: '' });
     }
-  }
-
-  static maxFilesExceeded(files, maxNumFiles) {
-    return files.length > maxNumFiles;
-  }
-
-  static fileNamesUnique(files) {
-    const fileNames : string[] = [];
-    for (let i = 0; i < files.length; i += 1) {
-      const fileName = files[i].name;
-      fileNames.push(fileName);
-    }
-
-    return fileNames.length === new Set(fileNames).size;
   }
 
   handleChangeFileUpload(event: any) {
@@ -152,10 +129,7 @@ class UploadDocs extends React.Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">
-            Upload Documents
-            {/* {location.state ? ` for "${location.state.clientUsername}"` : null} */}
-          </h1>
+          <h1 className="display-4">Upload Document</h1>
           <p className="lead pt-3">
             Click the &quot;Choose file&quot; button to select a PDF file to upload.
             The name and a preview of the PDF will appear below the buttons.
@@ -191,4 +165,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withAlert()(UploadDocs);
+export default withAlert()(DeveloperLanding);

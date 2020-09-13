@@ -14,103 +14,22 @@ interface Props {
   alert: any
 }
 
-interface State {
-  username: string,
-  password: string,
-  buttonState: string
-}
+interface State {}
 
 class Header extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      buttonState: '',
-      username: '',
-      password: '',
     };
-    this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-
-    this.handleChangeUsername = this.handleChangeUsername.bind(this);
-    this.handleChangePassword = this.handleChangePassword.bind(this);
   }
 
   handleLogout(event: any) {
-    this.setState({ buttonState: '' });
+    event.preventDefault();
     const {
       logOut,
     } = this.props;
-    this.setState({
-      username: '',
-      password: '',
-    });
     logOut();
-  }
-
-  handleLogin(event: any) {
-    this.setState({ buttonState: 'running' });
-    event.preventDefault();
-    const {
-      logIn,
-    } = this.props;
-    const {
-      username,
-      password,
-    } = this.state;
-    if (username.trim() === '' || password.trim() === '') {
-      this.props.alert.show('Please enter a valid username or password');
-      this.setState({ buttonState: '' });
-    } else {
-      fetch(`${getServerURL()}/login`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          responseJSON = JSON.parse(responseJSON);
-          const {
-            status,
-            userRole,
-            organization,
-            firstName,
-            lastName,
-          } = responseJSON;
-          if (status === 'AUTH_SUCCESS') {
-            const role = () => {
-              switch (userRole) {
-                case 'Admin': return Role.Admin;
-                case 'Worker': return Role.Worker;
-                case 'Client': return Role.Client;
-                default: return Role.LoggedOut;
-              }
-            };
-            logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-          } else if (status === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Password');
-            this.setState({ buttonState: '' });
-          } else if (status === 'USER_NOT_FOUND') {
-            this.props.alert.show('Incorrect Username');
-            this.setState({ buttonState: '' });
-          } else {
-            this.props.alert.show('Server Failure: Please Try Again');
-            this.setState({ buttonState: '' });
-          }
-        }).catch((error) => {
-          this.props.alert.show('Network Failure: Check Server Connection');
-          this.setState({ buttonState: '' });
-        });
-    }
-  }
-
-  handleChangePassword(event: any) {
-    this.setState({ password: event.target.value });
-  }
-
-  handleChangeUsername(event: any) {
-    this.setState({ username: event.target.value });
   }
 
   render() {
@@ -192,7 +111,7 @@ class Header extends Component<Props, State, {}> {
                 <Link className="nav-link" to="/">Home</Link>
               </li>
               <li className="nav-item my-1 mr-2 ml-2">
-                <Link className="nav-link" to="/find-organization">Find Organizations</Link>
+                <Link className="nav-link" to="/find-organizations">Find Organizations</Link>
               </li>
               <li className="nav-item my-1 mr-2 ml-2">
                 <Link className="nav-link" to="/our-mission">About</Link>

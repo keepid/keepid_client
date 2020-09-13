@@ -20,7 +20,6 @@ interface State {
   itemsPerPageSelected: any,
   numElements: number,
   searchName: string,
-  username: string,
   adminName: string,
   organization: string,
 }
@@ -55,7 +54,6 @@ class AdminPanel extends Component<Props, State> {
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
       numElements: 0,
-      username: props.username,
       searchName: '',
       adminName: props.name,
       organization: props.organization,
@@ -109,10 +107,12 @@ class AdminPanel extends Component<Props, State> {
     this.setState({ currentWorker });
   }
 
+  // eslint-disable-next-line
   onChangeEditPermission(event: any) {
     // const thisCopy = this;
   }
 
+  // eslint-disable-next-line
   onChangeRegisterPermission(event: any) {
     // const thisCopy = this;
   }
@@ -123,7 +123,7 @@ class AdminPanel extends Component<Props, State> {
       currentPage,
       itemsPerPageSelected,
     } = this.state;
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
@@ -135,11 +135,10 @@ class AdminPanel extends Component<Props, State> {
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        responseJSON = JSON.parse(responseJSON);
         const {
           people,
           numPeople,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
         this.setState({
           numElements: numPeople,
           workers: people,
@@ -254,7 +253,7 @@ class AdminPanel extends Component<Props, State> {
         </div>
       );
 
-    const itemsPerPage = parseInt(itemsPerPageSelected.value);
+    const itemsPerPage = Number(itemsPerPageSelected.value);
     const tablePageSelector = TablePageSelector({
       currentPage,
       itemsPerPage,
@@ -291,12 +290,12 @@ class AdminPanel extends Component<Props, State> {
           <div className="row pt-3">
             <div className="col-md-3 pb-3">
               <Link to="/upload-document">
-                <button className="btn btn-lg btn-primary loginButtonBackground">Upload Form</button>
+                <button type="button" className="btn btn-lg btn-primary loginButtonBackground">Upload Form</button>
               </Link>
             </div>
             <div className="col-md-3 pb-3">
               <Link to="/my-documents">
-                <button className="btn btn-lg btn-primary loginButtonBackground">View Applications</button>
+                <button type="button" className="btn btn-lg btn-primary loginButtonBackground">View Applications</button>
               </Link>
             </div>
           </div>

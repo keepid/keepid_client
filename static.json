@@ -1,0 +1,14 @@
+{
+    "root": "build/",
+    "routes": {
+      "/**": "index.html"
+    },
+    "https_only": true,
+    "headers": {
+        "/**": {
+            "Content-Security-Policy": "frame-ancestors 'self'",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block"
+        }
+      }
+  }
