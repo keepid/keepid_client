@@ -1,7 +1,7 @@
 package Security;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONObject;
 
 import java.io.File;
@@ -41,8 +41,6 @@ public class GoogleCredentials {
 
     try {
       FileWriter credFile = new FileWriter("keepid-google-kms.json");
-      // Potentially find a different way to remove escape characters instead of using deprecated
-      // method
       credFile.write(StringEscapeUtils.unescapeJava(credJson.toString()));
       credFile.close();
     } catch (IOException e) {
