@@ -4,12 +4,6 @@ import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import USStates from '../../static/data/states_titlecase.json';
-import {
-  isValidAddress, isValidBirthDate, isValidCity, isValidEmail,
-  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidFirstName,
-  isValidLastName,
-} from '../../lib/Validations/Validations';
-import { birthDateStringConverter } from './CompleteSignupFlow';
 
 interface Props {
   firstname: string,
@@ -23,7 +17,7 @@ interface Props {
   email: string,
   onChangeFirstname: () => void,
   onChangeLastname: () => void,
-  onChangeBirthDate: (e: Date, callback) => void,
+  onChangeBirthDate: (e) => void,
   onChangeAddress: () => void,
   onChangeCity: () => void,
   onChangeState: () => void,
@@ -91,7 +85,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
-    if (isValidFirstName(firstname)) {
+    // ( if firstname is valid here)
+    if (firstname) {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ firstnameValidator: 'false' }, resolve));
@@ -100,7 +95,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateLastname = async ():Promise<void> => {
     const { lastname } = this.props;
-    if (isValidLastName(lastname)) {
+    // ( if lastname is valid here)
+    if (lastname) {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ lastnameValidator: 'false' }, resolve));
@@ -109,7 +105,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateBirthdate = async ():Promise<void> => {
     const { birthDate } = this.props;
-    if (isValidBirthDate(birthDateStringConverter(birthDate))) {
+    // ( if birthDate is valid here)
+    if (birthDate) {
       await new Promise((resolve) => this.setState({ birthDateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ birthDateValidator: 'false' }, resolve));
@@ -118,7 +115,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateAddress = async ():Promise<void> => {
     const { address } = this.props;
-    if (isValidAddress(address)) {
+    // ( if address is valid here)
+    if (address) {
       await new Promise((resolve) => this.setState({ addressValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ addressValidator: 'false' }, resolve));
@@ -127,7 +125,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateCity = async ():Promise<void> => {
     const { city } = this.props;
-    if (isValidCity(city)) {
+    // ( if password is valid here)
+    if (city) {
       await new Promise((resolve) => this.setState({ cityValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ cityValidator: 'false' }, resolve));
@@ -136,7 +135,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateState = async ():Promise<void> => {
     const { state } = this.props;
-    if (isValidUSState(state)) {
+    // ( if state is valid here)
+    if (state) {
       await new Promise((resolve) => this.setState({ stateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ stateValidator: 'false' }, resolve));
@@ -145,7 +145,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateZipcode = async ():Promise<void> => {
     const { zipcode } = this.props;
-    if (isValidZipCode(zipcode)) {
+    // ( if zipcode is valid here)
+    if (zipcode) {
       await new Promise((resolve) => this.setState({ zipcodeValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ zipcodeValidator: 'false' }, resolve));
@@ -154,7 +155,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validatePhonenumber = async ():Promise<void> => {
     const { phonenumber } = this.props;
-    if (isValidPhoneNumber(phonenumber)) {
+    // ( if phonenumber is valid here)
+    if (phonenumber) {
       await new Promise((resolve) => this.setState({ phonenumberValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ phonenumberValidator: 'false' }, resolve));
@@ -163,7 +165,8 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   validateEmail = async ():Promise<void> => {
     const { email } = this.props;
-    if (isValidEmail(email)) {
+    // ( if email is valid here)
+    if (email) {
       await new Promise((resolve) => this.setState({ emailValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ emailValidator: 'false' }, resolve));
@@ -171,9 +174,8 @@ class PersonalInformation extends Component<Props, State, {}> {
   }
 
   customOnChangeBirthDate = (e) => {
-    this.props.onChangeBirthDate(e, () => {
-      this.validateBirthdate();
-    });
+    this.props.onChangeBirthDate(e);
+    this.validateBirthdate();
   }
 
   handleStepPrevious = (e) => {
@@ -254,7 +256,7 @@ class PersonalInformation extends Component<Props, State, {}> {
             <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Name</label>
-                <div className="col-sm-4 pb-2">
+                <div className="col-sm-4">
                   <label htmlFor="firstname" className="sr-only sr-only-focusable">First Name</label>
                   <input
                     type="text"
@@ -264,6 +266,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={firstname}
                     onChange={onChangeFirstname}
                     onBlur={this.validateFirstname}
+
                   />
                   {this.generalMessage(firstnameValidator)}
                 </div>
@@ -277,6 +280,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     value={lastname}
                     onChange={onChangeLastname}
                     onBlur={this.validateLastname}
+
                   />
                   {this.generalMessage(lastnameValidator)}
                 </div>
@@ -290,6 +294,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     onBlur={this.validateBirthdate}
                     selected={birthDate}
                     className={`form-control form-purple ${this.colorToggle(birthDateValidator)}`}
+
                   />
                 </div>
               </div>
@@ -312,7 +317,7 @@ class PersonalInformation extends Component<Props, State, {}> {
               </div>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label invisible" />
-                <div className="col-sm-3 mb-3 mb-sm-0">
+                <div className="col-sm-3">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input
                     type="text"
@@ -326,7 +331,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                   />
                   {this.generalMessage(cityValidator)}
                 </div>
-                <div className="col-sm-3 mb-3 mb-sm-0">
+                <div className="col-sm-3">
                   <label htmlFor="state" className="sr-only sr-only-focusable">State</label>
                   <select
                     className={`form-control form-purple ${this.colorToggle(stateValidator)}`}
@@ -343,7 +348,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                 <div className="col-sm-3">
                   <label htmlFor="zipcode" className="sr-only sr-only-focusable">Zipcode</label>
                   <input
-                    type="number"
+                    type="text"
                     className={`form-control form-purple ${this.colorToggle(zipcodeValidator)}`}
                     id="zipcode"
                     placeholder="Zipcode"
@@ -389,7 +394,7 @@ class PersonalInformation extends Component<Props, State, {}> {
               </div>
 
               <div className="d-flex">
-                <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
                 <button type="submit" className="ml-auto btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>
               </div>
             </form>

@@ -2,12 +2,6 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import USStates from '../../static/data/states_titlecase.json';
-import {
-  isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
-  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
-  isValidEIN,
-} from '../../lib/Validations/Validations';
-import CompleteSignupFlow from './CompleteSignupFlow';
 
 interface Props {
   orgName: string,
@@ -92,7 +86,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgName = async ():Promise<void> => {
     const { orgName } = this.props;
     // ( if orgName is valid here)
-    if (isValidOrgName(orgName)) {
+    if (orgName) {
       await new Promise((resolve) => this.setState({ orgNameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgNameValidator: 'false' }, resolve));
@@ -102,7 +96,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgWebsite = async ():Promise<void> => {
     const { orgWebsite } = this.props;
     // ( if orgWebsite is valid here)
-    if (isValidOrgWebsite(orgWebsite)) {
+    if (orgWebsite) {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'false' }, resolve));
@@ -112,7 +106,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateEIN = async ():Promise<void> => {
     const { ein } = this.props;
     // ( if ein is valid here)
-    if (isValidEIN(ein)) {
+    if (ein) {
       await new Promise((resolve) => this.setState({ einValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ einValidator: 'false' }, resolve));
@@ -122,7 +116,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgAddress = async ():Promise<void> => {
     const { orgAddress } = this.props;
     // ( if orgAddress is valid here)
-    if (isValidAddress(orgAddress)) {
+    if (orgAddress) {
       await new Promise((resolve) => this.setState({ orgAddressValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgAddressValidator: 'false' }, resolve));
@@ -132,7 +126,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgCity = async ():Promise<void> => {
     const { orgCity } = this.props;
     // ( if orgCity is valid here)
-    if (isValidCity(orgCity)) {
+    if (orgCity) {
       await new Promise((resolve) => this.setState({ orgCityValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgCityValidator: 'false' }, resolve));
@@ -142,7 +136,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgState = async ():Promise<void> => {
     const { orgState } = this.props;
     // ( if orgState is valid here)
-    if (isValidUSState(orgState)) {
+    if (orgState) {
       await new Promise((resolve) => this.setState({ orgStateValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgStateValidator: 'false' }, resolve));
@@ -152,7 +146,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgZipcode = async ():Promise<void> => {
     const { orgZipcode } = this.props;
     // ( if orgZipcode is valid here)
-    if (isValidZipCode(orgZipcode)) {
+    if (orgZipcode) {
       await new Promise((resolve) => this.setState({ orgZipcodeValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgZipcodeValidator: 'false' }, resolve));
@@ -162,7 +156,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgPhoneNumber = async ():Promise<void> => {
     const { orgPhoneNumber } = this.props;
     // ( if orgPhonenumber is valid here)
-    if (isValidPhoneNumber(orgPhoneNumber)) {
+    if (orgPhoneNumber) {
       await new Promise((resolve) => this.setState({ orgPhoneNumberValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgPhoneNumberValidator: 'false' }, resolve));
@@ -172,7 +166,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgEmail = async ():Promise<void> => {
     const { orgEmail } = this.props;
     // ( if orgEmail is valid here)
-    if (isValidEmail(orgEmail)) {
+    if (orgEmail) {
       await new Promise((resolve) => this.setState({ orgEmailValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgEmailValidator: 'false' }, resolve));
@@ -293,7 +287,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <label htmlFor="ein" className="col-sm-3 col-form-label text-sm-right">Organization EIN</label>
                 <div className="col-sm-9">
                   <input
-                    type="number"
+                    type="text"
                     className={`form-control form-purple ${this.colorToggle(einValidator)}`}
                     placeholder="Organization EIN"
                     id="ein"
@@ -324,7 +318,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
               </div>
               <div className="form-group row">
                 <label htmlFor="" className="col-sm-3 col-form-label invisible" />
-                <div className="col-sm-3 mb-3 mb-sm-0">
+                <div className="col-sm-3">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input
                     type="text"
@@ -338,7 +332,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                   />
                   {this.generalMessage(orgCityValidator)}
                 </div>
-                <div className="col-sm-3 mb-3 mb-sm-0">
+                <div className="col-sm-3">
                   <label htmlFor="state" className="sr-only sr-only-focusable">State</label>
                   <select
                     className={`form-control form-purple ${this.colorToggle(orgStateValidator)}`}
@@ -355,7 +349,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <div className="col-sm-3">
                   <label htmlFor="zipcode" className="sr-only sr-only-focusable">Zipcode</label>
                   <input
-                    type="number"
+                    type="text"
                     className={`form-control form-purple ${this.colorToggle(orgZipcodeValidator)}`}
                     id="zipcode"
                     placeholder="Zipcode"
@@ -400,7 +394,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 </div>
               </div>
               <div className="d-flex">
-                <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
+                <button type="button" className="btn btn-outline-danger mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
 
                 <button type="button" className="ml-auto btn btn-primary mt-5" onClick={this.handleStepComplete}>Continue</button>
               </div>

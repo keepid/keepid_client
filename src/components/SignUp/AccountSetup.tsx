@@ -1,8 +1,6 @@
 import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
-import Role from '../../static/Role';
-import { isValidUsername, isValidPassword } from '../../lib/Validations/Validations';
 
 interface Props {
   username: string,
@@ -12,8 +10,7 @@ interface Props {
   onChangePassword: () => void,
   onChangeConfirmPassword: () => void,
   handleContinue: ()=> void,
-  alert: any,
-  role: Role
+  alert: any
 }
 
 interface State {
@@ -48,7 +45,7 @@ class AccountSetup extends Component<Props, State, {}> {
   validateUsername = async ():Promise<void> => {
     const { username } = this.props;
     // ( if username is valid here and if username is taken)
-    if (isValidUsername(username)) {
+    if (username) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ usernameValidator: 'false' }, resolve));
@@ -77,7 +74,7 @@ class AccountSetup extends Component<Props, State, {}> {
   validatePassword = async (): Promise<void> => {
     const { password } = this.props;
     // ( if password is valid here)
-    if (isValidPassword(password)) {
+    if (password) {
       await new Promise((resolve) => this.setState({ passwordValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ passwordValidator: 'false' }, resolve));
@@ -170,25 +167,10 @@ class AccountSetup extends Component<Props, State, {}> {
             <div className="text-center pb-4 mb-2">
               <h2><b>First, set up your account information</b></h2>
               <span>
-                You will be the
+                You will be the admin of your organization. As the admin, you can set up accounts for
+                <br />
                 {' '}
-                {this.props.role}
-                {' '}
-                of your organization. As the
-                {' '}
-                {this.props.role}
-                ,
-                {this.props.role === Role.Admin
-                  ? (
-                    <div>
-                      you can set up accounts for
-                      <br />
-                      {' '}
-                      other workers in the organization and for your clients.
-                      {' '}
-                    </div>
-                  )
-                  : <div>you can set up accounts for clients</div>}
+                other works in the organization and for your clients.
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>

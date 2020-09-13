@@ -52,6 +52,7 @@ class LoginPage extends Component<Props, State> {
   onSubmitWithReCAPTCHA = async (e) => {
     e.preventDefault();
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload }, this.handleLogin);
     }

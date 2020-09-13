@@ -1,4 +1,4 @@
-import React, { Component, ReactComponentElement } from 'react';
+import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
@@ -13,14 +13,11 @@ import OrganizationInformation from './OrganizationInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmit from './ReviewSubmit';
 import USStates from '../../static/data/states_titlecase.json';
-import Role from '../../static/Role';
 
 const { Step } = Steps;
-const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
 interface Props {
   alert: any
-  role: Role
 }
 
 interface State {
@@ -47,6 +44,8 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
+  personSubmitted: boolean,
+  submitSuccessful: boolean,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean
@@ -79,6 +78,8 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
+      personSubmitted: false,
+      submitSuccessful: false,
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
@@ -95,7 +96,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
 
-  handleChangeBirthdate = (date: Date, callback) => this.setState({ birthDate: date }, callback);
+  handleChangeBirthdate = (date: Date) => this.setState({ birthDate: date });
 
   handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
 
@@ -134,20 +135,11 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   }
 
   handleContinue = ():void => {
-    this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
-    // this.setState({ signupStage: this.state.signupStage + 1 });
+    this.setState({ signupStage: this.state.signupStage + 1 });
   };
 
   handlePrevious = (): void => {
-    this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-    // this.setState({ signupStage: this.state.signupStage - 1 });
-  }
-
-  static addHttp = (url: string) => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
+    this.setState({ signupStage: this.state.signupStage - 1 });
   }
 
   handleFormSubmit = (): void => {
@@ -174,14 +166,12 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationEmail,
       recaptchaPayload,
     } = this.state;
-    const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
-    const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
-
+    const birthDateString = this.birthDateStringConverter(birthDate);
     // submit organization and director information
     fetch(`${getServerURL()}/organization-signup`, {
       method: 'POST',
       body: JSON.stringify({
-        organizationWebsite: revisedURL,
+        organizationWebsite,
         organizationName,
         organizationEIN,
         organizationAddressStreet,
@@ -225,7 +215,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  static birthDateStringConverter = (birthDate: Date) => {
+  birthDateStringConverter = (birthDate: Date) => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
@@ -236,7 +226,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
-  handleSignupComponentRender = () => {
+  handleSignupComponentRender() {
     switch (this.state.signupStage) {
       case 0: {
         return (
@@ -248,7 +238,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
-            role={this.props.role}
           />
         );
       }
@@ -346,9 +335,8 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         );
       }
       default: {
-        return (
-          <div />
-        );
+        // statements;
+        break;
       }
     }
   }
@@ -394,13 +382,12 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 5`} />
+          <ProgressBar className="d-md-none" now={this.state.signupStage / 4 * 100} label={`${this.state.signupStage / 4 * 100}%`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>
     );
   }
 }
-export const { birthDateStringConverter } = CompleteSignupFlow;
-export const { addHttp } = CompleteSignupFlow;
+
 export default withAlert()(CompleteSignupFlow);

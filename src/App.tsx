@@ -34,7 +34,6 @@ import LoginPage from './components/LoginPage';
 import ForgotPassword from './components/AccountSecurity/ForgotPassword';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import IdleTimeOutModal from './components/AccountSecurity/IdleTimeOutModal';
-import DeveloperLanding from './components/LandingPages/DeveloperLanding';
 import Home from './components/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
