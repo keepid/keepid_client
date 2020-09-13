@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
+import DatePicker from 'react-datepicker';
 import getServerURL from '../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../static/PDFType';
 import SignaturePad from '../lib/react-typescript-signature-pad';
+import 'react-datepicker/dist/react-datepicker.css';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
@@ -21,7 +23,9 @@ interface State {
   pdfApplication: File | undefined,
   buttonState: string,
   submitSuccessful: boolean,
-
+  currentPage: number,
+  numPages: number,
+  startDate: Date
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -35,8 +39,12 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication: undefined,
       buttonState: '',
       submitSuccessful: false,
+      currentPage: 0,
+      numPages: 0,
+      startDate: new Date(),
     };
     this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
+    this.handleChangeFormValueRadio = this.handleChangeFormValueRadio.bind(this);
     this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
     this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
     this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
@@ -68,9 +76,13 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
+    console.log(event.target);
     const { id } = event.target;
     const { value } = event.target;
     formAnswers[id] = value;
+    console.log(`id${id}`);
+    console.log(`value${value}`);
+    console.log(formAnswers);
     this.setState({ formAnswers });
   }
 
@@ -84,6 +96,22 @@ class ApplicationForm extends Component<Props, State> {
     formAnswers[id] = value;
     this.setState({ formAnswers });
   }
+
+  handleChangeFormValueRadio(event: any) {
+    const {
+      formAnswers,
+    } = this.state;
+    const { name } = event.target;
+    const { value } = event.target;
+    formAnswers[name] = value;
+    this.setState({ formAnswers });
+  }
+
+  handleChangeDate = (date) => {
+    this.setState({
+      startDate: date,
+    });
+  };
 
   onSubmitFormQuestions(event: any) {
     event.preventDefault();
@@ -152,6 +180,9 @@ class ApplicationForm extends Component<Props, State> {
       formQuestions,
       formAnswers,
       submitSuccessful,
+      currentPage,
+      numPages,
+      startDate,
     } = this.state;
 
     if (submitSuccessful) {
@@ -161,142 +192,219 @@ class ApplicationForm extends Component<Props, State> {
     let bodyElement;
     if (pdfApplication) {
       bodyElement = (
-        <div>
+        <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
+          <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+            <div className="progress mb-4">
+              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '90%' }} />
+            </div>
+            <div className="container">
+              <h2>Review and sign to complete your form</h2>
+              <p>Finally, sign the agreement and click submit when complete.</p>
+            </div>
+          </div>
+
           <DocumentViewer pdfFile={pdfApplication} />
-          <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
-          <button onClick={this.onSubmitPdfApplication} type="button">Submit Final Application</button>
+          <div className="d-flex justify-content-center pt-5">
+            <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+              <div className="pt-5 pb-3">I agree to all terms and conditions in the agreement above.</div>
+              <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
+              <div className="d-flex text-center my-5">
+                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
+                <span>
+                  <p>
+                    <b>
+                      Page
+                      {' '}
+                      {currentPage}
+                      {' '}
+                      of
+                      {' '}
+                      {numPages}
+                    </b>
+                  </p>
+                </span>
+                <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitPdfApplication}>Submit</button>
+              </div>
+            </div>
+          </div>
         </div>
       );
     } else if (formQuestions) {
       bodyElement = (
-        <form onSubmit={this.onSubmitFormQuestions}>
-          {formQuestions.map(
-            (entry) => (
-              <div className="mt-2 mb-2">
-                {
-                  (() => {
-                    if (entry.fieldType === 'TextField') {
-                      return (
-                        <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                            {entry.fieldQuestion}
-                            <input
-                              type="text"
-                              className="form-control form-purple mt-1"
-                              id={entry.fieldName}
-                              placeholder={entry.fieldName}
-                              onChange={this.handleChangeFormValue}
-                              required
-                            />
-                          </label>
-                        </div>
-                      );
-                    }
-
-                    if (entry.fieldType === 'CheckBox') {
-                      const temp = entry.fieldValueOptions;
-                      return (
-                        <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                            {entry.fieldQuestion}
-                          </label>
-
-                          <div className="mt-2 mb-2">
-                            <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                              <input
-                                type="checkbox"
-                                id={entry.fieldName}
-                                name={entry.fieldName}
-                                onChange={this.handleChangeFormValueCheckBox}
-                              />
-                              <label>
-                                {' '}
-                                {temp[0]}
-                              </label>
-                              <br />
-                            </label>
-                          </div>
-
-                        </div>
-                      );
-                    }
-
-                    if (entry.fieldType === 'RadioButton') {
-                      const temp = entry.fieldValueOptions;
-                      return (
-                        <div className="mt-2 mb-2">
-                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                            {entry.fieldQuestion}
-                          </label>
-                          {temp.map((value) => (
+        <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
+          <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+            <div className="progress mb-4">
+              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '75%' }} />
+            </div>
+            <div className="container col-lg-10 col-md-10 col-sm-12">
+              <h2>Application Form Name</h2>
+              <p>Sample description of what this form is about. Or instructions for the form can go here.</p>
+            </div>
+          </div>
+          <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+            <form onSubmit={this.onSubmitFormQuestions}>
+              {formQuestions.map(
+                (entry) => (
+                  <div className="my-5">
+                    {
+                      (() => {
+                        if (entry.fieldType === 'TextField') {
+                          return (
                             <div className="mt-2 mb-2">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                "
-                                {value}
-                                "
-                                <input
-                                  type="radio"
-                                  className="form-control form-purple mt-1"
-                                  id={entry.fieldName}
-                                  checked={formAnswers[entry.fieldName] === value}
-                                  value={value}
-                                  onChange={this.handleChangeFormValue}
-                                  required
-                                />
+                                {entry.fieldQuestion}
                               </label>
+                              <input
+                                type="text"
+                                className="form-control form-purple mt-1"
+                                id={entry.fieldName}
+                                placeholder={entry.fieldName}
+                                onChange={this.handleChangeFormValue}
+                                required
+                              />
+                              <small className="form-text text-muted mt-1">Sample subtitle text.</small>
                             </div>
-                          ))}
-                        </div>
-                      );
-                    }
+                          );
+                        }
 
-                    if (entry.fieldType === 'ComboBox') {
-                      const temp = entry.fieldValueOptions;
-                      return (
-                        <div className="dropdown">
-                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                            {entry.fieldQuestion}
-                            <br />
-                            <select id={entry.fieldName} onChange={this.handleChangeFormValue}>
-                              {temp.map((value) => (
-                                <option value={value}>{value}</option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-                      );
-                    }
+                        if (entry.fieldType === 'CheckBox') {
+                          const temp = entry.fieldValueOptions;
+                          console.log(temp);
+                          return (
+                            <div className="mt-2 mb-2">
+                              <div className="checkbox-question">
+                                <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                                  {entry.fieldQuestion}
+                                  <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                                </label>
 
-                    if (entry.fieldType === 'ListBox') {
-                      const temp = entry.fieldValueOptions;
-                      return (
-                        <div className="dropdown">
-                          <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                            {entry.fieldQuestion}
-                            <br />
-                            <select
-                              id={entry.fieldName}
-                              onChange={this.handleChangeFormValue}
-                              multiple
-                            >
+                                {temp.map((value) => (
+                                  <div className="checkbox-option">
+                                    <div className="custom-control custom-checkbox mx-2">
+                                      <input
+                                        type="checkbox"
+                                        className="custom-control-input mr-2"
+                                        id={entry.fieldName}
+                                        onChange={this.handleChangeFormValueCheckBox}
+                                        name={entry.fieldName}
+                                      />
+                                      <label className="custom-control-label" htmlFor={entry.fieldName}>{value}</label>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (entry.fieldType === 'RadioButton') {
+                          const temp = entry.fieldValueOptions;
+                          return (
+                            <div className="mt-2 mb-2">
+                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                                {entry.fieldQuestion}
+                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                              </label>
+
                               {temp.map((value) => (
-                                <option value={value}>{value}</option>
+                                <div className="custom-control custom-radio">
+                                  <input
+                                    type="radio"
+                                    className="custom-control-input"
+                                    id={value}
+                                    checked={formAnswers[entry.fieldName] === value}
+                                    value={value}
+                                    name={entry.fieldName}
+                                    onChange={this.handleChangeFormValueRadio}
+                                  />
+                                  <label className="custom-control-label" htmlFor={value}>{value}</label>
+                                </div>
                               ))}
-                            </select>
-                          </label>
-                        </div>
-                      );
+                            </div>
+                          );
+                        }
+
+                        if (entry.fieldType === 'ComboBox') {
+                          const temp = entry.fieldValueOptions;
+                          return (
+                            <div className="dropdown-question">
+                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                                {entry.fieldQuestion}
+                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                              </label>
+
+                              <select id={entry.fieldName} onChange={this.handleChangeFormValue} className="custom-select">
+                                <option selected>Open this select menu</option>
+                                {temp.map((value) => (
+                                  <option value={value}>{value}</option>
+                                ))}
+                              </select>
+                            </div>
+                          );
+                        }
+
+                        if (entry.fieldType === 'ListBox') {
+                          const temp = entry.fieldValueOptions;
+                          return (
+                            <div className="multiple-dropdown-question">
+                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                                {entry.fieldQuestion}
+                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                              </label>
+
+                              <select id={entry.fieldName} onChange={this.handleChangeFormValue} className="custom-select" multiple>
+                                <option selected>Open this select menu</option>
+                                {temp.map((value) => (
+                                  <option value={value}>{value}</option>
+                                ))}
+                              </select>
+                            </div>
+                          );
+                        }
+
+                        if (entry.fieldType == 'DateField') {
+                          return (
+                            <div className="date-question">
+                              <label htmlFor="date" className="w-100 font-weight-bold">Date</label>
+                              <DatePicker
+                                id="date"
+                                selected={startDate}
+                                onChange={this.handleChangeDate}
+                                className="form-control form-purple mt-1"
+                              />
+                              <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                            </div>
+                          );
+                        }
+                      })()
                     }
-                  })()
-                }
+                  </div>
+                ),
+              )}
+              <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
+                Submit Form Answers
+                <div className="ld ld-ring ld-spin" />
+              </button>
+              <div className="d-flex text-center my-5">
+                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
+                <span>
+                  <p>
+                    <b>
+                      Page
+                      {' '}
+                      {currentPage}
+                      {' '}
+                      of
+                      {' '}
+                      {numPages}
+                    </b>
+                  </p>
+                </span>
+                <button type="submit" className="ml-auto btn btn-primary ml-auto">Continue</button>
               </div>
-            ),
-          )}
-          <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
-            Submit Form Answers
-            <div className="ld ld-ring ld-spin" />
-          </button>
-        </form>
+            </form>
+          </div>
+        </div>
       );
     } else {
       bodyElement = (<div />);
@@ -307,12 +415,7 @@ class ApplicationForm extends Component<Props, State> {
           <title>Fill Application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="jumbotron jumbotron-fluid bg-white pb-0">
-          <div className="container">
-            <h1 className="display-4">Application Questions</h1>
-            <p className="lead">Fill out your application here.</p>
-          </div>
-        </div>
+
         {bodyElement}
         <Link to="/applications">
           <button type="button" className="btn btn-outline-success">
