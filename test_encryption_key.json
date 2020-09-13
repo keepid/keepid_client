@@ -1,0 +1,12 @@
+{
+    "keysetInfo": {
+        "primaryKeyId": 2103557731,
+        "keyInfo": [{
+            "typeUrl": "type.googleapis.com/google.crypto.tink.AesGcmKey",
+            "outputPrefixType": "TINK",
+            "keyId": 2103557731,
+            "status": "ENABLED"
+        }]
+    },
+    "encryptedKeyset": "CiQAKIVQfWBQvO5apS0ZGlMr1IrnJ+BHe3qI+KHfNqddJs2u0yESlQEAvp6HxHc4PAzyTgowiXeeaDguldMuzbuR83A7duXIRYWlu2Bl6MyhiBmqUVFkTRNfnFidhBgQqNp/WWYCkaoje74PUMP9tDS7CniJSk7d+fyRz+x2K2Fir1q+LAAXX1ECUOCHWCmf+w2fwsouuxlXYm4LIrdFGIoc9e6nkdvkzBNVyq4oXJO+UP8sQIFAvnw9/fbIIA=="
+}

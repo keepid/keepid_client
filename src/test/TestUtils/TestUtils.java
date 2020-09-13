@@ -4,6 +4,7 @@ import Config.AppConfig;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
+import Security.EncryptionObjectController;
 import Security.GoogleCredentials;
 import Security.Tokens;
 import User.User;
@@ -35,6 +36,7 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,6 +71,11 @@ public class TestUtils {
   public static void setUpTestDB() {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
+    try {
+      generateAndUploadEncryptionKey();
+    } catch (GeneralSecurityException | IOException | ParseException e) {
+      e.printStackTrace();
+    }
     try {
       /* *********************** Broad Street Ministry ************************ */
       Organization broadStreetMinistry =
@@ -596,6 +603,23 @@ public class TestUtils {
               TestUtils.hashPassword("a4d3jgHow0"),
               UserType.Client);
 
+      /* *********************** Login History Test Users ************************ */
+      User logInHistoryTest =
+          new User(
+              "Cathy",
+              "Chen",
+              "07-14-2020",
+              "contact@example.com",
+              "1234567890",
+              "login history Org",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "login-history-test",
+              TestUtils.hashPassword("login-history-test"),
+              UserType.Client);
       // Add the organization documents to the test database.
       MongoCollection<Organization> organizationCollection =
           testDB.getCollection("organization", Organization.class);
@@ -608,6 +632,34 @@ public class TestUtils {
               passwordSettingsOrg));
 
       // Add the user documents to the test database.
+      List<User> users =
+          Arrays.asList(
+              adminBSM,
+              workerFffBSM,
+              workerFftBSM,
+              workerTffBSM,
+              workerTftBSM,
+              workerTtfBSM,
+              workerTttBSM,
+              adminYMCA,
+              workerFffYMCA,
+              workerFftYMCA,
+              workerTffYMCA,
+              workerTftYMCA,
+              workerTtfYMCA,
+              workerTttYMCA,
+              tokenTestValid,
+              tokenTestNoToken,
+              tokenTestExpired,
+              accountSettingsTest,
+              settingsTest2FA,
+              passwordResetTest,
+              logInHistoryTest);
+      EncryptionObjectController encryptionObjectController =
+          new EncryptionObjectController(testDB);
+      for (User user : users) {
+        encryptionObjectController.encryptUser(user);
+      }
       MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
       userCollection.insertMany(
           Arrays.asList(
@@ -630,7 +682,8 @@ public class TestUtils {
               tokenTestExpired,
               accountSettingsTest,
               settingsTest2FA,
-              passwordResetTest));
+              passwordResetTest,
+              logInHistoryTest));
 
       // Add the 2FA tokens to the test database
       MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
@@ -681,18 +734,17 @@ public class TestUtils {
     assert db != null;
     db.createCollection("keys");
 
-    db.getCollection("keys").insertOne(Document.parse(key.toString()).append("fieldname", "key"));
+    db.getCollection("keys")
+        .insertOne(Document.parse(key.toString()).append("keyType", "encryption"));
   }
 
   public static Aead getAead() throws GeneralSecurityException, IOException {
-
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
     assert db != null;
     MongoCollection<Document> keyCollection = db.getCollection("keys", Document.class);
-    Document handleDoc = keyCollection.find(Filters.eq("fieldname", "key")).first();
+    Document handleDoc = keyCollection.find(Filters.eq("keyType", "encryption")).first();
 
-    System.out.println(handleDoc.toString());
     handleDoc.remove("fieldname");
     KeysetHandle keysetHandle =
         KeysetHandle.read(

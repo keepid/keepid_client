@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" version="4">
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_13">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -10,6 +10,15 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="jdk" jdkName="13" jdkType="JavaSDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli-linux-x86-amd64:0.2.0" level="project" />
+    <orderEntry type="library" name="Maven: io.ipinfo:ipinfo-api:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
+    <orderEntry type="library" name="Maven: io.ipinfo:ipinfo-api:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
     <orderEntry type="library" name="Maven: io.jsonwebtoken:jjwt:0.9.1" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.8.1" level="project" />
@@ -45,7 +54,11 @@
     <orderEntry type="library" name="Maven: de.mkammerer:argon2-jvm:2.6" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli:0.2.0" level="project" />
+<<<<<<< HEAD
     <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli-linux-x86-amd64:0.2.0" level="project" />
+=======
+    <orderEntry type="library" name="Maven: com.nixxcode.jvmbrotli:jvmbrotli-darwin-x86-amd64:0.2.0" level="project" />
+>>>>>>> origin/hmacV2-testing
     <orderEntry type="library" name="Maven: com.auth0:java-jwt:3.8.3" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.12" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20180813" level="project" />
