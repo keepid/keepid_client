@@ -4,6 +4,7 @@ import Bug.BugController;
 import Logger.LogFactory;
 import Security.EmailExceptions;
 import Security.EmailUtil;
+import Security.EncryptionObjectController;
 import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
@@ -36,11 +37,13 @@ public class OrganizationController {
       Objects.requireNonNull(System.getenv("NEW_ORG_TESTURL"));
   public static final String newOrgActualURL =
       Objects.requireNonNull(System.getenv("NEW_ORG_ACTUALURL"));
+  EncryptionObjectController encryptionObjectController;
 
   public OrganizationController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("OrgController");
+    this.encryptionObjectController = new EncryptionObjectController(db);
   }
 
   public Handler organizationSignupValidator =
@@ -338,6 +341,7 @@ public class OrganizationController {
 
         logger.info("Setting password and inserting user and org into Mongo");
         user.setPassword(passwordHash);
+        encryptionObjectController.encryptUser(user);
         userCollection.insertOne(user);
 
         orgCollection.insertOne(org);

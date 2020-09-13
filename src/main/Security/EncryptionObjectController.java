@@ -28,7 +28,7 @@ public class EncryptionObjectController {
   public void encryptUser(User user) throws GeneralSecurityException, IOException {
     String username = user.getUsername();
 
-    // logger.info("Attempting to encrypt User " + username);
+    logger.info("Attempting to encrypt User " + username);
     user.setAddress(encryptionController.encryptString(user.getAddress(), username));
     user.setBirthDate(encryptionController.encryptString(user.getBirthDate(), username));
     user.setCity(encryptionController.encryptString(user.getCity(), username));
@@ -41,8 +41,10 @@ public class EncryptionObjectController {
 
   public void decryptUser(User user) throws GeneralSecurityException, IOException {
     String username = user.getUsername();
+    logger.info("User Address " + user.getAddress());
 
-    // logger.info("Attempting to decrypt User " + username);
+    logger.info("Attempting to decrypt User " + username);
+
     user.setAddress(encryptionController.decryptString(user.getAddress(), username));
     user.setBirthDate(encryptionController.decryptString(user.getBirthDate(), username));
     user.setCity(encryptionController.decryptString(user.getCity(), username));

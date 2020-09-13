@@ -51,7 +51,7 @@ public class UserController {
       String username = req.getString("username");
       String password = req.getString("password");
       String ip = ctx.ip();
-      logger.info("Attempting to login" + username);
+      logger.info("Attempting to login " + username);
 
       res.put("userRole", "");
       res.put("organization", "");
@@ -68,13 +68,13 @@ public class UserController {
 
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
       User user = userCollection.find(eq("username", username)).first();
-      encryptionObjectController.decryptUser(user);
       if (user == null) {
         logger.error("Could not find user, " + username);
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
         ctx.json(res.toString());
         return;
       }
+      encryptionObjectController.decryptUser(user);
 
       SecurityUtils.PassHashEnum verifyPasswordStatus =
           securityUtils.verifyPassword(password, user.getPassword());
@@ -371,6 +371,7 @@ public class UserController {
       user.setPassword(hash);
 
       encryptionObjectController.encryptUser(user);
+      logger.info("User Encrypted Address", user.getAddress());
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
       logger.info("Successfully created user, " + user.getUsername());
