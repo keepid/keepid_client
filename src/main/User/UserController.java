@@ -1,24 +1,20 @@
 package User;
 
-import Activity.*;
 import Bug.BugController;
 import Config.Message;
 import Logger.LogFactory;
-import Security.EmailExceptions;
-import Security.EmailUtil;
-import Security.SecurityUtils;
-import Security.Tokens;
 import Validation.ValidationException;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import io.javalin.http.UploadedFile;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.io.InputStream;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.*;
@@ -37,42 +33,61 @@ public class UserController {
     logger = l.createLogger("UserController");
   }
 
+  public Handler uploadPfp =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        UploadedFile file = ctx.uploadedFile("file");
+        GetUserInfoService service = new GetUserInfoService(db, logger, username);
+        service.uploadPfp(file);
+        ctx.json(UserMessage.SUCCESS.toJSON("Profile Picture Uploaded Successfully").toString());
+      };
+
+  public Handler loadPfp =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        UploadedFile file = ctx.uploadedFile("file");
+        GetUserInfoService service = new GetUserInfoService(db, logger, username);
+        InputStream pfp = service.getUserPfp();
+        ctx.header("Content-Type", "application/pfp");
+        ctx.result(pfp);
+      };
+
   public Handler loginUser =
-    ctx -> {
-      ctx.req.getSession().invalidate();
-      JSONObject req = new JSONObject(ctx.body());
-      String username = req.getString("username");
-      String password = req.getString("password");
-      String ip = ctx.ip();
-      String userAgent = ctx.userAgent();
-      logger.info("Attempting to login " + username);
+      ctx -> {
+        ctx.req.getSession().invalidate();
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        String password = req.getString("password");
+        String ip = ctx.ip();
+        String userAgent = ctx.userAgent();
+        logger.info("Attempting to login " + username);
 
-      LoginService loginService = new LoginService(db, logger, username, password, ip, userAgent);
-      Message response = loginService.executeAndGetResponse();
-      logger.info(response.toString() + response.getErrorDescription());
-      JSONObject responseJSON = response.toJSON();
-      if(response == UserMessage.AUTH_SUCCESS){
-        responseJSON.put("userRole", loginService.getUserRole());
-        responseJSON.put("organization", loginService.getOrganization());
-        responseJSON.put("firstName", loginService.getFirstName());
-        responseJSON.put("lastName", loginService.getLastName());
-        responseJSON.put("twoFactorOn", loginService.isTwoFactorOn());
+        LoginService loginService = new LoginService(db, logger, username, password, ip, userAgent);
+        Message response = loginService.executeAndGetResponse();
+        logger.info(response.toString() + response.getErrorDescription());
+        JSONObject responseJSON = response.toJSON();
+        if (response == UserMessage.AUTH_SUCCESS) {
+          responseJSON.put("userRole", loginService.getUserRole());
+          responseJSON.put("organization", loginService.getOrganization());
+          responseJSON.put("firstName", loginService.getFirstName());
+          responseJSON.put("lastName", loginService.getLastName());
+          responseJSON.put("twoFactorOn", loginService.isTwoFactorOn());
 
-        ctx.sessionAttribute("privilegeLevel", loginService.getUserRole());
-        ctx.sessionAttribute("orgName", loginService.getOrganization());
-        ctx.sessionAttribute("username", loginService.getUsername());
-        ctx.sessionAttribute("fullName", loginService.getFullName());
-      } else {
-        responseJSON.put("userRole", "");
-        responseJSON.put("organization", "");
-        responseJSON.put("firstName", "");
-        responseJSON.put("lastName", "");
-        responseJSON.put("twoFactorOn", "");
-      }
-      ctx.result(responseJSON.toString());
-    };
+          ctx.sessionAttribute("privilegeLevel", loginService.getUserRole());
+          ctx.sessionAttribute("orgName", loginService.getOrganization());
+          ctx.sessionAttribute("username", loginService.getUsername());
+          ctx.sessionAttribute("fullName", loginService.getFullName());
+        } else {
+          responseJSON.put("userRole", "");
+          responseJSON.put("organization", "");
+          responseJSON.put("firstName", "");
+          responseJSON.put("lastName", "");
+          responseJSON.put("twoFactorOn", "");
+        }
+        ctx.result(responseJSON.toString());
+      };
 
-//  UNUSED
+  //  UNUSED
   public Handler generateUniqueUsername =
       ctx -> {
         logger.info("Starting generateUniqueUsername Handler");
@@ -144,7 +159,8 @@ public class UserController {
               password,
               userType);
           logger.info("Validating user success");
-          ctx.result(UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
+          ctx.result(
+              UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
         } catch (ValidationException ve) {
           logger.error("Validation exception");
           ctx.result(ve.getJSON().toString());
@@ -152,33 +168,50 @@ public class UserController {
       };
 
   public Handler createNewUser =
-    ctx -> {
-      logger.info("Starting createNewUser handler");
-      JSONObject req = new JSONObject(ctx.body());
-      UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
-      String organizationName = ctx.sessionAttribute("orgName");
-      String sessionUsername = ctx.sessionAttribute("username");
-      String firstName = req.getString("firstname").strip();
-      String lastName = req.getString("lastname").strip();
-      String birthDate = req.getString("birthDate").strip();
-      String email = req.getString("email").toLowerCase().strip();
-      String phone = req.getString("phonenumber").strip();
-      String address = req.getString("address").strip();
-      String city = req.getString("city").strip();
-      String state = req.getString("state").strip();
-      String zipcode = req.getString("zipcode").strip();
-      Boolean twoFactorOn = req.getBoolean("twoFactorOn");
-      String username = req.getString("username").strip();
-      String password = req.getString("password").strip();
-      String userTypeString = req.getString("personRole").strip();
-      UserType userType = UserType.userTypeFromString(userTypeString);
+      ctx -> {
+        logger.info("Starting createNewUser handler");
+        JSONObject req = new JSONObject(ctx.body());
+        UserType sessionUserLevel = ctx.sessionAttribute("privilegeLevel");
+        String organizationName = ctx.sessionAttribute("orgName");
+        String sessionUsername = ctx.sessionAttribute("username");
+        String firstName = req.getString("firstname").strip();
+        String lastName = req.getString("lastname").strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").toLowerCase().strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").strip();
+        String city = req.getString("city").strip();
+        String state = req.getString("state").strip();
+        String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        String userTypeString = req.getString("personRole").strip();
+        UserType userType = UserType.userTypeFromString(userTypeString);
 
-      CreateUserService createUserService = new CreateUserService(db, logger, sessionUserLevel, organizationName,
-              sessionUsername, firstName, lastName, birthDate, email, phone, address, city, state, zipcode,
-              twoFactorOn, username, password, userType);
-      Message response = createUserService.executeAndGetResponse();
-      ctx.result(response.toJSON().toString());
-    };
+        CreateUserService createUserService =
+            new CreateUserService(
+                db,
+                logger,
+                sessionUserLevel,
+                organizationName,
+                sessionUsername,
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                address,
+                city,
+                state,
+                zipcode,
+                twoFactorOn,
+                username,
+                password,
+                userType);
+        Message response = createUserService.executeAndGetResponse();
+        ctx.result(response.toJSON().toString());
+      };
 
   public Handler logout =
       ctx -> {
@@ -194,7 +227,7 @@ public class UserController {
         String username = ctx.sessionAttribute("username");
         GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
         Message response = infoService.executeAndGetResponse();
-        if(response != UserMessage.SUCCESS){ // if fail return
+        if (response != UserMessage.SUCCESS) { // if fail return
           ctx.result(response.toJSON().toString());
         } else {
           JSONObject userInfo = infoService.getUserFields(); // get user info here
@@ -203,9 +236,10 @@ public class UserController {
         }
       };
 
-  private JSONObject mergeJSON(JSONObject object1, JSONObject object2){ // helper function to merge 2 json objects
+  private JSONObject mergeJSON(
+      JSONObject object1, JSONObject object2) { // helper function to merge 2 json objects
     JSONObject merged = new JSONObject(object1, JSONObject.getNames(object1));
-    for(String key : JSONObject.getNames(object2)) {
+    for (String key : JSONObject.getNames(object2)) {
       merged.put(key, object2.get(key));
     }
     return merged;
