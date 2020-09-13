@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static PDF.PdfControllerHelper.getFieldInformation;
+
 public class PDFApplicationUnitTests {
 
   // Get subset of fields of type fieldType
@@ -50,8 +52,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationValidValuesTest1() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -77,8 +78,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationValidValuesTest2() throws IOException {
     File pdfInput = new File("src/test/resources/ss-5.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -103,8 +103,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationValidValuesTest3() throws IOException {
     File pdfInput = new File("src/test/resources/Application_for_a_Birth_Certificate.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -129,8 +128,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationTextFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -166,8 +164,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationComboBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -199,8 +196,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationListBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -232,8 +228,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationCheckBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -268,8 +263,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationPushButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -301,8 +295,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationRadioButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -334,8 +327,7 @@ public class PDFApplicationUnitTests {
   public void getFieldInformationSignatureFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();

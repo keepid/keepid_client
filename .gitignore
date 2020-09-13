@@ -38,3 +38,4 @@ session-store/*
 
 # don't track the keys property file
 secretkeys.properties
+/.gradle/

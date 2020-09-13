@@ -1,6 +1,5 @@
 package PDFTest;
 
-import PDF.PdfController;
 import Security.GoogleCredentials;
 import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
+import static PDF.PdfControllerHelper.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -238,13 +238,10 @@ public class PdfMongoTests {
         Unirest.post(TestUtils.getServerUrl() + "/get-application-questions")
             .body(body.toString())
             .asString();
-    System.out.println(applicationsQuestionsResponse.getBody());
     JSONObject applicationsQuestionsResponseJSON =
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
-
-    System.out.println(applicationsQuestionsResponseJSON.toString());
 
     // comb through JSON for each field, to see if it is there.
     LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
@@ -338,7 +335,6 @@ public class PdfMongoTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
-    System.out.println(applicationsQuestionsResponseJSON.toString());
 
     // comb through JSON for each field, to see if it is there.
     LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
@@ -407,8 +403,6 @@ public class PdfMongoTests {
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    System.out.println(applicationsQuestionsResponseJSON.toString());
-
     // comb through JSON for each field, to see if it is there.
     LinkedList<String[][]> fieldsToCheck = new LinkedList<String[][]>();
     // each array has format {{fieldType}, {fieldName} {fieldValueOptions}}
@@ -438,7 +432,6 @@ public class PdfMongoTests {
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    System.out.println(applicationsQuestionsResponseJSON.toString());
     delete(fileId, "FORM");
     TestUtils.logout();
   }
@@ -452,7 +445,6 @@ public class PdfMongoTests {
     File applicationDocx =
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     String fileId = uploadFileAndGetFileId(applicationDocx, "FORM");
-    System.out.println(fileId);
 
     JSONObject body = new JSONObject();
     body.put("applicationId", fileId);
@@ -460,7 +452,6 @@ public class PdfMongoTests {
         Unirest.post(TestUtils.getServerUrl() + "/get-application-questions")
             .body(body.toString())
             .asString();
-    System.out.println(applicationsQuestionsResponse.getBody());
     JSONObject applicationsQuestionsResponseJSON =
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
@@ -489,11 +480,7 @@ public class PdfMongoTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    System.out.println(applicationsQuestionsResponseJSON.toString());
-
     JSONObject formAnswers = getFormAnswersTestPDFForm(applicationsQuestionsResponseJSON);
-    System.out.println(formAnswers.toString());
-
     // fill out form
     body = new JSONObject();
     body.put("applicationId", fileId);
@@ -502,7 +489,6 @@ public class PdfMongoTests {
         Unirest.post(TestUtils.getServerUrl() + "/fill-application")
             .body(body.toString())
             .asFile(resourcesFolderPath + File.separator + "testpdf_filled_out.pdf");
-    System.out.println(filledForm.getStatus());
     assertThat(filledForm.getStatus()).isEqualTo(200);
 
     // check if all fields are filled
@@ -511,8 +497,7 @@ public class PdfMongoTests {
       File filled_out_pdf =
           new File(resourcesFolderPath + File.separator + "testpdf_filled_out.pdf");
       PDDocument pdf = PDDocument.load(filled_out_pdf);
-      fieldValues = PdfController.getFieldValues(pdf);
-      System.out.println(fieldValues.toString());
+      fieldValues = getFieldValues(pdf);
     } catch (IOException e) {
       assertThat(false).isTrue();
     }
@@ -539,11 +524,7 @@ public class PdfMongoTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    System.out.println(applicationsQuestionsResponseJSON.toString());
-
     JSONObject formAnswers = getFormAnswersTestPDFForm(applicationsQuestionsResponseJSON);
-    System.out.println(formAnswers.toString());
-
     // fill out form
     body = new JSONObject();
     body.put("applicationId", fileId);
@@ -559,7 +540,7 @@ public class PdfMongoTests {
     try {
       File filled_out_pdf = new File(resourcesFolderPath + File.separator + "ss-5_filled_out.pdf");
       PDDocument pdf = PDDocument.load(filled_out_pdf);
-      fieldValues = PdfController.getFieldValues(pdf);
+      fieldValues = getFieldValues(pdf);
     } catch (IOException e) {
       assertThat(false).isTrue();
     }
@@ -785,7 +766,6 @@ public class PdfMongoTests {
         Unirest.post(TestUtils.getServerUrl() + "/get-documents").body(body.toString()).asString();
     JSONObject getFormJSON = TestUtils.responseStringToJSON(getForm.getBody());
     // check that form has annotated = false in DB
-    System.out.println(getFormJSON.toString());
     assertThat(getFormJSON.getJSONArray("documents").getJSONObject(0).getBoolean("annotated"))
         .isEqualTo(false);
     String fileId = getFormJSON.getJSONArray("documents").getJSONObject(0).getString("id");
@@ -820,7 +800,6 @@ public class PdfMongoTests {
     body.put("pdfType", "APPLICATION");
     HttpResponse<String> getAllDocuments =
         Unirest.post(TestUtils.getServerUrl() + "/get-documents").body(body.toString()).asString();
-    System.out.println(getAllDocuments.getBody());
     JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
     assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
     return getAllDocumentsJSON;

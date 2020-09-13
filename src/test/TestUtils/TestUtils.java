@@ -719,13 +719,15 @@ public class TestUtils {
     KeysetHandle keysetHandle = KeysetHandle.generateNew(AesGcmKeyManager.aes256GcmTemplate());
     String keysetFilename = "test_encryption_key.json";
 
+    File keysetFile = new File(keysetFilename);
     keysetHandle.write(
-        JsonKeysetWriter.withFile(new File(keysetFilename)),
+        JsonKeysetWriter.withFile(keysetFile),
         new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
 
     Object obj = new JSONParser().parse(new FileReader(keysetFilename));
     System.out.println(obj.toString());
     uploadEncryptionKey((org.json.simple.JSONObject) obj);
+    keysetFile.delete();
   }
 
   private static void uploadEncryptionKey(org.json.simple.JSONObject key) {

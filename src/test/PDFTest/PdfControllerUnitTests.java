@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import static PDF.PdfControllerHelper.*;
+
 public class PdfControllerUnitTests {
 
   // Get subset of fields of type fieldType
@@ -58,23 +60,20 @@ public class PdfControllerUnitTests {
   public void getFieldInformationNullFileTest() throws IOException {
     File pdfInput = new File("");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
     pdfDocument.close();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void getFieldInformationNullPDFDocumentTest() {
     PDDocument pdfDocument = null;
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void getFieldInformationNullFieldsJSONTest() {
     PDDocument pdfDocument = null;
-    List<JSONObject> fieldsJSON = null;
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
   }
 
   @Test
@@ -82,104 +81,15 @@ public class PdfControllerUnitTests {
   public void getFieldInformationValidValuesTest1() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
 
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
       Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
-
-      // Editable
-      Assert.assertNotEquals("", field.getString("fieldQuestion"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
-
-      // Is valid fieldType
-      Set<String> validFieldTypes = PdfController.validFieldTypes;
-      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
-    }
-    pdfDocument.close();
-  }
-
-  @Test
-  // NOTE: We need to fix the file so that the buttons are radio
-  public void getFieldInformationValidValuesTest2() throws IOException {
-    File pdfInput = new File("src/test/resources/ss-5.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
-
-    // Make sure field names are correct
-    for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
-      // Not Editable
-      Assert.assertNotEquals("", field.getString("fieldName"));
-      Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
-
-      // Editable
-      Assert.assertNotEquals("", field.getString("fieldQuestion"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
-
-      // Is valid fieldType
-      Set<String> validFieldTypes = PdfController.validFieldTypes;
-      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
-    }
-    pdfDocument.close();
-  }
-
-  @Test
-  // NOTE: We need to fix the file so that the buttons are radio
-  public void getFieldInformationValidValuesTest3() throws IOException {
-    File pdfInput = new File("src/test/resources/Application_for_a_Birth_Certificate.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
-
-    // Make sure field names are correct
-    for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
-      // Not Editable
-      Assert.assertNotEquals("", field.getString("fieldName"));
-      Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions").toString());
-
-      // Editable
-      Assert.assertNotEquals("", field.getString("fieldQuestion"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
-      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
-
-      // Is valid fieldType
-      Set<String> validFieldTypes = PdfController.validFieldTypes;
-      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
-    }
-    pdfDocument.close();
-  }
-
-  @Test
-  // NOTE: We need to fix the file so that the buttons are radio
-  public void getFieldInformationValidValuesTest4() throws IOException {
-    File pdfInput = new File("src/test/resources/intellectual_property_release_fillable.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
-
-    // Make sure field names are correct
-    for (JSONObject field : fieldsJSON) {
-      System.out.println(field.toString());
-
-      // Not Editable
-      Assert.assertNotEquals("", field.getString("fieldName"));
-      Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -197,8 +107,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationTextFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -235,8 +144,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationComboBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -269,8 +177,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationListBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -303,8 +210,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationCheckBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -340,8 +246,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationPushButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -359,8 +264,6 @@ public class PdfControllerUnitTests {
     while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
       JSONObject field = testFieldsJSONIterator.next();
       JSONObject correctField = correctFieldIterator.next();
-      System.out.println(field.toString());
-      System.out.println(correctField.toString());
 
       // Change to equals for GSON
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
@@ -376,8 +279,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationRadioButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -410,8 +312,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationSignatureFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = new LinkedList<>();
-    PdfController.getFieldInformation(pdfDocument, fieldsJSON);
+    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -445,9 +346,8 @@ public class PdfControllerUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     JSONObject formAnswers = new JSONObject();
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues.toString());
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
     pdfDocument.close();
   }
 
@@ -469,8 +369,8 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("A different address", "321 Broad Street");
     correctFieldValues.put("currentdate_af_date", "07/07/2020");
 
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -496,13 +396,11 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Ribeye Steaks", "Off");
     correctFieldValues.put("Tomatoes", "Yes");
 
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues.toString());
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
     pdfDocument.close();
@@ -518,13 +416,11 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Radiobuttons", "Yes");
 
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -533,13 +429,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -548,12 +442,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
     pdfDocument.close();
@@ -569,13 +462,11 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Dropdown", "[Choice1]");
 
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -584,13 +475,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -599,12 +488,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
     pdfDocument.close();
@@ -622,13 +510,11 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Combobox", "[Choice1]");
 
-    PdfController.fillFields(pdfDocument, formAnswers);
-    JSONObject fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -639,13 +525,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
-    System.out.println(fieldValues);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -657,12 +541,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
 
@@ -675,12 +558,11 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    PdfController.fillFields(pdfDocument, formAnswers);
-    fieldValues = PdfController.getFieldValues(pdfDocument);
+    fillFields(pdfDocument, formAnswers);
+    fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
-      System.out.println(key + " " + fieldValues.getString(key));
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
     pdfDocument.close();
@@ -725,7 +607,6 @@ public class PdfControllerUnitTests {
     Assert.assertEquals(
         signature.getCOSObject().getItem(COSName.CONTENTS),
         signatureDocument.getCOSObject().getItem((COSName.CONTENTS)));
-    pdfDocument.save("src/test/resources/test_out_signature.pdf");
 
     IOUtils.closeQuietly(signatureOptions);
     pdfDocument.close();

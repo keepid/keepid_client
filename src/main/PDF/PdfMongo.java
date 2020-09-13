@@ -7,7 +7,6 @@ import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -19,7 +18,11 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+
 public class PdfMongo {
+  public static final int CHUNK_SIZE_BYTES = 100000;
 
   public static JSONObject upload(
       String uploader,
@@ -67,7 +70,7 @@ public class PdfMongo {
     if (pdfType == PDFType.FORM) {
       GridFSUploadOptions options =
           new GridFSUploadOptions()
-              .chunkSizeBytes(100000)
+              .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
@@ -78,7 +81,7 @@ public class PdfMongo {
     } else {
       GridFSUploadOptions options =
           new GridFSUploadOptions()
-              .chunkSizeBytes(100000)
+              .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
@@ -100,7 +103,7 @@ public class PdfMongo {
       PDFType pdfType,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    GridFSFile grid_out = gridBucket.find(Filters.eq("_id", fileID)).first();
+    GridFSFile grid_out = gridBucket.find(eq("_id", fileID)).first();
 
     if (grid_out == null || grid_out.getMetadata() == null) {
       return PdfMessage.NO_SUCH_FILE.toJSON();
@@ -111,7 +114,7 @@ public class PdfMongo {
 
     GridFSUploadOptions options =
         new GridFSUploadOptions()
-            .chunkSizeBytes(100000)
+            .chunkSizeBytes(CHUNK_SIZE_BYTES)
             .metadata(
                 new Document("type", "pdf")
                     .append("upload_date", String.valueOf(LocalDate.now()))
@@ -137,20 +140,20 @@ public class PdfMongo {
           && (privilegeLevel == UserType.Director
               || privilegeLevel == UserType.Admin
               || privilegeLevel == UserType.Worker)) {
-        filter = Filters.eq("metadata.organizationName", organizationName);
+        filter = eq("metadata.organizationName", organizationName);
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
-        filter = Filters.eq("metadata.uploader", uploader);
+        filter = eq("metadata.uploader", uploader);
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.FORM) {
         filter =
-            Filters.and(
-                Filters.eq("metadata.organizationName", organizationName),
-                Filters.eq("metadata.annotated", annotated));
+            and(
+                eq("metadata.organizationName", organizationName),
+                eq("metadata.annotated", annotated));
         files = mongodbGetAllFiles(filter, pdfType, db);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
@@ -169,25 +172,17 @@ public class PdfMongo {
     if (pdfType.equals(PDFType.FORM)) {
       for (GridFSFile grid_out : gridBucket.find(filter)) {
         assert grid_out.getMetadata() != null;
-        files.put(
-            new JSONObject()
-                .put("filename", grid_out.getFilename())
-                .put("annotated", grid_out.getMetadata().getBoolean("annotated"))
-                .put("uploader", grid_out.getMetadata().getString("uploader"))
-                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
-                .put("id", grid_out.getId().asObjectId().getValue().toString())
-                .put("uploadDate", grid_out.getUploadDate().toString()));
-      }
-    } else {
-      for (GridFSFile grid_out : gridBucket.find(filter)) {
-        assert grid_out.getMetadata() != null;
-        files.put(
+        JSONObject fileMetadata =
             new JSONObject()
                 .put("filename", grid_out.getFilename())
                 .put("uploader", grid_out.getMetadata().getString("uploader"))
                 .put("organizationName", grid_out.getMetadata().getString("organizationName"))
                 .put("id", grid_out.getId().asObjectId().getValue().toString())
-                .put("uploadDate", grid_out.getUploadDate().toString()));
+                .put("uploadDate", grid_out.getUploadDate().toString());
+        if (pdfType.equals(PDFType.FORM)) {
+          fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
+        }
+        files.put(fileMetadata);
       }
     }
     return files;
@@ -204,7 +199,7 @@ public class PdfMongo {
       EncryptionController encryptionController)
       throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
+    GridFSFile grid_out = gridBucket.find(eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;
     }
@@ -237,7 +232,7 @@ public class PdfMongo {
       ObjectId id,
       MongoDatabase db) {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
+    GridFSFile grid_out = gridBucket.find(eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
       return PdfMessage.NO_SUCH_FILE.toJSON();
     }
