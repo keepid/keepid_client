@@ -13,12 +13,14 @@ import OrganizationInformation from './OrganizationInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmit from './ReviewSubmit';
 import USStates from '../../static/data/states_titlecase.json';
+import Role from '../../static/Role';
 
 const { Step } = Steps;
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
 interface Props {
   alert: any
+  role: Role
 }
 
 interface State {
@@ -246,6 +248,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
+            role={this.props.role}
           />
         );
       }
