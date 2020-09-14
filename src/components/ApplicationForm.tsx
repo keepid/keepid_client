@@ -185,6 +185,7 @@ class ApplicationForm extends Component<Props, State> {
       startDate,
     } = this.state;
 
+    console.log(formAnswers);
     if (submitSuccessful) {
       return (<Redirect to="/home" />);
     }
@@ -269,7 +270,6 @@ class ApplicationForm extends Component<Props, State> {
 
                         if (entry.fieldType === 'CheckBox') {
                           const temp = entry.fieldValueOptions;
-                          console.log(temp);
                           return (
                             <div className="mt-2 mb-2">
                               <div className="checkbox-question">
