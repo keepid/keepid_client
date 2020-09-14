@@ -2,21 +2,26 @@ package User;
 
 import Config.DeploymentLevel;
 import Config.MongoConfig;
+import Security.EncryptionObjectController;
 import Security.SecurityUtils;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Scanner;
 
 import static com.mongodb.client.model.Filters.eq;
 
 public class CreateDeveloper {
 
-  public static void main(String[] args) throws Validation.ValidationException {
+  public static void main(String[] args)
+      throws Validation.ValidationException, GeneralSecurityException, IOException {
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.STAGING);
     SecurityUtils securityUtils = new SecurityUtils();
+    EncryptionObjectController encryptionObjectController = new EncryptionObjectController(db);
 
     Scanner scanner = new Scanner(System.in);
     System.out.println("Please Enter your First Name: ");
@@ -94,6 +99,7 @@ public class CreateDeveloper {
     }
 
     user.setPassword(hash);
+    encryptionObjectController.encryptUser(user, username);
     userCollection.insertOne(user);
     System.out.println(UserMessage.ENROLL_SUCCESS.toJSON().getString("message"));
   }

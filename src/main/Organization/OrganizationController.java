@@ -338,10 +338,10 @@ public class OrganizationController {
           ctx.json(OrgEnrollmentStatus.PASS_HASH_FAILURE.toJSON().toString());
           return;
         }
-
+        logger.info(user.getUsername() + " " + user.getFirstName());
         logger.info("Setting password and inserting user and org into Mongo");
         user.setPassword(passwordHash);
-        encryptionObjectController.encryptUser(user);
+        encryptionObjectController.encryptUser(user, username);
         userCollection.insertOne(user);
 
         orgCollection.insertOne(org);

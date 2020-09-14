@@ -658,7 +658,7 @@ public class TestUtils {
       EncryptionObjectController encryptionObjectController =
           new EncryptionObjectController(testDB);
       for (User user : users) {
-        encryptionObjectController.encryptUser(user);
+        encryptionObjectController.encryptUser(user, user.getUsername());
       }
       MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
       userCollection.insertMany(

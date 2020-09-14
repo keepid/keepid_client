@@ -17,7 +17,7 @@ public class EncryptionObjectController {
   public EncryptionObjectController(MongoDatabase db) {
     this.db = db;
     LogFactory logFactory = new LogFactory();
-    logFactory.createLogger("EncryptionObjectController");
+    logger = logFactory.createLogger("EncryptionObjectController");
     this.encryptionController = new EncryptionController(db);
   }
 
@@ -25,10 +25,7 @@ public class EncryptionObjectController {
   public static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
 
-  public void encryptUser(User user) throws GeneralSecurityException, IOException {
-    String username = user.getUsername();
-
-    logger.info("Attempting to encrypt User " + username);
+  public void encryptUser(User user, String username) throws GeneralSecurityException, IOException {
     user.setAddress(encryptionController.encryptString(user.getAddress(), username));
     user.setBirthDate(encryptionController.encryptString(user.getBirthDate(), username));
     user.setCity(encryptionController.encryptString(user.getCity(), username));
@@ -39,12 +36,7 @@ public class EncryptionObjectController {
     user.setZipcode(encryptionController.encryptString(user.getZipcode(), username));
   }
 
-  public void decryptUser(User user) throws GeneralSecurityException, IOException {
-    String username = user.getUsername();
-    logger.info("User Address " + user.getAddress());
-
-    logger.info("Attempting to decrypt User " + username);
-
+  public void decryptUser(User user, String username) throws GeneralSecurityException, IOException {
     user.setAddress(encryptionController.decryptString(user.getAddress(), username));
     user.setBirthDate(encryptionController.decryptString(user.getBirthDate(), username));
     user.setCity(encryptionController.decryptString(user.getCity(), username));
