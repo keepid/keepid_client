@@ -87,4 +87,91 @@ public class UserControllerIntegrationTest {
     JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
     System.out.println(actualResponseJson.toString());
   }
+
+  @Test
+  public void createUserWithNullOrgNameTest() {
+    JSONObject body = new JSONObject();
+    body.put("firstname", "mel");
+    body.put("lastname", "car");
+    body.put("birthDate", "02-16-1998");
+    body.put("email", "email@email");
+    body.put("phonenumber", "1234567890");
+    body.put("address", "123 park ave");
+    body.put("city", "new york");
+    body.put("state", "NY");
+    body.put("zipcode", "10003");
+    body.put("twoFactorOn", false);
+    body.put("username", "testUser123");
+    body.put("password", "testUser123");
+    body.put("personRole", "Worker");
+    body.put("orgName", "");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/create-invited-user")
+            .body(body.toString())
+            .asString();
+
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("INVALID_PARAMETER");
+  }
+
+  @Test
+  public void createInvitedUserSuccessfullyTest() {
+    JSONObject body = new JSONObject();
+    body.put("firstname", "mel");
+    body.put("lastname", "car");
+    body.put("birthDate", "02-16-1998");
+    body.put("email", "email@email");
+    body.put("phonenumber", "1234567890");
+    body.put("address", "123 park ave");
+    body.put("city", "new york");
+    body.put("state", "NY");
+    body.put("zipcode", "10003");
+    body.put("twoFactorOn", false);
+    body.put("username", "testUser123");
+    body.put("password", "testUser123");
+    body.put("personRole", "Worker");
+    body.put("orgName", "Test Org");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/create-invited-user")
+            .body(body.toString())
+            .asString();
+
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("ENROLL_SUCCESS");
+  }
+
+  @Test
+  public void createUserWithNullRoleTest() {
+    JSONObject body = new JSONObject();
+    body.put("firstname", "mel");
+    body.put("lastname", "car");
+    body.put("birthDate", "02-16-1998");
+    body.put("email", "email@email");
+    body.put("phonenumber", "1234567890");
+    body.put("address", "123 park ave");
+    body.put("city", "new york");
+    body.put("state", "NY");
+    body.put("zipcode", "10003");
+    body.put("twoFactorOn", false);
+    body.put("username", "testUser123");
+    body.put("password", "testUser123");
+    body.put("personRole", "");
+    body.put("orgName", "Test Org");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/create-invited-user")
+            .body(body.toString())
+            .asString();
+
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("INVALID_PRIVILEGE_TYPE");
+  }
 }

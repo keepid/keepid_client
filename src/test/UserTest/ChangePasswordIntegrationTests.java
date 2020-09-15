@@ -57,7 +57,10 @@ public class ChangePasswordIntegrationTests {
 
     Argon2 argon2 = Argon2Factory.create();
     char[] possiblePasswordArr = possiblePassword.toCharArray();
-    String passwordHash = user.getPassword();
+    String passwordHash = null;
+    if (user != null) {
+      passwordHash = user.getPassword();
+    }
 
     return argon2.verify(passwordHash, possiblePasswordArr);
   }
