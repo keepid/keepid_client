@@ -43,9 +43,10 @@ class ApplicationForm extends Component<Props, State> {
       numPages: 0,
       startDate: new Date(),
     };
-    this.handleChangeFormValue = this.handleChangeFormValue.bind(this);
-    this.handleChangeFormValueRadio = this.handleChangeFormValueRadio.bind(this);
+    this.handleChangeFormValueTextField = this.handleChangeFormValueTextField.bind(this);
+    this.handleChangeFormValueRadioButton = this.handleChangeFormValueRadioButton.bind(this);
     this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
+    this.handleChangeFormValueListBox = this.handleChangeFormValueListBox.bind(this);
     this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
     this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
@@ -67,21 +68,20 @@ class ApplicationForm extends Component<Props, State> {
       .then((responseJSON) => {
         const { fields } = JSON.parse(responseJSON);
         this.setState({ formQuestions: fields });
-        fields.map((entry) => (formAnswers[entry.fieldName] = ''));
+        fields.forEach((entry) => {
+          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+        });
         this.setState({ formAnswers });
       });
   }
 
-  handleChangeFormValue(event: any) {
+  handleChangeFormValueTextField(event: any) {
     const {
       formAnswers,
     } = this.state;
-    console.log(event.target);
     const { id } = event.target;
     const { value } = event.target;
     formAnswers[id] = value;
-    console.log(`id${id}`);
-    console.log(`value${value}`);
     console.log(formAnswers);
     this.setState({ formAnswers });
   }
@@ -92,18 +92,29 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
     console.log(event.target.checked);
     const { id } = event.target;
-    const value = event.target.checked;
+    const value : boolean = event.target.checked;
     formAnswers[id] = value;
     this.setState({ formAnswers });
   }
 
-  handleChangeFormValueRadio(event: any) {
+  handleChangeFormValueRadioButton(event: any) {
     const {
       formAnswers,
     } = this.state;
     const { name } = event.target;
     const { value } = event.target;
     formAnswers[name] = value;
+    this.setState({ formAnswers });
+  }
+
+  handleChangeFormValueListBox(event: any) {
+    const {
+      formAnswers,
+    } = this.state;
+    const values : string[] = Array.from(event.target.selectedOptions, (option: HTMLOptionElement) => option.value);
+    const { id } = event.target;
+    formAnswers[id] = values;
+    console.log(formAnswers);
     this.setState({ formAnswers });
   }
 
@@ -260,10 +271,10 @@ class ApplicationForm extends Component<Props, State> {
                                 className="form-control form-purple mt-1"
                                 id={entry.fieldName}
                                 placeholder={entry.fieldName}
-                                onChange={this.handleChangeFormValue}
+                                onChange={this.handleChangeFormValueTextField}
                                 required
                               />
-                              <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                              <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
                           );
                         }
@@ -275,7 +286,7 @@ class ApplicationForm extends Component<Props, State> {
                               <div className="checkbox-question">
                                 <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                                   {entry.fieldQuestion}
-                                  <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                                  <small className="form-text text-muted mt-1">Please complete this field.</small>
                                 </label>
 
                                 {temp.map((value) => (
@@ -303,7 +314,7 @@ class ApplicationForm extends Component<Props, State> {
                             <div className="mt-2 mb-2">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                                 {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                                <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
                               {temp.map((value) => (
@@ -315,7 +326,8 @@ class ApplicationForm extends Component<Props, State> {
                                     checked={formAnswers[entry.fieldName] === value}
                                     value={value}
                                     name={entry.fieldName}
-                                    onChange={this.handleChangeFormValueRadio}
+                                    onChange={this.handleChangeFormValueRadioButton}
+                                    required
                                   />
                                   <label className="custom-control-label" htmlFor={value}>{value}</label>
                                 </div>
@@ -330,11 +342,11 @@ class ApplicationForm extends Component<Props, State> {
                             <div className="dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                                 {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                                <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValue} className="custom-select">
-                                <option selected>Open this select menu</option>
+                              <select id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
+                                <option selected disabled value="">Please select your choice ...</option>
                                 {temp.map((value) => (
                                   <option value={value}>{value}</option>
                                 ))}
@@ -349,11 +361,11 @@ class ApplicationForm extends Component<Props, State> {
                             <div className="multiple-dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
                                 {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                                <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValue} className="custom-select" multiple>
-                                <option selected>Open this select menu</option>
+                              <select id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
+                                <option selected disabled value="">Please select your choice(s) ...</option>
                                 {temp.map((value) => (
                                   <option value={value}>{value}</option>
                                 ))}
@@ -362,7 +374,7 @@ class ApplicationForm extends Component<Props, State> {
                           );
                         }
 
-                        if (entry.fieldType == 'DateField') {
+                        if (entry.fieldType === 'DateField') {
                           return (
                             <div className="date-question">
                               <label htmlFor="date" className="w-100 font-weight-bold">Date</label>
@@ -372,7 +384,7 @@ class ApplicationForm extends Component<Props, State> {
                                 onChange={this.handleChangeDate}
                                 className="form-control form-purple mt-1"
                               />
-                              <small className="form-text text-muted mt-1">Sample subtitle text.</small>
+                              <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
                           );
                         }

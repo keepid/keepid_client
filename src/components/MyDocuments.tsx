@@ -310,6 +310,7 @@ class MyDocuments extends Component<Props, State> {
         const {
           documents,
         } = responseObject;
+        console.log(documents);
         this.setState({ documentData: documents });
       });
   }
@@ -318,11 +319,6 @@ class MyDocuments extends Component<Props, State> {
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <div>
-      <Link to="/my-documents/view">
-        <button type="button" onClick={(event) => this.onViewDocument(event, row)} className="btn btn-outline-success btn-sm">
-          View
-        </button>
-      </Link>
       {/* <Link to="/my-documents/print">
         <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
           Print
