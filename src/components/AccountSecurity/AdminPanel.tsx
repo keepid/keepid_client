@@ -161,30 +161,11 @@ class AdminPanel extends Component<Props, State> {
         <div className="card">
           <div className="card-body">
             <h5 className="card-title">
-              No Worker Selected
+              <i>No Worker Selected</i>
             </h5>
-            <p className="card-text">Set and Modify Permissions here</p>
           </div>
           <ul className="list-group list-group-flush">
             <li className="list-group-item">
-              <div className="form-group form-check">
-                <label htmlFor="viewCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="viewCheckbox" />
-                  Can View Client Documents
-                </label>
-              </div>
-              <div className="form-group form-check">
-                <label htmlFor="editCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="editCheckbox" />
-                  Can Edit Client Documents
-                </label>
-              </div>
-              <div className="form-group form-check">
-                <label htmlFor="registerCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={false} readOnly className="form-check-input" id="registerCheckbox" />
-                  Can Register New Clients
-                </label>
-              </div>
               <div className="form-group">
                 <label htmlFor="permissionSelector">
                   Set Worker Permission Level
@@ -196,11 +177,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+              <button type="submit" className="btn btn-danger">Delete Account</button>
             </li>
           </ul>
         </div>
@@ -210,28 +191,9 @@ class AdminPanel extends Component<Props, State> {
             <h5 className="card-title">
               {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
             </h5>
-            <p className="card-text">Set and Modify Permissions here</p>
           </div>
           <ul className="list-group list-group-flush">
             <li className="list-group-item">
-              <div className="form-group form-check">
-                <label htmlFor="viewCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={currentWorker.viewPermission} onChange={this.onChangeViewPermission} className="form-check-input" id="viewCheckbox" />
-                  Can View Client Documents
-                </label>
-              </div>
-              <div className="form-group form-check">
-                <label htmlFor="editCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={currentWorker.editPermission} onChange={this.onChangeEditPermission} className="form-check-input" id="editCheckbox" />
-                  Can Edit Client Documents
-                </label>
-              </div>
-              <div className="form-group form-check">
-                <label htmlFor="registerCheckbox" className="form-check-label">
-                  <input type="checkbox" checked={currentWorker.registerPermission} onChange={this.onChangeRegisterPermission} className="form-check-input" id="registerCheckbox" />
-                  Can Register New Clients
-                </label>
-              </div>
               <div className="form-group">
                 <label htmlFor="permissionSelector">
                   Set Worker Permission Level
@@ -243,11 +205,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+              <button type="submit" className="btn btn-danger">Delete Worker Account</button>
             </li>
           </ul>
         </div>
@@ -267,52 +229,54 @@ class AdminPanel extends Component<Props, State> {
           <title>Admin Panel</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="jumbotron jumbotron-fluid">
-          <div className="container">
-            <h1 className="display-7">{organization}</h1>
-            <p className="lead">
-              {'Welcome '}
-              {adminName}
-              .
-            </p>
-          </div>
-        </div>
         <div className="container">
-          <form className="form-inline my-2 my-lg-0">
-            <input
-              className="form-control mr-sm-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-              onChange={this.handleChangeSearchName}
-            />
-          </form>
-          <div className="row pt-3">
-            <div className="col-md-3 pb-3">
-              <Link to="/upload-document">
-                <button type="button" className="btn btn-lg btn-primary loginButtonBackground">Upload Form</button>
-              </Link>
+          <h1 className="mt-5">{organization}</h1>
+          <p className="lead">
+            {'Welcome, '}
+            {adminName}
+            !
+          </p>
+          <div className="row">
+            <div className="col-lg-7">
+              <form className="form-inline my-2 my-lg-0">
+                <input
+                  className="form-control mr-sm-2 w-100"
+                  type="search"
+                  placeholder="Search by name"
+                  aria-label="Search"
+                  onChange={this.handleChangeSearchName}
+                />
+              </form>
             </div>
-            <div className="col-md-3 pb-3">
-              <Link to="/my-documents">
-                <button type="button" className="btn btn-lg btn-primary loginButtonBackground">View Applications</button>
-              </Link>
+            <div className="col-lg-5">
+              <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
+                <div className="btn-group mr-2" role="group" aria-label="Button group">
+                  <Link to="/upload-document">
+                    <button className="btn btn-primary loginButtonBackground">Upload Form</button>
+                  </Link>
+                </div>
+                <div className="btn-group" role="group" aria-label="Button group">
+                  <Link to="/my-documents">
+                    <button className="btn btn-primary loginButtonBackground">View Applications</button>
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="row ml-1 mt-2 mb-2">
+          <div className="row ml-1 mt-3 mb-2">
             {numElements === 0 ? <div /> : tablePageSelector }
             {numElements === 0 ? <div />
               : (
                 <div className="w-25">
-                  <div className="card card-body mt-0 mb-4 border-0 p-0">
-                    <h5 className="card-text h6"># Items per page</h5>
+                  <div className="form-inline mt-1">
                     <Select
                       options={listOptions}
                       autoFocus
                       closeMenuOnSelect={false}
                       onChange={this.handleChangeItemsPerPage}
                       value={itemsPerPageSelected}
-                    />
+                    /> <p className="my-auto ml-2"> items per page
+                    </p>
                   </div>
                 </div>
               )}
