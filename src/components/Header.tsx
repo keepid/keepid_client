@@ -70,7 +70,7 @@ class Header extends Component<Props, State, {}> {
                   <Link className="nav-link" to="/my-organization">My Organization</Link>
                 </li>
                 <div className="my-1 flex-fill">
-                  <button type="button" onClick={this.handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
+                  <button type="button" onClick={this.handleLogout} className="btn btn-secondary">Log Out</button>
                 </div>
               </ul>
             </div>
@@ -108,9 +108,6 @@ class Header extends Component<Props, State, {}> {
                 <Link className="nav-link" to="/">Home</Link>
               </li>
               <li className="nav-item my-1 mr-2 ml-2">
-                <Link className="nav-link" to="/find-organizations">Find Organizations</Link>
-              </li>
-              <li className="nav-item my-1 mr-2 ml-2">
                 <Link className="nav-link" to="/our-mission">About</Link>
               </li>
               <li className="nav-item my-1 mr-3 ml-2">
@@ -118,7 +115,7 @@ class Header extends Component<Props, State, {}> {
               </li>
             </ul>
             <div className="my-1">
-              <Link to="/signup-branch">
+              <Link to="/organization-signup">
                 <button type="submit" className="btn btn-secondary w-40 mr-2">
                   Sign Up
                 </button>

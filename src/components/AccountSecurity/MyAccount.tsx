@@ -722,19 +722,6 @@ class MyAccount extends Component<Props, State, {}> {
             </div>
           </div>
         </div>
-        <div className="card mt-3 mb-3">
-          <div className="card-body">
-            <h5 className="card-title pb-3">Login History</h5>
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Access Details:
-              </div>
-              <div className="col-9 card-text mt-2 text-success">
-                Some Date and Time here, Some Address here (make this a list)
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }

@@ -16,16 +16,6 @@ class ClientLanding extends Component<{}, {}, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row m-auto mt-5">
-          <div className="d-flex p-3" id="Upload container">
-            <Link to="/upload-document">
-              <div className="rectangle pt-4">
-                <img className="uploadImg pb-2" src={UploadSVG} alt="See" />
-                <p className="textLanding">
-                  Upload a Document
-                </p>
-              </div>
-            </Link>
-          </div>
           <div className="d-flex p-3" id="Print container">
             <Link to="/my-documents">
               <div className="rectangle pt-2">
@@ -35,29 +25,11 @@ class ClientLanding extends Component<{}, {}, {}> {
 
             </Link>
           </div>
-          <div className="d-flex p-3" id="Request container">
-            <Link to="/request">
-              <div className="rectangle">
-                <img className="normalImage" src={RequestSVG} alt="Request" />
-                <p className="textLanding mt-3 pt-4">
-                  Request Documents
-                </p>
-              </div>
-            </Link>
-          </div>
           <div className="d-flex p-3" id="Applications container">
             <Link to="/applications">
               <div className="rectangle pt-2">
                 <img className="normalImage" src={AppSVG} alt="Applications" />
                 <p className="textLanding mt-5">My Applications</p>
-              </div>
-            </Link>
-          </div>
-          <div className="d-flex p-3" id="Email container">
-            <Link to="/email">
-              <div className="rectangle pt-2">
-                <img className="normalImage" src={EmailSVG} alt="Email" />
-                <p className="textLanding mt-5">Send an Email</p>
               </div>
             </Link>
           </div>

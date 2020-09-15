@@ -5,7 +5,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { Link } from 'react-router-dom';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
-import LoginSVG from '../static/images/login-svg.svg';
+import LoginSVG from '../static/images/venturelab_login.svg';
 import { reCaptchaKey } from '../configVars';
 
 interface State {
@@ -321,25 +321,13 @@ class LoginPage extends Component<Props, State> {
                 </div>
                 <div className="row pl-3 pb-1">
                   <span className="pt-3">
-                    Don&apos;t have an account?
-                  </span>
-                </div>
-                <div className="row pl-3">
-                  <div className="col-10 pl-0">
-                    <Link to="/find-organization">
-                      <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="row pl-3 pb-1">
-                  <span className="pt-3">
-                    Are you a nonprofit organization?
+                    Don't have an account?
                   </span>
                 </div>
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100">Start 3-Month Free Trial</button>
+                      <button type="button" className="btn btn-outline-primary w-100">Sign up now</button>
                     </Link>
                   </div>
                 </div>

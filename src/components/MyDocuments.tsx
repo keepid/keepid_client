@@ -399,7 +399,7 @@ class MyDocuments extends Component<Props, State> {
             <div className="row justify-content-left form-group mb-5">
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">
-                  <label className="btn btn-filestack btn-widget ml-5 mr-5">
+                  <label className="btn btn-filestack btn-widget ml-4 mr-4">
                     { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                     <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                   </label>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Redirect } from 'react-router-dom';
-import NotFoundSVG from '../static/images/page-not-found.svg';
+import NotFoundSVG from '../static/images/venturelab_page_not_found.svg';
 
 interface Props {
 }
@@ -61,8 +61,8 @@ class Error extends React.Component<Props, State> {
           <title>Error</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="alert alert-warning" role="alert">
-          Redirecting you back to the login page...
+        <div className="alert alert-warning mt-3" role="alert">
+          Redirecting you back to the home page...
         </div>
         <div className="jumbotron-fluid mt-2 text-center">
           <img alt="404 Error Not Found" className="w-50 p-4" src={NotFoundSVG} />
