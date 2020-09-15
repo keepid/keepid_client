@@ -46,12 +46,15 @@ public class PdfController {
   */
   public Handler pdfDelete =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+
         JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        String fileIDStr = req.getString("fileId");
+        PDFType pdfType =
+            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
+        String fileIDStr = Objects.requireNonNull(req.getString("fileId"));
+
         if (pdfType == null) {
           ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
           return;
@@ -72,13 +75,16 @@ public class PdfController {
   */
   public Handler pdfDownload =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+
         JSONObject req = new JSONObject(ctx.body());
-        String fileIDStr = req.getString("fileId");
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        String fileIDStr = Objects.requireNonNull(req.getString("fileId"));
+        PDFType pdfType =
+            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
         ObjectId fileID = new ObjectId(fileIDStr);
+
         if (pdfType == null) {
           ctx.result("Invalid PDFType");
         } else {
@@ -109,17 +115,19 @@ public class PdfController {
   */
   public Handler pdfGetAll =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+
         JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        PDFType pdfType =
+            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
         JSONObject res;
 
         if (pdfType == null) {
           res = PdfMessage.INVALID_PDF_TYPE.toJSON();
         } else if (pdfType == PDFType.FORM) {
-          boolean getUnannotatedForms = req.getBoolean("annotated");
+          boolean getUnannotatedForms = Objects.requireNonNull(req.getBoolean("annotated"));
           res =
               PdfMongo.getAllFiles(
                   user,
@@ -144,11 +152,12 @@ public class PdfController {
    */
   public Handler pdfUpload =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-        UploadedFile file = ctx.uploadedFile("file");
-        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+        UploadedFile file = Objects.requireNonNull(ctx.uploadedFile("file"));
+        PDFType pdfType =
+            Objects.requireNonNull(PDFType.createFromString(ctx.formParam("pdfType")));
         String fileIDStr = ctx.formParam("fileId");
         JSONObject res;
         ObjectId fileID;
@@ -182,17 +191,15 @@ public class PdfController {
 
   public Handler pdfSignedUpload =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
 
         // Params
-        UploadedFile file = ctx.uploadedFile("file");
-        UploadedFile signature = ctx.uploadedFile("signature");
-        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-        Objects.requireNonNull(file);
-        Objects.requireNonNull(signature);
-        Objects.requireNonNull(pdfType);
+        UploadedFile file = Objects.requireNonNull(ctx.uploadedFile("file"));
+        UploadedFile signature = Objects.requireNonNull(ctx.uploadedFile("signature"));
+        PDFType pdfType =
+            Objects.requireNonNull(PDFType.createFromString(ctx.formParam("pdfType")));
 
         JSONObject res;
         if (pdfType == null) {
@@ -226,11 +233,14 @@ public class PdfController {
    */
   public Handler getApplicationQuestions =
       ctx -> {
+        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+
         JSONObject req = new JSONObject(ctx.body());
-        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
-        String username = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String applicationIdString = Objects.requireNonNull(req.getString("applicationId"));
+        ObjectId applicationId = new ObjectId(applicationIdString);
+
         InputStream inputStream =
             PdfMongo.download(
                 username,
@@ -263,12 +273,14 @@ public class PdfController {
    */
   public Handler fillPDFForm =
       ctx -> {
+        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
+        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
+        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+
         JSONObject req = new JSONObject(ctx.body());
-        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
-        String username = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-        JSONObject formAnswers = req.getJSONObject("formAnswers");
+        String applicationIdString = Objects.requireNonNull(req.getString("applicationId"));
+        JSONObject formAnswers = Objects.requireNonNull(req.getJSONObject("formAnswers"));
+        ObjectId applicationId = new ObjectId(applicationIdString);
 
         InputStream inputStream =
             PdfMongo.download(

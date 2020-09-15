@@ -30,12 +30,7 @@ public class encryptionTest {
     String username = "username";
 
     String encrypted = encryptionController.encryptString(string1, username);
-
     String decrypted = encryptionController.decryptString(encrypted, username);
-
-    System.out.println("Encrypting: " + string1);
-    System.out.println("Encrypted Result: " + encrypted);
-    System.out.println("Decrypted Result: " + decrypted);
 
     assertEquals(string1, decrypted);
   }

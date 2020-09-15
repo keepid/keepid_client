@@ -58,7 +58,6 @@ public class UserControllerIntegrationTest {
 
     HttpResponse<String> actualResponse =
         Unirest.get(TestUtils.getServerUrl() + "/get-user-info").asString();
-    System.out.println(actualResponse.getBody());
     JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
     assertThat(actualResponseJson.get("city").toString()).isEqualTo("Philadelphia");
     assertThat(actualResponseJson.get("firstName").toString()).isEqualTo("Mike");
@@ -85,7 +84,6 @@ public class UserControllerIntegrationTest {
             .body(body.toString())
             .asString();
     JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
-    System.out.println(actualResponseJson.toString());
   }
 
   @Test

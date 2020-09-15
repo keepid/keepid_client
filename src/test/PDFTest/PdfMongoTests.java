@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,10 +22,6 @@ import java.util.LinkedList;
 import static PDF.PdfControllerHelper.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
-
-// NOTE: Please delete file(s) uploaded at the end of your test or call clearAllDocuments() at the
-// beginning of a test case (right after logging in) to clear before running any assertions. Some
-// test cases rely on there only being one document in the database.
 
 public class PdfMongoTests {
   private static String currentPDFFolderPath =
@@ -688,6 +685,7 @@ public class PdfMongoTests {
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
 
+  @BeforeEach
   public static void clearAllDocuments() {
     String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
     boolean[] annotated = {false, true, false};

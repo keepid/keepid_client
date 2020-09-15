@@ -683,7 +683,7 @@ public class TestUtils {
       MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
       tokenCollection.insertMany(Arrays.asList(validToken, expiredToken));
     } catch (Exception e) {
-      System.out.println(e);
+      e.printStackTrace();
     }
   }
 

@@ -8,7 +8,6 @@ import com.google.crypto.tink.aead.AesGcmKeyManager;
 import com.google.crypto.tink.config.TinkConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoDatabase;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.text.StringEscapeUtils;
 import org.bson.Document;
 import org.json.simple.JSONObject;
@@ -36,7 +35,7 @@ public class GoogleCredentials {
     String privateKeyID = Objects.requireNonNull(System.getenv("PRIVATE_KEY_ID"));
 
     String privateKey = Objects.requireNonNull(System.getenv("PRIVATE_KEY"));
-    privateKey = new String(Base64.decodeBase64(privateKey));
+    // privateKey = new String(Base64.decodeBase64(privateKey));
 
     String clientEmail = Objects.requireNonNull(System.getenv("CLIENT_EMAIL"));
     String clientID = Objects.requireNonNull(System.getenv("CLIENT_ID"));

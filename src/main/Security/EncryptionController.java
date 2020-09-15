@@ -43,9 +43,7 @@ public class EncryptionController {
   // Generates an AEAD Object through Google Tink for encryption and decryption
   public void generateAead() throws GeneralSecurityException, IOException {
     TinkConfig.register();
-    logger.info("Generating Aead");
 
-    // logger.info("Generating Credentials");
     GoogleCredentials.generateCredentials();
 
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
@@ -62,19 +60,15 @@ public class EncryptionController {
             JsonKeysetReader.withJsonObject(keyJson),
             new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
 
-    // logger.info("KeysetHandle Successfully Generated");
-    // logger.info("Deleting Credential File");
     GoogleCredentials.deleteCredentials();
 
     aead = keysetHandle.getPrimitive(Aead.class);
   }
 
   public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException {
-    // logger.info("Attempting to encrypt");
     try {
       byte[] ciphertext = aead.encrypt(data, aad);
 
-      // logger.info("Encryption done");
       return ciphertext;
 
     } catch (GeneralSecurityException e) {
@@ -83,14 +77,11 @@ public class EncryptionController {
     }
   }
 
-  public byte[] getDecrypted(byte[] ciphertext, byte[] aad)
-      throws GeneralSecurityException, IOException {
-    // logger.info("Attempting to decrypt");
+  public byte[] getDecrypted(byte[] ciphertext, byte[] aad) throws GeneralSecurityException {
 
     try {
       byte[] decrypted = aead.decrypt(ciphertext, aad);
 
-      // logger.info("Decryption Done");
       return decrypted;
     } catch (GeneralSecurityException e) {
       logger.error("Decryption Unsuccessful, double check aead");
@@ -98,9 +89,7 @@ public class EncryptionController {
     }
   }
 
-  public String encryptString(String inputString, String username)
-      throws GeneralSecurityException, IOException {
-    logger.info("Encrypting " + inputString);
+  public String encryptString(String inputString, String username) throws GeneralSecurityException {
 
     byte[] stringBytes = inputString.getBytes(StandardCharsets.ISO_8859_1);
     byte[] aad = username.getBytes();
@@ -109,9 +98,7 @@ public class EncryptionController {
   }
 
   public String decryptString(String encryptedString, String username)
-      throws GeneralSecurityException, IOException {
-    logger.info("Decrypting String");
-    System.out.println(encryptedString);
+      throws GeneralSecurityException {
 
     byte[] aad = username.getBytes();
     byte[] encryptedBytes = encryptedString.getBytes(StandardCharsets.ISO_8859_1);
@@ -123,9 +110,7 @@ public class EncryptionController {
 
   public InputStream encryptFile(InputStream fileStream, String username)
       throws IOException, GeneralSecurityException {
-    logger.info("Encrypting file");
     try {
-      // InputStream fileStream = new FileInputStream(file);
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
       byte[] aad = username.getBytes();
 
@@ -141,7 +126,6 @@ public class EncryptionController {
 
   public InputStream decryptFile(InputStream encryptedFile, String username)
       throws GeneralSecurityException, IOException {
-    logger.info("Decrypting File");
     byte[] aad = username.getBytes();
     byte[] encryptedBytes = encryptedFile.readAllBytes();
 
