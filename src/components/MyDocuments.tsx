@@ -310,6 +310,7 @@ class MyDocuments extends Component<Props, State> {
         const {
           documents,
         } = responseObject;
+        console.log(documents);
         this.setState({ documentData: documents });
       });
   }
