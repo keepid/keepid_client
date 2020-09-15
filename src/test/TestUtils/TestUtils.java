@@ -4,7 +4,7 @@ import Config.AppConfig;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
-import Security.EncryptionObjectController;
+import Security.EncryptionController;
 import Security.GoogleCredentials;
 import Security.Tokens;
 import User.User;
@@ -655,10 +655,9 @@ public class TestUtils {
               settingsTest2FA,
               passwordResetTest,
               logInHistoryTest);
-      EncryptionObjectController encryptionObjectController =
-          new EncryptionObjectController(testDB);
+      EncryptionController encryptionController = new EncryptionController(testDB);
       for (User user : users) {
-        encryptionObjectController.encryptUser(user, user.getUsername());
+        encryptionController.encryptUser(user, user.getUsername());
       }
       MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
       userCollection.insertMany(

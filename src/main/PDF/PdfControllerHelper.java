@@ -107,7 +107,8 @@ public class PdfControllerHelper {
           if (field instanceof PDCheckBox) {
             fieldsJSON.add(getCheckBox((PDCheckBox) field));
           } else if (field instanceof PDPushButton) {
-            fieldsJSON.add(getPushButton((PDPushButton) field));
+            // Do not do anything for a push button, we don't need them right now
+            // fieldsJSON.add(getPushButton((PDPushButton) field));
           } else if (field instanceof PDRadioButton) {
             fieldsJSON.add(getRadioButton((PDRadioButton) field));
           }
@@ -132,9 +133,11 @@ public class PdfControllerHelper {
     String fieldName = field.getFullyQualifiedName();
     String fieldType = "TextField";
     String fieldValueOptions = "[]";
+    String fieldDefaultValue = "";
     int numLines = DEFAULT_TEXT_FIELD_NUM_LINES;
     String fieldQuestion = "Please Enter Your " + field.getPartialName();
-    return createFieldJSONEntry(fieldName, fieldType, fieldValueOptions, numLines, fieldQuestion);
+    return createFieldJSONEntry(
+        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   }
 
   public static JSONObject getCheckBox(PDCheckBox field) {
@@ -143,18 +146,22 @@ public class PdfControllerHelper {
     JSONArray optionsJSONArray = new JSONArray();
     optionsJSONArray.put(field.getOnValue());
     String fieldValueOptions = optionsJSONArray.toString();
+    Boolean fieldDefaultValue = Boolean.FALSE;
     int numLines = DEFAULT_CHECK_BOX_NUM_LINES;
     String fieldQuestion = "Please select an option for " + field.getPartialName();
-    return createFieldJSONEntry(fieldName, fieldType, fieldValueOptions, numLines, fieldQuestion);
+    return createFieldJSONEntry(
+        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   }
 
   public static JSONObject getPushButton(PDPushButton field) {
     String fieldName = field.getFullyQualifiedName();
     String fieldType = "PushButton";
     String fieldValueOptions = "[]";
+    String fieldDefaultValue = "";
     int numLines = DEFAULT_PUSH_BUTTON_NUM_LINES;
     String fieldQuestion = "Select the Button If You Want To " + field.getPartialName();
-    return createFieldJSONEntry(fieldName, fieldType, fieldValueOptions, numLines, fieldQuestion);
+    return createFieldJSONEntry(
+        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   }
 
   public static JSONObject getRadioButton(PDRadioButton field) {
@@ -165,9 +172,11 @@ public class PdfControllerHelper {
       optionsJSONArray.put(choice);
     }
     String fieldValueOptions = optionsJSONArray.toString();
+    String fieldDefaultValue = "Off";
     int numLines = 2 + optionsJSONArray.length();
     String fieldQuestion = "Please select one option for " + field.getPartialName();
-    return createFieldJSONEntry(fieldName, fieldType, fieldValueOptions, numLines, fieldQuestion);
+    return createFieldJSONEntry(
+        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   }
 
   public static JSONObject getChoiceField(PDChoice field) {
@@ -183,19 +192,25 @@ public class PdfControllerHelper {
       optionsJSONArray.put(choice);
     }
     String fieldValueOptions = optionsJSONArray.toString();
+    String fieldDefaultValue = "Off";
     int numLines = optionsJSONArray.length() + 2;
     if (field.isMultiSelect()) {
-      fieldQuestion = "Please Select Option(s) for " + field.getPartialName();
+      fieldQuestion =
+          "Please Select Option(s) for "
+              + field.getPartialName()
+              + " (you can select multiple options with CTRL)";
     } else {
       fieldQuestion = "Please Select an Option for " + field.getPartialName();
     }
-    return createFieldJSONEntry(fieldName, fieldType, fieldValueOptions, numLines, fieldQuestion);
+    return createFieldJSONEntry(
+        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   }
 
   public static JSONObject createFieldJSONEntry(
       String fieldName,
       String fieldType,
       String fieldValueOptions,
+      Object fieldDefaultValue,
       int fieldNumLines,
       String fieldQuestion) {
     JSONObject fieldJSON = new JSONObject();
@@ -203,6 +218,7 @@ public class PdfControllerHelper {
     fieldJSON.put("fieldName", fieldName);
     fieldJSON.put("fieldType", fieldType);
     fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
+    fieldJSON.put("fieldDefaultValue", fieldDefaultValue);
     fieldJSON.put("fieldNumLines", fieldNumLines);
 
     // Editable

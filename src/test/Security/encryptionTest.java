@@ -22,6 +22,8 @@ public class encryptionTest {
 
   EncryptionController encryptionController = new EncryptionController(db);
 
+  public encryptionTest() throws GeneralSecurityException, IOException {}
+
   @Test
   public void encryptDecryptStringTest() throws GeneralSecurityException, IOException {
     String string1 = "Hello World 12345 9908";

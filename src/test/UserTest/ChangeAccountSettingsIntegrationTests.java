@@ -3,6 +3,7 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.EncryptionController;
 import Security.SecurityUtils;
 import TestUtils.TestUtils;
 import User.User;
@@ -13,26 +14,29 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangeAccountSettingsIntegrationTests {
+  Context ctx = mock(Context.class);
+  static MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  static EncryptionController encryptionController;
 
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    encryptionController = new EncryptionController(db);
   }
 
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
   // TODO: Swap new SecurityUtils() for a mock that correctly (or incorrectly hashes passwords.
@@ -95,7 +99,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "firstName", newFirstName));
@@ -121,7 +125,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "lastName", newLastName));
@@ -147,7 +151,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "birthDate", newBirthDate));
@@ -173,7 +177,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "phone", newPhone));
@@ -199,7 +203,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "email", newEmail));
@@ -225,7 +229,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "address", newAddress));
@@ -251,7 +255,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "city", newCity));
@@ -277,7 +281,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "state", newState));
@@ -303,7 +307,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectAttribute(username, "zipcode", newZipcode));

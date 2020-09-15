@@ -74,7 +74,7 @@ public class PdfMongo {
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
-                      .append("annotated", false)
+                      .append("annotated", true)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
       gridBucket.uploadFromStream(filename, inputStream, options);
@@ -131,6 +131,7 @@ public class PdfMongo {
       UserType privilegeLevel,
       PDFType pdfType,
       boolean annotated,
+      EncryptionController encryptionController,
       MongoDatabase db) {
     JSONObject res;
     try {
@@ -141,12 +142,12 @@ public class PdfMongo {
               || privilegeLevel == UserType.Admin
               || privilegeLevel == UserType.Worker)) {
         filter = eq("metadata.organizationName", organizationName);
-        files = mongodbGetAllFiles(filter, pdfType, db);
+        files = mongodbGetAllFiles(filter, pdfType, db, encryptionController);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
         filter = eq("metadata.uploader", uploader);
-        files = mongodbGetAllFiles(filter, pdfType, db);
+        files = mongodbGetAllFiles(filter, pdfType, db, encryptionController);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else if (pdfType == PDFType.FORM) {
@@ -154,7 +155,7 @@ public class PdfMongo {
             and(
                 eq("metadata.organizationName", organizationName),
                 eq("metadata.annotated", annotated));
-        files = mongodbGetAllFiles(filter, pdfType, db);
+        files = mongodbGetAllFiles(filter, pdfType, db, encryptionController);
         res = PdfMessage.SUCCESS.toJSON();
         res.put("documents", files);
       } else {
@@ -166,24 +167,29 @@ public class PdfMongo {
     return res;
   }
 
-  private static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
+  private static JSONArray mongodbGetAllFiles(
+      Bson filter, PDFType pdfType, MongoDatabase db, EncryptionController encryptionController)
+      throws GeneralSecurityException, IOException {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-    if (pdfType.equals(PDFType.FORM)) {
-      for (GridFSFile grid_out : gridBucket.find(filter)) {
-        assert grid_out.getMetadata() != null;
-        JSONObject fileMetadata =
-            new JSONObject()
-                .put("filename", grid_out.getFilename())
-                .put("uploader", grid_out.getMetadata().getString("uploader"))
-                .put("organizationName", grid_out.getMetadata().getString("organizationName"))
-                .put("id", grid_out.getId().asObjectId().getValue().toString())
-                .put("uploadDate", grid_out.getUploadDate().toString());
-        if (pdfType.equals(PDFType.FORM)) {
-          fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
-        }
-        files.put(fileMetadata);
+    for (GridFSFile grid_out : gridBucket.find(filter)) {
+      assert grid_out.getMetadata() != null;
+      String uploaderUsername = grid_out.getMetadata().getString("uploader");
+      JSONObject fileMetadata =
+          new JSONObject()
+              .put("uploader", uploaderUsername)
+              .put("organizationName", grid_out.getMetadata().getString("organizationName"))
+              .put("id", grid_out.getId().asObjectId().getValue().toString())
+              .put("uploadDate", grid_out.getUploadDate().toString());
+      if (pdfType.equals(PDFType.FORM)) {
+        fileMetadata.put("filename", grid_out.getFilename());
+        fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
+      } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
+        fileMetadata.put(
+            "filename",
+            encryptionController.decryptString(grid_out.getFilename(), uploaderUsername));
       }
+      files.put(fileMetadata);
     }
     return files;
   }
@@ -208,7 +214,10 @@ public class PdfMongo {
             || privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
-        return encryptionController.decryptFile(gridBucket.openDownloadStream(id), user);
+        // Figure out a better way to do this
+        String uploaderUsername = grid_out.getMetadata().getString("uploader");
+        return encryptionController.decryptFile(
+            gridBucket.openDownloadStream(id), uploaderUsername);
       }
     } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {

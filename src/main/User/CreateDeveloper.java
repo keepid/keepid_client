@@ -2,7 +2,7 @@ package User;
 
 import Config.DeploymentLevel;
 import Config.MongoConfig;
-import Security.EncryptionObjectController;
+import Security.EncryptionController;
 import Security.SecurityUtils;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
@@ -21,7 +21,7 @@ public class CreateDeveloper {
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.STAGING);
     SecurityUtils securityUtils = new SecurityUtils();
-    EncryptionObjectController encryptionObjectController = new EncryptionObjectController(db);
+    EncryptionController encryptionController = new EncryptionController(db);
 
     Scanner scanner = new Scanner(System.in);
     System.out.println("Please Enter your First Name: ");
@@ -99,7 +99,7 @@ public class CreateDeveloper {
     }
 
     user.setPassword(hash);
-    encryptionObjectController.encryptUser(user, username);
+    encryptionController.encryptUser(user, username);
     userCollection.insertOne(user);
     System.out.println(UserMessage.ENROLL_SUCCESS.toJSON().getString("message"));
   }

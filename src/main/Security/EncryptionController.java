@@ -1,6 +1,7 @@
 package Security;
 
 import Logger.LogFactory;
+import User.User;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.JsonKeysetReader;
 import com.google.crypto.tink.KeysetHandle;
@@ -25,24 +26,26 @@ import static com.mongodb.client.model.Filters.eq;
 public class EncryptionController {
   Logger logger;
   MongoDatabase db;
+  Aead aead;
 
   public static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
 
   public static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
 
-  public EncryptionController(MongoDatabase db) {
+  public EncryptionController(MongoDatabase db) throws GeneralSecurityException, IOException {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("EncryptionController");
+    generateAead();
   }
 
   // Generates an AEAD Object through Google Tink for encryption and decryption
-  public Aead generateAead() throws GeneralSecurityException, IOException {
+  public void generateAead() throws GeneralSecurityException, IOException {
     TinkConfig.register();
     logger.info("Generating Aead");
 
-    logger.info("Generating Credentials");
+    // logger.info("Generating Credentials");
     GoogleCredentials.generateCredentials();
 
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
@@ -59,23 +62,22 @@ public class EncryptionController {
             JsonKeysetReader.withJsonObject(keyJson),
             new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
 
-    logger.info("KeysetHandle Successfully Generated");
-    logger.info("Deleting Credential File");
+    // logger.info("KeysetHandle Successfully Generated");
+    // logger.info("Deleting Credential File");
     GoogleCredentials.deleteCredentials();
 
-    return keysetHandle.getPrimitive(Aead.class);
+    aead = keysetHandle.getPrimitive(Aead.class);
   }
 
-  public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException, IOException {
-    logger.info("Attempting to encrypt");
+  public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException {
+    // logger.info("Attempting to encrypt");
     try {
-      Aead aead = generateAead();
       byte[] ciphertext = aead.encrypt(data, aad);
 
-      logger.info("Encryption done");
+      // logger.info("Encryption done");
       return ciphertext;
 
-    } catch (GeneralSecurityException | IOException e) {
+    } catch (GeneralSecurityException e) {
       logger.error("General Security Exception thrown, encrpytion unsuccessful");
       throw e;
     }
@@ -83,15 +85,14 @@ public class EncryptionController {
 
   public byte[] getDecrypted(byte[] ciphertext, byte[] aad)
       throws GeneralSecurityException, IOException {
-    logger.info("Attempting to decrypt");
+    // logger.info("Attempting to decrypt");
 
     try {
-      Aead aead = generateAead();
       byte[] decrypted = aead.decrypt(ciphertext, aad);
 
-      logger.info("Decryption Done");
+      // logger.info("Decryption Done");
       return decrypted;
-    } catch (GeneralSecurityException | IOException e) {
+    } catch (GeneralSecurityException e) {
       logger.error("Decryption Unsuccessful, double check aead");
       throw e;
     }
@@ -147,5 +148,27 @@ public class EncryptionController {
     InputStream decryptedFileStream = new ByteArrayInputStream(getDecrypted(encryptedBytes, aad));
 
     return decryptedFileStream;
+  }
+
+  public void encryptUser(User user, String username) throws GeneralSecurityException, IOException {
+    user.setAddress(encryptString(user.getAddress(), username));
+    user.setBirthDate(encryptString(user.getBirthDate(), username));
+    user.setCity(encryptString(user.getCity(), username));
+    user.setEmail(encryptString(user.getEmail(), username));
+    user.setFirstName(encryptString(user.getFirstName(), username));
+    user.setLastName(encryptString(user.getLastName(), username));
+    user.setPhone(encryptString(user.getPhone(), username));
+    user.setZipcode(encryptString(user.getZipcode(), username));
+  }
+
+  public void decryptUser(User user, String username) throws GeneralSecurityException, IOException {
+    user.setAddress(decryptString(user.getAddress(), username));
+    user.setBirthDate(decryptString(user.getBirthDate(), username));
+    user.setCity(decryptString(user.getCity(), username));
+    user.setEmail(decryptString(user.getEmail(), username));
+    user.setFirstName(decryptString(user.getFirstName(), username));
+    user.setLastName(decryptString(user.getLastName(), username));
+    user.setPhone(decryptString(user.getPhone(), username));
+    user.setZipcode(decryptString(user.getZipcode(), username));
   }
 }

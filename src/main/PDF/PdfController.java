@@ -23,9 +23,9 @@ public class PdfController {
   private MongoDatabase db;
   private EncryptionController encryptionController;
 
-  public PdfController(MongoDatabase db) {
+  public PdfController(MongoDatabase db, EncryptionController encryptionController) {
     this.db = db;
-    this.encryptionController = new EncryptionController(db);
+    this.encryptionController = encryptionController;
   }
 
   public static Set<String> validFieldTypes =
@@ -122,9 +122,17 @@ public class PdfController {
           boolean getUnannotatedForms = req.getBoolean("annotated");
           res =
               PdfMongo.getAllFiles(
-                  user, organizationName, privilegeLevel, pdfType, getUnannotatedForms, db);
+                  user,
+                  organizationName,
+                  privilegeLevel,
+                  pdfType,
+                  getUnannotatedForms,
+                  encryptionController,
+                  db);
         } else {
-          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, false, db);
+          res =
+              PdfMongo.getAllFiles(
+                  user, organizationName, privilegeLevel, pdfType, false, encryptionController, db);
         }
         ctx.json(res.toString());
       };

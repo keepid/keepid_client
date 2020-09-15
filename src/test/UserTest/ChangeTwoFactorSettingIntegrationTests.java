@@ -3,6 +3,7 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.EncryptionController;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
@@ -12,25 +13,29 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangeTwoFactorSettingIntegrationTests {
+  Context ctx = mock(Context.class);
+  static MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  static EncryptionController encryptionController;
+
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    encryptionController = new EncryptionController(db);
   }
 
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
 
@@ -41,7 +46,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn("settings-test-2fa");
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.change2FASetting.handle(ctx);
 
     // Check that setting was changed
@@ -58,7 +63,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn("settings-test-2fa");
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.change2FASetting.handle(ctx);
 
     // Check that setting was changed

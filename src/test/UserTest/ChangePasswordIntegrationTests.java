@@ -3,6 +3,7 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.EncryptionController;
 import Security.SecurityUtils;
 import Security.Tokens;
 import TestUtils.TestUtils;
@@ -19,28 +20,30 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangePasswordIntegrationTests {
+  Context ctx = mock(Context.class);
+  static MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  static EncryptionController encryptionController;
 
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    encryptionController = new EncryptionController(db);
   }
 
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
 
@@ -85,7 +88,7 @@ public class ChangePasswordIntegrationTests {
 
     when(ctx.body()).thenReturn(inputString);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.resetPassword(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
@@ -117,7 +120,7 @@ public class ChangePasswordIntegrationTests {
 
     when(ctx.body()).thenReturn(inputString);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.resetPassword(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
@@ -145,7 +148,7 @@ public class ChangePasswordIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db);
+    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
     asc.changePasswordIn(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
