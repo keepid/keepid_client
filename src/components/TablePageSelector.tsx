@@ -59,10 +59,10 @@ function TablePageSelector(props: Props) : any {
   return (
     <div>
       <nav aria-label="Page navigation example">
-        <ul className="pagination mt-4 mb-3 mr-5 ml-4">
-          {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>Previous</span></li> : <div />}
+        <ul className="pagination mr-5 mt-1 mb-1">
+          {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div />}
           {numPagesArray.map((index) => <li key={uuid()} className="page-item"><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
-          {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>Next</span></li> : <div />}
+          {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div />}
         </ul>
       </nav>
     </div>
