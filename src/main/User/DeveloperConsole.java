@@ -3,10 +3,12 @@ package User;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.EncryptionController;
+import Security.GoogleCredentials;
 import Security.SecurityUtils;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -14,10 +16,27 @@ import java.util.Scanner;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class CreateDeveloper {
+public class DeveloperConsole {
 
   public static void main(String[] args)
-      throws Validation.ValidationException, GeneralSecurityException, IOException {
+      throws Validation.ValidationException, GeneralSecurityException, IOException, ParseException {
+
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Please Select an Option for the Developer Console: ");
+    System.out.println("1 - Create New Developer Account");
+    System.out.println("2 - Generate a New Encryption Key");
+    int optionSelected = scanner.nextInt();
+    if (optionSelected == 1) {
+      createDeveloper();
+    } else if (optionSelected == 2) {
+      createNewEncryptionKey();
+    } else {
+      System.out.println("Invalid Option");
+    }
+  }
+
+  public static void createDeveloper() throws GeneralSecurityException, IOException {
+
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.STAGING);
     SecurityUtils securityUtils = new SecurityUtils();
@@ -102,5 +121,11 @@ public class CreateDeveloper {
     encryptionController.encryptUser(user, username);
     userCollection.insertOne(user);
     System.out.println(UserMessage.ENROLL_SUCCESS.toJSON().getString("message"));
+  }
+
+  public static void createNewEncryptionKey()
+      throws GeneralSecurityException, IOException, ParseException {
+    GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.STAGING);
+    System.out.println("Successful Key Creation");
   }
 }

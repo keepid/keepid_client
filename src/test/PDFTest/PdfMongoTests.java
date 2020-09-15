@@ -1,5 +1,6 @@
 package PDFTest;
 
+import Config.DeploymentLevel;
 import Security.GoogleCredentials;
 import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
@@ -50,7 +51,7 @@ public class PdfMongoTests {
 
     try {
       TestUtils.tearDownTestDB();
-      TestUtils.generateAndUploadEncryptionKey();
+      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
       TestUtils.setUpTestDB();
       GoogleCredentials.generateCredentials();
     } catch (Exception e) {

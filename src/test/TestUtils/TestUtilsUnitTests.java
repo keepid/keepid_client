@@ -3,6 +3,7 @@ package TestUtils;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
+import Security.GoogleCredentials;
 import com.google.crypto.tink.Aead;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -38,7 +39,7 @@ public class TestUtilsUnitTests {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
     try {
-      TestUtils.generateAndUploadEncryptionKey();
+      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
       Aead aead = TestUtils.getAead();
       String original = "hello world";
       byte[] ciphertext = aead.encrypt(original.getBytes(), "".getBytes());

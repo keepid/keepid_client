@@ -11,10 +11,7 @@ import User.User;
 import User.UserType;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.JsonKeysetReader;
-import com.google.crypto.tink.JsonKeysetWriter;
 import com.google.crypto.tink.KeysetHandle;
-import com.google.crypto.tink.aead.AesGcmKeyManager;
-import com.google.crypto.tink.config.TinkConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -26,11 +23,9 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.bson.Document;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -72,7 +67,7 @@ public class TestUtils {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
     try {
-      generateAndUploadEncryptionKey();
+      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
     } catch (GeneralSecurityException | IOException | ParseException e) {
       e.printStackTrace();
     }
@@ -709,34 +704,6 @@ public class TestUtils {
       argon2.wipeArray(passwordArr);
     }
     return passwordHash;
-  }
-
-  public static void generateAndUploadEncryptionKey()
-      throws GeneralSecurityException, IOException, ParseException, ParseException {
-    TinkConfig.register();
-    GoogleCredentials.generateCredentials();
-    KeysetHandle keysetHandle = KeysetHandle.generateNew(AesGcmKeyManager.aes256GcmTemplate());
-    String keysetFilename = "test_encryption_key.json";
-
-    File keysetFile = new File(keysetFilename);
-    keysetHandle.write(
-        JsonKeysetWriter.withFile(keysetFile),
-        new GcpKmsClient().withCredentials(credentials).getAead(masterKeyUri));
-
-    Object obj = new JSONParser().parse(new FileReader(keysetFilename));
-    System.out.println(obj.toString());
-    uploadEncryptionKey((org.json.simple.JSONObject) obj);
-    keysetFile.delete();
-  }
-
-  private static void uploadEncryptionKey(org.json.simple.JSONObject key) {
-    MongoConfig.getMongoClient();
-    MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    assert db != null;
-    db.createCollection("keys");
-
-    db.getCollection("keys")
-        .insertOne(Document.parse(key.toString()).append("keyType", "encryption"));
   }
 
   public static Aead getAead() throws GeneralSecurityException, IOException {
