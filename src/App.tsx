@@ -42,6 +42,7 @@ import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
+import ClientProfilePage from './components/ClientProfilePage';
 
 interface State {
   role: Role,
@@ -376,6 +377,9 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route path="/create-user/:jwt">
                 <InviteSignupJWT />
+              </Route>
+              <Route path="/profile">
+                <ClientProfilePage />
               </Route>
               <Route path="/error">
                 <Error />
