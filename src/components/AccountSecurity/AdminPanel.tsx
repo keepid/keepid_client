@@ -179,11 +179,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary" onClick={(event):void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
+                <button type="submit" className="btn btn-outline-primary" onClick={():void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-danger" onClick={(event):void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Account</button>
+              <button type="submit" className="btn btn-danger" onClick={():void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Account</button>
             </li>
           </ul>
         </div>
@@ -207,11 +207,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary" onClick={(event):void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
+                <button type="submit" className="btn btn-outline-primary" onClick={():void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-danger" onClick={(event):void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Worker Account</button>
+              <button type="submit" className="btn btn-danger" onClick={():void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Worker Account</button>
             </li>
           </ul>
         </div>
