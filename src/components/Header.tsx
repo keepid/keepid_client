@@ -66,9 +66,12 @@ class Header extends Component<Props, State, {}> {
                 <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                   <Link className="nav-link" to="/settings">My Account Settings</Link>
                 </li>
-                <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
-                  <Link className="nav-link" to="/my-organization">My Organization</Link>
-                </li>
+                {(role === Role.Admin || role === Role.Director)
+                  && (
+                  <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
+                    <Link className="nav-link" to="/my-organization">My Organization</Link>
+                  </li>
+                  )}
                 <div className="my-1 flex-fill">
                   <button type="button" onClick={this.handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
                 </div>
