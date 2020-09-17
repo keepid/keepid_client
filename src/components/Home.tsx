@@ -25,7 +25,7 @@ class Home extends Component<Props, {}, {}> {
     return (
       <div className="">
         <Helmet>
-          <title>Welcome, Venture Lab</title>
+          <title>Welcome, Venture Lab!</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
 
