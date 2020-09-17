@@ -4,6 +4,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import { Link } from 'react-router-dom';
+import { withAlert } from 'react-alert';
 import TablePageSelector from '../TablePageSelector';
 import getServerURL from '../../serverOverride';
 
@@ -11,6 +12,7 @@ interface Props {
   username: string,
   name: string,
   organization: string,
+  alert: any,
 }
 
 interface State {
@@ -177,11 +179,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+                <button type="submit" className="btn btn-outline-primary" onClick={(event):void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-danger">Delete Account</button>
+              <button type="submit" className="btn btn-danger" onClick={(event):void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Account</button>
             </li>
           </ul>
         </div>
@@ -205,11 +207,11 @@ class AdminPanel extends Component<Props, State> {
                 </label>
               </div>
               <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+                <button type="submit" className="btn btn-outline-primary" onClick={(event):void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
               </div>
             </li>
             <li className="list-group-item">
-              <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+              <button type="submit" className="btn btn-danger" onClick={(event):void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Worker Account</button>
             </li>
           </ul>
         </div>
@@ -313,4 +315,4 @@ class AdminPanel extends Component<Props, State> {
   }
 }
 
-export default AdminPanel;
+export default withAlert()(AdminPanel);
