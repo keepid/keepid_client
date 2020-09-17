@@ -217,7 +217,24 @@ public class UserController {
         ctx.json(res.put("username", candidateUsername).toString());
         logger.info("Username successfully generated");
       };
-
+  public Handler usernameExists =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("firstname");
+        if (!ValidationUtils.isValidUsername(username)) {
+          ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
+          return;
+        }
+        MongoCollection<User> userCollection = db.getCollection("user", User.class);
+        User user = userCollection.find(eq("username", username)).first();
+        if (user != null) {
+          ctx.json(UserMessage.SUCCESS.toJSON().toString());
+          logger.info("Username not taken.");
+        } else {
+          ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
+          logger.error("Username already exists.");
+        }
+      };
   public Handler createUserValidator =
       ctx -> {
         logger.info("Starting createUserValidator handler");

@@ -52,6 +52,7 @@ public class AppConfig {
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser(securityUtils, emailUtil));
     app.post("/generate-username", userController.generateUniqueUsername);
+    app.post("/username-exists", userController.usernameExists);
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser(securityUtils));
     app.get("/logout", userController.logout);
