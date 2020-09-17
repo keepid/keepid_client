@@ -252,12 +252,12 @@ class AdminPanel extends Component<Props, State> {
               <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
                 <div className="btn-group mr-2" role="group" aria-label="Button group">
                   <Link to="/upload-document">
-                    <button className="btn btn-primary loginButtonBackground">Upload Form</button>
+                    <button type="button" className="btn btn-primary loginButtonBackground">Upload Form</button>
                   </Link>
                 </div>
                 <div className="btn-group" role="group" aria-label="Button group">
                   <Link to="/my-documents">
-                    <button className="btn btn-primary loginButtonBackground">View Applications</button>
+                    <button type="button" className="btn btn-primary loginButtonBackground">View Applications</button>
                   </Link>
                 </div>
               </div>
@@ -275,7 +275,11 @@ class AdminPanel extends Component<Props, State> {
                       closeMenuOnSelect={false}
                       onChange={this.handleChangeItemsPerPage}
                       value={itemsPerPageSelected}
-                    /> <p className="my-auto ml-2"> items per page
+                    />
+                    {' '}
+                    <p className="my-auto ml-2">
+                      {' '}
+                      items per page
                     </p>
                   </div>
                 </div>
