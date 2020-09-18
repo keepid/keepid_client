@@ -391,6 +391,7 @@ class WorkerLanding extends Component<Props, State> {
                   value={this.state.searchName}
                   placeholder="Search Name"
                   aria-label="Search"
+                  onKeyPress={(event) => { if (event.key === 'Enter') { event.preventDefault(); } }}
                 />
                 <img
                   alt="Search"
