@@ -156,64 +156,64 @@ class AdminPanel extends Component<Props, State> {
       organization,
       workers,
     } = this.state;
-    const workerPanel = (currentWorker === undefined)
-      ? (
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">
-              <i>No Worker Selected</i>
-            </h5>
-          </div>
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item">
-              <div className="form-group">
-                <label htmlFor="permissionSelector">
-                  Set Worker Permission Level
-                  <select className="form-control" id="permissionSelector">
-                    <option>Worker</option>
-                    <option>Admin</option>
-                    <option>Volunteer</option>
-                  </select>
-                </label>
-              </div>
-              <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
-              </div>
-            </li>
-            <li className="list-group-item">
-              <button type="submit" className="btn btn-danger">Delete Account</button>
-            </li>
-          </ul>
-        </div>
-      ) : (
-        <div className="card ml-5">
-          <div className="card-body">
-            <h5 className="card-title">
-              {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
-            </h5>
-          </div>
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item">
-              <div className="form-group">
-                <label htmlFor="permissionSelector">
-                  Set Worker Permission Level
-                  <select className="form-control" id="permissionSelector">
-                    <option>Worker</option>
-                    <option>Admin</option>
-                    <option>Volunteer</option>
-                  </select>
-                </label>
-              </div>
-              <div className="form-group">
-                <button type="submit" className="btn btn-outline-primary">Save Changes</button>
-              </div>
-            </li>
-            <li className="list-group-item">
-              <button type="submit" className="btn btn-danger">Delete Worker Account</button>
-            </li>
-          </ul>
-        </div>
-      );
+    // const workerPanel = (currentWorker === undefined)
+    //   ? (
+    //     <div className="card">
+    //       <div className="card-body">
+    //         <h5 className="card-title">
+    //           <i>No Worker Selected</i>
+    //         </h5>
+    //       </div>
+    //       <ul className="list-group list-group-flush">
+    //         <li className="list-group-item">
+    //           <div className="form-group">
+    //             <label htmlFor="permissionSelector">
+    //               Set Worker Permission Level
+    //               <select className="form-control" id="permissionSelector">
+    //                 <option>Worker</option>
+    //                 <option>Admin</option>
+    //                 <option>Volunteer</option>
+    //               </select>
+    //             </label>
+    //           </div>
+    //           <div className="form-group">
+    //             <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+    //           </div>
+    //         </li>
+    //         <li className="list-group-item">
+    //           <button type="submit" className="btn btn-danger">Delete Account</button>
+    //         </li>
+    //       </ul>
+    //     </div>
+    //   ) : (
+    //     <div className="card ml-5">
+    //       <div className="card-body">
+    //         <h5 className="card-title">
+    //           {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
+    //         </h5>
+    //       </div>
+    //       <ul className="list-group list-group-flush">
+    //         <li className="list-group-item">
+    //           <div className="form-group">
+    //             <label htmlFor="permissionSelector">
+    //               Set Worker Permission Level
+    //               <select className="form-control" id="permissionSelector">
+    //                 <option>Worker</option>
+    //                 <option>Admin</option>
+    //                 <option>Volunteer</option>
+    //               </select>
+    //             </label>
+    //           </div>
+    //           <div className="form-group">
+    //             <button type="submit" className="btn btn-outline-primary">Save Changes</button>
+    //           </div>
+    //         </li>
+    //         <li className="list-group-item">
+    //           <button type="submit" className="btn btn-danger">Delete Worker Account</button>
+    //         </li>
+    //       </ul>
+    //     </div>
+    // );
 
     const itemsPerPage = Number(itemsPerPageSelected.value);
     const tablePageSelector = TablePageSelector({
@@ -282,7 +282,7 @@ class AdminPanel extends Component<Props, State> {
               )}
           </div>
           <div className="row bd-highlight mb-3 pt-5">
-            <div className="col-md-8 pb-3">
+            <div className="col pb-3">
               <BootstrapTable
                 bootstrap4
                 keyField="username"
@@ -298,9 +298,6 @@ class AdminPanel extends Component<Props, State> {
                 }}
                 noDataIndication="No Workers Found"
               />
-            </div>
-            <div className="col-md-4 pb-3">
-              {workerPanel}
             </div>
           </div>
         </div>

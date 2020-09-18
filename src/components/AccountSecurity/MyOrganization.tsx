@@ -234,13 +234,13 @@ class MyOrganization extends Component<Props, State> {
 
   renderSuccessPopUp = (numInvitesSent:number):JSX.Element => (
     <div>
-      <Alert variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
-        <p>
+      <Alert className="mt-2" variant="success" dismissible onClose={() => (this.setState({ showPopUp: false }))}>
+        <p className="mb-0">
           Congrats! You successfully invited
           {' '}
           {numInvitesSent}
           {' '}
-          new members to your team! Head to your Admin Panel to see them
+          new members to your team! Head to your Admin Panel to see them.
         </p>
       </Alert>
     </div>
