@@ -1,8 +1,14 @@
 package UserTest;
 
+import static com.mongodb.client.model.Filters.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import Config.DeploymentLevel;
+import Config.Message;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
+import Security.ChangePasswordService;
 import Security.SecurityUtils;
 import Security.Tokens;
 import TestUtils.TestUtils;
@@ -14,18 +20,12 @@ import com.mongodb.client.model.ReplaceOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Context;
+import java.security.SecureRandom;
+import java.util.Objects;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.security.SecureRandom;
-import java.util.Objects;
-
-import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ChangePasswordIntegrationTests {
 
@@ -73,8 +73,8 @@ public class ChangePasswordIntegrationTests {
     String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
     int expirationTime = 7200000; // 2 hours
     String jwt =
-        SecurityUtils
-            .createJWT(id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+        SecurityUtils.createJWT(
+            id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
     MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
     tokenCollection.replaceOne(
@@ -105,8 +105,8 @@ public class ChangePasswordIntegrationTests {
     String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
     int expirationTime = 7200000; // 2 hours
     String jwt =
-        SecurityUtils
-            .createJWT(id, "KeepID", username, "Password Reset Confirmation", expirationTime);
+        SecurityUtils.createJWT(
+            id, "KeepID", username, "Password Reset Confirmation", expirationTime);
 
     MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
     tokenCollection.replaceOne(
@@ -168,10 +168,7 @@ public class ChangePasswordIntegrationTests {
       throw new Exception("Current test password doesn't match examples");
     }
 
-    UserMessage result =
-        AccountSecurityController.changePassword(
-            username, newPassword, oldPassword, db);
-
+    Message result = ChangePasswordService.changePassword(db, username, oldPassword, newPassword);
     assert (result == UserMessage.AUTH_SUCCESS);
   }
 }

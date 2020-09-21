@@ -12,14 +12,14 @@ public enum EmailMessages implements Message {
   NOT_VALID_EMAIL("NOT_VALID_EMAIL: The email address isn't valid"),
   SUCCESS("SUCCESS:Success.");
 
-  private String errorMessage;
+  private final String errorMessage;
 
   EmailMessages(String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
-  public String toString() {
-    return this.errorMessage;
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {

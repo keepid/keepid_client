@@ -37,4 +37,9 @@ public class ValidationException extends Exception implements Message {
   public String getErrorDescription() {
     return null;
   }
+
+  @Override
+  public String toResponseString() {
+    return null;
+  }
 }
