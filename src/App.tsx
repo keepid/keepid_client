@@ -156,7 +156,7 @@ class App extends React.Component<{}, State, {}> {
       role: Role.LoggedOut,
     });
 
-    fetch(`${getServerURL()}/logout`, {
+    fetch(`${getServerURL()}/home`, {
       method: 'GET',
       credentials: 'include',
     });
