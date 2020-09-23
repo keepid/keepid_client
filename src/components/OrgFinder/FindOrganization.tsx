@@ -40,7 +40,6 @@ class FindOrganization extends Component<Props, State> {
       orgsWithinRadius: [],
     };
     this.getAllOrganizations = this.getAllOrganizations.bind(this);
-    // this.geocodeZipcode = this.geocodeZipcode.bind(this);
     this.onHandleChangeZipcode = this.onHandleChangeZipcode.bind(this);
     this.onSubmitZipcode = this.onSubmitZipcode.bind(this);
   }
@@ -64,7 +63,7 @@ class FindOrganization extends Component<Props, State> {
       },
     ];
     return organizations;
-    this.setState({ organizations });
+    // this.setState({ organizations });
   }
 
   onHandleChangeZipcode(event: any) {
@@ -73,74 +72,8 @@ class FindOrganization extends Component<Props, State> {
 
   onSubmitZipcode(event: any) {
     event.preventDefault();
-    // this.geocodeZipcode();
     this.calculateOrganizationsWithinDistance(event.target.value);
   }
-
-  // geocodeZipcode() {
-  //   const {
-  //     zipcodeSearch,
-  //     results,
-  //   } = this.state;
-  //   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); // Do in OrganizationSignup
-  //   const search = `postal_code:${zipcodeSearch}`;
-  //   const urlParams = {
-  //     components: search,
-  //     key: APIKey,
-  //   };
-  //   Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
-  //   fetch(url.toString(), {
-  //     method: 'GET',
-  //   }).then((response) => response.json())
-  //     .then((responseJSON) => {
-  //       const { status } = responseJSON;
-
-  //       // if valid zipcode
-  //       if (status === 'OK') {
-  //         const zipcodeLatLng = responseJSON.results[0].geometry.location;
-  //         const zipcodeLat = responseJSON.results[0].geometry.location.lat;
-  //         const zipcodeLng = responseJSON.results[0].geometry.location.lng;
-
-          // if within radius, post results
-          // this.withinDistance(zipcodeLat, zipcodeLng);
-          // there are results
-          // if (!results.isEmpty) {
-          //   this.setState({
-          //     displayMap: true,
-          //     displayIcon: false,
-          //     displayError: false,
-          //     zipcodeLat,
-          //     zipcodeLng,
-          //   });
-          // } else { // there are no results
-          //   this.setState({
-          //     displayMap: true,
-          //     displayIcon: false,
-          //     displayError: false,
-          //     zipcodeLat,
-          //     zipcodeLng,
-          //   });
-          // }
-  //         this.setState({
-  //           displayMap: true,
-  //           displayIcon: false,
-  //           displayError: false,
-  //           zipcodeLat,
-  //           zipcodeLng,
-  //         });
-  //       } else {
-  //         // const {
-  //         //   alert,
-  //         // } = this.props;
-  //         // alert.show('Invalid zip code');
-  //         this.setState({
-  //           displayMap: false,
-  //           displayError: true,
-  //           displayIcon: false,
-  //         });
-  //       }
-  //     });
-  // }
 
   calculateOrganizationsWithinDistance(zipcode: number) {
     const {
@@ -155,13 +88,11 @@ class FindOrganization extends Component<Props, State> {
         orgsWithinRadius.push(allOrgs[i]);
       }
     }
-    this.setState(orgsWithinRadius);
+    return orgsWithinRadius;
+    // this.setState(orgsWithinRadius);
   }
 
-  getCoordinateFromZipcode(zipcode: number) {
-    // const {
-    //   zipcodeSearch,
-    // } = this.state;
+  getCoordinateFromZipcode(zipcode: number): Coordinate {
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); 
     const search = `postal_code:${zipcode}`;
     const urlParams = {
@@ -176,7 +107,7 @@ class FindOrganization extends Component<Props, State> {
         const { status } = responseJSON;
 
         // if valid zipcode
-        if (status === 'OK') {
+        if (status === 'SUCCESS') {
           const zipcodeLat = responseJSON.results[0].geometry.location.lat;
           const zipcodeLng = responseJSON.results[0].geometry.location.lng;
           const coordinateProps = {
@@ -197,7 +128,7 @@ class FindOrganization extends Component<Props, State> {
   }
 
   // haversine formula
-  getDistanceInKM(coordinate1, coordinate2): number {
+  getDistanceInKM(coordinate1: Coordinate, coordinate2: Coordinate): number {
     let lat1 = coordinate1.lat;
     let lat2 = coordinate2.lat;
     let lng1 = coordinate1.lng;
