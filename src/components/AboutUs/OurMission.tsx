@@ -16,8 +16,8 @@ class OurMission extends React.Component<{}, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-5">Mission Statement</h1>
-          <p className="lead pt-3">
+          <h1 className="mb-2">Mission Statement</h1>
+          <p className="lead-medium pt-2">
             The Mission of Team Keep.id is to
             {' '}
             <b>prioritize collaboration</b>
@@ -36,8 +36,8 @@ class OurMission extends React.Component<{}, State> {
           </p>
         </div>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-5">Values</h1>
-          <p className="lead pt-3">
+          <h1 className="mb-2">Values</h1>
+          <p className="lead-medium pt-2">
             Our three pillars are
             {' '}
             <b>collaboration</b>
@@ -58,8 +58,7 @@ class OurMission extends React.Component<{}, State> {
               <li className="pt-1">
                 <b>Purpose:</b>
                 {' '}
-                We understand the particular position and information we have on a disadvantaged population. We aim to create sustainable,
-                impact-driven features that have beneficial implications for those who entrust us with their data.
+                Purpose: We understand the particular position we are in to help a disadvantaged population. We aim to create sustainable, impact-driven technology that has beneficial implications for those who entrust us with their data.
               </li>
               <li className="pt-1">
                 <b>Empathy:</b>
@@ -70,14 +69,14 @@ class OurMission extends React.Component<{}, State> {
           </p>
         </div>
         <div className="jumbotron-fluid mt-5">
-          <h1 className="display-5">Product Vision</h1>
-          <p className="lead pt-3">
+          <h1 className="mb-2">Product Vision</h1>
+          <p className="lead-medium pt-2">
             Our product, Keep.id, aims to build a safety net around experienced homelessness by providing electronic document storage and complementary features. We envision Keep.id as a financially sustainable, HIPAA-compliant application that serves partner organizations in the Philadelphia community, and in the future, scales to various regional hubs experiencing homelessness in the U.S. We have three main goals for achieving this vision:
             <ul>
               <li className="pt-2">
                 <b>HIPAA Compliance</b>
                 {' '}
-                is a major engineering milestone that signals the technical integrity of our product.
+                is a major engineering milestone that will signal the technical integrity of our product.
               </li>
               <li className="pt-1">
                 <b>Receiving Funding</b>

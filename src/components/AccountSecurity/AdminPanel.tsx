@@ -4,6 +4,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import { Link } from 'react-router-dom';
+import { withAlert } from 'react-alert';
 import TablePageSelector from '../TablePageSelector';
 import getServerURL from '../../serverOverride';
 
@@ -11,6 +12,7 @@ interface Props {
   username: string,
   name: string,
   organization: string,
+  alert: any,
 }
 
 interface State {
@@ -156,64 +158,64 @@ class AdminPanel extends Component<Props, State> {
       organization,
       workers,
     } = this.state;
-    // const workerPanel = (currentWorker === undefined)
-    //   ? (
-    //     <div className="card">
-    //       <div className="card-body">
-    //         <h5 className="card-title">
-    //           <i>No Worker Selected</i>
-    //         </h5>
-    //       </div>
-    //       <ul className="list-group list-group-flush">
-    //         <li className="list-group-item">
-    //           <div className="form-group">
-    //             <label htmlFor="permissionSelector">
-    //               Set Worker Permission Level
-    //               <select className="form-control" id="permissionSelector">
-    //                 <option>Worker</option>
-    //                 <option>Admin</option>
-    //                 <option>Volunteer</option>
-    //               </select>
-    //             </label>
-    //           </div>
-    //           <div className="form-group">
-    //             <button type="submit" className="btn btn-outline-primary">Save Changes</button>
-    //           </div>
-    //         </li>
-    //         <li className="list-group-item">
-    //           <button type="submit" className="btn btn-danger">Delete Account</button>
-    //         </li>
-    //       </ul>
-    //     </div>
-    //   ) : (
-    //     <div className="card ml-5">
-    //       <div className="card-body">
-    //         <h5 className="card-title">
-    //           {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
-    //         </h5>
-    //       </div>
-    //       <ul className="list-group list-group-flush">
-    //         <li className="list-group-item">
-    //           <div className="form-group">
-    //             <label htmlFor="permissionSelector">
-    //               Set Worker Permission Level
-    //               <select className="form-control" id="permissionSelector">
-    //                 <option>Worker</option>
-    //                 <option>Admin</option>
-    //                 <option>Volunteer</option>
-    //               </select>
-    //             </label>
-    //           </div>
-    //           <div className="form-group">
-    //             <button type="submit" className="btn btn-outline-primary">Save Changes</button>
-    //           </div>
-    //         </li>
-    //         <li className="list-group-item">
-    //           <button type="submit" className="btn btn-danger">Delete Worker Account</button>
-    //         </li>
-    //       </ul>
-    //     </div>
-    // );
+    const workerPanel = (currentWorker === undefined)
+      ? (
+        <div className="card">
+          <div className="card-body">
+            <h5 className="card-title">
+              <i>No Worker Selected</i>
+            </h5>
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <div className="form-group">
+                <label htmlFor="permissionSelector">
+                  Set Worker Permission Level
+                  <select className="form-control" id="permissionSelector">
+                    <option>Worker</option>
+                    <option>Admin</option>
+                    <option>Volunteer</option>
+                  </select>
+                </label>
+              </div>
+              <div className="form-group">
+                <button type="submit" className="btn btn-outline-primary" onClick={():void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
+              </div>
+            </li>
+            <li className="list-group-item">
+              <button type="submit" className="btn btn-danger" onClick={():void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Account</button>
+            </li>
+          </ul>
+        </div>
+      ) : (
+        <div className="card ml-5">
+          <div className="card-body">
+            <h5 className="card-title">
+              {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
+            </h5>
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <div className="form-group">
+                <label htmlFor="permissionSelector">
+                  Set Worker Permission Level
+                  <select className="form-control" id="permissionSelector">
+                    <option>Worker</option>
+                    <option>Admin</option>
+                    <option>Volunteer</option>
+                  </select>
+                </label>
+              </div>
+              <div className="form-group">
+                <button type="submit" className="btn btn-outline-primary" onClick={():void => { const { alert } = this.props; alert.show('Save Changes feature coming soon...'); }}>Save Changes</button>
+              </div>
+            </li>
+            <li className="list-group-item">
+              <button type="submit" className="btn btn-danger" onClick={():void => { const { alert } = this.props; alert.show('Delete Worker Account feature coming soon...'); }}>Delete Worker Account</button>
+            </li>
+          </ul>
+        </div>
+      );
 
     const itemsPerPage = Number(itemsPerPageSelected.value);
     const tablePageSelector = TablePageSelector({
@@ -252,12 +254,12 @@ class AdminPanel extends Component<Props, State> {
               <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
                 <div className="btn-group mr-2" role="group" aria-label="Button group">
                   <Link to="/upload-document">
-                    <button className="btn btn-primary loginButtonBackground">Upload Form</button>
+                    <button type="button" className="btn btn-primary loginButtonBackground">Upload Form</button>
                   </Link>
                 </div>
                 <div className="btn-group" role="group" aria-label="Button group">
                   <Link to="/my-documents">
-                    <button className="btn btn-primary loginButtonBackground">View Applications</button>
+                    <button type="button" className="btn btn-primary loginButtonBackground">View Applications</button>
                   </Link>
                 </div>
               </div>
@@ -275,7 +277,11 @@ class AdminPanel extends Component<Props, State> {
                       closeMenuOnSelect={false}
                       onChange={this.handleChangeItemsPerPage}
                       value={itemsPerPageSelected}
-                    /> <p className="my-auto ml-2"> items per page
+                    />
+                    {' '}
+                    <p className="my-auto ml-2">
+                      {' '}
+                      items per page
                     </p>
                   </div>
                 </div>
@@ -306,4 +312,4 @@ class AdminPanel extends Component<Props, State> {
   }
 }
 
-export default AdminPanel;
+export default withAlert()(AdminPanel);
