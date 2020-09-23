@@ -55,6 +55,7 @@ public class AppConfig {
     app.post("/username-exists", userController.usernameExists);
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser(securityUtils));
+    app.post("/create-invited-user", userController.createNewInvitedUser(securityUtils));
     app.get("/logout", userController.logout);
     app.post(
         "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));

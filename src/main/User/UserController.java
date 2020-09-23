@@ -394,6 +394,80 @@ public class UserController {
     };
   }
 
+  public Handler createNewInvitedUser(SecurityUtils securityUtils) {
+    return ctx -> {
+      JSONObject req = new JSONObject(ctx.body());
+
+      String firstName = req.getString("firstname").toUpperCase().strip();
+      String lastName = req.getString("lastname").toUpperCase().strip();
+      String birthDate = req.getString("birthDate").strip();
+      String email = req.getString("email").toLowerCase().strip();
+      String phone = req.getString("phonenumber").strip();
+      String address = req.getString("address").toUpperCase().strip();
+      String city = req.getString("city").toUpperCase().strip();
+      String state = req.getString("state").toUpperCase().strip();
+      String zipcode = req.getString("zipcode").strip();
+      Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+      String username = req.getString("username").strip();
+      String password = req.getString("password").strip();
+      String userTypeString = req.getString("personRole").strip();
+      UserType userType = UserType.userTypeFromString(userTypeString);
+      String organizationName = req.getString("orgName").strip();
+
+      if (userTypeString == null || userTypeString.length() == 0) {
+        logger.error("Invalid privilege type");
+        ctx.json(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
+        return;
+      }
+
+      User user;
+      try {
+        user =
+            new User(
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                organizationName,
+                address,
+                city,
+                state,
+                zipcode,
+                twoFactorOn,
+                username,
+                password,
+                userType);
+      } catch (ValidationException ve) {
+        ctx.json(ve.getJSON().toString());
+        return;
+      }
+
+      MongoCollection<User> userCollection = db.getCollection("user", User.class);
+      User existingUser = userCollection.find(eq("username", user.getUsername())).first();
+
+      if (existingUser != null) {
+        ctx.json(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
+        return;
+      }
+
+      if (organizationName == null || organizationName.length() == 0) {
+        ctx.json(UserMessage.INVALID_PARAMETER.toJSON().toString());
+        return;
+      }
+
+      String hash = securityUtils.hashPassword(password);
+      if (hash == null) {
+        ctx.json(UserMessage.HASH_FAILURE.toJSON().toString());
+        return;
+      }
+
+      user.setPassword(hash);
+      userCollection.insertOne(user);
+      ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
+    };
+  }
+
   public Handler logout =
       ctx -> {
         ctx.req.getSession().invalidate();
