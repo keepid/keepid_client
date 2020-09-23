@@ -57,6 +57,7 @@ interface State {
   organization: string,
   showModal: boolean,
   autoLogout: boolean,
+  justLoggedOut: boolean
 }
 
 const timeUntilWarn: number = 1000 * 60 * 120;
@@ -79,6 +80,7 @@ class App extends React.Component<{}, State, {}> {
       organization: '',
       showModal: false,
       autoLogout: false,
+      justLoggedOut: false
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
@@ -87,6 +89,7 @@ class App extends React.Component<{}, State, {}> {
     this.handleClose = this.handleClose.bind(this);
     this.handleAutoLogout = this.handleAutoLogout.bind(this);
     this.resetAutoLogout = this.resetAutoLogout.bind(this);
+    this.logOutFinish = this.logOutFinish.bind(this);
   }
 
   resetAutoLogout() {
@@ -148,6 +151,11 @@ class App extends React.Component<{}, State, {}> {
     if (this.logoutTimeout) {
       clearTimeout(this.logoutTimeout);
     }
+    this.setState({justLoggedOut: true});
+    return <Route render={() => ( <Redirect to="/home" /> )} />;
+  }
+  
+  logOutFinish() {
     this.setState({
       username: '',
       name: '',
@@ -156,7 +164,7 @@ class App extends React.Component<{}, State, {}> {
       role: Role.LoggedOut,
     });
 
-    fetch(`${getServerURL()}/home`, {
+    fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -170,6 +178,7 @@ class App extends React.Component<{}, State, {}> {
       organization,
       showModal,
       autoLogout,
+      justLoggedOut
     } = this.state;
     return (
       <Router>
@@ -209,6 +218,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/home"
                 render={() => {
+                  if (justLoggedOut) this.logOutFinish(); 
                   if (role === Role.Director || role === Role.Admin || role === Role.Worker) {
                     return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                   }
