@@ -6,7 +6,7 @@ import DocumentViewer from './DocumentViewer';
 import getServerURL from '../serverOverride';
 import Role from '../static/Role';
 import PDFType from '../static/PDFType';
-import InfoSVG from "../static/images/info.svg";
+import InfoSVG from '../static/images/info.svg';
 
 interface Props {
   alert: any,
@@ -67,9 +67,8 @@ class UploadDocs extends React.Component<Props, State> {
         const responseObject = JSON.parse(responseJSON);
         const newState = {
           firstName: responseObject.firstName,
-          lastName: responseObject.lastName
+          lastName: responseObject.lastName,
         };
-        console.log(newState.firstName);
         this.setState(newState);
       });
   }
@@ -167,12 +166,12 @@ class UploadDocs extends React.Component<Props, State> {
     const {
       pdfFiles,
       buttonState,
-      firstName, 
-      lastName
+      firstName,
+      lastName,
     } = this.state;
 
     const {
-      userRole
+      userRole,
     } = this.props;
 
     return (
@@ -183,8 +182,9 @@ class UploadDocs extends React.Component<Props, State> {
         </Helmet>
         <div className="jumbotron-fluid mt-3">
           { (userRole === Role.Admin || userRole === Role.Worker) ? <div className="alert alert-primary mt-1" role="alert">
-              <img className="avatar mr-1" src={InfoSVG} alt="info" />You are uploading documents for {firstName} {lastName}.
-            </div> : null }
+            <img className="avatar mr-1" src={InfoSVG} alt="info" />
+            You are uploading documents for {firstName} {lastName}.
+          </div> : null }
 
           <h1 className="display-4">
             Upload Documents
