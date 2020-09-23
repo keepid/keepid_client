@@ -53,12 +53,10 @@ class AccountSetup extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        username: username,
+        username,
       }),
     }).then((response) => response.json())
-      .then((responseJSON) => {
-        return (responseJSON['status'] === 'SUCCESS');
-      });
+      .then((responseJSON) => (responseJSON.status === 'SUCCESS'));
 
     if (isValidUsername(username) && notTaken) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));

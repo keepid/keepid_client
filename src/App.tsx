@@ -80,7 +80,7 @@ class App extends React.Component<{}, State, {}> {
       organization: '',
       showModal: false,
       autoLogout: false,
-      justLoggedOut: false
+      justLoggedOut: false,
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
@@ -151,10 +151,10 @@ class App extends React.Component<{}, State, {}> {
     if (this.logoutTimeout) {
       clearTimeout(this.logoutTimeout);
     }
-    this.setState({justLoggedOut: true});
-    return <Route render={() => ( <Redirect to="/home" /> )} />;
+    this.setState({ justLoggedOut: true });
+    return <Route render={() => <Redirect to="/home" />} />;
   }
-  
+
   logOutFinish() {
     this.setState({
       username: '',
@@ -178,7 +178,7 @@ class App extends React.Component<{}, State, {}> {
       organization,
       showModal,
       autoLogout,
-      justLoggedOut
+      justLoggedOut,
     } = this.state;
     return (
       <Router>
@@ -218,7 +218,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/home"
                 render={() => {
-                  if (justLoggedOut) this.logOutFinish(); 
+                  if (justLoggedOut) this.logOutFinish();
                   if (role === Role.Director || role === Role.Admin || role === Role.Worker) {
                     return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                   }
