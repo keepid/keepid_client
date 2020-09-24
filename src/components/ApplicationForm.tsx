@@ -82,7 +82,6 @@ class ApplicationForm extends Component<Props, State> {
     const { id } = event.target;
     const { value } = event.target;
     formAnswers[id] = value;
-    console.log(formAnswers);
     this.setState({ formAnswers });
   }
 
@@ -90,7 +89,6 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    console.log(event.target.checked);
     const { id } = event.target;
     const value : boolean = event.target.checked;
     formAnswers[id] = value;
@@ -114,7 +112,6 @@ class ApplicationForm extends Component<Props, State> {
     const values : string[] = Array.from(event.target.selectedOptions, (option: HTMLOptionElement) => option.value);
     const { id } = event.target;
     formAnswers[id] = values;
-    console.log(formAnswers);
     this.setState({ formAnswers });
   }
 
@@ -156,7 +153,6 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
     if (pdfApplication) {
       const formData = new FormData();
-      console.log(pdfApplication);
       formData.append('file', pdfApplication);
       const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
@@ -196,7 +192,6 @@ class ApplicationForm extends Component<Props, State> {
       startDate,
     } = this.state;
 
-    console.log(formAnswers);
     if (submitSuccessful) {
       return (<Redirect to="/home" />);
     }
