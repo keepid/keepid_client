@@ -275,7 +275,11 @@ class AdminPanel extends Component<Props, State> {
                       closeMenuOnSelect={false}
                       onChange={this.handleChangeItemsPerPage}
                       value={itemsPerPageSelected}
-                    /> <p className="my-auto ml-2"> items per page
+                    />
+                    {' '}
+                    <p className="my-auto ml-2">
+                      {' '}
+                      items per page
                     </p>
                   </div>
                 </div>
