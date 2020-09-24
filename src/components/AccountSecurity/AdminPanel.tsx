@@ -262,6 +262,11 @@ class AdminPanel extends Component<Props, State> {
                 </div>
               </div>
             </div>
+            <div className="col-md-3 pb-3">
+              <Link to="/dev-panel">
+                <button type="button" className="btn btn-lg btn-primary loginButtonBackground">Developer Panel</button>
+              </Link>
+            </div>
           </div>
           <div className="row ml-1 mt-3 mb-2">
             {numElements === 0 ? <div /> : tablePageSelector }

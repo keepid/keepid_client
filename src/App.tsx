@@ -19,6 +19,7 @@ import Error from './components/Error';
 import Email from './components/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyOrganization from './components/AccountSecurity/MyOrganization';
+import DevPanel from './components/DevPanel';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
 import Role from './static/Role';
@@ -270,6 +271,15 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (role === Role.Director || role === Role.Admin) {
                     return (<AdminPanel name={name} organization={organization} username={username} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/dev-panel"
+                render={() => {
+                  if (role === Role.Director || role === Role.Admin) {
+                    return (<DevPanel userRole={role} name={name} organization={organization} username={username} />);
                   }
                   return <Redirect to="/error" />;
                 }}
