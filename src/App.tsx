@@ -379,7 +379,7 @@ class App extends React.Component<{}, State, {}> {
                 <InviteSignupJWT />
               </Route>
               <Route path="/profile">
-                <ClientProfilePage />
+                <ClientProfilePage username={username} />
               </Route>
               <Route path="/error">
                 <Error />

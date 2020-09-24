@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import getServerURL from '../serverOverride';
 
 interface Props{
-
+  username: string,
 }
 
 interface State{
@@ -17,7 +18,20 @@ class ClientProfilePage extends Component<Props, State> {
   }
 
   renderActivities = () => {
+    const { username } = this.props;
     // fetch call to get activitiesArr
+    fetch(`${getServerURL()}/get-all-activities`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = JSON.parse(responseJSON);
+        console.log(responseObject);
+      });
+
     const { activitiesArr } = this.state;
 
     const row = this.state.activitiesArr.map((activity, i) => {
