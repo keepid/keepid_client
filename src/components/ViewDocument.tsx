@@ -41,7 +41,7 @@ class ViewDocument extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileID: documentId,
+        fileId: documentId,
         pdfType,
       }),
     }).then((response) => response.blob())
