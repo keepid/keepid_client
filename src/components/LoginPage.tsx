@@ -153,6 +153,7 @@ class LoginPage extends Component<Props, State> {
                 case 'Admin': return Role.Admin;
                 case 'Worker': return Role.Worker;
                 case 'Client': return Role.Client;
+                case 'Developer': return Role.Developer;
                 default: return Role.LoggedOut;
               }
             };
