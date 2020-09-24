@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
+import ReactGA from 'react-ga';
 import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
@@ -41,8 +42,14 @@ import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
+import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import ClientProfilePage from './components/ClientProfilePage';
+
+window.onload = () => {
+  ReactGA.initialize('UA-176859431-1');
+  ReactGA.pageview(window.location.pathname + window.location.search);
+};
 
 interface State {
   role: Role,
@@ -138,25 +145,22 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
     this.setState({
       username: '',
       name: '',
       organization: '',
       showModal: false,
+      role: Role.LoggedOut,
     });
-
-    // clear the logout timeout
-    if (this.logoutTimeout) {
-      clearTimeout(this.logoutTimeout);
-    }
 
     fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
-    }).then((response) => {
-      this.setState({ role: Role.LoggedOut });
     });
-    return <Redirect to="login" />;
   }
 
   render() {
@@ -177,7 +181,6 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-
             {role !== Role.LoggedOut ? (
               <div>
                 <IdleTimer
@@ -195,8 +198,7 @@ class App extends React.Component<{}, State, {}> {
                   handleLogout={this.logOut}
                 />
               </div>
-            ) : null}
-
+            ) : <div />}
             <Switch>
               <Route
                 exact
@@ -335,6 +337,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/our-mission">
                 <OurMission />
+              </Route>
+              <Route path="/hubspot">
+                <Hubspot />
               </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />

@@ -338,8 +338,8 @@ thead {
 }
 
 .member-card {
-	width: 16vw;
-	min-width: 16.75rem;
+	width: 14vw;
+	min-width: 13.75rem;
 	border-color: $primary-theme;
 	border-width: 0.0625 rem;
 }
@@ -567,5 +567,9 @@ thead {
 
 div.scrollbar {
 	@include scrollbars(0.75rem, $primary-theme, #ffffff);
+}
+
+.lead-medium {
+	font-size: 1rem;
 }
 

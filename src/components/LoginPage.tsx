@@ -18,12 +18,10 @@ interface State {
   firstName: string,
   lastName: string,
   organization: string,
-  recaptchaLoaded: boolean,
-  recaptchaPayload: string,
-  recaptchaExpired: boolean
+  recaptchaPayload: string
 }
 
-const reCaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
   logIn: (role: Role, username: string, organization: string, name: string) => void,
@@ -46,45 +44,34 @@ class LoginPage extends Component<Props, State> {
       firstName: '',
       lastName: '',
       organization: '',
-      recaptchaLoaded: false,
       recaptchaPayload: '',
-      recaptchaExpired: false,
     };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleChangeUsername = this.handleChangeUsername.bind(this);
-    this.handleChangePassword = this.handleChangePassword.bind(this);
-    this.handleChangeVerificationCode = this.handleChangeVerificationCode.bind(this);
-    this.handleSubmitTwoFactorCode = this.handleSubmitTwoFactorCode.bind(this);
-    this.resubmitVerificationCode = this.resubmitVerificationCode.bind(this);
-    this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
 
   // RECAPTCHA CODE
-  componentDidMount() {
-    this.setState({ recaptchaLoaded: true });
+  onSubmitWithReCAPTCHA = async (e) => {
+    e.preventDefault();
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      const recaptchaPayload = await recaptchaRef.current.executeAsync();
+      this.setState({ recaptchaPayload }, this.handleLogin);
+    }
   }
+  // END RECAPTCHA CODE
 
-  handleRecaptchaChange = (recaptchaPayload) => {
-    this.setState({ recaptchaPayload });
-    if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
-  };
-  // RECAPTCHA
-
-  handleChangePassword(event: any) {
+  handleChangePassword = (event: any) => {
     this.setState({ password: event.target.value });
   }
 
-  handleChangeVerificationCode(event: any) {
+  handleChangeVerificationCode = (event: any) => {
     this.setState({ verificationCode: event.target.value });
   }
 
-  handleChangeUsername(event: any) {
+  handleChangeUsername = (event: any) => {
     this.setState({ username: event.target.value });
   }
 
-  handleSubmitTwoFactorCode(event: any) {
+  handleSubmitTwoFactorCode = (event: any) => {
     event.preventDefault();
-
     const token = this.state.verificationCode;
     const {
       username,
@@ -126,9 +113,8 @@ class LoginPage extends Component<Props, State> {
       });
   }
 
-  handleLogin(event: any) {
+  handleLogin = (): void => {
     this.setState({ buttonState: 'running' });
-    event.preventDefault();
     const {
       logIn,
     } = this.props;
@@ -136,19 +122,11 @@ class LoginPage extends Component<Props, State> {
       username,
       password,
       recaptchaPayload,
-      recaptchaLoaded,
-      recaptchaExpired,
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
-    } else if (!recaptchaLoaded || recaptchaExpired) {
-      this.props.alert.show('Recaptcha has expired. Please refresh the page');
-      this.setState({ buttonState: '' });
     } else {
-      if (reCaptchaRef && reCaptchaRef.current) {
-        reCaptchaRef.current.execute();
-      }
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
         credentials: 'include',
@@ -231,7 +209,6 @@ class LoginPage extends Component<Props, State> {
       username,
       password,
       verificationCode,
-      recaptchaLoaded,
     } = this.state;
     return (
       <div>
@@ -319,19 +296,15 @@ class LoginPage extends Component<Props, State> {
                   )
                   : <div />}
                 <div className="row pl-3 pt-3">
-                  <div className="col-6 pl-0">
-                    <div className="checkbox mb-3 pt-2">
-                      <label>
-                        <input type="checkbox" className="mr-1" value="remember-me" />
-                        {' '}
-                        Remember me
-                      </label>
-                    </div>
-                  </div>
                   {(this.state.twoFactorState !== 'show')
                     ? (
-                      <div className="col-6">
-                        <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleLogin)} onClick={this.handleLogin} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                      <div className="pb-2">
+                        <button
+                          type="submit"
+                          onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.onSubmitWithReCAPTCHA)}
+                          onClick={this.onSubmitWithReCAPTCHA}
+                          className={`btn btn-success px-5 loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}
+                        >
                           Sign In
                           <div className="ld ld-ring ld-spin" />
                         </button>
@@ -372,15 +345,12 @@ class LoginPage extends Component<Props, State> {
             </div>
           </div>
         </div>
-        {recaptchaLoaded && (
-          <ReCAPTCHA
-            theme="dark"
-            size="invisible"
-            ref={reCaptchaRef}
-            sitekey={reCaptchaKey}
-            onChange={this.handleRecaptchaChange}
-          />
-        )}
+        <ReCAPTCHA
+          theme="dark"
+          size="invisible"
+          ref={recaptchaRef}
+          sitekey={reCaptchaKey}
+        />
       </div>
     );
   }
