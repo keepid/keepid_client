@@ -1,5 +1,11 @@
 package User;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
+
 import Bug.BugController;
 import Config.Message;
 import Logger.LogFactory;
@@ -8,18 +14,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
-import io.javalin.http.UploadedFile;
+import java.util.List;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import java.io.InputStream;
-import java.util.List;
-
-import static com.mongodb.client.model.Filters.*;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
 
 public class UserController {
   Logger logger;
@@ -30,27 +29,8 @@ public class UserController {
     this.db = db;
     LogFactory l = new LogFactory();
     this.bugController = new BugController(db);
-    logger = l.createLogger("UserController");
+    logger = (new LogFactory()).createLogger("UserController");
   }
-
-  public Handler uploadPfp =
-      ctx -> {
-        String username = ctx.sessionAttribute("username");
-        UploadedFile file = ctx.uploadedFile("file");
-        GetUserInfoService service = new GetUserInfoService(db, logger, username);
-        service.uploadPfp(file);
-        ctx.json(UserMessage.SUCCESS.toJSON("Profile Picture Uploaded Successfully").toString());
-      };
-
-  public Handler loadPfp =
-      ctx -> {
-        String username = ctx.sessionAttribute("username");
-        UploadedFile file = ctx.uploadedFile("file");
-        GetUserInfoService service = new GetUserInfoService(db, logger, username);
-        InputStream pfp = service.getUserPfp();
-        ctx.header("Content-Type", "application/pfp");
-        ctx.result(pfp);
-      };
 
   public Handler loginUser =
       ctx -> {

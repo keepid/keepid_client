@@ -1,12 +1,16 @@
 package Security;
 
+import java.util.Date;
+import java.util.Objects;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
-import java.util.Date;
-import java.util.Objects;
-
 public class Tokens {
+  public enum TokenType {
+    PASSWORD_RESET,
+    TWO_FACTOR
+  }
+
   private ObjectId id;
 
   @BsonProperty(value = "username")

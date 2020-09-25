@@ -19,16 +19,17 @@ public enum UserMessage implements Message {
   INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),
   SUCCESS("SUCCESS:Success."),
   TOKEN_ISSUED("TOKEN_ISSUED:Token issued."),
-  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty.");
+  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty."),
+  EMAIL_DOES_NOT_EXIST("EMAIL_DOES_NOT_EXIST:No email found for this user");
 
-  private String errorMessage;
+  private final String errorMessage;
 
   UserMessage(String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
-  public String toString() {
-    return this.errorMessage;
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {
