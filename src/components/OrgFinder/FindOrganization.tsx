@@ -4,6 +4,8 @@ import MapComponent from './MapComponent';
 import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
 import InvalidZipcodeIcon from '../../static/images/InvalidZipcodeIcon.svg';
 import Coordinate from './Coordinate';
+import getServerURL from '../../serverOverride';
+import OrganizationSignup from '../SignUp/OrganizationSignup';
 
 interface Props {
   alert: any,
@@ -20,6 +22,7 @@ interface State {
   zipcodeLatLang: any,
   results: any,
   orgsWithinRadius: any,
+  count: number,
 }
 
 const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
@@ -38,6 +41,7 @@ class FindOrganization extends Component<Props, State> {
       zipcodeLatLang: {},
       results: [],
       orgsWithinRadius: [],
+      count: 0,
     };
     this.getAllOrganizations = this.getAllOrganizations.bind(this);
     this.onHandleChangeZipcode = this.onHandleChangeZipcode.bind(this);
@@ -49,20 +53,39 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getAllOrganizations() {
-    const count = 0;
-    const organizations = [
-      {
-        orgName: 'Broad Street Ministries',
-        lat: 39.9460872,
-        lng: -75.1644793,
-        address: '315 S Broad St, Philadelphia, PA 19107',
-        zipcode: 19107,
-        phone: '',
-        email: '',
-        count,
-      },
-    ];
-    return organizations;
+    const {
+      organizations,
+    } = this.state;
+    fetch(`${getServerURL()}/get-all-orgs `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        userTypes : [],
+        organizations : []
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          organizations,
+        } = JSON.parse(responseJSON);
+        this.setState({
+          organizations,
+        });
+      });
+    // const count = 0;
+    // const organizations = [
+    //   {
+    //     orgName: 'Broad Street Ministries',
+    //     lat: 39.9460872,
+    //     lng: -75.1644793,
+    //     address: '315 S Broad St, Philadelphia, PA 19107',
+    //     zipcode: 19107,
+    //     phone: '',
+    //     email: '',
+    //     count,
+    //   },
+    // ];
+    // return organizations;
     // this.setState({ organizations });
   }
 
@@ -78,6 +101,7 @@ class FindOrganization extends Component<Props, State> {
   calculateOrganizationsWithinDistance(zipcode: number) {
     const {
       orgsWithinRadius,
+      count,
     } = this.state;
     const searchCoordinate = this.getCoordinateFromZipcode(zipcode);
     const allOrgs = this.getAllOrganizations;
@@ -86,6 +110,7 @@ class FindOrganization extends Component<Props, State> {
       const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
       if (distBetween <= 10) {
         orgsWithinRadius.push(allOrgs[i]);
+        count + 1;;
       }
     }
     return orgsWithinRadius;
@@ -124,7 +149,12 @@ class FindOrganization extends Component<Props, State> {
           });
         }
       });
-    return;
+    const coordinateProps = {
+      lat: null,
+      lng: null,
+    }
+    const coordinate = new Coordinate(coordinateProps);
+    return coordinate;
   }
 
   // haversine formula
@@ -159,6 +189,7 @@ class FindOrganization extends Component<Props, State> {
       organizations,
       zipcodeLat,
       zipcodeLng,
+      count,
     } = this.state;
 
     return (
@@ -195,8 +226,8 @@ class FindOrganization extends Component<Props, State> {
             <div className="row">
               <div className="col-sm-6">
                 <div className="row">
-                  <h5 className="pb-3 mr-1 ml-3">3</h5>
-                  <h5 className="pb-3">results near 19104</h5>
+                  <h5 className="pb-3 mr-1 ml-3">{count}</h5>
+                  <h5 className="pb-3">results near {zipcodeSearch}</h5>
                 </div>
 
                 <div className="row mx-md-n5">

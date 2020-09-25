@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
 interface Props {
-    lat: number,
-    lng: number,
+    lat: any,
+    lng: any,
 }
 
 interface State {
