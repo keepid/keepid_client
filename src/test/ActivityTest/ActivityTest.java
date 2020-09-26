@@ -13,6 +13,7 @@ import com.mongodb.client.MongoDatabase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.bson.Document;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class ActivityTest {
     MongoCollection a = db.getCollection("activity");
     Document d = (Document) a.find(eq("owner", user1)).first();
     Document b = (Document) d.get("created");
-    System.out.println(b);
+    //    System.out.println(b);
     assert (b.get("lastName").equals("Chen"));
   }
   //
@@ -104,8 +105,14 @@ public class ActivityTest {
   @Test
   public void testController() {
     TestUtils.login("createAdminOwner", "login-history-test");
-    HttpResponse<String> findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    JSONObject input = new JSONObject();
+    JSONObject client = new JSONObject();
+    client.put("firstName", "exampleFirstName");
+    client.put("lastName", "exampleLastName");
+    client.put("email", "exampleEmail");
+    client.put("role", "Client");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").body(input).asEmpty();
     System.out.print("find" + findResponse.getBody().toString());
     TestUtils.logout();
   }
