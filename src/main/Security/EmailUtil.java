@@ -52,7 +52,7 @@ public class EmailUtil {
           + "organizationInviteEmail.html";
 
   public static void sendEmail(String senderName, String recipientEmail, String subject, String message)
-      throws EmailExceptions, UnsupportedEncodingException {
+      throws EmailExceptions {
 
     // Set SMTP server properties.
     Properties properties = System.getProperties();
@@ -89,7 +89,7 @@ public class EmailUtil {
 
       // Send the Email.
       Transport.send(msg);
-    } catch (MessagingException e) {
+    } catch (MessagingException | UnsupportedEncodingException e ) {
       e.printStackTrace();
     }
   }

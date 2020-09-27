@@ -3,18 +3,18 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.SecurityUtils;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -98,6 +98,11 @@ public class ChangeAccountSettingsIntegrationTests {
     AccountSecurityController asc = new AccountSecurityController(db);
     asc.changeAccountSetting.handle(ctx);
 
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    //    System.out.print("find" + findResponse.getBody().toString());
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "firstName", newFirstName));
   }
 

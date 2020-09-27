@@ -1,10 +1,14 @@
 package User;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
+
 import Activity.ActivityController;
 import Activity.LoginActivity;
 import Bug.BugController;
 import Config.Message;
 import Config.Service;
+import Database.UserDao;
 import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
@@ -16,18 +20,17 @@ import com.mongodb.client.model.ReplaceOptions;
 import io.ipinfo.api.IPInfo;
 import io.ipinfo.api.errors.RateLimitedException;
 import io.ipinfo.api.model.IPResponse;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import kong.unirest.Unirest;
 import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import java.io.UnsupportedEncodingException;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.set;
 
 public class LoginService implements Service {
   public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));
@@ -41,7 +44,13 @@ public class LoginService implements Service {
   private ActivityController activityController;
   public static final long JWT_EXPIRATION_IN_MILI = 300000;
 
-  public LoginService(MongoDatabase db, Logger logger, String username, String password, String ip, String userAgent) {
+  public LoginService(
+      MongoDatabase db,
+      Logger logger,
+      String username,
+      String password,
+      String ip,
+      String userAgent) {
     this.db = db;
     this.logger = logger;
     this.username = username;
@@ -55,35 +64,35 @@ public class LoginService implements Service {
   public Message executeAndGetResponse() {
     // validation
     if (!ValidationUtils.isValidUsername(this.username)
-            || !ValidationUtils.isValidPassword(this.password)) {
+        || !ValidationUtils.isValidPassword(this.password)) {
       logger.info("Invalid username and/or password");
       return UserMessage.AUTH_FAILURE;
     }
     // get user
-    User user = findUser(this.username);
-    if(user == null){
+    User user = UserDao.findOneUserOrNull(db, this.username);
+    if (user == null) {
       return UserMessage.AUTH_FAILURE;
     }
     Objects.requireNonNull(user);
     this.user = user;
     // verify password
-    if(!verifyPassword(this.password, user.getPassword())){
+    if (!verifyPassword(this.password, user.getPassword())) {
       return UserMessage.AUTH_FAILURE;
     }
     recordActivityLogin(); // record login activity
     getLocationOfLogin(user, ip, userAgent); // get ip location
     logger.info("Login Successful!");
     // if two factor is on, run 2fa
-    if(user.getTwoFactorOn() &&
-            (user.getUserType() == UserType.Director ||
-                    user.getUserType() == UserType.Admin ||
-                    user.getUserType() == UserType.Worker)) {
+    if (user.getTwoFactorOn()
+        && (user.getUserType() == UserType.Director
+            || user.getUserType() == UserType.Admin
+            || user.getUserType() == UserType.Worker)) {
       return perform2FA(user.getEmail());
     }
     return UserMessage.AUTH_SUCCESS;
   }
 
-  public void recordActivityLogin(){
+  public void recordActivityLogin() {
     LoginActivity log = new LoginActivity(user, user.getTwoFactorOn());
     activityController.addActivity(log);
   }
@@ -101,7 +110,7 @@ public class LoginService implements Service {
     IpObject thisLogin = new IpObject();
     ZonedDateTime currentTime = ZonedDateTime.now();
     String formattedDate =
-            currentTime.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
+        currentTime.format(DateTimeFormatter.ofPattern("MM/dd/YYYY, HH:mm")) + " Local Time";
     boolean isMobile = userAgent.contains("Mobi");
     String device = isMobile ? "Mobile" : "Computer";
 
@@ -113,15 +122,15 @@ public class LoginService implements Service {
     try {
       IPResponse response = ipInfo.lookupIP(ip);
       thisLogin.setLocation(
-              response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
+          response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
     } catch (RateLimitedException ex) {
       logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
       thisLogin.setLocation("Unknown");
       JSONObject body = new JSONObject();
       body.put(
-              "text",
-              "You are receiving this because we have arrived at maximum amount of IP "
-                      + "lookups we are allowed for our free plan.");
+          "text",
+          "You are receiving this because we have arrived at maximum amount of IP "
+              + "lookups we are allowed for our free plan.");
       Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
     }
     loginList.add(thisLogin);
@@ -136,89 +145,82 @@ public class LoginService implements Service {
     logger.info("Added login to login history");
   }
 
-  public Message perform2FA(String email){
+  public Message perform2FA(String email) {
     String randCode = String.format("%06d", new Random().nextInt(999999));
     Date expDate = new Date(System.currentTimeMillis() + JWT_EXPIRATION_IN_MILI);
     try {
       String emailContent = EmailUtil.getVerificationCodeEmail(randCode);
-      EmailUtil.sendEmail(
-              "Keep Id", email, "Keepid Verification Code", emailContent);
+      EmailUtil.sendEmail("Keep Id", email, "Keepid Verification Code", emailContent);
       saveJWTToDb(randCode, expDate);
     } catch (EmailExceptions emailException) {
       logger.error("Could not send email");
       return emailException;
-    } catch (UnsupportedEncodingException e) {
-      logger.error("Unsupported encoding");
-      return UserMessage.SERVER_ERROR;
     }
     return UserMessage.TOKEN_ISSUED;
   }
 
   public void saveJWTToDb(String randomCode, Date expirationDate) {
-    MongoCollection<Tokens> tokenCollection =
-            db.getCollection("tokens", Tokens.class);
+    MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
     tokenCollection.replaceOne(
-            eq("username", username),
-            new Tokens()
-                    .setUsername(username)
-                    .setTwoFactorCode(randomCode)
-                    .setTwoFactorExp(expirationDate),
-            new ReplaceOptions().upsert(true));
+        eq("username", username),
+        new Tokens()
+            .setUsername(username)
+            .setTwoFactorCode(randomCode)
+            .setTwoFactorExp(expirationDate),
+        new ReplaceOptions().upsert(true));
   }
 
   public boolean verifyPassword(String inputPassword, String userHash) {
     SecurityUtils.PassHashEnum verifyPasswordStatus =
-            SecurityUtils.verifyPassword(inputPassword, userHash);
+        SecurityUtils.verifyPassword(inputPassword, userHash);
     switch (verifyPasswordStatus) {
-      case SUCCESS: return true;
-      case ERROR: {
-        logger.error("Failed to hash password");
-        return false;
-      }
-      case FAILURE: {
-        logger.info("Incorrect password");
-        return false;
-      }
+      case SUCCESS:
+        return true;
+      case ERROR:
+        {
+          logger.error("Failed to hash password");
+          return false;
+        }
+      case FAILURE:
+        {
+          logger.info("Incorrect password");
+          return false;
+        }
     }
     return false;
   }
 
-  public User findUser(String username) {
-    MongoCollection<User> userCollection = db.getCollection("user", User.class);
-    return userCollection.find(eq("username", username)).first();
-  }
-
-  public UserType getUserRole(){
+  public UserType getUserRole() {
     Objects.requireNonNull(user);
     return user.getUserType();
   }
 
-  public String getOrganization(){
+  public String getOrganization() {
     Objects.requireNonNull(user);
     return user.getOrganization();
   }
 
-  public String getUsername(){
+  public String getUsername() {
     Objects.requireNonNull(user);
     return user.getUsername();
   }
 
-  public String getFirstName(){
+  public String getFirstName() {
     Objects.requireNonNull(user);
     return user.getFirstName();
   }
 
-  public String getLastName(){
+  public String getLastName() {
     Objects.requireNonNull(user);
     return user.getLastName();
   }
 
-  public String getFullName(){
+  public String getFullName() {
     Objects.requireNonNull(user);
     return user.getFirstName() + " " + user.getLastName();
   }
 
-  public boolean isTwoFactorOn(){
+  public boolean isTwoFactorOn() {
     Objects.requireNonNull(user);
     return user.getTwoFactorOn();
   }

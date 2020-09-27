@@ -21,8 +21,8 @@ public enum OrgEnrollmentStatus implements Message {
     this.errorMessage = errorMessage;
   }
 
-  public String toString() {
-    return this.errorMessage;
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {

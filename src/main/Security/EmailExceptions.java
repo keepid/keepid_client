@@ -11,8 +11,8 @@ public class EmailExceptions extends Exception implements Message {
     this.emailMessage = emailMessage;
   }
 
-  public String toString() {
-    return emailMessage.toString();
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {

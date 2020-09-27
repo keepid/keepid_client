@@ -7,17 +7,26 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.security.SecureRandom;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.Key;
 import java.util.Date;
 import java.util.Objects;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /*
    Methods for handling JSON Web Tokens (JWTs)
 */
 public class SecurityUtils {
+  private static final int ID_LENGTH = 25;
+  private static final int ID_START_CHARACTERS = 48;
+  private static final int ID_END_CHARACTERS = 122;
+  private static final boolean INCLUDE_LETTERS = true;
+  private static final boolean INCLUDE_NUMBERS = true;
+  private static final char[] ID_CHARACTERS = null;
+
 
   public enum PassHashEnum {
     SUCCESS,
@@ -25,9 +34,13 @@ public class SecurityUtils {
     ERROR;
   }
 
+  public static String generateRandomStringId() {
+    return RandomStringUtils.random(ID_LENGTH, ID_START_CHARACTERS, ID_END_CHARACTERS,
+        INCLUDE_LETTERS, INCLUDE_NUMBERS, ID_CHARACTERS, new SecureRandom());
+  }
+
   // JWT Creation Method for password reset
-  public static String createJWT(String id, String issuer, String user, String subject, long ttlMillis)
-      throws IOException {
+  public static String createJWT(String id, String issuer, String user, String subject, long ttlMillis) {
 
     String SECRET_KEY = Objects.requireNonNull(System.getenv("PASSWORD_RESET_KEY"));
 

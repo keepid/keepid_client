@@ -196,102 +196,102 @@ public class OrganizationJWTTests {
 
   //  {userTypes : ["worker", "director"],
   //  organizations : []}
-  @Test
-  public void queryNoOrgsTest() {
-    JSONObject body = new JSONObject();
-    JSONArray orgs = new JSONArray();
-    JSONArray userTypes = new JSONArray();
-
-    userTypes.put("worker");
-    userTypes.put("director");
-    body.put("userTypes", userTypes);
-    body.put("organizations", orgs);
-
-    HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
-
-    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-
-    assert (resp.has("message"));
-    assertThat(resp.getString("message")).isEqualTo("Success.");
-    assert (resp.has("status"));
-    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
-    assert (resp.has("workers"));
-    assertThat(resp.getInt("workers")).isEqualTo(12);
-    assert (resp.has("directors"));
-    assertThat(resp.getInt("directors")).isEqualTo(2);
-  }
-
-  //  {userTypes : ["worker", "director"],
-  //  organizations : ["Broad Street Ministry"]}
-  @Test
-  public void queryOneOrgsTest() {
-    JSONObject body = new JSONObject();
-    JSONArray orgs = new JSONArray();
-    JSONArray userTypes = new JSONArray();
-
-    orgs.put("Broad Street Ministry");
-    userTypes.put("worker");
-    userTypes.put("director");
-    body.put("userTypes", userTypes);
-    body.put("organizations", orgs);
-
-    HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
-
-    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-
-    assert (resp.has("message"));
-    assertThat(resp.getString("message")).isEqualTo("Success.");
-    assert (resp.has("status"));
-    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
-    assert (resp.has("workers"));
-    assertThat(resp.getInt("workers")).isEqualTo(6);
-    assert (resp.has("directors"));
-    assertThat(resp.getInt("directors")).isEqualTo(1);
-  }
-
-  //  {userTypes : ["worker", "director"],
-  //  organizations : ["Broad Street Ministry", "YMCA"]}
-  @Test
-  public void queryTwoOrgsTest() {
-    JSONObject body = new JSONObject();
-    JSONArray orgs = new JSONArray();
-    JSONArray userTypes = new JSONArray();
-
-    orgs.put("Broad Street Ministry");
-    orgs.put("YMCA");
-    userTypes.put("worker");
-    userTypes.put("director");
-    body.put("userTypes", userTypes);
-    body.put("organizations", orgs);
-
-    HttpResponse actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(body.toString())
-            .asString();
-
-    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
-
-    assert (resp.has("message"));
-    assertThat(resp.getString("message")).isEqualTo("Success.");
-    assert (resp.has("status"));
-    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
-    assert (resp.has("workers"));
-    assertThat(resp.getInt("workers")).isEqualTo(12);
-    assert (resp.has("directors"));
-    assertThat(resp.getInt("directors")).isEqualTo(2);
-  }
+  //  @Test
+  //  public void queryNoOrgsTest() {
+  //    JSONObject body = new JSONObject();
+  //    JSONArray orgs = new JSONArray();
+  //    JSONArray userTypes = new JSONArray();
+  //
+  //    userTypes.put("worker");
+  //    userTypes.put("director");
+  //    body.put("userTypes", userTypes);
+  //    body.put("organizations", orgs);
+  //
+  //    HttpResponse actualResponse =
+  //        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+  //            .header("Accept", "*/*")
+  //            .header("Content-Type", "text/plain")
+  //            .body(body.toString())
+  //            .asString();
+  //
+  //    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  //
+  //    assert (resp.has("message"));
+  //    assertThat(resp.getString("message")).isEqualTo("Success.");
+  //    assert (resp.has("status"));
+  //    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
+  //    assert (resp.has("workers"));
+  //    assertThat(resp.getInt("workers")).isEqualTo(12);
+  //    assert (resp.has("directors"));
+  //    assertThat(resp.getInt("directors")).isEqualTo(2);
+  //  }
+  //
+  //  //  {userTypes : ["worker", "director"],
+  //  //  organizations : ["Broad Street Ministry"]}
+  //  @Test
+  //  public void queryOneOrgsTest() {
+  //    JSONObject body = new JSONObject();
+  //    JSONArray orgs = new JSONArray();
+  //    JSONArray userTypes = new JSONArray();
+  //
+  //    orgs.put("Broad Street Ministry");
+  //    userTypes.put("worker");
+  //    userTypes.put("director");
+  //    body.put("userTypes", userTypes);
+  //    body.put("organizations", orgs);
+  //
+  //    HttpResponse actualResponse =
+  //        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+  //            .header("Accept", "*/*")
+  //            .header("Content-Type", "text/plain")
+  //            .body(body.toString())
+  //            .asString();
+  //
+  //    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  //
+  //    assert (resp.has("message"));
+  //    assertThat(resp.getString("message")).isEqualTo("Success.");
+  //    assert (resp.has("status"));
+  //    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
+  //    assert (resp.has("workers"));
+  //    assertThat(resp.getInt("workers")).isEqualTo(6);
+  //    assert (resp.has("directors"));
+  //    assertThat(resp.getInt("directors")).isEqualTo(1);
+  //  }
+  //
+  //  //  {userTypes : ["worker", "director"],
+  //  //  organizations : ["Broad Street Ministry", "YMCA"]}
+  //  @Test
+  //  public void queryTwoOrgsTest() {
+  //    JSONObject body = new JSONObject();
+  //    JSONArray orgs = new JSONArray();
+  //    JSONArray userTypes = new JSONArray();
+  //
+  //    orgs.put("Broad Street Ministry");
+  //    orgs.put("YMCA");
+  //    userTypes.put("worker");
+  //    userTypes.put("director");
+  //    body.put("userTypes", userTypes);
+  //    body.put("organizations", orgs);
+  //
+  //    HttpResponse actualResponse =
+  //        Unirest.post(TestUtils.getServerUrl() + "/get-usertype-count")
+  //            .header("Accept", "*/*")
+  //            .header("Content-Type", "text/plain")
+  //            .body(body.toString())
+  //            .asString();
+  //
+  //    JSONObject resp = TestUtils.responseStringToJSON(actualResponse.getBody().toString());
+  //
+  //    assert (resp.has("message"));
+  //    assertThat(resp.getString("message")).isEqualTo("Success.");
+  //    assert (resp.has("status"));
+  //    assertThat(resp.getString("status")).isEqualTo("SUCCESS");
+  //    assert (resp.has("workers"));
+  //    assertThat(resp.getInt("workers")).isEqualTo(12);
+  //    assert (resp.has("directors"));
+  //    assertThat(resp.getInt("directors")).isEqualTo(2);
+  //  }
 
   @Test
   public void findAllOrgs() throws ValidationException {
