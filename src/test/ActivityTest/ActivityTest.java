@@ -111,9 +111,9 @@ public class ActivityTest {
     client.put("lastName", "exampleLastName");
     client.put("email", "exampleEmail");
     client.put("role", "Client");
-    HttpResponse findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").body(input).asEmpty();
-    System.out.print("find" + findResponse.getBody().toString());
+    HttpResponse<String> findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").body(input).asString();
+    // System.out.print("find" + findResponse.getBody().toString());
     TestUtils.logout();
   }
 
