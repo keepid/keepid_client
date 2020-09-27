@@ -131,6 +131,33 @@ class AccountSetup extends Component<Props, State, {}> {
       <div />
     );
   }
+  returnAccountMessage = (): ReactElement<{}> => {
+    switch (this.props.role) {
+      case Role.Admin: {
+        return (
+        <div>
+        Admins can set up accounts for
+        <br />
+        {' '}
+        other workers in the organization and for clients.
+        {' '}
+      </div>);
+      }
+      case Role.Director, Role.Worker, Role.Volunteer: {
+        return (
+          <div>
+          {`${this.props.role}s`} can set up 
+          <br />
+          {' '}
+          accounts for clients.
+          {' '}
+        </div>); 
+      }
+      default: {
+          return <div></div>;
+      }
+    }
+  }
 
   handleStepComplete = async (e) => {
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
@@ -168,9 +195,10 @@ class AccountSetup extends Component<Props, State, {}> {
         <div className="d-flex justify-content-center pt-5">
           <div className="col-md-8">
             <div className="text-center pb-4 mb-2">
-              <h2><b>First, set up your account information</b></h2>
+              <h2><b>First, set up the {this.props.role} account login.</b></h2>
               <span>
-                You will be the
+                {this.returnAccountMessage()} 
+                {/* You will be the
                 {' '}
                 {this.props.role}
                 {' '}
@@ -188,7 +216,7 @@ class AccountSetup extends Component<Props, State, {}> {
                       {' '}
                     </div>
                   )
-                  : <div>you can set up accounts for clients</div>}
+                  : <div>you can set up accounts for clients</div>} */}
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>

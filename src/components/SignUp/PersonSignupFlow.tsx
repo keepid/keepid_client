@@ -12,15 +12,16 @@ import PersonalInformation from './PersonalInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import Role from '../../static/Role';
+import ReviewSubmit from './ReviewSubmit';
 
 const { Step } = Steps;
 
 interface Props {
   alert: any,
-  orgName: string,
   personRole: Role,
+  //invited: boolean
+  //orgName: string,for generalizing to invite
 }
-
 interface State {
   signupStage: number,
   username: string,
@@ -38,10 +39,10 @@ interface State {
   hasSigned: boolean,
   recaptchaPayload: string,
   buttonState: string,
-  redirectLogin: boolean
+  redirectLogin: boolean,
 }
 
-class InviteSignupFlow extends Component<Props, State, {}> {
+class PersonSignupFlow extends Component<Props, State, {}> {
   static birthDateStringConverter = (birthDate: Date):string => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
@@ -73,6 +74,10 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       redirectLogin: false,
     };
   }
+  // static defaultProps = {
+  //   orgName: "",
+  //   invited: false
+  // }
 
   handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
 
@@ -127,11 +132,10 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       email,
       recaptchaPayload,
     } = this.state;
-    const { orgName, alert, personRole } = this.props;
-    const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
-    // submit user information
-
-    fetch(`${getServerURL()}/create-invited-user`, {
+    const { alert, personRole } = this.props;
+    const birthDateString = PersonSignupFlow.birthDateStringConverter(birthDate);
+    //const slug = this.props.invited ? "create-invited-user" : "create-user";
+    fetch(`${getServerURL()}/create-user`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -148,7 +152,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         username,
         password,
         personRole,
-        orgName,
+        //orgName,
         recaptchaPayload,
       }),
     }).then((response) => response.json())
@@ -160,7 +164,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
+          alert.show(`Successful ${this.props.personRole} signup to use Keep.id. You can login with the new username and password`);
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
@@ -315,5 +319,5 @@ class InviteSignupFlow extends Component<Props, State, {}> {
   }
 }
 
-export const { birthDateStringConverter } = InviteSignupFlow;
-export default withAlert()(InviteSignupFlow);
+export const { birthDateStringConverter } = PersonSignupFlow;
+export default withAlert()(PersonSignupFlow);
