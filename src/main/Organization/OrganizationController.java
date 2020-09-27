@@ -236,10 +236,9 @@ public class OrganizationController {
         logger.info("Querying organizations from Mongo");
         MongoCollection<Organization> orgCollection =
             db.getCollection("organization", Organization.class);
-        MongoCursor<Organization> orgCursor = orgCollection.find().iterator();
 
-        while (orgCursor.hasNext()) {
-          JSONObject curr = new JSONObject(orgCursor.next());
+        for (Organization organization : orgCollection.find()) {
+          JSONObject curr = new JSONObject(organization);
           orgs.put(curr);
         }
 

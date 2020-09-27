@@ -1,15 +1,9 @@
 package User;
 
-import Activity.*;
 import Bug.BugController;
 import Config.Message;
 import Logger.LogFactory;
-import Security.EmailExceptions;
-import Security.EmailUtil;
-import Security.SecurityUtils;
-import Security.Tokens;
 import Validation.ValidationException;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -35,6 +29,12 @@ public class UserController {
     LogFactory l = new LogFactory();
     this.bugController = new BugController(db);
     logger = l.createLogger("UserController");
+  }
+
+  public Handler loginUserFunction(LoginService loginService){
+    return ctx -> {
+
+    };
   }
 
   public Handler loginUser =
@@ -223,6 +223,7 @@ public class UserController {
         String listType = req.getString("listType");
         int currentPage = req.getInt("currentPage");
         int itemsPerPage = req.getInt("itemsPerPage");
+
         int startIndex = currentPage * itemsPerPage;
         int endIndex = (currentPage + 1) * itemsPerPage;
 
