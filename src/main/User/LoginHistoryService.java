@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Objects;
 
 public class LoginHistoryService implements Service {
   MongoDatabase db;
@@ -40,11 +41,18 @@ public class LoginHistoryService implements Service {
         oneLog.put("device", login.getDevice());
         loginHistoryArray.put(oneLog);
       }
-      JSONObject actual = new JSONObject();
-      actual.put("username", username);
-      actual.put("history", loginHistoryArray);
       logger.info("Retrieved login history successfully");
       return UserMessage.SUCCESS;
     }
+  }
+
+  public JSONArray getLoginHistoryArray() {
+    Objects.requireNonNull(loginHistoryArray);
+    return loginHistoryArray;
+  }
+
+  public String getUsername() {
+    Objects.requireNonNull(username);
+    return username;
   }
 }

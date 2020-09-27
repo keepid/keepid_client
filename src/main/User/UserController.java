@@ -198,7 +198,6 @@ public class UserController {
   public Handler getUserInfo =
       ctx -> {
         logger.info("Started getUserInfo handler");
-        JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
         GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
         Message response = infoService.executeAndGetResponse();
@@ -262,7 +261,13 @@ public class UserController {
         logger.info("Started getLogInHistory handler");
         String username = ctx.sessionAttribute("username");
         LoginHistoryService loginHistoryService = new LoginHistoryService(db, logger, username);
-        ctx.result(loginHistoryService.executeAndGetResponse().toResponseString());
+        Message responseMessage = loginHistoryService.executeAndGetResponse();
+        JSONObject res = responseMessage.toJSON();
+        if (responseMessage == UserMessage.SUCCESS) {
+          res.put("username", loginHistoryService.getUsername());
+          res.put("history", loginHistoryService.getLoginHistoryArray());
+        }
+        ctx.result(res.toString());
       };
 
   public Handler modifyPermissions =
