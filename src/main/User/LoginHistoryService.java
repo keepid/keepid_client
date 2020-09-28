@@ -26,7 +26,7 @@ public class LoginHistoryService implements Service {
   @Override
   public Message executeAndGetResponse() {
     logger.info("Started getLogInHistory service");
-    JSONArray loginHistoryArray = new JSONArray();
+    this.loginHistoryArray = new JSONArray();
     User user = UserDao.findOneUserOrNull(db, username);
     if (user == null) {
       logger.error("Session Token Failure");
