@@ -416,27 +416,10 @@ thead {
 	font-size: large;
 }
 
-@media screen and (min-width: 62.5625rem) { // medium screens
-	.brand-text {
-		font-weight: bolder;
-		font-size: calc(2rem + (12 * (100vw - 50rem)/ 624));
-		line-height: 1.3;
-	}
-}
-
-@media screen and (max-width: 62.5rem) { // large screens
-	.brand-text {
-		font-weight: bolder;
-		font-size: 2rem;
-		line-height: 1.3;
-	}
-}
-
-
-@media screen and (max-width: 48.125rem) {
-	.mobile-hide {
-		display: none;
-	}
+.brand-text {
+	font-weight: bolder;
+	font-size: calc(2.2rem + (9 * (100vw - 25rem)/ 624));
+	line-height: 1.3;
 }
 
 .btn-dark-custom, .btn-dark-custom:hover{
@@ -469,7 +452,7 @@ thead {
 }
 
 .home-subtext {
-	font-size: calc(1.25rem + (4 * (100vw - 12.5rem)/ 624));
+	font-size: calc(.94rem + (4 * (100vw - 15rem)/ 624));
 }
 
 .statistic-text {

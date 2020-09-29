@@ -51,7 +51,7 @@ class OurTeam extends React.Component<{}, State> {
             <img src={JohnJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">John Baek</h5>
-              <p className="card-text">Founder / Chief Legal Officer</p>
+              <p className="card-text">Founder / Legal Analyst</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
