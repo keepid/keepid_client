@@ -19,7 +19,7 @@ class ClientProfilePage extends Component<Props, State> {
 
   renderActivities = () => {
     const { username } = this.props;
-    // fetch call to get activitiesArr
+    /*
     fetch(`${getServerURL()}/get-all-activities`, {
       method: 'POST',
       credentials: 'include',
@@ -30,7 +30,7 @@ class ClientProfilePage extends Component<Props, State> {
       .then((responseJSON) => {
         const responseObject = JSON.parse(responseJSON);
         console.log(responseObject);
-      });
+      }); */
 
     const { activitiesArr } = this.state;
 
