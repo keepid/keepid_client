@@ -5,7 +5,6 @@ import { withAlert } from 'react-alert';
 import { Steps } from 'antd';
 import { ProgressBar } from 'react-bootstrap';
 import getServerURL from '../../serverOverride';
-// import Logo from '../../static/images/logo.svg';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AccountSetup from './AccountSetup';
 import PersonalInformation from './PersonalInformation';
