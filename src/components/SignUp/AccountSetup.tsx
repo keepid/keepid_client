@@ -131,28 +131,31 @@ class AccountSetup extends Component<Props, State, {}> {
       <div />
     );
   }
+
   returnAccountMessage = () => {
     switch (this.props.role) {
       case Role.Admin: {
         return (
           <div>
-          Admins can set up accounts for
-          <br />
-          {' '}
-          other workers in the organization and for clients.
-          {' '}
-          </div>);
+            Admins can set up accounts for
+            <br />
+            {' '}
+            other workers in the organization and for clients.
+            {' '}
+          </div>
+        );
       }
       case Role.Director: case Role.Worker: case Role.Volunteer: {
         return (
           <div>
-          {`${this.props.role}s`}
-          can set up 
-          <br />
-          {' '}
-          accounts for clients.
-          {' '}
-        </div>);
+            {`${this.props.role}s`}
+            can set up
+            <br />
+            {' '}
+            accounts for clients.
+            {' '}
+          </div>
+        );
       }
       default: {
         return <div />;
@@ -196,9 +199,13 @@ class AccountSetup extends Component<Props, State, {}> {
         <div className="d-flex justify-content-center pt-5">
           <div className="col-md-8">
             <div className="text-center pb-4 mb-2">
-              <h2><b>
-                First, set up the {this.props.role} account login.
-              </b></h2>
+              <h2>
+                <b>
+                First, set up the
+                {this.props.role}
+                account login.
+                </b>
+              </h2>
               <span>
                 {this.returnAccountMessage()}
               </span>

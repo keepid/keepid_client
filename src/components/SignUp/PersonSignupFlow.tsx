@@ -137,7 +137,6 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         username,
         password,
         personRole,
-        //orgName,
         recaptchaPayload,
       }),
     }).then((response) => response.json())
