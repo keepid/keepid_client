@@ -1,10 +1,10 @@
 enum Role {
-    Director, // can delete admin and create admin
-    Admin,
-    Worker,
-    Volunteer,
-    Client,
-    LoggedOut,
+    Director = 'Director',
+    Admin = 'Admin',
+    Worker = 'Worker',
+    Volunteer = 'Volunteer',
+    Client = 'Client',
+    LoggedOut = 'Logged-Out User',
 }
 
 export default Role;
