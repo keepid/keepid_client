@@ -34,7 +34,7 @@ public enum UserMessage implements Message {
   }
 
   public Message withMessage(String message) {
-    this.errorMessage = message;
+    this.errorMessage = getErrorName() + ":" + message;
     return this;
   }
 
