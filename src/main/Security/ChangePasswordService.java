@@ -6,9 +6,11 @@ import Config.Service;
 import Database.UserDao;
 import User.User;
 import User.UserMessage;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
-import java.util.Objects;
 import org.slf4j.Logger;
+
+import java.util.Objects;
 
 public class ChangePasswordService implements Service {
   MongoDatabase db;
@@ -32,6 +34,10 @@ public class ChangePasswordService implements Service {
     Objects.requireNonNull(username);
     Objects.requireNonNull(newPassword);
     Objects.requireNonNull(oldPassword);
+    if (!ValidationUtils.isValidUsername(username)
+        || !ValidationUtils.isValidPassword(newPassword)) {
+      return UserMessage.INVALID_PARAMETER;
+    }
     return changePassword(db, username, oldPassword, newPassword);
   }
 

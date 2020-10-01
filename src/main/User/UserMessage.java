@@ -23,7 +23,7 @@ public enum UserMessage implements Message {
   EMPTY_FIELD("EMPTY_FIELD:Cannot be empty."),
   EMAIL_DOES_NOT_EXIST("EMAIL_DOES_NOT_EXIST:No email found for this user");
 
-  private final String errorMessage;
+  private String errorMessage;
 
   UserMessage(String errorMessage) {
     this.errorMessage = errorMessage;
@@ -31,6 +31,11 @@ public enum UserMessage implements Message {
 
   public String toResponseString() {
     return toJSON().toString();
+  }
+
+  public Message withMessage(String message) {
+    this.errorMessage = message;
+    return this;
   }
 
   public String getErrorName() {

@@ -6,16 +6,11 @@ import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
-import Security.EmailUtil;
-import Security.SecurityUtils;
-import User.LoginService;
 import User.UserController;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
-
-import java.util.Optional;
 
 public class AppConfig {
   public static Long ASYNC_TIME_OUT = 10L;
@@ -57,17 +52,13 @@ public class AppConfig {
     app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
-    app.post(
-        "/forgot-password", accountSecurityController.forgotPassword);
+    app.post("/forgot-password", accountSecurityController.forgotPassword);
     app.post("/change-password", accountSecurityController.changePassword);
     app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
     app.post("/get-login-history", userController.getLogInHistory);
-
-    /* -------------- AUTHORIZATION  ----------------------- */
-    app.post("/modify-permissions", userController.modifyPermissions);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     app.post("/organization-signup-validator", orgController.organizationSignupValidator);
@@ -76,8 +67,7 @@ public class AppConfig {
     app.post("/invite-user", orgController.inviteUsers);
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
-    app.post(
-        "/change-account-setting", accountSecurityController.changeAccountSetting);
+    app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- SUBMIT BUG------------------ */

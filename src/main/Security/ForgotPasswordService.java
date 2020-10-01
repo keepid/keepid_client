@@ -1,23 +1,25 @@
 package Security;
 
-import static com.mongodb.client.model.Filters.eq;
-
 import Config.Message;
 import Config.Service;
 import Database.UserDao;
 import User.User;
 import User.UserMessage;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
-import java.util.Objects;
 import org.slf4j.Logger;
+
+import java.util.Objects;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class ForgotPasswordService implements Service {
 
   MongoDatabase db;
   Logger logger;
-  String username;
+  private String username;
   public static final int EXPIRATION_TIME_2_HOURS = 7200000;
 
   public ForgotPasswordService(MongoDatabase db, Logger logger, String username) {
@@ -29,6 +31,9 @@ public class ForgotPasswordService implements Service {
   @Override
   public Message executeAndGetResponse() {
     Objects.requireNonNull(username);
+    if (!ValidationUtils.isValidUsername(username)) {
+      return UserMessage.INVALID_PARAMETER;
+    }
     User user = UserDao.findOneUserOrNull(db, username);
     if (user == null) {
       return UserMessage.USER_NOT_FOUND;

@@ -7,13 +7,10 @@ import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
-import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
 
 public class UserController {
   Logger logger;
@@ -253,7 +250,7 @@ public class UserController {
              “IP”:”exampleIP”,
              “location”: “Postal, City”,
            }
-      ]08/233/2020dorm
+      ]
    }
   */
   public Handler getLogInHistory =
@@ -268,44 +265,6 @@ public class UserController {
           res.put("history", loginHistoryService.getLoginHistoryArray());
         }
         ctx.result(res.toString());
-      };
-
-  public Handler modifyPermissions =
-      ctx -> {
-        logger.info("Starting modifyPermissions handler");
-        String username = ctx.sessionAttribute("username");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-        String orgName = ctx.sessionAttribute("orgName");
-
-        JSONObject res = new JSONObject();
-
-        if (username == null || privilegeLevel == null || orgName == null) {
-          logger.error("Session token failure");
-          ctx.json(UserMessage.SESSION_TOKEN_FAILURE.toJSON().toString());
-          return;
-        }
-
-        if (!(privilegeLevel == UserType.Director || privilegeLevel == UserType.Admin)) {
-          logger.error("Insufficient privilege");
-          ctx.json(UserMessage.INSUFFICIENT_PRIVILEGE.toJSON().toString());
-          return;
-        }
-
-        JSONObject req = new JSONObject(ctx.body());
-        boolean canView = req.getBoolean("canView");
-        boolean canEdit = req.getBoolean("canEdit");
-        boolean canRegister = req.getBoolean("canRegister");
-
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        Bson filter = eq("username", username);
-        Bson updateCanView = set("canView", canView);
-        Bson updateCanEdit = set("canEdit", canEdit);
-        Bson updateCanRegister = set("canRegister", canRegister);
-        Bson updates = combine(updateCanView, updateCanEdit, updateCanRegister);
-        userCollection.findOneAndUpdate(filter, updates);
-
-        logger.info("Successfully modified permissions for " + username);
-        ctx.json(UserMessage.SUCCESS.toJSON().toString());
       };
 
   private JSONObject mergeJSON(
