@@ -53,9 +53,6 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getAllOrganizations() {
-    const {
-      organizations,
-    } = this.state;
     fetch(`${getServerURL()}/get-all-orgs `, {
       method: 'POST',
       credentials: 'include',
@@ -72,6 +69,7 @@ class FindOrganization extends Component<Props, State> {
           organizations,
         });
       });
+      console.log("got orgs!");
     // const count = 0;
     // const organizations = [
     //   {
@@ -101,6 +99,8 @@ class FindOrganization extends Component<Props, State> {
   calculateOrganizationsWithinDistance(zipcode: number) {
     const {
       orgsWithinRadius,
+    } = this.state;
+    var {
       count,
     } = this.state;
     const searchCoordinate = this.getCoordinateFromZipcode(zipcode);
@@ -110,7 +110,7 @@ class FindOrganization extends Component<Props, State> {
       const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
       if (distBetween <= 10) {
         orgsWithinRadius.push(allOrgs[i]);
-        count + 1;;
+        count++;
       }
     }
     return orgsWithinRadius;
@@ -180,6 +180,39 @@ class FindOrganization extends Component<Props, State> {
   degToRad(degree: number ): number {
     return degree * (Math.PI/180);
   }
+
+  renderOrganizations() {
+    const orgCards : React.ReactFragment[] = this.state.orgsWithinRadius.map((organization, i) => (
+      <div className="row mx-md-n5">
+        <div className="shadow p-3 mb-5 ml-5 bg-white rounded">
+          <div className="col px-md-2">
+            <h6 className="font-weight-bold">{organization.orgName}</h6>
+          </div>
+          <div className="col px-md-2"><b>{organization.address}</b></div>
+            <div className="row px-md-4">
+            <div className="text-green mr-1">
+              Open
+            </div>
+              • Closes 4:00PM
+            </div>
+            <div className="row px-md-4 pb-4">
+              Website:
+                <a href={organization.website} className="text-primary-theme ml-1">
+                  {organization.website}
+                </a>
+            </div>
+            <div className="row px-md-4">
+              Call:
+                <div className="text-primary-theme ml-1 mr-5">{organization.phone}</div>
+                  <div className="ml-5 mr-1">Email:</div>
+                <div className="text-primary-theme">{organization.email}</div>
+            </div>
+          </div>
+        {/* { showClientAuthModal ? this.render() : null } */}
+      </div>));
+      return orgCards;
+  }
+
   render() {
     const {
       displayMap,
@@ -230,7 +263,7 @@ class FindOrganization extends Component<Props, State> {
                   <h5 className="pb-3">results near {zipcodeSearch}</h5>
                 </div>
 
-                <div className="row mx-md-n5">
+                {/* <div className="row mx-md-n5">
                   <div className="shadow p-3 mb-5 ml-5 bg-white rounded">
                     <div className="col px-md-2">
                       <h6 className="font-weight-bold">Broad Street Ministry</h6>
@@ -309,8 +342,8 @@ class FindOrganization extends Component<Props, State> {
                       <div className="text-primary-theme mr-5">info@bethesdaproject.org</div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </div> */}
+              </div> 
 
               <div className="col mt-5">
                 {displayMap
@@ -329,7 +362,7 @@ class FindOrganization extends Component<Props, State> {
               </div>
             </div>
           )
-          : <div />}
+        : <div />}
 
         {displayError
           ? (
@@ -339,7 +372,8 @@ class FindOrganization extends Component<Props, State> {
               <img src={InvalidZipcodeIcon} className="img-fluid" alt="Guy looking into void" />
             </div>
           )
-          : <div />}
+        : <div />}
+          {/* {count === 0 ? <h3>No Organizations Found</h3> : this.renderOrganizations()} */}
       </div>
     );
   }
