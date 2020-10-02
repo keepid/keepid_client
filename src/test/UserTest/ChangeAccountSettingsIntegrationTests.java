@@ -1,5 +1,6 @@
 package UserTest;
 
+import Activity.ChangeUserAttributesActivity;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
@@ -101,7 +102,10 @@ public class ChangeAccountSettingsIntegrationTests {
     TestUtils.login("account-settings-test", "account-settings-test");
     HttpResponse findResponse =
         Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
-    //    System.out.print("find" + findResponse.getBody().toString());
+    assert (findResponse
+        .getBody()
+        .toString()
+        .contains(ChangeUserAttributesActivity.class.getSimpleName()));
     TestUtils.logout();
     assert (isCorrectAttribute(username, "firstName", newFirstName));
   }
@@ -154,7 +158,11 @@ public class ChangeAccountSettingsIntegrationTests {
 
     AccountSecurityController asc = new AccountSecurityController(db);
     asc.changeAccountSetting.handle(ctx);
-
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse.getBody().toString().contains("password"));
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "birthDate", newBirthDate));
   }
 
@@ -206,7 +214,11 @@ public class ChangeAccountSettingsIntegrationTests {
 
     AccountSecurityController asc = new AccountSecurityController(db);
     asc.changeAccountSetting.handle(ctx);
-
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse.getBody().toString().contains(newEmail));
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "email", newEmail));
   }
 
