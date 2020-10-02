@@ -89,7 +89,7 @@ class LoginPage extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
 
         if (status === 'AUTH_SUCCESS') {
@@ -137,7 +137,7 @@ class LoginPage extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const responseObject = JSON.parse(responseJSON);
+          const responseObject = responseJSON;
           const {
             status,
             userRole,

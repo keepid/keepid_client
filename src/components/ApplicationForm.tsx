@@ -55,7 +55,7 @@ class ApplicationForm extends Component<Props, State> {
         const {
           fieldNames,
           fieldQuestions,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
         const fieldNamesArray : string[] = fieldNames;
         const fieldQuestionsArray : string[] = fieldQuestions;
         console.log(responseJSON);

@@ -81,7 +81,7 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const {
           documents,
         } = responseObject;

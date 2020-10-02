@@ -72,7 +72,7 @@ class DeveloperLanding extends React.Component<Props, State> {
           body: formData,
         }).then((response) => response.json())
           .then((responseJSON) => {
-            const responseObject = JSON.parse(responseJSON);
+            const responseObject = responseJSON;
             const {
               status,
             } = responseObject;

@@ -182,7 +182,7 @@ class RenderInput extends Component<InputProps, InputState> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
         const { message } = responseObject;
         if (status === 'SUCCESS') { // successfully updated key and value
@@ -440,7 +440,7 @@ class MyAccount extends Component<Props, State, {}> {
       },
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const date = responseObject.birthDate.split('-');
         const newState = {
           username: responseObject.username,
@@ -527,7 +527,7 @@ class MyAccount extends Component<Props, State, {}> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { status } = JSON.parse(responseJSON);
+        const { status } = responseJSON;
         // old passwrod entered correctly
         if (status === 'AUTH_SUCCESS') {
           // new password is the same as the old password
@@ -565,7 +565,7 @@ class MyAccount extends Component<Props, State, {}> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { status } = JSON.parse(responseJSON);
+        const { status } = responseJSON;
         if (status === 'SUCCESS') { // succesfully updated key and value
           // alert.show(`Successfully set 2FA Value`);
           this.setState({ twoFactorOn });

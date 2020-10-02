@@ -41,7 +41,6 @@ interface State {
 }
 
 class PersonSignupFlow extends Component<Props, State, {}> {
-
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -144,7 +143,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
