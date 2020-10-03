@@ -1,5 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
+
+import Image from 'react-bootstrap/Image';
 import getServerURL from '../serverOverride';
+import Melinda from '../static/images/melinda.png';
+import CheckSVG from '../static/images/check.svg';
 
 interface Props{
   username: string,
@@ -7,6 +11,8 @@ interface Props{
 
 interface State{
   activitiesArr: any,
+  // showEditButton: boolean,
+  file:any,
 }
 
 class ClientProfilePage extends Component<Props, State> {
@@ -14,7 +20,40 @@ class ClientProfilePage extends Component<Props, State> {
     super(props);
     this.state = {
       activitiesArr: [{ person: 'Melinda Cardenas', action: 'Sent 3 Applications', dateOfAction: 'August 24th' }, { person: 'Yoav Zur', action: 'Uploaded 3 Docs', dateOfAction: 'August 25th' }],
+      // showEditButton: false,
+      file: '',
     };
+    this.editInformation = this.editInformation.bind(this);
+    this.photoUploadHandler = this.photoUploadHandler.bind(this);
+    this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+  }
+
+  editInformation = (event) => {
+
+  }
+
+  fileSelectedHandler = (event) => {
+    console.log(event.target.files[0]);
+    this.setState({
+      file: event.target.files[0],
+    });
+  }
+
+  photoUploadHandler = () => {
+    // fetch call to backend so photo can be saved and associated w person's profile
+    const { file } = this.state;
+
+    fetch(`${getServerURL()}/upload-profile-photo`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        file,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = JSON.parse(responseJSON);
+        console.log(responseObject);
+      });
   }
 
   renderActivities = () => {
@@ -53,7 +92,8 @@ class ClientProfilePage extends Component<Props, State> {
       return (
         <div
           className="row w-125 p-2 text-dark"
-          key={activity.toString()}
+          // key={activity.toString()}
+          key={Math.random()}
           style={{
             borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid', borderTop: 0, borderRight: 0, borderLeft: 0,
           }}
@@ -75,9 +115,25 @@ class ClientProfilePage extends Component<Props, State> {
   render() {
     return (
       <div className="container">
+        <div className="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <h5 className="modal-title" id="exampleModalLongTitle">Change Profile Photo</h5>
+              <input type="file" onChange={this.fileSelectedHandler} />
+              <button type="button" onClick={this.photoUploadHandler}>Upload Photo</button>
+            </div>
+          </div>
+        </div>
         <h1 className="m-3 font-weight-bold">Your Profile</h1>
         <div className="d-flex flex-row">
           <div className="rounded w-50 h-75 px-5 container mr-4 text-dark" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
+            <div className="container">
+              <Image src={Melinda} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
+              {/*
+              <Image src={CheckSVG} className="w-100 pt-2 mx-auto border position-relative" alt="search"
+                style={{ top: '0', left:'0', zIndex:1, height: '10rem' }} roundedCircle/>
+              */}
+            </div>
             <h3 className="font-weight-bold mt-3">Melinda Cardenas</h3>
             <div className="row">
               <div className="col">Username</div>
@@ -113,6 +169,9 @@ class ClientProfilePage extends Component<Props, State> {
               style={{
                 color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
               }}
+              onClick={this.editInformation}
+              data-toggle="modal"
+              data-target="#exampleModal"
             >
               Edit Your Information
             </button>
