@@ -1,7 +1,4 @@
-package User;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.set;
+package User.Services;
 
 import Activity.ActivityController;
 import Activity.LoginActivity;
@@ -13,6 +10,10 @@ import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
 import Security.Tokens;
+import User.IpObject;
+import User.User;
+import User.UserMessage;
+import User.UserType;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -20,17 +21,17 @@ import com.mongodb.client.model.ReplaceOptions;
 import io.ipinfo.api.IPInfo;
 import io.ipinfo.api.errors.RateLimitedException;
 import io.ipinfo.api.model.IPResponse;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
 import kong.unirest.Unirest;
 import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
 
 public class LoginService implements Service {
   public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));

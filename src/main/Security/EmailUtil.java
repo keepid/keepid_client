@@ -27,6 +27,8 @@ public class EmailUtil {
           + File.separator
           + "Security"
           + File.separator
+          + "Resources"
+          + File.separator
           + "verificationCodeEmail.html";
 
   private static String passwordResetLinkEmailPath =
@@ -37,6 +39,8 @@ public class EmailUtil {
           + "main"
           + File.separator
           + "Security"
+          + File.separator
+          + "Resources"
           + File.separator
           + "passwordResetLinkEmail.html";
 
@@ -49,9 +53,12 @@ public class EmailUtil {
           + File.separator
           + "Security"
           + File.separator
+          + "Resources"
+          + File.separator
           + "organizationInviteEmail.html";
 
-  public static void sendEmail(String senderName, String recipientEmail, String subject, String message)
+  public static void sendEmail(
+      String senderName, String recipientEmail, String subject, String message)
       throws EmailExceptions {
 
     // Set SMTP server properties.
@@ -89,7 +96,7 @@ public class EmailUtil {
 
       // Send the Email.
       Transport.send(msg);
-    } catch (MessagingException | UnsupportedEncodingException e ) {
+    } catch (MessagingException | UnsupportedEncodingException e) {
       e.printStackTrace();
     }
   }

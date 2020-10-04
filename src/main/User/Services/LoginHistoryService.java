@@ -1,8 +1,11 @@
-package User;
+package User.Services;
 
 import Config.Message;
 import Config.Service;
 import Database.UserDao;
+import User.IpObject;
+import User.User;
+import User.UserMessage;
 import com.mongodb.client.MongoDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;

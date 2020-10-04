@@ -1,10 +1,12 @@
-package Security;
+package Security.Services;
 
 import Activity.PasswordRecoveryActivity;
 import Config.Message;
 import Config.Service;
 import Database.TokenDao;
 import Database.UserDao;
+import Security.SecurityUtils;
+import Security.Tokens;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;

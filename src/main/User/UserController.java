@@ -3,6 +3,7 @@ package User;
 import Bug.BugController;
 import Config.Message;
 import Logger.LogFactory;
+import User.Services.*;
 import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -267,7 +268,7 @@ public class UserController {
         ctx.result(res.toString());
       };
 
-  private JSONObject mergeJSON(
+  public static JSONObject mergeJSON(
       JSONObject object1, JSONObject object2) { // helper function to merge 2 json objects
     JSONObject merged = new JSONObject(object1, JSONObject.getNames(object1));
     for (String key : JSONObject.getNames(object2)) {

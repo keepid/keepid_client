@@ -1,9 +1,10 @@
-package Security;
+package Security.Services;
 
 import Config.Message;
 import Config.Service;
 import Database.TokenDao;
 import Database.UserDao;
+import Security.Tokens;
 import User.User;
 import User.UserMessage;
 import User.UserType;
