@@ -1,7 +1,6 @@
 package Activity;
 
 import Logger.LogFactory;
-import User.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -12,8 +11,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.List;
-
-import static com.mongodb.client.model.Filters.eq;
 
 public class ActivityController {
   Logger logger;
@@ -37,13 +34,11 @@ public class ActivityController {
       ctx -> {
         JSONObject res = new JSONObject();
         String username = ctx.sessionAttribute("username");
-        MongoCollection<User> user = db.getCollection("user", User.class);
-        User curr = user.find(eq("username", username)).first();
-        MongoCollection a = db.getCollection("activity");
-        MongoCursor cu = a.find().iterator();
+        MongoCollection<Document> a = db.getCollection("activity", Document.class);
+        MongoCursor<Document> cu = a.find().iterator();
         JSONArray allAct = new JSONArray();
         while (cu.hasNext()) {
-          Document total = (Document) cu.next();
+          Document total = cu.next();
           Document owner = (Document) total.get("owner");
           if (username.equals(owner.get("username"))) {
             List<String> temp = total.getList("type", String.class);
