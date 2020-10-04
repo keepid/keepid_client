@@ -5,7 +5,6 @@ import FindOrgIcon from '../../static/images/FindOrgIcon.svg';
 import InvalidZipcodeIcon from '../../static/images/InvalidZipcodeIcon.svg';
 import Coordinate from './Coordinate';
 import getServerURL from '../../serverOverride';
-import OrganizationSignup from '../SignUp/OrganizationSignup';
 
 interface Props {
   alert: any,
@@ -64,7 +63,7 @@ class FindOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const {
           organizations,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
         this.setState({
           organizations,
         });
