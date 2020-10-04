@@ -61,7 +61,7 @@ public class AppConfig {
     app.post("/get-login-history", userController.getLogInHistory);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
-    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
+    //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
 
     app.post("/invite-user", orgController.inviteUsers);

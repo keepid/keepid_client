@@ -10,6 +10,7 @@ public enum EmailMessages implements Message {
   INVITER_DOM_NOT_FOUND("INVITER_DOM_NOT_FOUND: Can't locate sender name in html"),
   CODE_DOM_NOT_FOUND("CODE_DOM_NOT_FOUND: Can't locate verification code in html"),
   NOT_VALID_EMAIL("NOT_VALID_EMAIL: The email address isn't valid"),
+  UNABLE_TO_SEND("Failed to send emails"),
   SUCCESS("SUCCESS:Success.");
 
   private final String errorMessage;

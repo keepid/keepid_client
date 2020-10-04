@@ -13,6 +13,7 @@ public enum OrgEnrollmentStatus implements Message {
   INVALID_CHARACTERS(""),
   PASS_UNDER_8(""),
   INVALID_PARAMETER("INVALID_PARAMETER: Please Check Input"),
+  FAIL_TO_CREATE("Could not create user and/or org"),
   SUCCESS("SUCCESS: Success");
 
   public String errorMessage;
