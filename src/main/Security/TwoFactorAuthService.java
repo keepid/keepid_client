@@ -6,6 +6,7 @@ import Database.TokenDao;
 import Database.UserDao;
 import User.User;
 import User.UserMessage;
+import User.UserType;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ public class TwoFactorAuthService implements Service {
   Logger logger;
   private String username;
   private String token;
+  private UserType userType;
+  private String orgName;
 
   public TwoFactorAuthService(MongoDatabase db, Logger logger, String username, String token) {
     this.db = db;
@@ -60,11 +63,23 @@ public class TwoFactorAuthService implements Service {
     // Remove only the password reset token if there are other fields.
     TokenDao.removeTokenIfLast(db, username, tokens, Tokens.TokenType.TWO_FACTOR);
     // Set Session token.
-    ctx.sessionAttribute("privilegeLevel", user.getUserType());
-    ctx.sessionAttribute("orgName", user.getOrganization());
-    ctx.sessionAttribute("username", username);
+    //    ctx.sessionAttribute("privilegeLevel", user.getUserType());
+    //    ctx.sessionAttribute("orgName", user.getOrganization());
+    //    ctx.sessionAttribute("username", username);
+    this.userType = user.getUserType();
+    this.orgName = user.getOrganization();
     return UserMessage.AUTH_SUCCESS;
   };
 
-  public UserType getUserType() {}
+  public UserType getUserType() {
+    return this.userType;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getOrgName() {
+    return orgName;
+  }
 }
