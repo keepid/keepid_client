@@ -1,9 +1,10 @@
-package Security;
+package Security.Services;
 
 import Activity.ChangeUserAttributesActivity;
 import Config.Message;
 import Config.Service;
 import Database.UserDao;
+import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;

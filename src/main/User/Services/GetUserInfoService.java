@@ -1,7 +1,9 @@
-package User;
+package User.Services;
 
 import Config.Message;
 import Config.Service;
+import User.User;
+import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.json.JSONObject;
@@ -16,11 +18,13 @@ public class GetUserInfoService implements Service {
   private Logger logger;
   private String username;
   private User user;
+
   public GetUserInfoService(MongoDatabase db, Logger logger, String username) {
     this.db = db;
     this.logger = logger;
     this.username = username;
   }
+
   @Override
   public Message executeAndGetResponse() {
     Objects.requireNonNull(db);
@@ -37,7 +41,7 @@ public class GetUserInfoService implements Service {
     }
   }
 
-  public JSONObject getUserFields(){
+  public JSONObject getUserFields() {
     Objects.requireNonNull(user);
     JSONObject userObject = new JSONObject();
     userObject.put("userRole", this.user.getUserType());
@@ -56,7 +60,7 @@ public class GetUserInfoService implements Service {
     return userObject;
   }
 
-  public User findUserOrReturnNull(MongoDatabase db, String username){
+  public User findUserOrReturnNull(MongoDatabase db, String username) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     return userCollection.find(eq("username", username)).first();
   }

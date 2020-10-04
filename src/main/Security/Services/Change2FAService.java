@@ -1,4 +1,4 @@
-package Security;
+package Security.Services;
 
 import Activity.ChangeUserAttributesActivity;
 import Config.Message;
