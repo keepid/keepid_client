@@ -39,11 +39,12 @@ public class ActivityController {
         String username = ctx.sessionAttribute("username");
         MongoCollection<User> user = db.getCollection("user", User.class);
         User curr = user.find(eq("username", username)).first();
-        MongoCollection a = db.getCollection("activity");
-        MongoCursor cu = a.find().iterator();
+        MongoCollection<Document> a = db.getCollection("activity");
+        MongoCursor<Document> cu = a.find().iterator();
         JSONArray allAct = new JSONArray();
         while (cu.hasNext()) {
-          Document total = (Document) cu.next();
+          Document total = cu.next();
+
           Document owner = (Document) total.get("owner");
           if (username.equals(owner.get("username"))) {
             List<String> temp = total.getList("type", String.class);
