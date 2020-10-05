@@ -63,12 +63,13 @@ class FindOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const {
           organizations,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
         this.setState({
-          organizations,
+          organizations: organizations,
         });
+        console.log('got orgs!');
+        console.log(organizations);
       });
-    console.log('got orgs!');
     // const count = 0;
     // const organizations = [
     //   {
@@ -91,29 +92,12 @@ class FindOrganization extends Component<Props, State> {
   }
 
   onSubmitZipcode(event: any) {
-    event.preventDefault();
-    this.calculateOrganizationsWithinDistance(event.target.value);
-  }
-
-  calculateOrganizationsWithinDistance(zipcode: number) {
     const {
-      orgsWithinRadius,
+      zipcodeSearch,
     } = this.state;
-    let {
-      count,
-    } = this.state;
-    const searchCoordinate = this.getCoordinateFromZipcode(zipcode);
-    const allOrgs = this.getAllOrganizations;
-    for (let i = 0; i < allOrgs.length; i++) {
-      const orgCoordinate = this.getCoordinateFromZipcode(allOrgs[i].zipcode);
-      const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
-      if (distBetween <= 10) {
-        orgsWithinRadius.push(allOrgs[i]);
-        count++;
-      }
-    }
-    return orgsWithinRadius;
-    // this.setState(orgsWithinRadius);
+    event.preventDefault();
+    this.calculateOrganizationsWithinDistance(parseInt(zipcodeSearch));
+    console.log(zipcodeSearch);
   }
 
   getCoordinateFromZipcode(zipcode: number): Coordinate {
@@ -129,23 +113,34 @@ class FindOrganization extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-
+        console.log(responseJSON);
         // if valid zipcode
-        if (status === 'SUCCESS') {
-          const zipcodeLat = responseJSON.results[0].geometry.location.lat;
-          const zipcodeLng = responseJSON.results[0].geometry.location.lng;
-          const coordinateProps = {
+        if (status === 'OK') {
+          const zipcodeLat = parseInt(responseJSON.results[0].geometry.location.lat);
+          console.log(zipcodeLat);
+          const zipcodeLng = parseInt(responseJSON.results[0].geometry.location.lng);
+          let coordinateProps = {
             lat: zipcodeLat,
             lng: zipcodeLng,
           };
-          const coordinate = new Coordinate(coordinateProps);
+          let coordinate = new Coordinate(coordinateProps);
+          console.log(coordinate);
+          this.setState({
+            zipcodeLat: zipcodeLat,
+            zipcodeLng: zipcodeLng,
+            displayMap: true,
+            displayError: false,
+            displayIcon: false,
+          });
           return coordinate;
+        } else {
+          this.setState({
+            displayMap: false,
+            displayError: true,
+            displayIcon: false,
+          });
+          console.log('wrong zip!');
         }
-        this.setState({
-          displayMap: false,
-          displayError: true,
-          displayIcon: false,
-        });
       });
     const coordinateProps = {
       lat: null,
@@ -155,20 +150,48 @@ class FindOrganization extends Component<Props, State> {
     return coordinate;
   }
 
+  calculateOrganizationsWithinDistance(zipcode: number) {
+    const {
+      orgsWithinRadius,
+      organizations,
+    } = this.state;
+    let {
+      count,
+    } = this.state;
+    console.log(zipcode);
+    console.log(this.getCoordinateFromZipcode(zipcode));
+    let searchCoordinate = this.getCoordinateFromZipcode(zipcode);
+    console.log(searchCoordinate);
+    const allOrgs = organizations;
+    // for (let i = 0; i < allOrgs.length; i++) {
+    //   const orgCoordinate = this.getCoordinateFromZipcode(allOrgs[i].zipcode);
+    //   const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
+    //   console.log(distBetween);
+    //   if (distBetween <= 10) {
+    //     orgsWithinRadius.push(allOrgs[i]);
+    //     count++;
+    //   }
+    // }
+    this.setState(orgsWithinRadius);
+    console.log(orgsWithinRadius);
+    return orgsWithinRadius;
+  }
+
   // haversine formula
   getDistanceInKM(coordinate1: Coordinate, coordinate2: Coordinate): number {
-    const lat1 = coordinate1.lat;
-    const lat2 = coordinate2.lat;
-    const lng1 = coordinate1.lng;
-    const lng2 = coordinate2.lng;
+    let lat1 = coordinate1.lat;
+    console.log('lat1: ' + lat1);
+    let lat2 = coordinate2.lat;
+    let lng1 = coordinate1.lng;
+    let lng2 = coordinate2.lng;
     const avgEarthRadiusInKM = 6371;
-    const radLat = this.degToRad(lat2 - lat1);
-    const radLng = this.degToRad(lng2 - lng1);
-    const a = Math.sin(radLat / 2) * Math.sin(radLat / 2)
+    let radLat = this.degToRad(lat2 - lat1);
+    let radLng = this.degToRad(lng2 - lng1);
+    let a = Math.sin(radLat / 2) * Math.sin(radLat / 2)
       + Math.cos(this.degToRad(lat1)) * Math.cos(this.degToRad(lat2))
       * Math.sin(radLng / 2) * Math.sin(radLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distInKM = avgEarthRadiusInKM * c;
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    let distInKM = avgEarthRadiusInKM * c;
     return distInKM;
   }
 
@@ -256,10 +279,9 @@ class FindOrganization extends Component<Props, State> {
             <div className="row">
               <div className="col-sm-6">
                 <div className="row">
-                  <h5 className="pb-3 mr-1 ml-3">{count}</h5>
+                  <h5 className="pb-3 mr-1 ml-3">{count} </h5>
                   <h5 className="pb-3">
-                    results near
-                    {zipcodeSearch}
+                    results near {zipcodeSearch}
                   </h5>
                 </div>
 
