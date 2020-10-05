@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { ResponsivePieCanvas } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
+import { ResponsiveBar } from '@nivo/bar';
 import AddIcon from '../static/images/add-person-icon.svg';
 import DocumentsIcon from '../static/images/documents-icon.svg';
 import SignDocumentIcon from '../static/images/sign-document-icon.svg';
@@ -65,6 +66,40 @@ const lineData = [
     ],
   },
 ];
+
+const barData = {
+  color: 'HSL(237, 100%, 78%)',
+  data: [
+    {
+      days: '1',
+      applications: 12,
+    },
+    {
+      days: '2',
+      applications: 23,
+    },
+    {
+      days: '3',
+      applications: 3,
+    },
+    {
+      days: '4',
+      applications: 31,
+    },
+    {
+      days: '5',
+      applications: 12,
+    },
+    {
+      days: '6',
+      applications: 21,
+    },
+    {
+      days: '7',
+      applications: 11,
+    },
+  ],
+};
 
 interface Props {}
 interface State {}
@@ -202,6 +237,68 @@ class AdminDashboard extends Component<Props, State, {}> {
     />
   )
 
+  MyResponsiveBar = () => (
+    <ResponsiveBar
+      data={barData.data}
+      keys={['applications']}
+      indexBy="days"
+      margin={{
+        top: 50, right: 130, bottom: 50, left: 60,
+      }}
+      padding={0.3}
+      colors={barData.color}
+      borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+      axisTop={null}
+      axisRight={null}
+      axisBottom={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: 0,
+        legend: 'Days Ago',
+        legendPosition: 'middle',
+        legendOffset: 32,
+      }}
+      axisLeft={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: 0,
+        legend: 'Applications',
+        legendPosition: 'middle',
+        legendOffset: -40,
+      }}
+      labelSkipWidth={12}
+      labelSkipHeight={12}
+      labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+      legends={[
+        {
+          dataFrom: 'keys',
+          anchor: 'bottom-right',
+          direction: 'column',
+          justify: false,
+          translateX: 120,
+          translateY: 0,
+          itemsSpacing: 2,
+          itemWidth: 100,
+          itemHeight: 20,
+          itemDirection: 'left-to-right',
+          itemOpacity: 0.85,
+          symbolSize: 20,
+          effects: [
+            {
+              on: 'hover',
+              style: {
+                itemOpacity: 1,
+              },
+            },
+          ],
+        },
+      ]}
+      animate
+      motionStiffness={90}
+      motionDamping={15}
+    />
+  )
+
   render() {
     return (
       <div>
@@ -241,7 +338,7 @@ class AdminDashboard extends Component<Props, State, {}> {
                 <div className="row">
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
-                      <h1 className="card-title brand-text">20</h1>
+                      <h1 className="card-title">20</h1>
                       <h6 className="card-subtitle mb-2 text-muted">Documents to sign</h6>
                     </div>
                   </div>
@@ -259,7 +356,7 @@ class AdminDashboard extends Component<Props, State, {}> {
                 <div className="row">
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
-                      <h1 className="card-title brand-text">320</h1>
+                      <h1 className="card-title">320</h1>
                       <h6 className="card-subtitle mb-2 text-muted">Workers in your Organization</h6>
                     </div>
                   </div>
@@ -277,7 +374,7 @@ class AdminDashboard extends Component<Props, State, {}> {
                 <div className="row">
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
-                      <h1 className="card-title brand-text">250</h1>
+                      <h1 className="card-title">250</h1>
                       <h6 className="card-subtitle mb-2 text-muted">Clients in your Organization</h6>
                     </div>
                   </div>
@@ -319,7 +416,7 @@ class AdminDashboard extends Component<Props, State, {}> {
                   </div>
                 </div>
                 <div className="pie-chart-dimensions w-100 px-3 mt-n4">
-                  {this.MyResponsiveLine()}
+                  {this.MyResponsiveBar()}
                 </div>
               </div>
 

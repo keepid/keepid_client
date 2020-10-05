@@ -56,8 +56,8 @@ class FindOrganization extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        userTypes : [],
-        organizations : []
+        userTypes: [],
+        organizations: [],
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
@@ -68,7 +68,7 @@ class FindOrganization extends Component<Props, State> {
           organizations,
         });
       });
-      console.log("got orgs!");
+    console.log('got orgs!');
     // const count = 0;
     // const organizations = [
     //   {
@@ -99,12 +99,12 @@ class FindOrganization extends Component<Props, State> {
     const {
       orgsWithinRadius,
     } = this.state;
-    var {
+    let {
       count,
     } = this.state;
     const searchCoordinate = this.getCoordinateFromZipcode(zipcode);
     const allOrgs = this.getAllOrganizations;
-    for (var i = 0; i < allOrgs.length; i++) {
+    for (let i = 0; i < allOrgs.length; i++) {
       const orgCoordinate = this.getCoordinateFromZipcode(allOrgs[i].zipcode);
       const distBetween = this.getDistanceInKM(orgCoordinate, searchCoordinate);
       if (distBetween <= 10) {
@@ -117,7 +117,7 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getCoordinateFromZipcode(zipcode: number): Coordinate {
-    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); 
+    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?');
     const search = `postal_code:${zipcode}`;
     const urlParams = {
       components: search,
@@ -137,47 +137,44 @@ class FindOrganization extends Component<Props, State> {
           const coordinateProps = {
             lat: zipcodeLat,
             lng: zipcodeLng,
-          }
+          };
           const coordinate = new Coordinate(coordinateProps);
           return coordinate;
-        } else {
-          this.setState({
-            displayMap: false,
-            displayError: true,
-            displayIcon: false,
-          });
         }
+        this.setState({
+          displayMap: false,
+          displayError: true,
+          displayIcon: false,
+        });
       });
     const coordinateProps = {
       lat: null,
       lng: null,
-    }
+    };
     const coordinate = new Coordinate(coordinateProps);
     return coordinate;
   }
 
   // haversine formula
   getDistanceInKM(coordinate1: Coordinate, coordinate2: Coordinate): number {
-    let lat1 = coordinate1.lat;
-    let lat2 = coordinate2.lat;
-    let lng1 = coordinate1.lng;
-    let lng2 = coordinate2.lng;
+    const lat1 = coordinate1.lat;
+    const lat2 = coordinate2.lat;
+    const lng1 = coordinate1.lng;
+    const lng2 = coordinate2.lng;
     const avgEarthRadiusInKM = 6371;
-    var radLat = this.degToRad(lat2-lat1);
-    var radLng = this.degToRad(lng2-lng1);
-    var a = 
-      Math.sin(radLat/2) * Math.sin(radLat/2) + 
-      Math.cos(this.degToRad(lat1)) * Math.cos(this.degToRad(lat2)) *
-      Math.sin(radLng/2) * Math.sin(radLng/2)
-      ;
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    var distInKM = avgEarthRadiusInKM * c;
+    const radLat = this.degToRad(lat2 - lat1);
+    const radLng = this.degToRad(lng2 - lng1);
+    const a = Math.sin(radLat / 2) * Math.sin(radLat / 2)
+      + Math.cos(this.degToRad(lat1)) * Math.cos(this.degToRad(lat2))
+      * Math.sin(radLng / 2) * Math.sin(radLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distInKM = avgEarthRadiusInKM * c;
     return distInKM;
   }
 
   // helper function to convert degree to radian
-  degToRad(degree: number ): number {
-    return degree * (Math.PI/180);
+  degToRad(degree: number): number {
+    return degree * (Math.PI / 180);
   }
 
   renderOrganizations() {
@@ -188,28 +185,29 @@ class FindOrganization extends Component<Props, State> {
             <h6 className="font-weight-bold">{organization.orgName}</h6>
           </div>
           <div className="col px-md-2"><b>{organization.address}</b></div>
-            <div className="row px-md-4">
+          <div className="row px-md-4">
             <div className="text-green mr-1">
               Open
             </div>
-              • Closes 4:00PM
-            </div>
-            <div className="row px-md-4 pb-4">
-              Website:
-                <a href={organization.website} className="text-primary-theme ml-1">
-                  {organization.website}
-                </a>
-            </div>
-            <div className="row px-md-4">
-              Call:
-                <div className="text-primary-theme ml-1 mr-5">{organization.phone}</div>
-                  <div className="ml-5 mr-1">Email:</div>
-                <div className="text-primary-theme">{organization.email}</div>
-            </div>
+            • Closes 4:00PM
           </div>
+          <div className="row px-md-4 pb-4">
+            Website:
+            <a href={organization.website} className="text-primary-theme ml-1">
+              {organization.website}
+            </a>
+          </div>
+          <div className="row px-md-4">
+            Call:
+            <div className="text-primary-theme ml-1 mr-5">{organization.phone}</div>
+            <div className="ml-5 mr-1">Email:</div>
+            <div className="text-primary-theme">{organization.email}</div>
+          </div>
+        </div>
         {/* { showClientAuthModal ? this.render() : null } */}
-      </div>));
-      return orgCards;
+      </div>
+    ));
+    return orgCards;
   }
 
   render() {
@@ -259,7 +257,10 @@ class FindOrganization extends Component<Props, State> {
               <div className="col-sm-6">
                 <div className="row">
                   <h5 className="pb-3 mr-1 ml-3">{count}</h5>
-                  <h5 className="pb-3">results near {zipcodeSearch}</h5>
+                  <h5 className="pb-3">
+                    results near
+                    {zipcodeSearch}
+                  </h5>
                 </div>
 
                 {/* <div className="row mx-md-n5">
@@ -342,7 +343,7 @@ class FindOrganization extends Component<Props, State> {
                     </div>
                   </div>
                 </div> */}
-              </div> 
+              </div>
 
               <div className="col mt-5">
                 {displayMap
@@ -361,7 +362,7 @@ class FindOrganization extends Component<Props, State> {
               </div>
             </div>
           )
-        : <div />}
+          : <div />}
 
         {displayError
           ? (
@@ -371,8 +372,8 @@ class FindOrganization extends Component<Props, State> {
               <img src={InvalidZipcodeIcon} className="img-fluid" alt="Guy looking into void" />
             </div>
           )
-        : <div />}
-          {/* {count === 0 ? <h3>No Organizations Found</h3> : this.renderOrganizations()} */}
+          : <div />}
+        {/* {count === 0 ? <h3>No Organizations Found</h3> : this.renderOrganizations()} */}
       </div>
     );
   }

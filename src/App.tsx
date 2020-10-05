@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
+import ReactGA from 'react-ga';
 import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Header';
 import UploadDocs from './components/UploadDocs';
@@ -17,6 +18,7 @@ import Applications from './components/Applications';
 import Error from './components/Error';
 import Email from './components/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
+import MyOrganization from './components/AccountSecurity/MyOrganization';
 import MyDocuments from './components/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
 import Role from './static/Role';
@@ -40,6 +42,14 @@ import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AdminDashboard';
+import Hubspot from './components/AboutUs/Hubspot';
+import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
+import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
+
+window.onload = () => {
+  ReactGA.initialize('UA-176859431-1');
+  ReactGA.pageview(window.location.pathname + window.location.search);
+};
 
 interface State {
   role: Role,
@@ -135,25 +145,22 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
+    // clear the logout timeout
+    if (this.logoutTimeout) {
+      clearTimeout(this.logoutTimeout);
+    }
     this.setState({
       username: '',
       name: '',
       organization: '',
       showModal: false,
+      role: Role.LoggedOut,
     });
-
-    // clear the logout timeout
-    if (this.logoutTimeout) {
-      clearTimeout(this.logoutTimeout);
-    }
 
     fetch(`${getServerURL()}/logout`, {
       method: 'GET',
       credentials: 'include',
-    }).then((response) => {
-      this.setState({ role: Role.LoggedOut });
     });
-    return <Redirect to="login" />;
   }
 
   render() {
@@ -174,7 +181,6 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-
             {role !== Role.LoggedOut ? (
               <div>
                 <IdleTimer
@@ -192,8 +198,7 @@ class App extends React.Component<{}, State, {}> {
                   handleLogout={this.logOut}
                 />
               </div>
-            ) : null}
-
+            ) : <div />}
             <Switch>
               <Route
                 exact
@@ -230,7 +235,7 @@ class App extends React.Component<{}, State, {}> {
                 <SignupBrancher />
               </Route>
               <Route path="/organization-signup">
-                <CompleteSignupFlow />
+                <CompleteSignupFlow role={Role.Admin} />
               </Route>
               <Route
                 path="/person-signup/:roleString"
@@ -238,22 +243,22 @@ class App extends React.Component<{}, State, {}> {
                   switch (props.match.params.roleString) {
                     case 'admin':
                       return (role === Role.Director
-                        ? <PersonSignup userRole={role} personRole={Role.Admin} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Admin} />
                         : <Redirect to="/error" />
                       );
                     case 'worker':
                       return (role === Role.Director || role === Role.Admin
-                        ? <PersonSignup userRole={role} personRole={Role.Worker} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Worker} />
                         : <Redirect to="/error" />
                       );
                     case 'volunteer':
                       return (role === Role.Director || role === Role.Admin || role === Role.Worker
-                        ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Volunteer} />
                         : <Redirect to="/error" />
                       );
                     case 'client':
                       return (role === Role.Director || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
-                        ? <PersonSignup userRole={role} personRole={Role.Client} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Client} />
                         : <Redirect to="/error" />
                       );
                     default:
@@ -333,6 +338,9 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/our-mission">
                 <OurMission />
               </Route>
+              <Route path="/hubspot">
+                <Hubspot />
+              </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />
               </Route>
@@ -363,6 +371,18 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <Route
+                path="/my-organization"
+                render={() => {
+                  if (role === Role.Director || role === Role.Admin) {
+                    return (<MyOrganization name={name} organization={organization} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route path="/create-user/:jwt">
+                <InviteSignupJWT />
+              </Route>
               <Route path="/error">
                 <Error />
               </Route>
