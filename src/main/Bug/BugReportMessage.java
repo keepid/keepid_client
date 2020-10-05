@@ -5,7 +5,8 @@ import org.json.JSONObject;
 public enum BugReportMessage {
   SLACK_FAILED("SLACK_FAILED: Failed notify the team. Email contact@keep.id for further help"),
   SUCCESS("SUCCESS:Your report is submitted!"),
-  NO_TITLE("NO_TITLE:Your message has no title");
+  NO_TITLE("NO_TITLE:Your message has no title"),
+  INVALID_EMAIL("INVALID_EMAIL:The email address is invalid");
   private String errorMessage;
 
   BugReportMessage(String errorMessage) {

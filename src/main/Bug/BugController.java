@@ -1,6 +1,7 @@
 package Bug;
 
 import Logger.LogFactory;
+import Validation.ValidationUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
@@ -35,8 +36,16 @@ public class BugController {
         logger.info("Trying to get fields from form");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
-        String title = req.getString("bugTitle");
-        String description = req.getString("bugDescription");
+        String title = req.getString("title");
+        String description = req.getString("description");
+        String email = req.getString("email");
+        if (!ValidationUtils.isValidEmail(email)) {
+          logger.error("Bug report has invalid email");
+          res.put("status", BugReportMessage.INVALID_EMAIL.getErrorName());
+          res.put("message", BugReportMessage.INVALID_EMAIL.getErrorDescription());
+          ctx.json(res.toString());
+          return;
+        }
         if (null == title || "".equals(title)) {
           logger.error("Bug report has no title");
           res.put("status", BugReportMessage.NO_TITLE.getErrorName());
