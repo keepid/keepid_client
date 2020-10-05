@@ -353,7 +353,7 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/careers">
                 <Careers />
               </Route>
-              <Route path="/bug-report">
+              <Route path="/issue-report">
                 <BugReport />
               </Route>
               <Route path="/forgot-password">
