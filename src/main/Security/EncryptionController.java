@@ -9,15 +9,12 @@ import com.google.crypto.tink.config.TinkConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.apache.pdfbox.io.IOUtils;
 import org.bson.Document;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
@@ -78,7 +75,6 @@ public class EncryptionController {
   }
 
   public byte[] getDecrypted(byte[] ciphertext, byte[] aad) throws GeneralSecurityException {
-
     try {
       byte[] decrypted = aead.decrypt(ciphertext, aad);
 
@@ -90,69 +86,69 @@ public class EncryptionController {
   }
 
   public String encryptString(String inputString, String username) throws GeneralSecurityException {
-
-    byte[] stringBytes = inputString.getBytes(StandardCharsets.ISO_8859_1);
-    byte[] aad = username.getBytes();
-
-    return new String(getEncrypted(stringBytes, aad), StandardCharsets.ISO_8859_1);
+    //    byte[] stringBytes = inputString.getBytes(StandardCharsets.ISO_8859_1);
+    //    byte[] aad = username.getBytes();
+    //    String encryptedString =
+    //        new String(getEncrypted(stringBytes, aad), StandardCharsets.ISO_8859_1);
+    //    return encryptedString;
+    return inputString;
   }
 
   public String decryptString(String encryptedString, String username)
       throws GeneralSecurityException {
-
-    byte[] aad = username.getBytes();
-    byte[] encryptedBytes = encryptedString.getBytes(StandardCharsets.ISO_8859_1);
-
-    byte[] decryptedString = getDecrypted(encryptedBytes, aad);
-
-    return new String(decryptedString, StandardCharsets.ISO_8859_1);
+    //    byte[] aad = username.getBytes();
+    //    byte[] encryptedBytes = encryptedString.getBytes(StandardCharsets.ISO_8859_1);
+    //
+    //    byte[] decryptedString = getDecrypted(encryptedBytes, aad);
+    //
+    //    return new String(decryptedString, StandardCharsets.ISO_8859_1);
+    return encryptedString;
   }
 
   public InputStream encryptFile(InputStream fileStream, String username)
       throws IOException, GeneralSecurityException {
-    try {
-      byte[] fileBytes = IOUtils.toByteArray(fileStream);
-      byte[] aad = username.getBytes();
-
-      InputStream encryptedStream = new ByteArrayInputStream(getEncrypted(fileBytes, aad));
-
-      return encryptedStream;
-
-    } catch (IOException | GeneralSecurityException e) {
-      logger.error("Could not find file, or could not turn file into Byte Array");
-      throw e;
-    }
+    //    try {
+    //      byte[] fileBytes = IOUtils.toByteArray(fileStream);
+    //      byte[] aad = username.getBytes();
+    //
+    //      InputStream encryptedStream = new ByteArrayInputStream(getEncrypted(fileBytes, aad));
+    //
+    //      return encryptedStream;
+    //
+    //    } catch (IOException | GeneralSecurityException e) {
+    //      logger.error("Could not find file, or could not turn file into Byte Array");
+    //      throw e;
+    //    }
+    return fileStream;
   }
 
   public InputStream decryptFile(InputStream encryptedFile, String username)
       throws GeneralSecurityException, IOException {
-    byte[] aad = username.getBytes();
-    byte[] encryptedBytes = encryptedFile.readAllBytes();
-
-    InputStream decryptedFileStream = new ByteArrayInputStream(getDecrypted(encryptedBytes, aad));
-
-    return decryptedFileStream;
+    //    byte[] aad = username.getBytes();
+    //    byte[] encryptedBytes = encryptedFile.readAllBytes();
+    //
+    //    InputStream decryptedFileStream = new ByteArrayInputStream(getDecrypted(encryptedBytes,
+    // aad));
+    //
+    //    return decryptedFileStream;
+    return encryptedFile;
   }
 
   public void encryptUser(User user, String username) throws GeneralSecurityException, IOException {
-    user.setAddress(encryptString(user.getAddress(), username));
-    user.setBirthDate(encryptString(user.getBirthDate(), username));
-    user.setCity(encryptString(user.getCity(), username));
-    user.setEmail(encryptString(user.getEmail(), username));
-    user.setFirstName(encryptString(user.getFirstName(), username));
-    user.setLastName(encryptString(user.getLastName(), username));
-    user.setPhone(encryptString(user.getPhone(), username));
-    user.setZipcode(encryptString(user.getZipcode(), username));
+    //    user.setAddress(encryptString(user.getAddress(), username));
+    //    user.setBirthDate(encryptString(user.getBirthDate(), username));
+    //    user.setCity(encryptString(user.getCity(), username));
+    //    user.setEmail(encryptString(user.getEmail(), username));
+    //    user.setPhone(encryptString(user.getPhone(), username));
+    //    user.setZipcode(encryptString(user.getZipcode(), username));
   }
 
   public void decryptUser(User user, String username) throws GeneralSecurityException, IOException {
-    user.setAddress(decryptString(user.getAddress(), username));
-    user.setBirthDate(decryptString(user.getBirthDate(), username));
-    user.setCity(decryptString(user.getCity(), username));
-    user.setEmail(decryptString(user.getEmail(), username));
-    user.setFirstName(decryptString(user.getFirstName(), username));
-    user.setLastName(decryptString(user.getLastName(), username));
-    user.setPhone(decryptString(user.getPhone(), username));
-    user.setZipcode(decryptString(user.getZipcode(), username));
+    //    user.setAddress(decryptString(user.getAddress(), username));
+    //    user.setBirthDate(decryptString(user.getBirthDate(), username));
+    //    user.setCity(decryptString(user.getCity(), username));
+    //    user.setEmail(decryptString(user.getEmail(), username));
+    //    user.setPhone(decryptString(user.getPhone(), username));
+    //    user.setZipcode(decryptString(user.getZipcode(), username));
   }
 }

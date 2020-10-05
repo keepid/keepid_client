@@ -1,10 +1,10 @@
 package PDFTest;
 
-import Config.DeploymentLevel;
-import Security.GoogleCredentials;
+import Security.EncryptionController;
 import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.json.JSONArray;
@@ -16,14 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.util.LinkedList;
 
 import static PDF.PdfControllerHelper.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class PdfMongoTests {
+  private static EncryptionController encryptionController;
+  private static String username;
+
   private static String currentPDFFolderPath =
       Paths.get("").toAbsolutePath().toString()
           + File.separator
@@ -45,47 +49,39 @@ public class PdfMongoTests {
   @BeforeClass
   public static void setUp() {
     TestUtils.startServer();
-
-    try {
-      TestUtils.tearDownTestDB();
-      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
-      TestUtils.setUpTestDB();
-      GoogleCredentials.generateCredentials();
-    } catch (Exception e) {
-      fail(e);
-    }
+    TestUtils.setUpTestDB();
+    username = "adminBSM";
   }
 
   @AfterClass
   public static void tearDown() {
     TestUtils.tearDownTestDB();
-    GoogleCredentials.deleteCredentials();
   }
 
   @Test
   public void uploadValidPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     uploadTestPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadFormTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     uploadTestFormPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadAnnotatedPDFFormTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     uploadTestAnnotatedFormPDF();
     TestUtils.logout();
   }
 
   @Test
   public void uploadValidPDFTestExists() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     uploadTestPDF();
     searchTestPDF();
     TestUtils.logout();
@@ -93,7 +89,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadValidPDFTestExistsAndDelete() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     uploadTestPDF();
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
@@ -103,7 +99,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadInvalidPDFTypeTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     File examplePDF =
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     HttpResponse<String> uploadResponse =
@@ -119,7 +115,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadNullPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     File examplePDF = null;
     HttpResponse<String> uploadResponse =
         Unirest.post(TestUtils.getServerUrl() + "/upload")
@@ -134,7 +130,7 @@ public class PdfMongoTests {
 
   @Test
   public void uploadDocxTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+    TestUtils.login(username, username);
     File exampleDocx = new File(resourcesFolderPath + File.separator + "job_description.docx");
     HttpResponse<String> uploadResponse =
         Unirest.post(TestUtils.getServerUrl() + "/upload")
@@ -148,8 +144,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void downloadTestFormTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void downloadTestFormTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     File testPdf = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
     String fileId = uploadFileAndGetFileId(testPdf, "FORM");
 
@@ -164,8 +160,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void downloadPDFTypeNullTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void downloadPDFTypeNullTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     File testPdf = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
     String fileId = uploadFileAndGetFileId(testPdf, "FORM");
 
@@ -178,8 +174,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionsIPFormTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionsIPFormTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -222,8 +218,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionsTestPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionsTestPDFTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -314,8 +310,9 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionsBirthCertificateTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionsBirthCertificateTest()
+      throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -381,8 +378,9 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionsMediaReleaseTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionsMediaReleaseTest()
+      throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -411,8 +409,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionsSS5Test() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionsSS5Test() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -435,8 +433,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void getApplicationQuestionBlankPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void getApplicationQuestionBlankPDFTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     // when running entire file, other documents interfere with retrieving the form.
     clearAllDocuments();
 
@@ -461,8 +459,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void fillApplicationQuestionsTestPDFTest() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void fillApplicationQuestionsTestPDFTest() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     clearAllDocuments();
 
     File applicationPDF = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
@@ -505,8 +503,8 @@ public class PdfMongoTests {
   }
 
   @Test
-  public void fillApplicationQuestionsSS5Test() {
-    TestUtils.login("adminBSM", "adminBSM");
+  public void fillApplicationQuestionsSS5Test() throws IOException, GeneralSecurityException {
+    TestUtils.login(username, username);
     clearAllDocuments();
 
     File applicationPDF = new File(resourcesFolderPath + File.separator + "ss-5.pdf");
@@ -638,8 +636,14 @@ public class PdfMongoTests {
     }
   }
 
-  public static String uploadFileAndGetFileId(File file, String pdfType) {
+  public static String uploadFileAndGetFileId(File file, String pdfType)
+      throws IOException, GeneralSecurityException {
     // upload file
+    EncryptionController encryptionController = TestUtils.getEncryptionController();
+    InputStream fileStream = FileUtils.openInputStream(file);
+
+    File tmp = File.createTempFile("test1", "tmp");
+    FileUtils.copyInputStreamToFile(encryptionController.encryptFile(fileStream, username), tmp);
     HttpResponse<String> uploadResponse =
         Unirest.post(TestUtils.getServerUrl() + "/upload")
             .header("Content-Disposition", "attachment")

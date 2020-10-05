@@ -74,7 +74,7 @@ public class PdfMongo {
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
-                      .append("annotated", true)
+                      .append("annotated", false)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
       gridBucket.uploadFromStream(filename, inputStream, options);

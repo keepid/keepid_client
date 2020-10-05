@@ -8,7 +8,6 @@ import com.google.crypto.tink.Aead;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import org.json.simple.parser.ParseException;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -38,17 +37,18 @@ public class TestUtilsUnitTests {
   public void testEncryptionSetup() {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    GoogleCredentials.generateCredentials();
     try {
-      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
       Aead aead = TestUtils.getAead();
       String original = "hello world";
       byte[] ciphertext = aead.encrypt(original.getBytes(), "".getBytes());
       byte[] decrypted = aead.decrypt(ciphertext, "".getBytes());
       assertEquals(original, new String(decrypted));
-    } catch (GeneralSecurityException | IOException | ParseException e) {
+    } catch (GeneralSecurityException | IOException e) {
       e.printStackTrace();
       assert false;
     }
+    GoogleCredentials.deleteCredentials();
     TestUtils.tearDownTestDB();
   }
 }

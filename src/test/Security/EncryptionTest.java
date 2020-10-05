@@ -1,9 +1,11 @@
 package Security;
 
+import Config.DeploymentLevel;
 import Config.MongoConfig;
+import TestUtils.TestUtils;
 import com.google.common.io.Files;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,14 +17,16 @@ import java.security.GeneralSecurityException;
 
 import static org.junit.Assert.assertEquals;
 
-public class encryptionTest {
+public class EncryptionTest {
+  private static EncryptionController encryptionController;
 
-  MongoClient client = MongoConfig.getMongoClient();
-  MongoDatabase db = client.getDatabase("staging");
-
-  EncryptionController encryptionController = new EncryptionController(db);
-
-  public encryptionTest() throws GeneralSecurityException, IOException {}
+  @BeforeClass
+  public static void setUp() throws GeneralSecurityException, IOException {
+    TestUtils.startServer();
+    TestUtils.setUpTestDB();
+    MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
+    encryptionController = new EncryptionController(testDB);
+  }
 
   @Test
   public void encryptDecryptStringTest() throws GeneralSecurityException, IOException {

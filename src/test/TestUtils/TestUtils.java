@@ -40,12 +40,21 @@ public class TestUtils {
   private static final int SERVER_TEST_PORT = Integer.parseInt(System.getenv("TEST_PORT"));
   private static final String SERVER_TEST_URL = "http://localhost:" + SERVER_TEST_PORT;
   private static Javalin app;
+  private static EncryptionController encryptionController;
   private static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
   private static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
 
   public static void startServer() {
     if (app == null) {
+      try {
+        GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
+        MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+        encryptionController = new EncryptionController(db);
+      } catch (GeneralSecurityException | IOException | ParseException e) {
+        System.err.println(e.getStackTrace());
+        System.exit(0);
+      }
       app = AppConfig.appFactory(DeploymentLevel.TEST);
     }
   }
@@ -650,6 +659,7 @@ public class TestUtils {
               settingsTest2FA,
               passwordResetTest,
               logInHistoryTest);
+      // Need to encrypt users before upload
       EncryptionController encryptionController = new EncryptionController(testDB);
       for (User user : users) {
         encryptionController.encryptUser(user, user.getUsername());
@@ -685,6 +695,10 @@ public class TestUtils {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public static EncryptionController getEncryptionController() {
+    return encryptionController;
   }
 
   // Tears down the test database by clearing all collections.
@@ -728,6 +742,7 @@ public class TestUtils {
     body.put("username", username);
     HttpResponse<String> loginResponse =
         Unirest.post(SERVER_TEST_URL + "/login").body(body.toString()).asString();
+    System.out.println(loginResponse.getBody());
     JSONObject loginResponseJSON = TestUtils.responseStringToJSON(loginResponse.getBody());
     assertThat(loginResponseJSON.getString("status")).isEqualTo("AUTH_SUCCESS");
   }

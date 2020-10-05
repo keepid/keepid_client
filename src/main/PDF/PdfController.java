@@ -155,9 +155,8 @@ public class PdfController {
         String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
         String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
         UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-        UploadedFile file = Objects.requireNonNull(ctx.uploadedFile("file"));
-        PDFType pdfType =
-            Objects.requireNonNull(PDFType.createFromString(ctx.formParam("pdfType")));
+        UploadedFile file = ctx.uploadedFile("file");
+        PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
         String fileIDStr = ctx.formParam("fileId");
         JSONObject res;
         ObjectId fileID;

@@ -35,7 +35,7 @@ public class PDFApplicationUnitTests {
     return (new JSONObject()
         .put("fieldName", fieldName)
         .put("fieldType", fieldType)
-        .put("fieldValueOptions", fieldValueOptionsJSON.toString())
+        .put("fieldValueOptions", fieldValueOptionsJSON)
         .put("fieldMatchedDBName", "")
         .put("fieldMatchedDBVariable", "")
         .put("fieldQuestion", "Please Enter Your " + fieldName));
@@ -59,7 +59,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -85,7 +85,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -110,7 +110,7 @@ public class PDFApplicationUnitTests {
       // Not Editable
       Assert.assertNotEquals("", field.getString("fieldName"));
       Assert.assertNotEquals("", field.getString("fieldType"));
-      Assert.assertNotEquals(null, field.getString("fieldValueOptions"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
 
       // Editable
       Assert.assertNotEquals("", field.getString("fieldQuestion"));
@@ -155,7 +155,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getJSONArray("fieldValueOptions").toString(),
+          field.getJSONArray("fieldValueOptions").toString());
     }
     pdfDocument.close();
   }
@@ -187,7 +188,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getJSONArray("fieldValueOptions").toString(),
+          field.getJSONArray("fieldValueOptions").toString());
     }
     pdfDocument.close();
   }
@@ -219,7 +221,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getJSONArray("fieldValueOptions").toString(),
+          field.getJSONArray("fieldValueOptions").toString());
     }
     pdfDocument.close();
   }
@@ -232,7 +235,7 @@ public class PDFApplicationUnitTests {
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
-    String[] fieldValueOptions = {};
+    String[] fieldValueOptions = {"Yes"};
     correctFieldsJSON.add(createFieldJSON("Chicken", "CheckBox", fieldValueOptions));
     correctFieldsJSON.add(createFieldJSON("Vegetables", "CheckBox", fieldValueOptions));
     correctFieldsJSON.add(createFieldJSON("Ribeye Steaks", "CheckBox", fieldValueOptions));
@@ -254,7 +257,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getJSONArray("fieldValueOptions").toString(),
+          field.getJSONArray("fieldValueOptions").toString());
     }
     pdfDocument.close();
   }
@@ -265,30 +269,9 @@ public class PDFApplicationUnitTests {
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
 
-    // Set up correct field names and questions
-    List<JSONObject> correctFieldsJSON = new LinkedList<>();
-    String[] fieldValueOptions = {};
-    correctFieldsJSON.add(createFieldJSON("Submit", "PushButton", fieldValueOptions));
-    correctFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> correctFieldIterator = correctFieldsJSON.iterator();
-
     // Get Only Fields Needed for This Test
     List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "PushButton");
-    testFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> testFieldsJSONIterator = testFieldsJSON.iterator();
-
-    // Check Not Editable Fields are correct
-    while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
-      JSONObject field = testFieldsJSONIterator.next();
-      JSONObject correctField = correctFieldIterator.next();
-
-      // Change to equals for GSON
-      Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
-      Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
-      Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
-    }
-    pdfDocument.close();
+    Assert.assertEquals(0, testFieldsJSON.size());
   }
 
   @Test
@@ -318,7 +301,8 @@ public class PDFApplicationUnitTests {
       Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
       Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
       Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
+          correctField.getJSONArray("fieldValueOptions").toString(),
+          field.getJSONArray("fieldValueOptions").toString());
     }
     pdfDocument.close();
   }
@@ -338,20 +322,7 @@ public class PDFApplicationUnitTests {
 
     // Get Only Fields Needed for This Test
     List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "SignatureField");
-    testFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> testFieldsJSONIterator = testFieldsJSON.iterator();
-
-    // Check Not Editable Fields are correct
-    while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
-      JSONObject field = testFieldsJSONIterator.next();
-      JSONObject correctField = correctFieldIterator.next();
-
-      // Change to equals for GSON
-      Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
-      Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
-      Assert.assertEquals(
-          correctField.getString("fieldValueOptions"), field.getString("fieldValueOptions"));
-    }
+    Assert.assertEquals(0, testFieldsJSON.size());
     pdfDocument.close();
   }
 }

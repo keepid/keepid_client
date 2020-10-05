@@ -5,6 +5,7 @@ import Logger.LogFactory;
 import Security.*;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -67,7 +68,18 @@ public class UserController {
       }
 
       MongoCollection<User> userCollection = db.getCollection("user", User.class);
-      User user = userCollection.find(eq("username", username)).first();
+      FindIterable<User> matchingUsers = userCollection.find(eq("username", username));
+      int numMatchUsers = 0;
+      User user = matchingUsers.first();
+      for (User matchingUser : matchingUsers) {
+        numMatchUsers++;
+      }
+      if (numMatchUsers > 1) {
+        logger.error("Multiple users with username " + username);
+        res.put("status", UserMessage.AUTH_FAILURE.getErrorName());
+        ctx.json(res.toString());
+        return;
+      }
       if (user == null) {
         logger.error("Could not find user, " + username);
         res.put("status", UserMessage.AUTH_FAILURE.getErrorName());

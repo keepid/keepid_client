@@ -243,39 +243,6 @@ public class PdfControllerUnitTests {
   }
 
   @Test
-  public void getFieldInformationPushButtonTest() throws IOException {
-    File pdfInput = new File("src/test/resources/testpdf.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
-
-    // Set up correct field names and questions
-    List<JSONObject> correctFieldsJSON = new LinkedList<>();
-    String[] fieldValueOptions = {};
-    correctFieldsJSON.add(createFieldJSON("Submit", "PushButton", fieldValueOptions));
-    correctFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> correctFieldIterator = correctFieldsJSON.iterator();
-
-    // Get Only Fields Needed for This Test
-    List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "PushButton");
-    testFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> testFieldsJSONIterator = testFieldsJSON.iterator();
-
-    // Check Not Editable Fields are correct
-    while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
-      JSONObject field = testFieldsJSONIterator.next();
-      JSONObject correctField = correctFieldIterator.next();
-
-      // Change to equals for GSON
-      Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
-      Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
-      Assert.assertEquals(
-          correctField.getString("fieldValueOptions"),
-          field.getJSONArray("fieldValueOptions").toString());
-    }
-    pdfDocument.close();
-  }
-
-  @Test
   public void getFieldInformationRadioButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
@@ -290,39 +257,6 @@ public class PdfControllerUnitTests {
 
     // Get Only Fields Needed for This Test
     List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "RadioButton");
-    testFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> testFieldsJSONIterator = testFieldsJSON.iterator();
-
-    // Check Not Editable Fields are correct
-    while (testFieldsJSONIterator.hasNext() || correctFieldIterator.hasNext()) {
-      JSONObject field = testFieldsJSONIterator.next();
-      JSONObject correctField = correctFieldIterator.next();
-
-      // Change to equals for GSON
-      Assert.assertEquals(correctField.getString("fieldName"), field.getString("fieldName"));
-      Assert.assertEquals(correctField.getString("fieldType"), field.getString("fieldType"));
-      Assert.assertEquals(
-          correctField.getString("fieldValueOptions"),
-          field.getJSONArray("fieldValueOptions").toString());
-    }
-    pdfDocument.close();
-  }
-
-  @Test
-  public void getFieldInformationSignatureFieldTest() throws IOException {
-    File pdfInput = new File("src/test/resources/testpdf.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
-
-    // Set up correct field names and questions
-    List<JSONObject> correctFieldsJSON = new LinkedList<>();
-    String[] fieldValueOptions = {};
-    correctFieldsJSON.add(createFieldJSON("Signature", "SignatureField", fieldValueOptions));
-    correctFieldsJSON.sort(new JSONFieldComparator());
-    Iterator<JSONObject> correctFieldIterator = correctFieldsJSON.iterator();
-
-    // Get Only Fields Needed for This Test
-    List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "SignatureField");
     testFieldsJSON.sort(new JSONFieldComparator());
     Iterator<JSONObject> testFieldsJSONIterator = testFieldsJSON.iterator();
 

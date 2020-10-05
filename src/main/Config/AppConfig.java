@@ -41,6 +41,8 @@ public class AppConfig {
       encryptionController = new EncryptionController(db);
     } catch (GeneralSecurityException | IOException e) {
       // Is this correct? #Connor
+      System.err.println(e.getStackTrace());
+      System.exit(0);
       return null;
     }
 
