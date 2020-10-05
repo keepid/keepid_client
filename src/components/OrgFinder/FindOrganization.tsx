@@ -70,21 +70,6 @@ class FindOrganization extends Component<Props, State> {
         console.log('got orgs!');
         console.log(organizations);
       });
-    // const count = 0;
-    // const organizations = [
-    //   {
-    //     orgName: 'Broad Street Ministries',
-    //     lat: 39.9460872,
-    //     lng: -75.1644793,
-    //     address: '315 S Broad St, Philadelphia, PA 19107',
-    //     zipcode: 19107,
-    //     phone: '',
-    //     email: '',
-    //     count,
-    //   },
-    // ];
-    // return organizations;
-    // this.setState({ organizations });
   }
 
   onHandleChangeZipcode(event: any) {
@@ -100,7 +85,7 @@ class FindOrganization extends Component<Props, State> {
     console.log(zipcodeSearch);
   }
 
-  getCoordinateFromZipcode(zipcode: number): Coordinate {
+  getCoordinateFromZipcode(zipcode: number): Promise<Coordinate> {
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?');
     const search = `postal_code:${zipcode}`;
     const urlParams = {
@@ -132,7 +117,8 @@ class FindOrganization extends Component<Props, State> {
             displayError: false,
             displayIcon: false,
           });
-          return coordinate;
+          let promise = new Promise<Coordinate>((resolve, reject) => { (resolve(coordinate)) });
+          return promise;
         } else {
           this.setState({
             displayMap: false,
@@ -142,15 +128,17 @@ class FindOrganization extends Component<Props, State> {
           console.log('wrong zip!');
         }
       });
+      console.log('sigh');
     const coordinateProps = {
       lat: null,
       lng: null,
     };
-    const coordinate = new Coordinate(coordinateProps);
-    return coordinate;
+    let coordinate = new Coordinate(coordinateProps);
+    let promise = new Promise<Coordinate>((resolve, reject) => { (resolve(coordinate)) });
+    return promise;
   }
 
-  calculateOrganizationsWithinDistance(zipcode: number) {
+  async calculateOrganizationsWithinDistance(zipcode: number) {
     const {
       orgsWithinRadius,
       organizations,
@@ -159,8 +147,7 @@ class FindOrganization extends Component<Props, State> {
       count,
     } = this.state;
     console.log(zipcode);
-    console.log(this.getCoordinateFromZipcode(zipcode));
-    let searchCoordinate = this.getCoordinateFromZipcode(zipcode);
+    let searchCoordinate = await this.getCoordinateFromZipcode(zipcode);
     console.log(searchCoordinate);
     const allOrgs = organizations;
     // for (let i = 0; i < allOrgs.length; i++) {
