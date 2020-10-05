@@ -4,8 +4,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
 import getServerURL from '../serverOverride';
 import { reCaptchaKey } from '../configVars';
-import  {isValidEmail } from '../lib/Validations/Validations';
-
+import { isValidEmail } from '../lib/Validations/Validations';
 
 interface Props {
   alert: any,
@@ -44,6 +43,7 @@ class BugReport extends Component<Props, State, {}> {
   componentDidMount() {
     window.scrollTo(0, 0);
   }
+
   clearInput = ():void => {
     this.setState({
       title: '',
@@ -55,6 +55,7 @@ class BugReport extends Component<Props, State, {}> {
       descriptionValidator: '',
     });
   }
+
   validateEmail = async ():Promise<void> => {
     const { email } = this.state;
     if (isValidEmail(email)) {
@@ -68,7 +69,7 @@ class BugReport extends Component<Props, State, {}> {
     const { emailValidator } = this.state;
     if (emailValidator === 'true') {
       return (
-        <div className="valid-feedback"></div>
+        <div className="valid-feedback" />
       );
     } if (emailValidator === 'false') {
       return (
@@ -136,18 +137,6 @@ class BugReport extends Component<Props, State, {}> {
     );
   }
 
-  handleChangeTitle(event: any) {
-    this.setState({ title: event.target.value });
-  }
-
-  handleChangeDescription(event: any) {
-    this.setState({ description: event.target.value });
-  }
-
-  handleChangeEmail(event: any) {
-    this.setState({ email: event.target.value });
-  }
-
   colorToggle = (inputString: string): string => {
     if (inputString === 'true') {
       return 'is-valid';
@@ -159,18 +148,19 @@ class BugReport extends Component<Props, State, {}> {
 
   handleSubmit = async (event: any) => {
     event.preventDefault();
-    let {
+    const { alert } = this.props;
+    const {
       email,
       title,
       description,
       emailValidator,
       titleValidator,
-      descriptionValidator
+      descriptionValidator,
     } = this.state;
     await Promise.all([this.validateEmail(), this.validateTitle(), this.validateDescription()]);
     if (emailValidator !== 'true'
         || titleValidator !== 'true'
-        || descriptionValidator !== 'true') { 
+        || descriptionValidator !== 'true') {
       this.props.alert.show('Please fill out all fields correctly.'); return;
     }
     this.setState({ buttonState: 'running' });
@@ -188,22 +178,36 @@ class BugReport extends Component<Props, State, {}> {
 
         if (status === 'SUCCESS') {
           this.setState({ buttonState: '' });
-          this.props.alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
+          alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
           this.clearInput();
         } else {
-          this.props.alert.show('Failed to submit. Please fill out all fields correctly.');
+          alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
-        this.props.alert.show(`Failed to submit. Please try again.`);
+        alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
       });
   }
+
+  handleChangeTitle(event: any) {
+    this.setState({ title: event.target.value });
+  }
+
+  handleChangeDescription(event: any) {
+    this.setState({ description: event.target.value });
+  }
+
+  handleChangeEmail(event: any) {
+    this.setState({ email: event.target.value });
+  }
+
   render() {
     const {
       email,
       title,
       description,
+      buttonState,
       titleValidator,
       emailValidator,
       descriptionValidator,
@@ -223,7 +227,6 @@ class BugReport extends Component<Props, State, {}> {
               </div>
             </div>
             <form onSubmit={this.handleSubmit}>
-              
               <div className="col-md-12">
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
@@ -247,10 +250,10 @@ class BugReport extends Component<Props, State, {}> {
                 </div>
 
                 <div className="form-row form-group d-flex align-content-start pb-3">
-                <div className="col-md-1" />
-                <label htmlFor="title" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
-                  Issue Title
-                </label>
+                  <div className="col-md-1" />
+                  <label htmlFor="title" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
+                    Issue Title
+                  </label>
                   <div className="col-md-6">
                     <input
                       type="text"
@@ -264,9 +267,8 @@ class BugReport extends Component<Props, State, {}> {
                     />
                     {this.titleMessage()}
                   </div>
-                  <div className="col-md-2" /> 
+                  <div className="col-md-2" />
                 </div>
-
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
                   <label htmlFor="description" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
@@ -286,9 +288,7 @@ class BugReport extends Component<Props, State, {}> {
                   </div>
                   <div className="col-md-2" />
                 </div>
-                {/* </div> */}
                 <div className="form-row mt-2">
-                {/* <div className="col-md-4" /> */}
                   <div className="col-md-10 pt-2 pb-2 d-flex justify-content-end">
                     <span className="text-muted recaptcha-login-text text-right">
                       This page is protected by reCAPTCHA, and subject to the Google
@@ -305,7 +305,7 @@ class BugReport extends Component<Props, State, {}> {
                 <div className="form-row mt-2">
                   <div className="col-md-8" />
                   <div className="col-md-2 text-right d-flex justify-content-end pt-3">
-                    <button type="submit" onClick={this.handleSubmit} className={`btn ld-ext-right btn-primary ${this.state.buttonState}`}>
+                    <button type="submit" onClick={this.handleSubmit} className={`btn ld-ext-right btn-primary ${buttonState}`}>
                       Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>
