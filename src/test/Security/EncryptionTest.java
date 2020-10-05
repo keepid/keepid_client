@@ -6,6 +6,7 @@ import TestUtils.TestUtils;
 import com.google.common.io.Files;
 import com.mongodb.client.MongoDatabase;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.security.GeneralSecurityException;
 
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class EncryptionTest {
   private static EncryptionController encryptionController;
 
