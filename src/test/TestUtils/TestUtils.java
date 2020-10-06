@@ -48,10 +48,11 @@ public class TestUtils {
   public static void startServer() {
     if (app == null) {
       try {
-        GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
+        // GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
+        MongoConfig.getMongoClient();
         MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-        encryptionController = new EncryptionController(db);
-      } catch (GeneralSecurityException | IOException | ParseException e) {
+        encryptionController = null; // new EncryptionController(db);
+      } catch (Exception e) {
         System.err.println(e.getStackTrace());
         System.exit(0);
       }
