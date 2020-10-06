@@ -1,25 +1,7 @@
 package Security;
 
-import Config.DeploymentLevel;
-import Config.MongoConfig;
-import TestUtils.TestUtils;
-import com.google.common.io.Files;
-import com.mongodb.client.MongoDatabase;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
-
-import static org.junit.Assert.assertEquals;
-
-@Ignore
 public class EncryptionTest {
+  /*
   private static EncryptionController encryptionController;
 
   @BeforeClass
@@ -82,4 +64,5 @@ public class EncryptionTest {
     // Delete created file
     returnFile.delete();
   }
+   */
 }
