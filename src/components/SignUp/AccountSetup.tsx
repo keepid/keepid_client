@@ -132,6 +132,37 @@ class AccountSetup extends Component<Props, State, {}> {
     );
   }
 
+  returnAccountMessage = () => {
+    switch (this.props.role) {
+      case Role.Admin: {
+        return (
+          <div>
+            Admins can set up accounts for
+            <br />
+            {' '}
+            other workers in the organization and for clients.
+            {' '}
+          </div>
+        );
+      }
+      case Role.Director: case Role.Worker: case Role.Volunteer: {
+        return (
+          <div>
+            {`${this.props.role}s`}
+            can set up
+            <br />
+            {' '}
+            accounts for clients.
+            {' '}
+          </div>
+        );
+      }
+      default: {
+        return <div />;
+      }
+    }
+  }
+
   handleStepComplete = async (e) => {
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (this.state.usernameValidator === 'true'
@@ -168,27 +199,15 @@ class AccountSetup extends Component<Props, State, {}> {
         <div className="d-flex justify-content-center pt-5">
           <div className="col-md-8">
             <div className="text-center pb-4 mb-2">
-              <h2><b>First, set up your account information</b></h2>
+              <h2>
+                <b>
+                First, set up the
+                {this.props.role}
+                account login.
+                </b>
+              </h2>
               <span>
-                You will be the
-                {' '}
-                {this.props.role}
-                {' '}
-                of your organization. As the
-                {' '}
-                {this.props.role}
-                ,
-                {this.props.role === Role.Admin
-                  ? (
-                    <div>
-                      you can set up accounts for
-                      <br />
-                      {' '}
-                      other workers in the organization and for your clients.
-                      {' '}
-                    </div>
-                  )
-                  : <div>you can set up accounts for clients</div>}
+                {this.returnAccountMessage()}
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>

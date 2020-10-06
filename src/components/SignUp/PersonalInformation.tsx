@@ -249,7 +249,7 @@ class PersonalInformation extends Component<Props, State, {}> {
         <div className="d-flex justify-content-center pt-5">
           <div className="col-md-10">
             <div className="text-center pb-4 mb-2">
-              <h2><b>Next, tell us about yourself</b></h2>
+              <h2><b>Next, add in some contact information.</b></h2>
             </div>
             <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
