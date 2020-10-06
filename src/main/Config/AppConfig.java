@@ -14,9 +14,6 @@ import io.javalin.Javalin;
 import io.javalin.core.compression.Brotli;
 import io.javalin.core.compression.Gzip;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
 public class AppConfig {
   public static Long ASYNC_TIME_OUT = 10L;
   public static int SERVER_PORT = Integer.parseInt(System.getenv("PORT"));
@@ -37,14 +34,15 @@ public class AppConfig {
 
     /* Create the Encryption Controller for encryption */
     EncryptionController encryptionController;
-    try {
-      encryptionController = new EncryptionController(db);
-    } catch (GeneralSecurityException | IOException e) {
-      // Is this correct? #Connor
-      System.err.println(e.getStackTrace());
-      System.exit(0);
-      return null;
-    }
+    encryptionController = new EncryptionController();
+    //    try {
+    //      encryptionController = new EncryptionController(db);
+    //    } catch (GeneralSecurityException | IOException e) {
+    //      // Is this correct? #Connor
+    //      System.err.println(e.getStackTrace());
+    //      System.exit(0);
+    //      return null;
+    //    }
 
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db, encryptionController);

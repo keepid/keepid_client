@@ -30,6 +30,8 @@ public class EncryptionController {
   public static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
 
+  public EncryptionController() {}
+
   public EncryptionController(MongoDatabase db) throws GeneralSecurityException, IOException {
     this.db = db;
     LogFactory l = new LogFactory();

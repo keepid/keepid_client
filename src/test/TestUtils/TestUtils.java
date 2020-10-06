@@ -51,7 +51,7 @@ public class TestUtils {
         // GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
         MongoConfig.getMongoClient();
         MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-        encryptionController = null; // new EncryptionController(db);
+        encryptionController = new EncryptionController(); // new EncryptionController(db);
       } catch (Exception e) {
         System.err.println(e.getStackTrace());
         System.exit(0);

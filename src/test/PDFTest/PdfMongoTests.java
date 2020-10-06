@@ -691,24 +691,25 @@ public class PdfMongoTests {
 
   @BeforeEach
   public static void clearAllDocuments() {
-    String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
-    boolean[] annotated = {false, true, false};
-    for (int j = 0; j < pdfTypes.length; j++) {
-      JSONObject body = new JSONObject();
-      body.put("pdfType", pdfTypes[j]);
-      body.put("annotated", annotated[j]);
-      HttpResponse<String> getAllDocuments =
-          Unirest.post(TestUtils.getServerUrl() + "/get-documents")
-              .body(body.toString())
-              .asString();
-      JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
-      assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
-      JSONArray arr = getAllDocumentsJSON.getJSONArray("documents");
-      for (int i = 0; i < arr.length(); i++) {
-        String fileId = arr.getJSONObject(i).getString("id");
-        delete(fileId, pdfTypes[j]);
-      }
-    }
+    //    String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
+    //    boolean[] annotated = {false, true, false};
+    //    for (int j = 0; j < pdfTypes.length; j++) {
+    //      JSONObject body = new JSONObject();
+    //      body.put("pdfType", pdfTypes[j]);
+    //      body.put("annotated", annotated[j]);
+    //      HttpResponse<String> getAllDocuments =
+    //          Unirest.post(TestUtils.getServerUrl() + "/get-documents")
+    //              .body(body.toString())
+    //              .asString();
+    //      JSONObject getAllDocumentsJSON =
+    // TestUtils.responseStringToJSON(getAllDocuments.getBody());
+    //      assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
+    //      JSONArray arr = getAllDocumentsJSON.getJSONArray("documents");
+    //      for (int i = 0; i < arr.length(); i++) {
+    //        String fileId = arr.getJSONObject(i).getString("id");
+    //        delete(fileId, pdfTypes[j]);
+    //      }
+    //    }
   }
 
   public static void uploadTestPDF() {
