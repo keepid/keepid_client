@@ -74,7 +74,7 @@ class Footer extends Component<{}, {}> {
                   <Link to="/terms-of-use" className="footer-link">Terms of Use</Link>
                 </li> */}
                 <li className="mb-3">
-                  <Link to="/eula" className="footer-link">End User License Agreements</Link>
+                  <Link to="/eula" className="footer-link">End User License Agreement</Link>
                 </li>
                 <li className="mb-3">
                   <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
