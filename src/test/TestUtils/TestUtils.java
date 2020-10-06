@@ -23,7 +23,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.bson.Document;
 import org.json.JSONObject;
-import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,11 +75,11 @@ public class TestUtils {
   public static void setUpTestDB() {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    try {
-      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
-    } catch (GeneralSecurityException | IOException | ParseException e) {
-      e.printStackTrace();
-    }
+    //    try {
+    //      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
+    //    } catch (GeneralSecurityException | IOException | ParseException e) {
+    //      e.printStackTrace();
+    //    }
     try {
       /* *********************** Broad Street Ministry ************************ */
       Organization broadStreetMinistry =
@@ -661,7 +660,8 @@ public class TestUtils {
               passwordResetTest,
               logInHistoryTest);
       // Need to encrypt users before upload
-      EncryptionController encryptionController = new EncryptionController(testDB);
+      EncryptionController encryptionController =
+          new EncryptionController(); // new EncryptionController(testDB);
       for (User user : users) {
         encryptionController.encryptUser(user, user.getUsername());
       }

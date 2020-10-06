@@ -30,7 +30,7 @@ public class ChangeAccountSettingsIntegrationTests {
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
-    encryptionController = new EncryptionController(db);
+    encryptionController = TestUtils.getEncryptionController();
   }
 
   @AfterClass
