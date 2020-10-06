@@ -262,7 +262,7 @@ public class ChangeAccountSettingsIntegrationTests {
   }
 
   @Test
-  public void changeSateTest() throws Exception {
+  public void changeStateTest() throws Exception {
     String state1 = "PA";
     String state2 = "GA";
 
