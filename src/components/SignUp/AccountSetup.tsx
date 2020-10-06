@@ -202,7 +202,9 @@ class AccountSetup extends Component<Props, State, {}> {
               <h2>
                 <b>
                 First, set up the
+                {" "}
                 {this.props.role}
+                {" "}
                 account login.
                 </b>
               </h2>
