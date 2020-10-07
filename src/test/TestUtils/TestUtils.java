@@ -779,7 +779,7 @@ public class TestUtils {
   }
 
   public static JSONObject responseStringToJSON(String response) {
-    String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
-    return new JSONObject(strippedResponse);
+    // String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
+    return new JSONObject(response);
   }
 }

@@ -123,17 +123,19 @@ public class PdfController {
           boolean formsAreUnannotated = Objects.requireNonNull(req.getBoolean("annotated"));
           ctx.json(
               PdfMongo.getAllFiles(
-                  user,
-                  organizationName,
-                  privilegeLevel,
-                  pdfType,
-                  formsAreUnannotated,
-                  encryptionUtils,
-                  db));
+                      user,
+                      organizationName,
+                      privilegeLevel,
+                      pdfType,
+                      formsAreUnannotated,
+                      encryptionUtils,
+                      db)
+                  .toString());
         } else {
           ctx.json(
               PdfMongo.getAllFiles(
-                  user, organizationName, privilegeLevel, pdfType, false, encryptionUtils, db));
+                      user, organizationName, privilegeLevel, pdfType, false, encryptionUtils, db)
+                  .toString());
         }
       };
 

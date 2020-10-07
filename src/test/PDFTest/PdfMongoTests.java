@@ -701,6 +701,7 @@ public class PdfMongoTests {
           Unirest.post(TestUtils.getServerUrl() + "/get-documents")
               .body(body.toString())
               .asString();
+      System.out.println("body: " + getAllDocuments.getBody());
       JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
       assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
       JSONArray arr = getAllDocumentsJSON.getJSONArray("documents");
