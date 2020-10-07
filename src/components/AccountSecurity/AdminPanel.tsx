@@ -288,7 +288,7 @@ class AdminPanel extends Component<Props, State> {
               )}
           </div>
           <div className="row bd-highlight mb-3 pt-5">
-            <div className="col-md-8 pb-3">
+            <div className="col pb-3">
               <BootstrapTable
                 bootstrap4
                 keyField="username"
@@ -304,9 +304,6 @@ class AdminPanel extends Component<Props, State> {
                 }}
                 noDataIndication="No Workers Found"
               />
-            </div>
-            <div className="col-md-4 pb-3">
-              {workerPanel}
             </div>
           </div>
         </div>
