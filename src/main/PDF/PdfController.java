@@ -1,7 +1,11 @@
 package PDF;
 
+import Logger.LogFactory;
+import PDF.Services.DeletePDFService;
+import PDF.Services.DownloadPDFService;
+import PDF.Services.GetAllPdfFilesService;
+import PDF.Services.UploadPDFService;
 import User.UserType;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
@@ -10,24 +14,8 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.slf4j.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.LinkedList;
-import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,76 +24,60 @@ import java.util.*;
 
 public class PdfController {
   private MongoDatabase db;
+  private Logger logger;
 
   public PdfController(MongoDatabase db) {
     this.db = db;
+    LogFactory l = new LogFactory();
+    this.logger = l.createLogger("PdfController");
   }
 
-  public static Set<String> validFieldTypes =
-      new HashSet<>(
-          Arrays.asList(
-              "CheckBox",
-              "PushButton",
-              "RadioButton",
-              "ComboBox",
-              "ListBox",
-              "TextField",
-              "SignatureField"));
   public Handler pdfDelete =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
         String fileIDStr = req.getString("fileId");
-        if (!ValidationUtils.isValidObjectId(fileIDStr) || pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PARAMETER.toJSON());
-          return;
-        }
-        ObjectId fileID = new ObjectId(fileIDStr);
-        JSONObject res =
-            PdfMongo.delete(user, organizationName, pdfType, privilegeLevel, fileID, db);
-        ctx.json(res.toString());
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
+
+        DeletePDFService deletePDFService =
+            new DeletePDFService(db, logger, username, orgName, userType, pdfType, fileIDStr);
+        ctx.result(deletePDFService.executeAndGetResponse().toResponseString());
       };
 
   public Handler pdfDownload =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         String fileIDStr = req.getString("fileID");
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        ObjectId fileID = new ObjectId(fileIDStr);
-        if (pdfType == null) {
-          ctx.result("Invalid PDFType");
+        DownloadPDFService downloadPDFService =
+            new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
+        if (downloadPDFService.executeAndGetResponse() == PdfMessage.SUCCESS) {
+          ctx.header("Content-Type", "application/pdf");
+          ctx.result(downloadPDFService.getInputStream());
         } else {
-          InputStream stream =
-              PdfMongo.download(user, organizationName, privilegeLevel, fileID, pdfType, db);
-          if (stream != null) {
-            ctx.header("Content-Type", "application/pdf");
-            ctx.result(stream);
-          } else {
-            ctx.result("Error");
-          }
+          ctx.result("Error");
         }
       };
+
   public Handler pdfGetAll =
       ctx -> {
-        String user = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        JSONObject res = new JSONObject();
-
-        if (pdfType == null) {
-          res.put("status", "Invalid PDFType");
-        } else {
-          res = PdfMongo.getAllFiles(user, organizationName, privilegeLevel, pdfType, db);
+        GetAllPdfFilesService getAllPdfFilesService =
+            new GetAllPdfFilesService(db, logger, username, orgName, userType, pdfType);
+        JSONObject res = getAllPdfFilesService.executeAndGetResponse().toJSON();
+        if (getAllPdfFilesService.executeAndGetResponse() == PdfMessage.SUCCESS) {
+          res.put("documents", getAllPdfFilesService.getFiles());
         }
-        ctx.json(res.toString());
+        ctx.result(res.toString());
       };
 
   public Handler pdfUpload =
@@ -115,26 +87,10 @@ public class PdfController {
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         UploadedFile file = ctx.uploadedFile("file");
         PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-        JSONObject res;
-        if (pdfType == null) {
-          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
-        } else if (file == null) {
-          res = PdfMessage.INVALID_PDF.toJSON();
-        } else if (file.getContentType().equals("application/pdf")
-            || (file.getContentType().equals("application/octet-stream"))) {
-          res =
-              PdfMongo.upload(
-                  username,
-                  organizationName,
-                  privilegeLevel,
-                  file.getFilename(),
-                  pdfType,
-                  file.getContent(),
-                  this.db);
-        } else {
-          res = PdfMessage.INVALID_PDF.toJSON();
-        }
-        ctx.json(res.toString());
+        UploadPDFService uploadService =
+            new UploadPDFService(
+                db, logger, username, organizationName, privilegeLevel, pdfType, file);
+        ctx.result(uploadService.executeAndGetResponse().toResponseString());
       };
 
   public Handler getApplicationQuestions =
@@ -145,7 +101,7 @@ public class PdfController {
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         InputStream inputStream =
-            PdfMongo.download(
+            DownloadPDFService.download(
                 username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
@@ -153,8 +109,7 @@ public class PdfController {
         List<JSONObject> fieldsJSON = new LinkedList<>();
         getFieldInformation(pdfDocument, fieldsJSON);
         pdfDocument.close();
-
-        ctx.json(fieldsJSON);
+        ctx.result(fieldsJSON.toString());
       };
 
   /*
@@ -233,7 +188,7 @@ public class PdfController {
         JSONObject formAnswers = req.getJSONObject("formAnswers");
 
         InputStream inputStream =
-            PdfMongo.download(
+            DownloadPDFService.download(
                 username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
@@ -264,53 +219,14 @@ public class PdfController {
     }
   }
 
-  /*
-  private String getFieldFullName(PDField field) {
-    String fullName = field.getPartialName();
-    while (field.getParent() != null) {
-      field = field.getParent();
-      fullName = field.getPartialName() + "." + fullName;
-    }
-    return fullName;
-  }
-  // ImportXFDF importXFDFObject = new ImportXFDF();
-  // String xmlString = toXFDF(req);
-  // InputStream stream = new
-  // ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
-  // FDFDocument xfdfDocument = FDFDocument.loadXFDF(stream);
-  // importXFDFObject.importFDF(pdfDocument, xfdfDocument);
-
-  private String toXFDF(JSONObject req)
-      throws ParserConfigurationException, TransformerConfigurationException, TransformerException {
-    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-    Document doc = dBuilder.newDocument();
-    Element rootElement = doc.createElement("xfdf");
-    rootElement.setAttribute("xmlns", "http://ns.adobe.com/xfdf");
-    rootElement.setAttribute("xml:space", "preserve");
-    doc.appendChild(rootElement);
-    Element fields = doc.createElement("fields");
-    rootElement.appendChild(fields);
-
-    for (String key : req.keySet()) {
-      Element field = doc.createElement("field");
-      field.setAttribute("name", key);
-      fields.appendChild(field);
-
-      Element value = doc.createElement("value");
-      value.setTextContent(req.getString(key));
-      field.appendChild(value);
-    }
-
-    TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    Transformer transformer = transformerFactory.newTransformer();
-    DOMSource domSource = new DOMSource(doc);
-    StringWriter stringWriter = new StringWriter();
-    StreamResult streamResult = new StreamResult(stringWriter);
-
-    transformer.transform(domSource, streamResult);
-    String xmlString = stringWriter.toString();
-    return (xmlString);
-  }
-   */
+  public static Set<String> validFieldTypes =
+      new HashSet<>(
+          Arrays.asList(
+              "CheckBox",
+              "PushButton",
+              "RadioButton",
+              "ComboBox",
+              "ListBox",
+              "TextField",
+              "SignatureField"));
 }
