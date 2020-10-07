@@ -6,11 +6,11 @@ import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
-import PrintDocument from './PrintDocument';
+import PrintDocument from '../Old/PrintDocument';
 import ViewDocument from './ViewDocument';
-import getServerURL from '../serverOverride';
-import PDFType from '../static/PDFType';
-import Role from '../static/Role';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
+import Role from '../../static/Role';
 
 interface Props {
   alert: any,

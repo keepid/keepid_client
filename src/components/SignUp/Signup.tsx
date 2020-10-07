@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { withAlert } from 'react-alert';
-import SignaturePad from '../../lib/react-typescript-signature-pad';
+import SignaturePad from '../../lib/SignaturePad';
 import Role from '../../static/Role';
 import USStates from '../../static/data/states_titlecase.json';
 import getServerURL from '../../serverOverride';

@@ -3,10 +3,10 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Link } from 'react-router-dom';
-import getServerURL from '../serverOverride';
-import Role from '../static/Role';
-import LoginSVG from '../static/images/login-svg.svg';
-import { reCaptchaKey } from '../configVars';
+import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
+import LoginSVG from '../../static/images/login-svg.svg';
+import { reCaptchaKey } from '../../configVars';
 
 interface State {
   username: string,

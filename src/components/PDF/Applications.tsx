@@ -6,9 +6,9 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
 import ApplicationForm from './ApplicationForm';
-import TablePageSelector from './TablePageSelector';
-import getServerURL from '../serverOverride';
-import PDFType from '../static/PDFType';
+import TablePageSelector from '../Base/TablePageSelector';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
 
 interface Props {
   username: string,

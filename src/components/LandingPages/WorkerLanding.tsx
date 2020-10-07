@@ -9,7 +9,7 @@ import Modal from 'react-bootstrap/Modal';
 import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
-import TablePageSelector from '../TablePageSelector';
+import TablePageSelector from '../Base/TablePageSelector';
 
 interface Props {
   username: string,

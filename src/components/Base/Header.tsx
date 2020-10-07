@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import Logo from '../static/images/logo.svg';
-import getServerURL from '../serverOverride';
-import Role from '../static/Role';
+import Logo from '../../static/images/logo.svg';
+import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
 
 const logoSize = 40;
 interface Props {
