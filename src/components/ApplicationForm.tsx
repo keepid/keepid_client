@@ -158,7 +158,7 @@ class ApplicationForm extends Component<Props, State> {
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
-      fetch(`${getServerURL()}/upload-pdf-signed`, {
+      fetch(`${getServerURL()}/upload-signed-pdf`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
