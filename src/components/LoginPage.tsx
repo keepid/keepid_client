@@ -90,7 +90,7 @@ class LoginPage extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
 
         if (status === 'AUTH_SUCCESS') {
@@ -138,7 +138,7 @@ class LoginPage extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const responseObject = JSON.parse(responseJSON);
+          const responseObject = responseJSON;
           const {
             status,
             userRole,
@@ -339,7 +339,7 @@ class LoginPage extends Component<Props, State> {
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100">Start 3-Month Free Trial</button>
+                      <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>
                     </Link>
                   </div>
                 </div>

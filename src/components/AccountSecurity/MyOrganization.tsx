@@ -279,7 +279,7 @@ class MyOrganization extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
         if (status === 'SUCCESS') {
           this.setState((prevState) => ({

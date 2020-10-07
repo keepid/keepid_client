@@ -66,11 +66,20 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { fields } = JSON.parse(responseJSON);
-        this.setState({ formQuestions: fields });
-        fields.forEach((entry) => {
-          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-        });
+        const {
+          fieldNames,
+          fieldQuestions,
+        } = responseJSON;
+        const fieldNamesArray : string[] = fieldNames;
+        const fieldQuestionsArray : string[] = fieldQuestions;
+        const numFields = fieldNamesArray.length;
+        const formQuestionsCombined : [string, string][] = new Array(numFields);
+        for (let j = 0; j < numFields; j += 1) {
+          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
+        }
+        this.setState({ formQuestions: formQuestionsCombined });
+        // eslint-disable-next-line
+        formQuestionsCombined.map((entry) => { formAnswers[entry[0]] = ''; });
         this.setState({ formAnswers });
       });
   }

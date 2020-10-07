@@ -209,7 +209,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
           this.setState({ buttonState: '' });
           this.props.alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
