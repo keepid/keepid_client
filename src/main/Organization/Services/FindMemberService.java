@@ -1,4 +1,4 @@
-package Organization;
+package Organization.Services;
 
 import Config.Message;
 import Config.Service;
