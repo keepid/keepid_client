@@ -55,7 +55,7 @@ class PersonSignup extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
           this.setState({ submitSuccessful: true });

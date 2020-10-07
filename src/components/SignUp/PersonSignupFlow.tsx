@@ -143,7 +143,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });

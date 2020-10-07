@@ -100,7 +100,7 @@ class Applications extends Component<Props, State, {}> {
       .then((responseJSON) => {
         const {
           documents,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
         this.setState({
           documents,
         });

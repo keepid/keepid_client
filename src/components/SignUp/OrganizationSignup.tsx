@@ -144,7 +144,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = responseJSON;
+        } = JSON.parse(responseJSON);
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
@@ -225,7 +225,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           const {
             status,
             message,
-          } = responseJSON;
+          } = JSON.parse(responseJSON);
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });

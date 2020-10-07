@@ -235,7 +235,7 @@ class Signup extends Component<Props, State, {}> {
           const {
             status,
             message,
-          } = responseJSON;
+          } = JSON.parse(responseJSON);
           if (status === 'SUCCESS') {
             this.setState({ reaffirmStage: true });
           } else {
