@@ -41,7 +41,7 @@ $theme-colors: (
 
 h1,h2,h3,h4,h5,h6 {
 	font-family: Raleway;
-	font-weight: bold;
+	font-weight: 600 !important;
 }
 
 body {
@@ -72,6 +72,11 @@ body {
 	background: #e8e9ff;;
 };
 
+.border {
+	border: 0.0625rem solid #262867 !important;
+	border-radius: 0.625rem;
+}
+
 .container-home-right {
 	text-align: center;
 }
@@ -86,6 +91,14 @@ body {
 	.container-home-right {
 		margin-right: 0 !important;
 	};
+}
+
+.progress-bar {
+	background-color: $secondary-theme;
+}
+
+.section {
+	min-height: 72vh;
 }
 
 .section1 {
@@ -209,6 +222,17 @@ thead {
 
 .red-star {
 	color: $text-red
+}
+
+// Form elements
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after{
+	background-color: $primary-theme;
+	border-radius: 0.25rem;
+}
+
+.custom-radio .custom-control-input:checked ~ .custom-control-label::before{
+	background-color: $primary-theme;
+	border-color: $primary-theme;
 }
 
 .form-purple {

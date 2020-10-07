@@ -52,6 +52,7 @@ class LoginPage extends Component<Props, State> {
   onSubmitWithReCAPTCHA = async (e) => {
     e.preventDefault();
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
@@ -153,6 +154,7 @@ class LoginPage extends Component<Props, State> {
                 case 'Admin': return Role.Admin;
                 case 'Worker': return Role.Worker;
                 case 'Client': return Role.Client;
+                case 'Developer': return Role.Developer;
                 default: return Role.LoggedOut;
               }
             };
