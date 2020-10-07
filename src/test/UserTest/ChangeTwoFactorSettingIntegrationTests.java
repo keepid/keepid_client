@@ -22,13 +22,14 @@ import static org.mockito.Mockito.when;
 
 public class ChangeTwoFactorSettingIntegrationTests {
   Context ctx = mock(Context.class);
-  static MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  static MongoDatabase db;
   static EncryptionController encryptionController;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    db = MongoConfig.getDatabase(DeploymentLevel.TEST);
     encryptionController = TestUtils.getEncryptionController();
   }
 

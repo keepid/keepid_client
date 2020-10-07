@@ -23,13 +23,14 @@ import static org.mockito.Mockito.when;
 
 public class ChangeAccountSettingsIntegrationTests {
   Context ctx = mock(Context.class);
-  static MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  static MongoDatabase db;
   static EncryptionController encryptionController;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
+    db = MongoConfig.getDatabase(DeploymentLevel.TEST);
     encryptionController = TestUtils.getEncryptionController();
   }
 
@@ -44,6 +45,8 @@ public class ChangeAccountSettingsIntegrationTests {
   private boolean isCorrectAttribute(String username, String attribute, String possibleValue) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", username)).first();
+    System.out.println(userCollection.find().first());
+    System.out.println(username);
 
     switch (attribute) {
       case "firstName":
