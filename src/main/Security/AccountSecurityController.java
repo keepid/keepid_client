@@ -20,11 +20,11 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class AccountSecurityController {
   private MongoDatabase db;
-  private EncryptionController encryptionController;
+  private EncryptionUtils encryptionUtils;
 
-  public AccountSecurityController(MongoDatabase db, EncryptionController encryptionController) {
+  public AccountSecurityController(MongoDatabase db) {
     this.db = db;
-    this.encryptionController = encryptionController;
+    this.encryptionUtils = EncryptionUtils.getInstance();
   }
 
   public Handler forgotPassword(SecurityUtils securityUtils, EmailUtil emailUtil) {

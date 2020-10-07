@@ -1,6 +1,6 @@
 package PDF;
 
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import User.UserType;
 import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
@@ -21,11 +21,11 @@ import static PDF.PdfControllerHelper.*;
 
 public class PdfController {
   private MongoDatabase db;
-  private EncryptionController encryptionController;
+  private EncryptionUtils encryptionUtils;
 
-  public PdfController(MongoDatabase db, EncryptionController encryptionController) {
+  public PdfController(MongoDatabase db) {
     this.db = db;
-    this.encryptionController = encryptionController;
+    this.encryptionUtils = EncryptionUtils.getInstance();
   }
 
   public static Set<String> validFieldTypes =
@@ -86,22 +86,16 @@ public class PdfController {
         ObjectId fileID = new ObjectId(fileIDStr);
 
         if (pdfType == null) {
-          ctx.result("Invalid PDFType");
+          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
         } else {
           InputStream stream =
               PdfMongo.download(
-                  user,
-                  organizationName,
-                  privilegeLevel,
-                  fileID,
-                  pdfType,
-                  db,
-                  encryptionController);
+                  user, organizationName, privilegeLevel, fileID, pdfType, db, encryptionUtils);
           if (stream != null) {
             ctx.header("Content-Type", "application/pdf");
             ctx.result(stream);
           } else {
-            ctx.result("Error");
+            ctx.json(PdfMessage.SERVER_ERROR.toJSON());
           }
         }
       };
@@ -122,27 +116,25 @@ public class PdfController {
         JSONObject req = new JSONObject(ctx.body());
         PDFType pdfType =
             Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
-        JSONObject res;
 
         if (pdfType == null) {
-          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
         } else if (pdfType == PDFType.FORM) {
-          boolean getUnannotatedForms = Objects.requireNonNull(req.getBoolean("annotated"));
-          res =
+          boolean formsAreUnannotated = Objects.requireNonNull(req.getBoolean("annotated"));
+          ctx.json(
               PdfMongo.getAllFiles(
                   user,
                   organizationName,
                   privilegeLevel,
                   pdfType,
-                  getUnannotatedForms,
-                  encryptionController,
-                  db);
+                  formsAreUnannotated,
+                  encryptionUtils,
+                  db));
         } else {
-          res =
+          ctx.json(
               PdfMongo.getAllFiles(
-                  user, organizationName, privilegeLevel, pdfType, false, encryptionController, db);
+                  user, organizationName, privilegeLevel, pdfType, false, encryptionUtils, db));
         }
-        ctx.json(res.toString());
       };
 
   /*
@@ -162,16 +154,16 @@ public class PdfController {
         ObjectId fileID;
 
         if (pdfType == null) {
-          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
         } else if (file == null) {
-          res = PdfMessage.INVALID_PDF.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF.toJSON());
         } else if (file.getExtension().equals(".pdf")) {
           if (fileIDStr != null) {
             fileID = new ObjectId(fileIDStr);
           } else {
             fileID = null;
           }
-          res =
+          ctx.json(
               PdfMongo.upload(
                   username,
                   organizationName,
@@ -181,11 +173,10 @@ public class PdfController {
                   pdfType,
                   file.getContent(),
                   this.db,
-                  encryptionController);
+                  encryptionUtils));
         } else {
-          res = PdfMessage.INVALID_PDF.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF.toJSON());
         }
-        ctx.json(res.toString());
       };
 
   public Handler pdfSignedUpload =
@@ -202,14 +193,14 @@ public class PdfController {
 
         JSONObject res;
         if (pdfType == null) {
-          res = PdfMessage.INVALID_PDF_TYPE.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON());
         } else if (file == null) {
-          res = PdfMessage.INVALID_PDF.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF.toJSON());
         } else if (file.getContentType().equals("application/pdf")
             || (file.getContentType().equals("application/octet-stream"))) {
 
           InputStream pdfSigned = signPDF(username, file.getContent(), signature.getContent());
-          res =
+          ctx.json(
               PdfMongo.upload(
                   username,
                   organizationName,
@@ -218,12 +209,11 @@ public class PdfController {
                   null,
                   pdfType,
                   pdfSigned,
-                  this.db,
-                  encryptionController);
+                  db,
+                  encryptionUtils));
         } else {
-          res = PdfMessage.INVALID_PDF.toJSON();
+          ctx.json(PdfMessage.INVALID_PDF.toJSON());
         }
-        ctx.json(res.toString());
       };
 
   /*
@@ -248,7 +238,7 @@ public class PdfController {
                 applicationId,
                 PDFType.FORM,
                 db,
-                encryptionController);
+                encryptionUtils);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
@@ -289,14 +279,14 @@ public class PdfController {
                 applicationId,
                 PDFType.FORM,
                 db,
-                encryptionController);
+                encryptionUtils);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
         try {
           fillFields(pdfDocument, formAnswers);
         } catch (IOException exception) {
-          ctx.result("failure");
+          ctx.json(PdfMessage.SERVER_ERROR.toJSON());
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

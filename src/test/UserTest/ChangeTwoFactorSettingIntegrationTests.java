@@ -3,7 +3,7 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
@@ -23,14 +23,14 @@ import static org.mockito.Mockito.when;
 public class ChangeTwoFactorSettingIntegrationTests {
   Context ctx = mock(Context.class);
   static MongoDatabase db;
-  static EncryptionController encryptionController;
+  static EncryptionUtils encryptionUtils;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
     db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    encryptionController = TestUtils.getEncryptionController();
+    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass
@@ -47,7 +47,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn("settings-test-2fa");
 
-    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
+    AccountSecurityController asc = new AccountSecurityController(db);
     asc.change2FASetting.handle(ctx);
 
     // Check that setting was changed
@@ -64,7 +64,7 @@ public class ChangeTwoFactorSettingIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn("settings-test-2fa");
 
-    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
+    AccountSecurityController asc = new AccountSecurityController(db);
     asc.change2FASetting.handle(ctx);
 
     // Check that setting was changed

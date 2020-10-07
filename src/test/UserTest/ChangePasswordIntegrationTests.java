@@ -3,7 +3,7 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import Security.SecurityUtils;
 import Security.Tokens;
 import TestUtils.TestUtils;
@@ -31,14 +31,14 @@ import static org.mockito.Mockito.when;
 public class ChangePasswordIntegrationTests {
   Context ctx = mock(Context.class);
   static MongoDatabase db;
-  static EncryptionController encryptionController;
+  static EncryptionUtils encryptionUtils;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
     db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    encryptionController = TestUtils.getEncryptionController();
+    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass
@@ -92,7 +92,7 @@ public class ChangePasswordIntegrationTests {
 
     when(ctx.body()).thenReturn(inputString);
 
-    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
+    AccountSecurityController asc = new AccountSecurityController(db);
     asc.resetPassword(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
@@ -124,7 +124,7 @@ public class ChangePasswordIntegrationTests {
 
     when(ctx.body()).thenReturn(inputString);
 
-    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
+    AccountSecurityController asc = new AccountSecurityController(db);
     asc.resetPassword(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
@@ -152,7 +152,7 @@ public class ChangePasswordIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
-    AccountSecurityController asc = new AccountSecurityController(db, encryptionController);
+    AccountSecurityController asc = new AccountSecurityController(db);
     asc.changePasswordIn(new SecurityUtils()).handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));

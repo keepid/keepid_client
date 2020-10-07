@@ -35,13 +35,13 @@ import static com.mongodb.client.model.Updates.set;
 public class UserController {
   Logger logger;
   MongoDatabase db;
-  EncryptionController encryptionController;
+  EncryptionUtils encryptionUtils;
 
-  public UserController(MongoDatabase db, EncryptionController encryptionController) {
+  public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
-    this.encryptionController = encryptionController;
+    this.encryptionUtils = EncryptionUtils.getInstance();
   }
 
   public Handler loginUser(SecurityUtils securityUtils, EmailUtil emailUtil) {
@@ -86,7 +86,7 @@ public class UserController {
         ctx.json(res.toString());
         return;
       }
-      encryptionController.decryptUser(user, username);
+      encryptionUtils.decryptUser(user, username);
 
       SecurityUtils.PassHashEnum verifyPasswordStatus =
           securityUtils.verifyPassword(password, user.getPassword());
@@ -382,7 +382,7 @@ public class UserController {
 
       user.setPassword(hash);
 
-      encryptionController.encryptUser(user, username);
+      encryptionUtils.encryptUser(user, username);
       logger.info("User Encrypted Address", user.getAddress());
       userCollection.insertOne(user);
       ctx.json(UserMessage.ENROLL_SUCCESS.toJSON().toString());
@@ -480,7 +480,7 @@ public class UserController {
         User user = userCollection.find(eq("username", username)).first();
 
         if (user != null) {
-          encryptionController.decryptUser(user, username);
+          encryptionUtils.decryptUser(user, username);
           res.put("userRole", user.getUserType());
           res.put("organization", user.getOrganization());
           res.put("firstName", user.getFirstName());
@@ -550,7 +550,7 @@ public class UserController {
         int numMembers = 0;
         while (cursor.hasNext()) {
           User user = cursor.next();
-          encryptionController.decryptUser(user, user.getUsername());
+          encryptionUtils.decryptUser(user, user.getUsername());
 
           JSONObject userJSON = new JSONObject();
           userJSON.put("username", user.getUsername());

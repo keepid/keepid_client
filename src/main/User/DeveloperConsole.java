@@ -2,7 +2,7 @@ package User;
 
 import Config.DeploymentLevel;
 import Config.MongoConfig;
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import Security.GoogleCredentials;
 import Security.SecurityUtils;
 import Validation.ValidationException;
@@ -40,7 +40,7 @@ public class DeveloperConsole {
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.STAGING);
     SecurityUtils securityUtils = new SecurityUtils();
-    EncryptionController encryptionController = new EncryptionController(db);
+    EncryptionUtils encryptionUtils = EncryptionUtils.getInstance();
 
     Scanner scanner = new Scanner(System.in);
     System.out.println("Please Enter your First Name: ");
@@ -118,7 +118,7 @@ public class DeveloperConsole {
     }
 
     user.setPassword(hash);
-    encryptionController.encryptUser(user, username);
+    encryptionUtils.encryptUser(user, username);
     userCollection.insertOne(user);
     System.out.println(UserMessage.ENROLL_SUCCESS.toJSON().getString("message"));
   }

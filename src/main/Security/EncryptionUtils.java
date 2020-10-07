@@ -15,32 +15,50 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class EncryptionController {
-  Logger logger;
-  MongoDatabase db;
-  Aead aead;
+public class EncryptionUtils {
+  private static EncryptionUtils instance;
+  private static Logger logger;
+  private static MongoDatabase db;
+  private static Aead aead;
 
+  public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
   public static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
 
   public static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
 
-  public EncryptionController() {}
+  // This is just for because we aren't using encryption now, so we don't want to generate an AEAD
+  private EncryptionUtils() {}
 
-  public EncryptionController(MongoDatabase db) throws GeneralSecurityException, IOException {
+  private EncryptionUtils(MongoDatabase db) throws GeneralSecurityException, IOException {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("EncryptionController");
-    generateAead();
+    aead = generateAead();
+  }
+
+  // Remember to initialize before using!
+  public static void initialize(MongoDatabase db) throws GeneralSecurityException, IOException {
+    instance = new EncryptionUtils(db);
+  }
+
+  public static void initialize() {
+    instance = new EncryptionUtils();
+  }
+
+  public static EncryptionUtils getInstance() {
+    return instance;
   }
 
   // Generates an AEAD Object through Google Tink for encryption and decryption
-  public void generateAead() throws GeneralSecurityException, IOException {
+  public Aead generateAead() throws GeneralSecurityException, IOException {
     TinkConfig.register();
 
     GoogleCredentials.generateCredentials();
@@ -61,7 +79,7 @@ public class EncryptionController {
 
     GoogleCredentials.deleteCredentials();
 
-    aead = keysetHandle.getPrimitive(Aead.class);
+    return keysetHandle.getPrimitive(Aead.class);
   }
 
   public byte[] getEncrypted(byte[] data, byte[] aad) throws GeneralSecurityException {
@@ -88,10 +106,10 @@ public class EncryptionController {
   }
 
   public String encryptString(String inputString, String username) throws GeneralSecurityException {
-    //    byte[] stringBytes = inputString.getBytes(StandardCharsets.ISO_8859_1);
+    //    byte[] stringBytes = inputString.getBytes(CHARSET);
     //    byte[] aad = username.getBytes();
     //    String encryptedString =
-    //        new String(getEncrypted(stringBytes, aad), StandardCharsets.ISO_8859_1);
+    //        new String(getEncrypted(stringBytes, aad), CHARSET);
     //    return encryptedString;
     return inputString;
   }
@@ -99,11 +117,11 @@ public class EncryptionController {
   public String decryptString(String encryptedString, String username)
       throws GeneralSecurityException {
     //    byte[] aad = username.getBytes();
-    //    byte[] encryptedBytes = encryptedString.getBytes(StandardCharsets.ISO_8859_1);
+    //    byte[] encryptedBytes = encryptedString.getBytes(CHARSET);
     //
     //    byte[] decryptedString = getDecrypted(encryptedBytes, aad);
     //
-    //    return new String(decryptedString, StandardCharsets.ISO_8859_1);
+    //    return new String(decryptedString, CHARSET);
     return encryptedString;
   }
 

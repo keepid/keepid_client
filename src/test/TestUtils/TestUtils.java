@@ -4,7 +4,7 @@ import Config.AppConfig;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import Security.GoogleCredentials;
 import Security.Tokens;
 import User.User;
@@ -39,7 +39,7 @@ public class TestUtils {
   private static final int SERVER_TEST_PORT = Integer.parseInt(System.getenv("TEST_PORT"));
   private static final String SERVER_TEST_URL = "http://localhost:" + SERVER_TEST_PORT;
   private static Javalin app;
-  private static EncryptionController encryptionController;
+  private static EncryptionUtils encryptionUtils;
   private static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
   private static final String credentials =
       Objects.requireNonNull(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
@@ -50,7 +50,8 @@ public class TestUtils {
         // GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
         MongoConfig.getMongoClient();
         MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-        encryptionController = new EncryptionController(); // new EncryptionController(db);
+        EncryptionUtils.initialize();
+        encryptionUtils = EncryptionUtils.getInstance();
       } catch (Exception e) {
         System.err.println(e.getStackTrace());
         System.exit(0);
@@ -660,10 +661,8 @@ public class TestUtils {
               passwordResetTest,
               logInHistoryTest);
       // Need to encrypt users before upload
-      EncryptionController encryptionController =
-          new EncryptionController(); // new EncryptionController(testDB);
       for (User user : users) {
-        encryptionController.encryptUser(user, user.getUsername());
+        encryptionUtils.encryptUser(user, user.getUsername());
       }
       MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
       userCollection.insertMany(
@@ -698,8 +697,8 @@ public class TestUtils {
     }
   }
 
-  public static EncryptionController getEncryptionController() {
-    return encryptionController;
+  public static EncryptionUtils getEncryptionUtils() {
+    return encryptionUtils;
   }
 
   // Tears down the test database by clearing all collections.

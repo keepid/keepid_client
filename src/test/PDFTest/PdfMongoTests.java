@@ -1,6 +1,6 @@
 package PDFTest;
 
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import TestUtils.TestUtils;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -25,7 +25,7 @@ import static PDF.PdfControllerHelper.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PdfMongoTests {
-  private static EncryptionController encryptionController;
+  private static EncryptionUtils encryptionUtils;
   private static String username;
 
   private static String currentPDFFolderPath =
@@ -639,11 +639,11 @@ public class PdfMongoTests {
   public static String uploadFileAndGetFileId(File file, String pdfType)
       throws IOException, GeneralSecurityException {
     // upload file
-    EncryptionController encryptionController = TestUtils.getEncryptionController();
+    EncryptionUtils encryptionUtils = TestUtils.getEncryptionUtils();
     InputStream fileStream = FileUtils.openInputStream(file);
 
     File tmp = File.createTempFile("test1", "tmp");
-    FileUtils.copyInputStreamToFile(encryptionController.encryptFile(fileStream, username), tmp);
+    FileUtils.copyInputStreamToFile(encryptionUtils.encryptFile(fileStream, username), tmp);
     HttpResponse<String> uploadResponse =
         Unirest.post(TestUtils.getServerUrl() + "/upload")
             .header("Content-Disposition", "attachment")

@@ -6,7 +6,7 @@ import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
 import Security.EmailUtil;
-import Security.EncryptionController;
+import Security.EncryptionUtils;
 import Security.SecurityUtils;
 import User.UserController;
 import com.mongodb.client.MongoDatabase;
@@ -32,24 +32,20 @@ public class AppConfig {
     LogFactory l = new LogFactory();
     l.createLogger();
 
-    /* Create the Encryption Controller for encryption */
-    EncryptionController encryptionController;
-    encryptionController = new EncryptionController();
+    EncryptionUtils.initialize();
     //    try {
     //      encryptionController = new EncryptionController(db);
     //    } catch (GeneralSecurityException | IOException e) {
-    //      // Is this correct? #Connor
     //      System.err.println(e.getStackTrace());
     //      System.exit(0);
     //      return null;
     //    }
 
     // We need to instantiate the controllers with the database.
-    OrganizationController orgController = new OrganizationController(db, encryptionController);
-    UserController userController = new UserController(db, encryptionController);
-    AccountSecurityController accountSecurityController =
-        new AccountSecurityController(db, encryptionController);
-    PdfController pdfController = new PdfController(db, encryptionController);
+    OrganizationController orgController = new OrganizationController(db);
+    UserController userController = new UserController(db);
+    AccountSecurityController accountSecurityController = new AccountSecurityController(db);
+    PdfController pdfController = new PdfController(db);
     BugController bugController = new BugController(db);
 
     /* -------------- DUMMY PATHS ------------------------- */
@@ -62,7 +58,7 @@ public class AppConfig {
     app.post("/get-documents", pdfController.pdfGetAll);
     app.post("/get-application-questions", pdfController.getApplicationQuestions);
     app.post("/fill-application", pdfController.fillPDFForm);
-    app.post("/upload-pdf-signed", pdfController.pdfSignedUpload);
+    app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser(securityUtils, emailUtil));
