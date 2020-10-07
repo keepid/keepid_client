@@ -1,7 +1,8 @@
-package Organization;
+package Organization.Services;
 
 import Config.Message;
 import Config.Service;
+import Organization.Organization;
 import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;

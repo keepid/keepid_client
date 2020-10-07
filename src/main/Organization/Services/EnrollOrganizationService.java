@@ -1,10 +1,12 @@
-package Organization;
+package Organization.Services;
 
 import Activity.ActivityController;
 import Activity.CreateOrgActivity;
 import Bug.BugController;
 import Config.Message;
 import Config.Service;
+import Organization.OrgEnrollmentStatus;
+import Organization.Organization;
 import Security.SecurityUtils;
 import User.IpObject;
 import User.User;
