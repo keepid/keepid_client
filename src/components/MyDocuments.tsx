@@ -83,7 +83,7 @@ class MyDocuments extends Component<Props, State> {
           .then((responseJSON) => {
             const {
               status,
-            } = JSON.parse(responseJSON);
+            } = responseJSON;
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
               this.setState({
@@ -229,7 +229,6 @@ class MyDocuments extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-        console.log(pdfFile);
       }).catch((error) => {
         alert('Error Fetching File');
       });
@@ -306,10 +305,9 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
         const {
           documents,
-        } = responseObject;
+        } = responseJSON;
         console.log(documents);
         this.setState({ documentData: documents });
       });

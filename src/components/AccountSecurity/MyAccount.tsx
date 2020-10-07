@@ -440,20 +440,19 @@ class MyAccount extends Component<Props, State, {}> {
       },
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const date = responseObject.birthDate.split('-');
+        const date = responseJSON.birthDate.split('-');
         const newState = {
-          username: responseObject.username,
-          firstName: responseObject.firstName,
-          lastName: responseObject.lastName,
+          username: responseJSON.username,
+          firstName: responseJSON.firstName,
+          lastName: responseJSON.lastName,
           birthDate: new Date(date[2], date[0] - 1, date[1]),
-          email: responseObject.email,
-          phone: responseObject.phone,
-          city: responseObject.city,
-          state: responseObject.state,
-          address: responseObject.address,
-          zipcode: responseObject.zipcode,
-          twoFactorOn: responseObject.twoFactorOn,
+          email: responseJSON.email,
+          phone: responseJSON.phone,
+          city: responseJSON.city,
+          state: responseJSON.state,
+          address: responseJSON.address,
+          zipcode: responseJSON.zipcode,
+          twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
       });

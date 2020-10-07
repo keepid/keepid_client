@@ -64,10 +64,9 @@ class UploadDocs extends React.Component<Props, State> {
       },
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
         const newState = {
-          firstName: responseObject.firstName,
-          lastName: responseObject.lastName,
+          firstName: responseJSON.firstName,
+          lastName: responseJSON.lastName,
         };
         this.setState(newState);
       });
