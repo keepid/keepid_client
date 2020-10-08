@@ -650,6 +650,7 @@ public class PdfMongoTests {
             .field("pdfType", pdfType)
             .field("file", file)
             .asString();
+    System.out.println(uploadResponse.getBody());
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
