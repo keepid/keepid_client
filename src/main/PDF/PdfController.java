@@ -153,7 +153,7 @@ public class PdfController {
         PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
         String fileIDStr = ctx.formParam("fileId");
         JSONObject res;
-        ObjectId fileID;
+        ObjectId fileID = null;
 
         if (pdfType == null) {
           ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
@@ -162,8 +162,6 @@ public class PdfController {
         } else if (file.getExtension().equals(".pdf")) {
           if (fileIDStr != null) {
             fileID = new ObjectId(fileIDStr);
-          } else {
-            fileID = null;
           }
           ctx.json(
               PdfMongo.upload(
