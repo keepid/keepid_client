@@ -1,5 +1,6 @@
 package Config;
 
+import Activity.ActivityController;
 import Bug.BugController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
@@ -27,8 +28,6 @@ public class AppConfig {
     setApplicationHeaders(app);
 
     /* Utilities to pass to route handlers */
-    SecurityUtils securityUtils = new SecurityUtils();
-    EmailUtil emailUtil = new EmailUtil();
     LogFactory l = new LogFactory();
     l.createLogger();
 
@@ -47,7 +46,7 @@ public class AppConfig {
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
     BugController bugController = new BugController(db);
-
+    ActivityController activityController = new ActivityController(db);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -61,33 +60,27 @@ public class AppConfig {
     app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
-    app.post("/login", userController.loginUser(securityUtils, emailUtil));
+    app.post("/login", userController.loginUser);
     app.post("/generate-username", userController.generateUniqueUsername);
     app.post("/create-user-validator", userController.createUserValidator);
-    app.post("/create-user", userController.createNewUser(securityUtils));
-    app.post("/create-invited-user", userController.createNewInvitedUser(securityUtils));
+    app.post("/create-user", userController.createNewUser);
     app.get("/logout", userController.logout);
-    app.post(
-        "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
-    app.post("/change-password", accountSecurityController.changePasswordIn(securityUtils));
-    app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
+    app.post("/forgot-password", accountSecurityController.forgotPassword);
+    app.post("/change-password", accountSecurityController.changePassword);
+    app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
     app.post("/get-login-history", userController.getLogInHistory);
 
-    /* -------------- AUTHORIZATION  ----------------------- */
-    app.post("/modify-permissions", userController.modifyPermissions);
-
     /* -------------- ORGANIZATION SIGN UP ------------------ */
-    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
-    app.post("/organization-signup", orgController.enrollOrganization(securityUtils));
+    //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
+    app.post("/organization-signup", orgController.enrollOrganization);
 
-    app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
+    app.post("/invite-user", orgController.inviteUsers);
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
-    app.post(
-        "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
+    app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- SUBMIT BUG------------------ */
@@ -98,6 +91,7 @@ public class AppConfig {
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/get-all-orgs", orgController.listOrgs);
+    app.post("/get-all-activities", activityController.findMyActivities);
 
     return app;
   }

@@ -1,8 +1,12 @@
 package PDF;
 
 import Security.EncryptionUtils;
+import Logger.LogFactory;
+import PDF.Services.DeletePDFService;
+import PDF.Services.DownloadPDFService;
+import PDF.Services.GetAllPdfFilesService;
+import PDF.Services.UploadPDFService;
 import User.UserType;
-import Validation.ValidationUtils;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
@@ -10,6 +14,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,10 +27,13 @@ import static PDF.PdfControllerHelper.*;
 public class PdfController {
   private MongoDatabase db;
   private EncryptionUtils encryptionUtils;
+  private Logger logger;
 
   public PdfController(MongoDatabase db) {
     this.db = db;
     this.encryptionUtils = EncryptionUtils.getInstance();
+    LogFactory l = new LogFactory();
+    this.logger = l.createLogger("PdfController");
   }
 
   public static Set<String> validFieldTypes =
@@ -46,26 +54,16 @@ public class PdfController {
   */
   public Handler pdfDelete =
       ctx -> {
-        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-
         JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType =
-            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
-        String fileIDStr = Objects.requireNonNull(req.getString("fileId"));
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        String fileIDStr = req.getString("fileId");
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
 
-        if (pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
-          return;
-        } else if (!ValidationUtils.isValidObjectId(fileIDStr)) {
-          ctx.json(PdfMessage.INVALID_PARAMETER.toJSON().toString());
-          return;
-        }
-        ObjectId fileID = new ObjectId(fileIDStr);
-        ctx.json(
-            PdfMongo.delete(user, organizationName, pdfType, privilegeLevel, fileID, db)
-                .toString());
+        DeletePDFService deletePDFService =
+            new DeletePDFService(db, logger, username, orgName, userType, pdfType, fileIDStr);
+        ctx.result(deletePDFService.executeAndGetResponse().toResponseString());
       };
 
   /*
@@ -75,28 +73,19 @@ public class PdfController {
   */
   public Handler pdfDownload =
       ctx -> {
-        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
-        String fileIDStr = Objects.requireNonNull(req.getString("fileId"));
-        PDFType pdfType =
-            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
-        ObjectId fileID = new ObjectId(fileIDStr);
-
-        if (pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
+        String fileIDStr = req.getString("fileID");
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        DownloadPDFService downloadPDFService =
+            new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
+        if (downloadPDFService.executeAndGetResponse() == PdfMessage.SUCCESS) {
+          ctx.header("Content-Type", "application/pdf");
+          ctx.result(downloadPDFService.getInputStream());
         } else {
-          InputStream stream =
-              PdfMongo.download(
-                  user, organizationName, privilegeLevel, fileID, pdfType, db, encryptionUtils);
-          if (stream != null) {
-            ctx.header("Content-Type", "application/pdf");
-            ctx.result(stream);
-          } else {
-            ctx.json(PdfMessage.SERVER_ERROR.toJSON().toString());
-          }
+          ctx.result("Error");
         }
       };
 
@@ -109,34 +98,18 @@ public class PdfController {
   */
   public Handler pdfGetAll =
       ctx -> {
-        String user = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-
+        String username = ctx.sessionAttribute("username");
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType userType = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType =
-            Objects.requireNonNull(PDFType.createFromString(req.getString("pdfType")));
-
-        if (pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
-        } else if (pdfType == PDFType.FORM) {
-          boolean formsAreUnannotated = Objects.requireNonNull(req.getBoolean("annotated"));
-          ctx.json(
-              PdfMongo.getAllFiles(
-                      user,
-                      organizationName,
-                      privilegeLevel,
-                      pdfType,
-                      formsAreUnannotated,
-                      encryptionUtils,
-                      db)
-                  .toString());
-        } else {
-          ctx.json(
-              PdfMongo.getAllFiles(
-                      user, organizationName, privilegeLevel, pdfType, false, encryptionUtils, db)
-                  .toString());
+        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+        GetAllPdfFilesService getAllPdfFilesService =
+            new GetAllPdfFilesService(db, logger, username, orgName, userType, pdfType);
+        JSONObject res = getAllPdfFilesService.executeAndGetResponse().toJSON();
+        if (getAllPdfFilesService.executeAndGetResponse() == PdfMessage.SUCCESS) {
+          res.put("documents", getAllPdfFilesService.getFiles());
         }
+        ctx.result(res.toString());
       };
 
   /*
@@ -146,76 +119,15 @@ public class PdfController {
    */
   public Handler pdfUpload =
       ctx -> {
-        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         UploadedFile file = ctx.uploadedFile("file");
         PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-        String fileIDStr = ctx.formParam("fileId");
-        JSONObject res;
-        ObjectId fileID = null;
-
-        if (pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
-        } else if (file == null) {
-          ctx.json(PdfMessage.INVALID_PDF.toJSON().toString());
-        } else if (file.getExtension().equals(".pdf")) {
-          if (fileIDStr != null) {
-            fileID = new ObjectId(fileIDStr);
-          }
-          ctx.json(
-              PdfMongo.upload(
-                      username,
-                      organizationName,
-                      privilegeLevel,
-                      file.getFilename(),
-                      fileID,
-                      pdfType,
-                      file.getContent(),
-                      this.db,
-                      encryptionUtils)
-                  .toString());
-        } else {
-          ctx.json(PdfMessage.INVALID_PDF.toJSON().toString());
-        }
-      };
-
-  public Handler pdfSignedUpload =
-      ctx -> {
-        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-
-        // Params
-        UploadedFile file = Objects.requireNonNull(ctx.uploadedFile("file"));
-        UploadedFile signature = Objects.requireNonNull(ctx.uploadedFile("signature"));
-        PDFType pdfType =
-            Objects.requireNonNull(PDFType.createFromString(ctx.formParam("pdfType")));
-
-        JSONObject res;
-        if (pdfType == null) {
-          ctx.json(PdfMessage.INVALID_PDF_TYPE.toJSON().toString());
-        } else if (file == null) {
-          ctx.json(PdfMessage.INVALID_PDF.toJSON().toString());
-        } else if (file.getContentType().equals("application/pdf")
-            || (file.getContentType().equals("application/octet-stream"))) {
-
-          InputStream pdfSigned = signPDF(username, file.getContent(), signature.getContent());
-          ctx.json(
-              PdfMongo.upload(
-                      username,
-                      organizationName,
-                      privilegeLevel,
-                      file.getFilename(),
-                      null,
-                      pdfType,
-                      pdfSigned,
-                      db,
-                      encryptionUtils)
-                  .toString());
-        } else {
-          ctx.json(PdfMessage.INVALID_PDF.toJSON().toString());
-        }
+        UploadPDFService uploadService =
+            new UploadPDFService(
+                db, logger, username, organizationName, privilegeLevel, pdfType, file);
+        ctx.result(uploadService.executeAndGetResponse().toResponseString());
       };
 
   /*
@@ -229,27 +141,19 @@ public class PdfController {
         UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
 
         JSONObject req = new JSONObject(ctx.body());
-        String applicationIdString = Objects.requireNonNull(req.getString("applicationId"));
-        ObjectId applicationId = new ObjectId(applicationIdString);
-
+        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         InputStream inputStream =
-            PdfMongo.download(
-                username,
-                organizationName,
-                privilegeLevel,
-                applicationId,
-                PDFType.FORM,
-                db,
-                encryptionUtils);
+            DownloadPDFService.download(
+                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
         List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
         pdfDocument.close();
-
-        JSONObject allFields = PdfMessage.SUCCESS.toJSON();
-        allFields.put("fields", new JSONArray(fieldsJSON));
-        ctx.json(allFields.toString());
+        ctx.result(fieldsJSON.toString());
       };
 
   /*
@@ -264,31 +168,23 @@ public class PdfController {
    */
   public Handler fillPDFForm =
       ctx -> {
-        String username = Objects.requireNonNull(ctx.sessionAttribute("username"));
-        String organizationName = Objects.requireNonNull(ctx.sessionAttribute("orgName"));
-        UserType privilegeLevel = Objects.requireNonNull(ctx.sessionAttribute("privilegeLevel"));
-
         JSONObject req = new JSONObject(ctx.body());
-        String applicationIdString = Objects.requireNonNull(req.getString("applicationId"));
-        JSONObject formAnswers = Objects.requireNonNull(req.getJSONObject("formAnswers"));
-        ObjectId applicationId = new ObjectId(applicationIdString);
+        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        String username = ctx.sessionAttribute("username");
+        String organizationName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        JSONObject formAnswers = req.getJSONObject("formAnswers");
 
         InputStream inputStream =
-            PdfMongo.download(
-                username,
-                organizationName,
-                privilegeLevel,
-                applicationId,
-                PDFType.FORM,
-                db,
-                encryptionUtils);
+            DownloadPDFService.download(
+                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
         PDDocument pdfDocument = PDDocument.load(inputStream);
         pdfDocument.setAllSecurityToBeRemoved(true);
 
         try {
           fillFields(pdfDocument, formAnswers);
         } catch (IOException exception) {
-          ctx.json(PdfMessage.SERVER_ERROR.toJSON().toString());
+          ctx.result("failure");
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

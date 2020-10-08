@@ -1,30 +1,38 @@
 package UserTest;
 
 import Config.DeploymentLevel;
+import Config.Message;
 import Config.MongoConfig;
+import Database.TokenDao;
+import Logger.LogFactory;
 import Security.AccountSecurityController;
 import Security.EncryptionUtils;
 import Security.SecurityUtils;
+import Security.Services.ChangePasswordService;
+import Security.Services.ForgotPasswordService;
+import Security.Services.ResetPasswordService;
 import Security.Tokens;
 import TestUtils.TestUtils;
 import User.User;
 import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.ReplaceOptions;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.http.Context;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +40,7 @@ public class ChangePasswordIntegrationTests {
   Context ctx = mock(Context.class);
   static MongoDatabase db;
   static EncryptionUtils encryptionUtils;
+  private static final int EXPIRATION_TIME_2_HOURS = 7200000;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
@@ -46,6 +55,10 @@ public class ChangePasswordIntegrationTests {
     TestUtils.tearDownTestDB();
   }
 
+  Context ctx = mock(Context.class);
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  Logger logger = new LogFactory().createLogger();
+
   // Make sure to enable .env file configurations for these tests
 
   // We will switch between these two passwords for simplicity
@@ -55,79 +68,38 @@ public class ChangePasswordIntegrationTests {
   private boolean isCorrectPassword(String username, String possiblePassword) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", username)).first();
-
+    Objects.requireNonNull(user);
     Argon2 argon2 = Argon2Factory.create();
     char[] possiblePasswordArr = possiblePassword.toCharArray();
-    String passwordHash = null;
-    if (user != null) {
-      passwordHash = user.getPassword();
-    }
+    String passwordHash = user.getPassword();
 
     return argon2.verify(passwordHash, possiblePasswordArr);
   }
 
   @Test
-  public void forgotPasswordCreatesTokenTest() throws Exception {
+  public void forgotPasswordCreatesTokenTest() {
     String username = "password-reset-test";
-    String newPassword = password2;
-
-    // If we are already using password2, switch to password1
-    if (isCorrectPassword(username, password2)) {
-      newPassword = password1;
-    }
-
-    String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-    int expirationTime = 7200000; // 2 hours
-    String jwt =
-        (new SecurityUtils())
-            .createJWT(id, "KeepID", username, "Password Reset Confirmation", expirationTime);
-
-    MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-    tokenCollection.replaceOne(
-        eq("username", username),
-        new Tokens().setUsername(username).setResetJwt(jwt),
-        new ReplaceOptions().upsert(true));
-
-    String inputString = "{\"newPassword\":" + newPassword + ",\"jwt\":" + jwt + "}";
-
-    when(ctx.body()).thenReturn(inputString);
-
-    AccountSecurityController asc = new AccountSecurityController(db);
-    asc.resetPassword(new SecurityUtils()).handle(ctx);
-
-    assert (isCorrectPassword(username, newPassword));
+    ForgotPasswordService forgotPasswordService = new ForgotPasswordService(db, logger, username);
+    Message returnMessage = forgotPasswordService.executeAndGetResponse();
+    assertEquals(UserMessage.SUCCESS, returnMessage);
+    Tokens tokens = TokenDao.getTokensOrNull(db, username);
+    assertEquals(1, tokens.numTokens());
+    TokenDao.removeTokenIfLast(db, username, tokens, Tokens.TokenType.PASSWORD_RESET);
   }
 
   @Test
   public void resetPasswordWithJWTTest() throws Exception {
     String username = "password-reset-test";
-    String newPassword = password2;
-
-    // If we are already using password2, switch to password1
-    if (isCorrectPassword(username, password2)) {
-      newPassword = password1;
-    }
-
-    String id = RandomStringUtils.random(25, 48, 122, true, true, null, new SecureRandom());
-    int expirationTime = 7200000; // 2 hours
+    String id = SecurityUtils.generateRandomStringId();
     String jwt =
-        (new SecurityUtils())
-            .createJWT(id, "KeepID", username, "Password Reset Confirmation", expirationTime);
-
-    MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-    tokenCollection.replaceOne(
-        eq("username", username),
-        new Tokens().setUsername(username).setResetJwt(jwt),
-        new ReplaceOptions().upsert(true));
-
-    String inputString = "{\"newPassword\":" + newPassword + ",\"jwt\":" + jwt + "}";
-
-    when(ctx.body()).thenReturn(inputString);
-
-    AccountSecurityController asc = new AccountSecurityController(db);
-    asc.resetPassword(new SecurityUtils()).handle(ctx);
-
-    assert (isCorrectPassword(username, newPassword));
+        SecurityUtils.createJWT(
+            id, "KeepID", username, "Password Reset Confirmation", EXPIRATION_TIME_2_HOURS);
+    ResetPasswordService forgotPasswordService =
+        new ResetPasswordService(db, logger, jwt, username);
+    Message returnMessage = forgotPasswordService.executeAndGetResponse();
+    assertEquals(UserMessage.AUTH_FAILURE, returnMessage);
+    Tokens tokens = TokenDao.getTokensOrNull(db, username);
+    assertNull(tokens);
   }
 
   @Test
@@ -153,7 +125,7 @@ public class ChangePasswordIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changePasswordIn(new SecurityUtils()).handle(ctx);
+    asc.changePassword.handle(ctx);
 
     assert (isCorrectPassword(username, newPassword));
   }
@@ -174,10 +146,7 @@ public class ChangePasswordIntegrationTests {
       throw new Exception("Current test password doesn't match examples");
     }
 
-    UserMessage result =
-        AccountSecurityController.changePassword(
-            username, newPassword, oldPassword, db, new SecurityUtils());
-
+    Message result = ChangePasswordService.changePassword(db, username, oldPassword, newPassword);
     assert (result == UserMessage.AUTH_SUCCESS);
   }
 }

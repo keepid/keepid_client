@@ -114,123 +114,105 @@ public class TestUtils {
 
       User workerFffBSM =
           new User(
-                  "Worker",
-                  "Fff",
-                  "12-14-1997",
-                  "workerfff@broadstreetministry.org",
-                  "2157354847",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workerfffBSM",
-                  TestUtils.hashPassword("workerfffBSM"),
-                  UserType.Worker)
-              .setCanEdit(false)
-              .setCanView(false)
-              .setCanRegister(false);
+              "Worker",
+              "Fff",
+              "12-14-1997",
+              "workerfff@broadstreetministry.org",
+              "2157354847",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workerfffBSM",
+              TestUtils.hashPassword("workerfffBSM"),
+              UserType.Worker);
 
       User workerFftBSM =
           new User(
-                  "Worker",
-                  "Fft",
-                  "09-04-1978",
-                  "workerfft@broadstreetministry.org",
-                  "2152839504",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workerfftBSM",
-                  TestUtils.hashPassword("workerfftBSM"),
-                  UserType.Worker)
-              .setCanEdit(false)
-              .setCanView(false)
-              .setCanRegister(true);
+              "Worker",
+              "Fft",
+              "09-04-1978",
+              "workerfft@broadstreetministry.org",
+              "2152839504",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workerfftBSM",
+              TestUtils.hashPassword("workerfftBSM"),
+              UserType.Worker);
 
       User workerTffBSM =
           new User(
-                  "Worker",
-                  "Tff",
-                  "09-04-1978",
-                  "workertff@broadstreetministry.org",
-                  "2152839504",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workertffBSM",
-                  TestUtils.hashPassword("workertffBSM"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(false)
-              .setCanRegister(false);
+              "Worker",
+              "Tff",
+              "09-04-1978",
+              "workertff@broadstreetministry.org",
+              "2152839504",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workertffBSM",
+              TestUtils.hashPassword("workertffBSM"),
+              UserType.Worker);
 
       User workerTftBSM =
           new User(
-                  "Worker",
-                  "Tft",
-                  "09-14-1978",
-                  "workertft@broadstreetministry.org",
-                  "2152839204",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workertftBSM",
-                  TestUtils.hashPassword("workertftBSM"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(false)
-              .setCanRegister(true);
+              "Worker",
+              "Tft",
+              "09-14-1978",
+              "workertft@broadstreetministry.org",
+              "2152839204",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workertftBSM",
+              TestUtils.hashPassword("workertftBSM"),
+              UserType.Worker);
 
       User workerTtfBSM =
           new User(
-                  "Worker",
-                  "Ttf",
-                  "09-14-1978",
-                  "workerttf@broadstreetministry.org",
-                  "2152812204",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workerttfBSM",
-                  TestUtils.hashPassword("workerttfBSM"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(true)
-              .setCanRegister(false);
+              "Worker",
+              "Ttf",
+              "09-14-1978",
+              "workerttf@broadstreetministry.org",
+              "2152812204",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workerttfBSM",
+              TestUtils.hashPassword("workerttfBSM"),
+              UserType.Worker);
 
       User workerTttBSM =
           new User(
-                  "Worker",
-                  "Ttt",
-                  "09-14-1978",
-                  "workerttt@broadstreetministry.org",
-                  "2152839204",
-                  "Broad Street Ministry",
-                  "311 Broad Street",
-                  "Philadelphia",
-                  "PA",
-                  "19104",
-                  false,
-                  "workertttBSM",
-                  TestUtils.hashPassword("workertttBSM"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(true)
-              .setCanRegister(true);
+              "Worker",
+              "Ttt",
+              "09-14-1978",
+              "workerttt@broadstreetministry.org",
+              "2152839204",
+              "Broad Street Ministry",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "workertttBSM",
+              TestUtils.hashPassword("workertttBSM"),
+              UserType.Worker);
 
       User client1BSM =
           new User(
@@ -298,123 +280,105 @@ public class TestUtils {
 
       User workerFffYMCA =
           new User(
-                  "Worker",
-                  "Fff",
-                  "12-14-1997",
-                  "workerfff@ymca.net",
-                  "2157354847",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workerfffYMCA",
-                  TestUtils.hashPassword("workerfffYMCA"),
-                  UserType.Worker)
-              .setCanEdit(false)
-              .setCanView(false)
-              .setCanRegister(false);
+              "Worker",
+              "Fff",
+              "12-14-1997",
+              "workerfff@ymca.net",
+              "2157354847",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workerfffYMCA",
+              TestUtils.hashPassword("workerfffYMCA"),
+              UserType.Worker);
 
       User workerFftYMCA =
           new User(
-                  "Worker",
-                  "Fft",
-                  "09-04-1978",
-                  "workerfft@ymca.net",
-                  "2152839504",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workerfftYMCA",
-                  TestUtils.hashPassword("workerfftYMCA"),
-                  UserType.Worker)
-              .setCanEdit(false)
-              .setCanView(false)
-              .setCanRegister(true);
+              "Worker",
+              "Fft",
+              "09-04-1978",
+              "workerfft@ymca.net",
+              "2152839504",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workerfftYMCA",
+              TestUtils.hashPassword("workerfftYMCA"),
+              UserType.Worker);
 
       User workerTffYMCA =
           new User(
-                  "Worker",
-                  "Tff",
-                  "09-04-1978",
-                  "workertff@ymca.net",
-                  "2152839504",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workertffYMCA",
-                  TestUtils.hashPassword("workertffYMCA"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(false)
-              .setCanRegister(false);
+              "Worker",
+              "Tff",
+              "09-04-1978",
+              "workertff@ymca.net",
+              "2152839504",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workertffYMCA",
+              TestUtils.hashPassword("workertffYMCA"),
+              UserType.Worker);
 
       User workerTftYMCA =
           new User(
-                  "Worker",
-                  "Tft",
-                  "09-14-1978",
-                  "workertft@ymca.net",
-                  "2152839204",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workertftYMCA",
-                  TestUtils.hashPassword("workertftYMCA"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(false)
-              .setCanRegister(true);
+              "Worker",
+              "Tft",
+              "09-14-1978",
+              "workertft@ymca.net",
+              "2152839204",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workertftYMCA",
+              TestUtils.hashPassword("workertftYMCA"),
+              UserType.Worker);
 
       User workerTtfYMCA =
           new User(
-                  "Worker",
-                  "Ttf",
-                  "09-14-1978",
-                  "workerttf@ymca.net",
-                  "2152812204",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workerttfYMCA",
-                  TestUtils.hashPassword("workerttfYMCA"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(true)
-              .setCanRegister(false);
+              "Worker",
+              "Ttf",
+              "09-14-1978",
+              "workerttf@ymca.net",
+              "2152812204",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workerttfYMCA",
+              TestUtils.hashPassword("workerttfYMCA"),
+              UserType.Worker);
 
       User workerTttYMCA =
           new User(
-                  "Worker",
-                  "Ttt",
-                  "09-14-1978",
-                  "workerttt@ymca.net",
-                  "2152839204",
-                  "YMCA",
-                  "11088 Knights Road",
-                  "Philadelphia",
-                  "PA",
-                  "19154",
-                  false,
-                  "workertttYMCA",
-                  TestUtils.hashPassword("workertttYMCA"),
-                  UserType.Worker)
-              .setCanEdit(true)
-              .setCanView(true)
-              .setCanRegister(true);
+              "Worker",
+              "Ttt",
+              "09-14-1978",
+              "workerttt@ymca.net",
+              "2152839204",
+              "YMCA",
+              "11088 Knights Road",
+              "Philadelphia",
+              "PA",
+              "19154",
+              false,
+              "workertttYMCA",
+              TestUtils.hashPassword("workertttYMCA"),
+              UserType.Worker);
 
       User client1YMCA =
           new User(
@@ -625,6 +589,41 @@ public class TestUtils {
               "login-history-test",
               TestUtils.hashPassword("login-history-test"),
               UserType.Client);
+      /* *********************** Activity Test Users ************************ */
+      User createAdminOwner =
+          new User(
+              "Cathy",
+              "Chen",
+              "07-14-2020",
+              "contact@example.com",
+              "1234567890",
+              "login history Org",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "createAdminOwner",
+              TestUtils.hashPassword("login-history-test"),
+              UserType.Director);
+
+      User createdAdmin =
+          new User(
+              "Cathy",
+              "Chen",
+              "07-14-2020",
+              "contact@example.com",
+              "1234567890",
+              "login history Org",
+              "311 Broad Street",
+              "Philadelphia",
+              "PA",
+              "19104",
+              false,
+              "createdAdmin",
+              TestUtils.hashPassword("login-history-test"),
+              UserType.Admin);
+
       // Add the organization documents to the test database.
       MongoCollection<Organization> organizationCollection =
           testDB.getCollection("organization", Organization.class);
@@ -687,7 +686,9 @@ public class TestUtils {
               accountSettingsTest,
               settingsTest2FA,
               passwordResetTest,
-              logInHistoryTest));
+              logInHistoryTest,
+              createAdminOwner,
+              createdAdmin));
 
       // Add the 2FA tokens to the test database
       MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
@@ -778,7 +779,10 @@ public class TestUtils {
   }
 
   public static JSONObject responseStringToJSON(String response) {
-    String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
-    return new JSONObject(strippedResponse);
+    if (response.charAt(0) == '"') {
+      String strippedResponse = response.substring(1, response.length() - 1).replace("\\", "");
+      return new JSONObject(strippedResponse);
+    }
+    return new JSONObject(response);
   }
 }

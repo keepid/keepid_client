@@ -40,15 +40,19 @@ public class MongoConfig {
     return client;
   }
 
-  public static MongoDatabase getDatabase(DeploymentLevel deploymentLevel){
-    if(client == null){
+  public static MongoDatabase getDatabase(DeploymentLevel deploymentLevel) {
+    if (client == null) {
       throw new IllegalStateException("Please start a client before getting a database");
     }
-    switch(deploymentLevel){
-      case TEST: return client.getDatabase(MONGO_DB_TEST);
-      case STAGING: return client.getDatabase(MONGO_DB_STAGING);
-      case PRODUCTION: return client.getDatabase(MONGO_DB_PRODUCTION);
-      default: return null;
+    switch (deploymentLevel) {
+      case TEST:
+        return client.getDatabase(MONGO_DB_TEST);
+      case STAGING:
+        return client.getDatabase(MONGO_DB_STAGING);
+      case PRODUCTION:
+        return client.getDatabase(MONGO_DB_PRODUCTION);
+      default:
+        return null;
     }
   }
 
@@ -58,9 +62,14 @@ public class MongoConfig {
 
   public static void dropDatabase(DeploymentLevel deploymentLevel) {
     MongoDatabase db = getDatabase(deploymentLevel);
-    if(db == null){
+    if (db == null) {
       throw new IllegalStateException("Please start a client before dropping a database");
     }
     db.drop();
+    try {
+      Thread.sleep(4000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 }

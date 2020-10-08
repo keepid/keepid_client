@@ -56,15 +56,6 @@ public class User {
   @BsonProperty(value = "twoFactorOn")
   private boolean twoFactorOn;
 
-  @BsonProperty(value = "canEdit")
-  private boolean canEdit;
-
-  @BsonProperty(value = "canView")
-  private boolean canView;
-
-  @BsonProperty(value = "canRegister")
-  private boolean canRegister;
-
   @BsonProperty(value = "creationDate")
   private Date creationDate;
 
@@ -127,13 +118,6 @@ public class User {
     this.password = password;
     this.userType = userType;
     this.creationDate = date;
-    this.calcPermissions();
-  }
-
-  private void calcPermissions() {
-    this.canEdit = this.userType == UserType.Director || this.userType == UserType.Admin;
-    this.canView = this.userType == UserType.Director || this.userType == UserType.Admin;
-    this.canRegister = this.userType == UserType.Director || this.userType == UserType.Admin;
   }
 
   /** **************** GETTERS ********************* */
@@ -195,18 +179,6 @@ public class User {
 
   public boolean getTwoFactorOn() {
     return this.twoFactorOn;
-  }
-
-  public boolean getCanEdit() {
-    return this.canEdit;
-  }
-
-  public boolean getCanView() {
-    return this.canView;
-  }
-
-  public boolean getCanRegister() {
-    return this.canRegister;
   }
 
   public Date getCreationDate() {
@@ -285,21 +257,6 @@ public class User {
 
   public User setUserType(UserType userType) {
     this.userType = userType;
-    return this;
-  }
-
-  public User setCanEdit(boolean canEdit) {
-    this.canEdit = canEdit;
-    return this;
-  }
-
-  public User setCanView(boolean canView) {
-    this.canView = canView;
-    return this;
-  }
-
-  public User setCanRegister(boolean canRegister) {
-    this.canRegister = canRegister;
     return this;
   }
 
@@ -399,9 +356,6 @@ public class User {
     sb.append(", password=").append(this.password);
     sb.append(", userType=").append(this.userType);
     sb.append(", twoFactorOn=").append(this.twoFactorOn);
-    sb.append(", canEdit=").append(this.canEdit);
-    sb.append(", canView=").append(this.canView);
-    sb.append(", canRegister=").append(this.canRegister);
     sb.append(", creationDate=").append(this.creationDate);
     sb.append("}");
     return sb.toString();
@@ -425,10 +379,7 @@ public class User {
         && Objects.equals(this.username, user.username)
         && Objects.equals(this.password, user.password)
         && Objects.equals(this.userType, user.userType)
-        && Objects.equals(this.twoFactorOn, user.twoFactorOn)
-        && Objects.equals(this.canEdit, user.canEdit)
-        && Objects.equals(this.canView, user.canView)
-        && Objects.equals(this.canRegister, user.canRegister);
+        && Objects.equals(this.twoFactorOn, user.twoFactorOn);
   }
 
   @Override
@@ -447,9 +398,6 @@ public class User {
         this.username,
         this.password,
         this.userType,
-        this.twoFactorOn,
-        this.canEdit,
-        this.canView,
-        this.canRegister);
+        this.twoFactorOn);
   }
 }

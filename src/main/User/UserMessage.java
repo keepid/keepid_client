@@ -1,8 +1,9 @@
 package User;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum UserMessage {
+public enum UserMessage implements Message {
   AUTH_SUCCESS("AUTH_SUCCESS:Successfully Authenticated User"),
   ENROLL_SUCCESS("ENROLL_SUCCESS:Successfully enrolled User."),
   AUTH_FAILURE("AUTH_FAILURE:Wrong Credentials"),
@@ -19,7 +20,8 @@ public enum UserMessage {
   INVALID_PRIVILEGE_TYPE("INVALID_PRIVILEGE_TYPE:The privilege type is invalid"),
   SUCCESS("SUCCESS:Success."),
   TOKEN_ISSUED("TOKEN_ISSUED:Token issued."),
-  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty.");
+  EMPTY_FIELD("EMPTY_FIELD:Cannot be empty."),
+  EMAIL_DOES_NOT_EXIST("EMAIL_DOES_NOT_EXIST:No email found for this user");
 
   private String errorMessage;
 
@@ -27,8 +29,13 @@ public enum UserMessage {
     this.errorMessage = errorMessage;
   }
 
-  public String toString() {
-    return this.errorMessage;
+  public String toResponseString() {
+    return toJSON().toString();
+  }
+
+  public Message withMessage(String message) {
+    this.errorMessage = getErrorName() + ":" + message;
+    return this;
   }
 
   public String getErrorName() {
