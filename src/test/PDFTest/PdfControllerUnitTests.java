@@ -275,8 +275,8 @@ public class PdfControllerUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     JSONObject formAnswers = new JSONObject();
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
     pdfDocument.close();
   }
 
@@ -298,8 +298,8 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("A different address", "321 Broad Street");
     correctFieldValues.put("currentdate_af_date", "07/07/2020");
 
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -325,8 +325,8 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Ribeye Steaks", "Off");
     correctFieldValues.put("Tomatoes", "Yes");
 
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -345,8 +345,8 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Radiobuttons", "Yes");
 
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -358,8 +358,8 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -371,8 +371,8 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -384,15 +384,14 @@ public class PdfControllerUnitTests {
   @Test
   public void fillFieldsListBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
-    PDDocument pdfDocument = PDDocument.load(pdfInput);
     JSONObject formAnswers = new JSONObject();
     formAnswers.put("Dropdown", "Choice1");
 
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Dropdown", "[Choice1]");
 
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -403,9 +402,8 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Dropdown", "[Choice2]");
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
-    pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -416,15 +414,13 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Dropdown", "[Choice3]");
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
-    pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
       Assert.assertEquals(correctFieldValues.getString(key), fieldValues.getString(key));
     }
-    pdfDocument.close();
   }
 
   @Test
@@ -439,8 +435,8 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Combobox", "[Choice1]");
 
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    JSONObject fieldValues = getFieldValues(pdfDocument);
+    InputStream completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    JSONObject fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -454,8 +450,8 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -470,8 +466,8 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {
@@ -487,8 +483,8 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(new FileInputStream(pdfInput), formAnswers);
-    fieldValues = getFieldValues(pdfDocument);
+    completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
+    fieldValues = getFieldValues(completedPDF);
 
     // We test that all the fields in correctFields have the right value
     for (String key : correctFieldValues.keySet()) {

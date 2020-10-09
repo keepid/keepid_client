@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -494,7 +495,7 @@ public class PdfMongoTests {
       File filled_out_pdf =
           new File(resourcesFolderPath + File.separator + "testpdf_filled_out.pdf");
       PDDocument pdf = PDDocument.load(filled_out_pdf);
-      fieldValues = getFieldValues(pdf);
+      fieldValues = getFieldValues(new FileInputStream(filled_out_pdf));
     } catch (IOException e) {
       assertThat(false).isTrue();
     }
@@ -537,7 +538,7 @@ public class PdfMongoTests {
     try {
       File filled_out_pdf = new File(resourcesFolderPath + File.separator + "ss-5_filled_out.pdf");
       PDDocument pdf = PDDocument.load(filled_out_pdf);
-      fieldValues = getFieldValues(pdf);
+      fieldValues = getFieldValues(new FileInputStream(filled_out_pdf));
     } catch (IOException e) {
       assertThat(false).isTrue();
     }

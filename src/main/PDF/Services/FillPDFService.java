@@ -77,6 +77,7 @@ public class FillPDFService implements Service {
       throw new IllegalArgumentException();
     }
     for (String fieldName : formAnswers.keySet()) {
+      System.out.println(fieldName);
       PDField field = acroForm.getField(fieldName);
       if (field instanceof PDButton) {
         if (field instanceof PDCheckBox) {

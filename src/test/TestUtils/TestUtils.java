@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -787,7 +788,8 @@ public class TestUtils {
     return new JSONObject(response);
   }
 
-  public static JSONObject getFieldValues(PDDocument pdfDocument) throws IOException {
+  public static JSONObject getFieldValues(InputStream inputStream) throws IOException {
+    PDDocument pdfDocument = PDDocument.load(inputStream);
     JSONObject fieldValues = new JSONObject();
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     List<PDField> fields = new LinkedList<>();
@@ -805,6 +807,7 @@ public class TestUtils {
       // Delete field just gotten so we do not infinite recurse
       fields.remove(0);
     }
+    pdfDocument.close();
     return fieldValues;
   }
 
