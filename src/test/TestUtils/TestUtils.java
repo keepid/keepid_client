@@ -21,6 +21,10 @@ import de.mkammerer.argon2.Argon2Factory;
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.bson.Document;
 import org.json.JSONObject;
 
@@ -28,10 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -785,4 +786,36 @@ public class TestUtils {
     }
     return new JSONObject(response);
   }
+
+  public static JSONObject getFieldValues(PDDocument pdfDocument) throws IOException {
+    JSONObject fieldValues = new JSONObject();
+    PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
+    List<PDField> fields = new LinkedList<>();
+    fields.addAll(acroForm.getFields());
+    while (!fields.isEmpty()) {
+      PDField field = fields.get(0);
+      if (field instanceof PDNonTerminalField) {
+        // If the field has children
+        List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
+        fields.addAll(childrenFields);
+      } else {
+        fieldValues.put(field.getFullyQualifiedName(), field.getValueAsString());
+      }
+
+      // Delete field just gotten so we do not infinite recurse
+      fields.remove(0);
+    }
+    return fieldValues;
+  }
+
+  public static Set<String> validFieldTypes =
+      new HashSet<>(
+          Arrays.asList(
+              "CheckBox",
+              "PushButton",
+              "RadioButton",
+              "ComboBox",
+              "ListBox",
+              "TextField",
+              "SignatureField"));
 }

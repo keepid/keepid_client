@@ -21,7 +21,7 @@ public class DownloadPDFService implements Service {
   Logger logger;
   private String username;
   private String orgName;
-  private UserType userType;
+  private UserType privilegeLevel;
   private PDFType pdfType;
   private String fileId;
   private InputStream inputStream;
@@ -31,14 +31,14 @@ public class DownloadPDFService implements Service {
       Logger logger,
       String username,
       String orgName,
-      UserType userType,
+      UserType privilegeLevel,
       String fileId,
       PDFType pdfType) {
     this.db = db;
     this.logger = logger;
     this.username = username;
     this.orgName = orgName;
-    this.userType = userType;
+    this.privilegeLevel = privilegeLevel;
     this.pdfType = pdfType;
     this.fileId = fileId;
   }
@@ -49,7 +49,14 @@ public class DownloadPDFService implements Service {
     if (pdfType == null) {
       return PdfMessage.INVALID_PDF;
     }
-    this.inputStream = download(username, orgName, userType, fileID, pdfType, db);
+    if (privilegeLevel == UserType.Client
+        || privilegeLevel == UserType.Worker
+        || privilegeLevel == UserType.Director
+        || privilegeLevel == UserType.Admin) {
+      this.inputStream = download(username, orgName, privilegeLevel, fileID, pdfType, db);
+    } else {
+      return PdfMessage.INSUFFICIENT_PRIVILEGE;
+    }
     if (inputStream == null) {
       return PdfMessage.INVALID_PDF_TYPE;
     } else {

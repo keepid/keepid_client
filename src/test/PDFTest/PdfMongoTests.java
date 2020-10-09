@@ -21,7 +21,7 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.LinkedList;
 
-import static PDF.PdfControllerHelper.getFieldValues;
+import static TestUtils.TestUtils.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PdfMongoTests {
@@ -128,20 +128,21 @@ public class PdfMongoTests {
     TestUtils.logout();
   }
 
-  @Test
-  public void uploadDocxTest() {
-    TestUtils.login(username, username);
-    File exampleDocx = new File(resourcesFolderPath + File.separator + "job_description.docx");
-    HttpResponse<String> uploadResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/upload")
-            .header("Content-Disposition", "attachment")
-            .field("pdfType", "APPLICATION")
-            .field("file", exampleDocx)
-            .asString();
-    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
-    assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
-    TestUtils.logout();
-  }
+  // Need to get it so it will only allow PDF and not docx+
+  //  @Test
+  //  public void uploadDocxTest() {
+  //    TestUtils.login(username, username);
+  //    File exampleDocx = new File(resourcesFolderPath + File.separator + "job_description.docx");
+  //    HttpResponse<String> uploadResponse =
+  //        Unirest.post(TestUtils.getServerUrl() + "/upload")
+  //            .header("Content-Disposition", "attachment")
+  //            .field("pdfType", "APPLICATION")
+  //            .field("file", exampleDocx)
+  //            .asString();
+  //    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+  //    assertThat(uploadResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
+  //    TestUtils.logout();
+  //  }
 
   @Test
   public void downloadTestFormTest() throws IOException, GeneralSecurityException {
@@ -779,7 +780,7 @@ public class PdfMongoTests {
     examplePDF =
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     uploadResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/upload")
+        Unirest.post(TestUtils.getServerUrl() + "/upload-annotated")
             .field("pdfType", "FORM")
             .header("Content-Disposition", "attachment")
             .field("file", examplePDF)

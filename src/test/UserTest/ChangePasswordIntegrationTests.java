@@ -6,7 +6,6 @@ import Config.MongoConfig;
 import Database.TokenDao;
 import Logger.LogFactory;
 import Security.AccountSecurityController;
-import Security.EncryptionUtils;
 import Security.SecurityUtils;
 import Security.Services.ChangePasswordService;
 import Security.Services.ForgotPasswordService;
@@ -25,9 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -37,17 +33,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangePasswordIntegrationTests {
-  Context ctx = mock(Context.class);
-  static MongoDatabase db;
-  static EncryptionUtils encryptionUtils;
   private static final int EXPIRATION_TIME_2_HOURS = 7200000;
 
   @BeforeClass
-  public static void setUp() throws GeneralSecurityException, IOException {
+  public static void setUp() {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
-    db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass

@@ -1,6 +1,6 @@
 package PDFTest;
 
-import PDF.PdfController;
+import TestUtils.TestUtils;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static PDF.PdfControllerHelper.*;
+import static PDF.Services.FillPDFService.fillFields;
+import static PDF.Services.GetQuestionsPDFService.getFieldInformation;
+import static TestUtils.TestUtils.getFieldValues;
 
 public class PdfControllerUnitTests {
 
@@ -60,20 +62,13 @@ public class PdfControllerUnitTests {
   public void getFieldInformationNullFileTest() throws IOException {
     File pdfInput = new File("");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
     pdfDocument.close();
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void getFieldInformationNullPDFDocumentTest() {
-    PDDocument pdfDocument = null;
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void getFieldInformationNullFieldsJSONTest() {
-    PDDocument pdfDocument = null;
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+  public void getFieldInformationNullPDFDocumentTest() throws IOException {
+    List<JSONObject> fieldsJSON = getFieldInformation(null);
   }
 
   @Test
@@ -81,7 +76,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationValidValuesTest1() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Make sure field names are correct
     for (JSONObject field : fieldsJSON) {
@@ -97,7 +92,7 @@ public class PdfControllerUnitTests {
       Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
 
       // Is valid fieldType
-      Set<String> validFieldTypes = PdfController.validFieldTypes;
+      Set<String> validFieldTypes = TestUtils.validFieldTypes;
       Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
     }
     pdfDocument.close();
@@ -107,7 +102,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationTextFieldTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -144,7 +139,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationComboBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -177,7 +172,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationListBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -210,7 +205,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationCheckBoxTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -246,7 +241,7 @@ public class PdfControllerUnitTests {
   public void getFieldInformationRadioButtonTest() throws IOException {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
-    List<JSONObject> fieldsJSON = getFieldInformation(pdfDocument);
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
 
     // Set up correct field names and questions
     List<JSONObject> correctFieldsJSON = new LinkedList<>();
@@ -280,7 +275,7 @@ public class PdfControllerUnitTests {
     File pdfInput = new File("src/test/resources/testpdf.pdf");
     PDDocument pdfDocument = PDDocument.load(pdfInput);
     JSONObject formAnswers = new JSONObject();
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
     pdfDocument.close();
   }
@@ -303,7 +298,7 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("A different address", "321 Broad Street");
     correctFieldValues.put("currentdate_af_date", "07/07/2020");
 
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -330,7 +325,7 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Ribeye Steaks", "Off");
     correctFieldValues.put("Tomatoes", "Yes");
 
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -350,7 +345,7 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Radiobuttons", "Yes");
 
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -363,7 +358,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -376,7 +371,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -396,7 +391,7 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Dropdown", "[Choice1]");
 
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -409,7 +404,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -422,7 +417,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -444,7 +439,7 @@ public class PdfControllerUnitTests {
     JSONObject correctFieldValues = new JSONObject();
     correctFieldValues.put("Combobox", "[Choice1]");
 
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     JSONObject fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -459,7 +454,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -475,7 +470,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -492,7 +487,7 @@ public class PdfControllerUnitTests {
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
     pdfDocument = PDDocument.load(pdfInput);
-    fillFields(pdfDocument, formAnswers);
+    fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(pdfDocument);
 
     // We test that all the fields in correctFields have the right value
@@ -544,5 +539,80 @@ public class PdfControllerUnitTests {
 
     IOUtils.closeQuietly(signatureOptions);
     pdfDocument.close();
+  }
+
+  @Test
+  // NOTE: We need to fix the file so that the buttons are radio
+  public void getFieldInformationValidValuesTest2() throws IOException {
+    File pdfInput = new File("src/test/resources/ss-5.pdf");
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
+
+    // Make sure field names are correct
+    for (JSONObject field : fieldsJSON) {
+      // Not Editable
+      Assert.assertNotEquals("", field.getString("fieldName"));
+      Assert.assertNotEquals("", field.getString("fieldType"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
+
+      // Editable
+      Assert.assertNotEquals("", field.getString("fieldQuestion"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
+
+      // Is valid fieldType
+      Set<String> validFieldTypes = TestUtils.validFieldTypes;
+      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
+    }
+  }
+
+  @Test
+  // NOTE: We need to fix the file so that the buttons are radio
+  public void getFieldInformationValidValuesTest3() throws IOException {
+    File pdfInput = new File("src/test/resources/Application_for_a_Birth_Certificate.pdf");
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
+
+    // Make sure field names are correct
+    for (JSONObject field : fieldsJSON) {
+      // Not Editable
+      Assert.assertNotEquals("", field.getString("fieldName"));
+      Assert.assertNotEquals("", field.getString("fieldType"));
+      Assert.assertNotEquals(null, field.getJSONArray("fieldValueOptions"));
+
+      // Editable
+      Assert.assertNotEquals("", field.getString("fieldQuestion"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBName"));
+      Assert.assertEquals("", field.getString("fieldMatchedDBVariable"));
+
+      // Is valid fieldType
+      Set<String> validFieldTypes = TestUtils.validFieldTypes;
+      Assert.assertTrue(validFieldTypes.contains(field.getString("fieldType")));
+    }
+  }
+
+  @Test
+  public void getFieldInformationPushButtonTest() throws IOException {
+    File pdfInput = new File("src/test/resources/testpdf.pdf");
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
+
+    // Get Only Fields Needed for This Test
+    List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "PushButton");
+    Assert.assertEquals(0, testFieldsJSON.size());
+  }
+
+  @Test
+  public void getFieldInformationSignatureFieldTest() throws IOException {
+    File pdfInput = new File("src/test/resources/testpdf.pdf");
+    List<JSONObject> fieldsJSON = getFieldInformation(new FileInputStream(pdfInput));
+
+    // Set up correct field names and questions
+    List<JSONObject> correctFieldsJSON = new LinkedList<>();
+    String[] fieldValueOptions = {};
+    correctFieldsJSON.add(createFieldJSON("Signature", "SignatureField", fieldValueOptions));
+    correctFieldsJSON.sort(new JSONFieldComparator());
+    Iterator<JSONObject> correctFieldIterator = correctFieldsJSON.iterator();
+
+    // Get Only Fields Needed for This Test
+    List<JSONObject> testFieldsJSON = getFieldsOfType(fieldsJSON, "SignatureField");
+    Assert.assertEquals(0, testFieldsJSON.size());
   }
 }

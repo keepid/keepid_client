@@ -6,9 +6,7 @@ import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
-import Security.EmailUtil;
 import Security.EncryptionUtils;
-import Security.SecurityUtils;
 import User.UserController;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -52,12 +50,13 @@ public class AppConfig {
 
     /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfController.pdfUpload);
+    app.post("/upload-annotated", pdfController.pdfUploadAnnotated);
+    app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document/", pdfController.pdfDelete);
-    app.post("/get-documents", pdfController.pdfGetAll);
+    app.post("/get-documents", pdfController.pdfGetDocuments);
     app.post("/get-application-questions", pdfController.getApplicationQuestions);
     app.post("/fill-application", pdfController.fillPDFForm);
-    app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
