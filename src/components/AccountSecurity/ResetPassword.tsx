@@ -79,7 +79,7 @@ class ResetPassword extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const { status } = JSON.parse(responseJSON);
+          const { status } = responseJSON;
           if (status === 'SUCCESS') {
             this.props.alert.show('Successfully reset password');
             this.setState({ buttonState: '', collapseState: 'show' });

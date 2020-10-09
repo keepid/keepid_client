@@ -66,11 +66,20 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { fields } = JSON.parse(responseJSON);
-        this.setState({ formQuestions: fields });
-        fields.forEach((entry) => {
-          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-        });
+        const {
+          fieldNames,
+          fieldQuestions,
+        } = responseJSON;
+        const fieldNamesArray : string[] = fieldNames;
+        const fieldQuestionsArray : string[] = fieldQuestions;
+        const numFields = fieldNamesArray.length;
+        const formQuestionsCombined : [string, string][] = new Array(numFields);
+        for (let j = 0; j < numFields; j += 1) {
+          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
+        }
+        this.setState({ formQuestions: formQuestionsCombined });
+        // eslint-disable-next-line
+        formQuestionsCombined.map((entry) => { formAnswers[entry[0]] = ''; });
         this.setState({ formAnswers });
       });
   }
@@ -171,10 +180,11 @@ class ApplicationForm extends Component<Props, State> {
   }
 
   // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-  dataURLtoBlob(dataurl) {
+  dataURLtoBlob = (dataurl) => {
     const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]); let n = bstr.length; const
       u8arr = new Uint8Array(n);
+    // eslint-disable-next-line
     while (n--) {
       u8arr[n] = bstr.charCodeAt(n);
     }
@@ -383,7 +393,9 @@ class ApplicationForm extends Component<Props, State> {
                             </div>
                           );
                         }
-                      })()
+
+                        return <div />;
+                      })
                     }
                   </div>
                 ),

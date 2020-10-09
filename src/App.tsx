@@ -44,6 +44,7 @@ import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AccountSecurity/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
+import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -245,22 +246,22 @@ class App extends React.Component<{}, State, {}> {
                   switch (props.match.params.roleString) {
                     case 'admin':
                       return (role === Role.Director
-                        ? <PersonSignup userRole={role} personRole={Role.Admin} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Admin} />
                         : <Redirect to="/error" />
                       );
                     case 'worker':
                       return (role === Role.Director || role === Role.Admin
-                        ? <PersonSignup userRole={role} personRole={Role.Worker} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Worker} />
                         : <Redirect to="/error" />
                       );
                     case 'volunteer':
                       return (role === Role.Director || role === Role.Admin || role === Role.Worker
-                        ? <PersonSignup userRole={role} personRole={Role.Volunteer} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Volunteer} />
                         : <Redirect to="/error" />
                       );
                     case 'client':
                       return (role === Role.Director || role === Role.Admin || role === Role.Worker || role === Role.Volunteer
-                        ? <PersonSignup userRole={role} personRole={Role.Client} />
+                        ? <PersonSignupFlow userRole={role} personRole={Role.Client} />
                         : <Redirect to="/error" />
                       );
                     default:
