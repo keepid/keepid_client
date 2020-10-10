@@ -55,7 +55,9 @@ public class PdfController {
         UserType userType = ctx.sessionAttribute("privilegeLevel");
         JSONObject req = new JSONObject(ctx.body());
         String fileIDStr = req.getString("fileId");
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+
+        String pdfTypeString = req.getString("pdfType");
+        PDFType pdfType = PDFType.createFromString(pdfTypeString);
         DownloadPDFService downloadPDFService =
             new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
         Message response = downloadPDFService.executeAndGetResponse();
