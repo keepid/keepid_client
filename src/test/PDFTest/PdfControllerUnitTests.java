@@ -449,6 +449,7 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Combobox", "[Choice2]");
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
+    pdfDocument.close();
     pdfDocument = PDDocument.load(pdfInput);
     completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(completedPDF);
@@ -465,6 +466,7 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Combobox", "[Choice1, Choice2]");
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
+    pdfDocument.close();
     pdfDocument = PDDocument.load(pdfInput);
     completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(completedPDF);
@@ -482,6 +484,7 @@ public class PdfControllerUnitTests {
     correctFieldValues.put("Combobox", "[Choice1, Choice2, Choice3]");
 
     pdfInput = new File("src/test/resources/testpdf.pdf");
+    pdfDocument.close();
     pdfDocument = PDDocument.load(pdfInput);
     completedPDF = fillFields(new FileInputStream(pdfInput), formAnswers);
     fieldValues = getFieldValues(completedPDF);
