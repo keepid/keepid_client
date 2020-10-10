@@ -6,6 +6,7 @@ import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
+import Security.EncryptionUtils;
 import User.UserController;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -28,6 +29,15 @@ public class AppConfig {
     LogFactory l = new LogFactory();
     l.createLogger();
 
+    EncryptionUtils.initialize();
+    //    try {
+    //      encryptionController = new EncryptionController(db);
+    //    } catch (GeneralSecurityException | IOException e) {
+    //      System.err.println(e.getStackTrace());
+    //      System.exit(0);
+    //      return null;
+    //    }
+
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
     UserController userController = new UserController(db);
@@ -40,17 +50,19 @@ public class AppConfig {
 
     /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfController.pdfUpload);
+    app.post("/upload-annotated", pdfController.pdfUploadAnnotated);
+    app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document/", pdfController.pdfDelete);
-    app.post("/get-documents", pdfController.pdfGetAll);
+    app.post("/get-documents", pdfController.pdfGetDocuments);
     app.post("/get-application-questions", pdfController.getApplicationQuestions);
     app.post("/fill-application", pdfController.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
     app.post("/generate-username", userController.generateUniqueUsername);
-    app.post("/create-user-validator", userController.createUserValidator);
     app.post("/create-user", userController.createNewUser);
+    app.post("/create-invited-user", userController.createNewInvitedUser);
     app.get("/logout", userController.logout);
     app.post("/forgot-password", accountSecurityController.forgotPassword);
     app.post("/change-password", accountSecurityController.changePassword);

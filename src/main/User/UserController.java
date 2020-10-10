@@ -3,8 +3,8 @@ package User;
 import Bug.BugController;
 import Config.Message;
 import Logger.LogFactory;
+import Security.EncryptionUtils;
 import User.Services.*;
-import Validation.ValidationException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
@@ -16,11 +16,14 @@ import static com.mongodb.client.model.Filters.eq;
 public class UserController {
   Logger logger;
   MongoDatabase db;
+  EncryptionUtils encryptionUtils;
   BugController bugController;
 
   public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
+    logger = l.createLogger("UserController");
+    this.encryptionUtils = EncryptionUtils.getInstance();
     this.bugController = new BugController(db);
     logger = (new LogFactory()).createLogger("UserController");
   }
@@ -79,67 +82,6 @@ public class UserController {
         logger.info("Username successfully generated");
       };
 
-  public Handler createUserValidator =
-      ctx -> {
-        logger.info("Starting createUserValidator handler");
-        JSONObject req = new JSONObject(ctx.body());
-
-        String firstName = req.getString("firstname").toUpperCase().strip();
-        String lastName = req.getString("lastname").toUpperCase().strip();
-        String birthDate = req.getString("birthDate").strip();
-        String email = req.getString("email").toLowerCase().strip();
-        String phone = req.getString("phonenumber").strip();
-        String address = req.getString("address").toUpperCase().strip();
-        String city = req.getString("city").toUpperCase().strip();
-        String state = req.getString("state").toUpperCase().strip();
-        String zipcode = req.getString("zipcode").strip();
-        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
-        String username = req.getString("username").strip();
-        String password = req.getString("password").strip();
-        String userTypeString = req.getString("personRole").strip();
-        UserType userType = UserType.userTypeFromString(userTypeString);
-
-        if (userType == null) {
-          logger.error("userType is null");
-          ctx.result(UserMessage.INVALID_PRIVILEGE_TYPE.toJSON().toString());
-          return;
-        }
-
-        MongoCollection<User> userCollection = db.getCollection("user", User.class);
-        User existingUser = userCollection.find(eq("username", username)).first();
-
-        if (existingUser != null) {
-          logger.error("Username already exists");
-          ctx.result(UserMessage.USERNAME_ALREADY_EXISTS.toJSON().toString());
-          return;
-        }
-
-        try {
-          logger.info("Attempting to validate user");
-          new User(
-              firstName,
-              lastName,
-              birthDate,
-              email,
-              phone,
-              "",
-              address,
-              city,
-              state,
-              zipcode,
-              twoFactorOn,
-              username,
-              password,
-              userType);
-          logger.info("Validating user success");
-          ctx.result(
-              UserValidationMessage.toUserMessageJSON(UserValidationMessage.VALID).toString());
-        } catch (ValidationException ve) {
-          logger.error("Validation exception");
-          ctx.result(ve.getJSON().toString());
-        }
-      };
-
   public Handler createNewUser =
       ctx -> {
         logger.info("Starting createNewUser handler");
@@ -169,6 +111,50 @@ public class UserController {
                 sessionUserLevel,
                 organizationName,
                 sessionUsername,
+                firstName,
+                lastName,
+                birthDate,
+                email,
+                phone,
+                address,
+                city,
+                state,
+                zipcode,
+                twoFactorOn,
+                username,
+                password,
+                userType);
+        Message response = createUserService.executeAndGetResponse();
+        ctx.result(response.toJSON().toString());
+      };
+
+  public Handler createNewInvitedUser =
+      ctx -> {
+        logger.info("Starting createNewUser handler");
+        JSONObject req = new JSONObject(ctx.body());
+
+        String firstName = req.getString("firstname").strip();
+        String lastName = req.getString("lastname").strip();
+        String birthDate = req.getString("birthDate").strip();
+        String email = req.getString("email").strip();
+        String phone = req.getString("phonenumber").strip();
+        String address = req.getString("address").strip();
+        String city = req.getString("city").strip();
+        String state = req.getString("state").strip();
+        String zipcode = req.getString("zipcode").strip();
+        Boolean twoFactorOn = req.getBoolean("twoFactorOn");
+        String username = req.getString("username").strip();
+        String password = req.getString("password").strip();
+        UserType userType = UserType.userTypeFromString(req.getString("personRole").strip());
+        String organizationName = req.getString("orgName").strip();
+
+        CreateUserService createUserService =
+            new CreateUserService(
+                db,
+                logger,
+                UserType.Director,
+                organizationName,
+                null,
                 firstName,
                 lastName,
                 birthDate,

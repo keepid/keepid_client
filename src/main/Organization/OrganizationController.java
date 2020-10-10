@@ -3,6 +3,12 @@ package Organization;
 import Activity.ActivityController;
 import Config.Message;
 import Logger.LogFactory;
+import Security.EmailExceptions;
+import Security.EmailUtil;
+import Security.EncryptionUtils;
+import Security.SecurityUtils;
+import User.User;
+import User.UserMessage;
 import Organization.Services.EnrollOrganizationService;
 import Organization.Services.FindMemberService;
 import Organization.Services.InviteUserService;
@@ -26,10 +32,13 @@ public class OrganizationController {
       Objects.requireNonNull(System.getenv("NEW_ORG_TESTURL"));
   public static final String newOrgActualURL =
       Objects.requireNonNull(System.getenv("NEW_ORG_ACTUALURL"));
+  EncryptionUtils encryptionUtils;
 
   public OrganizationController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
+    logger = l.createLogger("OrgController");
+    this.encryptionUtils = EncryptionUtils.getInstance();
     this.activityController = new ActivityController(db);
     this.logger = l.createLogger("OrgController");
   }

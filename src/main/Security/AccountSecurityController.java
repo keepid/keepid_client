@@ -11,10 +11,12 @@ import org.slf4j.Logger;
 
 public class AccountSecurityController {
   private MongoDatabase db;
+  private EncryptionUtils encryptionUtils;
   private Logger logger;
 
   public AccountSecurityController(MongoDatabase db) {
     this.db = db;
+    this.encryptionUtils = EncryptionUtils.getInstance();
     logger = (new LogFactory()).createLogger("AccountSecurityController");
   }
 

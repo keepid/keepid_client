@@ -4,6 +4,7 @@ import Config.Message;
 import Config.Service;
 import PDF.PDFType;
 import PDF.PdfMessage;
+import Security.EncryptionUtils;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -15,9 +16,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Objects;
 
-public class GetAllPdfFilesService implements Service {
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+
+public class GetAllFilesPDFService implements Service {
   MongoDatabase db;
   Logger logger;
   private String username;
@@ -25,20 +31,23 @@ public class GetAllPdfFilesService implements Service {
   private UserType userType;
   private PDFType pdfType;
   private JSONArray files;
+  private boolean annotated;
 
-  public GetAllPdfFilesService(
+  public GetAllFilesPDFService(
       MongoDatabase db,
       Logger logger,
       String username,
       String orgName,
       UserType userType,
-      PDFType pdfType) {
+      PDFType pdfType,
+      boolean annotated) {
     this.db = db;
     this.logger = logger;
     this.username = username;
     this.orgName = orgName;
     this.userType = userType;
     this.pdfType = pdfType;
+    this.annotated = annotated;
   }
 
   @Override
@@ -46,7 +55,7 @@ public class GetAllPdfFilesService implements Service {
     if (pdfType == null) {
       return PdfMessage.INVALID_PDF_TYPE;
     } else {
-      return getAllFiles(username, orgName, userType, pdfType, db);
+      return getAllFiles(username, orgName, userType, pdfType, annotated, db);
     }
   }
 
@@ -60,6 +69,7 @@ public class GetAllPdfFilesService implements Service {
       String organizationName,
       UserType privilegeLevel,
       PDFType pdfType,
+      boolean annotated,
       MongoDatabase db) {
     try {
       Bson filter;
@@ -75,7 +85,10 @@ public class GetAllPdfFilesService implements Service {
         files = mongodbGetAllFiles(filter, pdfType, db);
         return PdfMessage.SUCCESS;
       } else if (pdfType == PDFType.FORM) {
-        filter = Filters.eq("metadata.organizationName", organizationName);
+        filter =
+            and(
+                eq("metadata.organizationName", organizationName),
+                eq("metadata.annotated", annotated));
         files = mongodbGetAllFiles(filter, pdfType, db);
         return PdfMessage.SUCCESS;
       } else {
@@ -86,18 +99,28 @@ public class GetAllPdfFilesService implements Service {
     }
   }
 
-  private static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
+  public static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db)
+      throws GeneralSecurityException, IOException {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     for (GridFSFile grid_out : gridBucket.find(filter)) {
       assert grid_out.getMetadata() != null;
-      files.put(
+      String uploaderUsername = grid_out.getMetadata().getString("uploader");
+      JSONObject fileMetadata =
           new JSONObject()
-              .put("filename", grid_out.getFilename())
-              .put("uploader", grid_out.getMetadata().getString("uploader"))
+              .put("uploader", uploaderUsername)
               .put("organizationName", grid_out.getMetadata().getString("organizationName"))
               .put("id", grid_out.getId().asObjectId().getValue().toString())
-              .put("uploadDate", grid_out.getUploadDate().toString()));
+              .put("uploadDate", grid_out.getUploadDate().toString());
+      if (pdfType.equals(PDFType.FORM)) {
+        fileMetadata.put("filename", grid_out.getFilename());
+        fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
+      } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
+        fileMetadata.put(
+            "filename",
+            EncryptionUtils.getInstance().decryptString(grid_out.getFilename(), uploaderUsername));
+      }
+      files.put(fileMetadata);
     }
     return files;
   }

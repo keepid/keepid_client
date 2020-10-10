@@ -13,16 +13,23 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ChangeAccountSettingsIntegrationTests {
+  Context ctx = mock(Context.class);
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
   }
@@ -31,9 +38,6 @@ public class ChangeAccountSettingsIntegrationTests {
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
   // TODO: Swap new SecurityUtils() for a mock that correctly (or incorrectly hashes passwords.
@@ -275,7 +279,7 @@ public class ChangeAccountSettingsIntegrationTests {
   }
 
   @Test
-  public void changeSateTest() throws Exception {
+  public void changeStateTest() throws Exception {
     String state1 = "PA";
     String state2 = "GA";
 

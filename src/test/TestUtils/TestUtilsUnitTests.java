@@ -28,4 +28,23 @@ public class TestUtilsUnitTests {
             .getOrgStreetAddress());
     TestUtils.tearDownTestDB();
   }
+
+  //  @Test
+  //  public void testEncryptionSetup() {
+  //    TestUtils.startServer();
+  //    TestUtils.setUpTestDB();
+  //    GoogleCredentials.generateCredentials();
+  //    try {
+  //      Aead aead = TestUtils.getAead();
+  //      String original = "hello world";
+  //      byte[] ciphertext = aead.encrypt(original.getBytes(), "".getBytes());
+  //      byte[] decrypted = aead.decrypt(ciphertext, "".getBytes());
+  //      assertEquals(original, new String(decrypted));
+  //    } catch (GeneralSecurityException | IOException e) {
+  //      e.printStackTrace();
+  //      assert false;
+  //    }
+  //    GoogleCredentials.deleteCredentials();
+  //    TestUtils.tearDownTestDB();
+  //  }
 }

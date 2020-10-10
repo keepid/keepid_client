@@ -108,7 +108,7 @@ public class CreateUserService implements Service {
   @Override
   public Message executeAndGetResponse() {
     // validations
-    if (sessionUserLevel == null || organizationName == null || sessionUsername == null) {
+    if (organizationName == null) {
       logger.info("Token failure");
       return UserMessage.SESSION_TOKEN_FAILURE;
     }

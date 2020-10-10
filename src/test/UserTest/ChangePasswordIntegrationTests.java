@@ -5,7 +5,6 @@ import Config.Message;
 import Config.MongoConfig;
 import Database.TokenDao;
 import Logger.LogFactory;
-import Security.AccountSecurityController;
 import Security.SecurityUtils;
 import Security.Services.ChangePasswordService;
 import Security.Services.ForgotPasswordService;
@@ -24,13 +23,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
-import java.util.Objects;
-
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ChangePasswordIntegrationTests {
   private static final int EXPIRATION_TIME_2_HOURS = 7200000;
@@ -59,11 +55,12 @@ public class ChangePasswordIntegrationTests {
   private boolean isCorrectPassword(String username, String possiblePassword) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", username)).first();
-    Objects.requireNonNull(user);
+    if (user == null) {
+      return false;
+    }
     Argon2 argon2 = Argon2Factory.create();
     char[] possiblePasswordArr = possiblePassword.toCharArray();
     String passwordHash = user.getPassword();
-
     return argon2.verify(passwordHash, possiblePasswordArr);
   }
 
@@ -92,34 +89,34 @@ public class ChangePasswordIntegrationTests {
     Tokens tokens = TokenDao.getTokensOrNull(db, username);
     assertNull(tokens);
   }
-
-  @Test
-  public void changePasswordWhileLoggedInTest() throws Exception {
-    String username = "password-reset-test";
-    String oldPassword = "";
-    String newPassword = "";
-
-    if (isCorrectPassword(username, password1)) {
-      oldPassword = password1;
-      newPassword = password2;
-    } else if (isCorrectPassword(username, password2)) {
-      oldPassword = password2;
-      newPassword = password1;
-    } else {
-      throw new Exception("Current test password doesn't match examples");
-    }
-
-    String inputString =
-        "{\"oldPassword\":" + oldPassword + ",\"newPassword\":" + newPassword + "}";
-
-    when(ctx.body()).thenReturn(inputString);
-    when(ctx.sessionAttribute("username")).thenReturn(username);
-
-    AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changePassword.handle(ctx);
-
-    assert (isCorrectPassword(username, newPassword));
-  }
+  //
+  //  @Test
+  //  public void changePasswordWhileLoggedInTest() throws Exception {
+  //    String username = "password-reset-test";
+  //    String oldPassword = "";
+  //    String newPassword = "";
+  //
+  //    if (isCorrectPassword(username, password1)) {
+  //      oldPassword = password1;
+  //      newPassword = password2;
+  //    } else if (isCorrectPassword(username, password2)) {
+  //      oldPassword = password2;
+  //      newPassword = password1;
+  //    } else {
+  //      throw new Exception("Current test password doesn't match examples");
+  //    }
+  //
+  //    String inputString =
+  //        "{\"oldPassword\":" + oldPassword + ",\"newPassword\":" + newPassword + "}";
+  //
+  //    when(ctx.body()).thenReturn(inputString);
+  //    when(ctx.sessionAttribute("username")).thenReturn(username);
+  //
+  //    AccountSecurityController asc = new AccountSecurityController(db);
+  //    asc.changePassword.handle(ctx);
+  //
+  //    assert (isCorrectPassword(username, newPassword));
+  //  }
 
   @Test
   public void changePasswordHelperTest() throws Exception {

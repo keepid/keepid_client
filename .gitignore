@@ -30,11 +30,15 @@ log.txt
 .classpath
 .project
 
+# secrets
 session-store
 ./session-store
 session-store*
 session-store/*
 .env
+
+keepid-google-kms.json
+test_encryption_key.json
 
 # don't track the keys property file
 secretkeys.properties

@@ -10,15 +10,28 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSignDesigner;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.bson.Document;
 import org.slf4j.Logger;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
-public class UploadPDFService implements Service {
+public class UploadSignedPDFService implements Service {
   public static final int CHUNK_SIZE_BYTES = 100000;
 
   String uploader;
@@ -27,11 +40,12 @@ public class UploadPDFService implements Service {
   String filename;
   String fileContentType;
   InputStream fileStream;
+  InputStream signatureFileStream;
   PDFType pdfType;
   MongoDatabase db;
   Logger logger;
 
-  public UploadPDFService(
+  public UploadSignedPDFService(
       MongoDatabase db,
       Logger logger,
       String uploaderUsername,
@@ -40,7 +54,8 @@ public class UploadPDFService implements Service {
       PDFType pdfType,
       String filename,
       String fileContentType,
-      InputStream fileStream) {
+      InputStream fileStream,
+      InputStream signatureFileStream) {
     this.db = db;
     this.logger = logger;
     this.uploader = uploaderUsername;
@@ -50,6 +65,7 @@ public class UploadPDFService implements Service {
     this.filename = filename;
     this.fileContentType = fileContentType;
     this.fileStream = fileStream;
+    this.signatureFileStream = signatureFileStream;
   }
 
   @Override
@@ -68,10 +84,10 @@ public class UploadPDFService implements Service {
           && (privilegeLevel == UserType.Client
               || privilegeLevel == UserType.Worker
               || privilegeLevel == UserType.Director
-              || privilegeLevel == UserType.Admin
-              || privilegeLevel == UserType.Developer)) {
+              || privilegeLevel == UserType.Admin)) {
         try {
-          mongodbUpload(uploader, organizationName, filename, fileStream, pdfType, db);
+          InputStream signedPDF = signPDF(uploader, fileStream, signatureFileStream);
+          mongodbUpload(uploader, organizationName, filename, signedPDF, pdfType, db);
           return PdfMessage.SUCCESS;
         } catch (GeneralSecurityException | IOException e) {
           return PdfMessage.SERVER_ERROR;
@@ -117,5 +133,62 @@ public class UploadPDFService implements Service {
           EncryptionUtils.getInstance().encryptFile(inputStream, uploader),
           options);
     }
+  }
+
+  public static InputStream signPDF(
+      String username, InputStream pdfInputStream, InputStream imageInputStream)
+      throws IOException {
+    PDDocument pdfDocument = PDDocument.load(pdfInputStream);
+
+    PDVisibleSignDesigner visibleSignDesigner = new PDVisibleSignDesigner(imageInputStream);
+    visibleSignDesigner.zoom(0);
+    PDVisibleSigProperties visibleSigProperties =
+        new PDVisibleSigProperties()
+            .visualSignEnabled(true)
+            .setPdVisibleSignature(visibleSignDesigner);
+    visibleSigProperties.buildSignature();
+
+    SignatureOptions signatureOptions = new SignatureOptions();
+    signatureOptions.setVisualSignature(visibleSigProperties.getVisibleSignature());
+
+    PDSignature signature = new PDSignature();
+    signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+    signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+    signature.setName(username);
+    signature.setSignDate(Calendar.getInstance());
+
+    for (PDSignatureField signatureField : findSignatureFields(pdfDocument)) {
+      signatureField.setValue(signature);
+    }
+
+    pdfDocument.addSignature(signature, signatureOptions);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    pdfDocument.save(outputStream);
+    pdfDocument.close();
+
+    return new ByteArrayInputStream(outputStream.toByteArray());
+  }
+
+  // Make it so that it can handle different signers
+  public static List<PDSignatureField> findSignatureFields(PDDocument pdfDocument) {
+    List<PDSignatureField> signatureFields = new LinkedList<>();
+    List<PDField> fields = new LinkedList<>();
+    fields.addAll(pdfDocument.getDocumentCatalog().getAcroForm().getFields());
+    while (!fields.isEmpty()) {
+      PDField field = fields.get(0);
+      if (field instanceof PDNonTerminalField) {
+        List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
+        fields.addAll(childrenFields);
+      } else {
+        if (field instanceof PDSignatureField) {
+          signatureFields.add((PDSignatureField) field);
+        }
+      }
+
+      // Remove field just gotten so we do not get it again
+      fields.remove(0);
+    }
+    return signatureFields;
   }
 }
