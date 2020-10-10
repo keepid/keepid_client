@@ -9,8 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 public class UserControllerIntegrationTest {
 
@@ -168,7 +166,6 @@ public class UserControllerIntegrationTest {
         Unirest.post(TestUtils.getServerUrl() + "/create-invited-user")
             .body(body.toString())
             .asString();
-
     JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
 
     assert (actualResponseJSON.has("status"));

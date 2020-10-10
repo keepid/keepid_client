@@ -38,7 +38,7 @@ public class EncryptionUtils {
   private EncryptionUtils() {}
 
   private EncryptionUtils(MongoDatabase db) throws GeneralSecurityException, IOException {
-    this.db = db;
+    EncryptionUtils.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("EncryptionController");
     aead = generateAead();

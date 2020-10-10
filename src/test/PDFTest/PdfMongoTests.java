@@ -652,7 +652,6 @@ public class PdfMongoTests {
             .field("pdfType", pdfType)
             .field("file", file)
             .asString();
-    System.out.println(uploadResponse.getBody());
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
@@ -704,7 +703,6 @@ public class PdfMongoTests {
           Unirest.post(TestUtils.getServerUrl() + "/get-documents")
               .body(body.toString())
               .asString();
-      System.out.println("body: " + getAllDocuments.getBody());
       JSONObject getAllDocumentsJSON = TestUtils.responseStringToJSON(getAllDocuments.getBody());
       assertThat(getAllDocumentsJSON.getString("status")).isEqualTo("SUCCESS");
       JSONArray arr = getAllDocumentsJSON.getJSONArray("documents");

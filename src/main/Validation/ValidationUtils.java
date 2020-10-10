@@ -49,8 +49,8 @@ public class ValidationUtils {
         && ValRegex.phoneNumberPattern.matcher(input).matches();
   }
 
-  public static boolean isValidOrganizationName(String organization) {
-    return organization != null;
+  public static boolean isValidOrganizationName(String input) {
+    return input != null && !input.strip().isBlank();
   }
 
   public static boolean isValidZipCode(String input) {
