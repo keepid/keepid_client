@@ -25,8 +25,8 @@ import static com.mongodb.client.model.Filters.eq;
 public class EncryptionUtils {
   private static EncryptionUtils instance;
   private static Logger logger;
-  private static MongoDatabase db;
-  private static Aead aead;
+  private MongoDatabase db;
+  private Aead aead;
 
   public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
   public static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
@@ -38,10 +38,10 @@ public class EncryptionUtils {
   private EncryptionUtils() {}
 
   private EncryptionUtils(MongoDatabase db) throws GeneralSecurityException, IOException {
-    EncryptionUtils.db = db;
+    this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("EncryptionController");
-    aead = generateAead();
+    this.aead = generateAead();
   }
 
   // Remember to initialize before using!

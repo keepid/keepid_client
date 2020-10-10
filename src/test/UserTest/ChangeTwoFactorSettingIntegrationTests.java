@@ -3,7 +3,6 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.EncryptionUtils;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
@@ -22,15 +21,12 @@ import static org.mockito.Mockito.when;
 
 public class ChangeTwoFactorSettingIntegrationTests {
   Context ctx = mock(Context.class);
-  static MongoDatabase db;
-  static EncryptionUtils encryptionUtils;
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
-    db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass

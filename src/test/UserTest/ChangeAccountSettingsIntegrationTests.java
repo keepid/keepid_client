@@ -26,15 +26,12 @@ import static org.mockito.Mockito.when;
 @Ignore
 public class ChangeAccountSettingsIntegrationTests {
   Context ctx = mock(Context.class);
-  static MongoDatabase db;
-  //  static EncryptionUtils encryptionUtils;
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
-    db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    //    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass
