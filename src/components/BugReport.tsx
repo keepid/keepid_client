@@ -190,9 +190,8 @@ class BugReport extends Component<Props, State, {}> {
         const { status } = responseObject;
 
         if (status === 'SUCCESS') {
-          this.setState({ buttonState: '' });
-          alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
           this.clearInput();
+          alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
@@ -201,7 +200,7 @@ class BugReport extends Component<Props, State, {}> {
         alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
       });
-      
+   //console.log(this.state);   
   }
 
   handleChangeTitle(event: any) {
@@ -225,7 +224,6 @@ class BugReport extends Component<Props, State, {}> {
       titleValidator,
       emailValidator,
       descriptionValidator,
-      recaptchaPayload,
     } = this.state;
     return (
       <div className="container">
