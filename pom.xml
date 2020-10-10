@@ -232,7 +232,7 @@
         <dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java</artifactId>
-            <version>3.9.00</version>
+            <version>3.11.01</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -243,7 +243,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.7</version>
+            <version>4.5.13</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
