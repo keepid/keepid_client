@@ -24,8 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
-import java.util.Objects;
-
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -59,11 +57,12 @@ public class ChangePasswordIntegrationTests {
   private boolean isCorrectPassword(String username, String possiblePassword) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     User user = userCollection.find(eq("username", username)).first();
-    Objects.requireNonNull(user);
+    if (user == null) {
+      return false;
+    }
     Argon2 argon2 = Argon2Factory.create();
     char[] possiblePasswordArr = possiblePassword.toCharArray();
     String passwordHash = user.getPassword();
-
     return argon2.verify(passwordHash, possiblePasswordArr);
   }
 
