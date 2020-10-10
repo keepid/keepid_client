@@ -18,6 +18,7 @@ interface State {
   titleValidator: string,
   emailValidator: string
   descriptionValidator: string,
+  recaptchaPayload: string,
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -33,12 +34,15 @@ class BugReport extends Component<Props, State, {}> {
       titleValidator: '',
       emailValidator: '',
       descriptionValidator: '',
+      recaptchaPayload: '',
     };
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSubmitWithRecaptcha = this.handleSubmitWithRecaptcha.bind(this);
     this.handleChangeTitle = this.handleChangeTitle.bind(this);
     this.handleChangeDescription = this.handleChangeDescription.bind(this);
     this.handleChangeEmail = this.handleChangeEmail.bind(this);
+    this.clearInput = this.clearInput.bind(this);
   }
+
 
   componentDidMount() {
     window.scrollTo(0, 0);
@@ -53,6 +57,7 @@ class BugReport extends Component<Props, State, {}> {
       titleValidator: '',
       emailValidator: '',
       descriptionValidator: '',
+      recaptchaPayload: '',
     });
   }
 
@@ -146,8 +151,13 @@ class BugReport extends Component<Props, State, {}> {
     return '';
   }
 
-  handleSubmit = async (event: any) => {
+  handleSubmitWithRecaptcha = async (event: any) => {
     event.preventDefault();
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      const recaptchaPayload = await recaptchaRef.current.executeAsync();
+      this.setState({ recaptchaPayload });
+    }
+    else return;
     const { alert } = this.props;
     const {
       email,
@@ -156,7 +166,9 @@ class BugReport extends Component<Props, State, {}> {
       emailValidator,
       titleValidator,
       descriptionValidator,
+      recaptchaPayload,
     } = this.state;
+
     await Promise.all([this.validateEmail(), this.validateTitle(), this.validateDescription()]);
     if (emailValidator !== 'true'
         || titleValidator !== 'true'
@@ -170,6 +182,7 @@ class BugReport extends Component<Props, State, {}> {
         email,
         title,
         description,
+        recaptchaPayload,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
@@ -188,6 +201,7 @@ class BugReport extends Component<Props, State, {}> {
         alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
       });
+      
   }
 
   handleChangeTitle(event: any) {
@@ -211,6 +225,7 @@ class BugReport extends Component<Props, State, {}> {
       titleValidator,
       emailValidator,
       descriptionValidator,
+      recaptchaPayload,
     } = this.state;
     return (
       <div className="container">
@@ -226,11 +241,11 @@ class BugReport extends Component<Props, State, {}> {
                 <p className="lead text-left font-weight-bolder py-3">Thank you for helping us identify issues with our platform.</p>
               </div>
             </div>
-            <form onSubmit={this.handleSubmit}>
+            <form onSubmit={this.handleSubmitWithRecaptcha}>
               <div className="col-md-12">
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
-                  <label htmlFor="email" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
+                  <label htmlFor="email" className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3">
                     Email
                   </label>
                   <div className="col-md-6">
@@ -251,7 +266,7 @@ class BugReport extends Component<Props, State, {}> {
 
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
-                  <label htmlFor="title" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
+                  <label htmlFor="title" className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3">
                     Issue Title
                   </label>
                   <div className="col-md-6">
@@ -271,7 +286,7 @@ class BugReport extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
-                  <label htmlFor="description" className="col-md-3 font-weight-bold text-right pt-2 pr-3">
+                  <label htmlFor="description" className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3">
                     Issue Description
                   </label>
                   <div className="col-md-6">
@@ -290,7 +305,7 @@ class BugReport extends Component<Props, State, {}> {
                 </div>
                 <div className="form-row mt-2">
                   <div className="col-md-10 pt-2 pb-2 d-flex justify-content-end">
-                    <span className="text-muted recaptcha-login-text text-right">
+                    <span className="text-muted recaptcha-login-text text-sm-left text-lg-right">
                       This page is protected by reCAPTCHA, and subject to the Google
                       {' '}
                       <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
@@ -305,7 +320,7 @@ class BugReport extends Component<Props, State, {}> {
                 <div className="form-row mt-2">
                   <div className="col-md-8" />
                   <div className="col-md-2 text-right d-flex justify-content-end pt-3">
-                    <button type="submit" onClick={this.handleSubmit} className={`btn ld-ext-right btn-primary ${buttonState}`}>
+                    <button type="submit" onClick={this.handleSubmitWithRecaptcha} className={`btn ld-ext-right btn-primary ${buttonState}`}>
                       Submit
                       <div className="ld ld-ring ld-spin" />
                     </button>
@@ -316,6 +331,12 @@ class BugReport extends Component<Props, State, {}> {
             </form>
           </div>
         </div>
+        <ReCAPTCHA
+          theme="dark"
+          size="invisible"
+          ref={recaptchaRef}
+          sitekey={reCaptchaKey}
+        />
       </div>
     );
   }
