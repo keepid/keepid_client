@@ -4,8 +4,6 @@ import Activity.ChangeUserAttributesActivity;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.EncryptionUtils;
-import Security.SecurityUtils;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
@@ -27,14 +25,14 @@ import static org.mockito.Mockito.when;
 public class ChangeAccountSettingsIntegrationTests {
   Context ctx = mock(Context.class);
   static MongoDatabase db;
-  static EncryptionUtils encryptionUtils;
+  //  static EncryptionUtils encryptionUtils;
 
   @BeforeClass
   public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
     db = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    encryptionUtils = TestUtils.getEncryptionUtils();
+    //    encryptionUtils = TestUtils.getEncryptionUtils();
   }
 
   @AfterClass
