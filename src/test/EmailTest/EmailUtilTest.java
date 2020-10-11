@@ -14,7 +14,6 @@ public class EmailUtilTest {
   public void checkOrgInvite() {
     try {
       String actual = emailUtil.getOrganizationInviteEmail("ji", "Cat", "Kap");
-      // System.out.println(actual);
     } catch (EmailExceptions e) {
       Boolean a = e.toString().equals("INVITER_DOM_NOT_FOUND: Can't locate sender name in html");
       Boolean b = e.toString().equals("RECEIVER_DOM_NOT_FOUND: Can't locate target name in html");
@@ -28,7 +27,6 @@ public class EmailUtilTest {
   public void checkVeriCode() {
     try {
       String actual = emailUtil.getVerificationCodeEmail("hiii");
-      // System.out.println(actual);
     } catch (EmailExceptions e) {
       Boolean a = e.toString().equals("CODE_DOM_NOT_FOUND: Can't locate verification code in html");
       Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");
@@ -40,7 +38,6 @@ public class EmailUtilTest {
   public void checkReset() {
     try {
       String actual = emailUtil.getPasswordResetEmail("hiii");
-      // System.out.println(actual);
     } catch (EmailExceptions e) {
       Boolean a = e.toString().equals("EMAIL_DOM_NOT_FOUND: Can't locate target email in html");
       Boolean b = e.toString().equals("HTML_NOT_FOUND: Can't locate html needed for email");

@@ -1,8 +1,9 @@
 package Organization;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum OrgEnrollmentStatus {
+public enum OrgEnrollmentStatus implements Message {
   ORG_EXISTS("ORG_EXISTS: Organization Exists Already"),
   SUCCESSFUL_ENROLLMENT("SUCCESSFUL_ENROLLMENT: Please Wait 1-3 Business Days For Response"),
   PASS_HASH_FAILURE("PASS_HASH_FAILURE: Server Password Failure, Please Try Again"),
@@ -12,6 +13,7 @@ public enum OrgEnrollmentStatus {
   INVALID_CHARACTERS(""),
   PASS_UNDER_8(""),
   INVALID_PARAMETER("INVALID_PARAMETER: Please Check Input"),
+  FAIL_TO_CREATE("Could not create user and/or org"),
   SUCCESS("SUCCESS: Success");
 
   public String errorMessage;
@@ -20,8 +22,8 @@ public enum OrgEnrollmentStatus {
     this.errorMessage = errorMessage;
   }
 
-  public String toString() {
-    return this.errorMessage;
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {

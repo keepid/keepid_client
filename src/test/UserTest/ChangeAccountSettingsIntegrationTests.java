@@ -1,27 +1,35 @@
 package UserTest;
 
+import Activity.ChangeUserAttributesActivity;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Security.AccountSecurityController;
-import Security.SecurityUtils;
 import TestUtils.TestUtils;
 import User.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ChangeAccountSettingsIntegrationTests {
+  Context ctx = mock(Context.class);
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
   }
@@ -30,9 +38,6 @@ public class ChangeAccountSettingsIntegrationTests {
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
   // TODO: Swap new SecurityUtils() for a mock that correctly (or incorrectly hashes passwords.
@@ -96,8 +101,16 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse
+        .getBody()
+        .toString()
+        .contains(ChangeUserAttributesActivity.class.getSimpleName()));
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "firstName", newFirstName));
   }
 
@@ -122,7 +135,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "lastName", newLastName));
   }
@@ -148,8 +161,12 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
-
+    asc.changeAccountSetting.handle(ctx);
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse.getBody().toString().contains("password"));
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "birthDate", newBirthDate));
   }
 
@@ -174,7 +191,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "phone", newPhone));
   }
@@ -200,8 +217,12 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
-
+    asc.changeAccountSetting.handle(ctx);
+    TestUtils.login("account-settings-test", "account-settings-test");
+    HttpResponse findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse.getBody().toString().contains(newEmail));
+    TestUtils.logout();
     assert (isCorrectAttribute(username, "email", newEmail));
   }
 
@@ -226,7 +247,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "address", newAddress));
   }
@@ -252,13 +273,13 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "city", newCity));
   }
 
   @Test
-  public void changeSateTest() throws Exception {
+  public void changeStateTest() throws Exception {
     String state1 = "PA";
     String state2 = "GA";
 
@@ -278,7 +299,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "state", newState));
   }
@@ -304,7 +325,7 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
     AccountSecurityController asc = new AccountSecurityController(db);
-    asc.changeAccountSetting(new SecurityUtils()).handle(ctx);
+    asc.changeAccountSetting.handle(ctx);
 
     assert (isCorrectAttribute(username, "zipcode", newZipcode));
   }

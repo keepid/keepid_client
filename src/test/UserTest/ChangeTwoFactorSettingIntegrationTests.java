@@ -10,16 +10,23 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import static com.mongodb.client.model.Filters.eq;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ChangeTwoFactorSettingIntegrationTests {
+  Context ctx = mock(Context.class);
+  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws GeneralSecurityException, IOException {
     TestUtils.startServer();
     TestUtils.setUpTestDB();
   }
@@ -28,9 +35,6 @@ public class ChangeTwoFactorSettingIntegrationTests {
   public static void tearDown() {
     TestUtils.tearDownTestDB();
   }
-
-  Context ctx = mock(Context.class);
-  MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
 
   // Make sure to enable .env file configurations for these tests
 

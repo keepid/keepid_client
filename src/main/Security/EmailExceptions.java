@@ -1,8 +1,9 @@
 package Security;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public class EmailExceptions extends Exception {
+public class EmailExceptions extends Exception implements Message {
 
   private EmailMessages emailMessage;
 
@@ -10,8 +11,8 @@ public class EmailExceptions extends Exception {
     this.emailMessage = emailMessage;
   }
 
-  public String toString() {
-    return emailMessage.toString();
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public String getErrorName() {

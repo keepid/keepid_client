@@ -1,12 +1,12 @@
 package Config;
 
+import Activity.ActivityController;
 import Bug.BugController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
-import Security.EmailUtil;
-import Security.SecurityUtils;
+import Security.EncryptionUtils;
 import User.UserController;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
@@ -26,10 +26,17 @@ public class AppConfig {
     setApplicationHeaders(app);
 
     /* Utilities to pass to route handlers */
-    SecurityUtils securityUtils = new SecurityUtils();
-    EmailUtil emailUtil = new EmailUtil();
     LogFactory l = new LogFactory();
     l.createLogger();
+
+    EncryptionUtils.initialize();
+    //    try {
+    //      encryptionController = new EncryptionController(db);
+    //    } catch (GeneralSecurityException | IOException e) {
+    //      System.err.println(e.getStackTrace());
+    //      System.exit(0);
+    //      return null;
+    //    }
 
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
@@ -37,47 +44,42 @@ public class AppConfig {
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
     BugController bugController = new BugController(db);
-
+    ActivityController activityController = new ActivityController(db);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
     /* -------------- FILE MANAGEMENT --------------------- */
     app.post("/upload", pdfController.pdfUpload);
+    app.post("/upload-annotated", pdfController.pdfUploadAnnotated);
+    app.post("/upload-signed-pdf", pdfController.pdfSignedUpload);
     app.post("/download", pdfController.pdfDownload);
     app.post("/delete-document/", pdfController.pdfDelete);
-    app.post("/get-documents", pdfController.pdfGetAll);
+    app.post("/get-documents", pdfController.pdfGetDocuments);
     app.post("/get-application-questions", pdfController.getApplicationQuestions);
     app.post("/fill-application", pdfController.fillPDFForm);
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
-    app.post("/login", userController.loginUser(securityUtils, emailUtil));
+    app.post("/login", userController.loginUser);
     app.post("/generate-username", userController.generateUniqueUsername);
-    app.post("/username-exists", userController.usernameExists);
-    app.post("/create-user-validator", userController.createUserValidator);
-    app.post("/create-user", userController.createNewUser(securityUtils));
-    app.post("/create-invited-user", userController.createNewInvitedUser(securityUtils));
+    app.post("/create-user", userController.createNewUser);
+    app.post("/create-invited-user", userController.createNewInvitedUser);
     app.get("/logout", userController.logout);
-    app.post(
-        "/forgot-password", accountSecurityController.forgotPassword(securityUtils, emailUtil));
-    app.post("/change-password", accountSecurityController.changePasswordIn(securityUtils));
-    app.post("/reset-password", accountSecurityController.resetPassword(securityUtils));
+    app.post("/forgot-password", accountSecurityController.forgotPassword);
+    app.post("/change-password", accountSecurityController.changePassword);
+    app.post("/reset-password", accountSecurityController.resetPassword);
     app.get("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
     app.post("/get-login-history", userController.getLogInHistory);
 
-    /* -------------- AUTHORIZATION  ----------------------- */
-    app.post("/modify-permissions", userController.modifyPermissions);
-
     /* -------------- ORGANIZATION SIGN UP ------------------ */
-    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
-    app.post("/organization-signup", orgController.enrollOrganization(securityUtils));
+    //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
+    app.post("/organization-signup", orgController.enrollOrganization);
 
-    app.post("/invite-user", orgController.inviteUsers(securityUtils, emailUtil));
+    app.post("/invite-user", orgController.inviteUsers);
 
     /* -------------- ACCOUNT SETTINGS ------------------ */
-    app.post(
-        "/change-account-setting", accountSecurityController.changeAccountSetting(securityUtils));
+    app.post("/change-account-setting", accountSecurityController.changeAccountSetting);
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- SUBMIT BUG------------------ */
@@ -88,6 +90,7 @@ public class AppConfig {
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/get-all-orgs", orgController.listOrgs);
+    app.post("/get-all-activities", activityController.findMyActivities);
 
     return app;
   }
