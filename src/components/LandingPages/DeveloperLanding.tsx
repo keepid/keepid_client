@@ -45,7 +45,6 @@ const listOptions = [
 
 interface State {
   pdfFiles: FileList | undefined,
-  buttonState: string
 }
 
 class DeveloperLanding extends Component<Props, State, {}> {
