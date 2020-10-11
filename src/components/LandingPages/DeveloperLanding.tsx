@@ -48,102 +48,6 @@ interface State {
 }
 
 class DeveloperLanding extends Component<Props, State, {}> {
-  handleChangeFileUpload(event: any, rowIndex: number) {
-    event.preventDefault();
-    const {
-      alert,
-    } = this.props;
-    const { files } = event.target;
-
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFileChange(rowIndex));
-  }
-
-  handleFileChange(rowIndex: number) {
-    const {
-      alert,
-    } = this.props;
-
-    if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
-    const pdfFile = this.state.pdfFiles[0];
-    if (pdfFile === null) throw new Error('Must upload a file');
-
-    const formData = new FormData();
-    formData.append('file', pdfFile, pdfFile.name);
-    formData.append('fileId', this.state.documents[rowIndex].id);
-
-    fetch(`${getServerURL()}/upload-annotated`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          status,
-        } = JSON.parse(responseJSON);
-        if (status === 'SUCCESS') {
-          alert.show(`Successfully uploaded ${pdfFile.name}`);
-          this.setState({
-            pdfFiles: undefined,
-          }, () => this.getDocuments());
-        } else {
-          alert.show(`Failure to upload ${pdfFile.name}`);
-        }
-      });
-  }
-
-  handleChangeFileDownload(event: any, rowIndex: number) {
-    event.preventDefault();
-    const {
-      alert,
-    } = this.props;
-    const { files } = event.target;
-
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFileDownload(rowIndex));
-  }
-
-  handleFileDownload(rowIndex: number) {
-    const {
-      userRole,
-    } = this.props;
-
-    const documentId = this.state.documents[rowIndex].id;
-    const documentName = this.state.documents[rowIndex].filename;
-
-    let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.FORM;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
-    } else {
-      pdfType = undefined;
-    }
-
-    fetch(`${getServerURL()}/download`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        fileId: documentId,
-        pdfType,
-      }),
-    }).then((response) => response.blob())
-      .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(response);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = documentName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }).catch((error) => {
-        alert('Error Fetching File');
-      });
-  }
-
   ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
     <div>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
@@ -276,6 +180,102 @@ class DeveloperLanding extends Component<Props, State, {}> {
             documents,
           });
         }
+      });
+  }
+
+  handleChangeFileUpload(event: any, rowIndex: number) {
+    event.preventDefault();
+    const {
+      alert,
+    } = this.props;
+    const { files } = event.target;
+
+    this.setState({
+      pdfFiles: files,
+    }, () => this.handleFileChange(rowIndex));
+  }
+
+  handleFileChange(rowIndex: number) {
+    const {
+      alert,
+    } = this.props;
+
+    if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
+    const pdfFile = this.state.pdfFiles[0];
+    if (pdfFile === null) throw new Error('Must upload a file');
+
+    const formData = new FormData();
+    formData.append('file', pdfFile, pdfFile.name);
+    formData.append('fileId', this.state.documents[rowIndex].id);
+
+    fetch(`${getServerURL()}/upload-annotated`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+        } = responseJSON;
+        if (status === 'SUCCESS') {
+          alert.show(`Successfully uploaded ${pdfFile.name}`);
+          this.setState({
+            pdfFiles: undefined,
+          }, () => this.getDocuments());
+        } else {
+          alert.show(`Failure to upload ${pdfFile.name}`);
+        }
+      });
+  }
+
+  handleChangeFileDownload(event: any, rowIndex: number) {
+    event.preventDefault();
+    const {
+      alert,
+    } = this.props;
+    const { files } = event.target;
+
+    this.setState({
+      pdfFiles: files,
+    }, () => this.handleFileDownload(rowIndex));
+  }
+
+  handleFileDownload(rowIndex: number) {
+    const {
+      userRole,
+    } = this.props;
+
+    const documentId = this.state.documents[rowIndex].id;
+    const documentName = this.state.documents[rowIndex].filename;
+
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.FORM;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
+
+    fetch(`${getServerURL()}/download`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileId: documentId,
+        pdfType,
+      }),
+    }).then((response) => response.blob())
+      .then((response) => {
+        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = documentName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }).catch((error) => {
+        alert('Error Fetching File');
       });
   }
 

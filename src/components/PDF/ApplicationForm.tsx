@@ -28,6 +28,18 @@ interface State {
   startDate: Date
 }
 
+// Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+function dataURLtoBlob(dataurl) {
+  const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]); let n = bstr.length; const
+    u8arr = new Uint8Array(n);
+  while (n >= 0) {
+    n -= 1;
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: 'image/png' });
+}
+
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
 
@@ -66,20 +78,11 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          fieldNames,
-          fieldQuestions,
-        } = responseJSON;
-        const fieldNamesArray : string[] = fieldNames;
-        const fieldQuestionsArray : string[] = fieldQuestions;
-        const numFields = fieldNamesArray.length;
-        const formQuestionsCombined : [string, string][] = new Array(numFields);
-        for (let j = 0; j < numFields; j += 1) {
-          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
-        }
-        this.setState({ formQuestions: formQuestionsCombined });
-        // eslint-disable-next-line
-        formQuestionsCombined.map((entry) => { formAnswers[entry[0]] = ''; });
+        const { fields } = responseJSON;
+        this.setState({ formQuestions: fields });
+        fields.forEach((entry) => {
+          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+        });
         this.setState({ formAnswers });
       });
   }
@@ -177,18 +180,6 @@ class ApplicationForm extends Component<Props, State> {
           this.props.alert.show('Successfully Submitted Application');
         });
     }
-  }
-
-  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-  dataURLtoBlob = (dataurl) => {
-    const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]); let n = bstr.length; const
-      u8arr = new Uint8Array(n);
-    // eslint-disable-next-line
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: 'image/png' });
   }
 
   render() {
@@ -393,9 +384,8 @@ class ApplicationForm extends Component<Props, State> {
                             </div>
                           );
                         }
-
                         return <div />;
-                      })
+                      })()
                     }
                   </div>
                 ),

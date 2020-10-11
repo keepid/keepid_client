@@ -267,19 +267,33 @@ class MyDocuments extends Component<Props, State> {
     });
   }
 
-  deleteDocument(event: any, row: any) {
-    const fileId = row.id;
+  deleteDocument(event: any, rowIndex: number) {
+    event.preventDefault();
+    const documentId = this.state.documentData[rowIndex].id;
+
+    const {
+      userRole,
+    } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
 
     fetch(`${getServerURL()}/delete-document/`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileId,
-        pdfType: PDFType.APPLICATION,
+        fileId: documentId,
+        pdfType,
       }),
-    }).then(() => {
-      this.getDocumentData();
-    });
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        this.getDocumentData();
+      });
   }
 
   getDocumentData() {
@@ -331,7 +345,7 @@ class MyDocuments extends Component<Props, State> {
       <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} className="btn btn-outline-success btn-sm ml-2">
         Download
       </button>
-      <button type="button" onClick={(event) => this.deleteDocument(event, row)} className="btn btn-outline-danger btn-sm ml-2">
+      <button type="button" onClick={(event) => this.deleteDocument(event, rowIndex)} className="btn btn-outline-danger btn-sm ml-2">
         Delete
       </button>
 
