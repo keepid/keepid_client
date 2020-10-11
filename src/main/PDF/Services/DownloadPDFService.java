@@ -82,16 +82,19 @@ public class DownloadPDFService implements Service {
             || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         this.inputStream = gridBucket.openDownloadStream(id);
+        return PdfMessage.SUCCESS;
       }
     } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
         this.inputStream = gridBucket.openDownloadStream(id);
+        return PdfMessage.SUCCESS;
       }
     } else if (pdfType == PDFType.FORM) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
         this.inputStream = gridBucket.openDownloadStream(id);
+        return PdfMessage.SUCCESS;
       }
     }
-    return null;
+    return PdfMessage.INVALID_PDF_TYPE;
   }
 }

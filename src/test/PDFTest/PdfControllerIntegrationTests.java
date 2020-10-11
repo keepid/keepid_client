@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import static TestUtils.TestUtils.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PdfMongoTests {
+public class PdfControllerIntegrationTests {
   private static EncryptionUtils encryptionUtils;
   private static String username;
 
