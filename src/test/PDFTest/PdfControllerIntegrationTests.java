@@ -453,9 +453,9 @@ public class PdfControllerIntegrationTests {
     JSONObject applicationsQuestionsResponseJSON =
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
-    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
-    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
-        .isEqualTo(new JSONArray().toString());
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
+    //    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
+    //        .isEqualTo(new JSONArray().toString());
     delete(fileId, "FORM");
     TestUtils.logout();
   }
