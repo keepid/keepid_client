@@ -6,7 +6,6 @@
     "node": "12.18.3"
   },
   "dependencies": {
-    "@mikecousins/react-pdf": "^5.5.1",
     "@nivo/bar": "^0.62.0",
     "@nivo/line": "^0.62.0",
     "@nivo/pie": "^0.62.0",

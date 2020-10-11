@@ -53,7 +53,7 @@ class LoginPage extends Component<Props, State> {
     e.preventDefault();
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       // @ts-ignore
-      const recaptchaPayload = await recaptchaRef.current.gexecuteAsync();
+      const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
   }

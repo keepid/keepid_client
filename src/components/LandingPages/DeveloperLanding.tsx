@@ -86,12 +86,10 @@ class DeveloperLanding extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           alert.show(`Successfully uploaded ${pdfFile.name}`);
           this.setState({
-            buttonState: '',
             pdfFiles: undefined,
           }, () => this.getDocuments());
         } else {
           alert.show(`Failure to upload ${pdfFile.name}`);
-          this.setState({ buttonState: '' });
         }
       });
   }
@@ -155,7 +153,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
       </label>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
         Download
-        <button onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
+        <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
       </label>
     </div>
   )
@@ -181,7 +179,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
     this.handleFileDownload = this.handleFileDownload.bind(this);
     this.state = {
       pdfFiles: undefined,
-      buttonState: '',
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
       currentUser: undefined,
@@ -272,11 +269,14 @@ class DeveloperLanding extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const {
+          status,
           documents,
-        } = JSON.parse(responseJSON);
-        this.setState({
-          documents,
-        });
+        } = responseJSON;
+        if (status === 'SUCCESS') {
+          this.setState({
+            documents,
+          });
+        }
       });
   }
 

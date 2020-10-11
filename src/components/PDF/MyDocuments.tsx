@@ -66,7 +66,6 @@ class MyDocuments extends Component<Props, State> {
       // upload each pdf file
       for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
-        console.log(pdfFile);
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
         if (userRole === Role.Client) {
@@ -176,8 +175,6 @@ class MyDocuments extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-        console.log(pdfFile);
-
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
@@ -267,7 +264,7 @@ class MyDocuments extends Component<Props, State> {
     this.setState({
       currentDocumentId: id,
       currentDocumentName: filename,
-    }, () => console.log(filename));
+    });
   }
 
   deleteDocument(event: any, row: any) {
@@ -308,7 +305,6 @@ class MyDocuments extends Component<Props, State> {
         const {
           documents,
         } = responseJSON;
-        console.log(documents);
         this.setState({ documentData: documents });
       });
   }
