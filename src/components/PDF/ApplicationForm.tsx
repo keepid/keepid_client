@@ -166,7 +166,7 @@ class ApplicationForm extends Component<Props, State> {
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
-      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+      const signature = dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
