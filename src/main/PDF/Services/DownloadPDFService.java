@@ -53,14 +53,9 @@ public class DownloadPDFService implements Service {
         || privilegeLevel == UserType.Worker
         || privilegeLevel == UserType.Director
         || privilegeLevel == UserType.Admin) {
-      this.inputStream = download(username, orgName, privilegeLevel, fileID, pdfType, db);
+      return download(username, orgName, privilegeLevel, fileID, pdfType, db);
     } else {
       return PdfMessage.INSUFFICIENT_PRIVILEGE;
-    }
-    if (inputStream == null) {
-      return PdfMessage.INVALID_PDF_TYPE;
-    } else {
-      return PdfMessage.SUCCESS;
     }
   }
 
@@ -69,7 +64,7 @@ public class DownloadPDFService implements Service {
     return inputStream;
   }
 
-  public static InputStream download(
+  public Message download(
       String user,
       String organizationName,
       UserType privilegeLevel,
@@ -79,22 +74,22 @@ public class DownloadPDFService implements Service {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     GridFSFile grid_out = gridBucket.find(Filters.eq("_id", id)).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
-      return null;
+      return PdfMessage.NO_SUCH_FILE;
     }
     if (pdfType == PDFType.APPLICATION
         && (privilegeLevel == UserType.Director
             || privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
-        return gridBucket.openDownloadStream(id);
+        this.inputStream = gridBucket.openDownloadStream(id);
       }
     } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
-        return gridBucket.openDownloadStream(id);
+        this.inputStream = gridBucket.openDownloadStream(id);
       }
     } else if (pdfType == PDFType.FORM) {
       if (grid_out.getMetadata().getString("organizationName").equals(organizationName)) {
-        return gridBucket.openDownloadStream(id);
+        this.inputStream = gridBucket.openDownloadStream(id);
       }
     }
     return null;

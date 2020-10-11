@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
@@ -78,19 +77,16 @@ public class GetAllFilesPDFService implements Service {
               || privilegeLevel == UserType.Admin
               || privilegeLevel == UserType.Worker)) {
         filter = Filters.eq("metadata.organizationName", organizationName);
-        files = mongodbGetAllFiles(filter, pdfType, db);
-        return PdfMessage.SUCCESS;
+        return mongodbGetAllFiles(filter, pdfType, db);
       } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
         filter = Filters.eq("metadata.uploader", uploader);
-        files = mongodbGetAllFiles(filter, pdfType, db);
-        return PdfMessage.SUCCESS;
+        return mongodbGetAllFiles(filter, pdfType, db);
       } else if (pdfType == PDFType.FORM) {
         filter =
             and(
                 eq("metadata.organizationName", organizationName),
                 eq("metadata.annotated", annotated));
-        files = mongodbGetAllFiles(filter, pdfType, db);
-        return PdfMessage.SUCCESS;
+        return mongodbGetAllFiles(filter, pdfType, db);
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
       }
@@ -99,8 +95,7 @@ public class GetAllFilesPDFService implements Service {
     }
   }
 
-  public static JSONArray mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db)
-      throws GeneralSecurityException, IOException {
+  public Message mongodbGetAllFiles(Bson filter, PDFType pdfType, MongoDatabase db) {
     JSONArray files = new JSONArray();
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
     for (GridFSFile grid_out : gridBucket.find(filter)) {
@@ -116,12 +111,18 @@ public class GetAllFilesPDFService implements Service {
         fileMetadata.put("filename", grid_out.getFilename());
         fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
       } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
-        fileMetadata.put(
-            "filename",
-            EncryptionUtils.getInstance().decryptString(grid_out.getFilename(), uploaderUsername));
+        try {
+          fileMetadata.put(
+              "filename",
+              EncryptionUtils.getInstance()
+                  .decryptString(grid_out.getFilename(), uploaderUsername));
+        } catch (GeneralSecurityException e) {
+          return PdfMessage.ENCRYPTION_ERROR;
+        }
       }
       files.put(fileMetadata);
     }
-    return files;
+    this.files = files;
+    return PdfMessage.SUCCESS;
   }
 }

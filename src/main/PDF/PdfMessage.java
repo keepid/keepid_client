@@ -11,7 +11,8 @@ public enum PdfMessage implements Message {
   SERVER_ERROR("SERVER_ERROR:There was an error with the server."),
   INSUFFICIENT_PRIVILEGE("INSUFFICIENT_PRIVILEGE:Privilege level too low."),
   SUCCESS("SUCCESS:Success."),
-  NO_SUCH_FILE("NO_SUCH_FILE:PDF does not exist");
+  NO_SUCH_FILE("NO_SUCH_FILE:PDF does not exist"),
+  ENCRYPTION_ERROR("ENCRYPTION_ERROR:Error encrypting/decrypting");
 
   private String errorMessage;
 

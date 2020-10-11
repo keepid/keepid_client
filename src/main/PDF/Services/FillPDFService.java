@@ -49,14 +49,13 @@ public class FillPDFService implements Service {
           || privilegeLevel == UserType.Director
           || privilegeLevel == UserType.Admin) {
         try {
-          completedForm = fillFields(fileStream, formAnswers);
+          return fillFields(fileStream, formAnswers);
         } catch (IOException e) {
           return PdfMessage.SERVER_ERROR;
         }
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
       }
-      return PdfMessage.SUCCESS;
     }
   }
 
@@ -65,16 +64,16 @@ public class FillPDFService implements Service {
     return completedForm;
   }
 
-  public static InputStream fillFields(InputStream inputStream, JSONObject formAnswers)
+  public Message fillFields(InputStream inputStream, JSONObject formAnswers)
       throws IllegalArgumentException, IOException {
     if (inputStream == null || formAnswers == null) {
-      throw new IllegalArgumentException();
+      return PdfMessage.INVALID_PDF;
     }
     PDDocument pdfDocument = PDDocument.load(inputStream);
     pdfDocument.setAllSecurityToBeRemoved(true);
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     if (acroForm == null) {
-      throw new IllegalArgumentException();
+      return PdfMessage.INVALID_PDF;
     }
     for (String fieldName : formAnswers.keySet()) {
       PDField field = acroForm.getField(fieldName);
@@ -124,6 +123,7 @@ public class FillPDFService implements Service {
     pdfDocument.save(outputStream);
     pdfDocument.close();
 
-    return new ByteArrayInputStream(outputStream.toByteArray());
+    this.completedForm = new ByteArrayInputStream(outputStream.toByteArray());
+    return PdfMessage.SUCCESS;
   }
 }
