@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import { ResponsivePieCanvas } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsiveBar } from '@nivo/bar';
-import AddIcon from '../static/images/add-person-icon.svg';
-import DocumentsIcon from '../static/images/documents-icon.svg';
-import SignDocumentIcon from '../static/images/sign-document-icon.svg';
-import SignDocumentPNG from '../static/images/sign-document.png';
-import WorkerPNG from '../static/images/workers.png';
-import ClientsPNG from '../static/images/clients.png';
+import AddIcon from '../../static/images/add-person-icon.svg';
+import DocumentsIcon from '../../static/images/documents-icon.svg';
+import SignDocumentIcon from '../../static/images/sign-document-icon.svg';
+import SignDocumentPNG from '../../static/images/sign-document.png';
+import WorkerPNG from '../../static/images/workers.png';
+import ClientsPNG from '../../static/images/clients.png';
 
 const pieData = [
   {

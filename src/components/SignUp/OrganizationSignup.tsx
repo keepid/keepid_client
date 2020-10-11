@@ -5,7 +5,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
 import Role from '../../static/Role';
 import USStates from '../../static/data/states_titlecase.json';
-import SignaturePad from '../../lib/react-typescript-signature-pad';
+import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import { reCaptchaKey } from '../../configVars';
 import Signup from './Signup';

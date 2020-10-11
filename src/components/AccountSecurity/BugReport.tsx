@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
-import getServerURL from '../serverOverride';
-import { reCaptchaKey } from '../configVars';
+import getServerURL from '../../serverOverride';
+import { reCaptchaKey } from '../../configVars';
 
 interface Props{
   alert: any

@@ -3,10 +3,9 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import uuid from 'react-uuid';
 import DocumentViewer from './DocumentViewer';
-import getServerURL from '../serverOverride';
-import Role from '../static/Role';
-import PDFType from '../static/PDFType';
-import InfoSVG from '../static/images/info.svg';
+import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
+import PDFType from '../../static/PDFType';
 
 interface Props {
   alert: any,
@@ -15,9 +14,7 @@ interface Props {
 
 interface State {
   pdfFiles: FileList | undefined,
-  buttonState: string,
-  firstName: string,
-  lastName: string,
+  buttonState: string
 }
 
 interface PDFProps {
@@ -48,28 +45,9 @@ class UploadDocs extends React.Component<Props, State> {
     this.state = {
       pdfFiles: undefined,
       buttonState: '',
-      firstName: '',
-      lastName: '',
     };
     this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
-  }
-
-  componentDidMount() {
-    fetch(`${getServerURL()}/get-user-info`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const newState = {
-          firstName: responseJSON.firstName,
-          lastName: responseJSON.lastName,
-        };
-        this.setState(newState);
-      });
   }
 
   submitForm(event: any) {
@@ -165,13 +143,7 @@ class UploadDocs extends React.Component<Props, State> {
     const {
       pdfFiles,
       buttonState,
-      firstName,
-      lastName,
     } = this.state;
-
-    const {
-      userRole,
-    } = this.props;
 
     return (
       <div className="container">
@@ -179,19 +151,7 @@ class UploadDocs extends React.Component<Props, State> {
           <title>Upload Documents</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="jumbotron-fluid mt-3">
-          { (userRole === Role.Admin || userRole === Role.Worker) ? (
-            <div className="alert alert-primary mt-1" role="alert">
-              <img className="avatar mr-1" src={InfoSVG} alt="info" />
-              You are uploading documents for
-              {' '}
-              {firstName}
-              {' '}
-              {lastName}
-              .
-            </div>
-          ) : null }
-
+        <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">
             Upload Documents
             {/* {location.state ? ` for "${location.state.clientUsername}"` : null} */}
@@ -205,8 +165,8 @@ class UploadDocs extends React.Component<Props, State> {
 
           <ul className="list-unstyled mt-5">
             {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
-              }
+              pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+            }
           </ul>
 
           <div className="row justify-content-left form-group mb-5">

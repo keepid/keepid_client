@@ -6,11 +6,11 @@ import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
-import PrintDocument from './PrintDocument';
+import PrintDocument from '../Old/PrintDocument';
 import ViewDocument from './ViewDocument';
-import getServerURL from '../serverOverride';
-import PDFType from '../static/PDFType';
-import Role from '../static/Role';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
+import Role from '../../static/Role';
 
 interface Props {
   alert: any,
@@ -66,7 +66,6 @@ class MyDocuments extends Component<Props, State> {
       // upload each pdf file
       for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
-        console.log(pdfFile);
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
         if (userRole === Role.Client) {
@@ -176,8 +175,6 @@ class MyDocuments extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-        console.log(pdfFile);
-
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
@@ -267,22 +264,36 @@ class MyDocuments extends Component<Props, State> {
     this.setState({
       currentDocumentId: id,
       currentDocumentName: filename,
-    }, () => console.log(filename));
+    });
   }
 
-  deleteDocument(event: any, row: any) {
-    const fileId = row.id;
+  deleteDocument(event: any, rowIndex: number) {
+    event.preventDefault();
+    const documentId = this.state.documentData[rowIndex].id;
+
+    const {
+      userRole,
+    } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
 
     fetch(`${getServerURL()}/delete-document/`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileId,
-        pdfType: PDFType.APPLICATION,
+        fileId: documentId,
+        pdfType,
       }),
-    }).then(() => {
-      this.getDocumentData();
-    });
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        this.getDocumentData();
+      });
   }
 
   getDocumentData() {
@@ -308,7 +319,6 @@ class MyDocuments extends Component<Props, State> {
         const {
           documents,
         } = responseJSON;
-        console.log(documents);
         this.setState({ documentData: documents });
       });
   }
@@ -335,7 +345,7 @@ class MyDocuments extends Component<Props, State> {
       <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} className="btn btn-outline-success btn-sm ml-2">
         Download
       </button>
-      <button type="button" onClick={(event) => this.deleteDocument(event, row)} className="btn btn-outline-danger btn-sm ml-2">
+      <button type="button" onClick={(event) => this.deleteDocument(event, rowIndex)} className="btn btn-outline-danger btn-sm ml-2">
         Delete
       </button>
 

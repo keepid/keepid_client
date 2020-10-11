@@ -3,10 +3,10 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
-import getServerURL from '../serverOverride';
+import getServerURL from '../../serverOverride';
 import DocumentViewer from './DocumentViewer';
-import PDFType from '../static/PDFType';
-import SignaturePad from '../lib/react-typescript-signature-pad';
+import PDFType from '../../static/PDFType';
+import SignaturePad from '../../lib/SignaturePad';
 import 'react-datepicker/dist/react-datepicker.css';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
@@ -26,6 +26,18 @@ interface State {
   currentPage: number,
   numPages: number,
   startDate: Date
+}
+
+// Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+function dataURLtoBlob(dataurl) {
+  const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]); let n = bstr.length; const
+    u8arr = new Uint8Array(n);
+  while (n >= 0) {
+    n -= 1;
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: 'image/png' });
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -66,20 +78,11 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          fieldNames,
-          fieldQuestions,
-        } = responseJSON;
-        const fieldNamesArray : string[] = fieldNames;
-        const fieldQuestionsArray : string[] = fieldQuestions;
-        const numFields = fieldNamesArray.length;
-        const formQuestionsCombined : [string, string][] = new Array(numFields);
-        for (let j = 0; j < numFields; j += 1) {
-          formQuestionsCombined[j] = [fieldNamesArray[j], fieldQuestionsArray[j]];
-        }
-        this.setState({ formQuestions: formQuestionsCombined });
-        // eslint-disable-next-line
-        formQuestionsCombined.map((entry) => { formAnswers[entry[0]] = ''; });
+        const { fields } = responseJSON;
+        this.setState({ formQuestions: fields });
+        fields.forEach((entry) => {
+          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+        });
         this.setState({ formAnswers });
       });
   }
@@ -163,11 +166,11 @@ class ApplicationForm extends Component<Props, State> {
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
-      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+      const signature = dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
-      fetch(`${getServerURL()}/upload-pdf-signed`, {
+      fetch(`${getServerURL()}/upload-signed-pdf`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -177,18 +180,6 @@ class ApplicationForm extends Component<Props, State> {
           this.props.alert.show('Successfully Submitted Application');
         });
     }
-  }
-
-  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-  dataURLtoBlob = (dataurl) => {
-    const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]); let n = bstr.length; const
-      u8arr = new Uint8Array(n);
-    // eslint-disable-next-line
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: 'image/png' });
   }
 
   render() {
@@ -393,9 +384,8 @@ class ApplicationForm extends Component<Props, State> {
                             </div>
                           );
                         }
-
                         return <div />;
-                      })
+                      })()
                     }
                   </div>
                 ),

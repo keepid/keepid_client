@@ -1,162 +1,359 @@
-import React, { useState } from 'react';
+import React, { Component, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Switch, Route, Link } from 'react-router-dom';
+import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import Select from 'react-select';
 import { withAlert } from 'react-alert';
-import uuid from 'react-uuid';
-import DocumentViewer from '../DocumentViewer';
+import ApplicationForm from '../PDF/ApplicationForm';
+import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
+import DocumentViewer from '../PDF/DocumentViewer';
+import Role from '../../static/Role';
 
 interface Props {
-  alert: any
+  alert: any,
+  userRole: Role,
+  username: string,
+  name: string,
+  organization: string,
 }
 
 interface State {
+  currentApplicationId: string | undefined,
+  currentApplicationFilename: string | undefined,
+  documents: any,
+  currentUser: any,
+  currentPage: number,
+  itemsPerPageSelected: any,
+  numElements: number,
+  searchName: string,
+  username: string,
+  adminName: string,
+  organization: string,
+}
+
+const listOptions = [
+  { value: '2', label: '2' },
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '25', label: '25' },
+  { value: '50', label: '50' },
+];
+
+interface State {
   pdfFiles: FileList | undefined,
-  buttonState: string
 }
 
-interface PDFProps {
-  pdfFile: File
-}
+class DeveloperLanding extends Component<Props, State, {}> {
+  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+    <div>
+      <label className="btn btn-filestack btn-widget ml-5 mr-5">
+        Re-Upload
+        <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={(event) => this.handleChangeFileUpload(event, rowIndex)} hidden />
+      </label>
+      <label className="btn btn-filestack btn-widget ml-5 mr-5">
+        Download
+        <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
+      </label>
+    </div>
+  )
 
-const MAX_NUM_OF_FILES: number = 5;
+  tableCols = [{
+    dataField: 'filename',
+    text: 'Application Name',
+    sort: true,
+  }, {
+    dataField: 'category',
+    text: 'Category',
+    sort: true,
+  }, {
+    text: 'Actions',
+    formatter: this.ButtonFormatter,
+  }];
 
-function RenderPDF(props: PDFProps): React.ReactElement {
-  const [showResults, setShowResults] = useState(false);
-  const { pdfFile } = props;
-  return (
-    <li className="mt-3">
-      <div className="row">
-        <button className="btn btn-outline-primary btn-sm mr-3" type="button" onClick={() => setShowResults(!showResults)}>{showResults ? 'Hide' : 'View'}</button>
-        <p>{pdfFile.name}</p>
-      </div>
-      { showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null }
-    </li>
-  );
-}
-
-class DeveloperLanding extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.submitForm = this.submitForm.bind(this);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
+    this.handleFileChange = this.handleFileChange.bind(this);
+    this.handleChangeFileDownload = this.handleChangeFileDownload.bind(this);
+    this.handleFileDownload = this.handleFileDownload.bind(this);
     this.state = {
       pdfFiles: undefined,
-      buttonState: '',
+      currentApplicationId: undefined,
+      currentApplicationFilename: undefined,
+      currentUser: undefined,
+      currentPage: 0,
+      itemsPerPageSelected: listOptions[0],
+      numElements: 0,
+      username: props.username,
+      searchName: '',
+      adminName: props.name,
+      organization: props.organization,
+      documents: [],
     };
-    this.submitForm = this.submitForm.bind(this);
-    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
+    this.onClickWorker = this.onClickWorker.bind(this);
+    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
+    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
+    this.changeCurrentPage = this.changeCurrentPage.bind(this);
+    this.getDocuments = this.getDocuments.bind(this);
+    this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
+    this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
 
-  submitForm(event: any) {
-    this.setState({ buttonState: 'running' });
-    event.preventDefault();
+  componentDidMount() {
+    this.getDocuments();
+  }
+
+  onClickWorker(event: any) {
+    this.setState({ currentUser: event });
+  }
+
+  handleChangeSearchName(event: any) {
+    this.setState({
+      searchName: event.target.value,
+      currentPage: 0,
+    });
+  }
+
+  handleChangeItemsPerPage(itemsPerPageSelected: any) {
+    this.setState({
+      currentPage: 0,
+    });
+  }
+
+  handleViewDocument(event: any, rowIndex: number) {
     const {
-      pdfFiles,
+      documents,
     } = this.state;
 
+    const index = rowIndex;
+    const form = documents[index];
     const {
-      alert,
-    } = this.props;
-
-    if (pdfFiles) {
-      // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i += 1) {
-        const pdfFile = pdfFiles[i];
-        const formData = new FormData();
-        formData.append('file', pdfFile, pdfFile.name);
-        formData.append('pdfType', PDFType.FORM);
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        }).then((response) => response.json())
-          .then((responseJSON) => {
-            const responseObject = responseJSON;
-            const {
-              status,
-            } = responseObject;
-            if (status === 'SUCCESS') {
-              alert.show(`Successfully uploaded ${pdfFile.name}`);
-              this.setState({
-                buttonState: '',
-                pdfFiles: undefined,
-              });
-            } else {
-              alert.show(`Failure to upload ${pdfFile.name}`);
-              this.setState({ buttonState: '' });
-            }
-          });
-      }
-    } else {
-      alert.show('Please select a file');
-      this.setState({ buttonState: '' });
-    }
+      id,
+      filename,
+    } = form;
+    this.setState(
+      {
+        currentApplicationId: id,
+        currentApplicationFilename: filename,
+      },
+    );
   }
 
-  handleChangeFileUpload(event: any) {
+  changeCurrentPage(newCurrentPage: number) {
+    this.setState({ currentPage: newCurrentPage }, this.getDocuments);
+  }
+
+  onChangeViewPermission(event: any) {
+    const {
+      currentUser,
+    } = this.state;
+    currentUser.viewPermission = event.target.ischecked;
+    this.setState({ currentUser }, this.getDocuments);
+  }
+
+  getDocuments() {
+    const {
+      searchName,
+      currentPage,
+      itemsPerPageSelected,
+    } = this.state;
+    const itemsPerPage = Number(itemsPerPageSelected.value);
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+        annotated: false,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+          documents,
+        } = responseJSON;
+        if (status === 'SUCCESS') {
+          this.setState({
+            documents,
+          });
+        }
+      });
+  }
+
+  handleChangeFileUpload(event: any, rowIndex: number) {
     event.preventDefault();
     const {
       alert,
     } = this.props;
     const { files } = event.target;
 
-    // check that the number of files uploaded doesn't exceed the maximum
-    if (files.length > MAX_NUM_OF_FILES) {
-      // eslint-disable-next-line no-param-reassign
-      event.target.value = null; // discard selected files
-      alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
-      return;
-    }
-
-    // all validation met
     this.setState({
       pdfFiles: files,
-    });
+    }, () => this.handleFileChange(rowIndex));
+  }
+
+  handleFileChange(rowIndex: number) {
+    const {
+      alert,
+    } = this.props;
+
+    if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
+    const pdfFile = this.state.pdfFiles[0];
+    if (pdfFile === null) throw new Error('Must upload a file');
+
+    const formData = new FormData();
+    formData.append('file', pdfFile, pdfFile.name);
+    formData.append('fileId', this.state.documents[rowIndex].id);
+
+    fetch(`${getServerURL()}/upload-annotated`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+        } = responseJSON;
+        if (status === 'SUCCESS') {
+          alert.show(`Successfully uploaded ${pdfFile.name}`);
+          this.setState({
+            pdfFiles: undefined,
+          }, () => this.getDocuments());
+        } else {
+          alert.show(`Failure to upload ${pdfFile.name}`);
+        }
+      });
+  }
+
+  handleChangeFileDownload(event: any, rowIndex: number) {
+    event.preventDefault();
+    const {
+      alert,
+    } = this.props;
+    const { files } = event.target;
+
+    this.setState({
+      pdfFiles: files,
+    }, () => this.handleFileDownload(rowIndex));
+  }
+
+  handleFileDownload(rowIndex: number) {
+    const {
+      userRole,
+    } = this.props;
+
+    const documentId = this.state.documents[rowIndex].id;
+    const documentName = this.state.documents[rowIndex].filename;
+
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.FORM;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
+
+    fetch(`${getServerURL()}/download`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileId: documentId,
+        pdfType,
+      }),
+    }).then((response) => response.blob())
+      .then((response) => {
+        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = documentName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }).catch((error) => {
+        alert('Error Fetching File');
+      });
   }
 
   render() {
     const {
-      pdfFiles,
-      buttonState,
+      currentApplicationFilename,
+      currentApplicationId,
+      currentUser,
+      currentPage,
+      itemsPerPageSelected,
+      numElements,
+      username,
+      adminName,
+      organization,
+      documents,
     } = this.state;
 
+    const itemsPerPage = Number(itemsPerPageSelected.value);
+    const tablePageSelector = TablePageSelector({
+      currentPage,
+      itemsPerPage,
+      numElements,
+      changeCurrentPage: this.changeCurrentPage,
+    });
+
     return (
-      <div className="container">
+      <div className="container-fluid">
         <Helmet>
-          <title>Upload Documents</title>
+          <title>Developer Panel</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="jumbotron-fluid mt-5">
-          <h1 className="display-4">Upload Document</h1>
-          <p className="lead pt-3">
-            Click the &quot;Choose file&quot; button to select a PDF file to upload.
-            The name and a preview of the PDF will appear below the buttons.
-            After confirming that you have chosen the correct file, click the &quot;Upload&quot; button to upload.
-            Otherwise, choose a different file.
-          </p>
-
-          <ul className="list-unstyled mt-5">
-            {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
-              }
-          </ul>
-
-          <div className="row justify-content-left form-group mb-5">
-            <form onSubmit={this.submitForm}>
-              <div className="form-row mt-3">
-                <label className="btn btn-filestack btn-widget ml-5 mr-5">
-                  { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
-                  <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
-                </label>
-                { pdfFiles && pdfFiles.length > 0 ? (
-                  <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-                    Upload
-                    <div className="ld ld-ring ld-spin" />
-                  </button>
-                ) : null}
-              </div>
-            </form>
+        <div className="jumbotron jumbotron-fluid bg-white pb-0">
+          <div className="container">
+            <h1 className="display-4">My Un-Annotated Forms</h1>
+            <p className="lead">See all of your un-annotated forms. Check the category of each of your forms here (TBI).</p>
+          </div>
+        </div>
+        <div className="container">
+          <form className="form-inline my-2 my-lg-0">
+            <input
+              className="form-control mr-sm-2 w-50"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+              onChange={this.handleChangeSearchName}
+            />
+          </form>
+          <div className="row ml-1 mt-2 mb-2">
+            {numElements === 0 ? <div /> : tablePageSelector }
+            {numElements === 0 ? <div />
+              : (
+                <div className="w-25">
+                  <div className="card card-body mt-0 mb-4 border-0 p-0">
+                    <h5 className="card-text h6"># Items per page</h5>
+                    <Select
+                      options={listOptions}
+                      autoFocus
+                      closeMenuOnSelect={false}
+                      onChange={this.handleChangeItemsPerPage}
+                      value={itemsPerPageSelected}
+                    />
+                  </div>
+                </div>
+              )}
+          </div>
+          <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+            <div className="w-100 pd-3">
+              <BootstrapTable
+                bootstrap4
+                keyField="id"
+                data={documents}
+                hover
+                striped
+                noDataIndication="No Forms Present"
+                columns={this.tableCols}
+                pagination={paginationFactory()}
+              />
+            </div>
           </div>
         </div>
       </div>

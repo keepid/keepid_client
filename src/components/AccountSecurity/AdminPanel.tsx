@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import { Link } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import TablePageSelector from '../TablePageSelector';
+import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
 
 interface Props {
