@@ -430,6 +430,7 @@ public class PdfControllerIntegrationTests {
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
+    System.out.println(fileId);
     delete(fileId, "FORM");
     TestUtils.logout();
   }
@@ -687,6 +688,7 @@ public class PdfControllerIntegrationTests {
         Unirest.post(TestUtils.getServerUrl() + "/delete-document")
             .body(body.toString())
             .asString();
+    System.out.println(deleteResponse.getBody());
     JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
