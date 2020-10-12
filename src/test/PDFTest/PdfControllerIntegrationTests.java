@@ -689,6 +689,7 @@ public class PdfControllerIntegrationTests {
             .body(body.toString())
             .asString();
     System.out.println(deleteResponse.getBody());
+    System.out.println(deleteResponse.getBody());
     JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
