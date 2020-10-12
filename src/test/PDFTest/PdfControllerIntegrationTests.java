@@ -94,7 +94,7 @@ public class PdfControllerIntegrationTests {
     uploadTestPDF();
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
-    delete(idString);
+    // delete(idString);
     TestUtils.logout();
   }
 
@@ -215,7 +215,7 @@ public class PdfControllerIntegrationTests {
           .isEqualTo(fieldNames[i]);
     }
 
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -270,7 +270,7 @@ public class PdfControllerIntegrationTests {
 
     checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
 
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -430,8 +430,7 @@ public class PdfControllerIntegrationTests {
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    System.out.println(fileId);
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -457,7 +456,7 @@ public class PdfControllerIntegrationTests {
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
     //    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
     //        .isEqualTo(new JSONArray().toString());
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -545,7 +544,7 @@ public class PdfControllerIntegrationTests {
     }
     assertThat(fieldValues).isNotNull();
     checkFormAnswersSS5Form(fieldValues);
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -688,8 +687,6 @@ public class PdfControllerIntegrationTests {
         Unirest.post(TestUtils.getServerUrl() + "/delete-document")
             .body(body.toString())
             .asString();
-    System.out.println(deleteResponse.getBody());
-    System.out.println(deleteResponse.getBody());
     JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
     assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
