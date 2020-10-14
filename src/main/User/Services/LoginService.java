@@ -2,10 +2,10 @@ package User.Services;
 
 import Activity.ActivityController;
 import Activity.LoginActivity;
-import Bug.BugController;
 import Config.Message;
 import Config.Service;
 import Database.UserDao;
+import Issue.IssueController;
 import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;
@@ -132,7 +132,7 @@ public class LoginService implements Service {
           "text",
           "You are receiving this because we have arrived at maximum amount of IP "
               + "lookups we are allowed for our free plan.");
-      Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+      Unirest.post(IssueController.issueReportActualURL).body(body.toString()).asEmpty();
     }
     loginList.add(thisLogin);
     addLoginHistoryToDB(loginList);

@@ -1,7 +1,7 @@
 package User;
 
-import Bug.BugController;
 import Config.Message;
+import Issue.IssueController;
 import Logger.LogFactory;
 import Security.EncryptionUtils;
 import User.Services.*;
@@ -17,14 +17,14 @@ public class UserController {
   Logger logger;
   MongoDatabase db;
   EncryptionUtils encryptionUtils;
-  BugController bugController;
+  IssueController issueController;
 
   public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
     this.encryptionUtils = EncryptionUtils.getInstance();
-    this.bugController = new BugController(db);
+    this.issueController = new IssueController(db);
     logger = (new LogFactory()).createLogger("UserController");
   }
 

@@ -1,4 +1,4 @@
-package Bug;
+package Issue;
 
 import Logger.LogFactory;
 import Validation.ValidationUtils;
@@ -15,24 +15,24 @@ import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class BugController {
+public class IssueController {
   MongoDatabase db;
   Logger logger;
 
-  public BugController(MongoDatabase db) {
+  public IssueController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
-    this.logger = l.createLogger("BugReportController");
+    this.logger = l.createLogger("IssueReportController");
   }
 
-  public static final String bugReportActualURL =
-      Objects.requireNonNull(System.getenv("BUG_REPORT_ACTUALURL"));
-  public static final String bugReportTestURL =
-      Objects.requireNonNull(System.getenv("BUG_REPORT_TESTURL"));
+  public static final String issueReportActualURL =
+      Objects.requireNonNull(System.getenv("ISSUE_REPORT_ACTUALURL"));
+  public static final String issueReportTestURL =
+      Objects.requireNonNull(System.getenv("ISSUE_REPORT_TESTURL"));
 
-  public Handler submitBug =
+  public Handler submitIssue =
       ctx -> {
-        logger.info("Starting submitBug");
+        logger.info("Starting submitIssue");
         logger.info("Trying to get fields from form");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
@@ -40,16 +40,16 @@ public class BugController {
         String description = req.getString("description");
         String email = req.getString("email");
         if (!ValidationUtils.isValidEmail(email)) {
-          logger.error("Bug report has invalid email");
-          res.put("status", BugReportMessage.INVALID_EMAIL.getErrorName());
-          res.put("message", BugReportMessage.INVALID_EMAIL.getErrorDescription());
+          logger.error("Issue report has invalid email");
+          res.put("status", IssueReportMessage.INVALID_EMAIL.getErrorName());
+          res.put("message", IssueReportMessage.INVALID_EMAIL.getErrorDescription());
           ctx.json(res.toString());
           return;
         }
-        if (null == title || "".equals(title)) {
-          logger.error("Bug report has no title");
-          res.put("status", BugReportMessage.NO_TITLE.getErrorName());
-          res.put("message", BugReportMessage.NO_TITLE.getErrorDescription());
+        if (null == title || "".equals(title) || null == description || "".equals(description)) {
+          logger.error("Issue2 report has no title");
+          res.put("status", IssueReportMessage.EMPTY_FIELD.getErrorName());
+          res.put("message", IssueReportMessage.EMPTY_FIELD.getErrorDescription());
           ctx.json(res.toString());
           return;
         }
@@ -57,14 +57,14 @@ public class BugController {
         JSONArray blocks = new JSONArray();
         JSONObject titleJson = new JSONObject();
         JSONObject titleText = new JSONObject();
-        titleText.put("text", "*Bug Title: * " + title);
+        titleText.put("text", "*Issue Title: * " + title);
         titleText.put("type", "mrkdwn");
         titleJson.put("type", "section");
         titleJson.put("text", titleText);
         blocks.put(titleJson);
         JSONObject desJson = new JSONObject();
         JSONObject desText = new JSONObject();
-        desText.put("text", "*Bug Description: * " + description);
+        desText.put("text", "*Issue Description: * " + description);
         desText.put("type", "mrkdwn");
         desJson.put("text", desText);
         desJson.put("type", "section");
@@ -73,56 +73,56 @@ public class BugController {
         input.put("blocks", blocks);
         logger.info("Trying to post the message on Slack");
         HttpResponse posted =
-            Unirest.post(bugReportActualURL)
+            Unirest.post(issueReportActualURL)
                 .header("accept", "application/json")
                 .body(input.toString())
                 .asEmpty();
-        logger.info("Trying to add bugReport to database");
-        MongoCollection<BugReport> bugReportCollection =
-            db.getCollection("BugReport", BugReport.class);
-        BugReport bugReport = new BugReport(title, description);
-        bugReportCollection.insertOne(bugReport);
+        logger.info("Trying to add issueReport to database");
+        MongoCollection<IssueReport> issueReportCollection =
+            db.getCollection("IssueReport", IssueReport.class);
+        IssueReport issueReport = new IssueReport(title, description);
+        issueReportCollection.insertOne(issueReport);
         if (!posted.isSuccess()) {
           logger.error("Posing on Slack failed");
-          res.put("status", BugReportMessage.SLACK_FAILED.getErrorName());
-          res.put("message", BugReportMessage.SLACK_FAILED.getErrorDescription());
+          res.put("status", IssueReportMessage.SLACK_FAILED.getErrorName());
+          res.put("message", IssueReportMessage.SLACK_FAILED.getErrorDescription());
           ctx.json(res.toString());
           return;
         }
-        res.put("status", BugReportMessage.SUCCESS.getErrorName());
-        res.put("message", BugReportMessage.SUCCESS.getErrorDescription());
+        res.put("status", IssueReportMessage.SUCCESS.getErrorName());
+        res.put("message", IssueReportMessage.SUCCESS.getErrorDescription());
         ctx.json(res.toString());
-        logger.info("Done with submitBug");
+        logger.info("Done with submitIssue");
       };
   // Exclusive for testing purposes.
-  public Handler findBug =
+  public Handler findIssue =
       ctx -> {
         logger.info(
-            "Starting findBug (This is never used in a real program. Good for testing purpose.)");
+            "Starting findIssue (This is never used in a real program. Good for testing purpose.)");
         logger.info("Get title from the form");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
-        String title = req.getString("bugTitle");
+        String title = req.getString("issueTitle");
         if (null == title || "".equals(title)) {
           logger.error("The query has no title");
-          res.put("bugTitle", "null");
-          res.put("bugDescription", "null");
+          res.put("issueTitle", "null");
+          res.put("issueDescription", "null");
           ctx.json(res.toString());
           return;
         }
-        res.put("bugTitle", title);
+        res.put("issueTitle", title);
         logger.info("Trying to find target report from the database.");
-        MongoCollection<BugReport> bugReportCollection =
-            db.getCollection("BugReport", BugReport.class);
-        BugReport bugReport = bugReportCollection.find(eq("bugTitle", title)).first();
-        if (bugReport == null) {
+        MongoCollection<IssueReport> issueReportCollection =
+            db.getCollection("IssueReport", IssueReport.class);
+        IssueReport issueReport = issueReportCollection.find(eq("issueTitle", title)).first();
+        if (issueReport == null) {
           logger.info("Target report is not found");
-          res.put("bugDescription", "null");
+          res.put("issueDescription", "null");
           ctx.json(res.toString());
           return;
         }
-        res.put("bugDescription", bugReport.getBugDescription());
+        res.put("issueDescription", issueReport.getIssueDescription());
         ctx.json(res.toString());
-        logger.info("Finished with findBug");
+        logger.info("Finished with findIssue");
       };
 }

@@ -1,15 +1,15 @@
-package Bug;
+package Issue;
 
 import org.json.JSONObject;
 
-public enum BugReportMessage {
+public enum IssueReportMessage {
   SLACK_FAILED("SLACK_FAILED: Failed notify the team. Email contact@keep.id for further help"),
   SUCCESS("SUCCESS:Your report is submitted!"),
-  NO_TITLE("NO_TITLE:Your message has no title"),
+  EMPTY_FIELD("EMPTY_FIELD:Your issue report needs a title"),
   INVALID_EMAIL("INVALID_EMAIL:The email address is invalid");
   private String errorMessage;
 
-  BugReportMessage(String errorMessage) {
+  IssueReportMessage(String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
