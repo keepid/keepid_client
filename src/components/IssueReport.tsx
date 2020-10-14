@@ -23,7 +23,7 @@ interface State {
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
-class BugReport extends Component<Props, State, {}> {
+class IssueReport extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -176,7 +176,7 @@ class BugReport extends Component<Props, State, {}> {
       this.props.alert.show('Please fill out all fields correctly.'); return;
     }
     this.setState({ buttonState: 'running' });
-    fetch(`${getServerURL()}/submit-bug`, {
+    fetch(`${getServerURL()}/submit-issue`, {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -340,4 +340,4 @@ class BugReport extends Component<Props, State, {}> {
   }
 }
 
-export default withAlert()(BugReport);
+export default withAlert()(IssueReport);
