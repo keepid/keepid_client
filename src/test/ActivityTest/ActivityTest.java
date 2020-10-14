@@ -119,7 +119,6 @@ public class ActivityTest {
     TestUtils.login("createAdminOwner", "login-history-test");
     MongoCollection a = db.getCollection("activity");
     MongoCursor c = a.find(eq("owner", user1)).iterator();
-    //    System.out.print(c.next().toString());
     assert (c.hasNext());
     TestUtils.logout();
   }

@@ -13,6 +13,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,7 +23,8 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 //
-// @Ignore
+
+@Ignore
 public class ChangeAccountSettingsIntegrationTests {
   Context ctx = mock(Context.class);
   MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
