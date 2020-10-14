@@ -3,14 +3,14 @@ package Organization;
 import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import java.util.Date;
+import java.util.Objects;
+import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
-import java.util.Date;
-import java.util.Objects;
-
-public class Organization {
+public class Organization extends Document {
   private ObjectId id;
 
   @BsonProperty(value = "orgName")
@@ -174,6 +174,11 @@ public class Organization {
 
   public Organization setOrgPhoneNumber(String phoneNumber) {
     this.orgPhoneNumber = phoneNumber;
+    return this;
+  }
+
+  public Organization setCreationDate(Date creationDate) {
+    this.creationDate = creationDate;
     return this;
   }
 

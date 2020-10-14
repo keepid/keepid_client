@@ -3,15 +3,15 @@ package User;
 import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-
-public class User {
+public class User extends Document {
   private ObjectId id;
 
   @BsonProperty(value = "firstName")
@@ -227,6 +227,11 @@ public class User {
 
   public User setCity(String city) {
     this.city = city;
+    return this;
+  }
+
+  public User setCreationDate(Date date) {
+    this.creationDate = date;
     return this;
   }
 
