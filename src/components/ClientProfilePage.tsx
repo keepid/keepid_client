@@ -1,18 +1,24 @@
 import React, { Component, useState } from 'react';
 
 import Image from 'react-bootstrap/Image';
+import { useLocation } from 'react-router-dom';
 import getServerURL from '../serverOverride';
 import Melinda from '../static/images/melinda.png';
 import CheckSVG from '../static/images/check.svg';
 
 interface Props{
-  username: string,
+  username:any,
 }
 
 interface State{
   activitiesArr: any,
   // showEditButton: boolean,
   file:any,
+}
+
+function getLocation() {
+  // let location = useLocation();
+  // console.log(location.state);
 }
 
 class ClientProfilePage extends Component<Props, State> {
@@ -26,6 +32,7 @@ class ClientProfilePage extends Component<Props, State> {
     this.editInformation = this.editInformation.bind(this);
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
     this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+    this.renderClientInfo = this.renderClientInfo.bind(this);
   }
 
   editInformation = (event) => {
@@ -56,20 +63,65 @@ class ClientProfilePage extends Component<Props, State> {
       });
   }
 
-  renderActivities = () => {
-    const { username } = this.props;
-    /*
-    fetch(`${getServerURL()}/get-all-activities`, {
-      method: 'POST',
+  renderClientInfo = () => {
+    fetch(`${getServerURL()}/get-user-info`, {
       credentials: 'include',
-      body: JSON.stringify({
-        username,
-      }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         const responseObject = JSON.parse(responseJSON);
         console.log(responseObject);
-      }); */
+      });
+    // console.log('USERNAME' + this.props.username);
+    // let location = useLocation();
+    // console.log(location.state);
+    // {location.state ? ` for "${location.state.client}"` : null}
+
+    return (
+      <div>
+        <h3 className="font-weight-bold mt-3">Melinda Cardenas</h3>
+        <div className="row">
+          <div className="col">Username</div>
+          <div className="col">burningjournal</div>
+        </div>
+        <div className="row">
+          <div className="col">Password</div>
+          <div className="col">******</div>
+        </div>
+        <div className="row">
+          <div className="col">Birthdate</div>
+          <div className="col">01/01/98</div>
+        </div>
+        <div className="row">
+          <div className="col">Phone No.</div>
+          <div className="col">1234567890</div>
+        </div>
+        <div className="row">
+          <div className="col">Email</div>
+          <div className="col">lala@gmail.com</div>
+        </div>
+        <div className="row">
+          <div className="col">Address</div>
+          <div className="col">123 park ave. new york, ny, 10003</div>
+        </div>
+        <div className="row">
+          <div className="col">Organization</div>
+          <div className="col">Keep.id</div>
+        </div>
+      </div>
+    );
+  }
+
+  renderActivities = () => {
+    // const { username } = this.props;
+
+    fetch(`${getServerURL()}/get-all-activities`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = JSON.parse(responseJSON);
+        console.log(responseObject);
+      });
 
     const { activitiesArr } = this.state;
 
@@ -134,35 +186,7 @@ class ClientProfilePage extends Component<Props, State> {
                 style={{ top: '0', left:'0', zIndex:1, height: '10rem' }} roundedCircle/>
               */}
             </div>
-            <h3 className="font-weight-bold mt-3">Melinda Cardenas</h3>
-            <div className="row">
-              <div className="col">Username</div>
-              <div className="col">burningjournal</div>
-            </div>
-            <div className="row">
-              <div className="col">Password</div>
-              <div className="col">******</div>
-            </div>
-            <div className="row">
-              <div className="col">Birthdate</div>
-              <div className="col">01/01/98</div>
-            </div>
-            <div className="row">
-              <div className="col">Phone No.</div>
-              <div className="col">1234567890</div>
-            </div>
-            <div className="row">
-              <div className="col">Email</div>
-              <div className="col">lala@gmail.com</div>
-            </div>
-            <div className="row">
-              <div className="col">Address</div>
-              <div className="col">123 park ave. new york, ny, 10003</div>
-            </div>
-            <div className="row">
-              <div className="col">Organization</div>
-              <div className="col">Keep.id</div>
-            </div>
+            {this.renderClientInfo()}
             <button
               type="button"
               className="btn m-2 ml-4 font-weight-bold"

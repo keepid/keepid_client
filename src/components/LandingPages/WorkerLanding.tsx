@@ -10,6 +10,7 @@ import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
 import TablePageSelector from '../TablePageSelector';
+import ClientProfilePage from '../ClientProfilePage';
 
 interface Props {
   username: string,
@@ -246,7 +247,12 @@ class WorkerLanding extends Component<Props, State> {
                 {client.zipcode}
               </h6>
               <p className="card-text">Some information about the client here.</p>
-              <a href="/" className="card-link">Client Profile</a>
+              <Link to={{ pathname: '/profile', state: { username: client.username } }}>
+                <button type="button" className="btn btn-primary">Client Profile</button>
+              </Link>
+              {/* <Link to='/profile'>
+                <button type="button" className="btn btn-primary">Client Profile</button>
+              </Link> */}
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>

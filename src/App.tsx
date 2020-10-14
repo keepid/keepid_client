@@ -383,9 +383,16 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/create-user/:jwt">
                 <InviteSignupJWT />
               </Route>
-              <Route path="/profile">
-                <ClientProfilePage username={username} />
-              </Route>
+              <Route
+                path="/profile"
+                // location={{pathname:"/components/LandingPages/WorkerLanding"}}
+                render={() => {
+                  if (role !== Role.LoggedOut) {
+                    return (<ClientProfilePage username={username} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
               <Route path="/error">
                 <Error />
               </Route>
