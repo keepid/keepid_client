@@ -5,7 +5,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
 import Role from '../../static/Role';
 import USStates from '../../static/data/states_titlecase.json';
-import SignaturePad from '../../lib/react-typescript-signature-pad';
+import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import { reCaptchaKey } from '../../configVars';
 import Signup from './Signup';
@@ -144,7 +144,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
@@ -225,7 +225,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           const {
             status,
             message,
-          } = JSON.parse(responseJSON);
+          } = responseJSON;
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });

@@ -1,23 +1,22 @@
-import React, { Component, ReactComponentElement } from 'react';
+import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import { Steps } from 'antd';
 import { ProgressBar } from 'react-bootstrap';
 import getServerURL from '../../serverOverride';
-// import Logo from '../../static/images/logo.svg';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AccountSetup from './AccountSetup';
 import PersonalInformation from './PersonalInformation';
 import SignUserAgreement from './SignUserAgreement';
 import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import Role from '../../static/Role';
+import { birthDateStringConverter } from './CompleteSignupFlow';
 
 const { Step } = Steps;
 
 interface Props {
   alert: any,
-  orgName: string,
   personRole: Role,
 }
 
@@ -38,19 +37,10 @@ interface State {
   hasSigned: boolean,
   recaptchaPayload: string,
   buttonState: string,
-  redirectLogin: boolean
+  redirectLogin: boolean,
 }
 
-class InviteSignupFlow extends Component<Props, State, {}> {
-  static birthDateStringConverter = (birthDate: Date):string => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
-  }
-
+class PersonSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -127,11 +117,9 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       email,
       recaptchaPayload,
     } = this.state;
-    const { orgName, alert, personRole } = this.props;
-    const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
-    // submit user information
-
-    fetch(`${getServerURL()}/create-invited-user`, {
+    const { alert, personRole } = this.props;
+    const birthDateString = birthDateStringConverter(birthDate);
+    fetch(`${getServerURL()}/create-user`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -148,7 +136,6 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         username,
         password,
         personRole,
-        orgName,
         recaptchaPayload,
       }),
     }).then((response) => response.json())
@@ -160,7 +147,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
+          alert.show(`Successful ${this.props.personRole} signup to use Keep.id. You can login with the new username and password`);
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
@@ -315,5 +302,4 @@ class InviteSignupFlow extends Component<Props, State, {}> {
   }
 }
 
-export const { birthDateStringConverter } = InviteSignupFlow;
-export default withAlert()(InviteSignupFlow);
+export default withAlert()(PersonSignupFlow);

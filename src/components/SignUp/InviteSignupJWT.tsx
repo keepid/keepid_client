@@ -6,7 +6,7 @@ import InviteSignupFlow from './InviteSignupFlow';
 const jwtDecode = require('jwt-decode');
 
 function InviteSignupJWT() {
-  const { jwt } = useParams();
+  const { jwt }: any = useParams();
   try {
     const decoded = jwtDecode(jwt);
     const currentTime = Date.now() / 1000;

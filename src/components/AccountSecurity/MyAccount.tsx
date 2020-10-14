@@ -182,7 +182,7 @@ class RenderInput extends Component<InputProps, InputState> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
         const { message } = responseObject;
         if (status === 'SUCCESS') { // successfully updated key and value
@@ -440,20 +440,19 @@ class MyAccount extends Component<Props, State, {}> {
       },
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
-        const date = responseObject.birthDate.split('-');
+        const date = responseJSON.birthDate.split('-');
         const newState = {
-          username: responseObject.username,
-          firstName: responseObject.firstName,
-          lastName: responseObject.lastName,
+          username: responseJSON.username,
+          firstName: responseJSON.firstName,
+          lastName: responseJSON.lastName,
           birthDate: new Date(date[2], date[0] - 1, date[1]),
-          email: responseObject.email,
-          phone: responseObject.phone,
-          city: responseObject.city,
-          state: responseObject.state,
-          address: responseObject.address,
-          zipcode: responseObject.zipcode,
-          twoFactorOn: responseObject.twoFactorOn,
+          email: responseJSON.email,
+          phone: responseJSON.phone,
+          city: responseJSON.city,
+          state: responseJSON.state,
+          address: responseJSON.address,
+          zipcode: responseJSON.zipcode,
+          twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
       });
@@ -527,7 +526,7 @@ class MyAccount extends Component<Props, State, {}> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { status } = JSON.parse(responseJSON);
+        const { status } = responseJSON;
         // old passwrod entered correctly
         if (status === 'AUTH_SUCCESS') {
           // new password is the same as the old password
@@ -565,7 +564,7 @@ class MyAccount extends Component<Props, State, {}> {
       body: JSON.stringify(data),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { status } = JSON.parse(responseJSON);
+        const { status } = responseJSON;
         if (status === 'SUCCESS') { // succesfully updated key and value
           // alert.show(`Successfully set 2FA Value`);
           this.setState({ twoFactorOn });
