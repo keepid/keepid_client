@@ -7,9 +7,17 @@ import Security.EncryptionUtils;
 import User.Services.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.model.Filters;
 import io.javalin.http.Handler;
+import io.javalin.http.UploadedFile;
+import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.io.InputStream;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -262,4 +270,35 @@ public class UserController {
     }
     return merged;
   }
+
+  public InputStream getUserPfp(String username) {
+    Bson filter = Filters.eq("metadata.owner", username);
+    GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
+    GridFSFile grid_out = gridBucket.find(filter).first();
+    if (grid_out == null || grid_out.getMetadata() == null) {
+      return null;
+    }
+    InputStream pfp = gridBucket.openDownloadStream(grid_out.getObjectId());
+    return pfp;
+  }
+
+  public Handler uploadPfp =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        UploadedFile file = ctx.uploadedFile("file");
+        logger.info(username + " is attempting to upload a profile picture");
+        UploadPfpService serv = new UploadPfpService(db, logger, username, file);
+        JSONObject res = serv.executeAndGetResponse().toJSON();
+        logger.info(username + " has successfully uploaded a profile picture");
+        ctx.json(res.toString());
+      };
+
+  public Handler loadPfp =
+      ctx -> {
+        String username = ctx.sessionAttribute("username");
+        LoadPfpService lps = new LoadPfpService(db, logger, username);
+        JSONObject mes = lps.executeAndGetResponse().toJSON();
+        ctx.header("Content-Type", "application/pfp");
+        ctx.result(lps.getRes());
+      };
 }
