@@ -29,7 +29,8 @@ import OurPartners from './components/AboutUs/OurPartners';
 import OurMission from './components/AboutUs/OurMission';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import getServerURL from './serverOverride';
-import BugReport from './components/AccountSecurity/BugReport';
+
+import IssueReport from './components/AccountSecurity/IssueReport';
 import LoginPage from './components/AccountSecurity/LoginPage';
 import ForgotPassword from './components/AccountSecurity/ForgotPassword';
 import FindOrganization from './components/OrgFinder/FindOrganization';
@@ -356,8 +357,8 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/careers">
                 <Careers />
               </Route>
-              <Route path="/bug-report">
-                <BugReport />
+              <Route path="/issue-report">
+                <IssueReport />
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />
