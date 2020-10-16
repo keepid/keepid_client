@@ -1,29 +1,29 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import PrintLogo from '../static/images/print.svg';
+import RequestLogo from '../../static/images/request.svg';
 
-class Print extends Component<{}, {}, {}> {
+class Request extends Component<{}, {}, {}> {
   render() {
     return (
       <div className="container-fluid">
         <Helmet>
-          <title>Print</title>
+          <title>Request Documents</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
           <div className="col-md-6">
-            <img src={PrintLogo} className="float-right mt-2" alt="Print" />
+            <img src={RequestLogo} className="float-right mt-2" alt="Print" />
           </div>
           <div className="col-md-6 mt-4">
             <h3 className="textPrintHeader">
-              Print Documents
+              Request My Documents
             </h3>
           </div>
         </div>
         <div className="row">
           <div className="col-md-12">
             <p className="textPrintDesc mt-3">
-              <span>Click the box next to every document you would like to print out, then click the “Print” button in the bottom right.</span>
+              <span>Click the box next to every document you would like to request, then click the “Request” button in the bottom right.</span>
             </p>
           </div>
         </div>
@@ -75,7 +75,7 @@ class Print extends Component<{}, {}, {}> {
             </table>
           </div>
           <button type="submit" className="btn btn-lg">
-            Print
+            Request
           </button>
         </div>
       </div>
@@ -83,4 +83,4 @@ class Print extends Component<{}, {}, {}> {
   }
 }
 
-export default Print;
+export default Request;

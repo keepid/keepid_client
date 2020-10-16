@@ -2,22 +2,22 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
-import HubLogo from '../static/images/hubs.svg';
-import DatabaseLogo from '../static/images/database.svg';
-import AidPlatLogo from '../static/images/aidplatform.svg';
+import HubLogo from '../../static/images/hubs.svg';
+import DatabaseLogo from '../../static/images/database.svg';
+import AidPlatLogo from '../../static/images/aidplatform.svg';
 // import HomeForm from '../static/images/home-forms.svg';
-import SignUp from '../static/images/sign-up.svg';
-import SyncFiles from '../static/images/sync-files.svg';
-import SecureGraphic from '../static/images/security.svg';
-import ControlGraphic from '../static/images/control.svg';
-import DocTransferGraphic from '../static/images/doc-transfer.svg';
-import ConstantAvailabilityGraphic from '../static/images/constant-availability.svg';
-import Spreadsheet from '../static/images/spreadsheet.svg';
-import Access from '../static/images/access-data.svg';
-import FileCloud from '../static/images/file-cloud.svg';
-import Building from '../static/images/building.svg';
-import Profile from '../static/images/profile-pic.svg';
-import HomepageGraphic from '../static/images/homepage_graphic.svg';
+import SignUp from '../../static/images/sign-up.svg';
+import SyncFiles from '../../static/images/sync-files.svg';
+import SecureGraphic from '../../static/images/security.svg';
+import ControlGraphic from '../../static/images/control.svg';
+import DocTransferGraphic from '../../static/images/doc-transfer.svg';
+import ConstantAvailabilityGraphic from '../../static/images/constant-availability.svg';
+import Spreadsheet from '../../static/images/spreadsheet.svg';
+import Access from '../../static/images/access-data.svg';
+import FileCloud from '../../static/images/file-cloud.svg';
+import Building from '../../static/images/building.svg';
+import Profile from '../../static/images/profile-pic.svg';
+import HomepageGraphic from '../../static/images/homepage_graphic.svg';
 
 interface Props {
   // autoLogout is true if the user automatically logged out and was redirect to this page

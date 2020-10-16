@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Redirect } from 'react-router-dom';
-import NotFoundSVG from '../static/images/page-not-found.svg';
+import NotFoundSVG from '../../static/images/page-not-found.svg';
 
 interface Props {
 }

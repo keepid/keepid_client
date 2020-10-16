@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import DocumentViewer from './DocumentViewer';
+import DocumentViewer from '../PDF/DocumentViewer';
 
 interface Props {
   documentId: string | undefined,

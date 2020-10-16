@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import EULA from '../../static/EULA.pdf';
-import SignaturePad from '../../lib/react-typescript-signature-pad';
+import SignaturePad from '../../lib/SignaturePad';
 
 interface Props {
   handleContinue: () => void,

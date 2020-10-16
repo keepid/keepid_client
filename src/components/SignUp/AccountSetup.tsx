@@ -201,9 +201,11 @@ class AccountSetup extends Component<Props, State, {}> {
             <div className="text-center pb-4 mb-2">
               <h2>
                 <b>
-                First, set up the
-                {this.props.role}
-                account login.
+                  First, set up the
+                  {' '}
+                  {this.props.role}
+                  {' '}
+                  account login.
                 </b>
               </h2>
               <span>

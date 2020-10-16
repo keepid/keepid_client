@@ -9,7 +9,7 @@ import Modal from 'react-bootstrap/Modal';
 import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
-import TablePageSelector from '../TablePageSelector';
+import TablePageSelector from '../Base/TablePageSelector';
 
 interface Props {
   username: string,
@@ -117,7 +117,7 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const {
           people,
           numPeople,
@@ -161,7 +161,7 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { loginStatus } = responseObject;
         if (loginStatus === 'AUTH_SUCCESS') {
           // Allow worker privileges

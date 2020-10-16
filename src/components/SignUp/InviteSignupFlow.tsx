@@ -156,7 +156,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         const {
           status,
           message,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });

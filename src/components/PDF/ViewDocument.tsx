@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentViewer from './DocumentViewer';
-import getServerURL from '../serverOverride';
-import PDFType from '../static/PDFType';
-import Role from '../static/Role';
+import getServerURL from '../../serverOverride';
+import PDFType from '../../static/PDFType';
+import Role from '../../static/Role';
 
 interface Props {
   userRole: Role,
@@ -41,7 +41,7 @@ class ViewDocument extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileID: documentId,
+        fileId: documentId,
         pdfType,
       }),
     }).then((response) => response.blob())

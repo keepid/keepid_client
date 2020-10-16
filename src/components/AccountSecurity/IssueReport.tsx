@@ -2,9 +2,9 @@ import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
-import getServerURL from '../serverOverride';
-import { reCaptchaKey } from '../configVars';
-import { isValidEmail } from '../lib/Validations/Validations';
+import getServerURL from '../../serverOverride';
+import { reCaptchaKey } from '../../configVars';
+import { isValidEmail } from '../../lib/Validations/Validations';
 
 interface Props {
   alert: any,
@@ -158,6 +158,7 @@ class IssueReport extends Component<Props, State, {}> {
       this.setState({ recaptchaPayload });
     }
     else return;
+    this.setState({buttonState:''});
     const { alert } = this.props;
     const {
       email,
@@ -190,17 +191,19 @@ class IssueReport extends Component<Props, State, {}> {
         const { status } = responseObject;
 
         if (status === 'SUCCESS') {
-          this.clearInput();
           alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
+          this.clearInput();
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
+          return;
         }
       }).catch((error) => {
         alert.show('Failed to submit. Please try again.');
-        this.setState({ buttonState: '' });
+        this.setState({ buttonState: '' }); return;
       });
-   //console.log(this.state);   
+  this.clearInput();
+   console.log(this.state);   
   }
 
   handleChangeTitle(event: any) {

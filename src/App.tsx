@@ -10,38 +10,39 @@ import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
 import PersonSignup from './components/SignUp/PersonSignup';
-import Header from './components/Header';
-import UploadDocs from './components/UploadDocs';
+import Header from './components/Base/Header';
+import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
-import Request from './components/Request';
-import Applications from './components/Applications';
-import Error from './components/Error';
-import Email from './components/Email';
+import Request from './components/Old/Request';
+import Applications from './components/PDF/Applications';
+import Error from './components/Base/Error';
+import Email from './components/Old/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyOrganization from './components/AccountSecurity/MyOrganization';
-import MyDocuments from './components/MyDocuments';
+import DevPanel from './components/LandingPages/DeveloperLanding';
+import MyDocuments from './components/PDF/MyDocuments';
 import OurTeam from './components/AboutUs/OurTeam';
 import Role from './static/Role';
 import MyAccount from './components/AccountSecurity/MyAccount';
-import Footer from './components/Footer';
+import Footer from './components/Base/Footer';
 import OurPartners from './components/AboutUs/OurPartners';
 import OurMission from './components/AboutUs/OurMission';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import getServerURL from './serverOverride';
-import IssueReport from './components/IssueReport';
-import LoginPage from './components/LoginPage';
+
+import IssueReport from './components/AccountSecurity/IssueReport';
+import LoginPage from './components/AccountSecurity/LoginPage';
 import ForgotPassword from './components/AccountSecurity/ForgotPassword';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import IdleTimeOutModal from './components/AccountSecurity/IdleTimeOutModal';
-import DeveloperLanding from './components/LandingPages/DeveloperLanding';
-import Home from './components/Home';
+import Home from './components/Base/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import EULA from './components/AboutUs/EULA';
 import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import SignupBrancher from './components/SignUp/SignupBrancher';
 import Careers from './components/AboutUs/Careers';
-import AdminDashboard from './components/AdminDashboard';
+import AdminDashboard from './components/AccountSecurity/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
@@ -216,6 +217,9 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Client) {
                     return (<ClientLanding />);
                   }
+                  if (role === Role.Developer) {
+                    return (<DevPanel name={name} organization={organization} username={username} role={role} />);
+                  }
                   return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />;
                 }}
               />
@@ -276,6 +280,15 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                path="/dev-panel"
+                render={() => {
+                  if (role === Role.Director || role === Role.Admin) {
+                    return (<DevPanel userRole={role} name={name} organization={organization} username={username} />);
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
                 path="/upload-document"
                 render={() => {
                   if (role === Role.Client || role === Role.Admin || role === Role.Director) {
@@ -316,15 +329,6 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (role === Role.Client) {
                     return <Email />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
-              <Route
-                path="/developer-landing"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <DeveloperLanding />;
                   }
                   return <Redirect to="/error" />;
                 }}

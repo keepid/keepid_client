@@ -3,10 +3,10 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Link } from 'react-router-dom';
-import getServerURL from '../serverOverride';
-import Role from '../static/Role';
-import LoginSVG from '../static/images/login-svg.svg';
-import { reCaptchaKey } from '../configVars';
+import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
+import LoginSVG from '../../static/images/login-svg.svg';
+import { reCaptchaKey } from '../../configVars';
 
 interface State {
   username: string,
@@ -52,6 +52,7 @@ class LoginPage extends Component<Props, State> {
   onSubmitWithReCAPTCHA = async (e) => {
     e.preventDefault();
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
@@ -89,7 +90,7 @@ class LoginPage extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
+        const responseObject = responseJSON;
         const { status } = responseObject;
 
         if (status === 'AUTH_SUCCESS') {
@@ -137,7 +138,7 @@ class LoginPage extends Component<Props, State> {
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          const responseObject = JSON.parse(responseJSON);
+          const responseObject = responseJSON;
           const {
             status,
             userRole,
@@ -153,6 +154,7 @@ class LoginPage extends Component<Props, State> {
                 case 'Admin': return Role.Admin;
                 case 'Worker': return Role.Worker;
                 case 'Client': return Role.Client;
+                case 'Developer': return Role.Developer;
                 default: return Role.LoggedOut;
               }
             };
@@ -337,7 +339,7 @@ class LoginPage extends Component<Props, State> {
                 <div className="row pl-3">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100">Start 3-Month Free Trial</button>
+                      <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>
                     </Link>
                   </div>
                 </div>

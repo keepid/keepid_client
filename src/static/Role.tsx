@@ -4,6 +4,7 @@ enum Role {
     Worker = 'Worker',
     Volunteer = 'Volunteer',
     Client = 'Client',
+    Developer = 'Developer',
     LoggedOut = 'Logged-Out User',
 }
 
