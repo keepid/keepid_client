@@ -53,30 +53,35 @@ public class IssueReportTest {
     assert (posted.isSuccess());
   }
 
-  // I commented the test below as it would send a message in bug reports channel in slack when run.
+  // I commented the test below as it would send a message in issue reports channel in slack when
+  // run.
   // If you wish to test
-  // locally, please change the url in the IssueController to bugReportTestURL so this will only
+  // locally, please change the url in the IssueController to issueReportTestURL so this will only
   // send
   // message the test channel.
   // If you are not sure which one to put, contact me @cathy chen on slack.
   @Test
   public void testMongo() {
-    //    JSONObject body = new JSONObject();
-    //    body.put("bugTitle", "mongo1");
-    //    body.put("bugDescription", "mongo2");
-    //    HttpResponse<String> submitResponse =
-    //        Unirest.post(TestUtils.getServerUrl() +
-    // "/submit-bug").body(body.toString()).asString();
-    //    assert ("SUCCESS"
-    //
-    // .equals(TestUtils.responseStringToJSON(submitResponse.getBody()).getString("status")));
-    //    body = new JSONObject();
-    //    body.put("bugTitle", "mongo1");
-    //    HttpResponse<String> findResponse =
-    //        Unirest.post(TestUtils.getServerUrl() + "/find-bug").body(body.toString()).asString();
-    //    assert ("mongo2"
-    //        .equals(
-    //
-    // TestUtils.responseStringToJSON(findResponse.getBody()).getString("bugDescription")));
+    testMongoExample("issue1", "issueBody", "contact@keep.id");
+    testMongoExample("otherIssue", "body", "contact@keep.id");
+  }
+
+  public void testMongoExample(String title, String description, String email) {
+    JSONObject body = new JSONObject();
+    body.put("title", title);
+    body.put("description", description);
+    body.put("email", email);
+    HttpResponse<String> submitResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/submit-issue").body(body.toString()).asString();
+    assert ("SUCCESS"
+        .equals(TestUtils.responseStringToJSON(submitResponse.getBody()).getString("status")));
+    body = new JSONObject();
+    body.put("issueTitle", title);
+    HttpResponse<String> findResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/find-issue").body(body.toString()).asString();
+    assert (description.equals(
+        TestUtils.responseStringToJSON(findResponse.getBody()).getString("issueDescription")));
+    assert (email.equals(
+        TestUtils.responseStringToJSON(findResponse.getBody()).getString("issueEmail")));
   }
 }

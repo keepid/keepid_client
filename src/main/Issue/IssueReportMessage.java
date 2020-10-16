@@ -1,8 +1,9 @@
 package Issue;
 
+import Config.Message;
 import org.json.JSONObject;
 
-public enum IssueReportMessage {
+public enum IssueReportMessage implements Message {
   SLACK_FAILED("SLACK_FAILED: Failed notify the team. Email contact@keep.id for further help"),
   SUCCESS("SUCCESS:Your report is submitted!"),
   EMPTY_FIELD("EMPTY_FIELD:Your issue report needs a title"),
@@ -23,6 +24,10 @@ public enum IssueReportMessage {
 
   public String getErrorDescription() {
     return this.errorMessage.split(":")[1];
+  }
+
+  public String toResponseString() {
+    return toJSON().toString();
   }
 
   public JSONObject toJSON() {

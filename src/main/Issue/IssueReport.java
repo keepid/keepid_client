@@ -12,11 +12,15 @@ public class IssueReport {
   @BsonProperty(value = "issueDescription")
   private String issueDescription;
 
+  @BsonProperty(value = "issueEmail")
+  private String issueEmail;
+
   public IssueReport() {}
 
-  public IssueReport(String issueTitle, String issueDescription) {
+  public IssueReport(String issueTitle, String issueDescription, String issueEmail) {
     this.issueTitle = issueTitle;
     this.issueDescription = issueDescription;
+    this.issueEmail = issueEmail;
   }
 
   public String getIssueTitle() {
@@ -27,11 +31,19 @@ public class IssueReport {
     return issueDescription;
   }
 
+  public String getIssueEmail() {
+    return issueEmail;
+  }
+
   public void setIssueTitle(String issueTitle) {
     this.issueTitle = issueTitle;
   }
 
   public void setIssueDescription(String issueDescription) {
     this.issueDescription = issueDescription;
+  }
+
+  public void setIssueEmail(String issueEmail) {
+    this.issueEmail = issueEmail;
   }
 }
