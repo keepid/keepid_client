@@ -444,6 +444,7 @@ public class PdfControllerIntegrationTests {
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     String fileId = uploadFileAndGetFileId(applicationDocx, "FORM");
 
+    System.out.println(fileId);
     JSONObject body = new JSONObject();
     body.put("applicationId", fileId);
     HttpResponse<String> applicationsQuestionsResponse =
@@ -454,6 +455,7 @@ public class PdfControllerIntegrationTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
+    System.out.println(applicationsQuestionsResponseJSON.toString());
     //    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
     //        .isEqualTo(new JSONArray().toString());
     // delete(fileId, "FORM");
@@ -667,18 +669,6 @@ public class PdfControllerIntegrationTests {
     return fileId;
   }
 
-  public static void delete(String id) {
-    JSONObject body = new JSONObject();
-    body.put("pdfType", "APPLICATION");
-    body.put("fileId", id);
-    HttpResponse<String> deleteResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/delete-document")
-            .body(body.toString())
-            .asString();
-    JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
-    assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
-  }
-
   public static void delete(String id, String pdfType) {
     JSONObject body = new JSONObject();
     body.put("pdfType", pdfType);
@@ -693,8 +683,8 @@ public class PdfControllerIntegrationTests {
 
   @BeforeEach
   public static void clearAllDocuments() {
-    String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
-    boolean[] annotated = {false, true, false};
+    String[] pdfTypes = {"FORM", "FORM", "APPLICATION", "IDENTIFICATION"};
+    boolean[] annotated = {false, true, false, false};
     for (int j = 0; j < pdfTypes.length; j++) {
       JSONObject body = new JSONObject();
       body.put("pdfType", pdfTypes[j]);

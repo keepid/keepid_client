@@ -65,9 +65,6 @@ public class GetQuestionsPDFService implements Service {
    @Param inputStream is the document
   */
   public Message getFieldInformation(InputStream inputStream) throws IOException {
-    if (inputStream == null) {
-      return PdfMessage.INVALID_PDF;
-    }
     PDDocument pdfDocument = PDDocument.load(inputStream);
     pdfDocument.setAllSecurityToBeRemoved(true);
     List<JSONObject> fieldsJSON = new LinkedList<>();
