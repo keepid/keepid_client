@@ -1,4 +1,5 @@
-import React, { Component, ReactElement } from 'react';
+import React from 'react';
+import { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
@@ -42,7 +43,6 @@ class IssueReport extends Component<Props, State, {}> {
     this.handleChangeEmail = this.handleChangeEmail.bind(this);
     this.clearInput = this.clearInput.bind(this);
   }
-
 
   componentDidMount() {
     window.scrollTo(0, 0);
@@ -101,7 +101,7 @@ class IssueReport extends Component<Props, State, {}> {
     const { emailValidator } = this.state;
     if (emailValidator === 'true') {
       return (
-        <div className="valid-feedback" ></div>
+        <div className="valid-feedback"/>
       );
     } if (emailValidator === 'false') {
       return (
@@ -158,7 +158,7 @@ class IssueReport extends Component<Props, State, {}> {
       this.setState({ recaptchaPayload });
     }
     else return;
-    this.setState({buttonState:''});
+    this.setState({ buttonState: 'running' });
     const { alert } = this.props;
     const {
       email,
@@ -174,9 +174,8 @@ class IssueReport extends Component<Props, State, {}> {
     if (emailValidator !== 'true'
         || titleValidator !== 'true'
         || descriptionValidator !== 'true') {
-      this.props.alert.show('Please fill out all fields correctly.'); return;
+      alert.show('Please fill out all fields correctly.'); return;
     }
-    this.setState({ buttonState: 'running' });
     fetch(`${getServerURL()}/submit-issue`, {
       method: 'POST',
       body: JSON.stringify({
@@ -196,14 +195,12 @@ class IssueReport extends Component<Props, State, {}> {
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
-          return;
         }
       }).catch((error) => {
         alert.show('Failed to submit. Please try again.');
-        this.setState({ buttonState: '' }); return;
+        this.setState({ buttonState: '' });
       });
-  this.clearInput();
-   console.log(this.state);   
+    this.clearInput();  
   }
 
   handleChangeTitle(event: any) {
