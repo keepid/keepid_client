@@ -2,9 +2,9 @@ package Organization.Services;
 
 import Activity.ActivityController;
 import Activity.CreateOrgActivity;
-import Bug.BugController;
 import Config.Message;
 import Config.Service;
+import Issue.IssueController;
 import Organization.OrgEnrollmentStatus;
 import Organization.Organization;
 import Security.SecurityUtils;
@@ -203,7 +203,7 @@ public class EnrollOrganizationService implements Service {
             "text",
             "You are receiving this because an new organization signed up but wasn't successfully "
                 + "posted on Slack.");
-        Unirest.post(BugController.bugReportActualURL).body(body.toString()).asEmpty();
+        Unirest.post(IssueController.issueReportActualURL).body(body.toString()).asEmpty();
       }
       logger.info("Done with enrollOrganization");
       return OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT;
