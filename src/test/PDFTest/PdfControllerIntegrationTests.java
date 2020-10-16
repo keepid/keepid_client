@@ -683,8 +683,8 @@ public class PdfControllerIntegrationTests {
 
   @BeforeEach
   public static void clearAllDocuments() {
-    String[] pdfTypes = {"FORM", "FORM", "APPLICATION", "IDENTIFICATION"};
-    boolean[] annotated = {false, true, false, false};
+    String[] pdfTypes = {"FORM", "FORM", "APPLICATION"};
+    boolean[] annotated = {false, true, false};
     for (int j = 0; j < pdfTypes.length; j++) {
       JSONObject body = new JSONObject();
       body.put("pdfType", pdfTypes[j]);
