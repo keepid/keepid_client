@@ -37,11 +37,6 @@ class IssueReport extends Component<Props, State, {}> {
       descriptionValidator: '',
       recaptchaPayload: '',
     };
-    this.handleSubmitWithRecaptcha = this.handleSubmitWithRecaptcha.bind(this);
-    this.handleChangeTitle = this.handleChangeTitle.bind(this);
-    this.handleChangeDescription = this.handleChangeDescription.bind(this);
-    this.handleChangeEmail = this.handleChangeEmail.bind(this);
-    this.clearInput = this.clearInput.bind(this);
   }
 
   componentDidMount() {
@@ -59,6 +54,14 @@ class IssueReport extends Component<Props, State, {}> {
       descriptionValidator: '',
       recaptchaPayload: '',
     });
+    this.resetRecaptcha();
+  }
+
+  resetRecaptcha = () => {
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      recaptchaRef.current.reset();
+    }
+    this.setState({ recaptchaPayload: '' });
   }
 
   validateEmail = async ():Promise<void> => {
@@ -192,26 +195,29 @@ class IssueReport extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
           this.clearInput();
+
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
+          this.resetRecaptcha();
         }
       }).catch((error) => {
         alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
+        this.resetRecaptcha();
       });
-    this.clearInput();  
+
   }
 
-  handleChangeTitle(event: any) {
+  handleChangeTitle = (event: any) => {
     this.setState({ title: event.target.value });
   }
 
-  handleChangeDescription(event: any) {
+  handleChangeDescription = (event: any) => {
     this.setState({ description: event.target.value });
   }
 
-  handleChangeEmail(event: any) {
+  handleChangeEmail = (event: any) => {
     this.setState({ email: event.target.value });
   }
 
