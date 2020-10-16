@@ -35,7 +35,6 @@ public class GetQuestionsPDFService implements Service {
     this.logger = logger;
     this.privilegeLevel = privilegeLevel;
     this.fileStream = fileStream;
-    this.applicationQuestions = applicationQuestions;
   }
 
   @Override
@@ -48,14 +47,13 @@ public class GetQuestionsPDFService implements Service {
           || privilegeLevel == UserType.Director
           || privilegeLevel == UserType.Admin) {
         try {
-          applicationQuestions = getFieldInformation(fileStream);
+          return getFieldInformation(fileStream);
         } catch (IOException e) {
           return PdfMessage.SERVER_ERROR;
         }
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
       }
-      return PdfMessage.SUCCESS;
     }
   }
 
@@ -66,18 +64,14 @@ public class GetQuestionsPDFService implements Service {
   /*
    @Param inputStream is the document
   */
-  public static List<JSONObject> getFieldInformation(InputStream inputStream) throws IOException {
-    if (inputStream == null) {
-      throw new IllegalArgumentException();
-    }
+  public Message getFieldInformation(InputStream inputStream) throws IOException {
     PDDocument pdfDocument = PDDocument.load(inputStream);
     pdfDocument.setAllSecurityToBeRemoved(true);
     List<JSONObject> fieldsJSON = new LinkedList<>();
 
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     if (acroForm == null) {
-      // form with no fields
-      return fieldsJSON;
+      return PdfMessage.INVALID_PDF;
     }
     List<PDField> fields = new LinkedList<>();
     fields.addAll(acroForm.getFields());
@@ -113,7 +107,8 @@ public class GetQuestionsPDFService implements Service {
     }
     pdfDocument.close();
 
-    return fieldsJSON;
+    this.applicationQuestions = fieldsJSON;
+    return PdfMessage.SUCCESS;
   }
 
   private static JSONObject getTextField(PDTextField field) {

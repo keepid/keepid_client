@@ -7,7 +7,6 @@ import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
-import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -193,22 +192,33 @@ public class PdfController {
   public Handler getApplicationQuestions =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        String applicationId = req.getString("applicationId");
         String username = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
-        InputStream inputStream =
-            DownloadPDFService.download(
-                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
-
-        GetQuestionsPDFService getQuestionsPDFService =
-            new GetQuestionsPDFService(db, logger, privilegeLevel, inputStream);
-        Message response = getQuestionsPDFService.executeAndGetResponse();
-        JSONObject responseJSON = response.toJSON();
-        if (response == PdfMessage.SUCCESS) {
-          responseJSON.put("fields", getQuestionsPDFService.getApplicationQuestions());
+        DownloadPDFService downloadPDFService =
+            new DownloadPDFService(
+                db,
+                logger,
+                username,
+                organizationName,
+                privilegeLevel,
+                applicationId,
+                PDFType.FORM);
+        Message responseDownload = downloadPDFService.executeAndGetResponse();
+        if (responseDownload == PdfMessage.SUCCESS) {
+          InputStream inputStream = downloadPDFService.getInputStream();
+          GetQuestionsPDFService getQuestionsPDFService =
+              new GetQuestionsPDFService(db, logger, privilegeLevel, inputStream);
+          Message response = getQuestionsPDFService.executeAndGetResponse();
+          JSONObject responseJSON = response.toJSON();
+          if (response == PdfMessage.SUCCESS) {
+            responseJSON.put("fields", getQuestionsPDFService.getApplicationQuestions());
+          }
+          ctx.result(responseJSON.toString());
+        } else {
+          ctx.result(responseDownload.toResponseString());
         }
-        ctx.result(responseJSON.toString());
       };
 
   /*
@@ -224,24 +234,35 @@ public class PdfController {
   public Handler fillPDFForm =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        ObjectId applicationId = new ObjectId(req.getString("applicationId"));
+        String applicationId = req.getString("applicationId");
         String username = ctx.sessionAttribute("username");
         String organizationName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         JSONObject formAnswers = req.getJSONObject("formAnswers");
 
-        InputStream inputStream =
-            DownloadPDFService.download(
-                username, organizationName, privilegeLevel, applicationId, PDFType.FORM, db);
-
-        FillPDFService fillPDFService =
-            new FillPDFService(db, logger, privilegeLevel, inputStream, formAnswers);
-        Message response = fillPDFService.executeAndGetResponse();
-        if (response == PdfMessage.SUCCESS) {
-          ctx.header("Content-Type", "application/pdf");
-          ctx.result(fillPDFService.getCompletedForm());
+        DownloadPDFService downloadPDFService =
+            new DownloadPDFService(
+                db,
+                logger,
+                username,
+                organizationName,
+                privilegeLevel,
+                applicationId,
+                PDFType.FORM);
+        Message responseDownload = downloadPDFService.executeAndGetResponse();
+        if (responseDownload == PdfMessage.SUCCESS) {
+          InputStream inputStream = downloadPDFService.getInputStream();
+          FillPDFService fillPDFService =
+              new FillPDFService(db, logger, privilegeLevel, inputStream, formAnswers);
+          Message response = fillPDFService.executeAndGetResponse();
+          if (response == PdfMessage.SUCCESS) {
+            ctx.header("Content-Type", "application/pdf");
+            ctx.result(fillPDFService.getCompletedForm());
+          } else {
+            ctx.result(response.toResponseString());
+          }
         } else {
-          ctx.result(response.toResponseString());
+          ctx.result(responseDownload.toResponseString());
         }
       };
 }
