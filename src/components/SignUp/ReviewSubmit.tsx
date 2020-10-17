@@ -48,7 +48,11 @@ class ReviewSubmit extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
-
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
+      const token = await recaptchaRef.current.executeAsync();
+      this.props.handleChangeRecaptcha(token);
+    }
   }
 
   passwordHider = (password: string) => '*'.repeat(password.length - 1)
@@ -229,7 +233,6 @@ class ReviewSubmit extends Component<Props, State, {}> {
                   Submit
                   <div className="ld ld-ring ld-spin" />
                 </button>
-                {/* <button type="button" className="ml-auto btn btn-primary mt-5" onClick={handleSubmit}>Submit</button> */}
               </div>
             </div>
           </div>

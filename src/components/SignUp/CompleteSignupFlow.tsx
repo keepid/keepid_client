@@ -134,12 +134,10 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleContinue = ():void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
-    // this.setState({ signupStage: this.state.signupStage + 1 });
   };
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-    // this.setState({ signupStage: this.state.signupStage - 1 });
   }
 
   static addHttp = (url: string) => {
@@ -206,6 +204,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        console.log(responseJSON);
         const {
           status,
           message,
@@ -371,21 +370,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="container mt-5">
-          {/* <div className="row pt-5 pb-5">
-            <div className="col-md-3">
-              <button type="button" className="btn btn-outline-primary float-left">Back to Home</button>
-            </div>
-            <div className="col-md-6">
-              <div className="d-flex justify-content-center">
-                <img alt="Keep.id Logo" className="footer-brand img-fluid mb-2 ml-3" src={Logo} />
-                <div className="mb-2 ml-3 footer-brand-logo">Keep.id</div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <button type="button" className="btn btn-outline-primary float-right">Log In</button>
-            </div>
-          </div> */}
-
           <Steps className="d-none d-md-flex" progressDot current={signupStage}>
             <Step title="Account Setup" description="" />
             <Step title="Personal Information" description="" />
