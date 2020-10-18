@@ -3,14 +3,14 @@ package Organization;
 import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
-import java.util.Date;
-import java.util.Objects;
-import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
-public class Organization extends Document {
+import java.util.Date;
+import java.util.Objects;
+
+public class Organization {
   private ObjectId id;
 
   @BsonProperty(value = "orgName")
