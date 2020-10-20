@@ -1,5 +1,5 @@
-import React from 'react';
-import { Component, ReactElement } from 'react';
+import React, { Component, ReactElement } from 'react';
+
 import { Helmet } from 'react-helmet';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { withAlert } from 'react-alert';
@@ -104,7 +104,7 @@ class IssueReport extends Component<Props, State, {}> {
     const { emailValidator } = this.state;
     if (emailValidator === 'true') {
       return (
-        <div className="valid-feedback"/>
+        <div className="valid-feedback" />
       );
     } if (emailValidator === 'false') {
       return (
@@ -159,8 +159,7 @@ class IssueReport extends Component<Props, State, {}> {
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload });
-    }
-    else return;
+    } else return;
     this.setState({ buttonState: 'running' });
     const { alert } = this.props;
     const {
@@ -195,7 +194,6 @@ class IssueReport extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
           this.clearInput();
-
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
@@ -206,7 +204,6 @@ class IssueReport extends Component<Props, State, {}> {
         this.setState({ buttonState: '' });
         this.resetRecaptcha();
       });
-
   }
 
   handleChangeTitle = (event: any) => {

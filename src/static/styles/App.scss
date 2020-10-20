@@ -374,10 +374,20 @@ thead {
 }
 
 .alert-provider-custom div div {
-	background-color: $secondary-theme !important;
-	color: black !important;
-	border-radius: 1.5rem !important;
+	background-color: #F3F3F3 !important;
+	color: #212529 !important;
+	border-radius: .25rem !important;
+	border-color: #B7B7C0 !important;
+	border-style: solid !important;
+	border-width: .125rem !important;
+	min-width: 18.75rem !important;
+	font-family: 'Inter', sans-serif !important;
+	width: 33vw !important;
+}
 
+.alert-provider-custom div div button svg{
+	filter: invert(47%) sepia(13%) saturate(298%) hue-rotate(166deg) brightness(93%) contrast(91%) !important;
+	// fill: #6C757D !important;
 }
 
 .alert-provider-custom span {
