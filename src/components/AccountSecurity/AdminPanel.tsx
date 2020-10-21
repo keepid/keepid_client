@@ -44,9 +44,17 @@ class AdminPanel extends Component<Props, State> {
     text: 'Last Name',
     sort: true,
   }, {
-    dataField: 'privilegeLevel',
-    text: 'Worker Type',
+    dataField: 'email',
+    text: 'Email',
     sort: true,
+  }, {
+    dataField: 'privilegeLevel',
+    text: 'Role',
+    sort: true,
+  }, {
+    dataField: 'actions',
+    text: 'Actions',
+    sort: false,
   }];
 
   constructor(props: Props) {
@@ -67,7 +75,7 @@ class AdminPanel extends Component<Props, State> {
     };
     this.onClickWorker = this.onClickWorker.bind(this);
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
+    // this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
     this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getAdminWorkers = this.getAdminWorkers.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
@@ -90,12 +98,12 @@ class AdminPanel extends Component<Props, State> {
     }, this.getAdminWorkers);
   }
 
-  handleChangeItemsPerPage(itemsPerPageSelected: any) {
-    this.setState({
-      itemsPerPageSelected,
-      currentPage: 0,
-    }, this.getAdminWorkers);
-  }
+  // handleChangeItemsPerPage(itemsPerPageSelected: any) {
+  //   this.setState({
+  //     itemsPerPageSelected,
+  //     currentPage: 0,
+  //   }, this.getAdminWorkers);
+  // }
 
   changeCurrentPage(newCurrentPage: number) {
     this.setState({ currentPage: newCurrentPage }, this.getAdminWorkers);
@@ -233,77 +241,89 @@ class AdminPanel extends Component<Props, State> {
         </Helmet>
         <div className="container">
           <h1 className="mt-5">{organization}</h1>
-          <p className="lead">
-            {'Welcome, '}
-            {adminName}
-            !
+          <p>
+            {' '}
+            {numElements }
+            {' '}
+            members
+            {' '}
           </p>
+
           <div className="row">
-            <div className="col-lg-7">
-              <form className="form-inline my-2 my-lg-0">
-                <input
-                  className="form-control mr-sm-2 w-100"
-                  type="search"
-                  placeholder="Search by name"
-                  aria-label="Search"
-                  onChange={this.handleChangeSearchName}
-                />
+            <div className="col-lg">
+
+              <form className="form-inline">
+                <div className="input-group">
+                  <input
+                    type="search"
+                    className="form-control w-50 mb-3"
+                    placeholder="Search by name, email, role..."
+                    aria-label="Search"
+                    onChange={this.handleChangeSearchName}
+                  />
+                  <div className="input-group-append mb-3">
+                    <button className="btn btn-primary loginButtonBackground" type="submit">Search</button>
+                  </div>
+                </div>
               </form>
             </div>
             <div className="col-lg-5">
               <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
-                <div className="btn-group mr-2" role="group" aria-label="Button group">
+                {/* <div className="btn-group mr-2" role="group" aria-label="Button group">
                   <Link to="/upload-document">
                     <button type="button" className="btn btn-primary loginButtonBackground">Upload Form</button>
                   </Link>
-                </div>
+                </div> */}
                 <div className="btn-group" role="group" aria-label="Button group">
-                  <Link to="/my-documents">
-                    <button type="button" className="btn btn-primary loginButtonBackground">View Applications</button>
+                  <Link to="/person-signup/worker">
+                    <button type="button" className="btn btn-primary loginButtonBackground">+ Invite Members</button>
                   </Link>
                 </div>
               </div>
             </div>
           </div>
-          <div className="row ml-1 mt-3 mb-2">
+          {/* <div className="row ml-1 mt-3 mb-2">
             {numElements === 0 ? <div /> : tablePageSelector }
             {numElements === 0 ? <div />
               : (
-                <div className="w-25">
-                  <div className="form-inline mt-1">
-                    <Select
-                      options={listOptions}
-                      autoFocus
-                      closeMenuOnSelect={false}
-                      onChange={this.handleChangeItemsPerPage}
-                      value={itemsPerPageSelected}
-                    />
-                    {' '}
-                    <p className="my-auto ml-2">
-                      {' '}
-                      items per page
-                    </p>
-                  </div>
-                </div>
+                // <div className="w-25">
+                //   <div className="form-inline mt-1">
+                //     <Select
+                //       options={listOptions}
+                //       autoFocus
+                //       closeMenuOnSelect={false}
+                //       // onChange={this.handleChangeItemsPerPage}
+                //       // value={itemsPerPageSelected}
+                //     />
+                //     {' '}
+                //     <p className="my-auto ml-2">
+                //       {' '}
+                //       items per page
+                //     </p>
+                //   </div>
+                // </div>
               )}
-          </div>
-          <div className="row bd-highlight mb-3 pt-5">
-            <div className="col pb-3">
-              <BootstrapTable
-                bootstrap4
-                keyField="username"
-                data={workers}
-                hover
-                striped
-                columns={this.tableCols}
-                selectRow={{
-                  mode: 'radio',
-                  onSelect: this.onClickWorker,
-                  clickToSelect: true,
-                  hideSelectColumn: true,
-                }}
-                noDataIndication="No Workers Found"
-              />
+          </div> */}
+          <div className="row bd-highlight mb-3">
+            <div className="scrollbar" style={{ maxHeight: '15.625rem', overflow: 'scroll', scrollbarColor: '#7B81FF' }}>
+              <div className="col pb-3">
+                <BootstrapTable
+                  bootstrap4
+                  keyField="username"
+                  data={workers}
+                  hover="primary-theme"
+                  striped
+                  columns={this.tableCols}
+                  selectRow={{
+                    mode: 'radio',
+                    onSelect: this.onClickWorker,
+                    clickToSelect: true,
+                    hideSelectColumn: true,
+                    bgColor: 'primary-theme',
+                  }}
+                  noDataIndication="No Workers Found"
+                />
+              </div>
             </div>
           </div>
         </div>
