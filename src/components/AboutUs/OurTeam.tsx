@@ -159,7 +159,7 @@ class OurTeam extends React.Component<{}, State> {
             <img src={ChrisJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Christopher Ng</h5>
-              <p className="card-text">Nonprofit Ambassador / UI/UX Designer</p>
+              <p className="card-text">Nonprofit Ambassador</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">

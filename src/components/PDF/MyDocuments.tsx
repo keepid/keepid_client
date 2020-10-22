@@ -41,7 +41,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
         <button className="btn btn-outline-primary btn-sm mr-3" type="button" onClick={() => setShowResults(!showResults)}>{showResults ? 'Hide' : 'View'}</button>
         <p>{pdfFile.name}</p>
       </div>
-      { showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null }
+      { showResults ? <div className="row mt-3 w-100"><DocumentViewer pdfFile={pdfFile} /></div> : <div /> }
     </li>
   );
 }

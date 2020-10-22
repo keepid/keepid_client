@@ -57,6 +57,13 @@ class LoginPage extends Component<Props, State> {
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
   }
+
+  resetRecaptcha = () => {
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      recaptchaRef.current.reset();
+    }
+    this.setState({ recaptchaPayload: '' });
+  }
   // END RECAPTCHA CODE
 
   handleChangePassword = (event: any) => {
