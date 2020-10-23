@@ -71,6 +71,7 @@ public class AppConfig {
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
     app.post("/get-login-history", userController.getLogInHistory);
+    app.post("/username-exists", userController.usernameExists);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);

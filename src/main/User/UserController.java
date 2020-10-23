@@ -82,6 +82,15 @@ public class UserController {
         logger.info("Username successfully generated");
       };
 
+  public Handler usernameExists =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("firstname");
+        CheckUsernameExistsService checkUsernameExistsService =
+            new CheckUsernameExistsService(db, logger, username);
+        ctx.result(checkUsernameExistsService.executeAndGetResponse().toResponseString());
+      };
+
   public Handler createNewUser =
       ctx -> {
         logger.info("Starting createNewUser handler");
