@@ -293,7 +293,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <label htmlFor="ein" className="col-sm-3 col-form-label text-sm-right">Organization EIN</label>
                 <div className="col-sm-9">
                   <input
-                    type="number"
+                    type="text"
                     className={`form-control form-purple ${this.colorToggle(einValidator)}`}
                     placeholder="Organization EIN"
                     id="ein"
