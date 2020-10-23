@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import Role from '../../static/Role';
 import { isValidUsername, isValidPassword } from '../../lib/Validations/Validations';
+import getServerURL from '../../serverOverride';
 
 interface Props {
   username: string,
@@ -48,7 +49,21 @@ class AccountSetup extends Component<Props, State, {}> {
   validateUsername = async ():Promise<void> => {
     const { username } = this.props;
     // ( if username is valid here and if username is taken)
-    if (isValidUsername(username)) {
+    const notTaken: boolean = await fetch(`${getServerURL()}/username-exists`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username: username,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status
+        } = responseJSON;
+        return (status === 'SUCCESS');
+      });
+
+    if (isValidUsername(username) && notTaken) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ usernameValidator: 'false' }, resolve));
