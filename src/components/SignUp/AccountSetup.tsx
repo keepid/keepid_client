@@ -57,7 +57,10 @@ class AccountSetup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        return (responseJSON['status'] === 'SUCCESS');
+        const {
+          status
+        } = responseJSON;
+        return (status === 'SUCCESS');
       });
 
     if (isValidUsername(username) && notTaken) {
