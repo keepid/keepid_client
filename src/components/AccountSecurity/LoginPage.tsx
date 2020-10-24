@@ -29,6 +29,8 @@ interface Props {
   isLoggedIn: boolean,
   role: Role,
   alert: any
+  autoLogout: boolean, // whether or not the user was logged out automatically
+  setAutoLogout: (boolean) => void // stop showing the logged out automatically banner once user navigates away from the page
 }
 
 class LoginPage extends Component<Props, State> {
@@ -46,6 +48,13 @@ class LoginPage extends Component<Props, State> {
       organization: '',
       recaptchaPayload: '',
     };
+  }
+
+  componentWillUnmount() {
+    const {
+      setAutoLogout,
+    } = this.props;
+    setAutoLogout(false);
   }
 
   // RECAPTCHA CODE
@@ -219,12 +228,22 @@ class LoginPage extends Component<Props, State> {
       password,
       verificationCode,
     } = this.state;
+    const {
+      autoLogout,
+    } = this.props;
     return (
       <div>
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+        {autoLogout
+          ? (
+            <div className="alert alert-warning" role="alert">
+              You were automatically logged out and redirected to this page.
+            </div>
+          )
+          : null}
         <div className="container">
           <div className="row mt-4">
             <div className="col mobile-hide">

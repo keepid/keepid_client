@@ -4,6 +4,7 @@ import { transitions, Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { BrowserRouter as Router} from 'react-router-dom';
 // import { NONAME } from 'dns';
 
 const options = {
@@ -19,7 +20,9 @@ const options = {
 
 const Root = () => (
   <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
-    <App />
+    <Router>
+      <App />
+    </Router>
   </Provider>
 );
 
