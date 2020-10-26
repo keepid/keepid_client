@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 60 * 120; // in milliseconds
-const timeFromWarnToLogout: number = 1000 * 60;
+const timeUntilWarn: number = 1000 * 60 * 120; // two hours in milliseconds
+const timeFromWarnToLogout: number = 1000 * 60; // 1 minute in milliseconds
 
 interface Props {
     logOut: () => void,
@@ -17,34 +17,34 @@ function AutoLogout(props: Props): React.ReactElement {
   const [logoutTimeout, setLogoutTimeout] = useState<any>(undefined);
   const history = useHistory();
 
-  function handleLogout() {
+  const handleLogout = (): void => {
     // clear the logout timer
     clearTimeout(logoutTimeout);
     props.logOut();
     history.push('/login');
-  }
+  };
 
   // automatically logged out
-  function handleAutoLogout() {
+  const handleAutoLogout = (): void => {
     handleLogout();
     props.setAutoLogout(true);
-  }
+  };
 
-  function warnUserIdle() {
+  const warnUserIdle = (): void => {
     setShowModal(true);
     // start the logout timer
     const timeout = setTimeout(handleAutoLogout, timeFromWarnToLogout);
     setLogoutTimeout(timeout);
-  }
+  };
 
   // closing idle modal warning
-  function handleClose() {
+  const handleClose = (): void => {
     // reset the logout timer
     clearTimeout(logoutTimeout);
     setShowModal(false);
     // reset the warn timer
     idleTimerWarn.reset();
-  }
+  };
 
   return (
     <div>

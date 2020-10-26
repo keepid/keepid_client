@@ -8,10 +8,10 @@ interface Props {
 function Logout(props: Props): React.ReactElement {
   const history = useHistory();
 
-  function handleLogout() {
+  const handleLogout = (): void => {
     props.logOut();
     history.push('/login');
-  }
+  };
 
   return (
     <button type="button" onClick={handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>

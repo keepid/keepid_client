@@ -28,6 +28,7 @@ class Header extends Component<Props, State, {}> {
     const {
       isLoggedIn,
       role,
+      logOut,
     } = this.props;
     if (isLoggedIn) {
       return (
@@ -66,7 +67,7 @@ class Header extends Component<Props, State, {}> {
                   </li>
                   )}
                 <div className="my-1 flex-fill">
-                  <Logout logOut={this.props.logOut} />
+                  <Logout logOut={logOut} />
                 </div>
               </ul>
             </div>
