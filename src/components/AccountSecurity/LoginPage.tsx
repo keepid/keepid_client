@@ -75,13 +75,6 @@ class LoginPage extends Component<Props, State> {
   }
   // END RECAPTCHA CODE
 
-  resetRecaptcha = () => {
-    if (recaptchaRef !== null && recaptchaRef.current !== null) {
-      recaptchaRef.current.reset();
-    }
-    this.setState({ recaptchaPayload: '' });
-  }
-
   clearInput = async () => {
     this.setState({ username: '', password: '' });
   }
@@ -139,7 +132,7 @@ class LoginPage extends Component<Props, State> {
         this.props.alert.show('Network Failure: Check Server Connection.');
         this.setState({ buttonState: '' });
       });
-      this.resetRecaptcha();
+    this.resetRecaptcha();
   }
 
   handleLogin = (): void => {
