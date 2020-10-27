@@ -10,6 +10,7 @@ import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
 import TablePageSelector from '../Base/TablePageSelector';
+import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
 
 interface Props {
   username: string,
@@ -221,7 +222,8 @@ class WorkerLanding extends Component<Props, State> {
         <div className="card-body">
           <div className="d-flex flex-row">
             <div className="d-flex flex-column mr-4">
-              <div className="p-2 ">PROFILE PICTURE HERE</div>
+              {/* eslint-disable-next-line */}
+              <img alt="generic profile" className="profile-picture" src={GenericProfilePicture} />
             </div>
             <div className="d-flex flex-lg-column mr-4">
               <h5 className="card-title mb-3 h4">
@@ -244,7 +246,7 @@ class WorkerLanding extends Component<Props, State> {
                 {client.zipcode}
               </h6>
               <p className="card-text">Some information about the client here.</p>
-              <a href="/" className="card-link">Client Profile</a>
+              {/* <a href="/" className="card-link">Client Profile</a> */}
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>
@@ -268,13 +270,13 @@ class WorkerLanding extends Component<Props, State> {
               >
                 View Documents
               </button>
-              <button
+              {/* <button
                 type="button"
                 className="btn btn-info mb-2 btn-sm"
                 onClick={(event) => this.handleClickSendEmail(event, client)}
               >
                 Send Email
-              </button>
+              </button> */}
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
