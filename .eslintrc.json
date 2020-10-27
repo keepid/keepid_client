@@ -41,6 +41,7 @@
         "jsx-a11y/img-redundant-alt": 1,
         "jsx-a11y/anchor-is-valid": 1,
         "react/no-did-update-set-state": "off",
-        "max-classes-per-file": 1
+        "max-classes-per-file": 1,
+        "react/jsx-props-no-spreading": 1
     }
 }

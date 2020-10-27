@@ -247,12 +247,12 @@ class WorkerLanding extends Component<Props, State> {
               <p className="card-text">Some information about the client here.</p>
               {/* <a href="/" className="card-link">Client Profile</a> */}
             </div>
-            <div className="d-flex flex-column mr-4">
+            {/* <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 1&quot; on &quot;example date 1&quot;</h6>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 2&quot; on &quot;example date 2&quot;</h6>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 3&quot; on &quot;example date 3&quot;</h6>
-            </div>
+            </div> */}
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
               <button

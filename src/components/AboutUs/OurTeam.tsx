@@ -21,7 +21,7 @@ import Ani from '../../static/images/members/ani.jpg';
 import Ivorine from '../../static/images/members/ivorine.jpg';
 import Austin from '../../static/images/members/austin.jpg';
 import Anna from '../../static/images/members/anna.jpg';
-import Sarah from '../../static/images/members/anna.jpg';
+import Sarah from '../../static/images/members/sarah.png';
 import Victoria from '../../static/images/members/victoria.jpg';
 import Vanessa from '../../static/images/members/vanessa.jpg';
 
@@ -156,14 +156,14 @@ class OurTeam extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Nonprofit Communications</h3>
         </div>
-        <div className="card member-card mr-4 mb-4">
-          <img src={Sarah} className="card-img-top " alt="..." />
-          <div className="card-body">
-            <h5 className="card-title">Sarah Kim</h5>
-            <p className="card-text">Nonprofit Liaison</p>
-          </div>
-        </div>
         <div className="d-flex flex-wrap">
+          <div className="card member-card mr-4 mb-4">
+            <img src={Sarah} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Sarah Kim</h5>
+              <p className="card-text">Nonprofit Liaison</p>
+            </div>
+          </div>
           <div className="card member-card mr-4 mb-4">
             <img src={ChrisJPG} className="card-img-top " alt="..." />
             <div className="card-body">
@@ -171,7 +171,6 @@ class OurTeam extends React.Component<{}, State> {
               <p className="card-text">Nonprofit Liaison</p>
             </div>
           </div>
-
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Business</h3>

@@ -6,12 +6,12 @@ import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import uuid from 'react-uuid';
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
-import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 
 const { SearchBar } = Search;
 
@@ -428,14 +428,14 @@ class MyDocuments extends Component<Props, State> {
               <div className="w-100 pd-3">
                 <ToolkitProvider
                   keyField="id"
-                  data={ documentData }
-                  columns={ this.tableCols }
+                  data={documentData}
+                  columns={this.tableCols}
                   search
                 >
                   {
-                    props => (
+                    (props) => (
                       <div>
-                        <SearchBar { ...props.searchProps } />
+                        <SearchBar {...props.searchProps} />
                         <hr />
                         <BootstrapTable
                           bootstrap4
@@ -443,7 +443,7 @@ class MyDocuments extends Component<Props, State> {
                           striped
                           noDataIndication="No Documents Present"
                           pagination={paginationFactory()}
-                          { ...props.baseProps }
+                          {...props.baseProps}
                         />
                       </div>
                     )
