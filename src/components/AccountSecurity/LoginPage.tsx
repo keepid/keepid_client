@@ -186,19 +186,22 @@ class LoginPage extends Component<Props, State> {
             this.props.alert.show('Incorrect Username or Password');
             this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username or Password');
             this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else {
             this.props.alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           }
         }).catch((error) => {
           this.props.alert.show('Network Failure: Check Server Connection');
           this.setState({ buttonState: '' });
+          this.resetRecaptcha();
         });
-      this.resetRecaptcha();
     }
   }
 
