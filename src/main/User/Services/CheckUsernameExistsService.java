@@ -22,7 +22,7 @@ public class CheckUsernameExistsService implements Service {
   @Override
   public Message executeAndGetResponse() {
     User user = UserDao.findOneUserOrNull(db, username);
-    if (user != null) {
+    if (user == null) {
       logger.info("Username not taken.");
       return UserMessage.SUCCESS;
     } else {
