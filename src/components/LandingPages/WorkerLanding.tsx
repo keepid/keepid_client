@@ -222,8 +222,7 @@ class WorkerLanding extends Component<Props, State> {
         <div className="card-body">
           <div className="d-flex flex-row">
             <div className="d-flex flex-column mr-4">
-              {/* eslint-disable-next-line */}
-              <img alt="generic profile" className="profile-picture" src={GenericProfilePicture} />
+              <img alt="a blank profile" className="profile-picture" src={GenericProfilePicture} />
             </div>
             <div className="d-flex flex-lg-column mr-4">
               <h5 className="card-title mb-3 h4">
