@@ -7,7 +7,6 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import uuid from 'react-uuid';
 import DocumentViewer from './DocumentViewer';
-import PrintDocument from '../Old/PrintDocument';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
@@ -457,9 +456,6 @@ class MyDocuments extends Component<Props, State> {
         <Route path="/my-documents/view">
           {currentDocumentId && currentDocumentName
             ? <ViewDocument userRole={userRole} documentId={currentDocumentId} documentName={currentDocumentName} /> : <div />}
-        </Route>
-        <Route path="/my-documents/print">
-          <PrintDocument documentId={currentDocumentId} />
         </Route>
       </Switch>
     );

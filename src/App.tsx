@@ -12,10 +12,8 @@ import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
-import Request from './components/Old/Request';
 import Applications from './components/PDF/Applications';
 import Error from './components/Base/Error';
-import Email from './components/Old/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyOrganization from './components/AccountSecurity/MyOrganization';
 import DevPanel from './components/LandingPages/DeveloperLanding';
@@ -235,24 +233,6 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (role === Role.Client) {
                     return <Applications name={name} organization={organization} username={username} />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
-              <Route
-                path="/request"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <Request />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
-              <Route
-                path="/email"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <Email />;
                   }
                   return <Redirect to="/error" />;
                 }}

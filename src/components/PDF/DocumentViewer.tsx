@@ -11,7 +11,7 @@ class DocumentViewer extends Component<Props> {
       pdfFile,
     } = this.props;
     return (
-      <div className="container-fluid">
+      <div className="container">
         <Helmet>
           <title>
             Document:

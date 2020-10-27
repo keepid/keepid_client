@@ -53,16 +53,17 @@ class AccountSetup extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        username: username,
+        username,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        console.log(responseJSON);
         const {
-          status
+          status,
         } = responseJSON;
         return (status === 'SUCCESS');
       });
-
+    console.log(notTaken);
     if (isValidUsername(username) && notTaken) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
@@ -179,6 +180,7 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
+    e.preventDefault();
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (this.state.usernameValidator === 'true'
         && this.state.passwordValidator === 'true'

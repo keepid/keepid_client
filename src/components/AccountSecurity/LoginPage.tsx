@@ -75,6 +75,10 @@ class LoginPage extends Component<Props, State> {
   }
   // END RECAPTCHA CODE
 
+  clearInput = async () => {
+    this.setState({ username: '', password: '' });
+  }
+
   handleChangePassword = (event: any) => {
     this.setState({ password: event.target.value });
   }
@@ -128,6 +132,7 @@ class LoginPage extends Component<Props, State> {
         this.props.alert.show('Network Failure: Check Server Connection.');
         this.setState({ buttonState: '' });
       });
+    this.resetRecaptcha();
   }
 
   handleLogin = (): void => {
@@ -142,7 +147,9 @@ class LoginPage extends Component<Props, State> {
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
+      this.clearInput();
       this.setState({ buttonState: '' });
+      this.resetRecaptcha();
     } else {
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
@@ -186,17 +193,23 @@ class LoginPage extends Component<Props, State> {
             });
           } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
+            this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username or Password');
+            this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else {
             this.props.alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           }
         }).catch((error) => {
           this.props.alert.show('Network Failure: Check Server Connection');
           this.setState({ buttonState: '' });
+          this.resetRecaptcha();
         });
     }
   }
