@@ -5,6 +5,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import uuid from 'react-uuid';
 import DocumentViewer from './DocumentViewer';
 import PrintDocument from '../Old/PrintDocument';
 import ViewDocument from './ViewDocument';
@@ -400,6 +401,11 @@ class MyDocuments extends Component<Props, State> {
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
+            <ul className="list-unstyled mt-5">
+              {
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+              }
+            </ul>
             <div className="row justify-content-left form-group mb-5">
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">

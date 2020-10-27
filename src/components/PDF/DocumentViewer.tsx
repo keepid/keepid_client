@@ -11,7 +11,7 @@ class DocumentViewer extends Component<Props> {
       pdfFile,
     } = this.props;
     return (
-      <div>
+      <div className="container-fluid">
         <Helmet>
           <title>
             Document:
@@ -20,7 +20,7 @@ class DocumentViewer extends Component<Props> {
           </title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="embed-responsive embed-responsive-16by9 align-content-center w-100">
+        <div className="row embed-responsive embed-responsive-16by9 align-content-center">
           <iframe className="embed-responsive-item" src={window.URL.createObjectURL(pdfFile)} title="Document" />
         </div>
       </div>
