@@ -4,6 +4,7 @@ import { withAlert } from 'react-alert';
 import Logo from '../../static/images/logo.svg';
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import Logout from './Logout';
 
 const logoSize = 40;
 interface Props {
@@ -23,18 +24,11 @@ class Header extends Component<Props, State, {}> {
     };
   }
 
-  handleLogout = (event: any) => {
-    event.preventDefault();
-    const {
-      logOut,
-    } = this.props;
-    logOut();
-  }
-
   render() {
     const {
       isLoggedIn,
       role,
+      logOut,
     } = this.props;
     if (isLoggedIn) {
       return (
@@ -73,7 +67,7 @@ class Header extends Component<Props, State, {}> {
                   </li>
                   )}
                 <div className="my-1 flex-fill">
-                  <button type="button" onClick={this.handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
+                  <Logout logOut={logOut} />
                 </div>
               </ul>
             </div>
