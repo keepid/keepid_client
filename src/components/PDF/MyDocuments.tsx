@@ -5,11 +5,15 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import uuid from 'react-uuid';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
+
+const { SearchBar } = Search;
 
 interface Props {
   alert: any,
@@ -399,6 +403,11 @@ class MyDocuments extends Component<Props, State> {
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
+            <ul className="list-unstyled mt-5">
+              {
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+              }
+            </ul>
             <div className="row justify-content-left form-group mb-5">
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">
@@ -415,22 +424,31 @@ class MyDocuments extends Component<Props, State> {
                 </div>
               </form>
             </div>
-            <form className="form-inline my-2 my-lg-0">
-              <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-              <button className="btn btn-outline-primary my-2 my-sm-0" type="submit">Search Documents</button>
-            </form>
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
               <div className="w-100 pd-3">
-                <BootstrapTable
-                  bootstrap4
+                <ToolkitProvider
                   keyField="id"
-                  data={documentData}
-                  hover
-                  striped
-                  noDataIndication="No Documents Present"
-                  columns={this.tableCols}
-                  pagination={paginationFactory()}
-                />
+                  data={ documentData }
+                  columns={ this.tableCols }
+                  search
+                >
+                  {
+                    props => (
+                      <div>
+                        <SearchBar { ...props.searchProps } />
+                        <hr />
+                        <BootstrapTable
+                          bootstrap4
+                          hover
+                          striped
+                          noDataIndication="No Documents Present"
+                          pagination={paginationFactory()}
+                          { ...props.baseProps }
+                        />
+                      </div>
+                    )
+                  }
+                </ToolkitProvider>
               </div>
             </div>
           </div>
