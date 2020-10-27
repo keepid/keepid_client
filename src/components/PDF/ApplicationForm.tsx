@@ -79,6 +79,7 @@ class ApplicationForm extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const { fields } = responseJSON;
+        console.log(responseJSON);
         this.setState({ formQuestions: fields });
         fields.forEach((entry) => {
           formAnswers[entry.fieldName] = entry.fieldDefaultValue;
@@ -256,6 +257,15 @@ class ApplicationForm extends Component<Props, State> {
                   <div className="my-5">
                     {
                       (() => {
+                        if (entry.isReadOnly === true) {
+                          return (
+                            <div className="mt-2 mb-2">
+                              <label className="w-100 font-weight-bold">
+                                {entry.fieldQuestion}
+                              </label>
+                            </div>
+                          );
+                        }
                         if (entry.fieldType === 'TextField') {
                           return (
                             <div className="mt-2 mb-2">
@@ -268,7 +278,24 @@ class ApplicationForm extends Component<Props, State> {
                                 id={entry.fieldName}
                                 placeholder={entry.fieldName}
                                 onChange={this.handleChangeFormValueTextField}
-                                required
+                                required={entry.isRequired}
+                              />
+                              <small className="form-text text-muted mt-1">Please complete this field.</small>
+                            </div>
+                          );
+                        }
+                        if (entry.fieldType === 'MultilineTextField') {
+                          return (
+                            <div className="mt-2 mb-2">
+                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+                                {entry.fieldQuestion}
+                              </label>
+                              <textarea
+                                className="form-control form-purple mt-1"
+                                id={entry.fieldName}
+                                placeholder={entry.fieldName}
+                                onChange={this.handleChangeFormValueTextField}
+                                required={entry.isRequired}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
@@ -294,6 +321,7 @@ class ApplicationForm extends Component<Props, State> {
                                         id={entry.fieldName}
                                         onChange={this.handleChangeFormValueCheckBox}
                                         name={entry.fieldName}
+                                        required={entry.isRequired}
                                       />
                                       <label className="custom-control-label" htmlFor={entry.fieldName}>{value}</label>
                                     </div>
@@ -323,7 +351,7 @@ class ApplicationForm extends Component<Props, State> {
                                     value={value}
                                     name={entry.fieldName}
                                     onChange={this.handleChangeFormValueRadioButton}
-                                    required
+                                    required={entry.isRequired}
                                   />
                                   <label className="custom-control-label" htmlFor={value}>{value}</label>
                                 </div>
@@ -341,7 +369,12 @@ class ApplicationForm extends Component<Props, State> {
                                 <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
+                              <select
+                                id={entry.fieldName}
+                                onChange={this.handleChangeFormValueTextField}
+                                className="custom-select"
+                                required={entry.isRequired}
+                              >
                                 <option selected disabled value="">Please select your choice ...</option>
                                 {temp.map((value) => (
                                   <option value={value}>{value}</option>
@@ -360,7 +393,13 @@ class ApplicationForm extends Component<Props, State> {
                                 <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
+                              <select
+                                id={entry.fieldName}
+                                onChange={this.handleChangeFormValueListBox}
+                                className="custom-select"
+                                multiple
+                                required={entry.isRequired}
+                              >
                                 <option selected disabled value="">Please select your choice(s) ...</option>
                                 {temp.map((value) => (
                                   <option value={value}>{value}</option>
@@ -379,6 +418,7 @@ class ApplicationForm extends Component<Props, State> {
                                 selected={startDate}
                                 onChange={this.handleChangeDate}
                                 className="form-control form-purple mt-1"
+                                required={entry.isRequired}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
