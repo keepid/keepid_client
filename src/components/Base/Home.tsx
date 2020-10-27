@@ -19,39 +19,14 @@ import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
 import HomepageGraphic from '../../static/images/homepage_graphic.svg';
 
-interface Props {
-  // autoLogout is true if the user automatically logged out and was redirect to this page
-  autoLogout: boolean,
-  resetAutoLogout: () => void,
-}
-
-class Home extends Component<Props, {}, {}> {
-  componentWillUnmount() {
-    const {
-      resetAutoLogout,
-    } = this.props;
-    resetAutoLogout();
-  }
-
+class Home extends Component<{}, {}, {}> {
   render() {
-    const {
-      autoLogout,
-    } = this.props;
-
     return (
       <div>
         <Helmet>
           <title>Welcome</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-
-        {autoLogout
-          ? (
-            <div className="alert alert-warning" role="alert">
-              You were automatically logged out and redirected to this page.
-            </div>
-          )
-          : null}
 
         <div className="container-fluid my-auto">
           <div className="row section1 mt-5 justify-content-center">
