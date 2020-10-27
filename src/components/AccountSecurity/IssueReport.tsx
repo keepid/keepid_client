@@ -176,9 +176,9 @@ class IssueReport extends Component<Props, State, {}> {
     if (emailValidator !== 'true'
         || titleValidator !== 'true'
         || descriptionValidator !== 'true') {
-      alert.show('Please fill out all fields correctly.'); 
+      alert.show('Please fill out all fields correctly.');
       this.resetRecaptcha();
-      this.setState( {buttonState: '' });
+      this.setState({ buttonState: '' });
       return;
     }
     fetch(`${getServerURL()}/submit-issue`, {

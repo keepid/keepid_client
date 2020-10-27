@@ -39,7 +39,6 @@ const options = [
 ];
 
 const listOptions = [
-  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -117,11 +116,10 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
         const {
           people,
           numPeople,
-        } = responseObject;
+        } = responseJSON;
         if (people) {
           this.setState({
             numClients: numPeople,
@@ -161,16 +159,16 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const { loginStatus } = responseObject;
-        if (loginStatus === 'AUTH_SUCCESS') {
+        console.log(responseJSON);
+        const { status } = responseJSON;
+        if (status === 'AUTH_SUCCESS') {
           // Allow worker privileges
           this.setState({
             clientCredentialsCorrect: true,
           });
-        } else if (loginStatus === 'AUTH_FAILURE') {
+        } else if (status === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
-        } else if (loginStatus === 'USER_NOT_FOUND') {
+        } else if (status === 'USER_NOT_FOUND') {
           this.props.alert.show('Username Does Not Exist');
         } else {
           this.props.alert.show('Server Failure: Please Try Again');
