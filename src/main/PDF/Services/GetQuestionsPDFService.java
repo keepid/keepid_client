@@ -113,13 +113,27 @@ public class GetQuestionsPDFService implements Service {
 
   private static JSONObject getTextField(PDTextField field) {
     String fieldName = field.getFullyQualifiedName();
-    String fieldType = "TextField";
+    String fieldType;
+    if (field.isMultiline()) {
+      fieldType = "MultilineTextField";
+    } else {
+      fieldType = "TextField";
+    }
     String fieldValueOptions = "[]";
     String fieldDefaultValue = "";
+    Boolean fieldIsReadOnly = field.isReadOnly();
+    Boolean fieldIsRequired = field.isRequired();
     int numLines = DEFAULT_TEXT_FIELD_NUM_LINES;
     String fieldQuestion = "Please Enter Your " + field.getPartialName();
     return createFieldJSONEntry(
-        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
+        fieldName,
+        fieldType,
+        fieldValueOptions,
+        fieldDefaultValue,
+        fieldIsReadOnly,
+        fieldIsRequired,
+        numLines,
+        fieldQuestion);
   }
 
   private static JSONObject getCheckBox(PDCheckBox field) {
@@ -129,10 +143,19 @@ public class GetQuestionsPDFService implements Service {
     optionsJSONArray.put(field.getOnValue());
     String fieldValueOptions = optionsJSONArray.toString();
     Boolean fieldDefaultValue = Boolean.FALSE;
+    Boolean fieldIsReadOnly = field.isReadOnly();
+    Boolean fieldIsRequired = field.isRequired();
     int numLines = DEFAULT_CHECK_BOX_NUM_LINES;
     String fieldQuestion = "Please select an option for " + field.getPartialName();
     return createFieldJSONEntry(
-        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
+        fieldName,
+        fieldType,
+        fieldValueOptions,
+        fieldDefaultValue,
+        fieldIsReadOnly,
+        fieldIsRequired,
+        numLines,
+        fieldQuestion);
   }
 
   //  public static JSONObject getPushButton(PDPushButton field) {
@@ -155,10 +178,19 @@ public class GetQuestionsPDFService implements Service {
     }
     String fieldValueOptions = optionsJSONArray.toString();
     String fieldDefaultValue = "Off";
+    Boolean fieldIsReadOnly = field.isReadOnly();
+    Boolean fieldIsRequired = field.isRequired();
     int numLines = 2 + optionsJSONArray.length();
     String fieldQuestion = "Please select one option for " + field.getPartialName();
     return createFieldJSONEntry(
-        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
+        fieldName,
+        fieldType,
+        fieldValueOptions,
+        fieldDefaultValue,
+        fieldIsReadOnly,
+        fieldIsRequired,
+        numLines,
+        fieldQuestion);
   }
 
   private static JSONObject getChoiceField(PDChoice field) {
@@ -175,6 +207,8 @@ public class GetQuestionsPDFService implements Service {
     }
     String fieldValueOptions = optionsJSONArray.toString();
     String fieldDefaultValue = "Off";
+    Boolean fieldIsReadOnly = field.isReadOnly();
+    Boolean fieldIsRequired = field.isRequired();
     int numLines = optionsJSONArray.length() + 2;
     if (field.isMultiSelect()) {
       fieldQuestion =
@@ -185,7 +219,14 @@ public class GetQuestionsPDFService implements Service {
       fieldQuestion = "Please Select an Option for " + field.getPartialName();
     }
     return createFieldJSONEntry(
-        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
+        fieldName,
+        fieldType,
+        fieldValueOptions,
+        fieldDefaultValue,
+        fieldIsReadOnly,
+        fieldIsRequired,
+        numLines,
+        fieldQuestion);
   }
 
   private static JSONObject createFieldJSONEntry(
@@ -193,6 +234,8 @@ public class GetQuestionsPDFService implements Service {
       String fieldType,
       String fieldValueOptions,
       Object fieldDefaultValue,
+      boolean fieldIsReadOnly,
+      boolean fieldIsRequired,
       int fieldNumLines,
       String fieldQuestion) {
     JSONObject fieldJSON = new JSONObject();
@@ -201,6 +244,8 @@ public class GetQuestionsPDFService implements Service {
     fieldJSON.put("fieldType", fieldType);
     fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
     fieldJSON.put("fieldDefaultValue", fieldDefaultValue);
+    fieldJSON.put("fieldIsReadOnly", fieldIsReadOnly);
+    fieldJSON.put("fieldIsRequired", fieldIsRequired);
     fieldJSON.put("fieldNumLines", fieldNumLines);
 
     // Editable

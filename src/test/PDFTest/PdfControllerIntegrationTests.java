@@ -319,7 +319,8 @@ public class PdfControllerIntegrationTests {
     clearAllDocuments();
 
     File applicationPDF =
-        new File(resourcesFolderPath + File.separator + "Application_for_a_Birth_Certificate.pdf");
+        new File(
+            resourcesFolderPath + File.separator + "Application_for_a_Birth_Certificate_2.pdf");
     String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
 
     JSONObject body = new JSONObject();
@@ -444,7 +445,6 @@ public class PdfControllerIntegrationTests {
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     String fileId = uploadFileAndGetFileId(applicationDocx, "FORM");
 
-    System.out.println(fileId);
     JSONObject body = new JSONObject();
     body.put("applicationId", fileId);
     HttpResponse<String> applicationsQuestionsResponse =
@@ -455,7 +455,6 @@ public class PdfControllerIntegrationTests {
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
-    System.out.println(applicationsQuestionsResponseJSON.toString());
     //    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
     //        .isEqualTo(new JSONArray().toString());
     // delete(fileId, "FORM");
