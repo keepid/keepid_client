@@ -85,7 +85,7 @@ public class UserController {
   public Handler usernameExists =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
-        String username = req.getString("firstname");
+        String username = req.getString("username");
         CheckUsernameExistsService checkUsernameExistsService =
             new CheckUsernameExistsService(db, logger, username);
         ctx.result(checkUsernameExistsService.executeAndGetResponse().toResponseString());
