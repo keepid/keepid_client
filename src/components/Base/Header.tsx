@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import Logo from '../../static/images/logo.svg';
-import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
 import Logout from './Logout';
 

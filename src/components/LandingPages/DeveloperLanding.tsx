@@ -1,16 +1,13 @@
 import React, { Component, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Switch, Route, Link } from 'react-router-dom';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import Select from 'react-select';
 import { withAlert } from 'react-alert';
-import ApplicationForm from '../PDF/ApplicationForm';
 import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
-import DocumentViewer from '../PDF/DocumentViewer';
 import Role from '../../static/Role';
 
 interface Props {

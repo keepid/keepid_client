@@ -72,13 +72,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   usernameMessage = (): ReactElement<{}> => {
-    if (this.state.usernameValidator === 'true') {
+    const { usernameValidator } = this.state;
+    if (usernameValidator === 'true') {
       return (
         <div className="valid-feedback">
           This username is available.
         </div>
       );
-    } if (this.state.usernameValidator === 'false') {
+    } if (usernameValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Invalid or taken username.
@@ -101,13 +102,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   passwordMessage = (): ReactElement<{}> => {
-    if (this.state.passwordValidator === 'true') {
+    const { passwordValidator } = this.state;
+    if (passwordValidator === 'true') {
       return (
         <div className="valid-feedback">
           Password looks great!
         </div>
       );
-    } if (this.state.passwordValidator === 'false') {
+    } if (passwordValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Password must be at least 8 characters long.
@@ -120,9 +122,9 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   validateConfirmPassword = async (): Promise<void> => {
-    const { confirmPassword } = this.props;
+    const { confirmPassword, password } = this.props;
     // ( if confirmed password is valid here)
-    if (confirmPassword === this.props.password) {
+    if (confirmPassword === password) {
       await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'false' }, resolve));
@@ -130,13 +132,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   confirmPasswordMessage = (): ReactElement<{}> => {
-    if (this.state.confirmPasswordValidator === 'true') {
+    const { confirmPasswordValidator } = this.state;
+    if (confirmPasswordValidator === 'true') {
       return (
         <div className="valid-feedback">
           Passwords match.
         </div>
       );
-    } if (this.state.confirmPasswordValidator === 'false') {
+    } if (confirmPasswordValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Passwords do not match.
@@ -149,7 +152,8 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   returnAccountMessage = () => {
-    switch (this.props.role) {
+    const { role } = this.props;
+    switch (role) {
       case Role.Admin: {
         return (
           <div>
@@ -164,7 +168,7 @@ class AccountSetup extends Component<Props, State, {}> {
       case Role.Director: case Role.Worker: case Role.Volunteer: {
         return (
           <div>
-            {`${this.props.role}s`}
+            {`${role}s`}
             can set up
             <br />
             {' '}
@@ -180,14 +184,23 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
+    const {
+      alert,
+      handleContinue
+    } = this.props;
+    const {
+      usernameValidator,
+      passwordValidator,
+      confirmPasswordValidator
+    } = this.state;
     e.preventDefault();
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
-    if (this.state.usernameValidator === 'true'
-        && this.state.passwordValidator === 'true'
-        && this.state.confirmPasswordValidator === 'true') {
-      this.props.handleContinue();
+    if (usernameValidator === 'true'
+        && passwordValidator === 'true'
+        && confirmPasswordValidator === 'true') {
+      handleContinue();
     } else {
-      this.props.alert.show('One or more fields are invalid');
+      alert.show('One or more fields are invalid');
     }
   }
 
@@ -200,6 +213,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const {
       username,
       password,
+      role,
       confirmPassword,
       onChangeUsername,
       onChangePassword,
@@ -220,7 +234,7 @@ class AccountSetup extends Component<Props, State, {}> {
                 <b>
                   First, set up the
                   {' '}
-                  {this.props.role}
+                  {role}
                   {' '}
                   account login.
                 </b>

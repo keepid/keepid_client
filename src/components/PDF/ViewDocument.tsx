@@ -4,8 +4,10 @@ import DocumentViewer from './DocumentViewer';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import { withAlert } from 'react-alert';
 
 interface Props {
+  alert: any,
   userRole: Role,
   documentId: string,
   documentName: string,
@@ -28,6 +30,7 @@ class ViewDocument extends Component<Props, State> {
       userRole,
       documentId,
       documentName,
+      alert,
     } = this.props;
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -48,8 +51,8 @@ class ViewDocument extends Component<Props, State> {
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         this.setState({ pdfFile });
-      }).catch((error) => {
-        alert('Error Fetching File');
+      }).catch((_error) => {
+        alert.show('Error Fetching File');
       });
   }
 
@@ -70,4 +73,4 @@ class ViewDocument extends Component<Props, State> {
   }
 }
 
-export default ViewDocument;
+export default  withAlert()(ViewDocument);

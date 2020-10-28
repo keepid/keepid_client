@@ -50,59 +50,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class MyDocuments extends Component<Props, State> {
-  submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
-    this.setState({ buttonState: 'running' });
-    event.preventDefault();
-    const {
-      pdfFiles,
-    } = this.state;
-
-    const {
-      alert,
-    } = this.props;
-
-    if (pdfFiles) {
-      // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i += 1) {
-        const pdfFile = pdfFiles[i];
-        const formData = new FormData();
-        formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
-        }
-        if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.APPLICATION);
-        }
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        }).then((response) => response.json())
-          .then((responseJSON) => {
-            const {
-              status,
-            } = responseJSON;
-            if (status === 'SUCCESS') {
-              alert.show(`Successfully uploaded ${pdfFile.name}`);
-              this.setState({
-                buttonState: '',
-                pdfFiles: undefined,
-              }, () => this.getDocumentData());
-            } else {
-              alert.show(`Failure to upload ${pdfFile.name}`);
-              this.setState({ buttonState: '' });
-            }
-          });
-      }
-    } else {
-      alert.show('Please select a file');
-      this.setState({ buttonState: '' });
-    }
-  }
 
   static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
@@ -141,9 +88,6 @@ class MyDocuments extends Component<Props, State> {
 
   handleChangeFileDownload(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     this.setState({
@@ -154,10 +98,12 @@ class MyDocuments extends Component<Props, State> {
   handleFileDownload(rowIndex: number) {
     const {
       userRole,
+      alert,
     } = this.props;
+    const { documentData } = this.state;
 
-    const documentId = this.state.documentData[rowIndex].id;
-    const documentName = this.state.documentData[rowIndex].filename;
+    const documentId = documentData[rowIndex].id;
+    const documentName = documentData[rowIndex].filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -185,16 +131,13 @@ class MyDocuments extends Component<Props, State> {
         document.body.appendChild(a);
         a.click();
         a.remove();
-      }).catch((error) => {
-        alert('Error Fetching File');
+      }).catch((_error) => {
+        alert.show('Error Fetching File');
       });
   }
 
   handleChangeFilePrint(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     this.setState({
@@ -203,12 +146,11 @@ class MyDocuments extends Component<Props, State> {
   }
 
   handleFilePrint(rowIndex: number) {
-    const {
-      userRole,
-    } = this.props;
+    const { userRole, alert } = this.props;
+    const { documentData } = this.state;
 
-    const documentId = this.state.documentData[rowIndex].id;
-    const documentName = this.state.documentData[rowIndex].filename;
+    const documentId = documentData[rowIndex].id;
+    const documentName = documentData[rowIndex].filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -229,8 +171,8 @@ class MyDocuments extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-      }).catch((error) => {
-        alert('Error Fetching File');
+      }).catch((_error) => {
+        alert.show('Error Fetching File');
       });
   }
 
@@ -272,7 +214,8 @@ class MyDocuments extends Component<Props, State> {
 
   deleteDocument(event: any, rowIndex: number) {
     event.preventDefault();
-    const documentId = this.state.documentData[rowIndex].id;
+    const { documentData } = this.state;
+    const documentId = documentData[rowIndex].id;
 
     const {
       userRole,
@@ -294,7 +237,7 @@ class MyDocuments extends Component<Props, State> {
         pdfType,
       }),
     }).then((response) => response.json())
-      .then((responseJSON) => {
+      .then((_responseJSON) => {
         this.getDocumentData();
       });
   }
@@ -355,6 +298,60 @@ class MyDocuments extends Component<Props, State> {
     </div>
   )
 
+  submitForm(event: any) {
+    const {
+      userRole,
+    } = this.props;
+
+    this.setState({ buttonState: 'running' });
+    event.preventDefault();
+    const {
+      pdfFiles,
+    } = this.state;
+
+    const {
+      alert,
+    } = this.props;
+
+    if (pdfFiles) {
+      // upload each pdf file
+      for (let i = 0; i < pdfFiles.length; i += 1) {
+        const pdfFile = pdfFiles[i];
+        const formData = new FormData();
+        formData.append('file', pdfFile, pdfFile.name);
+        if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        }
+        if (userRole === Role.Director || userRole === Role.Admin) {
+          formData.append('pdfType', PDFType.APPLICATION);
+        }
+        fetch(`${getServerURL()}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        }).then((response) => response.json())
+          .then((responseJSON) => {
+            const {
+              status,
+            } = responseJSON;
+            if (status === 'SUCCESS') {
+              alert.show(`Successfully uploaded ${pdfFile.name}`);
+              this.setState({
+                buttonState: '',
+                pdfFiles: undefined,
+              }, () => this.getDocumentData());
+            } else {
+              alert.show(`Failure to upload ${pdfFile.name}`);
+              this.setState({ buttonState: '' });
+            }
+          });
+      }
+    } else {
+      alert.show('Please select a file');
+      this.setState({ buttonState: '' });
+    }
+  }
+
   tableCols = [{
     dataField: 'filename',
     text: 'File Name',
@@ -411,7 +408,7 @@ class MyDocuments extends Component<Props, State> {
             <div className="row justify-content-left form-group mb-5">
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">
-                  <label className="btn btn-filestack btn-widget ml-5 mr-5">
+                  <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
                     { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                     <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                   </label>

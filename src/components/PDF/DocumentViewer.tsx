@@ -1,15 +1,14 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Helmet } from 'react-helmet';
 
 interface Props {
   pdfFile: File,
 }
 
-class DocumentViewer extends Component<Props> {
-  render() {
+export default function DocumentViewer(props:Props) : React.ReactElement {
     const {
       pdfFile,
-    } = this.props;
+    } = props;
     return (
       <div className="container">
         <Helmet>
@@ -26,6 +25,5 @@ class DocumentViewer extends Component<Props> {
       </div>
     );
   }
-}
 
-export default DocumentViewer;
+

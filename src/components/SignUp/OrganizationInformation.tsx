@@ -7,7 +7,6 @@ import {
   isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
   isValidEIN,
 } from '../../lib/Validations/Validations';
-import CompleteSignupFlow from './CompleteSignupFlow';
 
 interface Props {
   orgName: string,
