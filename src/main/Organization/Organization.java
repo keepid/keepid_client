@@ -177,6 +177,11 @@ public class Organization {
     return this;
   }
 
+  public Organization setCreationDate(Date creationDate) {
+    this.creationDate = creationDate;
+    return this;
+  }
+
   private static OrganizationValidationMessage isValid(
       String orgName,
       String orgWebsite,

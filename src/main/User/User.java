@@ -230,6 +230,11 @@ public class User {
     return this;
   }
 
+  public User setCreationDate(Date date) {
+    this.creationDate = date;
+    return this;
+  }
+
   public User setState(String state) {
     this.state = state;
     return this;

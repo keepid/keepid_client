@@ -66,11 +66,11 @@ public class UploadAnnotatedPDFService implements Service {
           || privilegeLevel == UserType.Director
           || privilegeLevel == UserType.Admin
           || privilegeLevel == UserType.Developer)) {
-        mongodbUploadAnnotatedForm(uploader, organizationName, filename, fileIDStr, fileStream, db);
+        return mongodbUploadAnnotatedForm(
+            uploader, organizationName, filename, fileIDStr, fileStream, db);
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
       }
-      return PdfMessage.SUCCESS;
     }
   }
 

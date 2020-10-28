@@ -40,6 +40,8 @@ public class DeveloperConsole {
     MongoConfig.getMongoClient();
     MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.STAGING);
     SecurityUtils securityUtils = new SecurityUtils();
+    EncryptionUtils
+        .initialize(); // Change this to EncryptionUtils.initialize(db) once encryption is setup
     EncryptionUtils encryptionUtils = EncryptionUtils.getInstance();
 
     Scanner scanner = new Scanner(System.in);
@@ -89,7 +91,7 @@ public class DeveloperConsole {
               birthDate,
               email,
               phone,
-              "Team Keep",
+              "Team Keep 3",
               address,
               city,
               state,

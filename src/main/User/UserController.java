@@ -1,7 +1,7 @@
 package User;
 
-import Bug.BugController;
 import Config.Message;
+import Issue.IssueController;
 import Logger.LogFactory;
 import Security.EncryptionUtils;
 import User.Services.*;
@@ -25,14 +25,14 @@ public class UserController {
   Logger logger;
   MongoDatabase db;
   EncryptionUtils encryptionUtils;
-  BugController bugController;
+  IssueController issueController;
 
   public UserController(MongoDatabase db) {
     this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
     this.encryptionUtils = EncryptionUtils.getInstance();
-    this.bugController = new BugController(db);
+    this.issueController = new IssueController(db);
     logger = (new LogFactory()).createLogger("UserController");
   }
 
@@ -88,6 +88,15 @@ public class UserController {
         }
         ctx.json(res.put("username", candidateUsername).toString());
         logger.info("Username successfully generated");
+      };
+
+  public Handler usernameExists =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        CheckUsernameExistsService checkUsernameExistsService =
+            new CheckUsernameExistsService(db, logger, username);
+        ctx.result(checkUsernameExistsService.executeAndGetResponse().toResponseString());
       };
 
   public Handler createNewUser =

@@ -87,8 +87,7 @@ public class UploadSignedPDFService implements Service {
               || privilegeLevel == UserType.Admin)) {
         try {
           InputStream signedPDF = signPDF(uploader, fileStream, signatureFileStream);
-          mongodbUpload(uploader, organizationName, filename, signedPDF, pdfType, db);
-          return PdfMessage.SUCCESS;
+          return mongodbUpload(uploader, organizationName, filename, signedPDF, pdfType, db);
         } catch (GeneralSecurityException | IOException e) {
           return PdfMessage.SERVER_ERROR;
         }
@@ -98,7 +97,7 @@ public class UploadSignedPDFService implements Service {
     }
   }
 
-  public static void mongodbUpload(
+  public Message mongodbUpload(
       String uploader,
       String organizationName,
       String filename,
@@ -133,6 +132,7 @@ public class UploadSignedPDFService implements Service {
           EncryptionUtils.getInstance().encryptFile(inputStream, uploader),
           options);
     }
+    return PdfMessage.SUCCESS;
   }
 
   public static InputStream signPDF(

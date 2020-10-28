@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import static TestUtils.TestUtils.getFieldValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PdfMongoTests {
+public class PdfControllerIntegrationTests {
   private static EncryptionUtils encryptionUtils;
   private static String username;
 
@@ -94,7 +94,7 @@ public class PdfMongoTests {
     uploadTestPDF();
     JSONObject allDocuments = searchTestPDF();
     String idString = allDocuments.getJSONArray("documents").getJSONObject(0).getString("id");
-    delete(idString);
+    // delete(idString);
     TestUtils.logout();
   }
 
@@ -215,7 +215,7 @@ public class PdfMongoTests {
           .isEqualTo(fieldNames[i]);
     }
 
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -270,7 +270,7 @@ public class PdfMongoTests {
 
     checkForFields(applicationsQuestionsResponseJSON, fieldsToCheck);
 
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -430,7 +430,7 @@ public class PdfMongoTests {
 
     assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
 
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -444,6 +444,7 @@ public class PdfMongoTests {
         new File(resourcesFolderPath + File.separator + "CIS_401_Final_Progress_Report.pdf");
     String fileId = uploadFileAndGetFileId(applicationDocx, "FORM");
 
+    System.out.println(fileId);
     JSONObject body = new JSONObject();
     body.put("applicationId", fileId);
     HttpResponse<String> applicationsQuestionsResponse =
@@ -453,10 +454,11 @@ public class PdfMongoTests {
     JSONObject applicationsQuestionsResponseJSON =
         TestUtils.responseStringToJSON(applicationsQuestionsResponse.getBody());
 
-    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("SUCCESS");
-    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
-        .isEqualTo(new JSONArray().toString());
-    delete(fileId, "FORM");
+    assertThat(applicationsQuestionsResponseJSON.getString("status")).isEqualTo("INVALID_PDF");
+    System.out.println(applicationsQuestionsResponseJSON.toString());
+    //    assertThat(applicationsQuestionsResponseJSON.getJSONArray("fields").toString())
+    //        .isEqualTo(new JSONArray().toString());
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -544,7 +546,7 @@ public class PdfMongoTests {
     }
     assertThat(fieldValues).isNotNull();
     checkFormAnswersSS5Form(fieldValues);
-    delete(fileId, "FORM");
+    // delete(fileId, "FORM");
     TestUtils.logout();
   }
 
@@ -665,18 +667,6 @@ public class PdfMongoTests {
 
     String fileId = getFormJSON.getJSONArray("documents").getJSONObject(0).getString("id");
     return fileId;
-  }
-
-  public static void delete(String id) {
-    JSONObject body = new JSONObject();
-    body.put("pdfType", "APPLICATION");
-    body.put("fileId", id);
-    HttpResponse<String> deleteResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/delete-document")
-            .body(body.toString())
-            .asString();
-    JSONObject deleteResponseJSON = TestUtils.responseStringToJSON(deleteResponse.getBody());
-    assertThat(deleteResponseJSON.getString("status")).isEqualTo("SUCCESS");
   }
 
   public static void delete(String id, String pdfType) {

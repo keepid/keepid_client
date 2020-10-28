@@ -1,7 +1,7 @@
 package Config;
 
 import Activity.ActivityController;
-import Bug.BugController;
+import Issue.IssueController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
@@ -43,7 +43,7 @@ public class AppConfig {
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
-    BugController bugController = new BugController(db);
+    IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController(db);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
@@ -73,6 +73,8 @@ public class AppConfig {
     app.post("/get-login-history", userController.getLogInHistory);
     app.post("/upload-pfp", userController.uploadPfp);
     app.post("/load-pfp", userController.loadPfp);
+    app.post("/username-exists", userController.usernameExists);
+
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
     app.post("/organization-signup", orgController.enrollOrganization);
@@ -84,7 +86,7 @@ public class AppConfig {
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- SUBMIT BUG------------------ */
-    app.post("/submit-bug", bugController.submitBug);
+    app.post("/submit-issue", issueController.submitIssue);
 
     /* -------------- ADMIN DASHBOARD ------------------ */
     app.post("/get-usertype-count", orgController.findMembersOfOrgs);
