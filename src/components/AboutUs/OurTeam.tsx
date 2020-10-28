@@ -24,6 +24,9 @@ import Anna from '../../static/images/members/anna.jpg';
 import Sarah from '../../static/images/members/sarah.png';
 import Victoria from '../../static/images/members/victoria.jpg';
 import Vanessa from '../../static/images/members/vanessa.jpg';
+import Jamie from '../../static/images/members/jamie.jpg';
+import Janelle from '../../static/images/members/janelle.png';
+import Xander from '../../static/images/members/xander.png';
 
 interface State {}
 
@@ -97,6 +100,13 @@ class OurTeam extends React.Component<{}, State> {
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
+            <img src={Xander} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Xander Cernek</h5>
+              <p className="card-text">Software Engineer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
             <img src={Cathy} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Cathy Chen</h5>
@@ -107,6 +117,13 @@ class OurTeam extends React.Component<{}, State> {
             <img src={Vanessa} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Vanessa Hu</h5>
+              <p className="card-text">Software Engineer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Janelle} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Janelle Leung</h5>
               <p className="card-text">Software Engineer</p>
             </div>
           </div>
@@ -161,6 +178,13 @@ class OurTeam extends React.Component<{}, State> {
             <img src={Sarah} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Sarah Kim</h5>
+              <p className="card-text">Nonprofit Liaison</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Jamie} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jamie Lu</h5>
               <p className="card-text">Nonprofit Liaison</p>
             </div>
           </div>
