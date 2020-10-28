@@ -53,12 +53,12 @@ class AccountSetup extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        username: username,
+        username,
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
         const {
-          status
+          status,
         } = responseJSON;
         return (status === 'SUCCESS');
       });
