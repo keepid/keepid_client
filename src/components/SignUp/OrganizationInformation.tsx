@@ -7,7 +7,9 @@ import {
   isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
   isValidEIN,
 } from '../../lib/Validations/Validations';
-import CompleteSignupFlow from './CompleteSignupFlow';
+// import CompleteSignupFlow from './CompleteSignupFlow';
+import 'jquery-mask-plugin';
+import $ from "jquery";
 
 interface Props {
   orgName: string,
@@ -60,6 +62,24 @@ class OrganizationInformation extends Component<Props, State, {}> {
       orgEmailValidator: '',
     };
   }
+
+  ConvertNumber(number, format): string {
+    var tail=format.lastIndexOf('.');number=number.toString();
+    tail=tail>-1?format.substr(tail):'';
+    if(tail.length > 0) {
+      if(tail.charAt(1)=='#') {
+        tail=number.substr(number.lastIndexOf('.'),tail.length);
+      }
+    }
+    number=number.replace(/\..*|[^0-9]/g,'').split('');
+    format=format.replace(/\..*/g,'').split('');
+    for(var i=format.length-1; i>-1; i--) {
+        if(format[i]=='#'){
+          format[i]=number.pop()
+        }
+    }
+    return number.join('')+format.join('')+tail;
+  } 
 
   colorToggle = (inputString: string): string => {
     if (inputString === 'true') {
@@ -211,6 +231,14 @@ class OrganizationInformation extends Component<Props, State, {}> {
     }
   }
 
+  maskEIN () {
+    $('#ein').mask('00-0000000');
+  }
+
+  maskPhone() {
+    $('#phonenumber').mask('(000)000-0000');
+  }
+  
   render() {
     const {
       orgNameValidator,
@@ -297,11 +325,13 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     className={`form-control form-purple ${this.colorToggle(einValidator)}`}
                     placeholder="Organization EIN"
                     id="ein"
+                    data-mask="00-00000000"
                     value={ein}
                     onChange={onChangeOrgEIN}
                     onBlur={this.validateEIN}
 
                   />
+                  {this.maskEIN()}
                   {this.generalMessage(einValidator)}
                 </div>
               </div>
@@ -380,6 +410,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     onBlur={this.validateOrgPhoneNumber}
 
                   />
+                  {this.maskPhone()}
                   {this.generalMessage(orgPhoneNumberValidator)}
                 </div>
               </div>
