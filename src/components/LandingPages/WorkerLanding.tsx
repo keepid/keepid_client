@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import { withAlert } from 'react-alert';
-
 import Modal from 'react-bootstrap/Modal';
 import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
@@ -247,12 +246,9 @@ class WorkerLanding extends Component<Props, State> {
                 {client.zipcode}
               </h6>
               <p className="card-text">Some information about the client here.</p>
-              <Link to={{ pathname: '/profile', state: { username: client.username } }}>
+              <Link to={`/profile/${client.username}`}>
                 <button type="button" className="btn btn-primary">Client Profile</button>
               </Link>
-              {/* <Link to='/profile'>
-                <button type="button" className="btn btn-primary">Client Profile</button>
-              </Link> */}
             </div>
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>

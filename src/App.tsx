@@ -44,8 +44,8 @@ import Careers from './components/AboutUs/Careers';
 import AdminDashboard from './components/AccountSecurity/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
-import ClientProfilePage from './components/ClientProfilePage';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
+import FindUsername from './components/FindUsername';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -388,11 +388,10 @@ class App extends React.Component<{}, State, {}> {
                 <InviteSignupJWT />
               </Route>
               <Route
-                path="/profile"
-                // location={{pathname:"/components/LandingPages/WorkerLanding"}}
+                path="/profile/:username"
                 render={() => {
                   if (role !== Role.LoggedOut) {
-                    return (<ClientProfilePage username={username} />);
+                    return (<FindUsername />);
                   }
                   return <Redirect to="/error" />;
                 }}
