@@ -123,7 +123,6 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
