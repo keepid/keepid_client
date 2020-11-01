@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
@@ -30,7 +30,7 @@ interface State {
 
 // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
 function dataURLtoBlob(dataurl) {
-  const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+  const arr = dataurl.split(','); // const mime = arr[0].match(/:(.*?);/)[1];
   const bstr = atob(arr[1]); let n = bstr.length; const
     u8arr = new Uint8Array(n);
   while (n >= 0) {
@@ -182,6 +182,16 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
+  progressBarFill() {
+    const { formQuestions, formAnswers } = this.state;
+    const total = (formQuestions) ? formQuestions.length : 0;
+    let answered = 0;
+    Object.keys(formAnswers).forEach((questionId) => {
+      if (formAnswers[questionId]) answered += 1;
+    });
+    return (total === 0) ? 100 : Math.round((answered / total) * 100);
+  }
+
   render() {
     const {
       pdfApplication,
@@ -198,12 +208,13 @@ class ApplicationForm extends Component<Props, State> {
     }
 
     let bodyElement;
+    const fillAmt = this.progressBarFill();
     if (pdfApplication) {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '90%' }} />
+              <div className="progress-bar active" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
             </div>
             <div className="container">
               <h2>Review and sign to complete your form</h2>
@@ -242,7 +253,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '75%' }} />
+              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
               <h2>Application Form Name</h2>
