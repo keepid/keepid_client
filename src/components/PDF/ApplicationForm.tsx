@@ -30,7 +30,7 @@ interface State {
 
 // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
 function dataURLtoBlob(dataurl) {
-  const arr = dataurl.split(','); // const mime = arr[0].match(/:(.*?);/)[1];
+  const arr = dataurl.split(',');
   const bstr = atob(arr[1]); let n = bstr.length; const
     u8arr = new Uint8Array(n);
   while (n >= 0) {
@@ -182,7 +182,7 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
-  progressBarFill() {
+  progressBarFill = (): number => {
     const { formQuestions, formAnswers } = this.state;
     const total = (formQuestions) ? formQuestions.length : 0;
     let answered = 0;
