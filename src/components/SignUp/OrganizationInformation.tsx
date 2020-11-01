@@ -9,6 +9,8 @@ import {
 } from '../../lib/Validations/Validations';
 import CompleteSignupFlow from './CompleteSignupFlow';
 
+const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
+
 interface Props {
   orgName: string,
   orgWebsite: string,
@@ -61,6 +63,13 @@ class OrganizationInformation extends Component<Props, State, {}> {
     };
   }
 
+  addHttp = (url: string):string => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
   colorToggle = (inputString: string): string => {
     if (inputString === 'true') {
       return 'is-valid';
@@ -102,7 +111,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgWebsite = async ():Promise<void> => {
     const { orgWebsite } = this.props;
     // ( if orgWebsite is valid here)
-    if (isValidOrgWebsite(orgWebsite)) {
+    if (isValidOrgWebsite(this.addHttp(orgWebsite))) {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'false' }, resolve));
