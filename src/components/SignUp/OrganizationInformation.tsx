@@ -8,6 +8,8 @@ import {
   isValidEIN,
 } from '../../lib/Validations/Validations';
 import CompleteSignupFlow from './CompleteSignupFlow';
+import 'jquery-mask-plugin';
+import $ from "jquery";
 
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
@@ -220,6 +222,18 @@ class OrganizationInformation extends Component<Props, State, {}> {
     }
   }
 
+  maskEIN () {
+    $('#ein').mask('00-0000000');
+  }
+
+  maskPhone() {
+    $('#phonenumber').mask('(000)000-0000');
+  }
+
+  maskZipcode() {
+    $('#zipcode').mask('00000');
+  }
+  
   render() {
     const {
       orgNameValidator,
@@ -302,15 +316,17 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <label htmlFor="ein" className="col-sm-3 col-form-label text-sm-right">Organization EIN</label>
                 <div className="col-sm-9">
                   <input
-                    type="number"
+                    type="text"
                     className={`form-control form-purple ${this.colorToggle(einValidator)}`}
                     placeholder="Organization EIN"
                     id="ein"
+                    data-mask="00-00000000"
                     value={ein}
                     onChange={onChangeOrgEIN}
                     onBlur={this.validateEIN}
 
                   />
+                  {this.maskEIN()}
                   {this.generalMessage(einValidator)}
                 </div>
               </div>
@@ -373,6 +389,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     onBlur={this.validateOrgZipcode}
 
                   />
+                  {this.maskZipcode()}
                   {this.generalMessage(orgZipcodeValidator)}
                 </div>
               </div>
@@ -389,6 +406,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                     onBlur={this.validateOrgPhoneNumber}
 
                   />
+                  {this.maskPhone()}
                   {this.generalMessage(orgPhoneNumberValidator)}
                 </div>
               </div>

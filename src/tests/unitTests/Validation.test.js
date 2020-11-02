@@ -165,6 +165,7 @@ test('valid name test', () => {
 test('valid EIN test', () => {
     expect(isValidEIN("12-1234567")).toBe(true);
     expect(isValidEIN("42-1231244")).toBe(true);
+    expect(isValidEIN("01-2345678")).toBe(true);
     expect(isValidEIN("561234567")).toBe(true);
     expect(isValidEIN("1-1232345")).toBe(false);
     expect(isValidEIN(null)).toBe(false);
