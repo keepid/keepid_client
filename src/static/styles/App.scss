@@ -612,3 +612,13 @@ div.scrollbar {
 	opacity: 0.5;
 	filter: alpha(opacity=50);
 }
+
+
+
+// Table styling
+
+
+// class for rows being edted
+.table-edit-row {
+	background-color: $primary-theme;
+}

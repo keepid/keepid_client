@@ -60,36 +60,41 @@ interface State {
 // for test table
 const products = [
   {
-    id: 1,
     name: 'TV',
-    'price': 1000
+    price: 1000,
   },
   {
-    id: 2,
     name: 'Mobile',
-    'price': 500
+    price: 500,
   },
   {
-    id: 3,
     name: 'Book',
-    'price': 20
-  }]
+    price: 20,
+  }];
 
-const data = new Array(100).fill(products).flat(); // some random data
+let data: any = [];
+for (let i = 0; i < 100; i++) {
+  let value = products[i % products.length];
+  const newValue = {
+    name: value['name'],
+    price: value['price'],
+    id: i,
+  };
+  data.push(newValue);
+}
 
 const columns = [{
   dataField: 'id',
-  text: 'Product ID'
+  text: 'Product ID',
 },
 {
   dataField: 'name',
-  text: 'Product Name'
+  text: 'Product Name',
 }, {
   dataField: 'price',
   text: 'Product Price',
-  sort: true
-}]
-
+  sort: true,
+}];
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -160,9 +165,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => {
-                  return <Table columns={ columns } data={ data } />
-                }}
+                render={() => <Table columns={columns} data={data} />}
               />
               <Route
                 exact
