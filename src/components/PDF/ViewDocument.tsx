@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { withAlert } from 'react-alert';
 import DocumentViewer from './DocumentViewer';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
-import { withAlert } from 'react-alert';
 
 interface Props {
   alert: any,
@@ -73,4 +73,4 @@ class ViewDocument extends Component<Props, State> {
   }
 }
 
-export default  withAlert()(ViewDocument);
+export default withAlert()(ViewDocument);

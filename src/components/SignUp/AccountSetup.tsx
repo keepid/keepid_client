@@ -57,13 +57,11 @@ class AccountSetup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const {
           status,
         } = responseJSON;
         return (status === 'SUCCESS');
       });
-    console.log(notTaken);
     if (isValidUsername(username) && notTaken) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
@@ -87,7 +85,7 @@ class AccountSetup extends Component<Props, State, {}> {
       );
     }
     return (
-      <div />
+      <div className="mb-2" />
     );
   }
 
@@ -117,7 +115,7 @@ class AccountSetup extends Component<Props, State, {}> {
       );
     }
     return (
-      <small id="emailHelp" className="form-text text-muted mt-1">Password must be at least 8 characters long.</small>
+      <small id="emailHelp" className="form-text text-muted">Password must be at least 8 characters long.</small>
     );
   }
 
@@ -186,12 +184,12 @@ class AccountSetup extends Component<Props, State, {}> {
   handleStepComplete = async (e) => {
     const {
       alert,
-      handleContinue
+      handleContinue,
     } = this.props;
     const {
       usernameValidator,
       passwordValidator,
-      confirmPasswordValidator
+      confirmPasswordValidator,
     } = this.state;
     e.preventDefault();
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
@@ -244,9 +242,9 @@ class AccountSetup extends Component<Props, State, {}> {
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>
-              <div className="form-group row">
-                <label htmlFor="username" className="col-sm-3 col-form-label text-sm-right ">Username</label>
-                <div className="col-sm-9">
+              <div className="form-group row mt-3">
+                <p className="col-sm-3 col-form-label text-sm-right ">Username</p>
+                <label htmlFor="username" className="col-sm-9">
                   <input
                     type="text"
                     className={`form-control form-purple ${this.colorToggle(usernameValidator)}`}
@@ -258,11 +256,11 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.usernameMessage()}
-                </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="password" className="col-sm-3 col-form-label text-sm-right">Password</label>
-                <div className="col-sm-9">
+                <p className="col-sm-3 col-form-label text-sm-right">Password</p>
+                <label htmlFor="password" className="col-sm-9">
                   <input
                     type="password"
                     className={`form-control form-purple ${this.colorToggle(passwordValidator)}`}
@@ -274,11 +272,11 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.passwordMessage()}
-                </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="confirmPassword" className="col-sm-3 col-form-label text-sm-right">Confirm Password</label>
-                <div className="col-sm-9">
+                <p className="col-sm-3 col-form-label text-sm-right">Confirm Password</p>
+                <label htmlFor="confirmPassword" className="col-sm-9">
                   <input
                     type="password"
                     className={`form-control form-purple ${this.colorToggle(confirmPasswordValidator)}`}
@@ -290,7 +288,7 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.confirmPasswordMessage()}
-                </div>
+                </label>
               </div>
               <div className="d-flex justify-content-end">
                 <button type="submit" className="btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>

@@ -52,7 +52,6 @@ interface State {
 }
 
 class CompleteSignupFlow extends Component<Props, State, {}> {
-  
   static addHttp = (url: string) => {
     if (!urlPattern.test(url)) {
       return `http://${url}`;
@@ -236,7 +235,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
-    const { 
+    const {
       signupStage,
       username,
       password,

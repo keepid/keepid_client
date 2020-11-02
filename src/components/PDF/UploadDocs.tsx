@@ -38,11 +38,10 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class UploadDocs extends React.Component<Props, State> {
- 
   static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }
-  
+
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);

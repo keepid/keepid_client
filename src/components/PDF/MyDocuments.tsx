@@ -50,7 +50,6 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class MyDocuments extends Component<Props, State> {
-
   static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }

@@ -156,7 +156,6 @@ class Applications extends Component<Props, State, {}> {
     // fetch call here to get all the current Documents to fill
   }
 
-  
   handleChangeSearchName(event: any) {
     this.setState({
       searchName: event.target.value,
