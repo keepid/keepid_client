@@ -42,6 +42,7 @@ import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
+import Table from './components/Base/Table';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -55,6 +56,40 @@ interface State {
   organization: string,
   autoLogout: boolean,
 }
+
+// for test table
+const products = [
+  {
+    id: 1,
+    name: 'TV',
+    'price': 1000
+  },
+  {
+    id: 2,
+    name: 'Mobile',
+    'price': 500
+  },
+  {
+    id: 3,
+    name: 'Book',
+    'price': 20
+  }]
+
+const data = new Array(100).fill(products).flat(); // some random data
+
+const columns = [{
+  dataField: 'id',
+  text: 'Product ID'
+},
+{
+  dataField: 'name',
+  text: 'Product Name'
+}, {
+  dataField: 'price',
+  text: 'Product Price',
+  sort: true
+}]
+
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -122,6 +157,13 @@ class App extends React.Component<{}, State, {}> {
             {role !== Role.LoggedOut ? <AutoLogout logOut={this.logOut} setAutoLogout={this.setAutoLogout} /> : null}
 
             <Switch>
+              <Route
+                exact
+                path="/table-test"
+                render={() => {
+                  return <Table columns={ columns } data={ data } />
+                }}
+              />
               <Route
                 exact
                 path="/"
