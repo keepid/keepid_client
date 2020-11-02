@@ -1,4 +1,4 @@
-import React, { Component, ReactComponentElement } from 'react';
+import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
@@ -285,6 +285,9 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       signupStage,
       redirectLogin,
     } = this.state;
+    const {
+      personRole
+    } = this.props;
     if (redirectLogin) {
       return (
         <Redirect to="/login" />
@@ -301,7 +304,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         </Helmet>
         <div className="container mt-5">
           <Steps className="d-none d-md-flex" progressDot current={signupStage}>
-            <Step title={`${this.props.personRole} Account Setup`} description="" />
+            <Step title={`${personRole} Account Setup`} description="" />
             <Step title="Personal Information" description="" />
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
