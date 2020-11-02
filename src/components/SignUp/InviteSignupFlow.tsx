@@ -286,7 +286,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       redirectLogin,
     } = this.state;
     const {
-      personRole
+      personRole,
     } = this.props;
     if (redirectLogin) {
       return (
