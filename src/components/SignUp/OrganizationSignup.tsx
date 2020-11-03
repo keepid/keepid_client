@@ -173,7 +173,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       });
   }
 
-  handleSubmit(event: any) {
+  handleSubmit() {
     this.setState({ buttonState: 'running' });
     const { alert } = this.props;
     const {

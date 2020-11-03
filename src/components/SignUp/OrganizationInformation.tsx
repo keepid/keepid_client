@@ -64,25 +64,6 @@ class OrganizationInformation extends Component<Props, State, {}> {
     };
   }
 
-  generalMessage = (inputString:string): ReactElement<{}> => {
-    if (inputString === 'true') {
-      return (
-        <div className="valid-feedback">
-          Looks Great.
-        </div>
-      );
-    } if (inputString === 'false') {
-      return (
-        <div className="invalid-feedback">
-          Invalid or Blank field.
-        </div>
-      );
-    }
-    return (
-      <div />
-    );
-  }
-
   validateOrgName = async ():Promise<void> => {
     const { orgName } = this.props;
     // ( if orgName is valid here)
@@ -175,6 +156,25 @@ class OrganizationInformation extends Component<Props, State, {}> {
 
   componentDidMount() {
     window.scrollTo(0, 0);
+  }
+
+  generalMessage = (inputString:string): ReactElement<{}> => {
+    if (inputString === 'true') {
+      return (
+        <div className="valid-feedback">
+          Looks Great.
+        </div>
+      );
+    } if (inputString === 'false') {
+      return (
+        <div className="invalid-feedback">
+          Invalid or Blank field.
+        </div>
+      );
+    }
+    return (
+      <div />
+    );
   }
 
   colorToggle = (inputString: string): string => {

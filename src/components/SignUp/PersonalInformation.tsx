@@ -63,23 +63,6 @@ class PersonalInformation extends Component<Props, State, {}> {
     };
   }
 
-  generalMessage = (inputString:string): ReactElement<{}> => {
-    if (inputString === 'true') {
-      return (
-        <div className="valid-feedback" />
-      );
-    } if (inputString === 'false') {
-      return (
-        <div className="invalid-feedback">
-          Invalid or Blank field.
-        </div>
-      );
-    }
-    return (
-      <div />
-    );
-  }
-
   validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
     if (isValidFirstName(firstname)) {
@@ -162,14 +145,16 @@ class PersonalInformation extends Component<Props, State, {}> {
   }
 
   customOnChangeBirthDate = (e) => {
-    this.props.onChangeBirthDate(e, () => {
+    const { onChangeBirthDate } = this.props;
+    onChangeBirthDate(e, () => {
       this.validateBirthdate();
     });
   }
 
   handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
     e.preventDefault();
-    this.props.handlePrevious();
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
@@ -205,6 +190,23 @@ class PersonalInformation extends Component<Props, State, {}> {
 
   componentDidMount() {
     window.scrollTo(0, 0);
+  }
+
+  generalMessage = (inputString:string): ReactElement<{}> => {
+    if (inputString === 'true') {
+      return (
+        <div className="valid-feedback" />
+      );
+    } if (inputString === 'false') {
+      return (
+        <div className="invalid-feedback">
+          Invalid or Blank field.
+        </div>
+      );
+    }
+    return (
+      <div />
+    );
   }
 
   colorToggle = (inputString: string): string => {

@@ -44,6 +44,18 @@ class Signup extends Component<Props, State, {}> {
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
     return personBirthDateFormatted;
   }
+  
+  static personRoleString(personRole: Role) {
+    switch (personRole) {
+      case Role.Director: return 'Director';
+      case Role.Admin: return 'Admin';
+      case Role.Client: return 'Client';
+      case Role.LoggedOut: return 'LoggedOut';
+      case Role.Volunteer: return 'Volunteer';
+      case Role.Worker: return 'Worker';
+      default: return '';
+    }
+  }
 
   constructor(props: Props) {
     super(props);
@@ -239,14 +251,12 @@ class Signup extends Component<Props, State, {}> {
             status,
             message,
           } = responseJSON;
-          const { alert } = this.props;
           if (status === 'SUCCESS') {
             this.setState({ reaffirmStage: true });
           } else {
             alert.show(message);
           }
         }).catch((error) => {
-          const { alert } = this.props;
           alert.show(`Server Failure: ${error}`);
         });
     }
@@ -258,18 +268,6 @@ class Signup extends Component<Props, State, {}> {
 
   handleChangeAcceptEULA(acceptEULA: boolean) {
     this.setState({ acceptEULA });
-  }
-
-  static personRoleString(personRole: Role) {
-    switch (personRole) {
-      case Role.Director: return 'Director';
-      case Role.Admin: return 'Admin';
-      case Role.Client: return 'Client';
-      case Role.LoggedOut: return 'LoggedOut';
-      case Role.Volunteer: return 'Volunteer';
-      case Role.Worker: return 'Worker';
-      default: return '';
-    }
   }
 
   render() {

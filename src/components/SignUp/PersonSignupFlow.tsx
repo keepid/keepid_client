@@ -144,7 +144,6 @@ class PersonSignupFlow extends Component<Props, State, {}> {
           status,
           message,
         } = responseJSON;
-        const { personRole } = this.props;
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
           alert.show(`Successful ${personRole} signup to use Keep.id. You can login with the new username and password`);
