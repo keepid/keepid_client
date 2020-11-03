@@ -36,6 +36,16 @@ interface State {
 }
 
 class Signup extends Component<Props, State, {}> {
+
+  static birthDateString(birthDate: Date) {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
+  }
+
   constructor(props: Props) {
     super(props);
 
@@ -75,19 +85,12 @@ class Signup extends Component<Props, State, {}> {
     this.handleChangeAcceptEULA = this.handleChangeAcceptEULA.bind(this);
   }
 
-  static birthDateString(birthDate: Date) {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
-  }
-
   handleSubmit(event: any) {
     event.preventDefault();
     const {
       personRole,
+      alert,
+      onSubmitProp,
     } = this.props;
     const {
       personFirstName,
@@ -105,14 +108,14 @@ class Signup extends Component<Props, State, {}> {
       acceptEULA,
     } = this.state;
     if (!acceptEULA) {
-      this.props.alert.show('Please accept EULA before continuing');
+      alert.show('Please accept EULA before continuing');
     } else if (personPassword !== personConfirmPassword) {
-      this.props.alert.show('Your passwords are not identical');
+      alert.show('Your passwords are not identical');
     } else {
       const personRoleStringVar = Signup.personRoleString(personRole);
       const personBirthDateFormatted = Signup.birthDateString(personBirthDate);
 
-      this.props.onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
+      onSubmitProp(personFirstName, personLastName, personBirthDateFormatted, personEmail,
         personPhoneNumber, personAddressStreet, personAddressCity, personAddressState,
         personAddressZipcode, personUsername, personPassword, personRoleStringVar);
     }
@@ -154,7 +157,7 @@ class Signup extends Component<Props, State, {}> {
     this.setState({ personAddressZipcode: event.target.value });
   }
 
-  generatePersonUsername(event: any) {
+  generatePersonUsername() {
     const {
       personFirstName,
       personLastName,
@@ -190,6 +193,7 @@ class Signup extends Component<Props, State, {}> {
     event.preventDefault();
     const {
       personRole,
+      alert,
     } = this.props;
     const {
       personFirstName,
@@ -210,7 +214,7 @@ class Signup extends Component<Props, State, {}> {
     const personBirthDateFormatted = Signup.birthDateString(personBirthDate);
 
     if (personPassword !== personConfirmPassword) {
-      this.props.alert.show('Your passwords are not identical');
+      alert.show('Your passwords are not identical');
     } else {
       fetch(`${getServerURL()}/create-user-validator`, {
         method: 'POST',
@@ -236,18 +240,20 @@ class Signup extends Component<Props, State, {}> {
             status,
             message,
           } = responseJSON;
+          const { alert } = this.props;
           if (status === 'SUCCESS') {
             this.setState({ reaffirmStage: true });
           } else {
-            this.props.alert.show(message);
+            alert.show(message);
           }
         }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
+          const { alert } = this.props;
+          alert.show(`Server Failure: ${error}`);
         });
     }
   }
 
-  handleBack(event: any) {
+  handleBack() {
     this.setState({ reaffirmStage: false });
   }
 
@@ -285,6 +291,7 @@ class Signup extends Component<Props, State, {}> {
       personUsername,
       personPassword,
       personConfirmPassword,
+      personBirthDate,
       acceptEULA,
       reaffirmStage,
     } = this.state;
@@ -372,7 +379,7 @@ class Signup extends Component<Props, State, {}> {
                       <DatePicker
                         id="inputBirthDate"
                         onChange={this.handleChangePersonBirthDate}
-                        selected={this.state.personBirthDate}
+                        selected={personBirthDate}
                         className="form-control form-purple"
                         readOnly={reaffirmStage}
                         required

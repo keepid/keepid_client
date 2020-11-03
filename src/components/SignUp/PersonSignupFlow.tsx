@@ -144,10 +144,10 @@ class PersonSignupFlow extends Component<Props, State, {}> {
           status,
           message,
         } = responseJSON;
-
+        const { personRole } = this.props;
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          alert.show(`Successful ${this.props.personRole} signup to use Keep.id. You can login with the new username and password`);
+          alert.show(`Successful ${personRole} signup to use Keep.id. You can login with the new username and password`);
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
@@ -273,6 +273,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       signupStage,
       redirectLogin,
     } = this.state;
+    const { personRole } = this.props;
     if (redirectLogin) {
       return (
         <Redirect to="/login" />
@@ -289,7 +290,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         </Helmet>
         <div className="container mt-5">
           <Steps className="d-none d-md-flex" progressDot current={signupStage}>
-            <Step title={`${this.props.personRole} Account Setup`} description="" />
+            <Step title={`${personRole} Account Setup`} description="" />
             <Step title="Personal Information" description="" />
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
