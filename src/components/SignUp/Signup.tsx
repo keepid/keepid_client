@@ -36,7 +36,6 @@ interface State {
 }
 
 class Signup extends Component<Props, State, {}> {
-
   static birthDateString(birthDate: Date) {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
