@@ -39,8 +39,9 @@ interface State {}
 
 class ReviewSubmit extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
     e.preventDefault();
-    this.props.handlePrevious();
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
@@ -48,10 +49,11 @@ class ReviewSubmit extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
+    const { handleChangeRecaptcha } = this.props;
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       // @ts-ignore
       const token = await recaptchaRef.current.executeAsync();
-      this.props.handleChangeRecaptcha(token);
+      handleChangeRecaptcha(token);
     }
   }
 
