@@ -9,13 +9,19 @@ import paginationFactory, {
 import cellEditFactory from 'react-bootstrap-table2-editor';
 import Button from 'react-bootstrap/Button';
 import '../../static/styles/App.scss';
+import SaveSVG from '../../static/images/checkmark.svg';
+import EditSVG from '../../static/images/edit.svg';
+import DeleteSVG from '../../static/images/delete.svg';
+import getServerURL from '../../serverOverride';
 
 // This function controls formatting on the edit/save column (needed because of a glitch with the Edit/Save text)
 interface FormatterProps {
     editRows: Set<number>,
     row: any,
+    rowIndex: number,
     handleEdit: (event: any, row: any) => void,
-    handleSave: (event: any, row: any) => void, 
+    //handleSave: (event: any, row: any) => void, 
+    handleSave: (event: any, row: any, rowIndex: number) => Promise<void>,
 }
 
 function EditFormatter(props: FormatterProps): React.ReactElement {
@@ -30,19 +36,27 @@ function EditFormatter(props: FormatterProps): React.ReactElement {
     const handleSave = (e): void => {
         console.log('handleSave');
         setEditable(false);
-        props.handleSave(e, props.row);
+        props.handleSave(e, props.row, props.rowIndex);
     }
     
     return (
-        <Button variant='link' onClick={ (e) => editable ? handleSave(e) : handleEdit(e) }>
-            { editable ? 'Save' : 'Edit' }
+        <Button variant='link' className={ editable ? "save-text" : "edit-text"} onClick={ (e) => editable ? handleSave(e) : handleEdit(e) }>
+            <div className="row align-items-center">
+                <img className="px-1 save-text" src={editable ? SaveSVG : EditSVG}/>
+                <div>{ editable ? 'Save' : 'Edit' }</div> 
+            </div>
+           
         </Button>
     );
 }
 
 interface Props {
     data: any[],
-    columns: any[]
+    columns: any[],
+    canModify: boolean, // whether we can modify table at all
+    cantEditCols: Set<number>, //set of row numbers that shouldn't be allowed to be edited
+    route: string,
+
 }
 
 interface State {
@@ -65,9 +79,36 @@ class Table extends React.Component<Props, State, {}> {
     }
 
      // handles what happens when delete button clicked
-     handleDelete = (event: any, cell: any, row: any, rowIndex: number): void => {
+     handleDelete = async (event: any, cell: any, row: any, rowIndex: number): Promise<void> => {
         console.log('Delete button clicked');
-        console.log(row);
+        console.log("ROW" + Object.keys(row));
+        console.log("INDEX: " + rowIndex);
+        event.preventDefault();
+        const { route } = this.props;
+        const { editRows, data } = this.state;
+        editRows.delete(row.id);
+        const newData = data.filter(function(value, index, arr){ return index !== rowIndex;});
+        this.setState({
+            editRows,
+            data: newData,
+        });
+     
+        // const response = await fetch(`${getServerURL()}${route}`, {
+        //     method: 'POST',
+        //     credentials: 'include',
+        //     body: JSON.stringify({
+        //         mode: "delete", // or modify 
+        //         id: row.id,
+        //       }),
+        //     });
+        // if (!response.ok) {
+        //     throw new Error("Did not save. Please refresh & try again");
+        // }
+        // const { status } = await response.json();
+
+        // if (status === 'SUCCESS') {
+        //     alert("Deleted.");
+        // }
     }
 
     // handles what happens when edit button clicked
@@ -78,33 +119,71 @@ class Table extends React.Component<Props, State, {}> {
         this.setState({
             editRows: editRows,
         })
-        console.log(row);
+        //console.log(row);
     }
 
     // handles what happens when save button clicked
-    handleSave = (event: any, row: any): void => {
+    handleSave = async (event: any, row: any, rowIndex: number): Promise<void> => {
         event.preventDefault();
-        const { editRows } = this.state;
+        const { route } = this.props;
+        const { editRows, data } = this.state;
         editRows.delete(row.id);
         this.setState({
             editRows: editRows,
-        });
-        console.log(row);
-        // need to call API with the data
-    }
+        });;
+        // data in front-end is already updated
+        const newRow = data[rowIndex];
+        console.log("Checking here");
+        console.log(Object.entries(newRow));
+        
+        const response = await fetch(`${getServerURL()}${route}`, {
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify({
+                mode: "modify", // or delete for delete
+                ...newRow,
+              }),
+            });
+
+        // send all fields of this new row
+        if (!response.ok) {
+            throw new Error("Did not save. Please refresh & try again");
+        }
+        const { status } = await response.json();
+
+        if (status === 'SUCCESS') {
+
+        }
+        // TODO
+        // else {
+        //     alert('Your edits did not save. Please refresh & try again.');
+        // }
+
+        }
+
 
     // delete button React component
     deleteFormatter = (cell: any, row: any, rowIndex: number) => {
         return (
-            <Button variant='link' onClick = { (e) => this.handleDelete(e, cell, row, rowIndex) } >Delete</Button>
+            <Button variant='link' className="delete-text" onClick = { (e) => this.handleDelete(e, cell, row, rowIndex) } >
+            <div className="row align-items-center">
+                <img className="px-1 delete-text" src={DeleteSVG}/>
+                <div>Delete</div> 
+            </div>
+            </Button>
         )
     }
 
     render() {
         const {
             columns,
+            cantEditCols,
+            canModify,
         } = this.props;
 
+        const {
+            editRows,
+        } = this.state;
 
         // pagination option
         const paginationOption = {
@@ -114,28 +193,34 @@ class Table extends React.Component<Props, State, {}> {
 
         // edit options
         const cellEdit = cellEditFactory({
-            mode: 'click',
-            blurToSave: true,
+            mode: 'click',//ORIG TRUE
+            blurToSave: false,
+            nonEditableCols: () => Array.from(cantEditCols),
+            autoSelectText: true,
         });
 
         // controls editing
+        // this box is currently editable ONLY if in editRows (curr) & not in cols you're not allowed to edit
         const isEditable = (cell: any, row: any, rowIndex: number, colIndex: number) => {
+            if (!canModify) return false;
             const { editRows } = this.state;
-            return editRows.has(row.id);
+            return editRows.has(row.id) && !cantEditCols.has(colIndex);
         }
 
         // add edit control for each column
+        // TODO are indices off??
         const columnsAll = columns.map((value, index) => {
             value.editable = isEditable;
             return value;
         });
 
         // add Edit column
+        if (canModify) {
         columnsAll.push({
             dataField: 'edit',
-            text: 'Edit',
+            text: '',
             formatExtraData: this.state.editRows,
-            formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row}/>, //this.editFormatter(cell, row, rowIndex, formatExtraData),
+            formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row} rowIndex={rowIndex}/>, //this.editFormatter(cell, row, rowIndex, formatExtraData),
             editable: false,
             isDummyField: true,
         });
@@ -143,12 +228,20 @@ class Table extends React.Component<Props, State, {}> {
         // add Delete column
         columnsAll.push({
             dataField: 'delete',
-            text: 'Delete',
+            text: '',
             formatter: this.deleteFormatter,
             editable: false,
             isDummyField: true,
         });
-
+    }
+    // if current row is on edit mode...
+    // this class is applied to each row! rowClasses
+    // column format:
+            //  list of objects, each object is dataField & text, along with sort T/F.
+            // other fields: editable (if editable**), isDummyField (if true), possible formatter
+    //  boostrap table receives data DATA:
+            // list of objects, where each object's keys is the dataFields above
+    // what is cell edit
         const rowClasses = (row, rowIndex) => {
             if (this.state.editRows.has(row.id)) {
                 return 'table-edit-row'; // you can define some custon class here for on edit styling

@@ -43,6 +43,7 @@ import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 import Table from './components/Base/Table';
+import { Type } from 'react-bootstrap-table2-editor';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -90,11 +91,27 @@ const columns = [{
 {
   dataField: 'name',
   text: 'Product Name',
+  editor: {
+    type: Type.SELECT,
+    options: [{
+      value: 'TV',
+      label: 'TV'
+    }, {
+      value: 'Mobile',
+      label: 'Mobile'
+    }, {
+      value: 'Book',
+      label: 'Book'
+    }]
+  }
 }, {
   dataField: 'price',
   text: 'Product Price',
   sort: true,
+  //classes: (cell, row, rowIndex, colIndex) => rowIndex==2 ? 'editCell' : '',
+  // hard coded, not sure how to fix
 }];
+const cantEdit = new Set([0]);
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -165,7 +182,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} />}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify={true} route={"/table"}/>}
               />
               <Route
                 exact
