@@ -18,6 +18,7 @@ public class LoadPfpService implements Service {
   Logger logger;
   private String username;
   private InputStream res;
+  private String contentType;
 
   public LoadPfpService(MongoDatabase db, Logger logger, String username) {
     this.db = db;
@@ -34,6 +35,12 @@ public class LoadPfpService implements Service {
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;
     }
+    String fileName = grid_out.getFilename();
+    String[] temp = fileName.split("\\.");
+    contentType = temp[temp.length - 1];
+    if (!contentType.equals("png")) {
+      contentType = "jpeg";
+    }
     logger.info("Loaded profile pic with name " + grid_out.getFilename());
     InputStream pfp = gridBucket.openDownloadStream(grid_out.getObjectId());
     res = pfp;
@@ -42,5 +49,9 @@ public class LoadPfpService implements Service {
 
   public InputStream getRes() {
     return res;
+  }
+
+  public String getContentType() {
+    return contentType;
   }
 }

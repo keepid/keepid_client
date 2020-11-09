@@ -1,7 +1,6 @@
 package Config;
 
 import Activity.ActivityController;
-import Issue.IssueController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
@@ -43,7 +42,7 @@ public class AppConfig {
     UserController userController = new UserController(db);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
-    IssueController issueController = new IssueController(db);
+    //    IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController(db);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
@@ -86,7 +85,7 @@ public class AppConfig {
     app.post("/change-two-factor-setting", accountSecurityController.change2FASetting);
 
     /* -------------- SUBMIT BUG------------------ */
-    app.post("/submit-issue", issueController.submitIssue);
+    //    app.post("/submit-issue", issueController.submitIssue);
 
     /* -------------- ADMIN DASHBOARD ------------------ */
     app.post("/get-usertype-count", orgController.findMembersOfOrgs);
