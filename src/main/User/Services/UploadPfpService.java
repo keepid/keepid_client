@@ -6,9 +6,12 @@ import User.UserMessage;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.Filters;
 import io.javalin.http.UploadedFile;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
@@ -31,7 +34,12 @@ public class UploadPfpService implements Service {
   public Message executeAndGetResponse() {
     String fileName = pfp.getFilename();
     InputStream content = pfp.getContent();
+    Bson filter = Filters.eq("metadata.owner", username);
     GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
+    GridFSFile grid_out = gridBucket.find(filter).first();
+    if (grid_out != null) {
+      gridBucket.delete(grid_out.getObjectId());
+    }
     GridFSUploadOptions options =
         new GridFSUploadOptions()
             .chunkSizeBytes(100000)

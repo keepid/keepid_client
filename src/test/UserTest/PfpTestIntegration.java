@@ -56,9 +56,17 @@ public class PfpTestIntegration {
             .asString();
     JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    HttpResponse<byte[]> get = Unirest.post(TestUtils.getServerUrl() + "/load-pfp").asBytes();
+    assert (get.isSuccess());
   }
 
   public static void getPfp() {
+    File examplePDF = new File(currentPfpFolderPath + File.separator + "mvc.png");
+    HttpResponse<String> uploadResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", examplePDF)
+            .asString();
     HttpResponse<byte[]> get = Unirest.post(TestUtils.getServerUrl() + "/load-pfp").asBytes();
     assert (get.isSuccess());
   }

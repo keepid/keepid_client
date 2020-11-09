@@ -30,10 +30,11 @@ public class LoadPfpService implements Service {
     logger.info("Started get pfp service");
     Bson filter = Filters.eq("metadata.owner", username);
     GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
-    GridFSFile grid_out = gridBucket.find(filter).first();
+    GridFSFile grid_out = gridBucket.find(filter).limit(1).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
       return null;
     }
+    logger.info("Loaded profile pic with name " + grid_out.getFilename());
     InputStream pfp = gridBucket.openDownloadStream(grid_out.getObjectId());
     res = pfp;
     return UserMessage.SUCCESS;
