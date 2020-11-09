@@ -111,13 +111,6 @@ class Applications extends Component<Props, State, {}> {
     this.setState({ currentUser: event });
   }
 
-  handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-      currentPage: 0,
-    });
-  }
-
   handleChangeItemsPerPage(itemsPerPageSelected: any) {
     this.setState({
       currentPage: 0,
@@ -157,25 +150,26 @@ class Applications extends Component<Props, State, {}> {
 
   getDocuments() {
     const {
-      searchName,
-      currentPage,
       itemsPerPageSelected,
     } = this.state;
     const itemsPerPage = Number(itemsPerPageSelected.value);
     // fetch call here to get all the current Documents to fill
   }
 
+  handleChangeSearchName(event: any) {
+    this.setState({
+      searchName: event.target.value,
+      currentPage: 0,
+    });
+  }
+
   render() {
     const {
       currentApplicationFilename,
       currentApplicationId,
-      currentUser,
       currentPage,
       itemsPerPageSelected,
       numElements,
-      username,
-      adminName,
-      organization,
       documents,
     } = this.state;
 

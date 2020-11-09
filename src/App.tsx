@@ -8,7 +8,6 @@ import {
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
-import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';

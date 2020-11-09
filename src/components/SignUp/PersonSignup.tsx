@@ -52,6 +52,7 @@ class PersonSignup extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        const { alert } = this.props;
         const {
           status,
           message,
@@ -59,13 +60,14 @@ class PersonSignup extends Component<Props, State, {}> {
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
           this.setState({ submitSuccessful: true });
-          this.props.alert.show(message);
+          alert.show(message);
         } else {
-          this.props.alert.show(message);
+          alert.show(message);
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
-        this.props.alert.show(`Server Failure: ${error}`);
+        const { alert } = this.props;
+        alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
   }

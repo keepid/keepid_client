@@ -1,4 +1,4 @@
-import React, { Component, ReactComponentElement } from 'react';
+import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
@@ -52,6 +52,13 @@ interface State {
 }
 
 class CompleteSignupFlow extends Component<Props, State, {}> {
+  static addHttp = (url: string) => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -140,13 +147,6 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
   }
 
-  static addHttp = (url: string) => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
-  }
-
   handleFormSubmit = (): void => {
     const {
       username,
@@ -171,6 +171,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationEmail,
       recaptchaPayload,
     } = this.state;
+    const { alert } = this.props;
     const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
     const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
 
@@ -204,21 +205,20 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const {
           status,
           message,
         } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
           this.setState({ buttonState: '' });
-          this.props.alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
+          alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
           this.setState({ redirectLogin: true });
         } else {
-          this.props.alert.show(message);
+          alert.show(message);
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
-        this.props.alert.show(`Server Failure: ${error}`);
+        alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
   }
@@ -235,33 +235,60 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
   handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
-    switch (this.state.signupStage) {
+    const {
+      signupStage,
+      username,
+      password,
+      confirmPassword,
+      organizationName,
+      organizationWebsite,
+      organizationEIN,
+      organizationAddressStreet,
+      organizationAddressCity,
+      organizationAddressState,
+      organizationAddressZipcode,
+      organizationEmail,
+      organizationPhoneNumber,
+      firstname,
+      lastname,
+      birthDate,
+      email,
+      phonenumber,
+      address,
+      city,
+      state,
+      zipcode,
+      hasSigned,
+      buttonState,
+    } = this.state;
+    const { role } = this.props;
+    switch (signupStage) {
       case 0: {
         return (
           <AccountSetup
-            username={this.state.username}
-            password={this.state.password}
-            confirmPassword={this.state.confirmPassword}
+            username={username}
+            password={password}
+            confirmPassword={confirmPassword}
             onChangeUsername={this.handleChangeUsername}
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
-            role={this.props.role}
+            role={role}
           />
         );
       }
       case 1: {
         return (
           <PersonalInformation
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
             onChangeFirstname={this.handleChangeFirstname}
             onChangeLastname={this.handleChangeLastname}
             onChangeBirthDate={this.handleChangeBirthdate}
@@ -279,15 +306,15 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       case 2: {
         return (
           <OrganizationInformation
-            orgName={this.state.organizationName}
-            orgWebsite={this.state.organizationWebsite}
-            ein={this.state.organizationEIN}
-            orgAddress={this.state.organizationAddressStreet}
-            orgCity={this.state.organizationAddressCity}
-            orgState={this.state.organizationAddressState}
-            orgZipcode={this.state.organizationAddressZipcode}
-            orgPhoneNumber={this.state.organizationPhoneNumber}
-            orgEmail={this.state.organizationEmail}
+            orgName={organizationName}
+            orgWebsite={organizationWebsite}
+            ein={organizationEIN}
+            orgAddress={organizationAddressStreet}
+            orgCity={organizationAddressCity}
+            orgState={organizationAddressState}
+            orgZipcode={organizationAddressZipcode}
+            orgPhoneNumber={organizationPhoneNumber}
+            orgEmail={organizationEmail}
             onChangeOrgName={this.handleChangeOrgName}
             onChangeOrgWebsite={this.handleChangeOrgWebsite}
             onChangeOrgEIN={this.handleChangeEIN}
@@ -305,7 +332,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       case 3: {
         return (
           <SignUserAgreement
-            hasSigned={this.state.hasSigned}
+            hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
@@ -315,30 +342,30 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       case 4: {
         return (
           <ReviewSubmit
-            username={this.state.username}
-            password={this.state.password}
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
-            orgName={this.state.organizationName}
-            orgWebsite={this.state.organizationWebsite}
-            ein={this.state.organizationEIN}
-            orgAddress={this.state.address}
-            orgCity={this.state.city}
-            orgState={this.state.state}
-            orgZipcode={this.state.zipcode}
-            orgPhoneNumber={this.state.phonenumber}
-            orgEmail={this.state.email}
+            username={username}
+            password={password}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
+            orgName={organizationName}
+            orgWebsite={organizationWebsite}
+            ein={organizationEIN}
+            orgAddress={address}
+            orgCity={city}
+            orgState={state}
+            orgZipcode={zipcode}
+            orgPhoneNumber={phonenumber}
+            orgEmail={email}
             handleSubmit={this.handleFormSubmit}
             handlePrevious={this.handlePrevious}
             handleFormJumpTo={this.handleFormJumpTo}
-            buttonState={this.state.buttonState}
+            buttonState={buttonState}
             handleChangeRecaptcha={this.handleChangeRecaptcha}
           />
         );
@@ -377,7 +404,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 5`} />
+          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 5`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>
