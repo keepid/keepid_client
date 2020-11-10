@@ -29,7 +29,7 @@ class SignUserAgreement extends Component<Props, State, {}> {
       alert.show('Please sign the EULA');
     }
   }
-  
+
   handleStepPrevious = (e) => {
     const { handlePrevious } = this.props;
     e.preventDefault();

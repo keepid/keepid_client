@@ -44,7 +44,7 @@ class Signup extends Component<Props, State, {}> {
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
     return personBirthDateFormatted;
   }
-  
+
   static personRoleString(personRole: Role) {
     switch (personRole) {
       case Role.Director: return 'Director';

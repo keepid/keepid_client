@@ -23,11 +23,7 @@ interface State {
   currentUser: any,
   currentPage: number,
   itemsPerPageSelected: any,
-  numElements: number,
-  searchName: string,
-  username: string,
-  adminName: string,
-  organization: string,
+  numElements: number
 }
 
 const listOptions = [
@@ -73,22 +69,11 @@ class Applications extends Component<Props, State, {}> {
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
       numElements: 0,
-      username: props.username,
-      searchName: '',
-      adminName: props.name,
-      organization: props.organization,
       documents: [],
     };
-    this.onClickWorker = this.onClickWorker.bind(this);
-    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.changeCurrentPage = this.changeCurrentPage.bind(this);
-    this.getDocuments = this.getDocuments.bind(this);
-    this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
-    this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
@@ -107,17 +92,17 @@ class Applications extends Component<Props, State, {}> {
       });
   }
 
-  onClickWorker(event: any) {
+  onClickWorker = (event: any) => {
     this.setState({ currentUser: event });
   }
 
-  handleChangeItemsPerPage(itemsPerPageSelected: any) {
+  handleChangeItemsPerPage = (itemsPerPageSelected: any) => {
     this.setState({
       currentPage: 0,
     });
   }
 
-  handleViewDocument(event: any, rowIndex: number) {
+  handleViewDocument = (event: any, rowIndex: number) => {
     const {
       documents,
     } = this.state;
@@ -136,11 +121,11 @@ class Applications extends Component<Props, State, {}> {
     );
   }
 
-  changeCurrentPage(newCurrentPage: number) {
+  changeCurrentPage = (newCurrentPage: number) => {
     this.setState({ currentPage: newCurrentPage }, this.getDocuments);
   }
 
-  onChangeViewPermission(event: any) {
+  onChangeViewPermission = (event: any) => {
     const {
       currentUser,
     } = this.state;
@@ -148,19 +133,12 @@ class Applications extends Component<Props, State, {}> {
     this.setState({ currentUser }, this.getDocuments);
   }
 
-  getDocuments() {
+  getDocuments = () => {
     const {
       itemsPerPageSelected,
     } = this.state;
     const itemsPerPage = Number(itemsPerPageSelected.value);
     // fetch call here to get all the current Documents to fill
-  }
-
-  handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-      currentPage: 0,
-    });
   }
 
   render() {
@@ -196,7 +174,7 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              <form className="form-inline my-2 my-lg-0">
+              {/* <form className="form-inline my-2 my-lg-0">
                 <input
                   className="form-control mr-sm-2 w-50"
                   type="search"
@@ -204,7 +182,7 @@ class Applications extends Component<Props, State, {}> {
                   aria-label="Search"
                   onChange={this.handleChangeSearchName}
                 />
-              </form>
+              </form> */}
               <div className="row ml-1 mt-2 mb-2">
                 {numElements === 0 ? <div /> : tablePageSelector }
                 {numElements === 0 ? <div />
