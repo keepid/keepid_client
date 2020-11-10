@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import ConnorJPG from '../../static/images/members/connor.jpg';
-import SteffenJPG from '../../static/images/members/steffen.jpg';
+import SteffenJPG from '../../static/images/members/steffenCornwell.png';
 import GregJPG from '../../static/images/members/greg.jpg';
 import JacksonJPG from '../../static/images/members/jackson.jpg';
 import JackieJPG from '../../static/images/members/jackie.jpg';
