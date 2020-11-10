@@ -29,7 +29,8 @@ public class ActivityController {
 
   public Handler findMyActivities =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
         FindActivityService fas = new FindActivityService(db, logger, username);
         Message responseMessage = fas.executeAndGetResponse();
         JSONObject res = responseMessage.toJSON();
