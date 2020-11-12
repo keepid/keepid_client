@@ -34,6 +34,7 @@ import EmilyHong from '../../static/images/members/emilyHong.jpg';
 import JessicaHung from '../../static/images/members/jessicaHung.jpg';
 import EmilySu from '../../static/images/members/emilySu.jpg';
 import JamesBigbee from '../../static/images/members/jamesBigbee.jpg';
+import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
 
 interface State {}
 
@@ -254,6 +255,13 @@ class OurTeam extends React.Component<{}, State> {
             <div className="card-body">
               <h5 className="card-title">Maggie Lin</h5>
               <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={SeemranRashid} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Seemran Rashid</h5>
+              <p className="card-text">Donor Strategy</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
