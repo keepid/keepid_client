@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory, {
   PaginationProvider,
@@ -13,41 +13,62 @@ import SaveSVG from '../../static/images/checkmark.svg';
 import EditSVG from '../../static/images/edit.svg';
 import DeleteSVG from '../../static/images/delete.svg';
 import getServerURL from '../../serverOverride';
+import Modal from 'react-bootstrap/Modal';
 
 // This function controls formatting on the edit/save column (needed because of a glitch with the Edit/Save text)
 interface FormatterProps {
     editRows: Set<number>,
     row: any,
-    rowIndex: number,
     handleEdit: (event: any, row: any) => void,
-    //handleSave: (event: any, row: any) => void, 
-    handleSave: (event: any, row: any, rowIndex: number) => Promise<void>,
+    handleSave: (event: any, row: any) => void,
 }
 
 function EditFormatter(props: FormatterProps): React.ReactElement {
     const [editable, setEditable] = useState(false);
 
     const handleEdit = (e): void => {
-        console.log('handleEdit');
         setEditable(true);
         props.handleEdit(e, props.row);
     };
 
     const handleSave = (e): void => {
-        console.log('handleSave');
         setEditable(false);
-        props.handleSave(e, props.row, props.rowIndex);
+        props.handleSave(e, props.row);
     }
     
     return (
         <Button variant='link' className={ editable ? "save-text" : "edit-text"} onClick={ (e) => editable ? handleSave(e) : handleEdit(e) }>
             <div className="row align-items-center">
                 <img className="px-1 save-text" src={editable ? SaveSVG : EditSVG}/>
-                <div>{ editable ? 'Save' : 'Edit' }</div> 
+                <div className="d-none d-sm-block">{ editable ? 'Save' : 'Edit' }</div> 
             </div>
            
         </Button>
     );
+}
+
+interface TModalProps {
+    row: any,
+    handleClickClose: (event: any) => void,
+    handleDelete: (event: any) => void, 
+}
+
+function TModal(props: TModalProps): React.ReactElement {
+return (
+  <Modal key="deleteRow" show={true}>
+    <Modal.Body>
+      <div className="row mb-3 mt-3">
+        <div className="col">
+            {`This is irreversible. Are you sure you want to delete row ${props.row.id}?`}
+        </div>
+      </div>
+    </Modal.Body>
+    <Modal.Footer>
+        <button type="button" className="btn btn-danger" onClick={props.handleDelete}>Delete</button>
+        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={props.handleClickClose}>Cancel</button>  
+    </Modal.Footer>
+  </Modal>
+)
 }
 
 interface Props {
@@ -55,60 +76,116 @@ interface Props {
     columns: any[],
     canModify: boolean, // whether we can modify table at all
     cantEditCols: Set<number>, //set of row numbers that shouldn't be allowed to be edited
-    route: string,
+    modRoute: string,
 
 }
 
 interface State {
     editRows: Set<number>,
     data: any[],
+    showDeleteModal: boolean,
+    rowToDelete: any,
+    columns: any[],
 }
 
 class Table extends React.Component<Props, State, {}> {
 
     constructor(props) {
         super(props);
+        const columns = props.columns;
+        columns.forEach(col => {
+            col.formatter = this.InputFormatter;
+            col.editorClasses = "editor-input";
+        });
         this.state = {
           editRows: new Set<number>(), // editRows represents the row IDs of rows currently being edited
           data: props.data,
+          showDeleteModal: false,
+          rowToDelete: null,
+          columns: columns,
         }
         this.handleDelete = this.handleDelete.bind(this);
+        this.handleTryDelete = this.handleTryDelete.bind(this);
         this.handleEdit = this.handleEdit.bind(this);
         this.handleSave = this.handleSave.bind(this);
         this.deleteFormatter = this.deleteFormatter.bind(this);
     }
+    
+    InputFormatter = (cell: any, row: any):ReactElement<{}> => {
+        const { editRows } = this.state;
+        if (editRows.has(row.id)) {
+            return (
+              <input
+                type="text"
+                className={`form-control form-purple editor-input`}
+                value={cell}
+                readOnly
+                 />
+            );
+        }
+        else return cell;
+    }
+    handleClickClose = (event: any):void => {
+        this.setState({showDeleteModal: false,
+                        rowToDelete: null,
+                     });
+    }
+    
+    handleTryDelete = (event: any, row: any):void => {
+        event.preventDefault();
+        this.setState({
+            showDeleteModal: true,
+            rowToDelete: row,
+          });
+    }
+
 
      // handles what happens when delete button clicked
-     handleDelete = async (event: any, cell: any, row: any, rowIndex: number): Promise<void> => {
-        console.log('Delete button clicked');
-        console.log("ROW" + Object.keys(row));
-        console.log("INDEX: " + rowIndex);
+     handleDelete = (event: any, row: any): void => {
         event.preventDefault();
-        const { route } = this.props;
+        const { modRoute } = this.props;
         const { editRows, data } = this.state;
+        //**
         editRows.delete(row.id);
-        const newData = data.filter(function(value, index, arr){ return index !== rowIndex;});
+        const index = data.findIndex((member) => member.id === row.id);
+        const newData = data.slice();
+        newData.splice(index, 1);
         this.setState({
             editRows,
             data: newData,
+            showDeleteModal: false,
+            rowToDelete: null
         });
-     
-        // const response = await fetch(`${getServerURL()}${route}`, {
+        //**
+
+        // fetch(`${getServerURL()}${modRoute}`, {
         //     method: 'POST',
         //     credentials: 'include',
         //     body: JSON.stringify({
-        //         mode: "delete", // or modify 
+        //         mode: "delete", // or edit
         //         id: row.id,
         //       }),
+        //     }).then((response) => response.json())
+        //     .then((responseJSON) => {
+        //         const responseObject = responseJSON;
+        //         const { status } = responseObject;
+        //         if (status === 'SUCCESS') {
+        //             // TODO: move ** section into here
+        //         }
+        //         else {
+        //             alert('Your edits did not save. Please refresh & try again.');
+        //         }
+        //     this.setState({
+        //         showDeleteModal: false,
+        //         rowToDelete: null
         //     });
-        // if (!response.ok) {
-        //     throw new Error("Did not save. Please refresh & try again");
-        // }
-        // const { status } = await response.json();
-
-        // if (status === 'SUCCESS') {
-        //     alert("Deleted.");
-        // }
+        //     }).catch((error) => {
+        //         alert(`Network Failure: ${error}`);
+        //         this.setState({
+        //             showDeleteModal: false,
+        //             rowToDelete: null
+        //         });  
+        //     });
     }
 
     // handles what happens when edit button clicked
@@ -116,59 +193,59 @@ class Table extends React.Component<Props, State, {}> {
         event.preventDefault();
         const { editRows } = this.state;
         editRows.add(row.id);
+
         this.setState({
             editRows: editRows,
         })
-        //console.log(row);
     }
 
     // handles what happens when save button clicked
-    handleSave = async (event: any, row: any, rowIndex: number): Promise<void> => {
+    handleSave = (event: any, row: any): void => {
         event.preventDefault();
-        const { route } = this.props;
+        const { modRoute } = this.props;
         const { editRows, data } = this.state;
+        //**
         editRows.delete(row.id);
         this.setState({
             editRows: editRows,
-        });;
+        });
+        //**
         // data in front-end is already updated
-        const newRow = data[rowIndex];
-        console.log("Checking here");
-        console.log(Object.entries(newRow));
+        const index = data.findIndex((member) => member.id === row.id);
+        const member = { ...data[index] };
+        console.log(Object.entries(member));
         
-        const response = await fetch(`${getServerURL()}${route}`, {
-            method: 'POST',
-            credentials: 'include',
-            body: JSON.stringify({
-                mode: "modify", // or delete for delete
-                ...newRow,
-              }),
-            });
+        // fetch(`${getServerURL()}${modRoute}`, {
+        //     method: 'POST',
+        //     credentials: 'include',
+        //     body: JSON.stringify({
+        //         mode: "edit", // or delete
+        //         ...member,
+        //       }),
+        //     }).then((response) => response.json())
+        //     .then((responseJSON) => {
+        //         const responseObject = responseJSON;
+        //         const { status } = responseObject;
+        //         if (status === 'SUCCESS') {
+        //             // TODO: move ** into here
+        //         }
+        //         else {
+        //             alert('Your edits did not save. Please refresh & try again.');
+        //         }
+        //     }).catch((error) => {
+        //         alert(`Network Failure: ${error}`);
+        //     });
 
-        // send all fields of this new row
-        if (!response.ok) {
-            throw new Error("Did not save. Please refresh & try again");
-        }
-        const { status } = await response.json();
-
-        if (status === 'SUCCESS') {
-
-        }
-        // TODO
-        // else {
-        //     alert('Your edits did not save. Please refresh & try again.');
-        // }
-
-        }
+    }
 
 
     // delete button React component
-    deleteFormatter = (cell: any, row: any, rowIndex: number) => {
+    deleteFormatter = (cell: any, row: any) => {
         return (
-            <Button variant='link' className="delete-text" onClick = { (e) => this.handleDelete(e, cell, row, rowIndex) } >
+            <Button variant='link' className="delete-text" onClick = {(e) => this.handleTryDelete(e, row)} >
             <div className="row align-items-center">
                 <img className="px-1 delete-text" src={DeleteSVG}/>
-                <div>Delete</div> 
+                <div className="d-none d-sm-block">Delete</div> 
             </div>
             </Button>
         )
@@ -182,9 +259,9 @@ class Table extends React.Component<Props, State, {}> {
         } = this.props;
 
         const {
-            editRows,
+            showDeleteModal,
+            rowToDelete,
         } = this.state;
-
         // pagination option
         const paginationOption = {
             custom: true,
@@ -193,8 +270,8 @@ class Table extends React.Component<Props, State, {}> {
 
         // edit options
         const cellEdit = cellEditFactory({
-            mode: 'click',//ORIG TRUE
-            blurToSave: false,
+            mode: 'click',
+            blurToSave: true,
             nonEditableCols: () => Array.from(cantEditCols),
             autoSelectText: true,
         });
@@ -208,7 +285,6 @@ class Table extends React.Component<Props, State, {}> {
         }
 
         // add edit control for each column
-        // TODO are indices off??
         const columnsAll = columns.map((value, index) => {
             value.editable = isEditable;
             return value;
@@ -220,7 +296,7 @@ class Table extends React.Component<Props, State, {}> {
             dataField: 'edit',
             text: '',
             formatExtraData: this.state.editRows,
-            formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row} rowIndex={rowIndex}/>, //this.editFormatter(cell, row, rowIndex, formatExtraData),
+            formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row}/>, //this.editFormatter(cell, row, rowIndex, formatExtraData),
             editable: false,
             isDummyField: true,
         });
@@ -234,14 +310,7 @@ class Table extends React.Component<Props, State, {}> {
             isDummyField: true,
         });
     }
-    // if current row is on edit mode...
-    // this class is applied to each row! rowClasses
-    // column format:
-            //  list of objects, each object is dataField & text, along with sort T/F.
-            // other fields: editable (if editable**), isDummyField (if true), possible formatter
-    //  boostrap table receives data DATA:
-            // list of objects, where each object's keys is the dataFields above
-    // what is cell edit
+
         const rowClasses = (row, rowIndex) => {
             if (this.state.editRows.has(row.id)) {
                 return 'table-edit-row'; // you can define some custon class here for on edit styling
@@ -275,6 +344,7 @@ class Table extends React.Component<Props, State, {}> {
                         <PaginationListStandalone
                         {...paginationProps}
                         />
+                        {showDeleteModal ? <TModal row={rowToDelete} handleClickClose={this.handleClickClose} handleDelete={(e) => this.handleDelete(e, rowToDelete)} /> : null}
                     </div>
                     )
                 }

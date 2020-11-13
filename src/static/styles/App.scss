@@ -648,17 +648,17 @@ div.scrollbar {
 .table-edit-row {
     background-color: $primary-theme-light;
     font-family: 'Inter', sans-serif;
-    font-weight: 500;
+    font-weight: 400;
     color: $secondary-dark-theme;
 }
 
-.editCell {
-    color: $text-red;
-    background-color: $text-red
-}
-
-.editCell:hover {
-    background-color: darken($primary-theme-light, 80%);
+.editor-input {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 400 !important;
+    color: $secondary-dark-theme !important;
+    background-color: white !important;
 }
 
 @mixin table-mod-text($color) {
@@ -697,7 +697,3 @@ div.scrollbar {
     text-decoration: none;
     color: darken($text-red, 30%);
 }
-
-// .table-svg:hover {
-//     fill: blue;
-// }

@@ -108,8 +108,6 @@ const columns = [{
   dataField: 'price',
   text: 'Product Price',
   sort: true,
-  //classes: (cell, row, rowIndex, colIndex) => rowIndex==2 ? 'editCell' : '',
-  // hard coded, not sure how to fix
 }];
 const cantEdit = new Set([0]);
 
@@ -182,7 +180,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify={true} route={"/table"}/>}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify={true} modRoute={"/table"}/>}
               />
               <Route
                 exact
