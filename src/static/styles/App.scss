@@ -649,16 +649,27 @@ div.scrollbar {
     background-color: $primary-theme-light;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    color: $secondary-dark-theme;
+    //color: $secondary-dark-theme;
+}
+
+.table-zebra {
+    background: #F4F4F4;
+    //box-shadow: inset 0px -1px 0px #CECECE;
+}
+
+.table-zebra:hover,
+.table-row:hover {
+    background: $primary-theme-light !important;
 }
 
 .editor-input {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
-    text-align: center;
+    text-align: left;
     font-weight: 400 !important;
     color: $secondary-dark-theme !important;
     background-color: white !important;
+    margin: auto;
 }
 
 @mixin table-mod-text($color) {
@@ -697,3 +708,17 @@ div.scrollbar {
     text-decoration: none;
     color: darken($text-red, 30%);
 }
+
+// .react-bootstrap-table {
+//     display: block;
+//     width: 100%;
+//     overflow-x: auto;
+//     -webkit-overflow-scrolling: touch
+// }
+// .react-bootstrap-table table {
+//     table-layout: auto !important
+// }
+// .table th,
+// .table td {
+//     white-space: nowrap
+// }

@@ -37,9 +37,9 @@ function EditFormatter(props: FormatterProps): React.ReactElement {
     }
     
     return (
-        <Button variant='link' className={ editable ? "save-text" : "edit-text"} onClick={ (e) => editable ? handleSave(e) : handleEdit(e) }>
+        <Button variant='link' className={ editable ? "save-text table-button" : "edit-text table-button"} onClick={ (e) => editable ? handleSave(e) : handleEdit(e) }>
             <div className="row align-items-center">
-                <img className="px-1 save-text" src={editable ? SaveSVG : EditSVG}/>
+                <img className="px-1" src={editable ? SaveSVG : EditSVG}/>
                 <div className="d-none d-sm-block">{ editable ? 'Save' : 'Edit' }</div> 
             </div>
            
@@ -86,6 +86,7 @@ interface State {
     showDeleteModal: boolean,
     rowToDelete: any,
     columns: any[],
+    selectRows: Set<number>,
 }
 
 class Table extends React.Component<Props, State, {}> {
@@ -96,6 +97,13 @@ class Table extends React.Component<Props, State, {}> {
         columns.forEach(col => {
             col.formatter = this.InputFormatter;
             col.editorClasses = "editor-input";
+            col.style = (cell, row, rowIndex, colIndex) => {
+                const { editRows } = this.state;
+                return { "text-align": 'left',
+                          "padding-left": editRows.has(row.id) ? "1rem" : "2rem",
+                          "align-items": "center",
+                }
+            };
         });
         this.state = {
           editRows: new Set<number>(), // editRows represents the row IDs of rows currently being edited
@@ -103,6 +111,7 @@ class Table extends React.Component<Props, State, {}> {
           showDeleteModal: false,
           rowToDelete: null,
           columns: columns,
+          selectRows: new Set<number>(), //rowIDs of currently selected rows?
         }
         this.handleDelete = this.handleDelete.bind(this);
         this.handleTryDelete = this.handleTryDelete.bind(this);
@@ -242,9 +251,9 @@ class Table extends React.Component<Props, State, {}> {
     // delete button React component
     deleteFormatter = (cell: any, row: any) => {
         return (
-            <Button variant='link' className="delete-text" onClick = {(e) => this.handleTryDelete(e, row)} >
+            <Button variant='link' className="delete-text table-button" onClick = {(e) => this.handleTryDelete(e, row)} >
             <div className="row align-items-center">
-                <img className="px-1 delete-text" src={DeleteSVG}/>
+                <img className="px-1" src={DeleteSVG}/>
                 <div className="d-none d-sm-block">Delete</div> 
             </div>
             </Button>
@@ -297,6 +306,11 @@ class Table extends React.Component<Props, State, {}> {
             text: '',
             formatExtraData: this.state.editRows,
             formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row}/>, //this.editFormatter(cell, row, rowIndex, formatExtraData),
+            headerStyle: () => {
+                return { width: "10%",
+                        minWidth: "8rem"
+                };
+            },
             editable: false,
             isDummyField: true,
         });
@@ -306,15 +320,50 @@ class Table extends React.Component<Props, State, {}> {
             dataField: 'delete',
             text: '',
             formatter: this.deleteFormatter,
+            headerStyle: () => {
+                return { width: "10%",
+                        minWidth: "8rem"
+                };
+            },
             editable: false,
             isDummyField: true,
         });
-    }
-
-        const rowClasses = (row, rowIndex) => {
-            if (this.state.editRows.has(row.id)) {
-                return 'table-edit-row'; // you can define some custon class here for on edit styling
+        }
+        const selectRow = {
+            mode: 'checkbox',
+            clickToSelect: false,
+            bgColor: '#E8E9FF',
+            onSelect: (row, isSelect, rowIndex, e) => {
+                const { selectRows } = this.state;
+                if (selectRows.has(row.id))
+                    selectRows.delete(row.id);
+                else selectRows.add(row.id);
+                console.log("Selected: " + selectRows.forEach(x => {console.log(x)}));
+                this.setState({
+                    selectRows: selectRows,
+                });
+            },
+            onSelectAll: (isSelect, rows, e) => {
+            const { selectRows } = this.state;
+            if (selectRows.size !== 0)
+                selectRows.clear();
+            else
+                rows.forEach((row) => {selectRows.add(row.id)});
+            console.log("Select: " + selectRows.forEach(x => {console.log(x)}));
+            this.setState({
+                selectRows: selectRows,
+            });
             }
+        };
+        const rowClasses = (row, rowIndex) => {
+            const { editRows, data } = this.state;
+            var classes = 'table-row';
+            if (editRows.has(row.id)) {
+                classes += ' table-edit-row'; 
+            }
+            else if (data.length > 10 && rowIndex%2 === 0)
+                classes += ' table-zebra';
+                return classes;
         };
         
         return (
@@ -334,6 +383,7 @@ class Table extends React.Component<Props, State, {}> {
                             {...paginationTableProps}
                             cellEdit={ cellEdit }
                             rowClasses={ rowClasses }
+                            selectRow={ selectRow }
                         />
                         <SizePerPageDropdownStandalone
                         {...paginationProps}
