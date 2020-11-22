@@ -458,77 +458,82 @@ class ClientProfilePage extends Component<Props, State> {
           {username}
           &apos;s Profile
         </h1>
-        <div className="d-flex flex-row">
-          <div className="rounded w-50 h-75 px-5 container mr-4 text-dark" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-            <div className="container">
-              { photoAvailable === false
-                ? <Image src={DefaultProfilePhoto} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
-                  <div id="profilePhoto">
-                    <Image src={photo} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
+        <div className="row">
+          <div className="col-sm-6 col-12 h-75 text-dark">
+            <div className="rounded px-5" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
+              {/* <div className="rounded w-50 h-75 px-5 container mr-4 text-dark" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}> */}
+              <div className="container">
+                { photoAvailable === false
+                  ? <Image src={DefaultProfilePhoto} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
+                    <div id="profilePhoto">
+                      <Image src={photo} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
+                    </div>
+                  )}
+              </div>
+              <div>
+                <h3 className="font-weight-bold mt-3 text-center">
+                  {firstName}
+                  {' '}
+                  {lastName}
+                </h3>
+                <div className="row">
+                  <div className="col font-weight-bold">Username</div>
+                  <div className="col text-right">{username}</div>
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Password</div>
+                  <div className="col text-right">******</div>
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Birthdate</div>
+                  <div className="col text-right">{birthDate}</div>
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Phone No.</div>
+                  <div className="col text-right">{phone}</div>
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Email</div>
+                  <div className="col text-right">{email}</div>
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Address</div>
+                  <div className="col text-right">
+                    {address}
+                    {' '}
+                    {city}
+                    ,
+                    {' '}
+                    {state}
+                    {' '}
+                    {zipcode}
                   </div>
-                )}
-            </div>
-            <div>
-              <h3 className="font-weight-bold mt-3 text-center">
-                {firstName}
-                {' '}
-                {lastName}
-              </h3>
-              <div className="row">
-                <div className="col font-weight-bold">Username</div>
-                <div className="col text-right">{username}</div>
-              </div>
-              <div className="row">
-                <div className="col font-weight-bold">Password</div>
-                <div className="col text-right">******</div>
-              </div>
-              <div className="row">
-                <div className="col font-weight-bold">Birthdate</div>
-                <div className="col text-right">{birthDate}</div>
-              </div>
-              <div className="row">
-                <div className="col font-weight-bold">Phone No.</div>
-                <div className="col text-right">{phone}</div>
-              </div>
-              <div className="row">
-                <div className="col font-weight-bold">Email</div>
-                <div className="col text-right">{email}</div>
-              </div>
-              <div className="row">
-                <div className="col font-weight-bold">Address</div>
-                <div className="col text-right">
-                  {address}
-                  {' '}
-                  {city}
-                  ,
-                  {' '}
-                  {state}
-                  {' '}
-                  {zipcode}
+                </div>
+                <div className="row">
+                  <div className="col font-weight-bold">Organization</div>
+                  <div className="col text-right">{organization}</div>
                 </div>
               </div>
-              <div className="row">
-                <div className="col font-weight-bold">Organization</div>
-                <div className="col text-right">{organization}</div>
-              </div>
+              <button
+                type="button"
+                className="btn m-5 font-weight-bold"
+              // className="btn m-2 ml-4 font-weight-bold"
+                style={{
+                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                }}
+                data-toggle="modal"
+                data-target="#exampleModal"
+                onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
+              >
+                Edit Your Information
+              </button>
             </div>
-            <button
-              type="button"
-              className="btn m-2 ml-4 font-weight-bold"
-              style={{
-                color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
-              }}
-              data-toggle="modal"
-              data-target="#exampleModal"
-              onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
-            >
-              Edit Your Information
-            </button>
           </div>
-
-          <div className="d-flex flex-column w-50 h-75 text-dark">
+          <div className="col-sm-6 col-12 h-75 mt-2 mt-sm-0">
             <div className="rounded-top" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-              <h3 className="font-weight-bold mt-3 text-center">Recent Activity</h3>
+              {/* <div className="d-flex flex-column w-50 h-75 text-dark">
+            <div className="rounded-top" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}> */}
+              <h3 className="font-weight-bold mt-3 text-center text-dark">Recent Activity</h3>
             </div>
             <div
               className="rounded-bottom border-top-0 text-center container"
