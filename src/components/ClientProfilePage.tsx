@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
+// import Alert from 'react-bootstrap/Alert';
+import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
+import Cropper from 'react-easy-crop';
 import getServerURL from '../serverOverride';
 import DefaultProfilePhoto from '../static/images/Solid_grey.svg';
 
 interface Props{
   username:any,
+  alert:any,
 }
 
 interface State{
@@ -19,16 +23,34 @@ interface State{
   organization: string,
   phone: string,
   zipcode: string,
-  // showEditButton: boolean,
-  file:File | undefined,
-  response: boolean,
+  file:File | undefined | null | any,
+  // response: boolean,
   photoAvailable: boolean,
   photo: any,
+  crop: any,
+  zoom: number,
+  aspect: any,
+  showCropper: boolean,
+  fileSelected: any,
+  inputKey: any,
+  croppedAreaPixels: number,
+  loading: boolean,
 }
 
 class ClientProfilePage extends Component<Props, State> {
+  private hiddenFileInput: React.RefObject<HTMLInputElement>;
+
+  private controllerRef: React.MutableRefObject<AbortController | null>;
+  // abortController = new AbortController();
+  // signal = this.abortController.signal;
+
   constructor(props:Props) {
     super(props);
+    this.hiddenFileInput = React.createRef();
+    this.controllerRef = React.createRef();
+    // var controller = new AbortController();
+    // var signal = controller.signal;
+
     this.state = {
       firstName: '',
       lastName: '',
@@ -42,101 +64,41 @@ class ClientProfilePage extends Component<Props, State> {
       zipcode: '',
       activitiesArr: null,
       file: undefined,
-      response: false,
+      // response: false,
       photoAvailable: false,
       photo: null,
+      crop: { x: 0, y: 0 },
+      zoom: 1,
+      aspect: 1 / 1,
+      showCropper: false,
+      fileSelected: null,
+      inputKey: 0,
+      croppedAreaPixels: 0,
+      loading: false,
     };
+
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
     this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
-    // this.loadProfilePhoto = this.loadProfilePhoto.bind(this);
-    // this.renderClientInfo = this.renderClientInfo.bind(this);
-  }
-
-  fileSelectedHandler = (event:any) => {
-    this.setState({
-      file: event.target.files[0],
-    });
-  }
-
-  photoUploadHandler = () => {
-    const { file } = this.state;
-    const { username } = this.props;
-    const formData = new FormData();
-
-    if (file !== undefined) {
-      formData.append('file', file);
-      formData.append('username', username);
-    }
-
-    // to see contents use ....
-    // console.info(formData.getAll("file"));
-    // console.info(formData.getAll("username"));
-
-    fetch(`${getServerURL()}/upload-pfp`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
-        const { status } = responseObject;
-        // console.log(`upload pfp responseObject: ${responseObject}`);
-        if (status === 'SUCCESS') {
-          // console.log('loadProfilePhoto should start');
-          this.loadProfilePhoto();
-        }
-      });
-  }
-
-  loadProfilePhoto = () => {
-    // console.log('loadProfilePhoto started');
-    const { username } = this.props;
-
-    fetch(`${getServerURL()}/load-pfp`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username,
-      }),
-    }).then((response) => response.blob())
-      .then((data) => {
-        // console.log(data);
-        const url = URL.createObjectURL(data);
-        // console.log(url);
-        if (url) {
-          this.setState({
-            response: true,
-            photoAvailable: true,
-            photo: url,
-          });
-        }
-
-        // ATTEMPT #2
-        /* console.log(window.webkitURL.createObjectURL(data))
-        let reader = new FileReader();
-        let photoURL;
-        reader.readAsDataURL(data); // converts the blob to base64 and calls onload
-        reader.onload = function(e) {
-          if (e.target!=null){
-            let photoURL = e.target.result;
-            console.log(photoURL)
-          }
-          else{
-            console.log("it was null")
-          }
-        }
-
-        this.setState({
-            response:true,
-            photoAvailable: true,
-            photo:photoURL,
-        }) */
-      });
+    this.loadProfilePhoto = this.loadProfilePhoto.bind(this);
+    this.readFile = this.readFile.bind(this);
+    this.getCroppedImg = this.getCroppedImg.bind(this);
+    this.dataURItoBlob = this.dataURItoBlob.bind(this);
+    this.cropAndSave = this.cropAndSave.bind(this);
   }
 
   componentDidMount = () => {
+    if (this.controllerRef.current) {
+      this.controllerRef.current.abort();
+    }
+
     const { username } = this.props;
-    fetch(`${getServerURL()}/get-user-profile-info`, {
+    const abortController = new AbortController();
+    this.controllerRef.current = abortController;
+    const signal = this.controllerRef.current?.signal;
+    // const signal = abortController.signal;
+
+    fetch(`${getServerURL()}/get-user-info`, {
+      signal,
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -172,37 +134,186 @@ class ClientProfilePage extends Component<Props, State> {
           phone,
         });
       })
+      .then(() => this.loadProfilePhoto())
       .then(() => {
-        fetch(`${getServerURL()}/get-profile-activities`, {
+        fetch(`${getServerURL()}/get-all-activities`, {
+          signal,
           method: 'POST',
           credentials: 'include',
           body: JSON.stringify({ username }),
         }).then((response) => response.json())
           .then((responseJSON) => {
-            const responseObject = JSON.parse(responseJSON);
+            const responseObject = responseJSON;
+            const activitiesArr = responseObject.activities.allActivities;
             this.setState({
-              activitiesArr: responseObject.allActivities,
-              response: true,
+              activitiesArr,
+              // response: true,
             });
           });
+      });
+  }
+
+  componentWillUnmount = () => {
+    if (this.controllerRef.current) {
+      this.controllerRef.current.abort();
+    }
+  }
+
+  loadProfilePhoto = () => {
+    const { username } = this.props;
+    const signal = this.controllerRef.current?.signal;
+
+    fetch(`${getServerURL()}/load-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+      }),
+    }).then((response) => response.blob())
+      .then((blob) => {
+        const url = (URL || window.webkitURL).createObjectURL(blob);
+        if (url) {
+          this.setState({
+            photoAvailable: true,
+            photo: url,
+          });
+        }
+      });
+  }
+
+  fileSelectedHandler = async (event:any) => {
+    const file = event.target.files[0];
+    try {
+      const imageDataUrl = await this.readFile(file);
+      this.setState({
+        fileSelected: imageDataUrl,
+        showCropper: true,
+      });
+    } catch (e) {
+      const { alert } = this.props;
+      alert.show(`Trouble SelectingFile. Try Again or Report This Error To Keep.id: ${e}`);
+    }
+  }
+
+  readFile = (file) => new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(reader.result), false);
+    reader.readAsDataURL(file);
+  })
+
+  onZoomChange = (zoom) => {
+    this.setState({ zoom });
+  }
+
+  onCropChange = (crop) => {
+    this.setState({ crop });
+  }
+
+  onCropComplete = async (croppedArea, croppedAreaPixels) => {
+    this.setState({
+      croppedAreaPixels,
+    });
+  }
+
+  cropAndSave = async () => {
+    try {
+      const { fileSelected, croppedAreaPixels } = this.state;
+      const croppedImage = await this.getCroppedImg(fileSelected, croppedAreaPixels);
+      this.setState({
+        file: croppedImage,
+      }, () => {
+        this.photoUploadHandler();
+      });
+    } catch (e) {
+      const { alert } = this.props;
+      alert.show(`Could Not Crop Photo. Report This Error To Keep.id: ${e}`);
+    }
+  }
+
+  getCroppedImg = (imageSrc, pixelCrop) => {
+    const image = new (window as any).Image();
+    image.src = imageSrc;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const maxSize = Math.max(image.width, image.height);
+    const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
+
+    canvas.id = 'croppedPhoto';
+    canvas.width = safeArea;
+    canvas.height = safeArea;
+
+    if (ctx) {
+      ctx.drawImage(
+        image,
+        safeArea / 2 - image.width * 0.5,
+        safeArea / 2 - image.height * 0.5,
+      );
+
+      const data = ctx.getImageData(0, 0, safeArea, safeArea);
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
+
+      ctx.putImageData(
+        data,
+        Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
+        Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y),
+      );
+    }
+
+    const dataURL = canvas.toDataURL('image/jpg');
+    const file = this.dataURItoBlob(dataURL);
+    return file;
+  }
+
+  photoUploadHandler = () => {
+    const { file } = this.state;
+    const { username } = this.props;
+    const formData = new FormData();
+    const signal = this.controllerRef.current?.signal;
+
+    if (file !== undefined) {
+      formData.append('file', file);
+      formData.append('username', username);
+    }
+
+    // to see contents use ....
+    // console.info(formData.getAll("file"));
+
+    fetch(`${getServerURL()}/upload-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        try {
+          const responseObject = responseJSON;
+        } catch (e) {
+          const { alert } = this.props;
+          alert.show(`Could Not Upload Photo. Report This Error To Keep.id: ${e}`);
+        }
+        this.setState({ loading: false });
       })
-      .then(() => { this.loadProfilePhoto(); });
+      .then(() => this.loadProfilePhoto());
+  }
+
+  dataURItoBlob = (dataURI) => {
+    let byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0) byteString = atob(dataURI.split(',')[1]);
+    else byteString = unescape(dataURI.split(',')[1]);
+    // separate out the mime component
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    // write the bytes of the string to a typed array
+    const ia = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i += 1) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ia], { type: mimeString });
   }
 
   renderActivities = (activitiesArr) => {
-    /*
-    const { username } = this.props;
-    fetch(`${getServerURL()}/get-profile-activities`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({ username }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
-        this.setState({activitiesArr: responseObject.allActivities });
-      }); */
-
-    // const { activitiesArr } = this.state;
     if (activitiesArr.length === 0) {
       return (
         <div className="row w-125 p-2 text-dark">
@@ -239,7 +350,7 @@ class ClientProfilePage extends Component<Props, State> {
 
       return (
         <div
-          className="row w-125 p-2 text-dark" // key={activity.toString()}
+          className="row w-125 p-2 text-dark"
           key={Math.random()}
           style={{
             borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid', borderTop: 0, borderRight: 0, borderLeft: 0,
@@ -272,9 +383,15 @@ class ClientProfilePage extends Component<Props, State> {
       organization,
       phone,
       activitiesArr,
-      response,
       photoAvailable,
       photo,
+      showCropper,
+      fileSelected,
+      inputKey,
+      loading,
+      crop,
+      zoom,
+      aspect,
     } = this.state;
     const { username } = this.props;
 
@@ -283,10 +400,57 @@ class ClientProfilePage extends Component<Props, State> {
         <div className="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
-              <h5 className="modal-title" id="exampleModalLongTitle">Change Profile Photo</h5>
-              <input type="file" name="file" id="file" onChange={this.fileSelectedHandler} />
-              {/* <button type="button" onClick={this.photoUploadHandler}>Upload Photo</button> */}
-              <button type="submit" onClick={this.photoUploadHandler}>Upload Photo</button>
+              <h3 className="modal-title text-center mt-3 mb-2" id="ChangeProfilePhoto">Change Profile Photo</h3>
+              <button
+                type="button"
+                className="btn mb-2 mx-4 font-weight-bold"
+                style={{
+                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                }}
+                onClick={() => this.hiddenFileInput.current!.click()}
+              >
+                Select Photo
+              </button>
+              <input
+                style={{ display: 'none' }}
+                type="file"
+                key={inputKey}
+                ref={this.hiddenFileInput}
+                onChange={this.fileSelectedHandler}
+                accept=".jpg,.jpeg,.png"
+              />
+
+              { showCropper
+                  && (
+                  <div className="position-relative py-5 mx-2">
+                    <div className="crop-container py-5">
+                      <Cropper
+                        image={fileSelected}
+                        // image = {Melinda}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={aspect}
+                        onCropChange={this.onCropChange}
+                        onCropComplete={this.onCropComplete}
+                        onZoomChange={this.onZoomChange}
+                        cropShape="round"
+                        showGrid={false}
+                      />
+                    </div>
+                  </div>
+                  ) }
+
+              <button
+                className="btn mt-2 mb-3 mx-4 font-weight-bold ld-ext-right"
+                style={{
+                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                }}
+                type="submit"
+                onClick={() => { this.setState({ loading: true }, () => { this.cropAndSave(); }); }}
+              >
+                Set Profile Photo
+                {loading && (<div><div className="ld ld-ring ld-spin" /></div>)}
+              </button>
             </div>
           </div>
         </div>
@@ -297,20 +461,12 @@ class ClientProfilePage extends Component<Props, State> {
         <div className="d-flex flex-row">
           <div className="rounded w-50 h-75 px-5 container mr-4 text-dark" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
             <div className="container">
-              { response === false || photoAvailable === false
+              { photoAvailable === false
                 ? <Image src={DefaultProfilePhoto} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
-                  <div>
-                    {' '}
-                    <img src={photo} className="w-75 pt-2 mx-auto d-flex" alt="profile" />
-                    {' '}
+                  <div id="profilePhoto">
                     <Image src={photo} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
-                    {' '}
                   </div>
                 )}
-              {/* //attempt for edit icon
-              <Image src={CheckSVG} className="w-100 pt-2 mx-auto border position-relative" alt="search"
-                style={{ top: '0', left:'0', zIndex:1, height: '10rem' }} roundedCircle/>
-              */}
             </div>
             <div>
               <h3 className="font-weight-bold mt-3 text-center">
@@ -362,9 +518,9 @@ class ClientProfilePage extends Component<Props, State> {
               style={{
                 color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
               }}
-              // onClick={this.editInformation}
               data-toggle="modal"
               data-target="#exampleModal"
+              onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
             >
               Edit Your Information
             </button>
@@ -390,4 +546,4 @@ class ClientProfilePage extends Component<Props, State> {
   }
 }
 
-export default (ClientProfilePage);
+export default withAlert()(ClientProfilePage);

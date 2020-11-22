@@ -280,8 +280,11 @@ class MyOrganization extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const responseObject = responseJSON;
-        const { status } = responseObject;
+        const test = JSON.parse(responseObject);
+        const { status } = test;
+
         if (status === 'SUCCESS') {
+          console.log('it was a success');
           this.setState((prevState) => ({
             showPopUp: true,
             numInvitesSent: prevState.memberArr.length,
@@ -293,7 +296,7 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        alert.show(`Network Failure: ${error}`);
+        alert.show(`Network Failure: ${error} Logout and try again`);
         this.setState({ buttonLoadingState: false });
       });
   }
