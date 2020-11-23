@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import Geocode from 'react-geocode';
 import MapComponent from './MapComponent';
+import getServerURL from '../../serverOverride';
 
 interface Props {
   alert: any,
@@ -14,6 +16,11 @@ interface State {
 }
 
 const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
+
+Geocode.setApiKey(APIKey);
+Geocode.setLanguage('en');
+Geocode.setRegion('us');
+// Geocode.enableDebug();
 
 class FindOrganization extends Component<Props, State> {
   constructor(props: Props) {
@@ -35,17 +42,20 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getOrganizations() {
-    const organizations = [
-      {
-        orgName: 'Broad Street Ministries',
-        lat: 39.9460872,
-        lng: -75.1644793,
-        address: '315 S Broad St, Philadelphia, PA 19107',
-        phone: '',
-        email: '',
-      },
-    ];
-    this.setState({ organizations });
+    fetch(`${getServerURL()}/get-all-orgs `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        userTypes: [],
+        organizations: [],
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          organizations,
+        } = JSON.parse(responseJSON);
+        this.getOrganizationsLatLng(organizations);
+      });
   }
 
   onHandleChangeZipcode(event: any) {
@@ -55,6 +65,31 @@ class FindOrganization extends Component<Props, State> {
   onSubmitZipcode(event: any) {
     event.preventDefault();
     this.geocodeZipcode();
+  }
+
+  // gets latitude and longitute from address and updates the organization
+  getOrganizationsLatLng(organizations: Array<any>) {
+    const promises: any[] = [];
+    organizations.forEach((org) => {
+      const fullAddress = `${org.orgStreetAddress} ${org.orgCity} ${org.orgState}`;
+      promises.push(Geocode.fromAddress(fullAddress));
+      const formattedAddress = `${org.orgStreetAddress}, ${org.orgCity}, ${org.orgState} ${org.orgZipcode}`;
+      org.orgAddress = formattedAddress;
+    });
+
+    Promise.allSettled(promises)
+      .then((responses) => {
+        responses.map((response, index) => {
+          if (response.status === 'fulfilled') {
+            const { lat, lng } = response.value.results[0].geometry.location;
+            organizations[index].orgLat = lat;
+            organizations[index].orgLng = lng;
+          }
+        });
+        this.setState({
+          organizations,
+        });
+      });
   }
 
   geocodeZipcode() {

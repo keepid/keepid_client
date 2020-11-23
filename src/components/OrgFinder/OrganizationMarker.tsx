@@ -8,6 +8,7 @@ interface Props {
   address: string,
   phone: string,
   email: string,
+  website: string,
 }
 
 interface State {
@@ -38,6 +39,7 @@ class OrganizationMarker extends Component<Props, State> {
       address,
       phone,
       email,
+      website,
     } = this.props;
 
     const {
@@ -61,6 +63,7 @@ class OrganizationMarker extends Component<Props, State> {
                   <p>{address}</p>
                   <p>{phone}</p>
                   <p>{email}</p>
+                  <p>{website}</p>
                 </div>
               </InfoWindow>
               )}

@@ -33,12 +33,13 @@ class MapComponent extends Component<Props, State> {
           (organization, index) => (
             <OrganizationMarker
               key={uuid()}
-              lat={organization.lat}
-              lng={organization.lng}
+              lat={organization.orgLat}
+              lng={organization.orgLng}
               orgName={organization.orgName}
-              address={organization.address}
-              phone={organization.phone}
-              email={organization.email}
+              address={organization.orgAddress}
+              phone={organization.orgPhoneNumber}
+              email={organization.orgEmail}
+              website={organization.orgWebsite}
             />
           ),
         )}
