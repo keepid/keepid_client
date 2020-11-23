@@ -192,7 +192,8 @@ public class UserController {
   public Handler getUserInfo =
       ctx -> {
         logger.info("Started getUserInfo handler");
-        String username = ctx.sessionAttribute("username");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
         GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
         Message response = infoService.executeAndGetResponse();
         if (response != UserMessage.SUCCESS) { // if fail return
@@ -275,7 +276,7 @@ public class UserController {
 
   public Handler uploadPfp =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
+        String username = ctx.formParam("username");
         UploadedFile file = ctx.uploadedFile("file");
         logger.info(username + " is attempting to upload a profile picture");
         UploadPfpService serv = new UploadPfpService(db, logger, username, file);
@@ -285,7 +286,8 @@ public class UserController {
 
   public Handler loadPfp =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
         LoadPfpService lps = new LoadPfpService(db, logger, username);
         Message mes = lps.executeAndGetResponse();
         if (mes == UserMessage.SUCCESS) {
