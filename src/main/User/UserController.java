@@ -25,7 +25,7 @@ public class UserController {
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
     this.encryptionUtils = EncryptionUtils.getInstance();
-    //    this.issueController = new IssueController(db);
+    this.issueController = new IssueController(db);
     logger = (new LogFactory()).createLogger("UserController");
   }
 
@@ -280,7 +280,6 @@ public class UserController {
         logger.info(username + " is attempting to upload a profile picture");
         UploadPfpService serv = new UploadPfpService(db, logger, username, file);
         JSONObject res = serv.executeAndGetResponse().toJSON();
-        logger.info(username + " has successfully uploaded a profile picture");
         ctx.result(res.toString());
       };
 

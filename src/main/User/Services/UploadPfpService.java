@@ -48,6 +48,7 @@ public class UploadPfpService implements Service {
                     .append("upload_date", String.valueOf(LocalDate.now()))
                     .append("owner", username));
     gridBucket.uploadFromStream(fileName, content, options);
-    return UserMessage.SUCCESS.withMessage("Profile Picture Uploaded Successfully");
+    logger.info(username + " has successfully uploaded a profile picture with name  " + fileName);
+    return UserMessage.SUCCESS.withMessage("Profile Picture uploaded Successfully");
   }
 }

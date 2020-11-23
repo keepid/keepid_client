@@ -48,15 +48,43 @@ public class PfpTestIntegration {
   }
 
   public static void uploadTestPfp() {
-    File examplePDF = new File(currentPfpFolderPath + File.separator + "first-love.png");
-    HttpResponse<String> uploadResponse =
+    File PDF1 = new File(currentPfpFolderPath + File.separator + "1.png");
+    File PDF2 = new File(currentPfpFolderPath + File.separator + "2.png");
+    File PDF3 = new File(currentPfpFolderPath + File.separator + "3.png");
+    File PDF4 = new File(currentPfpFolderPath + File.separator + "4.png");
+    HttpResponse<String> upload1 =
         Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
             .header("Content-Disposition", "attachment")
-            .field("file", examplePDF)
+            .field("file", PDF1)
             .asString();
-    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(uploadResponse.getBody());
+    HttpResponse<String> upload2 =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", PDF2)
+            .asString();
+    HttpResponse<String> upload3 =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", PDF2)
+            .asString();
+    HttpResponse<String> upload4 =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", PDF1)
+            .asString();
+    HttpResponse<String> upload5 =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", PDF3)
+            .asString();
+    HttpResponse<String> upload6 =
+        Unirest.post(TestUtils.getServerUrl() + "/upload-pfp")
+            .header("Content-Disposition", "attachment")
+            .field("file", PDF4)
+            .asString();
+    JSONObject uploadResponseJSON = TestUtils.responseStringToJSON(upload6.getBody());
     assertThat(uploadResponseJSON.getString("status")).isEqualTo("SUCCESS");
-    HttpResponse<byte[]> get = Unirest.post(TestUtils.getServerUrl() + "/load-pfp").asBytes();
+    HttpResponse get = Unirest.post(TestUtils.getServerUrl() + "/load-pfp").asString();
     assert (get.isSuccess());
   }
 
