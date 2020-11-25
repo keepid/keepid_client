@@ -9,11 +9,7 @@ interface Props {
   lng: number,
 }
 
-interface State {
-
-}
-
-class MapComponent extends Component<Props, State> {
+class MapComponent extends Component<Props, {}> {
   render() {
     const {
       organizations,
@@ -30,7 +26,7 @@ class MapComponent extends Component<Props, State> {
         }}
       >
         {organizations.map(
-          (organization, index) => (
+          (organization) => (
             <OrganizationMarker
               key={uuid()}
               lat={organization.orgLat}
@@ -40,6 +36,7 @@ class MapComponent extends Component<Props, State> {
               phone={organization.orgPhoneNumber}
               email={organization.orgEmail}
               website={organization.orgWebsite}
+              showInfo={organization.showInfo}
             />
           ),
         )}

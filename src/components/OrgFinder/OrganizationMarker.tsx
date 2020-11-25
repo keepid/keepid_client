@@ -9,6 +9,7 @@ interface Props {
   phone: string,
   email: string,
   website: string,
+  showInfo: boolean,
 }
 
 interface State {
@@ -19,7 +20,7 @@ class OrganizationMarker extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      open: false,
+      open: props.showInfo,
     };
     this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
   }
