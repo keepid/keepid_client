@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import uuid from 'react-uuid';
 import OrganizationMarker from './OrganizationMarker';
@@ -9,42 +9,38 @@ interface Props {
   lng: number,
 }
 
-interface State {
+function MapComponent(props: Props): React.ReactElement {
+  const {
+    organizations,
+    lat,
+    lng,
+  } = props;
 
-}
-
-class MapComponent extends Component<Props, State> {
-  render() {
-    const {
-      organizations,
-      lat,
-      lng,
-    } = this.props;
-
-    return (
-      <GoogleMap
-        defaultZoom={12}
-        center={{
-          lat,
-          lng,
-        }}
-      >
-        {organizations.map(
-          (organization, index) => (
-            <OrganizationMarker
-              key={uuid()}
-              lat={organization.lat}
-              lng={organization.lng}
-              orgName={organization.orgName}
-              address={organization.address}
-              phone={organization.phone}
-              email={organization.email}
-            />
-          ),
-        )}
-      </GoogleMap>
-    );
-  }
+  return (
+    <GoogleMap
+      defaultZoom={12}
+      center={{
+        lat,
+        lng,
+      }}
+    >
+      {organizations.map(
+        (organization) => (
+          <OrganizationMarker
+            key={uuid()}
+            lat={organization.orgLat}
+            lng={organization.orgLng}
+            orgName={organization.orgName}
+            address={organization.orgAddress}
+            phone={organization.orgPhoneNumber}
+            email={organization.orgEmail}
+            website={organization.orgWebsite}
+            showInfo={organization.showInfo}
+          />
+        ),
+      )}
+    </GoogleMap>
+  );
 }
 
 export default withScriptjs(withGoogleMap(MapComponent));
