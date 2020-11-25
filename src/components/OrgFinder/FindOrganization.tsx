@@ -67,6 +67,23 @@ class FindOrganization extends Component<Props, State> {
     this.setState({ zipcodeSearch: event.target.value });
   }
 
+  // only show info for one org on card click or else the map view glitches
+  handleOrgCardClick(org: any, index: number) {
+    const {
+      organizationsWithinDistance,
+    } = this.state;
+    for (let i = 0; i < organizationsWithinDistance.length; i += 1) {
+      if (i === index) {
+        organizationsWithinDistance[i].showInfo = true;
+      } else {
+        organizationsWithinDistance[i].showInfo = false;
+      }
+    }
+    this.setState({
+      organizationsWithinDistance,
+    });
+  }
+
   onSubmitZipcode(event: any) {
     event.preventDefault();
     this.setState({
@@ -172,23 +189,6 @@ class FindOrganization extends Component<Props, State> {
           alert.show('Invalid zip code');
         }
       });
-  }
-
-  // only show info for one org on card click or else the map view glitches
-  handleOrgCardClick(org: any, index: number) {
-    const {
-      organizationsWithinDistance,
-    } = this.state;
-    for (let i = 0; i < organizationsWithinDistance.length; i += 1) {
-      if (i === index) {
-        organizationsWithinDistance[i].showInfo = true;
-      } else {
-        organizationsWithinDistance[i].showInfo = false;
-      }
-    }
-    this.setState({
-      organizationsWithinDistance,
-    });
   }
 
   render() {
