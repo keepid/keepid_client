@@ -232,6 +232,7 @@ class FindOrganization extends Component<Props, State> {
                   {distance}
                   {' '}
                   km of
+                  {' '}
                   {zipcodeSearch}
                 </span>
               </h5>
