@@ -499,7 +499,7 @@ class MyAccount extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           const loginHistory: any[] = [];
           for (let i = 0; i < responseObject.history.length; i += 1) {
-            let row = responseObject.history[i];
+            const row = responseObject.history[i];
             row.id = i;
             loginHistory.push(row);
           }
@@ -768,7 +768,7 @@ class MyAccount extends Component<Props, State, {}> {
                 <div className="input-group mb-3">
                   <input type="text" className="form-control form-purple" id="phoneNumber2" placeholder="(123)-456-7890" />
                   <div className="input-group-append">
-                    <button className="btn btn-primary btn-primary-theme rounded-right" type='button'>Submit</button>
+                    <button className="btn btn-primary btn-primary-theme rounded-right" type="button">Submit</button>
                   </div>
                 </div>
               </div>
