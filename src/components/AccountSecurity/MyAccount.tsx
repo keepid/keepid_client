@@ -6,8 +6,11 @@ import Button from 'react-bootstrap/Button';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import uuid from 'react-uuid';
+import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import USStates from '../../static/data/states_titlecase.json';
 import getServerURL from '../../serverOverride';
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 enum PasswordError {
   OldPasswordWrong = 1,
@@ -391,7 +394,30 @@ interface State {
 
   // 2FA variable
   twoFactorOn: boolean,
+
+  // login history
+  loginHistory: any[]
 }
+
+const loginHistoryCols = [{
+  dataField: 'date',
+  text: 'Date',
+  sort: true,
+}, {
+  dataField: 'IP',
+  text: 'IP',
+  sort: true,
+},
+{
+  dataField: 'device',
+  text: 'Device',
+  sort: true,
+},
+{
+  dataField: 'location',
+  text: 'Location',
+  sort: true,
+}];
 
 class MyAccount extends Component<Props, State, {}> {
   constructor(props: Props) {
@@ -422,6 +448,9 @@ class MyAccount extends Component<Props, State, {}> {
       buttonState: '',
       // 2FA variable
       twoFactorOn: true,
+
+      // login history
+      loginHistory: [],
     };
 
     this.handleEditPassword = this.handleEditPassword.bind(this);
@@ -455,6 +484,29 @@ class MyAccount extends Component<Props, State, {}> {
           twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
+      });
+
+    fetch(`${getServerURL()}/get-login-history`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = responseJSON;
+        const { status } = responseObject;
+        if (status === 'SUCCESS') {
+          const loginHistory: any[] = [];
+          for (let i = 0; i < responseObject.history.length; i += 1) {
+            let row = responseObject.history[i];
+            row.id = i;
+            loginHistory.push(row);
+          }
+          this.setState({
+            loginHistory,
+          });
+        }
       });
   }
 
@@ -590,6 +642,7 @@ class MyAccount extends Component<Props, State, {}> {
       newPasswordConfirm,
       passwordError,
       buttonState,
+      loginHistory,
     } = this.state;
 
     const {
@@ -697,40 +750,49 @@ class MyAccount extends Component<Props, State, {}> {
           </div>
         </div>
 
-        <div className="card mt-3 mb-3">
+        <div className="card mt-3 mb-3 pl-5 pr-5">
           <div className="card-body">
-            <h5 className="card-title pb-3">Two Factor Authentication</h5>
+            <div className="mb-3">
+              <h5 className="card-title float-left">Two-Factor Authentication</h5>
+            </div>
+            <br />
             <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Status:
-              </div>
-              <div className="input-group mb-3 col-6">
-                <label>
-                  <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
-                </label>
+              <div className="col-3 card-text mt-2 text-primary-theme">Status</div>
+              <div className="col-9 card-text">
+                <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
               </div>
             </div>
             <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Phone Number:
+              <div className="col-3 card-text mt-2 text-primary-theme">Phone Number</div>
+              <div className="col-9 card-text">
+                <div className="input-group mb-3">
+                  <input type="text" className="form-control form-purple" id="phoneNumber2" placeholder="(123)-456-7890" />
+                  <div className="input-group-append">
+                    <button className="btn btn-primary btn-primary-theme rounded-right" type='button'>Submit</button>
+                  </div>
+                </div>
               </div>
-              <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="phoneNumber2" placeholder="(123)-456-7890" />
-              </div>
-              <button type="button" className="btn btn-outline-success">Submit</button>
             </div>
           </div>
         </div>
+
         <div className="card mt-3 mb-3">
           <div className="card-body">
-            <h5 className="card-title pb-3">Login History</h5>
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Access Details:
-              </div>
-              <div className="col-9 card-text mt-2 text-success">
-                Some Date and Time here, Some Address here (make this a list)
-              </div>
+            <div className="mb-3">
+              <h5 className="card-title float-left">Login History</h5>
+            </div>
+            <br />
+            <div className="row m-3">
+              <BootstrapTable
+                keyField="id"
+                data={loginHistory}
+                columns={loginHistoryCols}
+                bootstrap4
+                hover
+                striped
+                noDataIndication="No login history"
+                pagination={paginationFactory()}
+              />
             </div>
           </div>
         </div>
