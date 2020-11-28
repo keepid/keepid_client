@@ -25,7 +25,8 @@ interface State {
   submitSuccessful: boolean,
   currentPage: number,
   numPages: number,
-  startDate: Date
+  startDate: Date,
+  formError: boolean,
 }
 
 // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
@@ -54,6 +55,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 0,
       numPages: 0,
       startDate: new Date(),
+      formError: false,
     };
     this.handleChangeFormValueTextField = this.handleChangeFormValueTextField.bind(this);
     this.handleChangeFormValueRadioButton = this.handleChangeFormValueRadioButton.bind(this);
@@ -78,13 +80,20 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { fields } = responseJSON;
-        this.setState({ formQuestions: fields });
-        fields.forEach((entry) => {
-          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-        });
-        this.setState({ formAnswers });
-      });
+        const { status } = responseJSON;
+        if ( status === "SUCCESS") {
+          const { fields } = responseJSON;
+          this.setState({ formQuestions: fields });
+          fields.forEach((entry) => {
+            formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+          });
+          this.setState({ formAnswers });
+        }  else {
+          this.setState({
+            formError: true,
+          })
+        }
+      });  
   }
 
   handleChangeFormValueTextField(event: any) {
@@ -201,6 +210,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       numPages,
       startDate,
+      formError
     } = this.state;
 
     if (submitSuccessful) {
@@ -436,12 +446,23 @@ class ApplicationForm extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
 
+        <div className='ml-5 mt-3'>
+          <Link to="/applications">
+            <button type="button" className="btn btn-primary">
+              Back
+            </button>
+          </Link>
+        </div>
+
         {bodyElement}
-        <Link to="/applications">
-          <button type="button" className="btn btn-outline-success">
-            Back
-          </button>
-        </Link>
+
+        { formError ? 
+          <div className='p-5'>
+            There was an error loading this form.
+          </div> 
+          : null
+        }
+
       </div>
     );
   }
