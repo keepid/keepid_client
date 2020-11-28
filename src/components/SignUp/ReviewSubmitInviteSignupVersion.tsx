@@ -43,10 +43,11 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
+    const { handleChangeRecaptcha } = this.props;
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       // @ts-ignore
       const token = await recaptchaRef.current.executeAsync();
-      this.props.handleChangeRecaptcha(token);
+      handleChangeRecaptcha(token);
     }
   }
 

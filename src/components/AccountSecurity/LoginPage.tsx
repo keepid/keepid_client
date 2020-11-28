@@ -320,7 +320,7 @@ class LoginPage extends Component<Props, State> {
                         />
                       </label>
 
-                      <div className="row pl-3 pt-3">
+                      <div className="row pt-3">
                         <div className="col-6 pl-0">
                           <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
                             Resend Code
@@ -336,7 +336,7 @@ class LoginPage extends Component<Props, State> {
                     </div>
                   )
                   : <div />}
-                <div className="row pl-3 pt-3">
+                <div className="row pt-3">
                   {(this.state.twoFactorState !== 'show')
                     ? (
                       <div className="pb-2">
@@ -353,29 +353,29 @@ class LoginPage extends Component<Props, State> {
                     )
                     : <div />}
                 </div>
-                <div className="row pl-3 pb-3">
+                <div className="row pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
                     <span className="">Forgot your password?</span>
                   </Link>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Don&apos;t have an account?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/find-organization">
                       <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
                     </Link>
                   </div>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Are you a nonprofit organization?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
                       <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>

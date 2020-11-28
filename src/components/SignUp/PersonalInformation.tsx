@@ -63,32 +63,6 @@ class PersonalInformation extends Component<Props, State, {}> {
     };
   }
 
-  colorToggle = (inputString: string): string => {
-    if (inputString === 'true') {
-      return 'is-valid';
-    } if (inputString === 'false') {
-      return 'is-invalid';
-    }
-    return '';
-  }
-
-  generalMessage = (inputString:string): ReactElement<{}> => {
-    if (inputString === 'true') {
-      return (
-        <div className="valid-feedback" />
-      );
-    } if (inputString === 'false') {
-      return (
-        <div className="invalid-feedback">
-          Invalid or Blank field.
-        </div>
-      );
-    }
-    return (
-      <div />
-    );
-  }
-
   validateFirstname = async ():Promise<void> => {
     const { firstname } = this.props;
     if (isValidFirstName(firstname)) {
@@ -171,22 +145,33 @@ class PersonalInformation extends Component<Props, State, {}> {
   }
 
   customOnChangeBirthDate = (e) => {
-    this.props.onChangeBirthDate(e, () => {
+    const { onChangeBirthDate } = this.props;
+    onChangeBirthDate(e, () => {
       this.validateBirthdate();
     });
   }
 
   handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
     e.preventDefault();
-    this.props.handlePrevious();
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
     e.preventDefault();
     await Promise.all([this.validateFirstname(), this.validateLastname(), this.validateEmail(), this.validateBirthdate(),
       this.validateAddress(), this.validateCity(), this.validateState(), this.validateZipcode(), this.validatePhonenumber()]);
+    const { alert, handleContinue } = this.props;
     const {
-      firstnameValidator, lastnameValidator, birthDateValidator, addressValidator, cityValidator, stateValidator, zipcodeValidator, phonenumberValidator, emailValidator,
+      firstnameValidator,
+      lastnameValidator,
+      birthDateValidator,
+      addressValidator,
+      cityValidator,
+      stateValidator,
+      zipcodeValidator,
+      phonenumberValidator,
+      emailValidator,
     } = this.state;
     if (firstnameValidator === 'true'
         && lastnameValidator === 'true'
@@ -197,14 +182,40 @@ class PersonalInformation extends Component<Props, State, {}> {
         && zipcodeValidator === 'true'
         && emailValidator === 'true'
         && phonenumberValidator === 'true') {
-      this.props.handleContinue();
+      handleContinue();
     } else {
-      this.props.alert.show('One or more fields are invalid');
+      alert.show('One or more fields are invalid');
     }
   }
 
   componentDidMount() {
     window.scrollTo(0, 0);
+  }
+
+  generalMessage = (inputString:string): ReactElement<{}> => {
+    if (inputString === 'true') {
+      return (
+        <div className="valid-feedback" />
+      );
+    } if (inputString === 'false') {
+      return (
+        <div className="invalid-feedback">
+          Invalid or Blank field.
+        </div>
+      );
+    }
+    return (
+      <div />
+    );
+  }
+
+  colorToggle = (inputString: string): string => {
+    if (inputString === 'true') {
+      return 'is-valid';
+    } if (inputString === 'false') {
+      return 'is-invalid';
+    }
+    return '';
   }
 
   render() {
@@ -253,7 +264,7 @@ class PersonalInformation extends Component<Props, State, {}> {
             </div>
             <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Name</label>
+                <label htmlFor="firstname" className="col-sm-3 col-form-label text-sm-right">Name</label>
                 <div className="col-sm-4 pb-2">
                   <label htmlFor="firstname" className="sr-only sr-only-focusable">First Name</label>
                   <input
@@ -294,7 +305,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Mailing Address</label>
+                <label htmlFor="address" className="col-sm-3 col-form-label text-sm-right">Mailing Address</label>
                 <div className="col-sm-9">
                   <label htmlFor="streetAddress" className="sr-only sr-only-focusable">Street Address</label>
                   <input
@@ -311,7 +322,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label invisible" />
+                <label htmlFor="city" className="col-sm-3 col-form-label invisible" />
                 <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input
