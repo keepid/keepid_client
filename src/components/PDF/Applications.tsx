@@ -42,13 +42,11 @@ class Applications extends Component<Props, State, {}> {
     </div>
   )
 
-  OverflowFormatter = (cell, row, rowIndex, formatExtraData) => {
-    return (
-      <div style={{overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
-        <small>{ cell }</small>
-      </div>
-    )
-  }
+  OverflowFormatter = (cell, row, rowIndex, formatExtraData) => (
+    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+      <small>{ cell }</small>
+    </div>
+  )
 
   tableCols = [{
     dataField: 'filename',

@@ -81,19 +81,19 @@ class ApplicationForm extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-        if ( status === "SUCCESS") {
+        if (status === 'SUCCESS') {
           const { fields } = responseJSON;
           this.setState({ formQuestions: fields });
           fields.forEach((entry) => {
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           });
           this.setState({ formAnswers });
-        }  else {
+        } else {
           this.setState({
             formError: true,
-          })
+          });
         }
-      });  
+      });
   }
 
   handleChangeFormValueTextField(event: any) {
@@ -210,7 +210,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       numPages,
       startDate,
-      formError
+      formError,
     } = this.state;
 
     if (submitSuccessful) {
@@ -273,8 +273,8 @@ class ApplicationForm extends Component<Props, State> {
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormQuestions}>
               {formQuestions.map(
-                (entry) => (
-                  <div className="my-5">
+                (entry, index) => (
+                  <div className="my-5" key={index}>
                     {
                       (() => {
                         if (entry.fieldType === 'TextField') {
@@ -307,7 +307,7 @@ class ApplicationForm extends Component<Props, State> {
                                 </label>
 
                                 {temp.map((value) => (
-                                  <div className="checkbox-option">
+                                  <div className="checkbox-option" key={value}>
                                     <div className="custom-control custom-checkbox mx-2">
                                       <input
                                         type="checkbox"
@@ -335,7 +335,7 @@ class ApplicationForm extends Component<Props, State> {
                               </label>
 
                               {temp.map((value) => (
-                                <div className="custom-control custom-radio">
+                                <div className="custom-control custom-radio" key={value}>
                                   <input
                                     type="radio"
                                     className="custom-control-input"
@@ -365,7 +365,7 @@ class ApplicationForm extends Component<Props, State> {
                               <select id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
                                 <option selected disabled value="">Please select your choice ...</option>
                                 {temp.map((value) => (
-                                  <option value={value}>{value}</option>
+                                  <option value={value} key={value}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -384,7 +384,7 @@ class ApplicationForm extends Component<Props, State> {
                               <select id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
                                 <option selected disabled value="">Please select your choice(s) ...</option>
                                 {temp.map((value) => (
-                                  <option value={value}>{value}</option>
+                                  <option value={value} key={value}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -446,7 +446,7 @@ class ApplicationForm extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
 
-        <div className='ml-5 mt-3'>
+        <div className="ml-5 mt-3">
           <Link to="/applications">
             <button type="button" className="btn btn-primary">
               Back
@@ -456,12 +456,13 @@ class ApplicationForm extends Component<Props, State> {
 
         {bodyElement}
 
-        { formError ? 
-          <div className='p-5'>
-            There was an error loading this form.
-          </div> 
-          : null
-        }
+        { formError
+          ? (
+            <div className="p-5">
+              There was an error loading this form.
+            </div>
+          )
+          : null}
 
       </div>
     );
