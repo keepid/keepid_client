@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
+import uuid from 'react-uuid';
 import getServerURL from '../../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../../static/PDFType';
@@ -273,8 +274,8 @@ class ApplicationForm extends Component<Props, State> {
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormQuestions}>
               {formQuestions.map(
-                (entry, index) => (
-                  <div className="my-5" key={index}>
+                (entry) => (
+                  <div className="my-5" key={uuid()}>
                     {
                       (() => {
                         if (entry.fieldType === 'TextField') {
