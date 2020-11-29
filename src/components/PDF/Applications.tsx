@@ -4,7 +4,6 @@ import { Switch, Route, Link } from 'react-router-dom';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import Select from 'react-select';
 import ApplicationForm from './ApplicationForm';
 import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
@@ -19,7 +18,7 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
-  documents: any,
+  documents: any[],
   currentUser: any,
   currentPage: number,
   itemsPerPageSelected: any,
@@ -43,19 +42,31 @@ class Applications extends Component<Props, State, {}> {
     </div>
   )
 
+  OverflowFormatter = (cell, row, rowIndex, formatExtraData) => (
+    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+      <small>{ cell }</small>
+    </div>
+  )
+
   tableCols = [{
     dataField: 'filename',
     text: 'Application Name',
     sort: true,
+    formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
   }, {
-    dataField: 'category',
-    text: 'Category',
+    dataField: 'organizationName',
+    text: 'Organization',
     sort: true,
   }, {
-    dataField: 'status',
-    text: 'Application Status',
+    dataField: 'uploadDate',
+    text: 'Upload Date',
     sort: true,
   }, {
+    dataField: 'uploader',
+    text: 'Uploader',
+    sort: true,
+  }, {
+    dataField: 'actions',
     text: 'Actions',
     formatter: this.ButtonFormatter,
   }];
@@ -83,12 +94,19 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          documents,
-        } = responseJSON;
-        this.setState({
-          documents,
-        });
+        const responseObject = responseJSON;
+        const { status } = responseObject;
+        if (status === 'SUCCESS') {
+          const documents: any[] = [];
+          for (let i = 0; i < responseObject.documents.length; i += 1) {
+            const row = responseObject.documents[i];
+            row.index = i;
+            documents.push(row);
+          }
+          this.setState({
+            documents,
+          });
+        }
       });
   }
 
@@ -174,33 +192,6 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              {/* <form className="form-inline my-2 my-lg-0">
-                <input
-                  className="form-control mr-sm-2 w-50"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  onChange={this.handleChangeSearchName}
-                />
-              </form> */}
-              <div className="row ml-1 mt-2 mb-2">
-                {numElements === 0 ? <div /> : tablePageSelector }
-                {numElements === 0 ? <div />
-                  : (
-                    <div className="w-25">
-                      <div className="card card-body mt-0 mb-4 border-0 p-0">
-                        <h5 className="card-text h6"># Items per page</h5>
-                        <Select
-                          options={listOptions}
-                          autoFocus
-                          closeMenuOnSelect={false}
-                          onChange={this.handleChangeItemsPerPage}
-                          value={itemsPerPageSelected}
-                        />
-                      </div>
-                    </div>
-                  )}
-              </div>
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
                 <div className="w-100 pd-3">
                   <BootstrapTable
