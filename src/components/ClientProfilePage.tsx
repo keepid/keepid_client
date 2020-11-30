@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-// import Alert from 'react-bootstrap/Alert';
 import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
@@ -12,7 +11,7 @@ interface Props{
 }
 
 interface State{
-  activitiesArr: any,
+  activitiesArr: Array<any>| null,
   firstName: string,
   lastName: string,
   birthDate: string,
@@ -24,7 +23,6 @@ interface State{
   phone: string,
   zipcode: string,
   file:File | undefined | null | any,
-  // response: boolean,
   photoAvailable: boolean,
   photo: any,
   crop: any,
@@ -35,21 +33,18 @@ interface State{
   inputKey: any,
   croppedAreaPixels: number,
   loading: boolean,
+  fileName: string,
 }
 
 class ClientProfilePage extends Component<Props, State> {
   private hiddenFileInput: React.RefObject<HTMLInputElement>;
 
   private controllerRef: React.MutableRefObject<AbortController | null>;
-  // abortController = new AbortController();
-  // signal = this.abortController.signal;
 
   constructor(props:Props) {
     super(props);
     this.hiddenFileInput = React.createRef();
     this.controllerRef = React.createRef();
-    // var controller = new AbortController();
-    // var signal = controller.signal;
 
     this.state = {
       firstName: '',
@@ -64,7 +59,6 @@ class ClientProfilePage extends Component<Props, State> {
       zipcode: '',
       activitiesArr: null,
       file: undefined,
-      // response: false,
       photoAvailable: false,
       photo: null,
       crop: { x: 0, y: 0 },
@@ -75,6 +69,7 @@ class ClientProfilePage extends Component<Props, State> {
       inputKey: 0,
       croppedAreaPixels: 0,
       loading: false,
+      fileName: '',
     };
 
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
@@ -84,9 +79,10 @@ class ClientProfilePage extends Component<Props, State> {
     this.getCroppedImg = this.getCroppedImg.bind(this);
     this.dataURItoBlob = this.dataURItoBlob.bind(this);
     this.cropAndSave = this.cropAndSave.bind(this);
+    this.renderActivities = this.renderActivities.bind(this);
   }
 
-  componentDidMount = () => {
+  componentDidMount = ():void => {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
@@ -95,7 +91,6 @@ class ClientProfilePage extends Component<Props, State> {
     const abortController = new AbortController();
     this.controllerRef.current = abortController;
     const signal = this.controllerRef.current?.signal;
-    // const signal = abortController.signal;
 
     fetch(`${getServerURL()}/get-user-info`, {
       signal,
@@ -118,7 +113,6 @@ class ClientProfilePage extends Component<Props, State> {
           email,
           organization,
           phone,
-          // status,
         } = responseObject;
 
         this.setState({
@@ -147,19 +141,23 @@ class ClientProfilePage extends Component<Props, State> {
             const activitiesArr = responseObject.activities.allActivities;
             this.setState({
               activitiesArr,
-              // response: true,
             });
+          }).catch((error) => {
+            if (error.toString() !== 'AbortError: The user aborted a request.') {
+              const { alert } = this.props;
+              alert.show(`Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`);
+            }
           });
       });
   }
 
-  componentWillUnmount = () => {
+  componentWillUnmount = ():void => {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
   }
 
-  loadProfilePhoto = () => {
+  loadProfilePhoto = ():void => {
     const { username } = this.props;
     const signal = this.controllerRef.current?.signal;
 
@@ -172,51 +170,62 @@ class ClientProfilePage extends Component<Props, State> {
       }),
     }).then((response) => response.blob())
       .then((blob) => {
-        const url = (URL || window.webkitURL).createObjectURL(blob);
-        if (url) {
-          this.setState({
-            photoAvailable: true,
-            photo: url,
-          });
+        const { size } = blob;
+        if (size > 0) {
+          const url = (URL || window.webkitURL).createObjectURL(blob);
+          if (url) {
+            this.setState({
+              photoAvailable: true,
+              photo: url,
+            });
+          }
+        }
+      }).catch((error) => {
+        if (error.toString() !== 'AbortError: The user aborted a request.') {
+          const { alert } = this.props;
+          alert.show(`Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`);
         }
       });
   }
 
-  fileSelectedHandler = async (event:any) => {
-    const file = event.target.files[0];
+  fileSelectedHandler = async (event: React.ChangeEvent<HTMLInputElement>):Promise<any> => {
     try {
-      const imageDataUrl = await this.readFile(file);
-      this.setState({
-        fileSelected: imageDataUrl,
-        showCropper: true,
-      });
+      if (event.target.files != null) {
+        const file = event.target.files[0];
+        const imageDataUrl = await this.readFile(file);
+        this.setState({
+          fileName: file.name,
+          fileSelected: imageDataUrl,
+          showCropper: true,
+        });
+      }
     } catch (e) {
       const { alert } = this.props;
-      alert.show(`Trouble SelectingFile. Try Again or Report This Error To Keep.id: ${e}`);
+      alert.show(`Trouble Selecting File. Try Again or Report This Error To Keep.id: ${e}`);
     }
   }
 
-  readFile = (file) => new Promise((resolve) => {
+  readFile = (file:File) => new Promise((resolve) => {
     const reader = new FileReader();
     reader.addEventListener('load', () => resolve(reader.result), false);
     reader.readAsDataURL(file);
   })
 
-  onZoomChange = (zoom) => {
+  onZoomChange = (zoom:number):void => {
     this.setState({ zoom });
   }
 
-  onCropChange = (crop) => {
+  onCropChange = (crop:any):void => {
     this.setState({ crop });
   }
 
-  onCropComplete = async (croppedArea, croppedAreaPixels) => {
+  onCropComplete = (croppedArea:any, croppedAreaPixels:any):void => {
     this.setState({
       croppedAreaPixels,
     });
   }
 
-  cropAndSave = async () => {
+  cropAndSave = async ():Promise<any> => {
     try {
       const { fileSelected, croppedAreaPixels } = this.state;
       const croppedImage = await this.getCroppedImg(fileSelected, croppedAreaPixels);
@@ -231,7 +240,7 @@ class ClientProfilePage extends Component<Props, State> {
     }
   }
 
-  getCroppedImg = (imageSrc, pixelCrop) => {
+  getCroppedImg = (imageSrc:any, pixelCrop:any):Blob => {
     const image = new (window as any).Image();
     image.src = imageSrc;
 
@@ -267,39 +276,7 @@ class ClientProfilePage extends Component<Props, State> {
     return file;
   }
 
-  photoUploadHandler = () => {
-    const { file } = this.state;
-    const { username } = this.props;
-    const formData = new FormData();
-    const signal = this.controllerRef.current?.signal;
-
-    if (file !== undefined) {
-      formData.append('file', file);
-      formData.append('username', username);
-    }
-
-    // to see contents use ....
-    // console.info(formData.getAll("file"));
-
-    fetch(`${getServerURL()}/upload-pfp`, {
-      signal,
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        try {
-          const responseObject = responseJSON;
-        } catch (e) {
-          const { alert } = this.props;
-          alert.show(`Could Not Upload Photo. Report This Error To Keep.id: ${e}`);
-        }
-        this.setState({ loading: false });
-      })
-      .then(() => this.loadProfilePhoto());
-  }
-
-  dataURItoBlob = (dataURI) => {
+  dataURItoBlob = (dataURI:any):Blob => {
     let byteString;
     if (dataURI.split(',')[0].indexOf('base64') >= 0) byteString = atob(dataURI.split(',')[1]);
     else byteString = unescape(dataURI.split(',')[1]);
@@ -313,7 +290,40 @@ class ClientProfilePage extends Component<Props, State> {
     return new Blob([ia], { type: mimeString });
   }
 
-  renderActivities = (activitiesArr) => {
+  photoUploadHandler = ():void => {
+    const { file, fileName } = this.state;
+    const { username } = this.props;
+    const formData = new FormData();
+    const signal = this.controllerRef.current?.signal;
+
+    if (file !== undefined) {
+      formData.append('file', file);
+      formData.append('username', username);
+      formData.append('fileName', fileName);
+    }
+
+    // to see contents use ....
+    // console.info(formData.getAll("file"));
+
+    fetch(`${getServerURL()}/upload-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const { status } = responseJSON;
+        if (status.toString() === 'SUCCESS') {
+          this.loadProfilePhoto();
+        }
+        this.setState({ loading: false });
+      }).catch((error) => {
+        const { alert } = this.props;
+        alert.show(`Could Not Upload Photo. Report This Error To Keep.id: ${error}`);
+      });
+  }
+
+  renderActivities = (activitiesArr:Array<any>):JSX.Element[]|JSX.Element => {
     if (activitiesArr.length === 0) {
       return (
         <div className="row w-125 p-2 text-dark">
@@ -416,7 +426,7 @@ class ClientProfilePage extends Component<Props, State> {
                 type="file"
                 key={inputKey}
                 ref={this.hiddenFileInput}
-                onChange={this.fileSelectedHandler}
+                onChange={(e) => this.fileSelectedHandler(e)}
                 accept=".jpg,.jpeg,.png"
               />
 
@@ -426,7 +436,6 @@ class ClientProfilePage extends Component<Props, State> {
                     <div className="crop-container py-5">
                       <Cropper
                         image={fileSelected}
-                        // image = {Melinda}
                         crop={crop}
                         zoom={zoom}
                         aspect={aspect}
@@ -459,14 +468,13 @@ class ClientProfilePage extends Component<Props, State> {
           &apos;s Profile
         </h1>
         <div className="row">
-          <div className="col-sm-6 col-12 h-75 text-dark">
+          <div className="col-md-6 col-12 h-75 text-dark">
             <div className="rounded px-5" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-              {/* <div className="rounded w-50 h-75 px-5 container mr-4 text-dark" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}> */}
               <div className="container">
                 { photoAvailable === false
-                  ? <Image src={DefaultProfilePhoto} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
+                  ? <Image src={DefaultProfilePhoto} className="w-50 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
                     <div id="profilePhoto">
-                      <Image src={photo} className="w-75 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
+                      <Image src={photo} className="w-50 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
                     </div>
                   )}
               </div>
@@ -517,7 +525,6 @@ class ClientProfilePage extends Component<Props, State> {
               <button
                 type="button"
                 className="btn m-5 font-weight-bold"
-              // className="btn m-2 ml-4 font-weight-bold"
                 style={{
                   color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
                 }}
@@ -529,16 +536,14 @@ class ClientProfilePage extends Component<Props, State> {
               </button>
             </div>
           </div>
-          <div className="col-sm-6 col-12 h-75 mt-2 mt-sm-0">
+          <div className="col-md-6 col-12 h-75 mt-2 mt-md-0">
             <div className="rounded-top" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-              {/* <div className="d-flex flex-column w-50 h-75 text-dark">
-            <div className="rounded-top" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}> */}
               <h3 className="font-weight-bold mt-3 text-center text-dark">Recent Activity</h3>
             </div>
             <div
               className="rounded-bottom border-top-0 text-center container"
               style={{
-                borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid', borderTop: 0,
+                borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid', borderTop: 0, maxHeight: '33rem', overflow: 'scroll',
               }}
             >
               { activitiesArr === null ? <div className="row w-125 p-2 text-dark"> Loading ... </div> : this.renderActivities(activitiesArr)}
