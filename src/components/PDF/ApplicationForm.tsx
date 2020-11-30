@@ -41,6 +41,8 @@ function dataURLtoBlob(dataurl) {
   return new Blob([u8arr], { type: 'image/png' });
 }
 
+const MAX_Q_PER_PAGE = 10;
+
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
 
@@ -52,8 +54,8 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication: undefined,
       buttonState: '',
       submitSuccessful: false,
-      currentPage: 0,
-      numPages: 0,
+      currentPage: 1,
+      numPages: 1,
       startDate: new Date(),
       formError: false,
     };
@@ -83,7 +85,10 @@ class ApplicationForm extends Component<Props, State> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const { fields } = responseJSON;
-          this.setState({ formQuestions: fields });
+          this.setState({ formQuestions: fields,
+                          numPages:
+                          (fields.length === 0) ? 1 : Math.ceil(fields.length/MAX_Q_PER_PAGE),
+                        });
           fields.forEach((entry) => {
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           });
@@ -94,6 +99,16 @@ class ApplicationForm extends Component<Props, State> {
           });
         }
       });
+  }
+
+  handleContinue = (e:any):void => {
+    e.preventDefault();
+    this.setState((prevState) => ({ currentPage: prevState.currentPage + 1 }), () => window.scrollTo(0, 0));
+  };
+
+  handlePrevious = (e:any): void => {
+    e.preventDefault();
+    this.setState((prevState) => ({ currentPage: prevState.currentPage - 1 }));
   }
 
   handleChangeFormValueTextField(event: any) {
@@ -172,6 +187,9 @@ class ApplicationForm extends Component<Props, State> {
     const {
       pdfApplication,
     } = this.state;
+    const {
+      alert
+    } = this.props;
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
@@ -186,7 +204,7 @@ class ApplicationForm extends Component<Props, State> {
       }).then((response) => (response.json()))
         .then((responseJSON) => {
           this.setState({ submitSuccessful: true });
-          this.props.alert.show('Successfully Submitted Application');
+          alert.show('Successfully Submitted Application');
         });
     }
   }
@@ -196,7 +214,10 @@ class ApplicationForm extends Component<Props, State> {
     const total = (formQuestions) ? formQuestions.length : 0;
     let answered = 0;
     Object.keys(formAnswers).forEach((questionId) => {
-      if (formAnswers[questionId]) answered += 1;
+      const ans = formAnswers[questionId];
+      if (ans && ans !== 'Off' && ans !== 'false')  {
+        answered += 1;
+      }
     });
     return (total === 0) ? 100 : Math.round((answered / total) * 100);
   }
@@ -219,7 +240,9 @@ class ApplicationForm extends Component<Props, State> {
 
     let bodyElement;
     const fillAmt = this.progressBarFill();
+    const qStartNum = (currentPage-1) * MAX_Q_PER_PAGE;
     if (pdfApplication) {
+      console.log('PDF APPLICATION!!!!');
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
@@ -238,7 +261,7 @@ class ApplicationForm extends Component<Props, State> {
               <div className="pt-5 pb-3">I agree to all terms and conditions in the agreement above.</div>
               <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
               <div className="d-flex text-center my-5">
-                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
+                {(currentPage === 1) ? null : <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>}
                 <span>
                   <p>
                     <b>
@@ -252,7 +275,7 @@ class ApplicationForm extends Component<Props, State> {
                     </b>
                   </p>
                 </span>
-                <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitPdfApplication}>Submit</button>
+                <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitPdfApplication}>Submit PDF</button>
               </div>
             </div>
           </div>
@@ -272,8 +295,13 @@ class ApplicationForm extends Component<Props, State> {
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormQuestions}>
+              
               {formQuestions.map(
-                (entry, index) => (
+                (entry, index) => {
+                  if (index < qStartNum || index >= qStartNum+MAX_Q_PER_PAGE) return null;
+                  const currValue = formAnswers[entry.fieldName];
+                  
+                  return (
                   <div className="my-5" key={index}>
                     {
                       (() => {
@@ -290,6 +318,7 @@ class ApplicationForm extends Component<Props, State> {
                                 placeholder={entry.fieldName}
                                 onChange={this.handleChangeFormValueTextField}
                                 required
+                                value={currValue || ''}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
@@ -355,6 +384,8 @@ class ApplicationForm extends Component<Props, State> {
 
                         if (entry.fieldType === 'ComboBox') {
                           const temp = entry.fieldValueOptions;
+                          const ans = formAnswers[entry.fieldName];
+                          const selectedVal = (!ans || ans === 'Off' || ans === 'false') ? 'defaultValue' : formAnswers[entry.fieldName];
                           return (
                             <div className="dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -362,8 +393,8 @@ class ApplicationForm extends Component<Props, State> {
                                 <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
-                                <option selected disabled value="">Please select your choice ...</option>
+                              <select defaultValue={selectedVal} id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
+                                <option disabled value='defaultValue'>Please select your choice ...</option>
                                 {temp.map((value) => (
                                   <option value={value} key={value}>{value}</option>
                                 ))}
@@ -374,6 +405,8 @@ class ApplicationForm extends Component<Props, State> {
 
                         if (entry.fieldType === 'ListBox') {
                           const temp = entry.fieldValueOptions;
+                          const ans = formAnswers[entry.fieldName];
+                          const selectedVals = ans || ['defaultValue'];
                           return (
                             <div className="multiple-dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -381,8 +414,8 @@ class ApplicationForm extends Component<Props, State> {
                                 <small className="form-text text-muted mt-1">Please complete this field.</small>
                               </label>
 
-                              <select id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
-                                <option selected disabled value="">Please select your choice(s) ...</option>
+                              <select value={selectedVals} id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
+                                <option disabled value="defaultValue">Please select your choice(s) ...</option>
                                 {temp.map((value) => (
                                   <option value={value} key={value}>{value}</option>
                                 ))}
@@ -400,6 +433,7 @@ class ApplicationForm extends Component<Props, State> {
                                 selected={startDate}
                                 onChange={this.handleChangeDate}
                                 className="form-control form-purple mt-1"
+                                value={currValue}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
@@ -409,14 +443,14 @@ class ApplicationForm extends Component<Props, State> {
                       })()
                     }
                   </div>
-                ),
+                )},
               )}
-              <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
+              {/* <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
                 Submit Form Answers
                 <div className="ld ld-ring ld-spin" />
-              </button>
+              </button> */}
               <div className="d-flex text-center my-5">
-                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
+              {(currentPage === 1) ? <div /> : <button type="button" className="btn btn-outline-primary mr-auto" onClick={this.handlePrevious}>Previous</button>}
                 <span>
                   <p>
                     <b>
@@ -430,7 +464,11 @@ class ApplicationForm extends Component<Props, State> {
                     </b>
                   </p>
                 </span>
-                <button type="submit" className="ml-auto btn btn-primary ml-auto">Continue</button>
+                
+                { (currentPage !== numPages)
+                  ? <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.handleContinue}>Continue</button>
+                  : <button type="submit" disabled={fillAmt !== 100} className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitFormQuestions}>Submit</button>
+                }
               </div>
             </form>
           </div>
