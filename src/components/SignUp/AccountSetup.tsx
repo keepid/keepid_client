@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import Role from '../../static/Role';
 import { isValidUsername, isValidPassword } from '../../lib/Validations/Validations';
+import getServerURL from '../../serverOverride';
 
 interface Props {
   username: string,
@@ -48,7 +49,20 @@ class AccountSetup extends Component<Props, State, {}> {
   validateUsername = async ():Promise<void> => {
     const { username } = this.props;
     // ( if username is valid here and if username is taken)
-    if (isValidUsername(username)) {
+    const notTaken: boolean = await fetch(`${getServerURL()}/username-exists`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+        } = responseJSON;
+        return (status === 'SUCCESS');
+      });
+    if (isValidUsername(username) && notTaken) {
       await new Promise((resolve) => this.setState({ usernameValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ usernameValidator: 'false' }, resolve));
@@ -56,13 +70,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   usernameMessage = (): ReactElement<{}> => {
-    if (this.state.usernameValidator === 'true') {
+    const { usernameValidator } = this.state;
+    if (usernameValidator === 'true') {
       return (
         <div className="valid-feedback">
           This username is available.
         </div>
       );
-    } if (this.state.usernameValidator === 'false') {
+    } if (usernameValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Invalid or taken username.
@@ -70,7 +85,7 @@ class AccountSetup extends Component<Props, State, {}> {
       );
     }
     return (
-      <div />
+      <div className="mb-2" />
     );
   }
 
@@ -85,13 +100,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   passwordMessage = (): ReactElement<{}> => {
-    if (this.state.passwordValidator === 'true') {
+    const { passwordValidator } = this.state;
+    if (passwordValidator === 'true') {
       return (
         <div className="valid-feedback">
           Password looks great!
         </div>
       );
-    } if (this.state.passwordValidator === 'false') {
+    } if (passwordValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Password must be at least 8 characters long.
@@ -99,14 +115,14 @@ class AccountSetup extends Component<Props, State, {}> {
       );
     }
     return (
-      <small id="emailHelp" className="form-text text-muted mt-1">Password must be at least 8 characters long.</small>
+      <small id="emailHelp" className="form-text text-muted">Password must be at least 8 characters long.</small>
     );
   }
 
   validateConfirmPassword = async (): Promise<void> => {
-    const { confirmPassword } = this.props;
+    const { confirmPassword, password } = this.props;
     // ( if confirmed password is valid here)
-    if (confirmPassword === this.props.password) {
+    if (confirmPassword === password) {
       await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ confirmPasswordValidator: 'false' }, resolve));
@@ -114,13 +130,14 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   confirmPasswordMessage = (): ReactElement<{}> => {
-    if (this.state.confirmPasswordValidator === 'true') {
+    const { confirmPasswordValidator } = this.state;
+    if (confirmPasswordValidator === 'true') {
       return (
         <div className="valid-feedback">
           Passwords match.
         </div>
       );
-    } if (this.state.confirmPasswordValidator === 'false') {
+    } if (confirmPasswordValidator === 'false') {
       return (
         <div className="invalid-feedback">
           Passwords do not match.
@@ -133,7 +150,8 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   returnAccountMessage = () => {
-    switch (this.props.role) {
+    const { role } = this.props;
+    switch (role) {
       case Role.Admin: {
         return (
           <div>
@@ -148,7 +166,7 @@ class AccountSetup extends Component<Props, State, {}> {
       case Role.Director: case Role.Worker: case Role.Volunteer: {
         return (
           <div>
-            {`${this.props.role}s`}
+            {`${role}s`}
             can set up
             <br />
             {' '}
@@ -164,13 +182,23 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
+    const {
+      alert,
+      handleContinue,
+    } = this.props;
+    const {
+      usernameValidator,
+      passwordValidator,
+      confirmPasswordValidator,
+    } = this.state;
+    e.preventDefault();
     await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
-    if (this.state.usernameValidator === 'true'
-        && this.state.passwordValidator === 'true'
-        && this.state.confirmPasswordValidator === 'true') {
-      this.props.handleContinue();
+    if (usernameValidator === 'true'
+        && passwordValidator === 'true'
+        && confirmPasswordValidator === 'true') {
+      handleContinue();
     } else {
-      this.props.alert.show('One or more fields are invalid');
+      alert.show('One or more fields are invalid');
     }
   }
 
@@ -183,6 +211,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const {
       username,
       password,
+      role,
       confirmPassword,
       onChangeUsername,
       onChangePassword,
@@ -203,7 +232,7 @@ class AccountSetup extends Component<Props, State, {}> {
                 <b>
                   First, set up the
                   {' '}
-                  {this.props.role}
+                  {role}
                   {' '}
                   account login.
                 </b>
@@ -213,9 +242,9 @@ class AccountSetup extends Component<Props, State, {}> {
               </span>
             </div>
             <form onSubmit={this.handleStepComplete}>
-              <div className="form-group row">
-                <label htmlFor="username" className="col-sm-3 col-form-label text-sm-right ">Username</label>
-                <div className="col-sm-9">
+              <div className="form-group row mt-3">
+                <p className="col-sm-3 col-form-label text-sm-right ">Username</p>
+                <label htmlFor="username" className="col-sm-9">
                   <input
                     type="text"
                     className={`form-control form-purple ${this.colorToggle(usernameValidator)}`}
@@ -227,11 +256,11 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.usernameMessage()}
-                </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="password" className="col-sm-3 col-form-label text-sm-right">Password</label>
-                <div className="col-sm-9">
+                <p className="col-sm-3 col-form-label text-sm-right">Password</p>
+                <label htmlFor="password" className="col-sm-9">
                   <input
                     type="password"
                     className={`form-control form-purple ${this.colorToggle(passwordValidator)}`}
@@ -243,11 +272,11 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.passwordMessage()}
-                </div>
+                </label>
               </div>
               <div className="form-group row">
-                <label htmlFor="confirmPassword" className="col-sm-3 col-form-label text-sm-right">Confirm Password</label>
-                <div className="col-sm-9">
+                <p className="col-sm-3 col-form-label text-sm-right">Confirm Password</p>
+                <label htmlFor="confirmPassword" className="col-sm-9">
                   <input
                     type="password"
                     className={`form-control form-purple ${this.colorToggle(confirmPasswordValidator)}`}
@@ -259,7 +288,7 @@ class AccountSetup extends Component<Props, State, {}> {
 
                   />
                   {this.confirmPasswordMessage()}
-                </div>
+                </label>
               </div>
               <div className="d-flex justify-content-end">
                 <button type="submit" className="btn btn-primary mt-5" onSubmit={this.handleStepComplete}>Continue</button>

@@ -39,8 +39,9 @@ interface State {}
 
 class ReviewSubmit extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
     e.preventDefault();
-    this.props.handlePrevious();
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
@@ -48,7 +49,12 @@ class ReviewSubmit extends Component<Props, State, {}> {
   }
 
   onSubmitWithReCAPTCHA = async () => {
-
+    const { handleChangeRecaptcha } = this.props;
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
+      const token = await recaptchaRef.current.executeAsync();
+      handleChangeRecaptcha(token);
+    }
   }
 
   passwordHider = (password: string) => '*'.repeat(password.length - 1)
@@ -229,7 +235,6 @@ class ReviewSubmit extends Component<Props, State, {}> {
                   Submit
                   <div className="ld ld-ring ld-spin" />
                 </button>
-                {/* <button type="button" className="ml-auto btn btn-primary mt-5" onClick={handleSubmit}>Submit</button> */}
               </div>
             </div>
           </div>

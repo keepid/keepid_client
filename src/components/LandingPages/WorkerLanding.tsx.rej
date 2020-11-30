@@ -1,0 +1,5 @@
+diff a/src/components/LandingPages/WorkerLanding.tsx b/src/components/LandingPages/WorkerLanding.tsx	(rejected hunks)
+@@ -225 +225,2 @@ class WorkerLanding extends Component<Props, State> {
+-              <img alt="profile-picture" className="profile-picture" src={GenericProfilePicture} />
++              {/* eslint-disable-next-line */}
++              <img alt="generic profile" className="profile-picture" src={GenericProfilePicture} />

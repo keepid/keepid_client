@@ -29,6 +29,8 @@ interface Props {
   isLoggedIn: boolean,
   role: Role,
   alert: any
+  autoLogout: boolean, // whether or not the user was logged out automatically
+  setAutoLogout: (boolean) => void // stop showing the logged out automatically banner once user navigates away from the page
 }
 
 class LoginPage extends Component<Props, State> {
@@ -48,6 +50,13 @@ class LoginPage extends Component<Props, State> {
     };
   }
 
+  componentWillUnmount() {
+    const {
+      setAutoLogout,
+    } = this.props;
+    setAutoLogout(false);
+  }
+
   // RECAPTCHA CODE
   onSubmitWithReCAPTCHA = async (e) => {
     e.preventDefault();
@@ -57,7 +66,18 @@ class LoginPage extends Component<Props, State> {
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
   }
+
+  resetRecaptcha = () => {
+    if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      recaptchaRef.current.reset();
+    }
+    this.setState({ recaptchaPayload: '' });
+  }
   // END RECAPTCHA CODE
+
+  clearInput = async () => {
+    this.setState({ username: '', password: '' });
+  }
 
   handleChangePassword = (event: any) => {
     this.setState({ password: event.target.value });
@@ -112,6 +132,7 @@ class LoginPage extends Component<Props, State> {
         this.props.alert.show('Network Failure: Check Server Connection.');
         this.setState({ buttonState: '' });
       });
+    this.resetRecaptcha();
   }
 
   handleLogin = (): void => {
@@ -126,7 +147,9 @@ class LoginPage extends Component<Props, State> {
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
+      this.clearInput();
       this.setState({ buttonState: '' });
+      this.resetRecaptcha();
     } else {
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
@@ -170,17 +193,23 @@ class LoginPage extends Component<Props, State> {
             });
           } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show('Incorrect Username or Password');
+            this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username or Password');
+            this.clearInput();
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           } else {
             this.props.alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
+            this.resetRecaptcha();
           }
         }).catch((error) => {
           this.props.alert.show('Network Failure: Check Server Connection');
           this.setState({ buttonState: '' });
+          this.resetRecaptcha();
         });
     }
   }
@@ -212,12 +241,22 @@ class LoginPage extends Component<Props, State> {
       password,
       verificationCode,
     } = this.state;
+    const {
+      autoLogout,
+    } = this.props;
     return (
       <div>
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+        {autoLogout
+          ? (
+            <div className="alert alert-warning" role="alert">
+              You were automatically logged out and redirected to this page.
+            </div>
+          )
+          : null}
         <div className="container">
           <div className="row mt-4">
             <div className="col mobile-hide">
@@ -281,7 +320,7 @@ class LoginPage extends Component<Props, State> {
                         />
                       </label>
 
-                      <div className="row pl-3 pt-3">
+                      <div className="row pt-3">
                         <div className="col-6 pl-0">
                           <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
                             Resend Code
@@ -297,7 +336,7 @@ class LoginPage extends Component<Props, State> {
                     </div>
                   )
                   : <div />}
-                <div className="row pl-3 pt-3">
+                <div className="row pt-3">
                   {(this.state.twoFactorState !== 'show')
                     ? (
                       <div className="pb-2">
@@ -314,29 +353,29 @@ class LoginPage extends Component<Props, State> {
                     )
                     : <div />}
                 </div>
-                <div className="row pl-3 pb-3">
+                <div className="row pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
                     <span className="">Forgot your password?</span>
                   </Link>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Don&apos;t have an account?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/find-organization">
                       <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
                     </Link>
                   </div>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Are you a nonprofit organization?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
                       <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>

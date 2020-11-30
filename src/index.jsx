@@ -7,7 +7,7 @@ import * as serviceWorker from './serviceWorker';
 // import { NONAME } from 'dns';
 
 const options = {
-  position: 'top right',
+  position: 'bottom left',
   timeout: 5000,
   offset: '10vh',
   type: 'info',

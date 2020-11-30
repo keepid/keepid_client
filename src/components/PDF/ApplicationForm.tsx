@@ -1,8 +1,9 @@
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
+import uuid from 'react-uuid';
 import getServerURL from '../../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../../static/PDFType';
@@ -25,12 +26,13 @@ interface State {
   submitSuccessful: boolean,
   currentPage: number,
   numPages: number,
-  startDate: Date
+  startDate: Date,
+  formError: boolean,
 }
 
 // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
 function dataURLtoBlob(dataurl) {
-  const arr = dataurl.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+  const arr = dataurl.split(',');
   const bstr = atob(arr[1]); let n = bstr.length; const
     u8arr = new Uint8Array(n);
   while (n >= 0) {
@@ -54,6 +56,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 0,
       numPages: 0,
       startDate: new Date(),
+      formError: false,
     };
     this.handleChangeFormValueTextField = this.handleChangeFormValueTextField.bind(this);
     this.handleChangeFormValueRadioButton = this.handleChangeFormValueRadioButton.bind(this);
@@ -78,12 +81,19 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const { fields } = responseJSON;
-        this.setState({ formQuestions: fields });
-        fields.forEach((entry) => {
-          formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-        });
-        this.setState({ formAnswers });
+        const { status } = responseJSON;
+        if (status === 'SUCCESS') {
+          const { fields } = responseJSON;
+          this.setState({ formQuestions: fields });
+          fields.forEach((entry) => {
+            formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+          });
+          this.setState({ formAnswers });
+        } else {
+          this.setState({
+            formError: true,
+          });
+        }
       });
   }
 
@@ -182,6 +192,16 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
+  progressBarFill = (): number => {
+    const { formQuestions, formAnswers } = this.state;
+    const total = (formQuestions) ? formQuestions.length : 0;
+    let answered = 0;
+    Object.keys(formAnswers).forEach((questionId) => {
+      if (formAnswers[questionId]) answered += 1;
+    });
+    return (total === 0) ? 100 : Math.round((answered / total) * 100);
+  }
+
   render() {
     const {
       pdfApplication,
@@ -191,6 +211,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       numPages,
       startDate,
+      formError,
     } = this.state;
 
     if (submitSuccessful) {
@@ -198,12 +219,13 @@ class ApplicationForm extends Component<Props, State> {
     }
 
     let bodyElement;
+    const fillAmt = this.progressBarFill();
     if (pdfApplication) {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '90%' }} />
+              <div className="progress-bar active" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
             </div>
             <div className="container">
               <h2>Review and sign to complete your form</h2>
@@ -242,7 +264,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '75%' }} />
+              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
               <h2>Application Form Name</h2>
@@ -253,7 +275,7 @@ class ApplicationForm extends Component<Props, State> {
             <form onSubmit={this.onSubmitFormQuestions}>
               {formQuestions.map(
                 (entry) => (
-                  <div className="my-5">
+                  <div className="my-5" key={uuid()}>
                     {
                       (() => {
                         if (entry.fieldType === 'TextField') {
@@ -286,7 +308,7 @@ class ApplicationForm extends Component<Props, State> {
                                 </label>
 
                                 {temp.map((value) => (
-                                  <div className="checkbox-option">
+                                  <div className="checkbox-option" key={value}>
                                     <div className="custom-control custom-checkbox mx-2">
                                       <input
                                         type="checkbox"
@@ -314,7 +336,7 @@ class ApplicationForm extends Component<Props, State> {
                               </label>
 
                               {temp.map((value) => (
-                                <div className="custom-control custom-radio">
+                                <div className="custom-control custom-radio" key={value}>
                                   <input
                                     type="radio"
                                     className="custom-control-input"
@@ -344,7 +366,7 @@ class ApplicationForm extends Component<Props, State> {
                               <select id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
                                 <option selected disabled value="">Please select your choice ...</option>
                                 {temp.map((value) => (
-                                  <option value={value}>{value}</option>
+                                  <option value={value} key={value}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -363,7 +385,7 @@ class ApplicationForm extends Component<Props, State> {
                               <select id={entry.fieldName} onChange={this.handleChangeFormValueListBox} className="custom-select" multiple required>
                                 <option selected disabled value="">Please select your choice(s) ...</option>
                                 {temp.map((value) => (
-                                  <option value={value}>{value}</option>
+                                  <option value={value} key={value}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -425,12 +447,24 @@ class ApplicationForm extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
 
+        <div className="ml-5 mt-3">
+          <Link to="/applications">
+            <button type="button" className="btn btn-primary">
+              Back
+            </button>
+          </Link>
+        </div>
+
         {bodyElement}
-        <Link to="/applications">
-          <button type="button" className="btn btn-outline-success">
-            Back
-          </button>
-        </Link>
+
+        { formError
+          ? (
+            <div className="p-5">
+              There was an error loading this form.
+            </div>
+          )
+          : null}
+
       </div>
     );
   }

@@ -38,6 +38,10 @@ function RenderPDF(props: PDFProps): React.ReactElement {
 }
 
 class UploadDocs extends React.Component<Props, State> {
+  static maxFilesExceeded(files, maxNumFiles) {
+    return files.length > maxNumFiles;
+  }
+
   constructor(props: Props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
@@ -104,10 +108,6 @@ class UploadDocs extends React.Component<Props, State> {
     }
   }
 
-  static maxFilesExceeded(files, maxNumFiles) {
-    return files.length > maxNumFiles;
-  }
-
   static fileNamesUnique(files) {
     const fileNames : string[] = [];
     for (let i = 0; i < files.length; i += 1) {
@@ -165,14 +165,14 @@ class UploadDocs extends React.Component<Props, State> {
 
           <ul className="list-unstyled mt-5">
             {
-              pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+              pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
             }
           </ul>
 
           <div className="row justify-content-left form-group mb-5">
             <form onSubmit={this.submitForm}>
               <div className="form-row mt-3">
-                <label className="btn btn-filestack btn-widget ml-5 mr-5">
+                <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
                   { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                   <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                 </label>

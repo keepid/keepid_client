@@ -5,12 +5,15 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Switch, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import uuid from 'react-uuid';
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import DocumentViewer from './DocumentViewer';
-import PrintDocument from '../Old/PrintDocument';
 import ViewDocument from './ViewDocument';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+
+const { SearchBar } = Search;
 
 interface Props {
   alert: any,
@@ -41,66 +44,12 @@ function RenderPDF(props: PDFProps): React.ReactElement {
         <button className="btn btn-outline-primary btn-sm mr-3" type="button" onClick={() => setShowResults(!showResults)}>{showResults ? 'Hide' : 'View'}</button>
         <p>{pdfFile.name}</p>
       </div>
-      { showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null }
+      { showResults ? <div className="row mt-3 w-100"><DocumentViewer pdfFile={pdfFile} /></div> : <div /> }
     </li>
   );
 }
 
 class MyDocuments extends Component<Props, State> {
-  submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
-    this.setState({ buttonState: 'running' });
-    event.preventDefault();
-    const {
-      pdfFiles,
-    } = this.state;
-
-    const {
-      alert,
-    } = this.props;
-
-    if (pdfFiles) {
-      // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i += 1) {
-        const pdfFile = pdfFiles[i];
-        const formData = new FormData();
-        formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
-        }
-        if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.APPLICATION);
-        }
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        }).then((response) => response.json())
-          .then((responseJSON) => {
-            const {
-              status,
-            } = responseJSON;
-            if (status === 'SUCCESS') {
-              alert.show(`Successfully uploaded ${pdfFile.name}`);
-              this.setState({
-                buttonState: '',
-                pdfFiles: undefined,
-              }, () => this.getDocumentData());
-            } else {
-              alert.show(`Failure to upload ${pdfFile.name}`);
-              this.setState({ buttonState: '' });
-            }
-          });
-      }
-    } else {
-      alert.show('Please select a file');
-      this.setState({ buttonState: '' });
-    }
-  }
-
   static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }
@@ -138,9 +87,6 @@ class MyDocuments extends Component<Props, State> {
 
   handleChangeFileDownload(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     this.setState({
@@ -151,10 +97,12 @@ class MyDocuments extends Component<Props, State> {
   handleFileDownload(rowIndex: number) {
     const {
       userRole,
+      alert,
     } = this.props;
+    const { documentData } = this.state;
 
-    const documentId = this.state.documentData[rowIndex].id;
-    const documentName = this.state.documentData[rowIndex].filename;
+    const documentId = documentData[rowIndex].id;
+    const documentName = documentData[rowIndex].filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -174,7 +122,6 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
@@ -182,16 +129,13 @@ class MyDocuments extends Component<Props, State> {
         document.body.appendChild(a);
         a.click();
         a.remove();
-      }).catch((error) => {
-        alert('Error Fetching File');
+      }).catch((_error) => {
+        alert.show('Error Fetching File');
       });
   }
 
   handleChangeFilePrint(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     this.setState({
@@ -200,12 +144,11 @@ class MyDocuments extends Component<Props, State> {
   }
 
   handleFilePrint(rowIndex: number) {
-    const {
-      userRole,
-    } = this.props;
+    const { userRole, alert } = this.props;
+    const { documentData } = this.state;
 
-    const documentId = this.state.documentData[rowIndex].id;
-    const documentName = this.state.documentData[rowIndex].filename;
+    const documentId = documentData[rowIndex].id;
+    const documentName = documentData[rowIndex].filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -226,8 +169,8 @@ class MyDocuments extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-      }).catch((error) => {
-        alert('Error Fetching File');
+      }).catch((_error) => {
+        alert.show('Error Fetching File');
       });
   }
 
@@ -269,7 +212,8 @@ class MyDocuments extends Component<Props, State> {
 
   deleteDocument(event: any, rowIndex: number) {
     event.preventDefault();
-    const documentId = this.state.documentData[rowIndex].id;
+    const { documentData } = this.state;
+    const documentId = documentData[rowIndex].id;
 
     const {
       userRole,
@@ -291,7 +235,7 @@ class MyDocuments extends Component<Props, State> {
         pdfType,
       }),
     }).then((response) => response.json())
-      .then((responseJSON) => {
+      .then((_responseJSON) => {
         this.getDocumentData();
       });
   }
@@ -352,6 +296,60 @@ class MyDocuments extends Component<Props, State> {
     </div>
   )
 
+  submitForm(event: any) {
+    const {
+      userRole,
+    } = this.props;
+
+    this.setState({ buttonState: 'running' });
+    event.preventDefault();
+    const {
+      pdfFiles,
+    } = this.state;
+
+    const {
+      alert,
+    } = this.props;
+
+    if (pdfFiles) {
+      // upload each pdf file
+      for (let i = 0; i < pdfFiles.length; i += 1) {
+        const pdfFile = pdfFiles[i];
+        const formData = new FormData();
+        formData.append('file', pdfFile, pdfFile.name);
+        if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        }
+        if (userRole === Role.Director || userRole === Role.Admin) {
+          formData.append('pdfType', PDFType.APPLICATION);
+        }
+        fetch(`${getServerURL()}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        }).then((response) => response.json())
+          .then((responseJSON) => {
+            const {
+              status,
+            } = responseJSON;
+            if (status === 'SUCCESS') {
+              alert.show(`Successfully uploaded ${pdfFile.name}`);
+              this.setState({
+                buttonState: '',
+                pdfFiles: undefined,
+              }, () => this.getDocumentData());
+            } else {
+              alert.show(`Failure to upload ${pdfFile.name}`);
+              this.setState({ buttonState: '' });
+            }
+          });
+      }
+    } else {
+      alert.show('Please select a file');
+      this.setState({ buttonState: '' });
+    }
+  }
+
   tableCols = [{
     dataField: 'filename',
     text: 'File Name',
@@ -400,10 +398,15 @@ class MyDocuments extends Component<Props, State> {
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
+            <ul className="list-unstyled mt-5">
+              {
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+              }
+            </ul>
             <div className="row justify-content-left form-group mb-5">
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">
-                  <label className="btn btn-filestack btn-widget ml-5 mr-5">
+                  <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
                     { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
                     <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                   </label>
@@ -416,22 +419,31 @@ class MyDocuments extends Component<Props, State> {
                 </div>
               </form>
             </div>
-            <form className="form-inline my-2 my-lg-0">
-              <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-              <button className="btn btn-outline-primary my-2 my-sm-0" type="submit">Search Documents</button>
-            </form>
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
               <div className="w-100 pd-3">
-                <BootstrapTable
-                  bootstrap4
+                <ToolkitProvider
                   keyField="id"
                   data={documentData}
-                  hover
-                  striped
-                  noDataIndication="No Documents Present"
                   columns={this.tableCols}
-                  pagination={paginationFactory()}
-                />
+                  search
+                >
+                  {
+                    (props) => (
+                      <div>
+                        <SearchBar {...props.searchProps} />
+                        <hr />
+                        <BootstrapTable
+                          bootstrap4
+                          hover
+                          striped
+                          noDataIndication="No Documents Present"
+                          pagination={paginationFactory()}
+                          {...props.baseProps}
+                        />
+                      </div>
+                    )
+                  }
+                </ToolkitProvider>
               </div>
             </div>
           </div>
@@ -439,9 +451,6 @@ class MyDocuments extends Component<Props, State> {
         <Route path="/my-documents/view">
           {currentDocumentId && currentDocumentName
             ? <ViewDocument userRole={userRole} documentId={currentDocumentId} documentName={currentDocumentName} /> : <div />}
-        </Route>
-        <Route path="/my-documents/print">
-          <PrintDocument documentId={currentDocumentId} />
         </Route>
       </Switch>
     );

@@ -1,5 +1,4 @@
 import React from 'react';
-import IdleTimer from 'react-idle-timer';
 import {
   BrowserRouter as Router,
   Route,
@@ -9,14 +8,11 @@ import {
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
-import PersonSignup from './components/SignUp/PersonSignup';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
-import Request from './components/Old/Request';
 import Applications from './components/PDF/Applications';
 import Error from './components/Base/Error';
-import Email from './components/Old/Email';
 import AdminPanel from './components/AccountSecurity/AdminPanel';
 import MyOrganization from './components/AccountSecurity/MyOrganization';
 import DevPanel from './components/LandingPages/DeveloperLanding';
@@ -29,11 +25,11 @@ import OurPartners from './components/AboutUs/OurPartners';
 import OurMission from './components/AboutUs/OurMission';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import getServerURL from './serverOverride';
-import BugReport from './components/AccountSecurity/BugReport';
+
+import IssueReport from './components/AccountSecurity/IssueReport';
 import LoginPage from './components/AccountSecurity/LoginPage';
 import ForgotPassword from './components/AccountSecurity/ForgotPassword';
 import FindOrganization from './components/OrgFinder/FindOrganization';
-import IdleTimeOutModal from './components/AccountSecurity/IdleTimeOutModal';
 import Home from './components/Base/Home';
 import ResetPassword from './components/AccountSecurity/ResetPassword';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
@@ -46,6 +42,7 @@ import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import FindUsername from './components/FindUsername';
+import AutoLogout from './components/AccountSecurity/AutoLogout';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -57,83 +54,30 @@ interface State {
   username: string,
   name: string,
   organization: string,
-  showModal: boolean,
   autoLogout: boolean,
 }
 
-const timeUntilWarn: number = 1000 * 60 * 120;
-const timeFromWarnToLogout: number = 1000 * 60;
-// const timeoutTotal: number = timeUntilWarn + timeFromWarnToLogout;
-
 class App extends React.Component<{}, State, {}> {
-  private idleTimerWarn;
-
-  private logoutTimeout;
-
   constructor(props: {}) {
     super(props);
-    this.idleTimerWarn = null;
-    this.logoutTimeout = null;
     this.state = {
       role: Role.LoggedOut,
       username: '',
       name: '',
       organization: '',
-      showModal: false,
       autoLogout: false,
     };
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
-
-    this.warnUserIdle = this.warnUserIdle.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.handleAutoLogout = this.handleAutoLogout.bind(this);
-    this.resetAutoLogout = this.resetAutoLogout.bind(this);
+    this.setAutoLogout = this.setAutoLogout.bind(this);
   }
 
-  resetAutoLogout() {
+  // this function is needed to tell the home page that the user was logged out automatically
+  // or remove that notification
+  setAutoLogout(logout: boolean) {
     this.setState({
-      autoLogout: false,
+      autoLogout: logout,
     });
-  }
-
-  warnUserIdle() {
-    const {
-      role,
-    } = this.state;
-
-    // if the user is currently logged in
-    if (role !== Role.LoggedOut) {
-      this.setState({
-        showModal: true,
-      });
-    }
-
-    // start the logout timer
-    this.logoutTimeout = setTimeout(this.handleAutoLogout, timeFromWarnToLogout);
-  }
-
-  // closing idle modal warning
-  handleClose() {
-    this.setState({
-      showModal: false,
-    });
-
-    // clear the logout timeout
-    if (this.logoutTimeout) {
-      clearTimeout(this.logoutTimeout);
-    }
-
-    // reset the warn timer
-    this.idleTimerWarn.reset();
-  }
-
-  // automatically logged out
-  handleAutoLogout() {
-    this.setState({
-      autoLogout: true,
-    });
-    this.logOut();
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -146,15 +90,10 @@ class App extends React.Component<{}, State, {}> {
   }
 
   logOut() {
-    // clear the logout timeout
-    if (this.logoutTimeout) {
-      clearTimeout(this.logoutTimeout);
-    }
     this.setState({
       username: '',
       name: '',
       organization: '',
-      showModal: false,
       role: Role.LoggedOut,
     });
 
@@ -170,7 +109,6 @@ class App extends React.Component<{}, State, {}> {
       username,
       name,
       organization,
-      showModal,
       autoLogout,
     } = this.state;
     return (
@@ -182,24 +120,8 @@ class App extends React.Component<{}, State, {}> {
               <meta name="description" content="Securely Combating Homelessness" />
             </Helmet>
             <Header isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
-            {role !== Role.LoggedOut ? (
-              <div>
-                <IdleTimer
-                  key="idleTimerWarn"
-                  ref={(ref) => { this.idleTimerWarn = ref; }}
-                  element={document}
-                  onIdle={this.warnUserIdle}
-                  debounce={250}
-                  timeout={timeUntilWarn}
-                  stopOnIdle
-                />
-                <IdleTimeOutModal
-                  showModal={showModal}
-                  handleClose={this.handleClose}
-                  handleLogout={this.logOut}
-                />
-              </div>
-            ) : <div />}
+            {role !== Role.LoggedOut ? <AutoLogout logOut={this.logOut} setAutoLogout={this.setAutoLogout} /> : null}
+
             <Switch>
               <Route
                 exact
@@ -220,7 +142,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Developer) {
                     return (<DevPanel name={name} organization={organization} username={username} role={role} />);
                   }
-                  return <Home autoLogout={autoLogout} resetAutoLogout={this.resetAutoLogout} />;
+                  return <Home />;
                 }}
               />
               <Route
@@ -232,7 +154,7 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} />
+                    : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} autoLogout={autoLogout} setAutoLogout={this.setAutoLogout} />
                 )}
               />
               <Route path="/signup-branch">
@@ -315,24 +237,6 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route
-                path="/request"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <Request />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
-              <Route
-                path="/email"
-                render={() => {
-                  if (role === Role.Client) {
-                    return <Email />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
               <Route path="/our-team">
                 <OurTeam />
               </Route>
@@ -357,8 +261,8 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/careers">
                 <Careers />
               </Route>
-              <Route path="/bug-report">
-                <BugReport />
+              <Route path="/issue-report">
+                <IssueReport />
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />

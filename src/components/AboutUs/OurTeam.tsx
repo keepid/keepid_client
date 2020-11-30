@@ -1,27 +1,40 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import ConnorJPG from '../../static/images/connor.jpg';
-import SteffenJPG from '../../static/images/steffen.jpg';
-import GregJPG from '../../static/images/greg.jpg';
-import JacksonJPG from '../../static/images/jackson.jpg';
-import JackieJPG from '../../static/images/jackie.jpg';
-import JohnJPG from '../../static/images/john.jpg';
-import ChrisJPG from '../../static/images/chris.jpg';
-import DanJPG from '../../static/images/dan.jpg';
-import Gio from '../../static/images/gio.jpg';
-import Cathy from '../../static/images/cathy.jpg';
-import Joey from '../../static/images/joey.jpg';
-import Jonathan from '../../static/images/jonathan.jpg';
-import Melinda from '../../static/images/melinda.png';
-import Sydney from '../../static/images/Sydney.png';
-import Sophia from '../../static/images/sophia.jpg';
-import Abhai from '../../static/images/Abhai.jpg';
-import Abhishek from '../../static/images/abhishek.jpg';
-import Ani from '../../static/images/ani.jpg';
-import Ivorine from '../../static/images/ivorine.jpg';
-import Daniel from '../../static/images/daniel.jpg';
-import Austin from '../../static/images/austin.jpg';
-import Anna from '../../static/images/anna.jpg';
+import ConnorJPG from '../../static/images/members/connor.jpg';
+import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
+import GregJPG from '../../static/images/members/greg.jpg';
+import JacksonJPG from '../../static/images/members/jackson.jpg';
+import JackieJPG from '../../static/images/members/jackie.jpg';
+import JohnJPG from '../../static/images/members/john.jpg';
+import ChrisJPG from '../../static/images/members/chris.jpg';
+import DanJPG from '../../static/images/members/dan.jpg';
+import Gio from '../../static/images/members/gio.jpg';
+import Cathy from '../../static/images/members/cathy.jpg';
+import Joey from '../../static/images/members/joey.jpg';
+import Jonathan from '../../static/images/members/jonathan.jpg';
+import Melinda from '../../static/images/members/melinda.png';
+import Sydney from '../../static/images/members/Sydney.png';
+import Sophia from '../../static/images/members/sophia.jpg';
+import Abhai from '../../static/images/members/Abhai.jpg';
+import Abhishek from '../../static/images/members/abhishek.jpg';
+import Ani from '../../static/images/members/ani.jpg';
+import Ivorine from '../../static/images/members/ivorine.jpg';
+import Austin from '../../static/images/members/austin.jpg';
+import Anna from '../../static/images/members/anna.jpg';
+import Sarah from '../../static/images/members/sarah.png';
+import Victoria from '../../static/images/members/victoria.jpg';
+import Vanessa from '../../static/images/members/vanessa.jpg';
+import Jamie from '../../static/images/members/jamie.jpg';
+import Janelle from '../../static/images/members/janelle.png';
+import Xander from '../../static/images/members/xander.png';
+import Michelle from '../../static/images/members/michelleYi.jpg';
+import JessicaHo from '../../static/images/members/jessicaHo.png';
+import MaggieLin from '../../static/images/members/maggieLin.jpg';
+import EmilyHong from '../../static/images/members/emilyHong.jpg';
+import JessicaHung from '../../static/images/members/jessicaHung.jpg';
+import EmilySu from '../../static/images/members/emilySu.jpg';
+import JamesBigbee from '../../static/images/members/jamesBigbee.jpg';
+import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
 
 interface State {}
 
@@ -51,28 +64,28 @@ class OurTeam extends React.Component<{}, State> {
             <img src={JohnJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">John Baek</h5>
-              <p className="card-text">Founder / Legal Analyst</p>
+              <p className="card-text">Founder / COO / Legal Analyst</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
             <img src={ConnorJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Connor Chong</h5>
-              <p className="card-text">Founder / CEO / Technical Product Manager / Security Engineer</p>
+              <p className="card-text">Founder / CEO / CTO / Product Manager</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
             <img src={SteffenJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Steffen Cornwell</h5>
-              <p className="card-text">Founder / Executive Director / Software Engineer</p>
+              <p className="card-text">Founder / Executive Director</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
             <img src={JacksonJPG} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Jackson Foltz</h5>
-              <p className="card-text">Founder / Nonprofit Ambassador / Secretary / Social Media Lead</p>
+              <p className="card-text">Founder / Nonprofit Ambassador / Donor Strategy Lead</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
@@ -88,16 +101,16 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <div className="card member-card mr-4 mb-4">
-            <img src={Ani} className="card-img-top " alt="..." />
+            <img src={Melinda} className="card-img-top " alt="..." />
             <div className="card-body">
-              <h5 className="card-title">Ani Agrawal</h5>
+              <h5 className="card-title">Melinda Cardenas</h5>
               <p className="card-text">Software Engineer</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
-            <img src={Melinda} className="card-img-top " alt="..." />
+            <img src={Xander} className="card-img-top " alt="..." />
             <div className="card-body">
-              <h5 className="card-title">Melinda Cardenas</h5>
+              <h5 className="card-title">Xander Cernek</h5>
               <p className="card-text">Software Engineer</p>
             </div>
           </div>
@@ -109,16 +122,30 @@ class OurTeam extends React.Component<{}, State> {
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
-            <img src={Daniel} className="card-img-top " alt="..." />
+            <img src={Vanessa} className="card-img-top " alt="..." />
             <div className="card-body">
-              <h5 className="card-title">Daniel Noble</h5>
-              <p className="card-text">Security Consultant</p>
+              <h5 className="card-title">Vanessa Hu</h5>
+              <p className="card-text">Software Engineer</p>
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
-            <img src={Abhai} className="card-img-top " alt="..." />
+            <img src={Janelle} className="card-img-top " alt="..." />
             <div className="card-body">
-              <h5 className="card-title">Abhai Shukla</h5>
+              <h5 className="card-title">Janelle Leung</h5>
+              <p className="card-text">Software Engineer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={JackieJPG} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jackie Peng</h5>
+              <p className="card-text">Software Engineer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Austin} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Austin Wu</h5>
               <p className="card-text">Software Engineer</p>
             </div>
           </div>
@@ -135,26 +162,13 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <div className="card member-card mr-4 mb-4">
-            <img src={Gio} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Gio Ballesteros</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
             <img src={Anna} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Anna Leong</h5>
               <p className="card-text">UI/UX Designer</p>
             </div>
           </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Jonathan} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jonathan Xue</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
+
           <div className="card member-card mr-4 mb-4">
             <img src={Sophia} className="card-img-top " alt="..." />
             <div className="card-body">
@@ -162,12 +176,127 @@ class OurTeam extends React.Component<{}, State> {
               <p className="card-text">UI/UX Designer</p>
             </div>
           </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Michelle} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Michelle Yi</h5>
+              <p className="card-text">UI/UX Designer</p>
+            </div>
+          </div>
 
         </div>
         <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Business and Communications</h3>
+          <h3 className="display-5">Nonprofit Communications</h3>
         </div>
         <div className="d-flex flex-wrap">
+          <div className="card member-card mr-4 mb-4">
+            <img src={Sarah} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Sarah Kim</h5>
+              <p className="card-text">Nonprofit Liaison</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Jamie} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jamie Lu</h5>
+              <p className="card-text">Nonprofit Liaison</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={ChrisJPG} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Christopher Ng</h5>
+              <p className="card-text">Nonprofit Liaison</p>
+            </div>
+          </div>
+        </div>
+        <div className="jumbotron-fluid mt-5">
+          <h3 className="display-5">Business</h3>
+        </div>
+        <div className="d-flex flex-wrap">
+          <div className="card member-card mr-4 mb-4">
+            <img src={Ani} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Ani Agrawal</h5>
+              <p className="card-text">Donor Strategy</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Abhai} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Abhai Shukla</h5>
+              <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={EmilyHong} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Emily Hong</h5>
+              <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={JessicaHo} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jessica Ho</h5>
+              <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={JessicaHung} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jessica Hung</h5>
+              <p className="card-text">Donor Strategy</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={MaggieLin} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Maggie Lin</h5>
+              <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={SeemranRashid} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Seemran Rashid</h5>
+              <p className="card-text">Donor Strategy</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={EmilySu} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Emily Su</h5>
+              <p className="card-text">Business Analyst</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Victoria} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Victoria Walter</h5>
+              <p className="card-text">Donor Strategy</p>
+            </div>
+          </div>
+        </div>
+        <div className="jumbotron-fluid mt-5">
+          <h3 className="display-5">Past Members</h3>
+        </div>
+        <div className="d-flex flex-wrap">
+          <div className="card member-card mr-4 mb-4">
+            <img src={DanJPG} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Daniel Barychev</h5>
+              <p className="card-text">Software Engineer / Security Engineer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={JamesBigbee} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">James Bigbee</h5>
+              <p className="card-text">Software Engineer</p>
+            </div>
+          </div>
           <div className="card member-card mr-4 mb-4">
             <img src={Sydney} className="card-img-top " alt="..." />
             <div className="card-body">
@@ -183,32 +312,6 @@ class OurTeam extends React.Component<{}, State> {
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
-            <img src={ChrisJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Christopher Ng</h5>
-              <p className="card-text">Nonprofit Ambassador / UI/UX Designer</p>
-            </div>
-          </div>
-        </div>
-        <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Past Members</h3>
-        </div>
-        <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={JackieJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jackie Peng</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={DanJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Daniel Barychev</h5>
-              <p className="card-text">Software Engineer / Security Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
             <img src={Abhishek} className="card-img-top " alt="..." />
             <div className="card-body">
               <h5 className="card-title">Abhishek Pandya</h5>
@@ -216,10 +319,17 @@ class OurTeam extends React.Component<{}, State> {
             </div>
           </div>
           <div className="card member-card mr-4 mb-4">
-            <img src={Austin} className="card-img-top " alt="..." />
+            <img src={Gio} className="card-img-top " alt="..." />
             <div className="card-body">
-              <h5 className="card-title">Austin Wu</h5>
-              <p className="card-text">Software Engineer</p>
+              <h5 className="card-title">Gio Ballesteros</h5>
+              <p className="card-text">UI/UX Designer</p>
+            </div>
+          </div>
+          <div className="card member-card mr-4 mb-4">
+            <img src={Jonathan} className="card-img-top " alt="..." />
+            <div className="card-body">
+              <h5 className="card-title">Jonathan Xue</h5>
+              <p className="card-text">UI/UX Designer</p>
             </div>
           </div>
         </div>

@@ -98,23 +98,41 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.handleRecaptchaChange = this.handleRecaptchaChange.bind(this);
   }
 
-  handleBack(event: any) {
-    this.setState({ reaffirmStage: false });
-  }
-
-  // RECAPTCHA CODE
   componentDidMount() {
     this.setState({ recaptchaLoaded: true });
+  }
+
+  onSubmitProp(firstname, lastname, birthDate, email,
+    phonenumber, address, city, state,
+    zipcode, username, password) {
+    this.setState({
+      personSubmitted: true,
+      firstname,
+      lastname,
+      birthDate,
+      email,
+      phonenumber,
+      address,
+      city,
+      state,
+      zipcode,
+      username,
+      password,
+    });
   }
 
   handleRecaptchaChange = (recaptchaPayload) => {
     this.setState({ recaptchaPayload });
     if (recaptchaPayload === null) this.setState({ recaptchaExpired: true });
   };
-  // RECAPTCHA
+
+  handleBack() {
+    this.setState({ reaffirmStage: false });
+  }
 
   handleContinue(event: any) {
     event.preventDefault();
+    const { alert } = this.props;
     const {
       organizationWebsite,
       organizationName,
@@ -148,15 +166,16 @@ class OrganizationSignup extends Component<Props, State, {}> {
         if (status === 'SUCCESS') {
           this.setState({ reaffirmStage: true });
         } else {
-          this.props.alert.show(message);
+          alert.show(message);
         }
       }).catch((error) => {
-        this.props.alert.show(`Server Failure: ${error}`);
+        alert.show(`Server Failure: ${error}`);
       });
   }
 
-  handleSubmit(event: any) {
+  handleSubmit() {
     this.setState({ buttonState: 'running' });
+    const { alert } = this.props;
     const {
       organizationWebsite,
       organizationName,
@@ -184,10 +203,10 @@ class OrganizationSignup extends Component<Props, State, {}> {
       recaptchaExpired,
     } = this.state;
     if (!acceptEULA) {
-      this.props.alert.show('You must read and accept the EULA before submitting the application');
+      alert.show('You must read and accept the EULA before submitting the application');
       this.setState({ buttonState: '' });
     } else if (!recaptchaLoaded || recaptchaExpired) {
-      this.props.alert.show('Recaptcha has expired. Please refresh the page');
+      alert.show('Recaptcha has expired. Please refresh the page');
       this.setState({ buttonState: '' });
     } else {
       if (reCaptchaRef && reCaptchaRef.current) {
@@ -229,35 +248,16 @@ class OrganizationSignup extends Component<Props, State, {}> {
           if (status === 'SUCCESSFUL_ENROLLMENT') {
             this.setState({ buttonState: '' });
             this.setState({ submitSuccessful: true });
-            this.props.alert.show(message);
+            alert.show(message);
           } else {
-            this.props.alert.show(message);
+            alert.show(message);
             this.setState({ buttonState: '' });
           }
         }).catch((error) => {
-          this.props.alert.show(`Server Failure: ${error}`);
+          alert.show(`Server Failure: ${error}`);
           this.setState({ buttonState: '' });
         });
     }
-  }
-
-  onSubmitProp(firstname, lastname, birthDate, email,
-    phonenumber, address, city, state,
-    zipcode, username, password, personRoleString) {
-    this.setState({
-      personSubmitted: true,
-      firstname,
-      lastname,
-      birthDate,
-      email,
-      phonenumber,
-      address,
-      city,
-      state,
-      zipcode,
-      username,
-      password,
-    });
   }
 
   handleChangeOrganizationName(event: any) {
@@ -308,7 +308,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
     this.setState({ reaffirmStage: !reaffirmStage });
   }
 
-  handleChangePersonSubmitted(event: any) {
+  handleChangePersonSubmitted() {
     const {
       personSubmitted,
     } = this.state;
@@ -331,6 +331,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
       submitSuccessful,
       reaffirmStage,
       recaptchaLoaded,
+      buttonState,
     } = this.state;
 
     const organizationFormHeader = !reaffirmStage ? 'Organization Signup Form' : 'Finish Organization Signup';
@@ -505,7 +506,7 @@ class OrganizationSignup extends Component<Props, State, {}> {
           <div className="col-md-6 text-right">
             <button type="button" onClick={this.handleChangePersonSubmitted} className="btn btn-warning mr-4 mb-4">Back to Director Signup</button>
             <button type="button" onClick={this.handleBack} className="btn btn-danger mr-4 mb-4">Back</button>
-            <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${this.state.buttonState}`}>
+            <button type="submit" onClick={this.handleSubmit} className={`btn btn-success ld-ext-right ${buttonState}`}>
               Submit
               <div className="ld ld-ring ld-spin" />
             </button>

@@ -15,24 +15,25 @@ interface Props {
 interface State {}
 
 class SignUserAgreement extends Component<Props, State, {}> {
-  handleStepPrevious = (e) => {
-    e.preventDefault();
-    this.props.handlePrevious();
+  componentDidMount() {
+    window.scrollTo(0, 0);
   }
 
   handleStepComplete = async (e) => {
     e.preventDefault();
-    const { hasSigned, handleContinue } = this.props;
+    const { hasSigned, alert, handleContinue } = this.props;
 
     if (hasSigned) {
       handleContinue();
     } else {
-      this.props.alert.show('Please sign the EULA');
+      alert.show('Please sign the EULA');
     }
   }
 
-  componentDidMount() {
-    window.scrollTo(0, 0);
+  handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
+    e.preventDefault();
+    handlePrevious();
   }
 
   render() {
