@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 import { ResponsivePieCanvas } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsiveBar } from '@nivo/bar';

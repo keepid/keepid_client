@@ -10,6 +10,7 @@ import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
 import TablePageSelector from '../Base/TablePageSelector';
+import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
 
 interface Props {
   username: string,
@@ -39,7 +40,6 @@ const options = [
 ];
 
 const listOptions = [
-  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -117,11 +117,10 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
         const {
           people,
           numPeople,
-        } = responseObject;
+        } = responseJSON;
         if (people) {
           this.setState({
             numClients: numPeople,
@@ -161,16 +160,16 @@ class WorkerLanding extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const { loginStatus } = responseObject;
-        if (loginStatus === 'AUTH_SUCCESS') {
+        console.log(responseJSON);
+        const { status } = responseJSON;
+        if (status === 'AUTH_SUCCESS') {
           // Allow worker privileges
           this.setState({
             clientCredentialsCorrect: true,
           });
-        } else if (loginStatus === 'AUTH_FAILURE') {
+        } else if (status === 'AUTH_FAILURE') {
           this.props.alert.show('Incorrect Password');
-        } else if (loginStatus === 'USER_NOT_FOUND') {
+        } else if (status === 'USER_NOT_FOUND') {
           this.props.alert.show('Username Does Not Exist');
         } else {
           this.props.alert.show('Server Failure: Please Try Again');
@@ -223,7 +222,7 @@ class WorkerLanding extends Component<Props, State> {
         <div className="card-body">
           <div className="d-flex flex-row">
             <div className="d-flex flex-column mr-4">
-              <div className="p-2 ">PROFILE PICTURE HERE</div>
+              <img alt="a blank profile" className="profile-picture" src={GenericProfilePicture} />
             </div>
             <div className="d-flex flex-lg-column mr-4">
               <h5 className="card-title mb-3 h4">
@@ -246,14 +245,14 @@ class WorkerLanding extends Component<Props, State> {
                 {client.zipcode}
               </h6>
               <p className="card-text">Some information about the client here.</p>
-              <a href="/" className="card-link">Client Profile</a>
+              {/* <a href="/" className="card-link">Client Profile</a> */}
             </div>
-            <div className="d-flex flex-column mr-4">
+            {/* <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Recent Actions</h5>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 1&quot; on &quot;example date 1&quot;</h6>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 2&quot; on &quot;example date 2&quot;</h6>
               <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 3&quot; on &quot;example date 3&quot;</h6>
-            </div>
+            </div> */}
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
               <button
@@ -270,13 +269,13 @@ class WorkerLanding extends Component<Props, State> {
               >
                 View Documents
               </button>
-              <button
+              {/* <button
                 type="button"
                 className="btn btn-info mb-2 btn-sm"
                 onClick={(event) => this.handleClickSendEmail(event, client)}
               >
                 Send Email
-              </button>
+              </button> */}
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
@@ -419,11 +418,11 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          <div className="row ml-1 mt-2 mb-2">
+          <div className="row mt-2 mb-2">
             {(role === Role.Director || role === Role.Admin) ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
             <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
           </div>
-          <div className="row ml-1 mt-2 mb-2">
+          <div className="row mt-4 mb-2">
             {numClients === 0 ? <div /> : tablePageSelector }
             {numClients === 0 ? <div />
               : (
