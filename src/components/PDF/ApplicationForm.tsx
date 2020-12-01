@@ -280,7 +280,7 @@ class ApplicationForm extends Component<Props, State> {
                                 onChange={this.handleChangeFormValueTextField}
                                 required={entry.isRequired}
                               />
-                              <small className="form-text text-muted mt-1">Please complete this field.</small>
+                              {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                             </div>
                           );
                         }
@@ -297,7 +297,7 @@ class ApplicationForm extends Component<Props, State> {
                                 onChange={this.handleChangeFormValueTextField}
                                 required={entry.isRequired}
                               />
-                              <small className="form-text text-muted mt-1">Please complete this field.</small>
+                              {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                             </div>
                           );
                         }
@@ -323,7 +323,7 @@ class ApplicationForm extends Component<Props, State> {
                                         name={entry.fieldName}
                                         required={entry.isRequired}
                                       />
-                                      <label className="custom-control-label" htmlFor={entry.fieldName}>{value}</label>
+                                      {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                                     </div>
                                   </div>
                                 ))}
@@ -353,7 +353,7 @@ class ApplicationForm extends Component<Props, State> {
                                     onChange={this.handleChangeFormValueRadioButton}
                                     required={entry.isRequired}
                                   />
-                                  <label className="custom-control-label" htmlFor={value}>{value}</label>
+
                                 </div>
                               ))}
                             </div>
