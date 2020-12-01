@@ -8,6 +8,7 @@ import DocumentViewer from './DocumentViewer';
 import PDFType from '../../static/PDFType';
 import SignaturePad from '../../lib/SignaturePad';
 import 'react-datepicker/dist/react-datepicker.css';
+import uuid from 'react-uuid';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
@@ -179,7 +180,8 @@ class ApplicationForm extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((responseBlob) => {
         const pdfFile = new File([responseBlob], applicationFilename, { type: 'application/pdf' });
-        this.setState({ pdfApplication: pdfFile });
+        this.setState({ pdfApplication: pdfFile,
+                        buttonState: '' });
       });
   }
 
@@ -232,6 +234,7 @@ class ApplicationForm extends Component<Props, State> {
       numPages,
       startDate,
       formError,
+      buttonState,
     } = this.state;
 
     if (submitSuccessful) {
@@ -242,7 +245,6 @@ class ApplicationForm extends Component<Props, State> {
     const fillAmt = this.progressBarFill();
     const qStartNum = (currentPage-1) * MAX_Q_PER_PAGE;
     if (pdfApplication) {
-      console.log('PDF APPLICATION!!!!');
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
@@ -261,21 +263,7 @@ class ApplicationForm extends Component<Props, State> {
               <div className="pt-5 pb-3">I agree to all terms and conditions in the agreement above.</div>
               <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
               <div className="d-flex text-center my-5">
-                {(currentPage === 1) ? null : <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>}
-                <span>
-                  <p>
-                    <b>
-                      Page
-                      {' '}
-                      {currentPage}
-                      {' '}
-                      of
-                      {' '}
-                      {numPages}
-                    </b>
-                  </p>
-                </span>
-                <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitPdfApplication}>Submit PDF</button>
+                <button type="submit" className={`ml-auto btn btn-primary loginButtonBackground`} onClick={this.onSubmitPdfApplication}>Submit PDF</button>
               </div>
             </div>
           </div>
@@ -302,7 +290,7 @@ class ApplicationForm extends Component<Props, State> {
                   const currValue = formAnswers[entry.fieldName];
                   
                   return (
-                  <div className="my-5" key={index}>
+                  <div className="my-5" key={uuid()}>
                     {
                       (() => {
                         if (entry.fieldType === 'TextField') {
@@ -445,13 +433,12 @@ class ApplicationForm extends Component<Props, State> {
                   </div>
                 )},
               )}
-              {/* <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
-                Submit Form Answers
-                <div className="ld ld-ring ld-spin" />
-              </button> */}
-              <div className="d-flex text-center my-5">
-              {(currentPage === 1) ? <div /> : <button type="button" className="btn btn-outline-primary mr-auto" onClick={this.handlePrevious}>Previous</button>}
-                <span>
+
+              <div className="row justify-content-between text-center my-5">
+                <div className="col-md-2 pl-0">
+                  {(currentPage === 1) ? null : <button type="button" className="mr-auto btn btn-outline-primary" onClick={this.handlePrevious}>Previous</button>}
+                </div>
+                <div className="col-md-4 text-center my-1">
                   <p>
                     <b>
                       Page
@@ -463,12 +450,16 @@ class ApplicationForm extends Component<Props, State> {
                       {numPages}
                     </b>
                   </p>
-                </span>
-                
-                { (currentPage !== numPages)
-                  ? <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.handleContinue}>Continue</button>
-                  : <button type="submit" disabled={fillAmt !== 100} className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitFormQuestions}>Submit</button>
-                }
+                </div>
+                <div className='col-md-2 mr-xs-3 mr-sm-0'>
+                  { (currentPage !== numPages)
+                    ? <button type="submit" className="btn btn-primary" onClick={this.handleContinue}>Continue</button>
+                    : <button type="submit" className={`btn btn-success loginButtonBackground ld-ext-right ${buttonState}`} onClick={this.onSubmitFormQuestions}>
+                        Submit
+                        <div className="ld ld-ring ld-spin" />
+                      </button>
+                  }
+                </div>
               </div>
             </form>
           </div>
