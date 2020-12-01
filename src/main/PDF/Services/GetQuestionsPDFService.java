@@ -124,7 +124,7 @@ public class GetQuestionsPDFService implements Service {
     Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
     int numLines = DEFAULT_TEXT_FIELD_NUM_LINES;
-    String fieldQuestion = "Please Enter Your " + field.getPartialName();
+    String fieldQuestion = "Please enter your: " + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
@@ -146,7 +146,7 @@ public class GetQuestionsPDFService implements Service {
     Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
     int numLines = DEFAULT_CHECK_BOX_NUM_LINES;
-    String fieldQuestion = "Please select an option for " + field.getPartialName();
+    String fieldQuestion = "Please select an option for:" + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
@@ -181,7 +181,7 @@ public class GetQuestionsPDFService implements Service {
     Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
     int numLines = 2 + optionsJSONArray.length();
-    String fieldQuestion = "Please select one option for " + field.getPartialName();
+    String fieldQuestion = "Please select one option for: " + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
@@ -212,11 +212,11 @@ public class GetQuestionsPDFService implements Service {
     int numLines = optionsJSONArray.length() + 2;
     if (field.isMultiSelect()) {
       fieldQuestion =
-          "Please Select Option(s) for "
+          "Please select option(s) for: "
               + field.getPartialName()
               + " (you can select multiple options with CTRL)";
     } else {
-      fieldQuestion = "Please Select an Option for " + field.getPartialName();
+      fieldQuestion = "Please select an option for: " + field.getPartialName();
     }
     return createFieldJSONEntry(
         fieldName,
