@@ -19,7 +19,6 @@ interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   documents: any[],
-  currentUser: any,
   currentPage: number,
   itemsPerPageSelected: any,
   numElements: number
@@ -76,7 +75,6 @@ class Applications extends Component<Props, State, {}> {
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
-      currentUser: undefined,
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
       numElements: 0,
@@ -94,24 +92,24 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const { status } = responseObject;
+        const {
+          status,
+          documents,
+        } = responseJSON;
+        const numElements = documents.length;
         if (status === 'SUCCESS') {
-          const documents: any[] = [];
-          for (let i = 0; i < responseObject.documents.length; i += 1) {
-            const row = responseObject.documents[i];
+          const myDocuments: any[] = [];
+          for (let i = 0; i < numElements; i += 1) {
+            const row = documents[i];
             row.index = i;
-            documents.push(row);
+            myDocuments.push(row);
           }
           this.setState({
-            documents,
+            documents: myDocuments,
+            numElements,
           });
         }
       });
-  }
-
-  onClickWorker = (event: any) => {
-    this.setState({ currentUser: event });
   }
 
   handleChangeItemsPerPage = (itemsPerPageSelected: any) => {
@@ -123,9 +121,13 @@ class Applications extends Component<Props, State, {}> {
   handleViewDocument = (event: any, rowIndex: number) => {
     const {
       documents,
+      currentPage,
+      itemsPerPageSelected,
     } = this.state;
 
-    const index = rowIndex;
+    const itemsPerPage = Number(itemsPerPageSelected.value);
+    console.log(rowIndex, currentPage, itemsPerPage);
+    const index = rowIndex + currentPage * itemsPerPage;
     const form = documents[index];
     const {
       id,
@@ -140,17 +142,11 @@ class Applications extends Component<Props, State, {}> {
   }
 
   changeCurrentPage = (newCurrentPage: number) => {
+    console.log('new current page', newCurrentPage);
     this.setState({ currentPage: newCurrentPage }, this.getDocuments);
   }
 
-  onChangeViewPermission = (event: any) => {
-    const {
-      currentUser,
-    } = this.state;
-    currentUser.viewPermission = event.target.ischecked;
-    this.setState({ currentUser }, this.getDocuments);
-  }
-
+  // TODO: Make this work
   getDocuments = () => {
     const {
       itemsPerPageSelected,
@@ -202,7 +198,6 @@ class Applications extends Component<Props, State, {}> {
                     striped
                     noDataIndication="No Applications Present"
                     columns={this.tableCols}
-                    pagination={paginationFactory()}
                   />
                 </div>
               </div>
