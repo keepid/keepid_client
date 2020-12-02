@@ -84,11 +84,15 @@ class ApplicationForm extends Component<Props, State> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const { fields } = responseJSON;
-          this.setState({ formQuestions: fields });
-          fields.forEach((entry) => {
+          for (let i = 0; i < fields.length; i += 1) {
+            fields[i].fieldID = uuid();
+            const entry = fields[i];
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+          }
+          this.setState({
+            formQuestions: fields,
+            formAnswers,
           });
-          this.setState({ formAnswers });
         } else {
           this.setState({
             formError: true,
@@ -192,6 +196,7 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
+  // TODO: Based on pagination, not on number of answered questions
   progressBarFill = (): number => {
     const { formQuestions, formAnswers } = this.state;
     const total = (formQuestions) ? formQuestions.length : 0;
@@ -275,7 +280,7 @@ class ApplicationForm extends Component<Props, State> {
             <form onSubmit={this.onSubmitFormQuestions}>
               {formQuestions.map(
                 (entry) => (
-                  <div className="my-5" key={uuid()}>
+                  <div className="my-5" key={entry.fieldID}>
                     {
                       (() => {
                         if (entry.isReadOnly === true) {
@@ -324,7 +329,6 @@ class ApplicationForm extends Component<Props, State> {
                         }
 
                         if (entry.fieldType === 'CheckBox') {
-                          const temp = entry.fieldValueOptions;
                           return (
                             <div className="mt-2 mb-2">
                               <div className="checkbox-question">
@@ -332,23 +336,20 @@ class ApplicationForm extends Component<Props, State> {
                                   {entry.fieldQuestion}
                                   <small className="form-text text-muted mt-1">Please complete this field.</small>
                                 </label>
-
-                                {temp.map((value) => (
-                                  <div className="checkbox-option" key={value}>
-                                    <div className="custom-control custom-checkbox mx-2">
-                                      <input
-                                        type="checkbox"
-                                        className="custom-control-input mr-2"
-                                        id={entry.fieldName}
-                                        onChange={this.handleChangeFormValueCheckBox}
-                                        name={entry.fieldName}
-                                        required={entry.isRequired}
-                                      />
-                                      <label className="custom-control-label" htmlFor={entry.fieldName}>{value}</label>
-                                      {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
-                                    </div>
+                                <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
+                                  <div className="custom-control custom-checkbox mx-2">
+                                    <input
+                                      type="checkbox"
+                                      className="custom-control-input mr-2"
+                                      id={entry.fieldName}
+                                      onChange={this.handleChangeFormValueCheckBox}
+                                      name={entry.fieldName}
+                                      required={entry.isRequired}
+                                    />
+                                    <label className="custom-control-label" htmlFor={entry.fieldName}>{entry.fieldValueOptions[0]}</label>
+                                    {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                                   </div>
-                                ))}
+                                </div>
                               </div>
                             </div>
                           );
