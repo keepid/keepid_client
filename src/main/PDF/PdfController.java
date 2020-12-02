@@ -86,12 +86,13 @@ public class PdfController {
         if (pdfType == PDFType.FORM) {
           annotated = Objects.requireNonNull(req.getBoolean("annotated"));
         }
-        GetAllFilesPDFService getAllFilesPDFService =
-            new GetAllFilesPDFService(db, logger, username, orgName, userType, pdfType, annotated);
-        Message response = getAllFilesPDFService.executeAndGetResponse();
+        GetFilesInformationPDFService getFilesInformationPDFService =
+            new GetFilesInformationPDFService(
+                db, logger, username, orgName, userType, pdfType, annotated);
+        Message response = getFilesInformationPDFService.executeAndGetResponse();
         JSONObject responseJSON = response.toJSON();
         if (response == PdfMessage.SUCCESS) {
-          responseJSON.put("documents", getAllFilesPDFService.getFiles());
+          responseJSON.put("documents", getFilesInformationPDFService.getFiles());
         }
         ctx.result(responseJSON.toString());
       };
@@ -122,6 +123,7 @@ public class PdfController {
                   file.getFilename(),
                   file.getContentType(),
                   file.getContent());
+          logger.info(String.valueOf(file.getContent().readAllBytes().length));
           ctx.result(uploadService.executeAndGetResponse().toResponseString());
         }
       };

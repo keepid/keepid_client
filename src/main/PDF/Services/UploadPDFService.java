@@ -10,6 +10,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.bson.Document;
 import org.slf4j.Logger;
 
@@ -98,6 +99,7 @@ public class UploadPDFService implements Service {
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("title", getFormTitle(inputStream))
                       .append("annotated", false)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
@@ -117,5 +119,11 @@ public class UploadPDFService implements Service {
           options);
     }
     return PdfMessage.SUCCESS;
+  }
+
+  public String getFormTitle(InputStream input) throws IOException {
+    PDDocument pdfDocument = PDDocument.load(input);
+    pdfDocument.setAllSecurityToBeRemoved(true);
+    return pdfDocument.getDocumentInformation().getTitle();
   }
 }
