@@ -2,26 +2,26 @@ package User.Services;
 
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import User.IpObject;
 import User.User;
 import User.UserMessage;
-import com.mongodb.client.MongoDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class LoginHistoryService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   private String username;
   private JSONArray loginHistoryArray;
 
-  public LoginHistoryService(MongoDatabase db, Logger logger, String username) {
-    this.db = db;
+  public LoginHistoryService(UserDao userDao, Logger logger, String username) {
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
   }
@@ -30,12 +30,12 @@ public class LoginHistoryService implements Service {
   public Message executeAndGetResponse() {
     logger.info("Started getLogInHistory service");
     this.loginHistoryArray = new JSONArray();
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+    Optional<User> optionalUser = userDao.get(username);
+    if (optionalUser.isEmpty()) {
       logger.error("Session Token Failure");
       return UserMessage.SESSION_TOKEN_FAILURE;
     } else {
-      List<IpObject> logIns = user.getLogInHistory();
+      List<IpObject> logIns = optionalUser.get().getLogInHistory();
       for (IpObject login : logIns) {
         JSONObject oneLog = new JSONObject();
         oneLog.put("IP", login.getIp());

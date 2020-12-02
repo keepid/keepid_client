@@ -2,27 +2,28 @@ package User.Services;
 
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
-import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
 
+import java.util.Optional;
+
 public class CheckUsernameExistsService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   String username;
 
-  public CheckUsernameExistsService(MongoDatabase db, Logger logger, String username) {
-    this.db = db;
+  public CheckUsernameExistsService(UserDao userDao, Logger logger, String username) {
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+    Optional<User> user = userDao.get(username);
+    if (user.isEmpty()) {
       logger.info("Username not taken.");
       return UserMessage.SUCCESS;
     } else {

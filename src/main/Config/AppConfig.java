@@ -1,6 +1,8 @@
 package Config;
 
 import Activity.ActivityController;
+import Database.User.UserDao;
+import Database.User.UserDaoFactory;
 import Issue.IssueController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
@@ -21,7 +23,7 @@ public class AppConfig {
   public static Javalin appFactory(DeploymentLevel deploymentLevel) {
     System.setProperty("logback.configurationFile", "../Logger/Resources/logback.xml");
     Javalin app = AppConfig.createJavalinApp(deploymentLevel);
-    MongoConfig.getMongoClient();
+    UserDao userDao = UserDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
     setApplicationHeaders(app);
 
@@ -40,7 +42,7 @@ public class AppConfig {
 
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
-    UserController userController = new UserController(db);
+    UserController userController = new UserController(userDao);
     AccountSecurityController accountSecurityController = new AccountSecurityController(db);
     PdfController pdfController = new PdfController(db);
     IssueController issueController = new IssueController(db);

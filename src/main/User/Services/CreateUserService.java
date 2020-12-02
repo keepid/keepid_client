@@ -3,23 +3,21 @@ package User.Services;
 import Activity.*;
 import Config.Message;
 import Config.Service;
+import Database.User.UserDao;
 import Security.SecurityUtils;
 import User.IpObject;
 import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.mongodb.client.model.Filters.eq;
+import java.util.Optional;
 
 public class CreateUserService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   UserType sessionUserLevel;
   String organizationName;
@@ -37,11 +35,10 @@ public class CreateUserService implements Service {
   String username;
   String password;
   UserType userType;
-  Message response;
   ActivityController activityController;
 
   public CreateUserService(
-      MongoDatabase db,
+      UserDao userDao,
       Logger logger,
       UserType sessionUserLevel,
       String organizationName,
@@ -59,7 +56,7 @@ public class CreateUserService implements Service {
       String username,
       String password,
       UserType userType) {
-    this.db = db;
+    this.userDao = userDao;
     this.logger = logger;
     this.sessionUserLevel = sessionUserLevel;
     this.organizationName = organizationName;
@@ -77,12 +74,12 @@ public class CreateUserService implements Service {
     this.username = username;
     this.password = password;
     this.userType = userType;
-    activityController = new ActivityController(db);
+    activityController = new ActivityController();
   }
 
   // for testing
   CreateUserService(
-      MongoDatabase db,
+      UserDao userDao,
       Logger logger,
       User user,
       String sessionUsername,
@@ -155,9 +152,8 @@ public class CreateUserService implements Service {
     }
 
     // add to database
-    MongoCollection<User> userCollection = db.getCollection("user", User.class);
-    User existingUser = userCollection.find(eq("username", user.getUsername())).first();
-    if (existingUser != null) {
+    Optional<User> optionalUser = userDao.get(username);
+    if (optionalUser.isPresent()) {
       logger.info("Username already exists");
       return UserMessage.USERNAME_ALREADY_EXISTS;
     }
@@ -175,9 +171,8 @@ public class CreateUserService implements Service {
     user.setLogInHistory(logInInfo);
 
     // insert user into database
-    userCollection.insertOne(user);
-    User sessionUser = userCollection.find(eq("username", sessionUsername)).first();
-
+    userDao.save(user);
+    User sessionUser = userDao.get(username).orElseThrow();
     // create activity
     switch (user.getUserType()) {
       case Worker:

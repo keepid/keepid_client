@@ -2,7 +2,7 @@ package Security.Services;
 
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import Security.EmailExceptions;
 import Security.EmailUtil;
 import Security.SecurityUtils;

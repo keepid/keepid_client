@@ -1,15 +1,13 @@
 package TestUtils;
 
-import Config.DeploymentLevel;
-import Config.MongoConfig;
+import Database.Dao;
 import Organization.Organization;
 import Security.SecurityUtils;
 import User.IpObject;
 import User.User;
 import User.UserType;
 import Validation.ValidationException;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,11 +15,11 @@ import java.util.List;
 public class EntityFactory {
   public static final long TEST_DATE = 1577862000000L; // Jan 1 2020
 
-  public PartialUser createUser() {
+  public static PartialUser createUser() {
     return new PartialUser();
   }
 
-  public PartialOrganization createOrganization() {
+  public static PartialOrganization createOrganization() {
     return new PartialOrganization();
   }
 
@@ -71,14 +69,9 @@ public class EntityFactory {
     }
 
     @Override
-    public User buildAndPersist() {
+    public User buildAndPersist(Dao<User> dao) {
       User user = this.build();
-      MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
-      if (testDB == null) {
-        throw new IllegalStateException("testDB must not be null");
-      }
-      MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
-      userCollection.insertOne(user);
+      dao.save(user);
       return user;
     }
 
@@ -202,15 +195,9 @@ public class EntityFactory {
     }
 
     @Override
-    public Organization buildAndPersist() {
+    public Organization buildAndPersist(Dao<Organization> dao) {
       Organization organization = this.build();
-      MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
-      if (testDB == null) {
-        throw new IllegalStateException("testDB must not be null");
-      }
-      MongoCollection<Organization> orgCollection =
-          testDB.getCollection("organization", Organization.class);
-      orgCollection.insertOne(organization);
+      dao.save(organization);
       return organization;
     }
 
@@ -268,6 +255,6 @@ public class EntityFactory {
   public interface PartialObject<T> {
     public T build();
 
-    public T buildAndPersist();
+    public T buildAndPersist(Dao<T> dao);
   }
 }

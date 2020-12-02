@@ -4,7 +4,7 @@ import Activity.ActivityController;
 import Activity.LoginActivity;
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import Issue.IssueController;
 import Security.EmailExceptions;
 import Security.EmailUtil;
@@ -37,6 +37,7 @@ public class LoginService implements Service {
   public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));
   private Logger logger;
   private MongoDatabase db;
+  private UserDao userDao;
   private String username;
   private String password;
   private User user;
@@ -46,19 +47,19 @@ public class LoginService implements Service {
   public static final long JWT_EXPIRATION_IN_MILI = 300000;
 
   public LoginService(
-      MongoDatabase db,
+      UserDao userDao,
       Logger logger,
       String username,
       String password,
       String ip,
       String userAgent) {
-    this.db = db;
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
     this.password = password;
     this.ip = ip;
     this.userAgent = userAgent;
-    activityController = new ActivityController(db);
+    activityController = new ActivityController();
   }
 
   // the execute function will handle all business logic
@@ -70,12 +71,12 @@ public class LoginService implements Service {
       return UserMessage.AUTH_FAILURE;
     }
     // get user
-    User user = UserDao.findOneUserOrNull(db, this.username);
-    if (user == null) {
+
+    Optional<User> optionalUser = userDao.get(this.username);
+    if (optionalUser.isEmpty()) {
       return UserMessage.AUTH_FAILURE;
     }
-    Objects.requireNonNull(user);
-    this.user = user;
+    User user = optionalUser.get();
     // verify password
     if (!verifyPassword(this.password, user.getPassword())) {
       return UserMessage.AUTH_FAILURE;

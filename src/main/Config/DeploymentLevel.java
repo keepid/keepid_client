@@ -3,5 +3,6 @@ package Config;
 public enum DeploymentLevel {
   PRODUCTION,
   STAGING,
-  TEST
+  TEST,
+  IN_MEMORY;
 };

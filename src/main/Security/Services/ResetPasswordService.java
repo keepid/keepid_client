@@ -4,7 +4,7 @@ import Activity.PasswordRecoveryActivity;
 import Config.Message;
 import Config.Service;
 import Database.TokenDao;
-import Database.UserDao;
+import Database.User.UserDao;
 import Security.SecurityUtils;
 import Security.Tokens;
 import User.User;

@@ -1,5 +1,7 @@
 package Activity;
 
+import Config.DeploymentLevel;
+import Config.MongoConfig;
 import Config.Message;
 import Logger.LogFactory;
 import User.UserMessage;
@@ -13,8 +15,8 @@ public class ActivityController {
   Logger logger;
   MongoDatabase db;
 
-  public ActivityController(MongoDatabase db) {
-    this.db = db;
+  public ActivityController() {
+    this.db = MongoConfig.getDatabase(DeploymentLevel.TEST);
     LogFactory l = new LogFactory();
     logger = l.createLogger("ActivityController");
   }
