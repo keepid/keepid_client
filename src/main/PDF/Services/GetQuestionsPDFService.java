@@ -3,9 +3,12 @@ package PDF.Services;
 import Config.Message;
 import Config.Service;
 import PDF.PdfMessage;
+import User.Services.GetUserInfoService;
+import User.UserMessage;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,23 +21,41 @@ import java.util.List;
 import java.util.Objects;
 
 public class GetQuestionsPDFService implements Service {
-  public static final int DEFAULT_TEXT_FIELD_NUM_LINES = 3;
-  public static final int DEFAULT_SIGNATURE_FIELD_NUM_LINES = 4;
-  public static final int DEFAULT_PUSH_BUTTON_NUM_LINES = 3;
-  public static final int DEFAULT_CHECK_BOX_NUM_LINES = 3;
+  public static final int DEFAULT_FIELD_NUM_LINES = 3;
+  // public static final int DEFAULT_SIGNATURE_FIELD_NUM_LINES = 4;
+  // public static final int DEFAULT_PUSH_BUTTON_NUM_LINES = 3;
+  // public static final int DEFAULT_CHECK_BOX_NUM_LINES = 3;
 
   UserType privilegeLevel;
+  String username;
+  JSONObject userInfo;
   InputStream fileStream;
   MongoDatabase db;
   Logger logger;
-  List<JSONObject> applicationQuestions;
+  JSONObject applicationInformation;
 
   public GetQuestionsPDFService(
-      MongoDatabase db, Logger logger, UserType privilegeLevel, InputStream fileStream) {
+      MongoDatabase db,
+      Logger logger,
+      UserType privilegeLevel,
+      String username,
+      InputStream fileStream) {
     this.db = db;
     this.logger = logger;
     this.privilegeLevel = privilegeLevel;
+    this.username = username;
     this.fileStream = fileStream;
+
+    // Now get the user's profile so we can autofill
+    GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
+    Message response = infoService.executeAndGetResponse();
+    JSONObject userInfo;
+    if (response != UserMessage.SUCCESS) { // if fail return
+      userInfo = null;
+    } else {
+      userInfo = infoService.getUserFields(); // get user info here
+    }
+    this.userInfo = userInfo;
   }
 
   @Override
@@ -57,24 +78,36 @@ public class GetQuestionsPDFService implements Service {
     }
   }
 
-  public List<JSONObject> getApplicationQuestions() {
-    Objects.requireNonNull(applicationQuestions);
-    return applicationQuestions;
+  public JSONObject getApplicationInformation() {
+    Objects.requireNonNull(applicationInformation);
+    return applicationInformation;
   }
+
   /*
    @Param inputStream is the document
   */
   public Message getFieldInformation(InputStream inputStream) throws IOException {
     PDDocument pdfDocument = PDDocument.load(inputStream);
     pdfDocument.setAllSecurityToBeRemoved(true);
+    JSONObject responseJSON = new JSONObject();
     List<JSONObject> fieldsJSON = new LinkedList<>();
 
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     if (acroForm == null) {
       return PdfMessage.INVALID_PDF;
     }
+
+    // Report the Metadata
+    PDDocumentInformation documentInformation = pdfDocument.getDocumentInformation();
+
+    // TODO: Make this the filename received from the client instead because of null checking
+    responseJSON.put("title", documentInformation.getTitle());
+    responseJSON.put("description", documentInformation.getSubject());
+
+    // Report the Fields
     List<PDField> fields = new LinkedList<>();
     fields.addAll(acroForm.getFields());
+
     while (!fields.isEmpty()) {
       PDField field = fields.get(0);
       if (field instanceof PDNonTerminalField) {
@@ -107,52 +140,58 @@ public class GetQuestionsPDFService implements Service {
     }
     pdfDocument.close();
 
-    this.applicationQuestions = fieldsJSON;
+    responseJSON.put("fields", fieldsJSON);
+    this.applicationInformation = responseJSON;
     return PdfMessage.SUCCESS;
   }
 
-  private static JSONObject getTextField(PDTextField field) {
+  private JSONObject getTextField(PDTextField field) {
     String fieldName = field.getFullyQualifiedName();
     String fieldType;
-    if (field.isMultiline()) {
+    String fieldQuestion;
+    if (field.isReadOnly()) {
+      fieldType = "ReadOnlyField";
+      fieldQuestion = field.getPartialName();
+      String fieldValue = field.getValueAsString();
+      if (fieldValue != null && !fieldValue.equals("")) {
+        fieldQuestion += ": " + fieldValue;
+      }
+    } else if (field.isMultiline()) {
       fieldType = "MultilineTextField";
+      fieldQuestion = "Please Enter Your: " + field.getPartialName();
     } else {
       fieldType = "TextField";
+      fieldQuestion = "Please Enter Your: " + field.getPartialName();
     }
     String fieldValueOptions = "[]";
     String fieldDefaultValue = "";
-    Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
-    int numLines = DEFAULT_TEXT_FIELD_NUM_LINES;
-    String fieldQuestion = "Please enter your: " + field.getPartialName();
+    int numLines = DEFAULT_FIELD_NUM_LINES;
     return createFieldJSONEntry(
         fieldName,
         fieldType,
         fieldValueOptions,
         fieldDefaultValue,
-        fieldIsReadOnly,
         fieldIsRequired,
         numLines,
         fieldQuestion);
   }
 
-  private static JSONObject getCheckBox(PDCheckBox field) {
+  private JSONObject getCheckBox(PDCheckBox field) {
     String fieldName = field.getFullyQualifiedName();
     String fieldType = "CheckBox";
     JSONArray optionsJSONArray = new JSONArray();
     optionsJSONArray.put(field.getOnValue());
     String fieldValueOptions = optionsJSONArray.toString();
     Boolean fieldDefaultValue = Boolean.FALSE;
-    Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
-    int numLines = DEFAULT_CHECK_BOX_NUM_LINES;
-    String fieldQuestion = "Please select an option for:" + field.getPartialName();
+    int numLines = DEFAULT_FIELD_NUM_LINES;
+    String fieldQuestion = "Please Select an Option for: " + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
         fieldValueOptions,
         fieldDefaultValue,
-        fieldIsReadOnly,
         fieldIsRequired,
         numLines,
         fieldQuestion);
@@ -169,7 +208,7 @@ public class GetQuestionsPDFService implements Service {
   //        fieldName, fieldType, fieldValueOptions, fieldDefaultValue, numLines, fieldQuestion);
   //  }
 
-  private static JSONObject getRadioButton(PDRadioButton field) {
+  private JSONObject getRadioButton(PDRadioButton field) {
     String fieldName = field.getFullyQualifiedName();
     String fieldType = "RadioButton";
     JSONArray optionsJSONArray = new JSONArray();
@@ -178,22 +217,20 @@ public class GetQuestionsPDFService implements Service {
     }
     String fieldValueOptions = optionsJSONArray.toString();
     String fieldDefaultValue = "Off";
-    Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
     int numLines = 2 + optionsJSONArray.length();
-    String fieldQuestion = "Please select one option for: " + field.getPartialName();
+    String fieldQuestion = "Please Select One Option for: " + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
         fieldValueOptions,
         fieldDefaultValue,
-        fieldIsReadOnly,
         fieldIsRequired,
         numLines,
         fieldQuestion);
   }
 
-  private static JSONObject getChoiceField(PDChoice field) {
+  private JSONObject getChoiceField(PDChoice field) {
     String fieldName = field.getFullyQualifiedName();
     String fieldType, fieldQuestion;
     if (field instanceof PDComboBox) {
@@ -207,51 +244,72 @@ public class GetQuestionsPDFService implements Service {
     }
     String fieldValueOptions = optionsJSONArray.toString();
     String fieldDefaultValue = "Off";
-    Boolean fieldIsReadOnly = field.isReadOnly();
     Boolean fieldIsRequired = field.isRequired();
     int numLines = optionsJSONArray.length() + 2;
     if (field.isMultiSelect()) {
       fieldQuestion =
-          "Please select option(s) for: "
+          "Please Select Option(s) for: "
               + field.getPartialName()
               + " (you can select multiple options with CTRL)";
     } else {
-      fieldQuestion = "Please select an option for: " + field.getPartialName();
+      fieldQuestion = "Please Select an Option for: " + field.getPartialName();
     }
     return createFieldJSONEntry(
         fieldName,
         fieldType,
         fieldValueOptions,
         fieldDefaultValue,
-        fieldIsReadOnly,
         fieldIsRequired,
         numLines,
         fieldQuestion);
   }
 
-  private static JSONObject createFieldJSONEntry(
+  private JSONObject createFieldJSONEntry(
       String fieldName,
       String fieldType,
       String fieldValueOptions,
       Object fieldDefaultValue,
-      boolean fieldIsReadOnly,
       boolean fieldIsRequired,
       int fieldNumLines,
       String fieldQuestion) {
     JSONObject fieldJSON = new JSONObject();
+
+    JSONObject userInfo = this.userInfo;
+    String[] splitFieldName = fieldName.split(":");
+    boolean fieldIsMatched = false;
+    if (splitFieldName.length == 1) {
+      // No annotation for matched field
+    } else if (splitFieldName.length == 2) {
+      // Annotation for matched field
+      String fieldNameBase = splitFieldName[0];
+      String fieldMatchedDBName = splitFieldName[1];
+      fieldQuestion = fieldQuestion.replaceFirst(fieldName, fieldNameBase);
+
+      if (userInfo.has(fieldMatchedDBName)) {
+        // Matched variable found
+        fieldDefaultValue = userInfo.getString(fieldMatchedDBName);
+        // TODO: Better way of changing the question (could be a problem)
+        fieldIsMatched = true;
+      } else {
+        // Matched not found
+        logger.error("Error in Annotation for Field: " + fieldName);
+      }
+    } else {
+      // Error in annotation - treat as normal without annotation
+      logger.error("Error in Annotation for Field: " + fieldName);
+    }
+
     // Not Editable
     fieldJSON.put("fieldName", fieldName);
     fieldJSON.put("fieldType", fieldType);
     fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
     fieldJSON.put("fieldDefaultValue", fieldDefaultValue);
-    fieldJSON.put("fieldIsReadOnly", fieldIsReadOnly);
     fieldJSON.put("fieldIsRequired", fieldIsRequired);
     fieldJSON.put("fieldNumLines", fieldNumLines);
+    fieldJSON.put("fieldIsMatched", fieldIsMatched);
 
     // Editable
     fieldJSON.put("fieldQuestion", fieldQuestion);
-    fieldJSON.put("fieldMatchedDBVariable", "");
-    fieldJSON.put("fieldMatchedDBName", "");
 
     return fieldJSON;
   }

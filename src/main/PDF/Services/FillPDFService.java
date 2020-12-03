@@ -75,6 +75,7 @@ public class FillPDFService implements Service {
     if (acroForm == null) {
       return PdfMessage.INVALID_PDF;
     }
+
     for (String fieldName : formAnswers.keySet()) {
       PDField field = acroForm.getField(fieldName);
       if (field instanceof PDButton) {

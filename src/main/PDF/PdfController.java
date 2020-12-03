@@ -7,11 +7,15 @@ import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+
+import static User.UserController.mergeJSON;
 
 public class PdfController {
   private MongoDatabase db;
@@ -112,6 +116,8 @@ public class PdfController {
           ctx.result(PdfMessage.INVALID_PDF.toResponseString());
         } else {
           PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+          // TODO: Replace with a title that is retrieved from the client (optionally)
+          String title = getPDFTitle(pdfType, file.getFilename(), file.getContent());
           UploadPDFService uploadService =
               new UploadPDFService(
                   db,
@@ -121,6 +127,7 @@ public class PdfController {
                   privilegeLevel,
                   pdfType,
                   file.getFilename(),
+                  title,
                   file.getContentType(),
                   file.getContent());
           logger.info(String.valueOf(file.getContent().readAllBytes().length));
@@ -211,13 +218,14 @@ public class PdfController {
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
           GetQuestionsPDFService getQuestionsPDFService =
-              new GetQuestionsPDFService(db, logger, privilegeLevel, inputStream);
+              new GetQuestionsPDFService(db, logger, privilegeLevel, username, inputStream);
           Message response = getQuestionsPDFService.executeAndGetResponse();
-          JSONObject responseJSON = response.toJSON();
           if (response == PdfMessage.SUCCESS) {
-            responseJSON.put("fields", getQuestionsPDFService.getApplicationQuestions());
+            JSONObject information = getQuestionsPDFService.getApplicationInformation();
+            ctx.result(mergeJSON(response.toJSON(), information).toString());
+          } else {
+            ctx.result(response.toJSON().toString());
           }
-          ctx.result(responseJSON.toString());
         } else {
           ctx.result(responseDownload.toResponseString());
         }
@@ -267,4 +275,20 @@ public class PdfController {
           ctx.result(responseDownload.toResponseString());
         }
       };
+
+  private String getPDFTitle(PDFType pdfType, String fileName, InputStream input) {
+    String title;
+    if (pdfType == PDFType.FORM) {
+      try {
+        PDDocument pdfDocument = PDDocument.load(input);
+        pdfDocument.setAllSecurityToBeRemoved(true);
+        title = pdfDocument.getDocumentInformation().getTitle();
+      } catch (IOException exception) {
+        title = fileName;
+      }
+    } else {
+      title = fileName;
+    }
+    return title;
+  }
 }
