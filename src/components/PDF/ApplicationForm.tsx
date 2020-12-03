@@ -3,12 +3,12 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
+import uuid from 'react-uuid';
 import getServerURL from '../../serverOverride';
 import DocumentViewer from './DocumentViewer';
 import PDFType from '../../static/PDFType';
 import SignaturePad from '../../lib/SignaturePad';
 import 'react-datepicker/dist/react-datepicker.css';
-import uuid from 'react-uuid';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
@@ -86,10 +86,11 @@ class ApplicationForm extends Component<Props, State> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const { fields } = responseJSON;
-          this.setState({ formQuestions: fields,
-                          numPages:
-                          (fields.length === 0) ? 1 : Math.ceil(fields.length/MAX_Q_PER_PAGE),
-                        });
+          this.setState({
+            formQuestions: fields,
+            numPages:
+            (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
+          });
           fields.forEach((entry) => {
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           });
@@ -109,7 +110,7 @@ class ApplicationForm extends Component<Props, State> {
 
   handlePrevious = (e:any): void => {
     e.preventDefault();
-    this.setState((prevState) => ({ currentPage: prevState.currentPage - 1 }));
+    this.setState((prevState) => ({ currentPage: prevState.currentPage - 1 }), () => window.scrollTo(0, 0));
   }
 
   handleChangeFormValueTextField(event: any) {
@@ -180,8 +181,10 @@ class ApplicationForm extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((responseBlob) => {
         const pdfFile = new File([responseBlob], applicationFilename, { type: 'application/pdf' });
-        this.setState({ pdfApplication: pdfFile,
-                        buttonState: '' });
+        this.setState({
+          pdfApplication: pdfFile,
+          buttonState: '',
+        });
       });
   }
 
@@ -190,7 +193,7 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication,
     } = this.state;
     const {
-      alert
+      alert,
     } = this.props;
     if (pdfApplication) {
       const formData = new FormData();
@@ -217,7 +220,7 @@ class ApplicationForm extends Component<Props, State> {
     let answered = 0;
     Object.keys(formAnswers).forEach((questionId) => {
       const ans = formAnswers[questionId];
-      if (ans && ans !== 'Off' && ans !== 'false')  {
+      if (ans && ans !== 'Off' && ans !== 'false') {
         answered += 1;
       }
     });
@@ -242,15 +245,13 @@ class ApplicationForm extends Component<Props, State> {
     }
 
     let bodyElement;
-    const fillAmt = this.progressBarFill();
-    const qStartNum = (currentPage-1) * MAX_Q_PER_PAGE;
+    const fillAmt = (currentPage / numPages) * 100;
+    // const fillAmt = this.progressBarFill();
+    const qStartNum = (currentPage - 1) * MAX_Q_PER_PAGE;
     if (pdfApplication) {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-            <div className="progress mb-4">
-              <div className="progress-bar active" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
-            </div>
             <div className="container">
               <h2>Review and sign to complete your form</h2>
               <p>Finally, sign the agreement and click submit when complete.</p>
@@ -263,7 +264,7 @@ class ApplicationForm extends Component<Props, State> {
               <div className="pt-5 pb-3">I agree to all terms and conditions in the agreement above.</div>
               <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
               <div className="d-flex text-center my-5">
-                <button type="submit" className={`ml-auto btn btn-primary loginButtonBackground`} onClick={this.onSubmitPdfApplication}>Submit PDF</button>
+                <button type="submit" className="ml-auto btn btn-primary loginButtonBackground" onClick={this.onSubmitPdfApplication}>Submit PDF</button>
               </div>
             </div>
           </div>
@@ -274,7 +275,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
+              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }} />
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
               <h2>Application Form Name</h2>
@@ -283,15 +284,14 @@ class ApplicationForm extends Component<Props, State> {
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormQuestions}>
-              
               {formQuestions.map(
                 (entry, index) => {
-                  if (index < qStartNum || index >= qStartNum+MAX_Q_PER_PAGE) return null;
+                  if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
                   const currValue = formAnswers[entry.fieldName];
-                  
+
                   return (
-                  <div className="my-5" key={uuid()}>
-                    {
+                    <div className="my-5" key={uuid()}>
+                      {
                       (() => {
                         if (entry.fieldType === 'TextField') {
                           return (
@@ -382,7 +382,7 @@ class ApplicationForm extends Component<Props, State> {
                               </label>
 
                               <select defaultValue={selectedVal} id={entry.fieldName} onChange={this.handleChangeFormValueTextField} className="custom-select" required>
-                                <option disabled value='defaultValue'>Please select your choice ...</option>
+                                <option disabled value="defaultValue">Please select your choice ...</option>
                                 {temp.map((value) => (
                                   <option value={value} key={value}>{value}</option>
                                 ))}
@@ -430,8 +430,9 @@ class ApplicationForm extends Component<Props, State> {
                         return <div />;
                       })()
                     }
-                  </div>
-                )},
+                    </div>
+                  );
+                },
               )}
 
               <div className="row justify-content-between text-center my-5">
@@ -451,14 +452,15 @@ class ApplicationForm extends Component<Props, State> {
                     </b>
                   </p>
                 </div>
-                <div className='col-md-2 mr-xs-3 mr-sm-0'>
-                  { (currentPage !== numPages)
+                <div className="col-md-2 mr-xs-3 mr-sm-0">
+                  {(currentPage !== numPages)
                     ? <button type="submit" className="btn btn-primary" onClick={this.handleContinue}>Continue</button>
-                    : <button type="submit" className={`btn btn-success loginButtonBackground ld-ext-right ${buttonState}`} onClick={this.onSubmitFormQuestions}>
+                    : (
+                      <button type="submit" className={`btn btn-success loginButtonBackground ld-ext-right ${buttonState}`} onClick={this.onSubmitFormQuestions}>
                         Submit
                         <div className="ld ld-ring ld-spin" />
                       </button>
-                  }
+                    )}
                 </div>
               </div>
             </form>
