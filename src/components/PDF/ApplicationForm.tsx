@@ -275,7 +275,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }} />
+              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} aria-label={`${fillAmt}%`} style={{ width: `${fillAmt}%` }} />
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
               <h2>Application Form Name</h2>
