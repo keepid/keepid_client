@@ -22,6 +22,8 @@ interface State {
   formQuestions: any[] | undefined,
   formAnswers: any,
   pdfApplication: File | undefined,
+  title: String,
+  description : String,
   buttonState: string,
   submitSuccessful: boolean,
   currentPage: number,
@@ -51,6 +53,8 @@ class ApplicationForm extends Component<Props, State> {
       formQuestions: undefined,
       formAnswers: {},
       pdfApplication: undefined,
+      title: '',
+      description: '',
       buttonState: '',
       submitSuccessful: false,
       currentPage: 0,
@@ -83,7 +87,11 @@ class ApplicationForm extends Component<Props, State> {
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
-          const { fields } = responseJSON;
+          const {
+            fields,
+            title,
+            description,
+          } = responseJSON;
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
             const entry = fields[i];
@@ -91,6 +99,8 @@ class ApplicationForm extends Component<Props, State> {
           }
           this.setState({
             formQuestions: fields,
+            title,
+            description,
             formAnswers,
           });
         } else {
@@ -210,6 +220,8 @@ class ApplicationForm extends Component<Props, State> {
   render() {
     const {
       pdfApplication,
+      title,
+      description,
       formQuestions,
       formAnswers,
       submitSuccessful,
@@ -272,8 +284,8 @@ class ApplicationForm extends Component<Props, State> {
               <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
-              <h2>Application Form Name</h2>
-              <p>Sample description of what this form is about. Or instructions for the form can go here.</p>
+              <h2>{ title }</h2>
+              <p>{ description }</p>
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
@@ -283,11 +295,11 @@ class ApplicationForm extends Component<Props, State> {
                   <div className="my-5" key={entry.fieldID}>
                     {
                       (() => {
-                        if (entry.isReadOnly === true) {
+                        if (entry.fieldType === 'ReadOnlyField') {
                           return (
                             <div className="mt-2 mb-2">
                               <label className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
+                                { entry.fieldName }
                               </label>
                             </div>
                           );
@@ -304,9 +316,11 @@ class ApplicationForm extends Component<Props, State> {
                                 id={entry.fieldName}
                                 placeholder={entry.fieldName}
                                 onChange={this.handleChangeFormValueTextField}
-                                required={entry.isRequired}
+                                value={formAnswers[entry.fieldName]}
+                                required={entry.fieldIsRequired}
+                                readOnly={entry.fieldIsMatched}
                               />
-                              {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+                              {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                             </div>
                           );
                         }
@@ -321,9 +335,11 @@ class ApplicationForm extends Component<Props, State> {
                                 id={entry.fieldName}
                                 placeholder={entry.fieldName}
                                 onChange={this.handleChangeFormValueTextField}
-                                required={entry.isRequired}
+                                value={formAnswers[entry.fieldName]}
+                                required={entry.fieldIsRequired}
+                                readOnly={entry.fieldIsMatched}
                               />
-                              {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+                              {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                             </div>
                           );
                         }
@@ -343,11 +359,12 @@ class ApplicationForm extends Component<Props, State> {
                                       className="custom-control-input mr-2"
                                       id={entry.fieldName}
                                       onChange={this.handleChangeFormValueCheckBox}
-                                      name={entry.fieldName}
-                                      required={entry.isRequired}
+                                      checked={formAnswers[entry.fieldName]}
+                                      required={entry.fieldIsRequired}
+                                      readOnly={entry.fieldIsMatched}
                                     />
                                     <label className="custom-control-label" htmlFor={entry.fieldName}>{entry.fieldValueOptions[0]}</label>
-                                    {entry.isRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+                                    {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
                                   </div>
                                 </div>
                               </div>
@@ -365,18 +382,19 @@ class ApplicationForm extends Component<Props, State> {
                               </label>
 
                               {temp.map((value) => (
-                                <div className="custom-control custom-radio" key={value}>
+                                <div className="custom-control custom-radio" key={`${entry.fieldName}_${value}`}>
                                   <input
                                     type="radio"
                                     className="custom-control-input"
-                                    id={value}
+                                    id={`${entry.fieldName}_${value}`}
+                                    name={entry.fieldName}
                                     checked={formAnswers[entry.fieldName] === value}
                                     value={value}
-                                    name={entry.fieldName}
                                     onChange={this.handleChangeFormValueRadioButton}
-                                    required={entry.isRequired}
+                                    required={entry.fieldIsRequired}
+                                    readOnly={entry.fieldIsMatched}
                                   />
-                                  <label className="custom-control-label" htmlFor={value}>{value}</label>
+                                  <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>{value}</label>
                                 </div>
                               ))}
                             </div>
@@ -384,7 +402,7 @@ class ApplicationForm extends Component<Props, State> {
                         }
 
                         if (entry.fieldType === 'ComboBox') {
-                          const temp = entry.fieldValueOptions;
+                          const { fieldValueOptions } = entry;
                           return (
                             <div className="dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -396,11 +414,11 @@ class ApplicationForm extends Component<Props, State> {
                                 id={entry.fieldName}
                                 onChange={this.handleChangeFormValueTextField}
                                 className="custom-select"
-                                required={entry.isRequired}
+                                required={entry.fieldIsRequired}
                               >
                                 <option selected disabled value="">Please select your choice ...</option>
-                                {temp.map((value) => (
-                                  <option value={value} key={value}>{value}</option>
+                                {fieldValueOptions.map((value) => (
+                                  <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -408,7 +426,7 @@ class ApplicationForm extends Component<Props, State> {
                         }
 
                         if (entry.fieldType === 'ListBox') {
-                          const temp = entry.fieldValueOptions;
+                          const { fieldValueOptions } = entry.fieldValueOptions;
                           return (
                             <div className="multiple-dropdown-question">
                               <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -421,11 +439,11 @@ class ApplicationForm extends Component<Props, State> {
                                 onChange={this.handleChangeFormValueListBox}
                                 className="custom-select"
                                 multiple
-                                required={entry.isRequired}
+                                required={entry.fieldIsRequired}
                               >
                                 <option selected disabled value="">Please select your choice(s) ...</option>
-                                {temp.map((value) => (
-                                  <option value={value} key={value}>{value}</option>
+                                {fieldValueOptions.map((value) => (
+                                  <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
                                 ))}
                               </select>
                             </div>
@@ -441,7 +459,7 @@ class ApplicationForm extends Component<Props, State> {
                                 selected={startDate}
                                 onChange={this.handleChangeDate}
                                 className="form-control form-purple mt-1"
-                                required={entry.isRequired}
+                                required={entry.fieldIsRequired}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
