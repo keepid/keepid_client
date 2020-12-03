@@ -184,7 +184,8 @@ class ApplicationForm extends Component<Props, State> {
         this.setState({
           pdfApplication: pdfFile,
           buttonState: '',
-        });
+        },
+        () => window.scrollTo(0, 0));
       });
   }
 
