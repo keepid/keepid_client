@@ -24,7 +24,6 @@ interface State {
   pdfApplication: File | undefined,
   title: String,
   description : String,
-  buttonState: string,
   submitSuccessful: boolean,
   currentPage: number,
   numPages: number,
@@ -55,7 +54,6 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication: undefined,
       title: '',
       description: '',
-      buttonState: '',
       submitSuccessful: false,
       currentPage: 0,
       numPages: 0,
@@ -66,6 +64,7 @@ class ApplicationForm extends Component<Props, State> {
     this.handleChangeFormValueRadioButton = this.handleChangeFormValueRadioButton.bind(this);
     this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
     this.handleChangeFormValueListBox = this.handleChangeFormValueListBox.bind(this);
+    this.handleChangeFormValueDateField = this.handleChangeFormValueDateField.bind(this);
     this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
     this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
@@ -76,6 +75,7 @@ class ApplicationForm extends Component<Props, State> {
     } = this.props;
     const {
       formAnswers,
+      startDate,
     } = this.state;
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
@@ -95,6 +95,10 @@ class ApplicationForm extends Component<Props, State> {
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
             const entry = fields[i];
+            if (entry.fieldType === 'DateField') {
+              // Need to update default date value with the date on the current computer
+              this.handleChangeFormValueDateField(startDate, entry.fieldId);
+            }
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           }
           this.setState({
@@ -151,10 +155,21 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   }
 
-  handleChangeDate = (date) => {
+  handleChangeFormValueDateField = (date, id) => {
+    const {
+      formAnswers,
+    } = this.state;
     this.setState({
       startDate: date,
     });
+
+    // https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
+    const mm = date.getMonth() + 1; // getMonth() is zero-based
+    const dd = date.getDate();
+    const value = [date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd].join('-');
+
+    formAnswers[id] = value;
+    this.setState({ formAnswers });
   };
 
   onSubmitFormQuestions(event: any) {
@@ -166,8 +181,6 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-
-    this.setState({ buttonState: 'running' });
 
     fetch(`${getServerURL()}/fill-application`, {
       method: 'POST',
@@ -246,14 +259,14 @@ class ApplicationForm extends Component<Props, State> {
             </div>
             <div className="container">
               <h2>Review and sign to complete your form</h2>
-              <p>Finally, sign the agreement and click submit when complete.</p>
+              <p>Finally, sign the document and click submit when complete.</p>
             </div>
           </div>
 
           <DocumentViewer pdfFile={pdfApplication} />
           <div className="d-flex justify-content-center pt-5">
             <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-              <div className="pt-5 pb-3">I agree to all terms and conditions in the agreement above.</div>
+              <div className="pt-5 pb-3">I agree to all terms and conditions in the form document above.</div>
               <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
               <div className="d-flex text-center my-5">
                 <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
@@ -296,13 +309,14 @@ class ApplicationForm extends Component<Props, State> {
                     {
                       (() => {
                         if (entry.fieldType === 'ReadOnlyField') {
-                          return (
-                            <div className="mt-2 mb-2">
-                              <label className="w-100 font-weight-bold">
-                                { entry.fieldName }
-                              </label>
-                            </div>
-                          );
+                          // TODO: Make it work
+                          // return (
+                          //   <div className="mt-2 mb-2">
+                          //     <label className="w-100 font-weight-bold">
+                          //       { entry.fieldName }
+                          //     </label>
+                          //   </div>
+                          // );
                         }
                         if (entry.fieldType === 'TextField') {
                           return (
@@ -457,9 +471,10 @@ class ApplicationForm extends Component<Props, State> {
                               <DatePicker
                                 id="date"
                                 selected={startDate}
-                                onChange={this.handleChangeDate}
+                                onChange={(date) => this.handleChangeFormValueDateField(date, entry.fieldId)}
                                 className="form-control form-purple mt-1"
                                 required={entry.fieldIsRequired}
+                                readOnly={entry.fieldIsMatched}
                               />
                               <small className="form-text text-muted mt-1">Please complete this field.</small>
                             </div>
@@ -471,10 +486,6 @@ class ApplicationForm extends Component<Props, State> {
                   </div>
                 ),
               )}
-              <button type="submit" className={`mt-2 btn btn-success loginButtonBackground ld-ext-right ${this.state.buttonState}`}>
-                Submit Form Answers
-                <div className="ld ld-ring ld-spin" />
-              </button>
               <div className="d-flex text-center my-5">
                 <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
                 <span>
