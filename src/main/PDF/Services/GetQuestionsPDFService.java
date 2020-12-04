@@ -94,6 +94,7 @@ public class GetQuestionsPDFService implements Service {
 
     PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
     if (acroForm == null) {
+      pdfDocument.close();
       return PdfMessage.INVALID_PDF;
     }
 
@@ -152,7 +153,7 @@ public class GetQuestionsPDFService implements Service {
     if (field.isReadOnly()) {
       fieldType = "ReadOnlyField";
       fieldQuestion = field.getPartialName();
-      String fieldValue = field.getValueAsString();
+      String fieldValue = field.getValue();
       if (fieldValue != null && !fieldValue.equals("")) {
         fieldQuestion += ": " + fieldValue;
       }
@@ -186,7 +187,7 @@ public class GetQuestionsPDFService implements Service {
     Boolean fieldDefaultValue = Boolean.FALSE;
     Boolean fieldIsRequired = field.isRequired();
     int numLines = DEFAULT_FIELD_NUM_LINES;
-    String fieldQuestion = "Please Select an Option for: " + field.getPartialName();
+    String fieldQuestion = "Please Select: " + field.getPartialName();
     return createFieldJSONEntry(
         fieldName,
         fieldType,
@@ -274,6 +275,8 @@ public class GetQuestionsPDFService implements Service {
       String fieldQuestion) {
     JSONObject fieldJSON = new JSONObject();
 
+    // TODO: Move into TextField?
+    // Find if field is matched
     JSONObject userInfo = this.userInfo;
     String[] splitFieldName = fieldName.split(":");
     boolean fieldIsMatched = false;
@@ -285,18 +288,23 @@ public class GetQuestionsPDFService implements Service {
       String fieldMatchedDBName = splitFieldName[1];
       fieldQuestion = fieldQuestion.replaceFirst(fieldName, fieldNameBase);
 
-      if (userInfo.has(fieldMatchedDBName)) {
+      if (fieldMatchedDBName.equals("currentDate") || fieldMatchedDBName.equals("anyDate")) {
+        fieldType = "DateField";
+        if (fieldMatchedDBName.equals("currentDate")) {
+          fieldIsMatched = true;
+        }
+      } else if (userInfo.has(fieldMatchedDBName)) {
         // Matched variable found
         fieldDefaultValue = userInfo.getString(fieldMatchedDBName);
         // TODO: Better way of changing the question (could be a problem)
         fieldIsMatched = true;
       } else {
         // Matched not found
-        logger.error("Error in Annotation for Field: " + fieldName);
+        logger.error("Error in Annotation for Field: " + fieldName + " - User Field not Found");
       }
     } else {
       // Error in annotation - treat as normal without annotation
-      logger.error("Error in Annotation for Field: " + fieldName);
+      logger.error("Error in Annotation for Field: " + fieldName + " - Invalid Format");
     }
 
     // Not Editable
