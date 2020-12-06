@@ -279,7 +279,7 @@ class MyOrganization extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
+        const responseObject = JSON.parse(responseJSON);
         const { status } = responseObject;
         if (status === 'SUCCESS') {
           this.setState((prevState) => ({
@@ -293,7 +293,7 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        alert.show(`Network Failure: ${error}`);
+        alert.show(`Network Failure: ${error}. Logout and try again or report this issue to Keep.id`);
         this.setState({ buttonLoadingState: false });
       });
   }
