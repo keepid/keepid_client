@@ -187,6 +187,9 @@ class FindOrganization extends Component<Props, State> {
             alert,
           } = this.props;
           alert.show('Invalid zip code');
+          this.setState({
+            searchLoading: false,
+          });
         }
       });
   }
