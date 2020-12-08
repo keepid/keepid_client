@@ -294,7 +294,7 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        alert.show(`Network Failure: ${error} Logout and try again`);
+        alert.show(`Network Failure: ${error}. Logout and try again or report this issue to Keep.id`);
         this.setState({ buttonLoadingState: false });
       });
   }

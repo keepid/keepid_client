@@ -365,7 +365,7 @@ class LoginPage extends Component<Props, State> {
                 </div>
                 <div className="row">
                   <div className="col-10 pl-0">
-                    <Link to="/find-organization">
+                    <Link to="/find-organizations">
                       <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
                     </Link>
                   </div>
