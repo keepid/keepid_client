@@ -34,6 +34,8 @@ interface State{
   croppedAreaPixels: number,
   loading: boolean,
   fileName: string,
+  backgroundColor:string,
+  color:string,
 }
 
 class ClientProfilePage extends Component<Props, State> {
@@ -70,6 +72,8 @@ class ClientProfilePage extends Component<Props, State> {
       croppedAreaPixels: 0,
       loading: false,
       fileName: '',
+      backgroundColor: '#7B81FF',
+      color: '#FFFFFF',
     };
 
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
@@ -402,6 +406,8 @@ class ClientProfilePage extends Component<Props, State> {
       crop,
       zoom,
       aspect,
+      backgroundColor,
+      color,
     } = this.state;
     const { username } = this.props;
 
@@ -470,11 +476,11 @@ class ClientProfilePage extends Component<Props, State> {
         <div className="row">
           <div className="col-md-6 col-12 h-75 text-dark">
             <div className="rounded px-5" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-              <div className="container">
+              <div className="container pt-4">
                 { photoAvailable === false
-                  ? <Image src={DefaultProfilePhoto} className="w-50 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
+                  ? <Image src={DefaultProfilePhoto} className="w-50 mx-auto d-flex" alt="profile photo" roundedCircle /> : (
                     <div id="profilePhoto">
-                      <Image src={photo} className="w-50 pt-2 mx-auto d-flex" alt="profile photo" roundedCircle />
+                      <Image src={photo} className="w-50 mx-auto d-flex" alt="profile photo" roundedCircle />
                     </div>
                   )}
               </div>
@@ -484,27 +490,27 @@ class ClientProfilePage extends Component<Props, State> {
                   {' '}
                   {lastName}
                 </h3>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Username</div>
                   <div className="col text-right">{username}</div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Password</div>
                   <div className="col text-right">******</div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Birthdate</div>
                   <div className="col text-right">{birthDate}</div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Phone No.</div>
                   <div className="col text-right">{phone}</div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Email</div>
                   <div className="col text-right">{email}</div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Address</div>
                   <div className="col text-right">
                     {address}
@@ -522,18 +528,24 @@ class ClientProfilePage extends Component<Props, State> {
                   <div className="col text-right">{organization}</div>
                 </div>
               </div>
-              <button
-                type="button"
-                className="btn m-5 font-weight-bold"
-                style={{
-                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
-                }}
-                data-toggle="modal"
-                data-target="#exampleModal"
-                onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
-              >
-                Edit Your Information
-              </button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  className="btn m-5 font-weight-bold"
+                  style={{
+                    backgroundColor, color, borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                  }}
+                  onMouseOver={() => this.setState({ backgroundColor: '#FFFFFF', color: '#7B81FF' })}
+                  onFocus={() => undefined}
+                  onMouseOut={() => this.setState({ backgroundColor: '#7B81FF', color: '#FFFFFF' })}
+                  onBlur={() => undefined}
+                  data-toggle="modal"
+                  data-target="#exampleModal"
+                  onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
+                >
+                  Edit Your Information
+                </button>
+              </div>
             </div>
           </div>
           <div className="col-md-6 col-12 h-75 mt-2 mt-md-0">
