@@ -283,7 +283,6 @@ class MyOrganization extends Component<Props, State> {
         const { status } = responseObject;
 
         if (status === 'SUCCESS') {
-          console.log('it was a success');
           this.setState((prevState) => ({
             showPopUp: true,
             numInvitesSent: prevState.memberArr.length,
