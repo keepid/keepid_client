@@ -33,7 +33,8 @@ public class LoadPfpService implements Service {
     GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
     GridFSFile grid_out = gridBucket.find(filter).limit(1).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
-      return null;
+      logger.info("No pfp found");
+      return UserMessage.USER_NOT_FOUND;
     }
     String fileName = grid_out.getFilename();
     String[] temp = fileName.split("\\.");

@@ -21,18 +21,20 @@ public class UploadPfpService implements Service {
   MongoDatabase db;
   Logger logger;
   private String username;
+  private String fileName;
   private UploadedFile pfp;
 
-  public UploadPfpService(MongoDatabase db, Logger logger, String username, UploadedFile pfp) {
+  public UploadPfpService(
+      MongoDatabase db, Logger logger, String username, UploadedFile pfp, String fileName) {
     this.db = db;
     this.logger = logger;
     this.username = username;
     this.pfp = pfp;
+    this.fileName = fileName;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    String fileName = pfp.getFilename();
     InputStream content = pfp.getContent();
     Bson filter = Filters.eq("metadata.owner", username);
     GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
