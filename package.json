@@ -9,8 +9,6 @@
     "@nivo/bar": "^0.62.0",
     "@nivo/line": "^0.62.0",
     "@nivo/pie": "^0.62.0",
-    "@sentry/browser": "^5.27.4",
-    "@sentry/tracing": "^5.27.4",
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.42",
     "@types/react": "^16.9.35",
