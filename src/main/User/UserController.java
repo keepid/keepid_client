@@ -294,6 +294,8 @@ public class UserController {
         if (mes == UserMessage.SUCCESS) {
           ctx.header("Content-Type", "image/" + lps.getContentType());
           ctx.result(lps.getRes());
+        } else {
+          ctx.result(mes.toJSON().toString());
         }
       };
 }
