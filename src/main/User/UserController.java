@@ -277,9 +277,10 @@ public class UserController {
   public Handler uploadPfp =
       ctx -> {
         String username = ctx.formParam("username");
+        String fileName = ctx.formParam("fileName");
         UploadedFile file = ctx.uploadedFile("file");
         logger.info(username + " is attempting to upload a profile picture");
-        UploadPfpService serv = new UploadPfpService(db, logger, username, file);
+        UploadPfpService serv = new UploadPfpService(db, logger, username, file, fileName);
         JSONObject res = serv.executeAndGetResponse().toJSON();
         ctx.result(res.toString());
       };
@@ -293,8 +294,6 @@ public class UserController {
         if (mes == UserMessage.SUCCESS) {
           ctx.header("Content-Type", "image/" + lps.getContentType());
           ctx.result(lps.getRes());
-        } else {
-          ctx.result(mes.toJSON().toString());
         }
       };
 }
