@@ -419,10 +419,7 @@ class ClientProfilePage extends Component<Props, State> {
               <h3 className="modal-title text-center mt-3 mb-2" id="ChangeProfilePhoto">Change Profile Photo</h3>
               <button
                 type="button"
-                className="btn mb-3 mx-4 font-weight-bold"
-                style={{
-                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
-                }}
+                className="btn mb-3 mx-4 font-weight-bold btn-primary"
                 onClick={() => this.hiddenFileInput.current!.click()}
               >
                 Select Photo
@@ -457,10 +454,7 @@ class ClientProfilePage extends Component<Props, State> {
                     <div>
                       <div className="text-center mx-4">
                         <button
-                          className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100"
-                          style={{
-                            color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
-                          }}
+                          className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                           type="submit"
                           onClick={() => { this.setState({ loading: true }, () => { this.cropAndSave(); }); }}
                         >
