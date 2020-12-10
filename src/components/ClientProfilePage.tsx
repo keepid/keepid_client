@@ -419,7 +419,7 @@ class ClientProfilePage extends Component<Props, State> {
               <h3 className="modal-title text-center mt-3 mb-2" id="ChangeProfilePhoto">Change Profile Photo</h3>
               <button
                 type="button"
-                className="btn mb-2 mx-4 font-weight-bold"
+                className="btn mb-3 mx-4 font-weight-bold"
                 style={{
                   color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
                 }}
@@ -438,34 +438,39 @@ class ClientProfilePage extends Component<Props, State> {
 
               { showCropper
                   && (
-                  <div className="position-relative py-5 mx-2">
-                    <div className="crop-container py-5">
-                      <Cropper
-                        image={fileSelected}
-                        crop={crop}
-                        zoom={zoom}
-                        aspect={aspect}
-                        onCropChange={this.onCropChange}
-                        onCropComplete={this.onCropComplete}
-                        onZoomChange={this.onZoomChange}
-                        cropShape="round"
-                        showGrid={false}
-                      />
+                  <div>
+                    <div className="position-relative py-5 mx-4">
+                      <div className="crop-container py-5">
+                        <Cropper
+                          image={fileSelected}
+                          crop={crop}
+                          zoom={zoom}
+                          aspect={aspect}
+                          onCropChange={this.onCropChange}
+                          onCropComplete={this.onCropComplete}
+                          onZoomChange={this.onZoomChange}
+                          cropShape="round"
+                          showGrid={false}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-center mx-4">
+                        <button
+                          className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100"
+                          style={{
+                            color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                          }}
+                          type="submit"
+                          onClick={() => { this.setState({ loading: true }, () => { this.cropAndSave(); }); }}
+                        >
+                          Set Profile Photo
+                          {loading && (<div><div className="ld ld-ring ld-spin" /></div>)}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   ) }
-
-              <button
-                className="btn mt-2 mb-3 mx-4 font-weight-bold ld-ext-right"
-                style={{
-                  color: '#7B81FF', borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
-                }}
-                type="submit"
-                onClick={() => { this.setState({ loading: true }, () => { this.cropAndSave(); }); }}
-              >
-                Set Profile Photo
-                {loading && (<div><div className="ld ld-ring ld-spin" /></div>)}
-              </button>
             </div>
           </div>
         </div>
