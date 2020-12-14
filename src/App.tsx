@@ -42,6 +42,7 @@ import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
+import TestCardPage from './components/Base/TestCardPage';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -128,6 +129,10 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   <Redirect to="/home" />
                 )}
+              />
+              <Route
+                path="/card"
+                render={() => <TestCardPage />}
               />
               <Route
                 path="/home"
