@@ -41,6 +41,19 @@ function TablePageSelector(props: Props) : any {
   for (let i = numPagesLowerBound; i <= numPagesUpperBound; i += 1) {
     numPagesArray.push(i + 1);
   }
+  let pageDisplayNums : number[];
+  console.log(`array${numPagesArray}`);
+  if (numPages < 6) {
+    pageDisplayNums = numPagesArray.slice();
+  } else if (currentPage < 2 || currentPage > numPages - 3) {
+    pageDisplayNums = [1, 2, -1, numPages - 1, numPages];
+  } else if (currentPage < 3) {
+    pageDisplayNums = [1, 2, 3, -1, numPages];
+  } else if (currentPage > numPages - 4) {
+    pageDisplayNums = [1, -1, ...numPagesArray.slice(-3)];
+  } else {
+    pageDisplayNums = [1, -1, currentPage + 1, -1, numPages];
+  }
 
   function handleClickToPage(index: number) {
     changeCurrentPage(index - 1);
@@ -58,11 +71,21 @@ function TablePageSelector(props: Props) : any {
 
   return (
     <div>
-      <nav aria-label="Page navigation example">
-        <ul className="pagination mr-5 mt-4 mb-1">
-          {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div />}
-          {numPagesArray.map((index) => <li key={uuid()} className="page-item"><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
-          {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div />}
+      <nav aria-label="Page navigation">
+        <ul className="pagination">
+          {(currentPage > 0 && numPages > 5) ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div style={{ width: '2.2em' }} />}
+          {pageDisplayNums.map((index) => {
+            if (index === -1) return (<li key={uuid()} className="page-item disabled"><span className="page-link">...</span></li>);
+            const isActive : string = (index === currentPage + 1) ? 'page-item active' : 'page-item';
+            return (
+              <li key={uuid()} className={isActive}>
+                <span className="page-link" onClick={(event) => handleClickToPage(index)}>
+                  {index}
+                </span>
+              </li>
+            );
+          })}
+          {(currentPage < (numPages - 1) && numPages > 5) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div style={{ width: '2.2em' }} />}
         </ul>
       </nav>
     </div>

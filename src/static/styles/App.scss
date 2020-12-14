@@ -709,6 +709,46 @@ div.scrollbar {
     color: darken($text-red, 30%);
 }
 
+.page-link {
+    text-align: center;
+}
+
+.pagination>li>span,
+.pagination>.disabled>span {
+    background-color: white;
+    color: $primary-theme !important;
+    width: 2.4rem;
+    max-width: 2.4rem;
+    align-self: auto;
+}
+
+.pagination>li>span:hover {
+    background-color: $primary-theme-light;
+    color: $primary-theme;
+}
+
+.pagination>.active>span {
+    border: 1px solid $primary-theme !important;
+    background: $primary-theme !important;
+    color: white !important;
+}
+
+.pagination>li:first-of-type>span {
+    border-radius: 4px 0px 0px 4px !important;
+}
+
+.pagination>li:last-of-type>span {
+    border-radius: 0px 4px 4px 0px !important;
+}
+
+.empty-table {
+    background-color: #EEEEEE;
+    height: 34rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
 // .react-bootstrap-table {
 //     display: block;
 //     width: 100%;

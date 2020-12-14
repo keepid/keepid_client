@@ -8,6 +8,7 @@ import {
 import './static/styles/App.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
+import { Type } from 'react-bootstrap-table2-editor';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -43,7 +44,6 @@ import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 import Table from './components/Base/Table';
-import { Type } from 'react-bootstrap-table2-editor';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -73,12 +73,12 @@ const products = [
     price: 20,
   }];
 
-let data: any = [];
+const data: any = [];
 for (let i = 0; i < 100; i++) {
-  let value = products[i % products.length];
+  const value = products[i % products.length];
   const newValue = {
-    name: value['name'],
-    price: value['price'],
+    name: value.name,
+    price: value.price,
     id: i,
   };
   data.push(newValue);
@@ -95,21 +95,26 @@ const columns = [{
     type: Type.SELECT,
     options: [{
       value: 'TV',
-      label: 'TV'
+      label: 'TV',
     }, {
       value: 'Mobile',
-      label: 'Mobile'
+      label: 'Mobile',
     }, {
       value: 'Book',
-      label: 'Book'
-    }]
-  }
+      label: 'Book',
+    }],
+  },
 }, {
   dataField: 'price',
   text: 'Product Price',
   sort: true,
 }];
 const cantEdit = new Set([0]);
+const emptyInfo = {
+  onPress: () => console.log('test'),
+  label: 'Invite members',
+  description: 'There are no members in this organization.',
+};
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -180,7 +185,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify={true} modRoute={"/table"}/>}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify modRoute="/table" emptyInfo={emptyInfo} />}
               />
               <Route
                 exact
