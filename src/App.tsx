@@ -6,6 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import './static/styles/Table.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
 import { Type } from 'react-bootstrap-table2-editor';
@@ -74,7 +75,7 @@ const products = [
   }];
 
 const data: any = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 20; i++) {
   const value = products[i % products.length];
   const newValue = {
     name: value.name,

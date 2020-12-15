@@ -134,11 +134,6 @@ class Table extends React.Component<Props, State, {}> {
       numElements: props.data.length,
 
     };
-    this.handleDelete = this.handleDelete.bind(this);
-    this.handleTryDelete = this.handleTryDelete.bind(this);
-    this.handleEdit = this.handleEdit.bind(this);
-    this.handleSave = this.handleSave.bind(this);
-    this.deleteFormatter = this.deleteFormatter.bind(this);
   }
 
     // row should appear as input if to be edited
