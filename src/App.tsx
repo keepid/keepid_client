@@ -75,7 +75,7 @@ const products = [
   }];
 
 const data: any = [];
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 100; i++) {
   const value = products[i % products.length];
   const newValue = {
     name: value.name,
@@ -88,6 +88,7 @@ for (let i = 0; i < 20; i++) {
 const columns = [{
   dataField: 'id',
   text: 'Product ID',
+  sort: true,
 },
 {
   dataField: 'name',

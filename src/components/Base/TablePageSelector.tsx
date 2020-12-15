@@ -62,7 +62,7 @@ function TablePageSelector(props: Props) : any {
   }
 
   return (
-    <div>
+    <div className="pt-2">
       <nav aria-label="Page navigation">
         <ul className="pagination">
           {(currentPage > 0 && numPages > TPage.NeedEllip) ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div style={{ width: '2.2em' }} />}

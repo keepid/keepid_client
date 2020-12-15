@@ -12,6 +12,7 @@ import Select, { components } from 'react-select';
 import SaveSVG from '../../static/images/checkmark.svg';
 import EditSVG from '../../static/images/edit.svg';
 import DeleteSVG from '../../static/images/delete.svg';
+import ArrowSVG from '../../static/images/down-arrow.svg';
 import getServerURL from '../../serverOverride';
 import TablePageSelector from '../Base/TablePageSelector';
 
@@ -37,9 +38,9 @@ function EditFormatter(props: FormatterProps): React.ReactElement {
   };
 
   return (
-    <Button variant="link" className={editable ? 'save-text table-button' : 'edit-text table-button'} onClick={(e) => (editable ? handleSave(e) : handleEdit(e))}>
+    <Button variant="link" className={editable ? 'save-text table-button action' : 'edit-text table-button action'} onClick={(e) => (editable ? handleSave(e) : handleEdit(e))}>
       <div className="row align-items-center">
-        <img className="px-1" src={editable ? SaveSVG : EditSVG} alt={editable ? "save" : "edit"}/>
+        <img className="px-1 table-svg" src={editable ? SaveSVG : EditSVG} alt={editable ? "save" : "edit"}/>
         <div className="d-none d-sm-block">{ editable ? 'Save' : 'Edit' }</div>
       </div>
 
@@ -57,7 +58,7 @@ function TModal(props: TModalProps): React.ReactElement {
   return (
     <Modal key="deleteRow" show>
       <Modal.Header>
-        Delete Row
+        <Modal.Title>Delete Row</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="row mb-3 mt-3">
@@ -121,6 +122,20 @@ class Table extends React.Component<Props, State, {}> {
           alignItems: 'center',
         };
       };
+      if ('sort' in col && col.sort === true) {
+        col.sortCaret = (order, column) => {
+          let sortAlt = 'sort';
+          let classDef = 'px-2 sort-svg';
+          if (!order) {
+            classDef += ' lighten';
+          }
+          else {
+            sortAlt += ' ' + order;
+            classDef += (order === 'desc') ? ' rotate180' : '';
+          }
+          return (<img className={classDef} src={ArrowSVG} alt={sortAlt}/>);
+        }
+      }
     });
     this.state = {
       editRows: new Set<number>(), // editRows represents the row IDs of rows currently being edited
@@ -153,9 +168,9 @@ class Table extends React.Component<Props, State, {}> {
     }
 
     deleteFormatter = (cell: any, row: any) => (
-      <Button variant="link" className="delete-text table-button" onClick={(e) => this.handleTryDelete(e, row)}>
+      <Button variant="link" className="delete-text table-button action" onClick={(e) => this.handleTryDelete(e, row)}>
         <div className="row align-items-center">
-          <img className="px-1" src={DeleteSVG} alt="delete" />
+          <img className="px-1 action-svg" src={DeleteSVG} alt="delete" />
           <div className="d-none d-sm-block">Delete</div>
         </div>
       </Button>
@@ -246,7 +261,6 @@ class Table extends React.Component<Props, State, {}> {
       // data in front-end is already updated
       const index = data.findIndex((member) => member.id === row.id);
       const member = { ...data[index] };
-      console.log(Object.entries(member));
 
       // fetch(`${getServerURL()}${modRoute}`, {
       //     method: 'POST',
@@ -309,6 +323,7 @@ class Table extends React.Component<Props, State, {}> {
         currentPage,
         itemsPerPageSelected,
         numElements,
+        selectRows,
       } = this.state;
       
       const itemsPerPage = Number(itemsPerPageSelected.value);
@@ -380,7 +395,7 @@ class Table extends React.Component<Props, State, {}> {
           dataField: 'edit',
           text: '',
           formatExtraData: this.state.editRows,
-          formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row} />, // this.editFormatter(cell, row, rowIndex, formatExtraData),
+          formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={this.handleEdit} handleSave={this.handleSave} editRows={formatExtraData} row={row} />,
           headerStyle: () => ({
             width: '10%',
             minWidth: '8rem',
@@ -407,7 +422,31 @@ class Table extends React.Component<Props, State, {}> {
       const selectRow = {
         mode: 'checkbox',
         clickToSelect: false,
-        bgColor: lightPurple,
+        headerColumnStyle: { width: '2.5rem' },
+        selectionHeaderRenderer: ({ indeterminate, ...rest }) => (
+          <div className="custom-control custom-checkbox mr-2">
+          <input
+            type="checkbox"
+            className="custom-control-input"
+            id={'selectAll'}
+            ref={ (input) => {
+              if (input) input.indeterminate = indeterminate;
+            } }
+            { ...rest }
+          />
+          <label className="custom-control-label" htmlFor={'selectAll'}></label>
+        </div>),
+        selectionRenderer: ({ mode, ...rest }) =>  {
+          return (
+          <div className="custom-control custom-checkbox mr-2">
+            <input
+              type={mode}
+              className="custom-control-input"
+              {...rest}
+            />
+            <label className="custom-control-label"></label>
+          </div>
+        )},
         onSelect: (row, isSelect, rowIndex, e) => {
           const { selectRows } = this.state;
           if (selectRows.has(row.id)) selectRows.delete(row.id);
@@ -418,7 +457,7 @@ class Table extends React.Component<Props, State, {}> {
         },
         onSelectAll: (isSelect, rows, e) => {
           const { selectRows } = this.state;
-          if (selectRows.size !== 0) selectRows.clear();
+          if (!isSelect) selectRows.clear();
           else rows.forEach((row) => { selectRows.add(row.id); });
           this.setState({
             selectRows,
@@ -429,9 +468,10 @@ class Table extends React.Component<Props, State, {}> {
       // specifies design rules for row colors
       const rowClasses = (row, rowIndex) => {
         let classes = 'table-row';
-        if (editRows.has(row.id)) {
-          classes += ' table-edit-row';
-        } else if (data.length > 10 && rowIndex % 2 === 0) classes += ' table-zebra';
+        if (editRows.has(row.id) || selectRows.has(row.id)) {
+          classes = ' table-edit-row';
+        } 
+        else if (data.length > 10 && rowIndex % 2 === 0) classes = ' table-zebra';
         return classes;
       };
 
@@ -442,54 +482,53 @@ class Table extends React.Component<Props, State, {}> {
         >
           {
                     ({
-                      paginationProps, // some of the pagination stuff should be passed in as props
+                      paginationProps,
                       paginationTableProps,
                     }) => (
                       <div>
-                        <BootstrapTable
-                          keyField="id"
-                          data={data}
-                          columns={columnsAll}
-                          {...paginationTableProps}
-                          cellEdit={cellEdit}
-                          rowClasses={rowClasses}
-                          selectRow={selectRow}
-                          noDataIndication={() => <this.NoDataIndication />}
-                          bodyClasses={(numElements === 0) ? 'empty-table' : ''}
-                        />
+                        <div className="row mx-4 mt-md-4">
+                          <BootstrapTable
+                            keyField="id"
+                            data={data}
+                            columns={columnsAll}
+                            {...paginationTableProps}
+                            cellEdit={cellEdit}
+                            rowClasses={rowClasses}
+                            selectRow={selectRow}
+                            noDataIndication={() => <this.NoDataIndication />}
+                            bodyClasses={(numElements === 0) ? 'empty-table' : ''}
+                          />
+                        </div>
                         {(numElements === 0) ? <div /> :
-                          (
-                          <div className="container">
-                            <div className="row justify-content-md-end align-items-center">
-                              <div className="col pl-md-4 pr-md-0">
-                                <PaginationTotalStandalone
-                                  {...paginationProps}
-                                />
-                              </div>
-                              <div className="col-md-4 form-inline mt-1">
-                                <Select
-                                  options={listOptions}
-                                  autoFocus
-                                  closeMenuOnSelect={false}
-                                  onChange={this.handleChangeItemsPerPage}
-                                  value={itemsPerPageSelected}
-                                  menuPlacement="top"
-                                  styles={selectStyles}
-                                />
+                          (<div className="row justify-content-end align-items-center">
+                            <div className="col-md-3 py-3 d-flex justify-content-center">
+                              <PaginationTotalStandalone
+                                {...paginationProps}
+                              />
+                            </div>
+                            <div className="col-md-3 form-inline py-2 d-flex justify-content-center">
+                              <Select
+                                options={listOptions}
+                                autoFocus
+                                closeMenuOnSelect={true}
+                                onChange={this.handleChangeItemsPerPage}
+                                value={itemsPerPageSelected}
+                                menuPlacement="top"
+                                styles={selectStyles}
+                              />
+                              {' '}
+                              <p className="my-auto ml-2">
                                 {' '}
-                                <p className="my-auto ml-2">
-                                  {' '}
-                                  results per page
-                                </p>
-                              </div>
-                              <div className="col pt-2">
-                                <TablePageSelector
-                                  currentPage={currentPage}
-                                  itemsPerPage={itemsPerPage}
-                                  numElements={numElements}
-                                  changeCurrentPage={this.changeCurrentPage}
-                                />
-                              </div>
+                                results per page
+                              </p>
+                            </div>
+                            <div className="col-md-3 mx-md-4 py-2 my-1 d-flex justify-content-center">
+                              <TablePageSelector
+                                currentPage={currentPage}
+                                itemsPerPage={itemsPerPage}
+                                numElements={numElements}
+                                changeCurrentPage={this.changeCurrentPage}
+                              />
                             </div>
                           </div>
                           )}

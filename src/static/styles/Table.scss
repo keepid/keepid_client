@@ -6,12 +6,37 @@
     font-weight: 400;
 }
 
+.action:hover,
+.action:focus {
+    filter: brightness(0.6);
+}
+
+.table-svg {
+    max-width: 1.4rem;
+}
+
+.sort-svg {
+    max-width: 2rem;
+}
+
 .table-zebra {
     background: #F4F4F4;
 }
 
 .table-zebra:hover,
 .table-row:hover {
+    background: $primary-theme-light !important;
+}
+
+.lighten {
+    filter: opacity(0.3);
+}
+
+.rotate180 {
+    transform: rotate(180deg);
+}
+
+.select-row {
     background: $primary-theme-light !important;
 }
 
@@ -47,7 +72,7 @@
 .edit-text:hover,
 .edit-text:focus {
     text-decoration: none;
-    color: darken($primary-theme, 30%);
+    color: darken($primary-theme, 40%);
 }
 
 .save-text:hover,
