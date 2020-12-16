@@ -8,12 +8,11 @@ import cellEditFactory from 'react-bootstrap-table2-editor';
 import Button from 'react-bootstrap/Button';
 import '../../static/styles/App.scss';
 import Modal from 'react-bootstrap/Modal';
-import Select, { components } from 'react-select';
+import Select from 'react-select';
 import SaveSVG from '../../static/images/checkmark.svg';
 import EditSVG from '../../static/images/edit.svg';
 import DeleteSVG from '../../static/images/delete.svg';
 import ArrowSVG from '../../static/images/down-arrow.svg';
-import getServerURL from '../../serverOverride';
 import TablePageSelector from '../Base/TablePageSelector';
 
 // This function controls formatting on the edit/save column (needed because of a glitch with the Edit/Save text)
@@ -87,12 +86,13 @@ interface Props {
     columns: any[],
     canModify: boolean, // whether we can modify table at all
     cantEditCols: Set<number>, // set of row numbers that shouldn't be allowed to be edited
-    modRoute: string,
     emptyInfo: {
       onPress: () => void,
       label: string,
       description: string,
     },
+    onDelete: (id: any) => void,
+    onEditSave: (row: any) => void,
 }
 
 interface State {
@@ -193,9 +193,8 @@ class Table extends React.Component<Props, State, {}> {
 
      handleDelete = (event: any, row: any): void => {
        event.preventDefault();
-       const { modRoute } = this.props;
+       const { onDelete } = this.props;
        const { editRows, data } = this.state;
-       //** this section should move to success section
        editRows.delete(row.id);
        const index = data.findIndex((member) => member.id === row.id);
        const newData = data.slice();
@@ -205,44 +204,13 @@ class Table extends React.Component<Props, State, {}> {
          data: newData,
          showDeleteModal: false,
          rowToDelete: null,
-       });
-       //**
-
-       // fetch(`${getServerURL()}${modRoute}`, {
-       //     method: 'POST',
-       //     credentials: 'include',
-       //     body: JSON.stringify({
-       //         mode: "delete", // or edit
-       //         id: row.id,
-       //       }),
-       //     }).then((response) => response.json())
-       //     .then((responseJSON) => {
-       //         const responseObject = responseJSON;
-       //         const { status } = responseObject;
-       //         if (status === 'SUCCESS') {
-       //             // TODO: move ** section into here
-       //         }
-       //         else {
-       //             alert('Your edits did not save. Please refresh & try again.');
-       //         }
-       //     this.setState({
-       //         showDeleteModal: false,
-       //         rowToDelete: null
-       //     });
-       //     }).catch((error) => {
-       //         alert(`Network Failure: ${error}`);
-       //         this.setState({
-       //             showDeleteModal: false,
-       //             rowToDelete: null
-       //         });
-       //     });
+       }, () => onDelete(row.id));
      }
 
     handleEdit = (event: any, row: any): void => {
       event.preventDefault();
       const { editRows } = this.state;
       editRows.add(row.id);
-
       this.setState({
         editRows,
       });
@@ -250,38 +218,15 @@ class Table extends React.Component<Props, State, {}> {
 
     handleSave = (event: any, row: any): void => {
       event.preventDefault();
-      const { modRoute } = this.props;
+      const { onEditSave } = this.props;
       const { editRows, data } = this.state;
-      //** this section should move to success section
       editRows.delete(row.id);
-      this.setState({
-        editRows,
-      });
-      //**
-      // data in front-end is already updated
       const index = data.findIndex((member) => member.id === row.id);
       const member = { ...data[index] };
-
-      // fetch(`${getServerURL()}${modRoute}`, {
-      //     method: 'POST',
-      //     credentials: 'include',
-      //     body: JSON.stringify({
-      //         mode: "edit", // or delete
-      //         ...member,
-      //       }),
-      //     }).then((response) => response.json())
-      //     .then((responseJSON) => {
-      //         const responseObject = responseJSON;
-      //         const { status } = responseObject;
-      //         if (status === 'SUCCESS') {
-      //             // TODO: move ** into here
-      //         }
-      //         else {
-      //             alert('Your edits did not save. Please refresh & try again.');
-      //         }
-      //     }).catch((error) => {
-      //         alert(`Network Failure: ${error}`);
-      //     });
+      this.setState({
+        editRows,
+      },  () => onEditSave(row));
+      
     }
 
     changeCurrentPage = (newCurrentPage: number): void => {
@@ -423,30 +368,32 @@ class Table extends React.Component<Props, State, {}> {
         mode: 'checkbox',
         clickToSelect: false,
         headerColumnStyle: { width: '2.5rem' },
-        selectionHeaderRenderer: ({ indeterminate, ...rest }) => (
-          <div className="custom-control custom-checkbox mr-2">
+        selectionHeaderRenderer: ({ indeterminate, mode, checked }) => 
+        (<div className="custom-control custom-checkbox mr-2">
           <input
-            type="checkbox"
+            type={mode}
             className="custom-control-input"
             id={'selectAll'}
             ref={ (input) => {
               if (input) input.indeterminate = indeterminate;
             } }
-            { ...rest }
+            checked={checked}
+            onChange={() => {return}}
           />
           <label className="custom-control-label" htmlFor={'selectAll'}></label>
         </div>),
-        selectionRenderer: ({ mode, ...rest }) =>  {
-          return (
-          <div className="custom-control custom-checkbox mr-2">
+        selectionRenderer: ({ mode, checked, disabled, ...rest }) =>
+          (<div className="custom-control custom-checkbox mr-2">
             <input
               type={mode}
               className="custom-control-input"
-              {...rest}
+              checked={checked}
+              disabled={disabled}
+              onChange={() => {return}}
             />
             <label className="custom-control-label"></label>
           </div>
-        )},
+        ),
         onSelect: (row, isSelect, rowIndex, e) => {
           const { selectRows } = this.state;
           if (selectRows.has(row.id)) selectRows.delete(row.id);

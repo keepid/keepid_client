@@ -117,6 +117,8 @@ const emptyInfo = {
   label: 'Invite members',
   description: 'There are no members in this organization.',
 };
+const onEditSave = row => { console.log("edit " + row.id)};
+const onDelete = id => { console.log("delete " + id)};
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -187,7 +189,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify modRoute="/table" emptyInfo={emptyInfo} />}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete}/>}
               />
               <Route
                 exact
