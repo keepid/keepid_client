@@ -1,9 +1,11 @@
 package User;
 
 import Config.Message;
+import Database.Token.TokenDao;
 import Database.User.UserDao;
 import Logger.LogFactory;
 import User.Services.*;
+import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.json.JSONObject;
@@ -11,10 +13,14 @@ import org.slf4j.Logger;
 
 public class UserController {
   Logger logger;
+  MongoDatabase db;
   UserDao userDao;
+  TokenDao tokenDao;
 
-  public UserController(UserDao userDao) {
+  public UserController(UserDao userDao, TokenDao tokenDao, MongoDatabase db) {
     this.userDao = userDao;
+    this.tokenDao = tokenDao;
+    this.db = db;
     LogFactory l = new LogFactory();
     logger = l.createLogger("UserController");
     logger = (new LogFactory()).createLogger("UserController");
@@ -31,7 +37,7 @@ public class UserController {
         logger.info("Attempting to login " + username);
 
         LoginService loginService =
-            new LoginService(userDao, logger, username, password, ip, userAgent);
+            new LoginService(userDao, tokenDao, logger, username, password, ip, userAgent);
         Message response = loginService.executeAndGetResponse();
         logger.info(response.toString() + response.getErrorDescription());
         JSONObject responseJSON = response.toJSON();
@@ -86,6 +92,8 @@ public class UserController {
         String password = req.getString("password").strip();
         String userTypeString = req.getString("personRole").strip();
         UserType userType = UserType.userTypeFromString(userTypeString);
+
+        logger.info(sessionUserLevel + " " + organizationName + " " + firstName);
 
         CreateUserService createUserService =
             new CreateUserService(
@@ -185,15 +193,27 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         String searchValue = req.getString("name").trim();
-        String orgName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        // TODO(xander) put back in ctx?
+        String orgName = req.getString("orgName");
+        UserType privilegeLevel = UserType.userTypeFromString(req.getString("privilegeLevel"));
         String listType = req.getString("listType").toUpperCase();
+        int currentPage = req.getInt("currentPage");
+        int itemsPerPage = req.getInt("itemsPerPage");
 
         GetMembersService getMembersService =
-            new GetMembersService(userDao, logger, searchValue, orgName, privilegeLevel, listType);
+            new GetMembersService(
+                userDao,
+                logger,
+                searchValue,
+                orgName,
+                privilegeLevel,
+                listType,
+                currentPage,
+                itemsPerPage);
         Message message = getMembersService.executeAndGetResponse();
         if (message == UserMessage.SUCCESS) {
-          res.put("people", getMembersService.getPeople());
+          res.put("people", getMembersService.getPeoplePage());
+          res.put("numPeople", getMembersService.getNumReturnedElements());
           ctx.result(mergeJSON(res, message.toJSON()).toString());
         } else {
           ctx.result(message.toResponseString());

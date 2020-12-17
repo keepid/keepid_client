@@ -1,6 +1,7 @@
 package PDF;
 
 import Config.Message;
+import Database.User.UserDao;
 import Logger.LogFactory;
 import PDF.Services.*;
 import User.UserType;
@@ -18,10 +19,12 @@ import static User.UserController.mergeJSON;
 
 public class PdfController {
   private MongoDatabase db;
+  private UserDao userDao;
   private Logger logger;
 
-  public PdfController(MongoDatabase db) {
+  public PdfController(MongoDatabase db, UserDao userDao) {
     this.db = db;
+    this.userDao = userDao;
     LogFactory l = new LogFactory();
     this.logger = l.createLogger("PdfController");
   }
@@ -226,7 +229,7 @@ public class PdfController {
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
           GetQuestionsPDFService getQuestionsPDFService =
-              new GetQuestionsPDFService(db, logger, privilegeLevel, username, inputStream);
+              new GetQuestionsPDFService(userDao, logger, privilegeLevel, username, inputStream);
           Message response = getQuestionsPDFService.executeAndGetResponse();
           if (response == PdfMessage.SUCCESS) {
             JSONObject information = getQuestionsPDFService.getApplicationInformation();

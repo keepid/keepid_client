@@ -104,7 +104,7 @@ public class EnrollOrganizationService implements Service {
     this.orgWebsite = orgWebsite;
     this.orgStreetAddress = orgStreetAddress;
     this.orgZipcode = orgZipcode;
-    activityController = new ActivityController(db);
+    activityController = new ActivityController();
   }
 
   //    // for testing

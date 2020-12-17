@@ -3,10 +3,12 @@ package TestUtils;
 import Database.Dao;
 import Organization.Organization;
 import Security.SecurityUtils;
+import Security.Tokens;
 import User.IpObject;
 import User.User;
 import User.UserType;
 import Validation.ValidationException;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +23,10 @@ public class EntityFactory {
 
   public static PartialOrganization createOrganization() {
     return new PartialOrganization();
+  }
+
+  public static PartialTokens createTokens() {
+    return new PartialTokens();
   }
 
   public static class PartialUser implements PartialObject<User> {
@@ -256,5 +262,59 @@ public class EntityFactory {
     public T build();
 
     public T buildAndPersist(Dao<T> dao);
+  }
+
+  public static class PartialTokens implements PartialObject<Tokens> {
+    private ObjectId id = new ObjectId();
+    private String username = "testUser123";
+    private String resetJwt =
+        SecurityUtils.createJWT(
+            id.toString(), "KeepID", username, "Password Reset Confirmation", 72000000);
+    private String twoFactorCode = "444555";
+    private Date twoFactorExp = new Date(Long.valueOf("3786930000000"));
+
+    @Override
+    public Tokens build() {
+      Tokens newTokens =
+          new Tokens()
+              .setId(id)
+              .setUsername(username)
+              .setResetJwt(resetJwt)
+              .setTwoFactorCode(twoFactorCode)
+              .setTwoFactorExp(twoFactorExp);
+      return newTokens;
+    }
+
+    @Override
+    public Tokens buildAndPersist(Dao<Tokens> dao) {
+      Tokens tokens = this.build();
+      dao.save(tokens);
+      return tokens;
+    }
+
+    public PartialTokens withId(ObjectId id) {
+      this.id = id;
+      return this;
+    }
+
+    public PartialTokens withUsername(String username) {
+      this.username = username;
+      return this;
+    }
+
+    public PartialTokens withResetJwt(String resetJwt) {
+      this.resetJwt = resetJwt;
+      return this;
+    }
+
+    public PartialTokens withTwoFactorCode(String twoFactorCode) {
+      this.twoFactorExp = twoFactorExp;
+      return this;
+    }
+
+    public PartialTokens withTwoFactorExp(Date twoFactorExp) {
+      this.twoFactorExp = twoFactorExp;
+      return this;
+    }
   }
 }

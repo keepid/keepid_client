@@ -3,16 +3,11 @@ package Organization;
 import Activity.ActivityController;
 import Config.Message;
 import Logger.LogFactory;
-import Security.EmailExceptions;
-import Security.EmailUtil;
-import Security.EncryptionUtils;
-import Security.SecurityUtils;
-import User.User;
-import User.UserMessage;
 import Organization.Services.EnrollOrganizationService;
 import Organization.Services.FindMemberService;
 import Organization.Services.InviteUserService;
 import Organization.Services.ListOrgsService;
+import Security.EncryptionUtils;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
@@ -39,7 +34,7 @@ public class OrganizationController {
     LogFactory l = new LogFactory();
     logger = l.createLogger("OrgController");
     this.encryptionUtils = EncryptionUtils.getInstance();
-    this.activityController = new ActivityController(db);
+    this.activityController = new ActivityController();
     this.logger = l.createLogger("OrgController");
   }
   //

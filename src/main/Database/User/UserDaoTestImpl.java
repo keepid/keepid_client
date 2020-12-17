@@ -58,8 +58,14 @@ public class UserDaoTestImpl implements UserDao {
   }
 
   @Override
-  public void update(User user, String[] params) {
-    // implement later
+  public void update(User user) {
+    userMap.put(user.getUsername(), user);
+  }
+
+  @Override
+  public void resetPassword(User user, String password) {
+    user.setPassword(password);
+    userMap.put(user.getUsername(), user);
   }
 
   @Override

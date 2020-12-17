@@ -1,29 +1,31 @@
 package Security.Services;
 
-import Activity.PasswordRecoveryActivity;
 import Config.Message;
 import Config.Service;
-import Database.TokenDao;
+import Database.Token.TokenDao;
 import Database.User.UserDao;
 import Security.SecurityUtils;
 import Security.Tokens;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import com.mongodb.client.MongoDatabase;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 
 import java.util.Date;
+import java.util.Optional;
 
 public class ResetPasswordService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
+  TokenDao tokenDao;
   Logger logger;
   private String jwt;
   private String newPassword;
 
-  public ResetPasswordService(MongoDatabase db, Logger logger, String jwt, String newPassword) {
-    this.db = db;
+  public ResetPasswordService(
+      UserDao userDao, TokenDao tokenDao, Logger logger, String jwt, String newPassword) {
+    this.userDao = userDao;
+    this.tokenDao = tokenDao;
     this.logger = logger;
     this.jwt = jwt;
     this.newPassword = newPassword;
@@ -43,20 +45,22 @@ public class ResetPasswordService implements Service {
     }
 
     String username = claim.getAudience();
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+    Optional<User> userResult = userDao.get(username);
+    if (userResult.isEmpty()) {
       return UserMessage.USER_NOT_FOUND;
     }
+    User user = userResult.get();
     long nowMillis = System.currentTimeMillis();
     Date now = new Date(nowMillis);
     if (claim.getExpiration().compareTo(now) < 0) {
       return UserMessage.AUTH_FAILURE.withMessage("Reset link expired.");
     }
     // Check if reset token exists.
-    Tokens tokens = TokenDao.getTokensOrNull(db, username);
-    if (tokens == null) {
+    Optional<Tokens> tokenResult = tokenDao.get(username);
+    if (tokenResult.isEmpty()) {
       return UserMessage.AUTH_FAILURE.withMessage("Reset token not found for user.");
     }
+    Tokens tokens = tokenResult.get();
     String storedJWT = tokens.getResetJwt();
     if (storedJWT == null) {
       return UserMessage.AUTH_FAILURE.withMessage("Reset token not found for user.");
@@ -64,8 +68,8 @@ public class ResetPasswordService implements Service {
     if (!storedJWT.equals(jwt)) {
       return UserMessage.AUTH_FAILURE.withMessage("Invalid reset token.");
     }
-    TokenDao.removeTokenIfLast(db, username, tokens, Tokens.TokenType.PASSWORD_RESET);
-    UserDao.resetPassword(db, user, newPassword, PasswordRecoveryActivity.class.getSimpleName());
+    tokenDao.removeTokenIfLast(username, tokens, Tokens.TokenType.PASSWORD_RESET);
+    userDao.resetPassword(user, newPassword);
     return UserMessage.SUCCESS;
   }
 }

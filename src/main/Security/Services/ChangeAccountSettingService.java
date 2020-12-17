@@ -9,18 +9,14 @@ import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.Objects;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.*;
+import java.util.Optional;
 
 public class ChangeAccountSettingService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   private String username;
   private String password;
@@ -28,8 +24,8 @@ public class ChangeAccountSettingService implements Service {
   private String value;
 
   public ChangeAccountSettingService(
-      MongoDatabase db, Logger logger, String username, String password, String key, String value) {
-    this.db = db;
+      UserDao userDao, Logger logger, String username, String password, String key, String value) {
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
     this.password = password;
@@ -39,15 +35,17 @@ public class ChangeAccountSettingService implements Service {
 
   @Override
   public Message executeAndGetResponse() {
-    Objects.requireNonNull(db);
+    Objects.requireNonNull(userDao);
     Objects.requireNonNull(username);
     Objects.requireNonNull(password);
     Objects.requireNonNull(key);
     Objects.requireNonNull(value);
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+
+    Optional<User> userResult = userDao.get(username);
+    if (userResult.isEmpty()) {
       return UserMessage.USER_NOT_FOUND;
     }
+    User user = userResult.get();
 
     String hash = user.getPassword();
     SecurityUtils.PassHashEnum verifyStatus = SecurityUtils.verifyPassword(password, hash);
@@ -57,15 +55,9 @@ public class ChangeAccountSettingService implements Service {
     if (verifyStatus == SecurityUtils.PassHashEnum.FAILURE) {
       return UserMessage.AUTH_FAILURE;
     }
-    MongoCollection userCollection = db.getCollection("user");
-    Document d =
-        (Document)
-            userCollection
-                .find(eq("username", username))
-                .projection(fields(include(key), excludeId()))
-                .first();
-    String old = d.get(key).toString();
-    ActivityController activityController = new ActivityController(db);
+    JSONObject userAsJson = user.serialize();
+    String old = userAsJson.get(key).toString();
+    ActivityController activityController = new ActivityController();
     ChangeUserAttributesActivity act = new ChangeUserAttributesActivity(user, key, old, value);
     activityController.addActivity(act);
     switch (key) {
@@ -126,7 +118,8 @@ public class ChangeAccountSettingService implements Service {
       default:
         return UserMessage.INVALID_PARAMETER;
     }
-    userCollection.replaceOne(eq("username", user.getUsername()), user);
+    //    userCollection.replaceOne(eq("username", user.getUsername()), user);
+    userDao.update(user);
     return UserMessage.SUCCESS;
   }
 }

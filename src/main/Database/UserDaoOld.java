@@ -31,7 +31,7 @@ public class UserDaoOld {
     userCollection.replaceOne(eq("username", user.getUsername()), user.setPassword(passwordHash));
     argon2.wipeArray(newPasswordArr);
 
-    ActivityController activityController = new ActivityController(db);
+    ActivityController activityController = new ActivityController();
     switch (activity) {
       case "PasswordRecoveryActivity":
         PasswordRecoveryActivity passwordRecoveryActivity =

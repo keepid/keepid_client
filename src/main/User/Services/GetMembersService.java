@@ -6,16 +6,14 @@ import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
 import User.UserType;
-import com.mongodb.client.MongoCursor;
-import org.bson.conversions.Bson;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Objects;
-
-import static com.mongodb.client.model.Filters.*;
-import static com.mongodb.client.model.Updates.combine;
 
 public class GetMembersService implements Service {
   UserDao userDao;
@@ -25,6 +23,12 @@ public class GetMembersService implements Service {
   private String searchValue;
   private ListType listType;
   private JSONArray people;
+  private int startIndex;
+  private int endIndex;
+  private JSONArray peoplePage;
+  private int numReturnedElements;
+
+  public static final int NUM_ELEMENTS_TO_RETURN = 80;
 
   public GetMembersService(
       UserDao userDao,
@@ -32,13 +36,17 @@ public class GetMembersService implements Service {
       String searchValue,
       String orgName,
       UserType privilegeLevel,
-      String listType) {
+      String listType,
+      int currentPage,
+      int itemsPerPage) {
     this.userDao = userDao;
     this.logger = logger;
     this.searchValue = searchValue;
     this.orgName = orgName;
     this.privilegeLevel = privilegeLevel;
     this.listType = ListType.valueOf(listType);
+    this.startIndex = currentPage * itemsPerPage;
+    this.endIndex = (currentPage + 1) * itemsPerPage;
   }
 
   public enum ListType {
@@ -59,72 +67,73 @@ public class GetMembersService implements Service {
     if (searchValue.trim().isBlank()) {
       return UserMessage.USER_NOT_FOUND;
     }
-    String[] nameSearchSplit = searchValue.trim().split(" ");
-
-    Bson orgNameMatch = eq("organization", orgName);
-    Bson filter;
-
-    if (!searchValue.contentEquals("")) {
-      filter = regex("firstName", nameSearchSplit[0], "i");
-      filter = or(filter, regex("lastName", nameSearchSplit[0], "i"));
-      for (int i = 1; i < nameSearchSplit.length; i++) {
-        filter = or(filter, regex("firstName", nameSearchSplit[i], "i"));
-        filter = or(filter, regex("lastName", nameSearchSplit[i], "i"));
-      }
-      filter = combine(filter, orgNameMatch);
-    } else {
-      filter = orgNameMatch;
-    }
-
-    JSONArray members = new JSONArray();
-    JSONArray clients = new JSONArray();
-    MongoCursor<User> cursor = userCollection.find(filter).iterator();
-    while (cursor.hasNext()) {
-      User user = cursor.next();
-      JSONObject userJSON = new JSONObject();
-      userJSON.put("username", user.getUsername());
-      userJSON.put("privilegeLevel", user.getUserType());
-      userJSON.put("firstName", user.getFirstName());
-      userJSON.put("lastName", user.getLastName());
-      userJSON.put("email", user.getEmail());
-      userJSON.put("phone", user.getPhone());
-      userJSON.put("address", user.getAddress());
-      userJSON.put("city", user.getCity());
-      userJSON.put("state", user.getState());
-      userJSON.put("zipcode", user.getZipcode());
-      UserType userType = user.getUserType();
-      logger.info("Getting member information");
-      if (userType == UserType.Director
-          || userType == UserType.Admin
-          || userType == UserType.Worker) {
-        members.put(userJSON);
-      } else if (userType == UserType.Client) {
-        clients.put(userJSON);
-      }
-    }
-
-    JSONArray people;
-    // If Getting Client List
-    if (listType == ListType.CLIENTS
-        && (privilegeLevel == UserType.Worker
-            || privilegeLevel == UserType.Admin
-            || privilegeLevel == UserType.Director)) {
-      people = clients;
-      // If Getting Worker/Admin List
-    } else if (listType == ListType.MEMBERS && privilegeLevel == UserType.Admin
-        || privilegeLevel == UserType.Director) {
-      people = members;
-    } else {
-      logger.error("Insufficient Privilege, Could not return member info");
+    if (!typeMatch(privilegeLevel, listType)) {
       return UserMessage.INSUFFICIENT_PRIVILEGE;
     }
-    this.people = people;
+    List<User> allUsers = userDao.getAll();
+
+    JSONArray userList = new JSONArray();
+
+    // Fuzzy search to rank results by threshold
+    List<BoundExtractedResult<User>> users =
+        FuzzySearch.extractSorted(
+            searchValue, allUsers, x -> x.getFirstName() + " " + x.getLastName());
+
+    int numReturnedElements = 0;
+    for (BoundExtractedResult<User> user : users) {
+      if (numReturnedElements < NUM_ELEMENTS_TO_RETURN) {
+        numReturnedElements += constructUserList(user.getReferent(), listType, userList);
+      }
+    }
+
+    this.numReturnedElements = numReturnedElements;
+    this.peoplePage = userList;
     logger.info("Successfully returned member information");
     return UserMessage.SUCCESS;
   }
 
-  public JSONArray getPeople() {
-    Objects.requireNonNull(people);
-    return people;
+  public int getNumReturnedElements() {
+    return numReturnedElements;
+  }
+
+  public JSONArray getPeoplePage() {
+    Objects.requireNonNull(peoplePage);
+    return peoplePage;
+  }
+
+  private static JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
+    JSONArray page = new JSONArray();
+    if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
+      if (pageEndIndex > elements.length()) {
+        pageEndIndex = elements.length();
+      }
+      for (int i = pageStartIndex; i < pageEndIndex; i++) {
+        page.put(elements.get(i));
+      }
+    }
+    return page;
+  }
+
+  // Return 1 if added to list to keep total below threshold
+  private int constructUserList(User user, ListType listType, JSONArray userList) {
+    JSONObject userJSON = user.serialize();
+    logger.info("Getting member information");
+    if (typeMatch(user.getUserType(), listType)) {
+      userList.put(userJSON);
+      return 1;
+    }
+    return 0;
+  }
+
+  private boolean typeMatch(UserType userType, ListType listType) {
+    if (listType == ListType.CLIENTS) {
+      return userType == UserType.Worker
+          || userType == UserType.Admin
+          || userType == UserType.Director;
+    } else if (listType == ListType.MEMBERS) {
+      return userType == UserType.Client;
+    } else {
+      return false;
+    }
   }
 }

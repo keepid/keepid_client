@@ -2,6 +2,7 @@ package Security.Services;
 
 import Config.Message;
 import Config.Service;
+import Database.Token.TokenDao;
 import Database.User.UserDao;
 import Security.EmailExceptions;
 import Security.EmailUtil;
@@ -10,24 +11,22 @@ import Security.Tokens;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.ReplaceOptions;
 import org.slf4j.Logger;
 
 import java.util.Objects;
-
-import static com.mongodb.client.model.Filters.eq;
+import java.util.Optional;
 
 public class ForgotPasswordService implements Service {
 
-  MongoDatabase db;
+  UserDao userDao;
+  TokenDao tokenDao;
   Logger logger;
   private String username;
   public static final int EXPIRATION_TIME_2_HOURS = 7200000;
 
-  public ForgotPasswordService(MongoDatabase db, Logger logger, String username) {
-    this.db = db;
+  public ForgotPasswordService(UserDao userDao, TokenDao tokenDao, Logger logger, String username) {
+    this.userDao = userDao;
+    this.tokenDao = tokenDao;
     this.logger = logger;
     this.username = username;
   }
@@ -38,10 +37,11 @@ public class ForgotPasswordService implements Service {
     if (!ValidationUtils.isValidUsername(username)) {
       return UserMessage.INVALID_PARAMETER;
     }
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+    Optional<User> userResult = userDao.get(username);
+    if (userResult.isEmpty()) {
       return UserMessage.USER_NOT_FOUND;
     }
+    User user = userResult.get();
     String emailAddress = user.getEmail();
     if (emailAddress == null) {
       return UserMessage.EMAIL_DOES_NOT_EXIST;
@@ -50,11 +50,8 @@ public class ForgotPasswordService implements Service {
     String jwt =
         SecurityUtils.createJWT(
             id, "KeepID", username, "Password Reset Confirmation", EXPIRATION_TIME_2_HOURS);
-    MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-    tokenCollection.replaceOne(
-        eq("username", username),
-        new Tokens().setUsername(username).setResetJwt(jwt),
-        new ReplaceOptions().upsert(true));
+    Tokens newToken = new Tokens().setUsername(username).setResetJwt(jwt);
+    tokenDao.replaceOne(username, newToken);
     try {
       String emailJWT = EmailUtil.getPasswordResetEmail("https://keep.id/reset-password/" + jwt);
       EmailUtil.sendEmail("Keep Id", emailAddress, "Password Reset Confirmation", emailJWT);

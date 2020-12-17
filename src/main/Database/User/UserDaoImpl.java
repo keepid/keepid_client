@@ -5,6 +5,7 @@ import Config.MongoConfig;
 import User.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
@@ -60,8 +61,15 @@ public class UserDaoImpl implements UserDao {
   }
 
   @Override
-  public void update(User user, String[] params) {
-    // implement later
+  public void update(User user) {
+    userCollection.replaceOne(eq("username", user.getUsername()), user);
+  }
+
+  @Override
+  public void resetPassword(User user, String password) {
+    userCollection.updateOne(
+        eq("username", user.getUsername()),
+        new Document("$set", new Document("password", password)));
   }
 
   @Override
