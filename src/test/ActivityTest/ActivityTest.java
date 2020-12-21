@@ -3,6 +3,7 @@ package ActivityTest;
 import Activity.Activity;
 import Activity.CreateAdminActivity;
 import Activity.CreateWorkerActivity;
+import Activity.LoginActivity;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import TestUtils.TestUtils;
@@ -13,7 +14,6 @@ import com.mongodb.client.MongoDatabase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.bson.Document;
-import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -105,15 +105,9 @@ public class ActivityTest {
   @Test
   public void testController() {
     TestUtils.login("createAdminOwner", "login-history-test");
-    JSONObject input = new JSONObject();
-    JSONObject client = new JSONObject();
-    client.put("firstName", "exampleFirstName");
-    client.put("lastName", "exampleLastName");
-    client.put("email", "exampleEmail");
-    client.put("role", "Client");
     HttpResponse<String> findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").body(input).asString();
-    // System.out.print("find" + findResponse.getBody().toString());
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+    assert (findResponse.getBody().contains(LoginActivity.class.getSimpleName()));
     TestUtils.logout();
   }
 
@@ -122,11 +116,9 @@ public class ActivityTest {
     MongoCollection<Activity> act = db.getCollection("activity", Activity.class);
     MongoCollection<User> user = db.getCollection("user", User.class);
     User user1 = user.find(eq("username", "createAdminOwner")).first();
-    User user2 = user.find(eq("username", "createdAdmin")).first();
     TestUtils.login("createAdminOwner", "login-history-test");
     MongoCollection a = db.getCollection("activity");
     MongoCursor c = a.find(eq("owner", user1)).iterator();
-    //    System.out.print(c.next().toString());
     assert (c.hasNext());
     TestUtils.logout();
   }

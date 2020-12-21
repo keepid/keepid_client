@@ -67,10 +67,12 @@ public class AppConfig {
     app.post("/forgot-password", accountSecurityController.forgotPassword);
     app.post("/change-password", accountSecurityController.changePassword);
     app.post("/reset-password", accountSecurityController.resetPassword);
-    app.get("/get-user-info", userController.getUserInfo);
+    app.post("/get-user-info", userController.getUserInfo);
     app.post("/two-factor", accountSecurityController.twoFactorAuth);
     app.post("/get-organization-members", userController.getMembers);
     app.post("/get-login-history", userController.getLogInHistory);
+    app.post("/upload-pfp", userController.uploadPfp);
+    app.post("/load-pfp", userController.loadPfp);
     app.post("/username-exists", userController.usernameExists);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */

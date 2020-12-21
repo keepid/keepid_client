@@ -1,16 +1,13 @@
 package Activity;
 
+import Config.Message;
 import Logger.LogFactory;
+import User.UserMessage;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
-import org.bson.Document;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import java.util.List;
 
 public class ActivityController {
   Logger logger;
@@ -32,26 +29,16 @@ public class ActivityController {
 
   public Handler findMyActivities =
       ctx -> {
-        JSONObject res = new JSONObject();
-        String username = ctx.sessionAttribute("username");
-        MongoCollection<Document> a = db.getCollection("activity", Document.class);
-        MongoCursor<Document> cu = a.find().iterator();
-        JSONArray allAct = new JSONArray();
-        while (cu.hasNext()) {
-          Document total = cu.next();
-          Document owner = (Document) total.get("owner");
-          if (username.equals(owner.get("username"))) {
-            List<String> temp = total.getList("type", String.class);
-            String t = temp.get(temp.size() - 1);
-            JSONObject activity = new JSONObject();
-            activity.append("type", t);
-            String info = total.toJson();
-            activity.append("info", info);
-            allAct.put(activity);
-          }
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        FindActivityService fas = new FindActivityService(db, logger, username);
+        Message responseMessage = fas.executeAndGetResponse();
+        JSONObject res = responseMessage.toJSON();
+        if (responseMessage == UserMessage.SUCCESS) {
+          res.put("username", fas.getUsername());
+          res.put("activities", fas.getActivitiesArray());
         }
-        res.put("allActivities", allAct);
-        ctx.json(res.toString());
+        ctx.result(res.toString());
       };
   /*
    Request body should contain the type of activity you are looking for. Message me for a complete list.
