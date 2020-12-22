@@ -19,7 +19,7 @@ interface Props {
 }
 
 interface State {
-  formQuestions: any[] | undefined,
+  fields: any[] | undefined,
   formAnswers: any,
   pdfApplication: File | undefined,
   title: String,
@@ -27,7 +27,6 @@ interface State {
   submitSuccessful: boolean,
   currentPage: number,
   numPages: number,
-  startDate: Date,
   formError: boolean,
 }
 
@@ -49,7 +48,7 @@ class ApplicationForm extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      formQuestions: undefined,
+      fields: undefined,
       formAnswers: {},
       pdfApplication: undefined,
       title: '',
@@ -57,7 +56,6 @@ class ApplicationForm extends Component<Props, State> {
       submitSuccessful: false,
       currentPage: 0,
       numPages: 0,
-      startDate: new Date(),
       formError: false,
     };
     this.handleChangeFormValueTextField = this.handleChangeFormValueTextField.bind(this);
@@ -65,7 +63,7 @@ class ApplicationForm extends Component<Props, State> {
     this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
     this.handleChangeFormValueListBox = this.handleChangeFormValueListBox.bind(this);
     this.handleChangeFormValueDateField = this.handleChangeFormValueDateField.bind(this);
-    this.onSubmitFormQuestions = this.onSubmitFormQuestions.bind(this);
+    this.onSubmitFormAnswers = this.onSubmitFormAnswers.bind(this);
     this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
 
@@ -75,7 +73,6 @@ class ApplicationForm extends Component<Props, State> {
     } = this.props;
     const {
       formAnswers,
-      startDate,
     } = this.state;
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
@@ -85,6 +82,7 @@ class ApplicationForm extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        console.log(responseJSON);
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const {
@@ -96,13 +94,14 @@ class ApplicationForm extends Component<Props, State> {
             fields[i].fieldID = uuid();
             const entry = fields[i];
             if (entry.fieldType === 'DateField') {
-              // Need to update default date value with the date on the current computer
-              this.handleChangeFormValueDateField(startDate, entry.fieldId);
+              // Need to update default date value with the local date on the current computer
+              formAnswers[entry.fieldName] = new Date();
+            } else {
+              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
             }
-            formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           }
           this.setState({
-            formQuestions: fields,
+            fields,
             title,
             description,
             formAnswers,
@@ -159,28 +158,34 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    this.setState({
-      startDate: date,
-    });
-
-    // https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
-    const mm = date.getMonth() + 1; // getMonth() is zero-based
-    const dd = date.getDate();
-    const value = [date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd].join('-');
-
-    formAnswers[id] = value;
+    formAnswers[id] = date;
     this.setState({ formAnswers });
   };
 
-  onSubmitFormQuestions(event: any) {
+  onSubmitFormAnswers(event: any) {
     event.preventDefault();
     const {
       applicationId,
       applicationFilename,
     } = this.props;
     const {
+      fields,
       formAnswers,
     } = this.state;
+
+    if (fields) {
+      for (let i = 0; i < fields.length; i += 1) {
+        const entry = fields[i];
+        if (entry.fieldType === 'DateField') {
+          // https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
+          const date = formAnswers[entry.fieldName];
+          const mm = date.getMonth() + 1; // getMonth() is zero-based
+          const dd = date.getDate();
+          const dateString = [date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd].join('-');
+          formAnswers[entry.fieldName] = dateString;
+        }
+      }
+    }
 
     fetch(`${getServerURL()}/fill-application`, {
       method: 'POST',
@@ -221,8 +226,8 @@ class ApplicationForm extends Component<Props, State> {
 
   // TODO: Based on pagination, not on number of answered questions
   progressBarFill = (): number => {
-    const { formQuestions, formAnswers } = this.state;
-    const total = (formQuestions) ? formQuestions.length : 0;
+    const { fields, formAnswers } = this.state;
+    const total = (fields) ? fields.length : 0;
     let answered = 0;
     Object.keys(formAnswers).forEach((questionId) => {
       if (formAnswers[questionId]) answered += 1;
@@ -235,12 +240,11 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication,
       title,
       description,
-      formQuestions,
+      fields,
       formAnswers,
       submitSuccessful,
       currentPage,
       numPages,
-      startDate,
       formError,
     } = this.state;
 
@@ -289,7 +293,7 @@ class ApplicationForm extends Component<Props, State> {
           </div>
         </div>
       );
-    } else if (formQuestions) {
+    } else if (fields) {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
@@ -302,14 +306,14 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-            <form onSubmit={this.onSubmitFormQuestions}>
-              {formQuestions.map(
+            <form onSubmit={this.onSubmitFormAnswers}>
+              {fields.map(
                 (entry) => (
                   <div className="my-5" key={entry.fieldID}>
                     {
                       (() => {
                         if (entry.fieldType === 'ReadOnlyField') {
-                          // TODO: Make it work
+                          // TODO: Make the readOnly Fields work as intended
                           // return (
                           //   <div className="mt-2 mb-2">
                           //     <label className="w-100 font-weight-bold">
@@ -469,9 +473,9 @@ class ApplicationForm extends Component<Props, State> {
                             <div className="date-question">
                               <label htmlFor="date" className="w-100 font-weight-bold">Date</label>
                               <DatePicker
-                                id="date"
-                                selected={startDate}
-                                onChange={(date) => this.handleChangeFormValueDateField(date, entry.fieldId)}
+                                id={entry.fieldName}
+                                selected={new Date(formAnswers[entry.fieldName])}
+                                onChange={(date) => this.handleChangeFormValueDateField(date, entry.fieldName)}
                                 className="form-control form-purple mt-1"
                                 required={entry.fieldIsRequired}
                                 readOnly={entry.fieldIsMatched}
