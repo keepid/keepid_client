@@ -116,23 +116,27 @@ public class GetQuestionsPDFService implements Service {
         List<PDField> childrenFields = ((PDNonTerminalField) field).getChildren();
         fields.addAll(childrenFields);
       } else {
+        JSONObject fieldJSON = null;
         if (field instanceof PDButton) {
           if (field instanceof PDCheckBox) {
-            fieldsJSON.add(getCheckBox((PDCheckBox) field));
+            fieldJSON = getCheckBox((PDCheckBox) field);
           } else if (field instanceof PDPushButton) {
             // Do not do anything for a push button, we don't need them right now
             // fieldsJSON.add(getPushButton((PDPushButton) field));
           } else if (field instanceof PDRadioButton) {
-            fieldsJSON.add(getRadioButton((PDRadioButton) field));
+            fieldJSON = getRadioButton((PDRadioButton) field);
           }
         } else if (field instanceof PDVariableText) {
           if (field instanceof PDChoice) {
-            fieldsJSON.add(getChoiceField((PDChoice) field));
+            fieldJSON = getChoiceField((PDChoice) field);
           } else if (field instanceof PDTextField) {
-            fieldsJSON.add(getTextField((PDTextField) field));
+            fieldJSON = getTextField((PDTextField) field);
           }
         } else if (field instanceof PDSignatureField) {
           // Do nothing, as signatures are dealt with in findSignatureFields
+        }
+        if (fieldJSON != null) {
+          fieldsJSON.add(fieldJSON);
         }
       }
 
@@ -286,28 +290,33 @@ public class GetQuestionsPDFService implements Service {
       // Annotation for matched field
       String fieldNameBase = splitFieldName[0];
       String fieldMatchedDBName = splitFieldName[1];
+      // TODO: Better way of changing the question (could be a problem)
       fieldQuestion = fieldQuestion.replaceFirst(fieldName, fieldNameBase);
 
-      if (fieldMatchedDBName.equals("currentDate") || fieldMatchedDBName.equals("anyDate")) {
+      if (fieldMatchedDBName.equals("anyDate")) {
         fieldType = "DateField";
-        if (fieldMatchedDBName.equals("currentDate")) {
-          fieldIsMatched = true;
-        }
+      } else if (fieldMatchedDBName.equals("currentDate")) {
+        // Make it matched because we should not modify the current date
+        fieldType = "DateField";
+        fieldIsMatched = true;
+      } else if (fieldMatchedDBName.equals("signature")) {
+        // Signatures not handles in first round of form completion
+        return null;
       } else if (userInfo.has(fieldMatchedDBName)) {
         // Matched variable found
         fieldDefaultValue = userInfo.getString(fieldMatchedDBName);
-        // TODO: Better way of changing the question (could be a problem)
-        fieldIsMatched = true;
+        // fieldIsMatched = true;
       } else {
         // Matched not found
         logger.error("Error in Annotation for Field: " + fieldName + " - User Field not Found");
+        return null;
       }
     } else {
       // Error in annotation - treat as normal without annotation
       logger.error("Error in Annotation for Field: " + fieldName + " - Invalid Format");
+      return null;
     }
 
-    // Not Editable
     fieldJSON.put("fieldName", fieldName);
     fieldJSON.put("fieldType", fieldType);
     fieldJSON.put("fieldValueOptions", new JSONArray(fieldValueOptions));
@@ -315,8 +324,6 @@ public class GetQuestionsPDFService implements Service {
     fieldJSON.put("fieldIsRequired", fieldIsRequired);
     fieldJSON.put("fieldNumLines", fieldNumLines);
     fieldJSON.put("fieldIsMatched", fieldIsMatched);
-
-    // Editable
     fieldJSON.put("fieldQuestion", fieldQuestion);
 
     return fieldJSON;
