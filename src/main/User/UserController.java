@@ -8,6 +8,7 @@ import User.Services.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import io.javalin.http.UploadedFile;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -191,7 +192,8 @@ public class UserController {
   public Handler getUserInfo =
       ctx -> {
         logger.info("Started getUserInfo handler");
-        String username = ctx.sessionAttribute("username");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
         GetUserInfoService infoService = new GetUserInfoService(db, logger, username);
         Message response = infoService.executeAndGetResponse();
         if (response != UserMessage.SUCCESS) { // if fail return
@@ -271,4 +273,29 @@ public class UserController {
     }
     return merged;
   }
+
+  public Handler uploadPfp =
+      ctx -> {
+        String username = ctx.formParam("username");
+        String fileName = ctx.formParam("fileName");
+        UploadedFile file = ctx.uploadedFile("file");
+        logger.info(username + " is attempting to upload a profile picture");
+        UploadPfpService serv = new UploadPfpService(db, logger, username, file, fileName);
+        JSONObject res = serv.executeAndGetResponse().toJSON();
+        ctx.result(res.toString());
+      };
+
+  public Handler loadPfp =
+      ctx -> {
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        LoadPfpService lps = new LoadPfpService(db, logger, username);
+        Message mes = lps.executeAndGetResponse();
+        if (mes == UserMessage.SUCCESS) {
+          ctx.header("Content-Type", "image/" + lps.getContentType());
+          ctx.result(lps.getRes());
+        } else {
+          ctx.result(mes.toJSON().toString());
+        }
+      };
 }
