@@ -70,6 +70,7 @@ public class GetQuestionsPDFService implements Service {
         try {
           return getFieldInformation(fileStream);
         } catch (IOException e) {
+          e.printStackTrace();
           return PdfMessage.SERVER_ERROR;
         }
       } else {
@@ -100,8 +101,8 @@ public class GetQuestionsPDFService implements Service {
 
     // Report the Metadata
     PDDocumentInformation documentInformation = pdfDocument.getDocumentInformation();
-
     // TODO: Make this the filename received from the client instead because of null checking
+    // TODO: This will then be the title from metadata, which is passed through when file selected
     responseJSON.put("title", documentInformation.getTitle());
     responseJSON.put("description", documentInformation.getSubject());
 
@@ -305,7 +306,7 @@ public class GetQuestionsPDFService implements Service {
       } else if (userInfo.has(fieldMatchedDBName)) {
         // Matched variable found
         fieldDefaultValue = userInfo.getString(fieldMatchedDBName);
-        // fieldIsMatched = true;
+        fieldIsMatched = true;
       } else {
         // Matched not found
         logger.error("Error in Annotation for Field: " + fieldName + " - User Field not Found");

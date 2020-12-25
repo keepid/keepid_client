@@ -95,7 +95,6 @@ public class UploadPDFService implements Service {
       MongoDatabase db)
       throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-
     if (pdfType == PDFType.FORM) {
       GridFSUploadOptions options =
           new GridFSUploadOptions()

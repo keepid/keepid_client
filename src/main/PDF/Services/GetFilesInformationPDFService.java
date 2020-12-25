@@ -108,10 +108,12 @@ public class GetFilesInformationPDFService implements Service {
               .put("id", grid_out.getId().asObjectId().getValue().toString())
               .put("uploadDate", grid_out.getUploadDate().toString());
       if (pdfType.equals(PDFType.FORM)) {
-        // TODO: Make one for filename and one for title (or they are both the same if one is
+        // TODO: Make one field for filename and one for title (or they are both the same if one is
         // derived from the other)
-        if (grid_out.getMetadata().getString("title") != null) {
-          fileMetadata.put("filename", grid_out.getMetadata().getString("title"));
+        String title = grid_out.getMetadata().getString("title");
+        // TODO: Reupload existing forms so that title is always not null
+        if (title != null) {
+          fileMetadata.put("filename", title);
         } else {
           fileMetadata.put("filename", grid_out.getFilename());
         }

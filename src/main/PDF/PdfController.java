@@ -11,7 +11,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -117,7 +116,17 @@ public class PdfController {
         } else {
           PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
           // TODO: Replace with a title that is retrieved from the client (optionally)
-          String title = getPDFTitle(pdfType, file.getFilename(), file.getContent());
+          String title = null;
+          try {
+            InputStream content = file.getContent();
+            PDDocument pdfDocument = PDDocument.load(content);
+            title = getPDFTitle(file.getFilename(), pdfDocument);
+            content.reset();
+            pdfDocument.close();
+          } catch (Exception exception) {
+            ctx.result(PdfMessage.INVALID_PDF.toResponseString());
+          }
+
           UploadPDFService uploadService =
               new UploadPDFService(
                   db,
@@ -130,7 +139,6 @@ public class PdfController {
                   title,
                   file.getContentType(),
                   file.getContent());
-          logger.info(String.valueOf(file.getContent().readAllBytes().length));
           ctx.result(uploadService.executeAndGetResponse().toResponseString());
         }
       };
@@ -276,18 +284,12 @@ public class PdfController {
         }
       };
 
-  private String getPDFTitle(PDFType pdfType, String fileName, InputStream input) {
-    String title;
-    if (pdfType == PDFType.FORM) {
-      try {
-        PDDocument pdfDocument = PDDocument.load(input);
-        pdfDocument.setAllSecurityToBeRemoved(true);
-        title = pdfDocument.getDocumentInformation().getTitle();
-      } catch (IOException exception) {
-        title = fileName;
-      }
-    } else {
-      title = fileName;
+  public static String getPDFTitle(String fileName, PDDocument pdfDocument) {
+    String title = fileName;
+    pdfDocument.setAllSecurityToBeRemoved(true);
+    String titleTmp = pdfDocument.getDocumentInformation().getTitle();
+    if (titleTmp != null) {
+      title = titleTmp;
     }
     return title;
   }
