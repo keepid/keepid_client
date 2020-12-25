@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route, Link } from 'react-router-dom';
 import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import ApplicationForm from './ApplicationForm';
 import TablePageSelector from '../Base/TablePageSelector';
@@ -126,7 +125,6 @@ class Applications extends Component<Props, State, {}> {
     } = this.state;
 
     const itemsPerPage = Number(itemsPerPageSelected.value);
-    console.log(rowIndex, currentPage, itemsPerPage);
     const index = rowIndex + currentPage * itemsPerPage;
     const form = documents[index];
     const {
@@ -142,7 +140,6 @@ class Applications extends Component<Props, State, {}> {
   }
 
   changeCurrentPage = (newCurrentPage: number) => {
-    console.log('new current page', newCurrentPage);
     this.setState({ currentPage: newCurrentPage }, this.getDocuments);
   }
 
