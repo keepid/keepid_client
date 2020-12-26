@@ -3,33 +3,63 @@ import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 
 interface Props {
-  cardHeight: string,
-  cardWidth: string,
+  cardSize?: string,
+  cardHeight?: string,
+  cardWidth?: string,
   cardTitle: string,
   cardText: string,
-  imageSrc: any,
-  imageLoc: string,
-  imageSize: string,
-  renderButton: boolean,
-  buttonText: string,
-  buttonOnClick: () => void,
-  renderAdditionalContent: () => any,
+  imageSrc?: any,
+  imageLoc?: string,
+  imageSize?: string,
+  buttonText?: string,
+  buttonOnClick?: () => void,
+  renderAdditionalContent?: () => any,
+}
+
+interface DefaultProps {
+  cardSize?: string,
+  cardHeight?: string,
+  cardWidth?: string,
+  imageSrc?: any,
+  imageLoc?: string,
+  imageSize?: string,
+  buttonText?: string,
+  buttonOnClick?: () => void,
+  renderAdditionalContent?: () => any,
 }
 
 function BaseCard(props: Props): React.ReactElement {
   const {
-    cardHeight,
-    cardWidth,
+    cardSize,
     cardTitle,
     cardText,
     imageSrc,
     imageLoc,
     imageSize,
-    renderButton,
     buttonText,
     buttonOnClick,
     renderAdditionalContent,
   } = props;
+  let cardHeight;
+  let cardWidth;
+  // default card sizes
+  if (cardSize === 'large-vertical') {
+    cardHeight = '535px';
+    cardWidth = '385px';
+  } else if (cardSize === 'large-horizontal') {
+    cardHeight = '380px';
+    cardWidth = '600px';
+  } else if (cardSize === 'small-vertical') {
+    cardHeight = '435px';
+    cardWidth = '265px';
+  } else if (cardSize === 'small-horizontal') {
+    cardHeight = '250px';
+    cardWidth = '400px';
+  } else {
+    cardHeight = props.cardHeight;
+    cardWidth = props.cardWidth;
+  }
+  // if there is an image, adjust image corner radius size based on image location
   const cardBorderRadius = 20;
   const buttonBorderRadius = 10;
   let borderTopLeftRadius = 0;
@@ -66,12 +96,16 @@ function BaseCard(props: Props): React.ReactElement {
                 <div style={{ height: '100%', overflow: 'scroll' }}>
                   <Card.Title>{cardTitle}</Card.Title>
                   <Card.Text>{cardText}</Card.Text>
-                  { renderAdditionalContent() }
+                  { typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null }
                 </div>
-                { renderButton
+                { typeof buttonText !== 'undefined'
                   ? (
                     <button
                       className="btn btn-card mt-3"
+                      onClick={buttonOnClick}
+                      style={{
+                        borderRadius: buttonBorderRadius,
+                      }}
                       type="button"
                     >
                       {buttonText}
@@ -82,25 +116,29 @@ function BaseCard(props: Props): React.ReactElement {
             </Card.Body>
           )
           : null }
-        { imageLoc === 'top'
+        { imageLoc === 'top' || typeof imageLoc === 'undefined'
           ? (
             <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%', overflow: 'scroll' }}>
-              <Image
-                src={imageSrc}
-                style={{
-                  height: imageSize,
-                  width: '100%',
-                  objectFit: 'cover',
-                  borderTopLeftRadius: cardBorderRadius,
-                  borderTopRightRadius: cardBorderRadius,
-                }}
-              />
+              { typeof imageLoc !== 'undefined'
+                ? (
+                  <Image
+                    src={imageSrc}
+                    style={{
+                      height: imageSize,
+                      width: '100%',
+                      objectFit: 'cover',
+                      borderTopLeftRadius: cardBorderRadius,
+                      borderTopRightRadius: cardBorderRadius,
+                    }}
+                  />
+                )
+                : null }
               <div className="p-4">
                 <Card.Title>{cardTitle}</Card.Title>
                 <Card.Text>{cardText}</Card.Text>
-                { renderAdditionalContent() }
+                { typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null }
               </div>
-              { renderButton
+              { typeof buttonText !== 'undefined'
                 ? (
                   <button
                     className="btn btn-card mt-auto mb-4 ml-4"
@@ -121,5 +159,19 @@ function BaseCard(props: Props): React.ReactElement {
     </div>
   );
 }
+
+const defaultProps: DefaultProps = {
+  cardSize: undefined,
+  cardHeight: undefined,
+  cardWidth: undefined,
+  imageSrc: undefined,
+  imageLoc: undefined,
+  imageSize: undefined,
+  buttonText: undefined,
+  buttonOnClick: undefined,
+  renderAdditionalContent: undefined,
+};
+
+BaseCard.defaultProps = defaultProps;
 
 export default BaseCard;
