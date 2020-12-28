@@ -6,6 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import './static/styles/BaseCard.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
 import Header from './components/Base/Header';
