@@ -48,13 +48,17 @@
     "react-scripts": "4.0.0",
     "react-select": "^3.1.0",
     "react-switch": "^5.0.1",
-    "react-test-renderer": "^16.13.1",
     "react-uuid": "^1.0.2",
     "switch": "0.0.0",
     "typescript": "^3.9.7",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
+    "@testing-library/dom": "^7.29.0",
+    "@testing-library/react": "^11.2.2",
+    "@testing-library/user-event": "^12.6.0",
+    "@types/enzyme": "3.10.8",
+    "@types/enzyme-adapter-react-16": "1.0.6",
     "@types/jquery": "^3.5.3",
     "@types/jquery-mask-plugin": "^1.14.3",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
@@ -71,6 +75,9 @@
     "css-loader": "^3.5.3",
     "cypress": "^4.9.0",
     "detect-port": "1.1.0",
+    "enzyme": "3.11.0",
+    "enzyme-adapter-react-16": "1.15.5",
+    "enzyme-to-json": "3.6.1",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-config-react-app": "^0.6.2",
     "eslint-loader": "1.6.0",
@@ -84,6 +91,7 @@
     "html-webpack-plugin": "2.24.0",
     "http-proxy-middleware": "^0.20.0",
     "husky": "^2.1.0",
+    "jest-fetch-mock": "3.0.3",
     "json-loader": "0.5.4",
     "node-hot-loader": "^1.20.0",
     "object-assign": "4.1.1",
@@ -91,9 +99,11 @@
     "promise": "7.1.1",
     "react-dev-utils": "^9.1.0",
     "react-hot-loader": "^4.12.21",
+    "react-test-renderer": "^16.13.1",
     "redirect": "^0.2.0",
     "style-loader": "0.13.1",
     "stylelint": "^12.0.1",
+    "ts-jest": "26.4.4",
     "url-loader": "^2.2.0",
     "whatwg-fetch": "2.0.2"
   },
@@ -106,6 +116,44 @@
     "lint:scss:fix": "stylelint 'src/**/*.scss' --syntax scss --fix",
     "lint:ts": "eslint . --ext .ts,.tsx",
     "lint:ts:fix": "npm run lint:ts -- --fix"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/index.tsx",
+      "!src/serviceWorker.ts",
+      "!src/reportWebVitals.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+      "./src/*/*.types.{ts,tsx}",
+      "./src/index.tsx",
+      "./src/serviceWorker.ts"
+    ],
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text-summary",
+      "clover"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 95,
+        "branches": 95,
+        "lines": 95,
+        "functions": 95
+      }
+    },
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/ts-jest"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ]
   },
   "eslintConfig": {
     "extends": "react-app"

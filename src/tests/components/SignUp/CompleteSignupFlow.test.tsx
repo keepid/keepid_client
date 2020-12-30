@@ -1,5 +1,4 @@
-// const { default: CompleteSignupFlow } = require("../../components/SignUp/CompleteSignupFlow");
-import {addHttp} from "../../components/SignUp/CompleteSignupFlow";
+import { addHttp } from "../../../components/SignUp/CompleteSignupFlow";
 
 test('add http test',() => {
     expect(addHttp("https://example.com")).toBe("https://example.com");
