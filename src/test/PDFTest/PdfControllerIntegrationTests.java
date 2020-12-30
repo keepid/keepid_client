@@ -463,6 +463,28 @@ public class PdfControllerIntegrationTests {
   }
 
   @Test
+  public void getDocumentsTargetUser() throws IOException, GeneralSecurityException {
+    TestUtils.login("workerttfBSM", "workerttfBSM");
+    clearAllDocuments();
+    File applicationPDF = new File(resourcesFolderPath + File.separator + "testpdf.pdf");
+    String fileId = uploadFileAndGetFileId(applicationPDF, "FORM");
+    TestUtils.logout();
+    TestUtils.login(username, username);
+
+    JSONObject body = new JSONObject();
+    body.put("pdfType", "FORM");
+    body.put("annotated", false);
+    body.put("targetUser", "workerttfBSM");
+    HttpResponse<String> getForm =
+        Unirest.post(TestUtils.getServerUrl() + "/get-documents").body(body.toString()).asString();
+    JSONObject getFormJSON = TestUtils.responseStringToJSON(getForm.getBody());
+    String downId = getFormJSON.getJSONArray("documents").getJSONObject(0).getString("id");
+    // String fileId = getFormJSON.getJSONArray("documents").getJSONObject(0).getString("id");
+    assertThat(fileId).isEqualTo(downId);
+    TestUtils.logout();
+  }
+
+  @Test
   public void fillApplicationQuestionsTestPDFTest() throws IOException, GeneralSecurityException {
     TestUtils.login(username, username);
     clearAllDocuments();
