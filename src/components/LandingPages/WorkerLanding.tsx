@@ -8,7 +8,6 @@ import Modal from 'react-bootstrap/Modal';
 import Role from '../../static/Role';
 import SearchSVG from '../../static/images/search.svg';
 import getServerURL from '../../serverOverride';
-import ClientProfilePage from '../ClientProfilePage';
 import TablePageSelector from '../Base/TablePageSelector';
 import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
 
