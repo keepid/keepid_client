@@ -175,7 +175,7 @@ class ClientProfilePage extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((blob) => {
         const { size } = blob;
-        if (size > 0) {
+        if (size > 72) {
           const url = (URL || window.webkitURL).createObjectURL(blob);
           if (url) {
             this.setState({
