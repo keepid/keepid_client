@@ -18,6 +18,7 @@ import FileCloud from '../../static/images/file-cloud.svg';
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
 import HomepageGraphic from '../../static/images/homepage_graphic.svg';
+import RectangleSVG from '../static/images/rectangle.svg';
 
 class Home extends Component<{}, {}, {}> {
   render() {
@@ -27,18 +28,17 @@ class Home extends Component<{}, {}, {}> {
           <title>Welcome</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-
         <div className="container-fluid my-auto">
           <div className="row section1 mt-5 justify-content-center">
             <div className="col-md-5 px-4 custom-vertical-center">
               <div className="rounded mb-3 pb-5">
                 <div className="page-header">
                   <span className="brand-text" id="brand-header">
-                    Safeguarding identities of those experiencing homelessness
+                    An identification platform
                   </span>
                 </div>
                 <p className="pt-2 pb-2 home-subtext">
-                  A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
+                  for those experiencing homelessness
                 </p>
                 <Link to="/signup-branch">
                   <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
@@ -57,23 +57,24 @@ class Home extends Component<{}, {}, {}> {
             </div>
           </div>
         </div>
-        <div className="container-fluid mx-0 pt-5 pb-4  background">
-          <div className="container section2">
-            <div className="row text-center">
-              <div className="col-md-4 flex-column ">
-                <h1 className="font-weight-bold statistic-text mb-2">552,830</h1>
-                <span className="statistic-subtext">Homeless Population in U.S.</span>
-                <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-              </div>
-              <div className="col-md-4 flex-column">
-                <h1 className="font-weight-bold statistic-text mb-2">5,800</h1>
-                <span className="statistic-subtext">Chronically Homeless Population in Philadelphia</span>
-                <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
-              </div>
-              <div className="col-md-4 flex-column">
-                <h1 className="font-weight-bold statistic-text mb-2">6,583</h1>
-                <span className="statistic-subtext">Youth experiencing Homelessness in Philadelphia</span>
-                <p className="text-muted pt-2 pb-2"><a href="https://www.projecthome.org/about/facts-homelessness">Source</a></p>
+        <div className="container py-5">
+          <div className="row viewport-height-50">
+            <div className="col-md-10 custom-vertical-center mx-auto text-center">
+              <div id="info">
+                <img
+                  className="svg-purple mb-5"
+                  src={RectangleSVG}
+                  alt="rectangle"
+                />
+                <h3 className="hero-subtext text-grey pb-3">
+                  Lacking formal identification is a prevalent issue among
+                  homeless individuals that bars them from accessing many basic
+                  social and financial services in the United States.
+                </h3>
+                <h3 className="hero-subtext text-black font-weight-medium">
+                  We are dedicated to empowering those who are experiencing
+                  homelessness to obtain, secure, and utilize identification.
+                </h3>
               </div>
             </div>
           </div>
