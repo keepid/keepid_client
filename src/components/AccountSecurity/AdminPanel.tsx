@@ -109,6 +109,7 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         const { people } = responseJSON;
+        if (people)
         people.forEach(person => { 
           person.id = person.username;
           delete person.username;
