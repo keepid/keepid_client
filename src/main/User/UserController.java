@@ -215,23 +215,12 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String listType = req.getString("listType").toUpperCase();
-        int currentPage = req.getInt("currentPage");
-        int itemsPerPage = req.getInt("itemsPerPage");
 
         GetMembersService getMembersService =
-            new GetMembersService(
-                db,
-                logger,
-                searchValue,
-                orgName,
-                privilegeLevel,
-                listType,
-                currentPage,
-                itemsPerPage);
+            new GetMembersService(db, logger, searchValue, orgName, privilegeLevel, listType);
         Message message = getMembersService.executeAndGetResponse();
         if (message == UserMessage.SUCCESS) {
-          res.put("people", getMembersService.getPeoplePage());
-          res.put("numPeople", getMembersService.getNumReturnedElements());
+          res.put("people", getMembersService.getPeople());
           ctx.result(mergeJSON(res, message.toJSON()).toString());
         } else {
           ctx.result(message.toResponseString());
