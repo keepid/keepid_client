@@ -27,7 +27,8 @@ function TablePageSelector(props: Props) : any {
     numElements,
     itemsPerPage,
   } = props;
-  const numPages : number = Math.floor((numElements - 1) / itemsPerPage) + 1;
+  const numPagesDbl = numElements / itemsPerPage;
+  const numPages : number = (numElements % itemsPerPage == 0) ? numPagesDbl : Math.floor(numPagesDbl) + 1;
   const numPagesArray : number[] = [];
   let numPagesLowerBound = 0;
   let numPagesUpperBound = numPagesLowerBound + numPages;

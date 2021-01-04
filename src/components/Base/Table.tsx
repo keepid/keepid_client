@@ -75,6 +75,7 @@ function TModal(props: TModalProps): React.ReactElement {
 }
 
 const listOptions = [
+  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -84,6 +85,7 @@ const listOptions = [
 interface Props {
     data: any[],
     columns: any[],
+    canSelect: boolean,
     canModify: boolean, // whether we can modify table at all
     cantEditCols: Set<number>, // set of row numbers that shouldn't be allowed to be edited
     emptyInfo: {
@@ -91,7 +93,7 @@ interface Props {
       label: string,
       description: string,
     },
-    onDelete: (id: any) => void,
+    onDelete: (id: any) => void, //this should modify backend + re-retrieve data to pass into Table.
     onEditSave: (row: any) => void,
 }
 
@@ -104,7 +106,6 @@ interface State {
     selectRows: Set<number>,
     currentPage: number,
     itemsPerPageSelected: any,
-    numElements: number,
 }
 
 class Table extends React.Component<Props, State, {}> {
@@ -156,8 +157,6 @@ class Table extends React.Component<Props, State, {}> {
       selectRows: new Set<number>(), // rowIDs of currently selected rows
       currentPage: 0,
       itemsPerPageSelected: listOptions[1],
-      numElements: props.data.length,
-
     };
   }
 
@@ -266,23 +265,23 @@ class Table extends React.Component<Props, State, {}> {
     render() {
       const {
         columns,
+        data,
         cantEditCols,
         canModify,
+        canSelect,
       } = this.props;
 
       const {
-        data,
         editRows,
         showDeleteModal,
         rowToDelete,
         currentPage,
         itemsPerPageSelected,
-        numElements,
         selectRows,
       } = this.state;
-      
       const itemsPerPage = Number(itemsPerPageSelected.value);
       const lightPurple = '#E8E9FF';
+      const numElements = data.length;
 
       //custom results display for table
       const customTotal = (from, to, size) => (
@@ -375,6 +374,7 @@ class Table extends React.Component<Props, State, {}> {
 
       // selection customization
       const selectRow = {
+        hideSelectColumn: !canSelect,
         mode: 'checkbox',
         clickToSelect: false,
         headerColumnStyle: { width: '2.5rem' },

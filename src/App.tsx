@@ -189,7 +189,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete}/>}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify canSelect={false} emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete}/>}
               />
               <Route
                 exact
