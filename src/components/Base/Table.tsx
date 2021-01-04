@@ -24,9 +24,9 @@ interface FormatterProps {
 }
 
 function EditFormatter(props: FormatterProps): React.ReactElement {
-  const [editable, setEditable] = useState(false);
-
+  const [editable, setEditable] = useState(props.row.id in props.editRows);
   const handleEdit = (e): void => {
+    e.preventDefault();
     setEditable(true);
     props.handleEdit(e, props.row);
   };
@@ -35,12 +35,12 @@ function EditFormatter(props: FormatterProps): React.ReactElement {
     setEditable(false);
     props.handleSave(e, props.row);
   };
-
+  const canEdit = editable && (props.editRows.has(props.row.id));
   return (
-    <Button variant="link" className={editable ? 'save-text table-button action' : 'edit-text table-button action'} onClick={(e) => (editable ? handleSave(e) : handleEdit(e))}>
+    <Button variant="link" className={canEdit ? 'save-text table-button action' : 'edit-text table-button action'} onClick={(e) => (canEdit ? handleSave(e) : handleEdit(e))}>
       <div className="row align-items-center">
-        <img className="px-1 table-svg" src={editable ? SaveSVG : EditSVG} alt={editable ? "save" : "edit"}/>
-        <div className="d-none d-sm-block">{ editable ? 'Save' : 'Edit' }</div>
+        <img className="px-1 table-svg" src={canEdit ? SaveSVG : EditSVG} alt={editable ? "save" : "edit"}/>
+        <div className="d-none d-sm-block">{ canEdit ? 'Save' : 'Edit' }</div>
       </div>
 
     </Button>
@@ -123,6 +123,16 @@ class Table extends React.Component<Props, State, {}> {
         };
       };
       if ('sort' in col && col.sort === true) {
+        col.onSort = (field, order) => {
+          const { selectRows, editRows } = this.state;
+          selectRows.clear();
+          editRows.clear();
+          this.setState({
+            selectRows,
+            editRows,
+          });
+          
+        }
         col.sortCaret = (order, column) => {
           let sortAlt = 'sort';
           let classDef = 'px-2 sort-svg';
