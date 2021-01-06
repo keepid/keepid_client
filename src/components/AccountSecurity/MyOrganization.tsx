@@ -281,6 +281,7 @@ class MyOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const responseObject = JSON.parse(responseJSON);
         const { status } = responseObject;
+
         if (status === 'SUCCESS') {
           this.setState((prevState) => ({
             showPopUp: true,

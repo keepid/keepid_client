@@ -42,6 +42,7 @@ import AdminDashboard from './components/AccountSecurity/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
+import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 
 window.onload = () => {
@@ -291,6 +292,16 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/create-user/:jwt">
                 <InviteSignupJWT />
               </Route>
+              <Route
+                path="/profile/:username"
+                render={(props) => {
+                  const clientUsername = props.match.params.username;
+                  if (role !== Role.LoggedOut) {
+                    return <ClientProfilePage username={clientUsername} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
               <Route path="/error">
                 <Error />
               </Route>
