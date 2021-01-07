@@ -7,11 +7,14 @@ import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.util.Objects;
+
+import static User.UserController.mergeJSON;
 
 public class PdfController {
   private MongoDatabase db;
@@ -86,12 +89,13 @@ public class PdfController {
         if (pdfType == PDFType.FORM) {
           annotated = Objects.requireNonNull(req.getBoolean("annotated"));
         }
-        GetAllFilesPDFService getAllFilesPDFService =
-            new GetAllFilesPDFService(db, logger, username, orgName, userType, pdfType, annotated);
-        Message response = getAllFilesPDFService.executeAndGetResponse();
+        GetFilesInformationPDFService getFilesInformationPDFService =
+            new GetFilesInformationPDFService(
+                db, logger, username, orgName, userType, pdfType, annotated);
+        Message response = getFilesInformationPDFService.executeAndGetResponse();
         JSONObject responseJSON = response.toJSON();
         if (response == PdfMessage.SUCCESS) {
-          responseJSON.put("documents", getAllFilesPDFService.getFiles());
+          responseJSON.put("documents", getFilesInformationPDFService.getFiles());
         }
         ctx.result(responseJSON.toString());
       };
@@ -111,6 +115,18 @@ public class PdfController {
           ctx.result(PdfMessage.INVALID_PDF.toResponseString());
         } else {
           PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+          // TODO: Replace with a title that is retrieved from the client (optionally)
+          String title = null;
+          try {
+            InputStream content = file.getContent();
+            PDDocument pdfDocument = PDDocument.load(content);
+            title = getPDFTitle(file.getFilename(), pdfDocument);
+            content.reset();
+            pdfDocument.close();
+          } catch (Exception exception) {
+            ctx.result(PdfMessage.INVALID_PDF.toResponseString());
+          }
+
           UploadPDFService uploadService =
               new UploadPDFService(
                   db,
@@ -120,6 +136,7 @@ public class PdfController {
                   privilegeLevel,
                   pdfType,
                   file.getFilename(),
+                  title,
                   file.getContentType(),
                   file.getContent());
           ctx.result(uploadService.executeAndGetResponse().toResponseString());
@@ -209,13 +226,14 @@ public class PdfController {
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
           GetQuestionsPDFService getQuestionsPDFService =
-              new GetQuestionsPDFService(db, logger, privilegeLevel, inputStream);
+              new GetQuestionsPDFService(db, logger, privilegeLevel, username, inputStream);
           Message response = getQuestionsPDFService.executeAndGetResponse();
-          JSONObject responseJSON = response.toJSON();
           if (response == PdfMessage.SUCCESS) {
-            responseJSON.put("fields", getQuestionsPDFService.getApplicationQuestions());
+            JSONObject information = getQuestionsPDFService.getApplicationInformation();
+            ctx.result(mergeJSON(response.toJSON(), information).toString());
+          } else {
+            ctx.result(response.toJSON().toString());
           }
-          ctx.result(responseJSON.toString());
         } else {
           ctx.result(responseDownload.toResponseString());
         }
@@ -265,4 +283,14 @@ public class PdfController {
           ctx.result(responseDownload.toResponseString());
         }
       };
+
+  public static String getPDFTitle(String fileName, PDDocument pdfDocument) {
+    String title = fileName;
+    pdfDocument.setAllSecurityToBeRemoved(true);
+    String titleTmp = pdfDocument.getDocumentInformation().getTitle();
+    if (titleTmp != null) {
+      title = titleTmp;
+    }
+    return title;
+  }
 }

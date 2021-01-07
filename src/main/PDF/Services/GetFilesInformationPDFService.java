@@ -22,7 +22,7 @@ import java.util.Objects;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
-public class GetAllFilesPDFService implements Service {
+public class GetFilesInformationPDFService implements Service {
   MongoDatabase db;
   Logger logger;
   private String username;
@@ -32,7 +32,7 @@ public class GetAllFilesPDFService implements Service {
   private JSONArray files;
   private boolean annotated;
 
-  public GetAllFilesPDFService(
+  public GetFilesInformationPDFService(
       MongoDatabase db,
       Logger logger,
       String username,
@@ -108,7 +108,15 @@ public class GetAllFilesPDFService implements Service {
               .put("id", grid_out.getId().asObjectId().getValue().toString())
               .put("uploadDate", grid_out.getUploadDate().toString());
       if (pdfType.equals(PDFType.FORM)) {
-        fileMetadata.put("filename", grid_out.getFilename());
+        // TODO: Make one field for filename and one for title (or they are both the same if one is
+        // derived from the other)
+        String title = grid_out.getMetadata().getString("title");
+        // TODO: Reupload existing forms so that title is always not null
+        if (title != null) {
+          fileMetadata.put("filename", title);
+        } else {
+          fileMetadata.put("filename", grid_out.getFilename());
+        }
         fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
       } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
         try {

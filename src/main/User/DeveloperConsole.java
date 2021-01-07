@@ -49,7 +49,7 @@ public class DeveloperConsole {
     String firstName = scanner.nextLine();
     System.out.println("Please Enter your Last Name: ");
     String lastName = scanner.nextLine();
-    System.out.println("Please Enter your Birthday in the Format (DD-MM-YYYY): ");
+    System.out.println("Please Enter your Birthday in the Format (MM-DD-YYYY): ");
     String birthDate = scanner.nextLine();
     System.out.println("Please Enter your Email: ");
     String email = scanner.nextLine();
@@ -67,6 +67,8 @@ public class DeveloperConsole {
         "Please Enter your Preference for Two-Factor Authentication (ONLY TYPE true or false): ");
     Boolean twoFactorOn = scanner.nextBoolean();
     scanner.nextLine();
+    System.out.println("Please Choose your Organization");
+    String organization = scanner.nextLine();
     System.out.println("Please Enter your Chosen Username: ");
     String username = scanner.nextLine();
     System.out.println("Please Enter your Password: ");
@@ -91,7 +93,7 @@ public class DeveloperConsole {
               birthDate,
               email,
               phone,
-              "Team Keep 3",
+              organization,
               address,
               city,
               state,

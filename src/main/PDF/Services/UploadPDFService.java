@@ -25,6 +25,7 @@ public class UploadPDFService implements Service {
   String organizationName;
   UserType privilegeLevel;
   String filename;
+  String title;
   String fileContentType;
   InputStream fileStream;
   PDFType pdfType;
@@ -39,6 +40,7 @@ public class UploadPDFService implements Service {
       UserType privilegeLevel,
       PDFType pdfType,
       String filename,
+      String title,
       String fileContentType,
       InputStream fileStream) {
     this.db = db;
@@ -48,6 +50,7 @@ public class UploadPDFService implements Service {
     this.privilegeLevel = privilegeLevel;
     this.pdfType = pdfType;
     this.filename = filename;
+    this.title = title;
     this.fileContentType = fileContentType;
     this.fileStream = fileStream;
   }
@@ -71,7 +74,8 @@ public class UploadPDFService implements Service {
               || privilegeLevel == UserType.Admin
               || privilegeLevel == UserType.Developer)) {
         try {
-          return mongodbUpload(uploader, organizationName, filename, fileStream, pdfType, db);
+          return mongodbUpload(
+              uploader, organizationName, filename, title, fileStream, pdfType, db);
         } catch (GeneralSecurityException | IOException e) {
           return PdfMessage.SERVER_ERROR;
         }
@@ -85,12 +89,12 @@ public class UploadPDFService implements Service {
       String uploader,
       String organizationName,
       String filename,
+      String title,
       InputStream inputStream,
       PDFType pdfType,
       MongoDatabase db)
       throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
-
     if (pdfType == PDFType.FORM) {
       GridFSUploadOptions options =
           new GridFSUploadOptions()
@@ -98,6 +102,7 @@ public class UploadPDFService implements Service {
               .metadata(
                   new Document("type", "pdf")
                       .append("upload_date", String.valueOf(LocalDate.now()))
+                      .append("title", title)
                       .append("annotated", false)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
