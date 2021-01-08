@@ -373,7 +373,7 @@ class ApplicationForm extends Component<Props, State> {
       }).then((response) => (response.json()))
         .then((responseJSON) => {
           this.setState({ submitSuccessful: true });
-          this.props.alert.show('Successfully Submitted Application');
+          this.props.alert.show('Successfully Completed PDF Application');
         });
     }
   }
@@ -532,7 +532,6 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
 
     if (submitSuccessful) {
-      alert.show('Successfully Completed PDF Application');
       return (<Redirect to="/home" />);
     }
 
