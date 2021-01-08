@@ -12,6 +12,18 @@ import 'react-datepicker/dist/react-datepicker.css';
 // import {Simulate} from "react-dom/test-utils";
 // import submit = Simulate.submit;
 
+interface Field {
+  fieldID: string, // Unique identifier id from frontend
+  fieldName: string, // Unique identifier name from backend
+  fieldType: string,
+  fieldValueOptions: string[],
+  fieldDefaultValue: any,
+  fieldIsRequired: boolean,
+  fieldNumLines: number,
+  fieldIsMatched: boolean,
+  fieldQuestion: string,
+}
+
 interface Props {
   alert: any,
   applicationId: string,
@@ -19,27 +31,15 @@ interface Props {
 }
 
 interface State {
-  fields: any[] | undefined,
-  formAnswers: any,
+  fields: Field[] | undefined,
+  formAnswers: { [fieldName: string]: any },
   pdfApplication: File | undefined,
-  title: String,
-  description : String,
+  title: string,
+  description : string,
   submitSuccessful: boolean,
   currentPage: number,
   numPages: number,
   formError: boolean,
-}
-
-// Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-function dataURLtoBlob(dataurl) {
-  const arr = dataurl.split(',');
-  const bstr = atob(arr[1]); let n = bstr.length; const
-    u8arr = new Uint8Array(n);
-  while (n >= 0) {
-    n -= 1;
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], { type: 'image/png' });
 }
 
 class ApplicationForm extends Component<Props, State> {
@@ -58,13 +58,6 @@ class ApplicationForm extends Component<Props, State> {
       numPages: 0,
       formError: false,
     };
-    this.handleChangeFormValueTextField = this.handleChangeFormValueTextField.bind(this);
-    this.handleChangeFormValueRadioButton = this.handleChangeFormValueRadioButton.bind(this);
-    this.handleChangeFormValueCheckBox = this.handleChangeFormValueCheckBox.bind(this);
-    this.handleChangeFormValueListBox = this.handleChangeFormValueListBox.bind(this);
-    this.handleChangeFormValueDateField = this.handleChangeFormValueDateField.bind(this);
-    this.onSubmitFormAnswers = this.onSubmitFormAnswers.bind(this);
-    this.onSubmitPdfApplication = this.onSubmitPdfApplication.bind(this);
   }
 
   componentDidMount() {
@@ -89,6 +82,7 @@ class ApplicationForm extends Component<Props, State> {
             title,
             description,
           } = responseJSON;
+          // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
             const entry = fields[i];
@@ -113,17 +107,19 @@ class ApplicationForm extends Component<Props, State> {
       });
   }
 
-  handleChangeFormValueTextField(event: any) {
+  handleChangeFormValueTextField = (event: any) => {
     const {
       formAnswers,
     } = this.state;
-    const { id } = event.target;
-    const { value } = event.target;
+    const {
+      id,
+      value,
+    } = event.target;
     formAnswers[id] = value;
     this.setState({ formAnswers });
   }
 
-  handleChangeFormValueCheckBox(event: any) {
+  handleChangeFormValueCheckBox = (event: any) => {
     const {
       formAnswers,
     } = this.state;
@@ -133,17 +129,19 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   }
 
-  handleChangeFormValueRadioButton(event: any) {
+  handleChangeFormValueRadioButton = (event: any) => {
     const {
       formAnswers,
     } = this.state;
-    const { name } = event.target;
-    const { value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
     formAnswers[name] = value;
     this.setState({ formAnswers });
   }
 
-  handleChangeFormValueListBox(event: any) {
+  handleChangeFormValueListBox = (event: any) => {
     const {
       formAnswers,
     } = this.state;
@@ -153,15 +151,160 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   }
 
-  handleChangeFormValueDateField = (date, id) => {
+  handleChangeFormValueDateField = (date: any, id: string) => {
     const {
       formAnswers,
     } = this.state;
     formAnswers[id] = date;
     this.setState({ formAnswers });
-  };
+  }
 
-  onSubmitFormAnswers(event: any) {
+  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="mt-2 mb-2">
+      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+        {entry.fieldQuestion}
+      </label>
+      <input
+        type="text"
+        className="form-control form-purple mt-1"
+        id={entry.fieldName}
+        placeholder={entry.fieldName}
+        onChange={this.handleChangeFormValueTextField}
+        value={formAnswers[entry.fieldName]}
+        required={entry.fieldIsRequired}
+        readOnly={entry.fieldIsMatched}
+      />
+      {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+    </div>
+  );
+
+  getMultilineTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="mt-2 mb-2">
+      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+        {entry.fieldQuestion}
+      </label>
+      <textarea
+        className="form-control form-purple mt-1"
+        id={entry.fieldName}
+        placeholder={entry.fieldName}
+        onChange={this.handleChangeFormValueTextField}
+        value={formAnswers[entry.fieldName]}
+        required={entry.fieldIsRequired}
+        readOnly={entry.fieldIsMatched}
+      />
+      {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+    </div>
+  );
+
+  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="mt-2 mb-2">
+      <div className="checkbox-question">
+        <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+          {entry.fieldQuestion}
+          <small className="form-text text-muted mt-1">Please complete this field.</small>
+        </label>
+        <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
+          <div className="custom-control custom-checkbox mx-2">
+            <input
+              type="checkbox"
+              className="custom-control-input mr-2"
+              id={entry.fieldName}
+              onChange={this.handleChangeFormValueCheckBox}
+              checked={formAnswers[entry.fieldName]}
+              required={entry.fieldIsRequired}
+              readOnly={entry.fieldIsMatched}
+            />
+            <label className="custom-control-label" htmlFor={entry.fieldName}>{entry.fieldValueOptions[0]}</label>
+            {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  getRadioButton = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="mt-2 mb-2">
+      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+        {entry.fieldQuestion}
+        <small className="form-text text-muted mt-1">Please complete this field.</small>
+      </label>
+      {entry.fieldValueOptions.map((value) => (
+        <div className="custom-control custom-radio" key={`${entry.fieldName}_${value}`}>
+          <input
+            type="radio"
+            className="custom-control-input"
+            id={`${entry.fieldName}_${value}`}
+            name={entry.fieldName}
+            checked={formAnswers[entry.fieldName] === value}
+            value={value}
+            onChange={this.handleChangeFormValueRadioButton}
+            required={entry.fieldIsRequired}
+            readOnly={entry.fieldIsMatched}
+          />
+          <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>{value}</label>
+        </div>
+      ))}
+    </div>
+  );
+
+  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="dropdown-question">
+      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+        {entry.fieldQuestion}
+        <small className="form-text text-muted mt-1">Please complete this field.</small>
+      </label>
+
+      <select
+        id={entry.fieldName}
+        onChange={this.handleChangeFormValueTextField}
+        className="custom-select"
+        required={entry.fieldIsRequired}
+      >
+        <option selected disabled value="">Please select your choice ...</option>
+        {entry.fieldValueOptions.map((value) => (
+          <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
+        ))}
+      </select>
+    </div>
+  );
+
+  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="multiple-dropdown-question">
+      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+        {entry.fieldQuestion}
+        <small className="form-text text-muted mt-1">Please complete this field.</small>
+      </label>
+      <select
+        id={entry.fieldName}
+        onChange={this.handleChangeFormValueListBox}
+        className="custom-select"
+        multiple
+        required={entry.fieldIsRequired}
+      >
+        <option selected disabled value="">Please select your choice(s) ...</option>
+        {entry.fieldValueOptions.map((value) => (
+          <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
+        ))}
+      </select>
+    </div>
+  );
+
+  getDateField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+    <div className="date-question">
+      <label htmlFor="date" className="w-100 font-weight-bold">Date</label>
+      <DatePicker
+        id={entry.fieldName}
+        selected={new Date(formAnswers[entry.fieldName])}
+        onChange={(date) => this.handleChangeFormValueDateField(date, entry.fieldName)}
+        className="form-control form-purple mt-1"
+        required={entry.fieldIsRequired}
+        readOnly={entry.fieldIsMatched}
+      />
+      <small className="form-text text-muted mt-1">Please complete this field.</small>
+    </div>
+  );
+
+  onSubmitFormAnswers = (event: any) => {
     event.preventDefault();
     const {
       applicationId,
@@ -176,7 +319,7 @@ class ApplicationForm extends Component<Props, State> {
       for (let i = 0; i < fields.length; i += 1) {
         const entry = fields[i];
         if (entry.fieldType === 'DateField') {
-          // https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
+          // Source: https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
           const date = formAnswers[entry.fieldName];
           const mm = date.getMonth() + 1; // getMonth() is zero-based
           const dd = date.getDate();
@@ -200,14 +343,26 @@ class ApplicationForm extends Component<Props, State> {
       });
   }
 
-  onSubmitPdfApplication(event: any) {
+  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+  dataURLtoBlob = (dataURL: string) => {
+    const arr = dataURL.split(',');
+    const bstr = atob(arr[1]); let n = bstr.length; const
+      u8arr = new Uint8Array(n);
+    while (n >= 0) {
+      n -= 1;
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: 'image/png' });
+  }
+
+  onSubmitPdfApplication = (event: any) => {
     const {
       pdfApplication,
     } = this.state;
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
-      const signature = dataURLtoBlob(this.signaturePad.toDataURL());
+      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
@@ -223,7 +378,7 @@ class ApplicationForm extends Component<Props, State> {
     }
   }
 
-  // TODO: Based on pagination, not on number of answered questions
+  // TODO: Change to be based on number of pages completed, not on number of answered questions
   progressBarFill = (): number => {
     const { fields, formAnswers } = this.state;
     const total = (fields) ? fields.length : 0;
@@ -231,29 +386,24 @@ class ApplicationForm extends Component<Props, State> {
     Object.keys(formAnswers).forEach((questionId) => {
       if (formAnswers[questionId]) answered += 1;
     });
-    return (total === 0) ? 100 : Math.round((answered / total) * 100);
+    const maxPercentage = 100;
+    return (total === 0) ? maxPercentage : Math.round((answered / total) * maxPercentage);
   }
 
-  render() {
+  getApplicationBody = () => {
     const {
       pdfApplication,
-      title,
-      description,
       fields,
       formAnswers,
-      submitSuccessful,
+      title,
+      description,
       currentPage,
       numPages,
-      formError,
     } = this.state;
-
-    if (submitSuccessful) {
-      return (<Redirect to="/home" />);
-    }
-
     let bodyElement;
     const fillAmt = this.progressBarFill();
     if (pdfApplication) {
+      // If the user has submitted their answers display the finished PDF application
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
@@ -293,6 +443,7 @@ class ApplicationForm extends Component<Props, State> {
         </div>
       );
     } else if (fields) {
+      // If the user has not yet answered the questions, display the fields
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
@@ -312,176 +463,29 @@ class ApplicationForm extends Component<Props, State> {
                     {
                       (() => {
                         if (entry.fieldType === 'ReadOnlyField') {
-                          // TODO: Make the readOnly Fields work as intended
-                          // return (
-                          //   <div className="mt-2 mb-2">
-                          //     <label className="w-100 font-weight-bold">
-                          //       { entry.fieldName }
-                          //     </label>
-                          //   </div>
-                          // );
+                          // TODO: Make the readOnly fields show and be formatted properly
+                          return <div />;
                         }
                         if (entry.fieldType === 'TextField') {
-                          return (
-                            <div className="mt-2 mb-2">
-                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control form-purple mt-1"
-                                id={entry.fieldName}
-                                placeholder={entry.fieldName}
-                                onChange={this.handleChangeFormValueTextField}
-                                value={formAnswers[entry.fieldName]}
-                                required={entry.fieldIsRequired}
-                                readOnly={entry.fieldIsMatched}
-                              />
-                              {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
-                            </div>
-                          );
+                          return this.getTextField(entry, formAnswers);
                         }
                         if (entry.fieldType === 'MultilineTextField') {
-                          return (
-                            <div className="mt-2 mb-2">
-                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
-                              </label>
-                              <textarea
-                                className="form-control form-purple mt-1"
-                                id={entry.fieldName}
-                                placeholder={entry.fieldName}
-                                onChange={this.handleChangeFormValueTextField}
-                                value={formAnswers[entry.fieldName]}
-                                required={entry.fieldIsRequired}
-                                readOnly={entry.fieldIsMatched}
-                              />
-                              {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
-                            </div>
-                          );
+                          return this.getMultilineTextField(entry, formAnswers);
                         }
-
                         if (entry.fieldType === 'CheckBox') {
-                          return (
-                            <div className="mt-2 mb-2">
-                              <div className="checkbox-question">
-                                <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                  {entry.fieldQuestion}
-                                  <small className="form-text text-muted mt-1">Please complete this field.</small>
-                                </label>
-                                <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
-                                  <div className="custom-control custom-checkbox mx-2">
-                                    <input
-                                      type="checkbox"
-                                      className="custom-control-input mr-2"
-                                      id={entry.fieldName}
-                                      onChange={this.handleChangeFormValueCheckBox}
-                                      checked={formAnswers[entry.fieldName]}
-                                      required={entry.fieldIsRequired}
-                                      readOnly={entry.fieldIsMatched}
-                                    />
-                                    <label className="custom-control-label" htmlFor={entry.fieldName}>{entry.fieldValueOptions[0]}</label>
-                                    {entry.fieldIsRequired ? <small className="form-text text-muted mt-1">Please complete this field.</small> : <div />}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
+                          return this.getCheckBox(entry, formAnswers);
                         }
-
                         if (entry.fieldType === 'RadioButton') {
-                          const temp = entry.fieldValueOptions;
-                          return (
-                            <div className="mt-2 mb-2">
-                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Please complete this field.</small>
-                              </label>
-
-                              {temp.map((value) => (
-                                <div className="custom-control custom-radio" key={`${entry.fieldName}_${value}`}>
-                                  <input
-                                    type="radio"
-                                    className="custom-control-input"
-                                    id={`${entry.fieldName}_${value}`}
-                                    name={entry.fieldName}
-                                    checked={formAnswers[entry.fieldName] === value}
-                                    value={value}
-                                    onChange={this.handleChangeFormValueRadioButton}
-                                    required={entry.fieldIsRequired}
-                                    readOnly={entry.fieldIsMatched}
-                                  />
-                                  <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>{value}</label>
-                                </div>
-                              ))}
-                            </div>
-                          );
+                          return this.getRadioButton(entry, formAnswers);
                         }
-
                         if (entry.fieldType === 'ComboBox') {
-                          const { fieldValueOptions } = entry;
-                          return (
-                            <div className="dropdown-question">
-                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Please complete this field.</small>
-                              </label>
-
-                              <select
-                                id={entry.fieldName}
-                                onChange={this.handleChangeFormValueTextField}
-                                className="custom-select"
-                                required={entry.fieldIsRequired}
-                              >
-                                <option selected disabled value="">Please select your choice ...</option>
-                                {fieldValueOptions.map((value) => (
-                                  <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
-                                ))}
-                              </select>
-                            </div>
-                          );
+                          return this.getComboBox(entry, formAnswers);
                         }
-
                         if (entry.fieldType === 'ListBox') {
-                          const { fieldValueOptions } = entry.fieldValueOptions;
-                          return (
-                            <div className="multiple-dropdown-question">
-                              <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-                                {entry.fieldQuestion}
-                                <small className="form-text text-muted mt-1">Please complete this field.</small>
-                              </label>
-
-                              <select
-                                id={entry.fieldName}
-                                onChange={this.handleChangeFormValueListBox}
-                                className="custom-select"
-                                multiple
-                                required={entry.fieldIsRequired}
-                              >
-                                <option selected disabled value="">Please select your choice(s) ...</option>
-                                {fieldValueOptions.map((value) => (
-                                  <option value={value} key={`${entry.fieldName}_${value}`}>{value}</option>
-                                ))}
-                              </select>
-                            </div>
-                          );
+                          return this.getListBox(entry, formAnswers);
                         }
-
                         if (entry.fieldType === 'DateField') {
-                          return (
-                            <div className="date-question">
-                              <label htmlFor="date" className="w-100 font-weight-bold">Date</label>
-                              <DatePicker
-                                id={entry.fieldName}
-                                selected={new Date(formAnswers[entry.fieldName])}
-                                onChange={(date) => this.handleChangeFormValueDateField(date, entry.fieldName)}
-                                className="form-control form-purple mt-1"
-                                required={entry.fieldIsRequired}
-                                readOnly={entry.fieldIsMatched}
-                              />
-                              <small className="form-text text-muted mt-1">Please complete this field.</small>
-                            </div>
-                          );
+                          return this.getDateField(entry, formAnswers);
                         }
                         return <div />;
                       })()
@@ -511,15 +515,34 @@ class ApplicationForm extends Component<Props, State> {
         </div>
       );
     } else {
+      // If the questions are still loading
       bodyElement = (<div />);
     }
+    return bodyElement;
+  }
+
+  render() {
+    const {
+      alert,
+    } = this.props;
+
+    const {
+      submitSuccessful,
+      formError,
+    } = this.state;
+
+    if (submitSuccessful) {
+      alert.show('Successfully Completed PDF Application');
+      return (<Redirect to="/home" />);
+    }
+
+    const bodyElement = this.getApplicationBody();
     return (
       <div className="container">
         <Helmet>
           <title>Fill Application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-
         <div className="ml-5 mt-3">
           <Link to="/applications">
             <button type="button" className="btn btn-primary">
@@ -527,9 +550,7 @@ class ApplicationForm extends Component<Props, State> {
             </button>
           </Link>
         </div>
-
         {bodyElement}
-
         { formError
           ? (
             <div className="p-5">
@@ -537,7 +558,6 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           )
           : null}
-
       </div>
     );
   }

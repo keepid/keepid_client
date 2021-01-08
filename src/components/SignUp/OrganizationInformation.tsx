@@ -312,7 +312,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 <label htmlFor="orgWebsite" className="col-sm-3 col-form-label text-sm-right">Organization website</label>
                 <div className="col-sm-9">
                   <input
-                    type="text"
+                    type="url"
                     className={`form-control form-purple ${this.colorToggle(orgWebsiteValidator)}`}
                     placeholder="Organization website"
                     id="orgWebsite"
