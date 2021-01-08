@@ -127,6 +127,7 @@ public class GetQuestionsPDFService implements Service {
         }
       }
     }
+    fieldsJSON.removeIf(field -> field == null);
     responseJSON.put("fields", fieldsJSON);
     this.applicationInformation = responseJSON;
 
