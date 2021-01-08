@@ -1,8 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import App from '../App';
 import { transitions, Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import App from '../App';
 
 const options = {
   position: 'top right',
@@ -19,6 +19,6 @@ test('renders without crashing', () => {
   render(
     <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
       <App />
-    </Provider>
+    </Provider>,
   );
 });

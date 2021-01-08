@@ -2,12 +2,24 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route, Link } from 'react-router-dom';
 import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import ApplicationForm from './ApplicationForm';
-import TablePageSelector from '../Base/TablePageSelector';
+// import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
+
+interface PaginationOption {
+  value: string,
+  label: string,
+}
+
+interface DocumentInformation {
+  uploader: string,
+  organizationName: string,
+  id: string,
+  uploadDate: string,
+  filename: string,
+}
 
 interface Props {
   username: string,
@@ -18,14 +30,13 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
-  documents: any[],
-  currentUser: any,
+  documents: DocumentInformation[],
   currentPage: number,
-  itemsPerPageSelected: any,
-  numElements: number
+  itemsPerPageSelected: PaginationOption,
+  numElements: number,
 }
 
-const listOptions = [
+const listOptions: PaginationOption[] = [
   { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
@@ -76,7 +87,6 @@ class Applications extends Component<Props, State, {}> {
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
-      currentUser: undefined,
       currentPage: 0,
       itemsPerPageSelected: listOptions[0],
       numElements: 0,
@@ -94,38 +104,35 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const { status } = responseObject;
+        const {
+          status,
+          documents,
+        } = responseJSON;
+        const numElements = documents.length;
         if (status === 'SUCCESS') {
-          const documents: any[] = [];
-          for (let i = 0; i < responseObject.documents.length; i += 1) {
-            const row = responseObject.documents[i];
+          const newDocuments: DocumentInformation[] = [];
+          for (let i = 0; i < numElements; i += 1) {
+            const row = documents[i];
             row.index = i;
-            documents.push(row);
+            newDocuments.push(row);
           }
           this.setState({
-            documents,
+            documents: newDocuments,
+            numElements,
           });
         }
       });
   }
 
-  onClickWorker = (event: any) => {
-    this.setState({ currentUser: event });
-  }
-
-  handleChangeItemsPerPage = (itemsPerPageSelected: any) => {
-    this.setState({
-      currentPage: 0,
-    });
-  }
-
   handleViewDocument = (event: any, rowIndex: number) => {
     const {
       documents,
+      currentPage,
+      itemsPerPageSelected,
     } = this.state;
 
-    const index = rowIndex;
+    const itemsPerPage = Number(itemsPerPageSelected.value);
+    const index = rowIndex + currentPage * itemsPerPage;
     const form = documents[index];
     const {
       id,
@@ -139,43 +146,41 @@ class Applications extends Component<Props, State, {}> {
     );
   }
 
-  changeCurrentPage = (newCurrentPage: number) => {
-    this.setState({ currentPage: newCurrentPage }, this.getDocuments);
-  }
-
-  onChangeViewPermission = (event: any) => {
-    const {
-      currentUser,
-    } = this.state;
-    currentUser.viewPermission = event.target.ischecked;
-    this.setState({ currentUser }, this.getDocuments);
-  }
-
-  getDocuments = () => {
-    const {
-      itemsPerPageSelected,
-    } = this.state;
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    // fetch call here to get all the current Documents to fill
-  }
+  // TODO: Pagination
+  // changeCurrentPage = (newCurrentPage: number) => {
+  // this.setState({ currentPage: newCurrentPage }, this.getDocuments);
+  // }
+  // }
+  //
+  // handleChangeItemsPerPage = (itemsPerPageSelected: any) => {
+  //  this.setState({
+  //    currentPage: 0,
+  //  });
+  // }
+  // getDocuments = () => {
+  //   const {
+  //     itemsPerPageSelected,
+  //   } = this.state;
+  //   const itemsPerPage = Number(itemsPerPageSelected.value);
+  //   // fetch call here to get all the current Documents to fill
+  // }
 
   render() {
     const {
       currentApplicationFilename,
       currentApplicationId,
-      currentPage,
-      itemsPerPageSelected,
       numElements,
       documents,
     } = this.state;
 
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    const tablePageSelector = TablePageSelector({
-      currentPage,
-      itemsPerPage,
-      numElements,
-      changeCurrentPage: this.changeCurrentPage,
-    });
+    // TODO: Pagination
+    // const itemsPerPage = Number(itemsPerPageSelected.value);
+    // const tablePageSelector = TablePageSelector({
+    //   currentPage,
+    //   itemsPerPage,
+    //   numElements,
+    //   changeCurrentPage: this.changeCurrentPage,
+    // });
 
     return (
       <Switch>
@@ -202,7 +207,6 @@ class Applications extends Component<Props, State, {}> {
                     striped
                     noDataIndication="No Applications Present"
                     columns={this.tableCols}
-                    pagination={paginationFactory()}
                   />
                 </div>
               </div>
