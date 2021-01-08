@@ -6,8 +6,10 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import './static/styles/Table.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
+import { Type } from 'react-bootstrap-table2-editor';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -72,12 +74,12 @@ const products = [
     price: 20,
   }];
 
-let data: any = [];
+const data: any = [];
 for (let i = 0; i < 100; i++) {
-  let value = products[i % products.length];
+  const value = products[i % products.length];
   const newValue = {
-    name: value['name'],
-    price: value['price'],
+    name: value.name,
+    price: value.price,
     id: i,
   };
   data.push(newValue);
@@ -86,15 +88,37 @@ for (let i = 0; i < 100; i++) {
 const columns = [{
   dataField: 'id',
   text: 'Product ID',
+  sort: true,
 },
 {
   dataField: 'name',
   text: 'Product Name',
+  editor: {
+    type: Type.SELECT,
+    options: [{
+      value: 'TV',
+      label: 'TV',
+    }, {
+      value: 'Mobile',
+      label: 'Mobile',
+    }, {
+      value: 'Book',
+      label: 'Book',
+    }],
+  },
 }, {
   dataField: 'price',
   text: 'Product Price',
   sort: true,
 }];
+const cantEdit = new Set([0]);
+const emptyInfo = {
+  onPress: () => console.log('test'),
+  label: 'Invite members',
+  description: 'There are no members in this organization.',
+};
+const onEditSave = row => { console.log("edit " + row.id)};
+const onDelete = id => { console.log("delete " + id)};
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -165,7 +189,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} />}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify canSelect={false} emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete}/>}
               />
               <Route
                 exact

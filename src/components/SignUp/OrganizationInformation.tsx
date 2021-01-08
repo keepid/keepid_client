@@ -9,7 +9,7 @@ import {
 } from '../../lib/Validations/Validations';
 import CompleteSignupFlow from './CompleteSignupFlow';
 import 'jquery-mask-plugin';
-import $ from "jquery";
+import $ from 'jquery';
 
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
@@ -222,7 +222,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
     }
   }
 
-  maskEIN () {
+  maskEIN() {
     $('#ein').mask('00-0000000');
   }
 
@@ -233,7 +233,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   maskZipcode() {
     $('#zipcode').mask('00000');
   }
-  
+
   render() {
     const {
       orgNameValidator,

@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
-import BootstrapTable from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Helmet } from 'react-helmet';
-import Select from 'react-select';
 import { Link } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
+import Table from '../Base/Table';
 
 interface Props {
   username: string,
@@ -18,16 +16,12 @@ interface Props {
 interface State {
   workers: any,
   currentWorker: any,
-  currentPage: number,
-  itemsPerPageSelected: any,
-  numElements: number,
   searchName: string,
   adminName: string,
   organization: string,
 }
 
 const listOptions = [
-  { value: '2', label: '2' },
   { value: '5', label: '5' },
   { value: '10', label: '10' },
   { value: '25', label: '25' },
@@ -36,6 +30,11 @@ const listOptions = [
 
 class AdminPanel extends Component<Props, State> {
   tableCols = [{
+    dataField: 'id',
+    text: 'username',
+    sort: false,
+    hidden: true,
+  }, {
     dataField: 'firstName',
     text: 'First Name',
     sort: true,
@@ -53,22 +52,13 @@ class AdminPanel extends Component<Props, State> {
     super(props);
     this.state = {
       currentWorker: undefined,
-      currentPage: 0,
-      itemsPerPageSelected: listOptions[0],
-      numElements: 0,
       searchName: '',
       adminName: props.name,
       organization: props.organization,
-      workers: [{
-        username: '',
-        name: '',
-        role: '',
-      }],
+      workers: [{}],
     };
     this.onClickWorker = this.onClickWorker.bind(this);
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getAdminWorkers = this.getAdminWorkers.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
     this.onChangeEditPermission = this.onChangeEditPermission.bind(this);
@@ -86,19 +76,7 @@ class AdminPanel extends Component<Props, State> {
   handleChangeSearchName(event: any) {
     this.setState({
       searchName: event.target.value,
-      currentPage: 0,
     }, this.getAdminWorkers);
-  }
-
-  handleChangeItemsPerPage(itemsPerPageSelected: any) {
-    this.setState({
-      itemsPerPageSelected,
-      currentPage: 0,
-    }, this.getAdminWorkers);
-  }
-
-  changeCurrentPage(newCurrentPage: number) {
-    this.setState({ currentPage: newCurrentPage }, this.getAdminWorkers);
   }
 
   onChangeViewPermission(event: any) {
@@ -120,40 +98,29 @@ class AdminPanel extends Component<Props, State> {
   }
 
   getAdminWorkers() {
-    const {
-      searchName,
-      currentPage,
-      itemsPerPageSelected,
-    } = this.state;
-    const itemsPerPage = Number(itemsPerPageSelected.value);
+    const { searchName } = this.state;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         listType: 'members',
-        currentPage,
-        itemsPerPage,
         name: searchName,
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
-        const {
-          people,
-          numPeople,
-        } = responseJSON;
-        this.setState({
-          numElements: numPeople,
-          workers: people,
+        const { people } = responseJSON;
+        if (people)
+        people.forEach(person => { 
+          person.id = person.username;
+          delete person.username;
         });
+        this.setState({ workers: people });
       });
   }
 
   render() {
     const {
       currentWorker,
-      currentPage,
-      itemsPerPageSelected,
-      numElements,
       adminName,
       organization,
       workers,
@@ -216,15 +183,14 @@ class AdminPanel extends Component<Props, State> {
           </ul>
         </div>
       );
-
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    const tablePageSelector = TablePageSelector({
-      currentPage,
-      itemsPerPage,
-      numElements,
-      changeCurrentPage: this.changeCurrentPage,
-    });
-
+    const cantEdit = new Set<number>();
+    const emptyInfo = {
+      onPress: () => console.log('add members'),
+      label: 'Add members',
+      description: 'There are no members in your organization.',
+    };
+    const onEditSave = row => { console.log("edit " + row.id)};
+    const onDelete = id => { console.log("delete " + id)};
     return (
       <div>
         <Helmet>
@@ -265,47 +231,16 @@ class AdminPanel extends Component<Props, State> {
               </div>
             </div>
           </div>
-          <div className="row ml-1 mt-3 mb-2">
-            {numElements === 0 ? <div /> : tablePageSelector }
-            {numElements === 0 ? <div />
-              : (
-                <div className="w-25">
-                  <div className="form-inline mt-1">
-                    <Select
-                      options={listOptions}
-                      autoFocus
-                      closeMenuOnSelect={false}
-                      onChange={this.handleChangeItemsPerPage}
-                      value={itemsPerPageSelected}
-                    />
-                    {' '}
-                    <p className="my-auto ml-2">
-                      {' '}
-                      items per page
-                    </p>
-                  </div>
-                </div>
-              )}
-          </div>
-          <div className="row bd-highlight mb-3 pt-5">
-            <div className="col pb-3">
-              <BootstrapTable
-                bootstrap4
-                keyField="username"
-                data={workers}
-                hover
-                striped
-                columns={this.tableCols}
-                selectRow={{
-                  mode: 'radio',
-                  onSelect: this.onClickWorker,
-                  clickToSelect: true,
-                  hideSelectColumn: true,
-                }}
-                noDataIndication="No Workers Found"
-              />
-            </div>
-          </div>
+          <Table
+            columns={this.tableCols}
+            data={workers}
+            cantEditCols={cantEdit}
+            canSelect={false}
+            canModify={false}
+            emptyInfo={emptyInfo}
+            onEditSave={onEditSave}
+            onDelete={onDelete}
+          />
         </div>
       </div>
     );
