@@ -34,6 +34,7 @@ interface State {
   fields: Field[] | undefined,
   formAnswers: { [fieldName: string]: any },
   pdfApplication: File | undefined,
+  buttonState: string,
   title: string,
   description : string,
   submitSuccessful: boolean,
@@ -41,6 +42,8 @@ interface State {
   numPages: number,
   formError: boolean,
 }
+
+const MAX_Q_PER_PAGE = 10;
 
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
@@ -51,11 +54,12 @@ class ApplicationForm extends Component<Props, State> {
       fields: undefined,
       formAnswers: {},
       pdfApplication: undefined,
+      buttonState: '',
       title: '',
       description: '',
       submitSuccessful: false,
-      currentPage: 0,
-      numPages: 0,
+      currentPage: 1,
+      numPages: 1,
       formError: false,
     };
   }
@@ -98,6 +102,8 @@ class ApplicationForm extends Component<Props, State> {
             title,
             description,
             formAnswers,
+            numPages:
+              (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
           });
         } else {
           this.setState({
@@ -105,6 +111,16 @@ class ApplicationForm extends Component<Props, State> {
           });
         }
       });
+  }
+
+  handleContinue = (e:any):void => {
+    e.preventDefault();
+    this.setState((prevState) => ({ currentPage: prevState.currentPage + 1 }), () => window.scrollTo(0, 0));
+  };
+
+  handlePrevious = (e:any): void => {
+    e.preventDefault();
+    this.setState((prevState) => ({ currentPage: prevState.currentPage - 1 }), () => window.scrollTo(0, 0));
   }
 
   handleChangeFormValueTextField = (event: any) => {
@@ -304,6 +320,14 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
+  toDateString = (date: Date) => {
+    // Source: https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
+    const mm = date.getMonth() + 1; // getMonth() is zero-based
+    const dd = date.getDate();
+    const dateString = [date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd].join('-');
+    return dateString;
+  }
+
   onSubmitFormAnswers = (event: any) => {
     event.preventDefault();
     const {
@@ -319,15 +343,13 @@ class ApplicationForm extends Component<Props, State> {
       for (let i = 0; i < fields.length; i += 1) {
         const entry = fields[i];
         if (entry.fieldType === 'DateField') {
-          // Source: https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
           const date = formAnswers[entry.fieldName];
-          const mm = date.getMonth() + 1; // getMonth() is zero-based
-          const dd = date.getDate();
-          const dateString = [date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd].join('-');
-          formAnswers[entry.fieldName] = dateString;
+          formAnswers[entry.fieldName] = this.toDateString(date);
         }
       }
     }
+
+    this.setState({ buttonState: 'running' });
 
     fetch(`${getServerURL()}/fill-application`, {
       method: 'POST',
@@ -339,7 +361,11 @@ class ApplicationForm extends Component<Props, State> {
     }).then((response) => response.blob())
       .then((responseBlob) => {
         const pdfFile = new File([responseBlob], applicationFilename, { type: 'application/pdf' });
-        this.setState({ pdfApplication: pdfFile });
+        this.setState({
+          pdfApplication: pdfFile,
+          buttonState: '',
+        },
+        () => window.scrollTo(0, 0));
       });
   }
 
@@ -359,6 +385,9 @@ class ApplicationForm extends Component<Props, State> {
     const {
       pdfApplication,
     } = this.state;
+    const {
+      alert,
+    } = this.props;
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
@@ -373,21 +402,22 @@ class ApplicationForm extends Component<Props, State> {
       }).then((response) => (response.json()))
         .then((responseJSON) => {
           this.setState({ submitSuccessful: true });
-          this.props.alert.show('Successfully Completed PDF Application');
+          alert.show('Successfully Completed PDF Application');
         });
     }
   }
 
-  // TODO: Change to be based on number of pages completed, not on number of answered questions
   progressBarFill = (): number => {
     const { fields, formAnswers } = this.state;
     const total = (fields) ? fields.length : 0;
     let answered = 0;
     Object.keys(formAnswers).forEach((questionId) => {
-      if (formAnswers[questionId]) answered += 1;
+      const ans = formAnswers[questionId];
+      if (ans && ans !== 'Off' && ans !== 'false') {
+        answered += 1;
+      }
     });
-    const maxPercentage = 100;
-    return (total === 0) ? maxPercentage : Math.round((answered / total) * maxPercentage);
+    return (total === 0) ? 100 : Math.round((answered / total) * 100);
   }
 
   getApplicationBody = () => {
@@ -398,18 +428,18 @@ class ApplicationForm extends Component<Props, State> {
       title,
       description,
       currentPage,
+      buttonState,
       numPages,
     } = this.state;
     let bodyElement;
-    const fillAmt = this.progressBarFill();
+    const fillAmt = (currentPage / numPages) * 100;
+    // const fillAmt = this.progressBarFill();
+    const qStartNum = (currentPage - 1) * MAX_Q_PER_PAGE;
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-            <div className="progress mb-4">
-              <div className="progress-bar active" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
-            </div>
             <div className="container">
               <h2>Review and sign to complete your form</h2>
               <p>Finally, sign the document and click submit when complete.</p>
@@ -422,21 +452,7 @@ class ApplicationForm extends Component<Props, State> {
               <div className="pt-5 pb-3">I agree to all terms and conditions in the form document above.</div>
               <SignaturePad ref={(ref) => { this.signaturePad = ref; }} />
               <div className="d-flex text-center my-5">
-                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
-                <span>
-                  <p>
-                    <b>
-                      Page
-                      {' '}
-                      {currentPage}
-                      {' '}
-                      of
-                      {' '}
-                      {numPages}
-                    </b>
-                  </p>
-                </span>
-                <button type="submit" className="ml-auto btn btn-primary ml-auto" onClick={this.onSubmitPdfApplication}>Submit</button>
+                <button type="submit" className="ml-auto btn btn-primary loginButtonBackground" onClick={this.onSubmitPdfApplication}>Submit PDF</button>
               </div>
             </div>
           </div>
@@ -448,7 +464,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
-              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} style={{ width: `${fillAmt}%` }}>{`${fillAmt}%`}</div>
+              <div className="progress-bar" role="progressbar" aria-valuenow={fillAmt} aria-valuemin={0} aria-valuemax={100} aria-label={`${fillAmt}%`} style={{ width: `${fillAmt}%` }} />
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
               <h2>{ title }</h2>
@@ -458,9 +474,11 @@ class ApplicationForm extends Component<Props, State> {
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map(
-                (entry) => (
-                  <div className="my-5" key={entry.fieldID}>
-                    {
+                (entry, index) => {
+                  if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
+                  return (
+                    <div className="my-5" key={entry.fieldID}>
+                      {
                       (() => {
                         if (entry.fieldType === 'ReadOnlyField') {
                           // TODO: Make the readOnly fields show and be formatted properly
@@ -490,12 +508,16 @@ class ApplicationForm extends Component<Props, State> {
                         return <div />;
                       })()
                     }
-                  </div>
-                ),
+                    </div>
+                  );
+                },
               )}
-              <div className="d-flex text-center my-5">
-                <button type="button" className="btn btn-outline-primary mr-auto">Previous Step</button>
-                <span>
+
+              <div className="row justify-content-between text-center my-5">
+                <div className="col-md-2 pl-0">
+                  {(currentPage === 1) ? null : <button type="button" className="mr-auto btn btn-outline-primary" onClick={this.handlePrevious}>Previous</button>}
+                </div>
+                <div className="col-md-4 text-center my-1">
                   <p>
                     <b>
                       Page
@@ -507,8 +529,17 @@ class ApplicationForm extends Component<Props, State> {
                       {numPages}
                     </b>
                   </p>
-                </span>
-                <button type="submit" className="ml-auto btn btn-primary ml-auto">Continue</button>
+                </div>
+                <div className="col-md-2 mr-xs-3 mr-sm-0">
+                  {(currentPage !== numPages)
+                    ? <button type="submit" className="btn btn-primary" onClick={this.handleContinue}>Continue</button>
+                    : (
+                      <button type="submit" className={`btn btn-success loginButtonBackground ld-ext-right ${buttonState}`} onClick={this.onSubmitFormAnswers}>
+                        Submit
+                        <div className="ld ld-ring ld-spin" />
+                      </button>
+                    )}
+                </div>
               </div>
             </form>
           </div>
