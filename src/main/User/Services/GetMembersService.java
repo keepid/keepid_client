@@ -25,10 +25,7 @@ public class GetMembersService implements Service {
   private UserType privilegeLevel;
   private String searchValue;
   private ListType listType;
-  private int startIndex;
-  private int endIndex;
-  private JSONArray peoplePage;
-  private int numReturnedElements;
+  private JSONArray people;
 
   public GetMembersService(
       MongoDatabase db,
@@ -36,17 +33,13 @@ public class GetMembersService implements Service {
       String searchValue,
       String orgName,
       UserType privilegeLevel,
-      String listType,
-      int currentPage,
-      int itemsPerPage) {
+      String listType) {
     this.db = db;
     this.logger = logger;
     this.searchValue = searchValue;
     this.orgName = orgName;
     this.privilegeLevel = privilegeLevel;
     this.listType = ListType.valueOf(listType);
-    this.startIndex = currentPage * itemsPerPage;
-    this.endIndex = (currentPage + 1) * itemsPerPage;
   }
 
   public enum ListType {
@@ -108,49 +101,28 @@ public class GetMembersService implements Service {
       }
     }
 
-    JSONArray peoplePage;
-    int numReturnElements;
+    JSONArray people;
     // If Getting Client List
     if (listType == ListType.CLIENTS
         && (privilegeLevel == UserType.Worker
             || privilegeLevel == UserType.Admin
             || privilegeLevel == UserType.Director)) {
-      peoplePage = getPage(clients, startIndex, endIndex);
-      numReturnElements = clients.length();
+      people = clients;
       // If Getting Worker/Admin List
     } else if (listType == ListType.MEMBERS && privilegeLevel == UserType.Admin
         || privilegeLevel == UserType.Director) {
-      peoplePage = getPage(members, startIndex, endIndex);
-      numReturnElements = members.length();
+      people = members;
     } else {
       logger.error("Insufficient Privilege, Could not return member info");
       return UserMessage.INSUFFICIENT_PRIVILEGE;
     }
-    this.numReturnedElements = numReturnElements;
-    this.peoplePage = peoplePage;
+    this.people = people;
     logger.info("Successfully returned member information");
     return UserMessage.SUCCESS;
   }
 
-  public int getNumReturnedElements() {
-    return numReturnedElements;
-  }
-
-  public JSONArray getPeoplePage() {
-    Objects.requireNonNull(peoplePage);
-    return peoplePage;
-  }
-
-  private static JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
-    JSONArray page = new JSONArray();
-    if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
-      if (pageEndIndex > elements.length()) {
-        pageEndIndex = elements.length();
-      }
-      for (int i = pageStartIndex; i < pageEndIndex; i++) {
-        page.put(elements.get(i));
-      }
-    }
-    return page;
+  public JSONArray getPeople() {
+    Objects.requireNonNull(people);
+    return people;
   }
 }
