@@ -52,12 +52,13 @@
     "react-uuid": "^1.0.2",
     "switch": "0.0.0",
     "typescript": "^3.9.7",
-    "valid-url": "^1.0.9"
-  },
-  "devDependencies": {
     "@testing-library/dom": "^7.29.0",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.6.0",
+    "react-test-renderer": "^16.13.1",
+    "valid-url": "^1.0.9"
+  },
+  "devDependencies": {
     "@types/enzyme": "3.10.8",
     "@types/enzyme-adapter-react-16": "1.0.6",
     "@types/jquery": "^3.5.3",
@@ -100,7 +101,6 @@
     "promise": "7.1.1",
     "react-dev-utils": "^9.1.0",
     "react-hot-loader": "^4.12.21",
-    "react-test-renderer": "^16.13.1",
     "redirect": "^0.2.0",
     "style-loader": "0.13.1",
     "stylelint": "^12.0.1",
