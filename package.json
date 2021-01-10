@@ -130,7 +130,7 @@
       "./src/*/*.types.{ts,tsx}",
       "./src/index.tsx",
       "./src/serviceWorker.ts",
-      "./node_modules/@babel/*"
+      "./node_modules/*"
     ],
     "coverageReporters": [
       "json",
