@@ -106,7 +106,8 @@ public class GetFilesInformationPDFService implements Service {
               .put("uploader", uploaderUsername)
               .put("organizationName", grid_out.getMetadata().getString("organizationName"))
               .put("id", grid_out.getId().asObjectId().getValue().toString())
-              .put("uploadDate", grid_out.getUploadDate().toString());
+              .put("uploadDate", grid_out.getUploadDate().toString())
+              .put("annotated", annotated);
       if (pdfType.equals(PDFType.FORM)) {
         // TODO: Make one field for filename and one for title (or they are both the same if one is
         // derived from the other)
@@ -117,6 +118,7 @@ public class GetFilesInformationPDFService implements Service {
         } else {
           fileMetadata.put("filename", grid_out.getFilename());
         }
+        fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
       } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
         try {
           fileMetadata.put(
