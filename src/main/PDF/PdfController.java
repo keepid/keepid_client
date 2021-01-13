@@ -3,11 +3,15 @@ package PDF;
 import Config.Message;
 import Logger.LogFactory;
 import PDF.Services.*;
+import User.User;
+import User.UserMessage;
 import User.UserType;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -15,6 +19,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import static User.UserController.mergeJSON;
+import static com.mongodb.client.model.Filters.eq;
 
 public class PdfController {
   private MongoDatabase db;
@@ -71,32 +76,85 @@ public class PdfController {
         }
       };
 
+  //  public User userCheck(JSONObject req) {
+  //    String username;
+  //    User user = null;
+  //    if (req != null && req.has("targetUser")) {
+  //      username = req.getString("targetUser");
+  //      MongoCollection<User> userCollection = this.db.getCollection("user", User.class);
+  //      user = userCollection.find(eq("username", username)).first();
+  //    }
+  //    return user;
+  //  }
+
+  public User userCheck(String req) {
+    logger.info("userCheck Helper started");
+    String username;
+    User user = null;
+    try {
+      JSONObject reqJson = new JSONObject(req);
+      if (reqJson.has("targetUser")) {
+        username = reqJson.getString("targetUser");
+        MongoCollection<User> userCollection = this.db.getCollection("user", User.class);
+        user = userCollection.find(eq("username", username)).first();
+      }
+    } catch (JSONException e) {
+
+    }
+    logger.info("userCheck done");
+    return user;
+  }
+
   /*
   REQUIRES JSON Body:
     - Body
       - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
       - if "pdfType" is "FORM"
         - "annotated": boolean for retrieving EITHER annotated forms OR unannotated forms
+      - OPTIONAL- "targetUser": User whose file you want to access.
+        - If left empty, defaults to original username.
   */
   public Handler pdfGetDocuments =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
-        String orgName = ctx.sessionAttribute("orgName");
-        UserType userType = ctx.sessionAttribute("privilegeLevel");
-        JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        boolean annotated = false;
-        if (pdfType == PDFType.FORM) {
-          annotated = Objects.requireNonNull(req.getBoolean("annotated"));
+        logger.info("Starting pdfGetDocuments");
+        String username;
+        String orgName;
+        UserType userType;
+        String reqBody = ctx.body();
+        JSONObject req = new JSONObject(reqBody);
+        JSONObject responseJSON;
+        User check = userCheck(ctx.body());
+        if (check == null && req.has("targetUser")) {
+          logger.info("Target User not Found");
+          responseJSON = UserMessage.USER_NOT_FOUND.toJSON();
+        } else {
+          if (check != null && req.has("targetUser")) {
+            logger.info("Target user found");
+            username = check.getUsername();
+            orgName = check.getOrganization();
+            userType = check.getUserType();
+          } else {
+            username = ctx.sessionAttribute("username");
+            orgName = ctx.sessionAttribute("orgName");
+            userType = ctx.sessionAttribute("privilegeLevel");
+          }
+          // System.out.println(username + ", " + orgName + ", " + userType.toString());
+          PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+          boolean annotated = false;
+          if (pdfType == PDFType.FORM) {
+            annotated = Objects.requireNonNull(req.getBoolean("annotated"));
+          }
+          GetFilesInformationPDFService getFilesInformationPDFService =
+              new GetFilesInformationPDFService(
+                  db, logger, username, orgName, userType, pdfType, annotated);
+          Message response = getFilesInformationPDFService.executeAndGetResponse();
+          responseJSON = response.toJSON();
+
+          if (response == PdfMessage.SUCCESS) {
+            responseJSON.put("documents", getFilesInformationPDFService.getFiles());
+          }
         }
-        GetFilesInformationPDFService getFilesInformationPDFService =
-            new GetFilesInformationPDFService(
-                db, logger, username, orgName, userType, pdfType, annotated);
-        Message response = getFilesInformationPDFService.executeAndGetResponse();
-        JSONObject responseJSON = response.toJSON();
-        if (response == PdfMessage.SUCCESS) {
-          responseJSON.put("documents", getFilesInformationPDFService.getFiles());
-        }
+
         ctx.result(responseJSON.toString());
       };
 
@@ -104,43 +162,73 @@ public class PdfController {
   REQUIRES 2 fields in HTTP Request
     - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
     - "file": the PDF file to be uploaded
+  Additional support for uploading on behalf of another user, JSON body:
+    - "targetUser": the user the file is being uploaded for
    */
   public Handler pdfUpload =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
-        String organizationName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        logger.info("pdfUpload");
+        String username;
+        String organizationName;
+        UserType privilegeLevel;
+        Message response;
         UploadedFile file = ctx.uploadedFile("file");
-        if (file == null) {
-          ctx.result(PdfMessage.INVALID_PDF.toResponseString());
-        } else {
-          PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-          // TODO: Replace with a title that is retrieved from the client (optionally)
-          String title = null;
-          try {
-            InputStream content = file.getContent();
-            PDDocument pdfDocument = PDDocument.load(content);
-            title = getPDFTitle(file.getFilename(), pdfDocument);
-            content.reset();
-            pdfDocument.close();
-          } catch (Exception exception) {
-            ctx.result(PdfMessage.INVALID_PDF.toResponseString());
-          }
-
-          UploadPDFService uploadService =
-              new UploadPDFService(
-                  db,
-                  logger,
-                  username,
-                  organizationName,
-                  privilegeLevel,
-                  pdfType,
-                  file.getFilename(),
-                  title,
-                  file.getContentType(),
-                  file.getContent());
-          ctx.result(uploadService.executeAndGetResponse().toResponseString());
+        JSONObject req;
+        String body = ctx.body();
+        try {
+          req = new JSONObject(body);
+        } catch (JSONException e) {
+          req = null;
         }
+        User check = userCheck(body);
+        if (req != null && req.has("targetUser") && check == null) {
+          logger.info("Target User could not be found in the database");
+          response = UserMessage.USER_NOT_FOUND;
+        } else {
+          if (req != null && req.has("targetUser") && check != null) {
+            logger.info("Target User found, setting parameters.");
+            username = check.getUsername();
+            organizationName = check.getOrganization();
+            privilegeLevel = check.getUserType();
+          } else {
+            username = ctx.sessionAttribute("username");
+            organizationName = ctx.sessionAttribute("orgName");
+            privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+          }
+          // System.out.println(username + ", " + organizationName + ", " + privilegeLevel);
+
+          if (file == null) {
+            logger.info("File is null, invalid pdf");
+            response = PdfMessage.INVALID_PDF;
+          } else {
+            PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+            // TODO: Replace with a title that is retrieved from the client (optionally)
+            String title = null;
+            try {
+              InputStream content = file.getContent();
+              PDDocument pdfDocument = PDDocument.load(content);
+              title = getPDFTitle(file.getFilename(), pdfDocument);
+              content.reset();
+              pdfDocument.close();
+            } catch (Exception exception) {
+              ctx.result(PdfMessage.INVALID_PDF.toResponseString());
+            }
+            UploadPDFService uploadService =
+                new UploadPDFService(
+                    db,
+                    logger,
+                    username,
+                    organizationName,
+                    privilegeLevel,
+                    pdfType,
+                    file.getFilename(),
+                    title,
+                    file.getContentType(),
+                    file.getContent());
+            response = uploadService.executeAndGetResponse();
+          }
+        }
+        ctx.result(response.toResponseString());
       };
 
   /*
