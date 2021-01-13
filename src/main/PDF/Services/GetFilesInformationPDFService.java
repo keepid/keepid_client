@@ -119,6 +119,7 @@ public class GetFilesInformationPDFService implements Service {
           fileMetadata.put("filename", grid_out.getFilename());
         }
         fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
+
       } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
         try {
           fileMetadata.put(
