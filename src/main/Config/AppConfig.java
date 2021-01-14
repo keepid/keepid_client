@@ -1,6 +1,10 @@
 package Config;
 
 import Activity.ActivityController;
+import Database.Token.TokenDao;
+import Database.Token.TokenDaoFactory;
+import Database.User.UserDao;
+import Database.User.UserDaoFactory;
 import Issue.IssueController;
 import Logger.LogFactory;
 import Organization.OrganizationController;
@@ -22,6 +26,8 @@ public class AppConfig {
     System.setProperty("logback.configurationFile", "../Logger/Resources/logback.xml");
     Javalin app = AppConfig.createJavalinApp(deploymentLevel);
     MongoConfig.getMongoClient();
+    UserDao userDao = UserDaoFactory.create(deploymentLevel);
+    TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
     setApplicationHeaders(app);
 
@@ -40,11 +46,12 @@ public class AppConfig {
 
     // We need to instantiate the controllers with the database.
     OrganizationController orgController = new OrganizationController(db);
-    UserController userController = new UserController(db);
-    AccountSecurityController accountSecurityController = new AccountSecurityController(db);
-    PdfController pdfController = new PdfController(db);
+    UserController userController = new UserController(userDao, tokenDao, db);
+    AccountSecurityController accountSecurityController =
+        new AccountSecurityController(userDao, tokenDao);
+    PdfController pdfController = new PdfController(db, userDao);
     IssueController issueController = new IssueController(db);
-    ActivityController activityController = new ActivityController(db);
+    ActivityController activityController = new ActivityController();
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -60,7 +67,6 @@ public class AppConfig {
 
     /* -------------- USER AUTHENTICATION/USER RELATED ROUTES-------------- */
     app.post("/login", userController.loginUser);
-    app.post("/generate-username", userController.generateUniqueUsername);
     app.post("/create-user", userController.createNewUser);
     app.post("/create-invited-user", userController.createNewInvitedUser);
     app.get("/logout", userController.logout);

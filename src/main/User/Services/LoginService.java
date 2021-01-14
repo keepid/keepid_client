@@ -4,7 +4,8 @@ import Activity.ActivityController;
 import Activity.LoginActivity;
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.Token.TokenDao;
+import Database.User.UserDao;
 import Issue.IssueController;
 import Security.EmailExceptions;
 import Security.EmailUtil;
@@ -15,14 +16,10 @@ import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationUtils;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.ReplaceOptions;
 import io.ipinfo.api.IPInfo;
 import io.ipinfo.api.errors.RateLimitedException;
 import io.ipinfo.api.model.IPResponse;
 import kong.unirest.Unirest;
-import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -30,13 +27,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.set;
-
 public class LoginService implements Service {
   public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));
   private Logger logger;
-  private MongoDatabase db;
+  private UserDao userDao;
+  private TokenDao tokenDao;
   private String username;
   private String password;
   private User user;
@@ -46,19 +41,21 @@ public class LoginService implements Service {
   public static final long JWT_EXPIRATION_IN_MILI = 300000;
 
   public LoginService(
-      MongoDatabase db,
+      UserDao userDao,
+      TokenDao tokenDao,
       Logger logger,
       String username,
       String password,
       String ip,
       String userAgent) {
-    this.db = db;
+    this.userDao = userDao;
+    this.tokenDao = tokenDao;
     this.logger = logger;
     this.username = username;
     this.password = password;
     this.ip = ip;
     this.userAgent = userAgent;
-    activityController = new ActivityController(db);
+    activityController = new ActivityController();
   }
 
   // the execute function will handle all business logic
@@ -70,12 +67,12 @@ public class LoginService implements Service {
       return UserMessage.AUTH_FAILURE;
     }
     // get user
-    User user = UserDao.findOneUserOrNull(db, this.username);
-    if (user == null) {
+
+    Optional<User> optionalUser = userDao.get(this.username);
+    if (optionalUser.isEmpty()) {
       return UserMessage.AUTH_FAILURE;
     }
-    Objects.requireNonNull(user);
-    this.user = user;
+    user = optionalUser.get();
     // verify password
     if (!verifyPassword(this.password, user.getPassword())) {
       return UserMessage.AUTH_FAILURE;
@@ -139,10 +136,8 @@ public class LoginService implements Service {
   }
 
   public void addLoginHistoryToDB(List<IpObject> loginList) {
-    MongoCollection<User> userCollection = db.getCollection("user", User.class);
-    Bson filter = eq("username", username);
-    Bson update = set("logInHistory", loginList);
-    userCollection.updateOne(filter, update);
+    user.setLogInHistory(loginList);
+    userDao.update(user);
     logger.info("Added login to login history");
   }
 
@@ -161,14 +156,12 @@ public class LoginService implements Service {
   }
 
   public void saveJWTToDb(String randomCode, Date expirationDate) {
-    MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
-    tokenCollection.replaceOne(
-        eq("username", username),
+    tokenDao.replaceOne(
+        username,
         new Tokens()
             .setUsername(username)
             .setTwoFactorCode(randomCode)
-            .setTwoFactorExp(expirationDate),
-        new ReplaceOptions().upsert(true));
+            .setTwoFactorExp(expirationDate));
   }
 
   public boolean verifyPassword(String inputPassword, String userHash) {

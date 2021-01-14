@@ -1,28 +1,27 @@
 package Security.Services;
 
-import Activity.ChangeUserAttributesActivity;
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class ChangePasswordService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   String username;
   String oldPassword;
   String newPassword;
 
   public ChangePasswordService(
-      MongoDatabase db, Logger logger, String username, String oldPassword, String newPassword) {
-    this.db = db;
+      UserDao userDao, Logger logger, String username, String oldPassword, String newPassword) {
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
     this.oldPassword = oldPassword;
@@ -31,7 +30,7 @@ public class ChangePasswordService implements Service {
 
   @Override
   public Message executeAndGetResponse() {
-    Objects.requireNonNull(db);
+    Objects.requireNonNull(userDao);
     Objects.requireNonNull(username);
     Objects.requireNonNull(newPassword);
     Objects.requireNonNull(oldPassword);
@@ -39,15 +38,16 @@ public class ChangePasswordService implements Service {
         || !ValidationUtils.isValidPassword(newPassword)) {
       return UserMessage.INVALID_PARAMETER;
     }
-    return changePassword(db, username, oldPassword, newPassword);
+    return changePassword(userDao, username, oldPassword, newPassword);
   }
 
   public static Message changePassword(
-      MongoDatabase db, String username, String oldPassword, String newPassword) {
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+      UserDao userDao, String username, String oldPassword, String newPassword) {
+    Optional<User> userResult = userDao.get(username);
+    if (userResult.isEmpty()) {
       return UserMessage.USER_NOT_FOUND;
     }
+    User user = userResult.get();
     String hash = user.getPassword();
     SecurityUtils.PassHashEnum hashStatus = SecurityUtils.verifyPassword(oldPassword, hash);
     if (hashStatus == SecurityUtils.PassHashEnum.ERROR) {
@@ -55,9 +55,8 @@ public class ChangePasswordService implements Service {
     } else if (hashStatus == SecurityUtils.PassHashEnum.FAILURE) {
       return UserMessage.AUTH_FAILURE;
     } else {
-      UserDao.resetPassword(
-          db, user, newPassword, ChangeUserAttributesActivity.class.getSimpleName());
-      return UserMessage.AUTH_SUCCESS;
+      userDao.resetPassword(user, newPassword);
     }
+    return UserMessage.AUTH_SUCCESS;
   }
 }

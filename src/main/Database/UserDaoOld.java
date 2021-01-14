@@ -11,7 +11,7 @@ import de.mkammerer.argon2.Argon2Factory;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class UserDao {
+public class UserDaoOld {
   public static User findOneUserOrNull(MongoDatabase db, String username) {
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
     return userCollection.find(eq("username", username)).first();
@@ -31,7 +31,7 @@ public class UserDao {
     userCollection.replaceOne(eq("username", user.getUsername()), user.setPassword(passwordHash));
     argon2.wipeArray(newPasswordArr);
 
-    ActivityController activityController = new ActivityController(db);
+    ActivityController activityController = new ActivityController();
     switch (activity) {
       case "PasswordRecoveryActivity":
         PasswordRecoveryActivity passwordRecoveryActivity =

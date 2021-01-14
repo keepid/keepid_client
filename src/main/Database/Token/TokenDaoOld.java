@@ -1,13 +1,13 @@
-package Database;
-
-import static com.mongodb.client.model.Filters.eq;
+package Database.Token;
 
 import Security.Tokens;
 import Security.Tokens.TokenType;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-public class TokenDao {
+import static com.mongodb.client.model.Filters.eq;
+
+public class TokenDaoOld {
   public static Tokens getTokensOrNull(MongoDatabase db, String username) {
     MongoCollection<Tokens> tokenCollection = db.getCollection("tokens", Tokens.class);
     return tokenCollection.find(eq("username", username)).first();

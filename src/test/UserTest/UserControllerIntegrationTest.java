@@ -171,4 +171,50 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("INVALID_PRIVILEGE_TYPE");
   }
+
+  @Test
+  public void getClients() {
+    JSONObject body = new JSONObject();
+    body.put("name", "Worker Tff");
+    body.put("orgName", "Test Org");
+    body.put("privilegeLevel", "Admin");
+    body.put("listType", "clients");
+    body.put("currentPage", "1");
+    body.put("itemsPerPage", "10");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-organization-members")
+            .body(body.toString())
+            .asString();
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    assert (actualResponseJSON.has("numPeople"));
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(17);
+    assert (actualResponseJSON.has("people"));
+  }
+
+  @Test
+  public void getMembers() {
+    JSONObject body = new JSONObject();
+    body.put("name", "Worker Tff");
+    body.put("orgName", "Test Org");
+    body.put("privilegeLevel", "Client");
+    body.put("listType", "members");
+    body.put("currentPage", "1");
+    body.put("itemsPerPage", "10");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-organization-members")
+            .body(body.toString())
+            .asString();
+    JSONObject actualResponseJSON = TestUtils.responseStringToJSON(actualResponse.getBody());
+
+    assert (actualResponseJSON.has("status"));
+    assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
+    assert (actualResponseJSON.has("numPeople"));
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(7);
+    assert (actualResponseJSON.has("people"));
+  }
 }

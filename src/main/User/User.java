@@ -5,6 +5,7 @@ import Validation.ValidationException;
 import Validation.ValidationUtils;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.Date;
@@ -404,5 +405,21 @@ public class User {
         this.password,
         this.userType,
         this.twoFactorOn);
+  }
+
+  public JSONObject serialize() {
+    JSONObject userJSON = new JSONObject();
+    userJSON.put("username", username);
+    userJSON.put("birthDate", birthDate);
+    userJSON.put("privilegeLevel", userType);
+    userJSON.put("firstName", firstName);
+    userJSON.put("lastName", lastName);
+    userJSON.put("email", email);
+    userJSON.put("phone", phone);
+    userJSON.put("address", address);
+    userJSON.put("city", city);
+    userJSON.put("state", state);
+    userJSON.put("zipcode", zipcode);
+    return userJSON;
   }
 }

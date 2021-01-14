@@ -3,22 +3,22 @@ package Security.Services;
 import Activity.ChangeUserAttributesActivity;
 import Config.Message;
 import Config.Service;
-import Database.UserDao;
+import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
-import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Change2FAService implements Service {
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   private String username;
   private Boolean isTwoFactorOn;
 
-  public Change2FAService(MongoDatabase db, Logger logger, String username, Boolean isTwoFactorOn) {
-    this.db = db;
+  public Change2FAService(UserDao userDao, Logger logger, String username, Boolean isTwoFactorOn) {
+    this.userDao = userDao;
     this.logger = logger;
     this.username = username;
     this.isTwoFactorOn = isTwoFactorOn;
@@ -26,11 +26,12 @@ public class Change2FAService implements Service {
 
   @Override
   public Message executeAndGetResponse() {
-    Objects.requireNonNull(db);
-    User user = UserDao.findOneUserOrNull(db, username);
-    if (user == null) {
+    Objects.requireNonNull(userDao);
+    Optional<User> userResult = userDao.get(username);
+    if (userResult.isEmpty()) {
       return UserMessage.USER_NOT_FOUND;
     }
+    User user = userResult.get();
     if (isTwoFactorOn == null) {
       return UserMessage.INVALID_PARAMETER;
     }
@@ -39,7 +40,7 @@ public class Change2FAService implements Service {
     String oldBoolean = booleanToString(!isTwoFactorOn);
     String newBoolean = booleanToString(isTwoFactorOn);
     new ChangeUserAttributesActivity(user, "twoFactorOn", oldBoolean, newBoolean);
-    UserDao.replaceUser(db, user);
+    userDao.update(user);
     return UserMessage.SUCCESS;
   }
 

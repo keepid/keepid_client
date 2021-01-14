@@ -3,7 +3,11 @@ package UserTest;
 import Config.DeploymentLevel;
 import Config.Message;
 import Config.MongoConfig;
-import Database.TokenDao;
+import Database.Token.TokenDao;
+import Database.Token.TokenDaoFactory;
+import Database.Token.TokenDaoOld;
+import Database.User.UserDao;
+import Database.User.UserDaoFactory;
 import Logger.LogFactory;
 import Security.SecurityUtils;
 import Security.Services.ChangePasswordService;
@@ -44,6 +48,8 @@ public class ChangePasswordIntegrationTests {
 
   Context ctx = mock(Context.class);
   MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+  UserDao userDao = UserDaoFactory.create(DeploymentLevel.TEST);
+  TokenDao tokenDao = TokenDaoFactory.create(DeploymentLevel.TEST);
   Logger logger = new LogFactory().createLogger();
 
   // Make sure to enable .env file configurations for these tests
@@ -67,12 +73,13 @@ public class ChangePasswordIntegrationTests {
   @Test
   public void forgotPasswordCreatesTokenTest() {
     String username = "password-reset-test";
-    ForgotPasswordService forgotPasswordService = new ForgotPasswordService(db, logger, username);
+    ForgotPasswordService forgotPasswordService =
+        new ForgotPasswordService(userDao, tokenDao, logger, username);
     Message returnMessage = forgotPasswordService.executeAndGetResponse();
     assertEquals(UserMessage.SUCCESS, returnMessage);
-    Tokens tokens = TokenDao.getTokensOrNull(db, username);
+    Tokens tokens = tokenDao.get(username).get();
     assertEquals(1, tokens.numTokens());
-    TokenDao.removeTokenIfLast(db, username, tokens, Tokens.TokenType.PASSWORD_RESET);
+    TokenDaoOld.removeTokenIfLast(db, username, tokens, Tokens.TokenType.PASSWORD_RESET);
   }
 
   @Test
@@ -83,10 +90,10 @@ public class ChangePasswordIntegrationTests {
         SecurityUtils.createJWT(
             id, "KeepID", username, "Password Reset Confirmation", EXPIRATION_TIME_2_HOURS);
     ResetPasswordService forgotPasswordService =
-        new ResetPasswordService(db, logger, jwt, username);
+        new ResetPasswordService(userDao, tokenDao, logger, jwt, username);
     Message returnMessage = forgotPasswordService.executeAndGetResponse();
     assertEquals(UserMessage.AUTH_FAILURE, returnMessage);
-    Tokens tokens = TokenDao.getTokensOrNull(db, username);
+    Tokens tokens = TokenDaoOld.getTokensOrNull(db, username);
     assertNull(tokens);
   }
   //
@@ -134,7 +141,8 @@ public class ChangePasswordIntegrationTests {
       throw new Exception("Current test password doesn't match examples");
     }
 
-    Message result = ChangePasswordService.changePassword(db, username, oldPassword, newPassword);
+    Message result =
+        ChangePasswordService.changePassword(userDao, username, oldPassword, newPassword);
     assert (result == UserMessage.AUTH_SUCCESS);
   }
 }

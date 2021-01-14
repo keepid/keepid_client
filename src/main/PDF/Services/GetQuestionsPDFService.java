@@ -2,11 +2,11 @@ package PDF.Services;
 
 import Config.Message;
 import Config.Service;
+import Database.User.UserDao;
 import PDF.PdfMessage;
 import User.Services.GetUserInfoService;
 import User.UserMessage;
 import User.UserType;
-import com.mongodb.client.MongoDatabase;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -27,17 +27,17 @@ public class GetQuestionsPDFService implements Service {
   String username;
   JSONObject userInfo;
   InputStream fileStream;
-  MongoDatabase db;
+  UserDao userDao;
   Logger logger;
   JSONObject applicationInformation;
 
   public GetQuestionsPDFService(
-      MongoDatabase db,
+      UserDao userDao,
       Logger logger,
       UserType privilegeLevel,
       String username,
       InputStream fileStream) {
-    this.db = db;
+    this.userDao = userDao;
     this.logger = logger;
     this.privilegeLevel = privilegeLevel;
     this.username = username;
@@ -47,7 +47,7 @@ public class GetQuestionsPDFService implements Service {
   @Override
   public Message executeAndGetResponse() {
     // First, get the user's profile so we can autofill the field questions
-    GetUserInfoService userInfoService = new GetUserInfoService(db, logger, username);
+    GetUserInfoService userInfoService = new GetUserInfoService(userDao, logger, username);
     Message userInfoServiceResponse = userInfoService.executeAndGetResponse();
     if (userInfoServiceResponse != UserMessage.SUCCESS) {
       return PdfMessage.SERVER_ERROR;
