@@ -563,7 +563,7 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
 
     if (submitSuccessful) {
-      return (<Redirect to="/home" />);
+      return (<Redirect to="/applications" />);
     }
 
     const bodyElement = this.getApplicationBody();
