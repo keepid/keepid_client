@@ -17,6 +17,7 @@ declare module "*.pdf" {
 }
 declare module 'react-bootstrap-table-next';
 declare module 'react-bootstrap-table2-paginator';
+declare module 'react-bootstrap-table2-toolkit';
 declare module 'react-dom';
 declare module 'react-helmet';
 declare module 'react-select';

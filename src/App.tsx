@@ -43,6 +43,8 @@ import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 
+import Dialogue from './components/Base/Dialogue'; // need to delete
+
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
   ReactGA.pageview(window.location.pathname + window.location.search);
@@ -122,6 +124,12 @@ class App extends React.Component<{}, State, {}> {
             {role !== Role.LoggedOut ? <AutoLogout logOut={this.logOut} setAutoLogout={this.setAutoLogout} /> : null}
 
             <Switch>
+            <Route
+                exact
+                path="/dialogue-test"
+                render={() => <Dialogue />}
+              />
+
               <Route
                 exact
                 path="/"
