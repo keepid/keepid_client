@@ -157,9 +157,12 @@ class IssueReport extends Component<Props, State, {}> {
   handleSubmitWithRecaptcha = async (event: any) => {
     event.preventDefault();
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+      // @ts-ignore
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload });
-    } else return;
+    } else {
+      return;
+    }
     this.setState({ buttonState: 'running' });
     const { alert } = this.props;
     const {

@@ -24,8 +24,6 @@ class Hubspot extends React.Component<Props, State> {
         <HubspotForm
           portalId="8293567"
           formId="d452f166-31d3-455d-b3f7-b0afbe967f46"
-          onSubmit={() => console.log('Submit!')}
-          onReady={(form) => console.log('Form ready!')}
           loading={<div>Loading...</div>}
         />
       </div>

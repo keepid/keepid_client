@@ -223,6 +223,7 @@ class MyOrganization extends Component<Props, State> {
             <option defaultValue="" disabled hidden aria-labelledby="role" />
             <option value="Admin">Admin</option>
             <option value="Worker">Worker</option>
+            <option value="Client">Client</option>
           </select>
         </div>
       );
@@ -281,6 +282,7 @@ class MyOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const responseObject = JSON.parse(responseJSON);
         const { status } = responseObject;
+
         if (status === 'SUCCESS') {
           this.setState((prevState) => ({
             showPopUp: true,
@@ -341,6 +343,7 @@ class MyOrganization extends Component<Props, State> {
                   <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
                   <option>Admin</option>
                   <option>Worker</option>
+                  <option>Client</option>
                 </select>
               </label>
             </div>
