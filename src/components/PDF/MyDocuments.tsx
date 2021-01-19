@@ -64,6 +64,98 @@ class MyDocuments extends Component<Props, State> {
     return fileNames.length === new Set(fileNames).size;
   }
 
+  constructor(props: Props) {
+    super(props);
+    this.submitForm = this.submitForm.bind(this);
+    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
+    this.handleChangeFileDownload = this.handleChangeFileDownload.bind(this);
+    this.handleFileDownload = this.handleFileDownload.bind(this);
+    this.handleChangeFilePrint = this.handleChangeFilePrint.bind(this);
+    this.handleFilePrint = this.handleFilePrint.bind(this);
+    this.state = {
+      pdfFiles: undefined,
+      buttonState: '',
+      currentDocumentId: undefined,
+      currentDocumentName: undefined,
+      documentData: [],
+    };
+    this.getDocumentData = this.getDocumentData.bind(this);
+    this.onViewDocument = this.onViewDocument.bind(this);
+    this.deleteDocument = this.deleteDocument.bind(this);
+    this.ButtonFormatter = this.ButtonFormatter.bind(this);
+  }
+
+  componentDidMount() {
+    this.getDocumentData();
+  }
+
+  onViewDocument(event: any, row: any) {
+    const {
+      id,
+      filename,
+    } = row;
+    this.setState({
+      currentDocumentId: id,
+      currentDocumentName: filename,
+    });
+  }
+
+  getDocumentData() {
+    const {
+      userRole,
+    } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = responseJSON;
+        this.setState({ documentData: documents });
+      });
+  }
+
+  ButtonFormatter = (cell: any, row: any, rowIndex) => (
+    // to get the unique id of the document, you need to set a hover state which stores the document id of the row
+    // then in this function you can then get the current hover document id and do an action depending on the document id
+    <div>
+      {/* <Link to="/my-documents/print">
+        <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
+          Print
+        </button>
+      </Link> */}
+      {/*
+      <button type="button" onClick={(event) => this.handleChangeFilePrint(event, rowIndex)} className="btn btn-outline-info ml-2 btn-sm">
+        Print
+      </button>
+      */}
+      <Link to="/my-documents/view">
+        <button type="button" onClick={(event) => this.onViewDocument(event, row)} className="btn btn-outline-info btn-sm">
+          View
+        </button>
+      </Link>
+      <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} className="btn btn-outline-success btn-sm ml-2">
+        Download
+      </button>
+      <button type="button" onClick={(event) => this.deleteDocument(event, rowIndex)} className="btn btn-outline-danger btn-sm ml-2">
+        Delete
+      </button>
+
+    </div>
+  )
+
   handleChangeFileUpload(event: any) {
     event.preventDefault();
     const {
@@ -129,7 +221,7 @@ class MyDocuments extends Component<Props, State> {
         document.body.appendChild(a);
         a.click();
         a.remove();
-      }).catch((_error) => {
+      }).catch(() => {
         alert.show('Error Fetching File');
       });
   }
@@ -168,46 +260,12 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.blob())
       .then((response) => {
+        // eslint-disable-next-line
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
-      }).catch((_error) => {
+        // pdfFile is not being used. keeping it here in case it is needed.
+      }).catch(() => {
         alert.show('Error Fetching File');
       });
-  }
-
-  constructor(props: Props) {
-    super(props);
-    this.submitForm = this.submitForm.bind(this);
-    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
-    this.handleChangeFileDownload = this.handleChangeFileDownload.bind(this);
-    this.handleFileDownload = this.handleFileDownload.bind(this);
-    this.handleChangeFilePrint = this.handleChangeFilePrint.bind(this);
-    this.handleFilePrint = this.handleFilePrint.bind(this);
-    this.state = {
-      pdfFiles: undefined,
-      buttonState: '',
-      currentDocumentId: undefined,
-      currentDocumentName: undefined,
-      documentData: [],
-    };
-    this.getDocumentData = this.getDocumentData.bind(this);
-    this.onViewDocument = this.onViewDocument.bind(this);
-    this.deleteDocument = this.deleteDocument.bind(this);
-    this.ButtonFormatter = this.ButtonFormatter.bind(this);
-  }
-
-  componentDidMount() {
-    this.getDocumentData();
-  }
-
-  onViewDocument(event: any, row: any) {
-    const {
-      id,
-      filename,
-    } = row;
-    this.setState({
-      currentDocumentId: id,
-      currentDocumentName: filename,
-    });
   }
 
   deleteDocument(event: any, rowIndex: number) {
@@ -235,66 +293,10 @@ class MyDocuments extends Component<Props, State> {
         pdfType,
       }),
     }).then((response) => response.json())
-      .then((_responseJSON) => {
+      .then(() => {
         this.getDocumentData();
       });
   }
-
-  getDocumentData() {
-    const {
-      userRole,
-    } = this.props;
-    let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
-    } else {
-      pdfType = undefined;
-    }
-    fetch(`${getServerURL()}/get-documents `, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        pdfType,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          documents,
-        } = responseJSON;
-        this.setState({ documentData: documents });
-      });
-  }
-
-  ButtonFormatter = (cell: any, row: any, rowIndex) => (
-    // to get the unique id of the document, you need to set a hover state which stores the document id of the row
-    // then in this function you can then get the current hover document id and do an action depending on the document id
-    <div>
-      {/* <Link to="/my-documents/print">
-        <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
-          Print
-        </button>
-      </Link> */}
-      {/*
-      <button type="button" onClick={(event) => this.handleChangeFilePrint(event, rowIndex)} className="btn btn-outline-info ml-2 btn-sm">
-        Print
-      </button>
-      */}
-      <Link to="/my-documents/view">
-        <button type="button" onClick={(event) => this.onViewDocument(event, row)} className="btn btn-outline-info btn-sm">
-          View
-        </button>
-      </Link>
-      <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} className="btn btn-outline-success btn-sm ml-2">
-        Download
-      </button>
-      <button type="button" onClick={(event) => this.deleteDocument(event, rowIndex)} className="btn btn-outline-danger btn-sm ml-2">
-        Delete
-      </button>
-
-    </div>
-  )
 
   submitForm(event: any) {
     const {
@@ -350,6 +352,8 @@ class MyDocuments extends Component<Props, State> {
     }
   }
 
+  // disabling because requires moving parts in a seemingly impossible way
+  // eslint-disable-next-line
   tableCols = [{
     dataField: 'filename',
     text: 'File Name',
@@ -400,7 +404,7 @@ class MyDocuments extends Component<Props, State> {
             </div>
             <ul className="list-unstyled mt-5">
               {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
+                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
               }
             </ul>
             <div className="row justify-content-left form-group mb-5">
