@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
+import { Link } from 'react-router-dom';
 
 interface Props {
   cardSize?: string,
   cardHeight?: string,
   cardWidth?: string,
+  cardLink?: string,
   cardTitle: string,
   cardText: string,
   imageSrc?: any,
+  imageAlt?: any,
   imageLoc?: string,
   imageSize?: string,
   buttonText?: string,
@@ -20,7 +23,9 @@ interface DefaultProps {
   cardSize?: string,
   cardHeight?: string,
   cardWidth?: string,
+  cardLink?: string,
   imageSrc?: any,
+  imageAlt?: any,
   imageLoc?: string,
   imageSize?: string,
   buttonText?: string,
@@ -29,59 +34,44 @@ interface DefaultProps {
 }
 
 function BaseCard(props: Props): React.ReactElement {
-  const {
-    cardSize,
-    cardTitle,
-    cardText,
-    imageSrc,
-    imageLoc,
-    imageSize,
-    buttonText,
-    buttonOnClick,
-    renderAdditionalContent,
-  } = props;
-  let cardHeight;
-  let cardWidth;
-  // default card sizes
-  if (cardSize === 'large-vertical') {
-    cardHeight = '535px';
-    cardWidth = '385px';
-  } else if (cardSize === 'large-horizontal') {
-    cardHeight = '380px';
-    cardWidth = '600px';
-  } else if (cardSize === 'small-vertical') {
-    cardHeight = '435px';
-    cardWidth = '265px';
-  } else if (cardSize === 'small-horizontal') {
-    cardHeight = '250px';
-    cardWidth = '400px';
-  } else {
-    cardHeight = props.cardHeight;
-    cardWidth = props.cardWidth;
-  }
-  // if there is an image, adjust image corner radius size based on image location
-  const cardBorderRadius = 20;
-  const buttonBorderRadius = 10;
-  let borderTopLeftRadius = 0;
-  let borderBottomLeftRadius = 0;
-  let borderTopRightRadius = 0;
-  let borderBottomRightRadius = 0;
-  if (imageLoc === 'left') {
-    borderTopLeftRadius = cardBorderRadius;
-    borderBottomLeftRadius = cardBorderRadius;
-  } else if (imageLoc === 'right') {
-    borderTopRightRadius = cardBorderRadius;
-    borderBottomRightRadius = cardBorderRadius;
-  }
-  return (
-    <div>
-      <Card className="shadow border-0" style={{ height: cardHeight, width: cardWidth, borderRadius: cardBorderRadius }}>
+  const [hover, setHover] = useState(false);
+  function renderCard(
+    cardTitle: string,
+    cardText: string,
+    cardHeight?: string,
+    cardWidth?: string,
+    cardLink?: string,
+    imageSrc?: any,
+    imageAlt?: any,
+    imageLoc?: string,
+    imageSize?: string,
+    buttonText?: string,
+    buttonOnClick?: () => void,
+    renderAdditionalContent?: () => any,
+  ): React.ReactElement {
+    // if there is an image, adjust image corner radius size based on image location
+    const cardBorderRadius = 20;
+    const buttonBorderRadius = 10;
+    let borderTopLeftRadius = 0;
+    let borderBottomLeftRadius = 0;
+    let borderTopRightRadius = 0;
+    let borderBottomRightRadius = 0;
+    if (imageLoc === 'left') {
+      borderTopLeftRadius = cardBorderRadius;
+      borderBottomLeftRadius = cardBorderRadius;
+    } else if (imageLoc === 'right') {
+      borderTopRightRadius = cardBorderRadius;
+      borderBottomRightRadius = cardBorderRadius;
+    }
+    return (
+      <Card className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`} style={{ height: cardHeight, width: cardWidth, borderRadius: cardBorderRadius }}>
         { imageLoc === 'left' || imageLoc === 'right'
           ? (
             <Card.Body className="p-0 d-flex flex-row">
               <Image
                 className={(imageLoc === 'left') ? 'order-1' : 'order-2'}
                 src={imageSrc}
+                alt={imageAlt}
                 style={{
                   height: '100%',
                   width: imageSize,
@@ -94,7 +84,7 @@ function BaseCard(props: Props): React.ReactElement {
               />
               <div className={`p-4 d-flex flex-column ${(imageLoc === 'left') ? 'order-2' : 'order-1'}`}>
                 <div style={{ height: '100%', overflow: 'scroll' }}>
-                  <Card.Title>{cardTitle}</Card.Title>
+                  <Card.Title><h3>{cardTitle}</h3></Card.Title>
                   <Card.Text>{cardText}</Card.Text>
                   { typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null }
                 </div>
@@ -123,6 +113,7 @@ function BaseCard(props: Props): React.ReactElement {
                 ? (
                   <Image
                     src={imageSrc}
+                    alt={imageAlt}
                     style={{
                       height: imageSize,
                       width: '100%',
@@ -134,7 +125,7 @@ function BaseCard(props: Props): React.ReactElement {
                 )
                 : null }
               <div className="p-4">
-                <Card.Title>{cardTitle}</Card.Title>
+                <Card.Title><h3>{cardTitle}</h3></Card.Title>
                 <Card.Text>{cardText}</Card.Text>
                 { typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null }
               </div>
@@ -156,6 +147,77 @@ function BaseCard(props: Props): React.ReactElement {
           )
           : null }
       </Card>
+    );
+  }
+  const {
+    cardSize,
+    cardTitle,
+    cardText,
+    cardLink,
+    imageSrc,
+    imageAlt,
+    imageLoc,
+    imageSize,
+    buttonText,
+    buttonOnClick,
+    renderAdditionalContent,
+  } = props;
+  let cardHeight;
+  let cardWidth;
+  // default card sizes
+  if (cardSize === 'large-vertical') {
+    cardHeight = '535px';
+    cardWidth = '385px';
+  } else if (cardSize === 'large-horizontal') {
+    cardHeight = '380px';
+    cardWidth = '600px';
+  } else if (cardSize === 'small-vertical') {
+    cardHeight = '435px';
+    cardWidth = '265px';
+  } else if (cardSize === 'small-horizontal') {
+    cardHeight = '250px';
+    cardWidth = '400px';
+  } else {
+    cardHeight = props.cardHeight;
+    cardWidth = props.cardWidth;
+  }
+  return (
+    <div className="ml-1 mr-1 mt-2 mb-2" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      { cardLink !== undefined
+        ? (
+          <Link to={cardLink} className="no-link-style">
+            {
+              renderCard(
+                cardTitle,
+                cardText,
+                cardHeight,
+                cardWidth,
+                cardLink,
+                imageSrc,
+                imageAlt,
+                imageLoc,
+                imageSize,
+                buttonText,
+                buttonOnClick,
+                renderAdditionalContent,
+              )
+            }
+          </Link>
+        )
+        : renderCard(
+          cardTitle,
+          cardText,
+          cardHeight,
+          cardWidth,
+          cardLink,
+          imageSrc,
+          imageAlt,
+          imageLoc,
+          imageSize,
+          buttonText,
+          buttonOnClick,
+          renderAdditionalContent,
+        ) }
     </div>
   );
 }
@@ -164,7 +226,9 @@ const defaultProps: DefaultProps = {
   cardSize: undefined,
   cardHeight: undefined,
   cardWidth: undefined,
+  cardLink: undefined,
   imageSrc: undefined,
+  imageAlt: undefined,
   imageLoc: undefined,
   imageSize: undefined,
   buttonText: undefined,

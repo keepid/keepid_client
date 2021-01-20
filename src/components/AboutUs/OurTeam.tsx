@@ -35,6 +35,7 @@ import JessicaHung from '../../static/images/members/jessicaHung.jpg';
 import EmilySu from '../../static/images/members/emilySu.jpg';
 import JamesBigbee from '../../static/images/members/jamesBigbee.jpg';
 import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
+import BaseCard from '../../components/Base/BaseCard';
 
 interface State {}
 
@@ -44,6 +45,7 @@ class OurTeam extends React.Component<{}, State> {
   }
 
   render() {
+    const imgSize = '65%';
     return (
       <div className="container">
         <Helmet>
@@ -60,278 +62,346 @@ class OurTeam extends React.Component<{}, State> {
           <h3 className="display-5">The Board</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={JohnJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">John Baek</h5>
-              <p className="card-text">Founder / COO / Legal Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={ConnorJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Connor Chong</h5>
-              <p className="card-text">Founder / CEO / CTO / Product Manager</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={SteffenJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Steffen Cornwell</h5>
-              <p className="card-text">Founder / Executive Director</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={JacksonJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jackson Foltz</h5>
-              <p className="card-text">Founder / Nonprofit Ambassador / Donor Strategy Lead</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={GregJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Gregory Kofman</h5>
-              <p className="card-text">Founder / Software Engineer</p>
-            </div>
-          </div>
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="John Baek"
+            cardText="Founder / COO / Legal Analyst"
+            imageSrc={JohnJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Connor Chong"
+            cardText="Founder / CEO / CTO / Product Manager"
+            imageSrc={ConnorJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Steffen Cornwell"
+            cardText="Founder / Executive Director"
+            imageSrc={SteffenJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jackson Foltz"
+            cardText="Founder / Nonprofit Ambassador / Donor Strategy Lead"
+            imageSrc={JacksonJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Gregory Kofman"
+            cardText="Founder / Software Engineer"
+            imageSrc={GregJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Engineering</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={Melinda} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Melinda Cardenas</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Xander} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Xander Cernek</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Cathy} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Cathy Chen</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Vanessa} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Vanessa Hu</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Janelle} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Janelle Leung</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={JackieJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jackie Peng</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Austin} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Austin Wu</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Joey} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Joey Zhao</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Melinda Cardenas"
+            cardText="Software Engineer"
+            imageSrc={Melinda}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Xander Cernek"
+            cardText="Software Engineer"
+            imageSrc={Xander}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Cathy Chen"
+            cardText="Software Engineer"
+            imageSrc={Cathy}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Vanessa Hu"
+            cardText="Software Engineer"
+            imageSrc={Vanessa}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Janelle Leung"
+            cardText="Software Engineer"
+            imageSrc={Janelle}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jackie Peng"
+            cardText="Software Engineer"
+            imageSrc={JackieJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Austin Wu"
+            cardText="Software Engineer"
+            imageSrc={Austin}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Joey Zhao"
+            cardText="Software Engineer"
+            imageSrc={Joey}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Design and UI/UX</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={Anna} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Anna Leong</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
-
-          <div className="card member-card mr-4 mb-4">
-            <img src={Sophia} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Sophia Ye</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Michelle} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Michelle Yi</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
-
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Anna Leong"
+            cardText="UI/UX Designer"
+            imageSrc={Anna}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Sophia Ye"
+            cardText="UI/UX Designer"
+            imageSrc={Sophia}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Michelle Yi"
+            cardText="UI/UX Designer"
+            imageSrc={Michelle}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Nonprofit Communications</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={Sarah} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Sarah Kim</h5>
-              <p className="card-text">Nonprofit Liaison</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Jamie} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jamie Lu</h5>
-              <p className="card-text">Nonprofit Liaison</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={ChrisJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Christopher Ng</h5>
-              <p className="card-text">Nonprofit Liaison</p>
-            </div>
-          </div>
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Sarah Kim"
+            cardText="Nonprofit Liaison"
+            imageSrc={Sarah}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jamie Lu"
+            cardText="Nonprofit Liaison"
+            imageSrc={Jamie}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Christopher Ng"
+            cardText="Nonprofit Liaison"
+            imageSrc={ChrisJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Business</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={Ani} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Ani Agrawal</h5>
-              <p className="card-text">Donor Strategy</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Abhai} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Abhai Shukla</h5>
-              <p className="card-text">Business Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={EmilyHong} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Emily Hong</h5>
-              <p className="card-text">Business Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={JessicaHo} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jessica Ho</h5>
-              <p className="card-text">Business Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={JessicaHung} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jessica Hung</h5>
-              <p className="card-text">Donor Strategy</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={MaggieLin} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Maggie Lin</h5>
-              <p className="card-text">Business Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={SeemranRashid} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Seemran Rashid</h5>
-              <p className="card-text">Donor Strategy</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={EmilySu} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Emily Su</h5>
-              <p className="card-text">Business Analyst</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Victoria} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Victoria Walter</h5>
-              <p className="card-text">Donor Strategy</p>
-            </div>
-          </div>
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Ani Agrawal"
+            cardText="Donor Strategy"
+            imageSrc={Ani}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Abhai Shukla"
+            cardText="Business Analyst"
+            imageSrc={Abhai}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Emily Hong"
+            cardText="Business Analyst"
+            imageSrc={EmilyHong}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jessica Ho"
+            cardText="Business Analyst"
+            imageSrc={JessicaHo}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jessica Hung"
+            cardText="Donor Strategy"
+            imageSrc={JessicaHung}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Maggie Lin"
+            cardText="Business Analyst"
+            imageSrc={MaggieLin}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Seemran Rashid"
+            cardText="Donor Strategy"
+            imageSrc={SeemranRashid}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Emily Su"
+            cardText="Business Analyst"
+            imageSrc={EmilySu}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Victoria Walter"
+            cardText="Donor Strategy"
+            imageSrc={Victoria}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
         <div className="jumbotron-fluid mt-5">
           <h3 className="display-5">Past Members</h3>
         </div>
         <div className="d-flex flex-wrap">
-          <div className="card member-card mr-4 mb-4">
-            <img src={DanJPG} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Daniel Barychev</h5>
-              <p className="card-text">Software Engineer / Security Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={JamesBigbee} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">James Bigbee</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Sydney} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Sydney Cheng</h5>
-              <p className="card-text">Business Analyst / Nonprofit Ambassador</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Ivorine} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Ivorine Do</h5>
-              <p className="card-text">Business Analyst / Social Media Manager</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Abhishek} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Abhishek Pandya</h5>
-              <p className="card-text">Software Engineer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Gio} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Gio Ballesteros</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
-          <div className="card member-card mr-4 mb-4">
-            <img src={Jonathan} className="card-img-top " alt="..." />
-            <div className="card-body">
-              <h5 className="card-title">Jonathan Xue</h5>
-              <p className="card-text">UI/UX Designer</p>
-            </div>
-          </div>
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Daniel Barychev"
+            cardText="Software Engineer / Security Engineer"
+            imageSrc={DanJPG}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="James Bigbee"
+            cardText="Software Engineer"
+            imageSrc={JamesBigbee}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Sydney Cheng"
+            cardText="Business Analyst / Nonprofit Ambassador"
+            imageSrc={Sydney}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Ivorine Do"
+            cardText="Business Analyst / Social Media Manager"
+            imageSrc={Ivorine}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Abhishek Pandya"
+            cardText="Software Engineer"
+            imageSrc={Abhishek}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Gio Ballesteros"
+            cardText="UI/UX Designer"
+            imageSrc={Gio}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Jonathan Xue"
+            cardText="UI/UX Designer"
+            imageSrc={Jonathan}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
         </div>
       </div>
     );
