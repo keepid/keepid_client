@@ -25,7 +25,7 @@ import DavidGlaser from '../../static/images/members/davidGlaser.jpg';
 import AnkitaSethi from '../../static/images/members/ankitaSethi.jpg';
 import KierenGill from '../../static/images/members/kierenGill.jpg';
 import AmandaYen from '../../static/images/members/amandaYen.png';
-import SamBarraza from '../../static/images/members/samBarazza.jpg';
+import SamBarraza from '../../static/images/members/samBarraza.jpg';
 
 import BaseCard from '../../components/Base/BaseCard';
 
