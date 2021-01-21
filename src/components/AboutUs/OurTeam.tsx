@@ -25,6 +25,8 @@ import DavidGlaser from '../../static/images/members/davidGlaser.jpg';
 import AnkitaSethi from '../../static/images/members/ankitaSethi.jpg';
 import KierenGill from '../../static/images/members/kierenGill.jpg';
 import AmandaYen from '../../static/images/members/amandaYen.png';
+import SamBarraza from '../../static/images/members/samBarazza.jpg';
+
 import BaseCard from '../../components/Base/BaseCard';
 
 interface State {}
@@ -243,6 +245,15 @@ class OurTeam extends React.Component<{}, State> {
             cardTitle="Maggie Lin"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={MaggieLin}
+            imageAlt="..."
+            imageLoc="top"
+            imageSize={imgSize}
+          />
+          <BaseCard
+            cardSize="small-vertical"
+            cardTitle="Sam Barrazza"
+            cardText="Nonprofit Strategy Analyst"
+            imageSrc={SamBarraza}
             imageAlt="..."
             imageLoc="top"
             imageSize={imgSize}
