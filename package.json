@@ -153,7 +153,8 @@
     },
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
-      "^.+\\.module\\.(css|sass|scss)$"
+      "^.+\\.module\\.(css|sass|scss)$",
+      "[/\\\\]node_modules/antd"
     ]
   },
   "eslintConfig": {
