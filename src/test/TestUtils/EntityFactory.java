@@ -1,5 +1,6 @@
 package TestUtils;
 
+import Activity.Activity;
 import Database.Dao;
 import Organization.Organization;
 import Security.SecurityUtils;
@@ -10,7 +11,9 @@ import User.UserType;
 import Validation.ValidationException;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +30,10 @@ public class EntityFactory {
 
   public static PartialTokens createTokens() {
     return new PartialTokens();
+  }
+
+  public static PartialActivity createActivity() {
+    return new PartialActivity();
   }
 
   public static class PartialUser implements PartialObject<User> {
@@ -168,8 +175,8 @@ public class EntityFactory {
   }
 
   public static class PartialOrganization implements PartialObject<Organization> {
-    private String orgName = "Broad Street Ministry Test Org Name";
-    private String orgWebsite = "testOrgWebsite.com";
+    private String orgName = "testOrganizationName";
+    private String orgWebsite = "https://www.example.org/somethinghere";
     private String orgEIN = "123456789";
     private String orgStreetAddress = "311 Broad Street";
     private String orgCity = "Philadelphia";
@@ -314,6 +321,46 @@ public class EntityFactory {
 
     public PartialTokens withTwoFactorExp(Date twoFactorExp) {
       this.twoFactorExp = twoFactorExp;
+      return this;
+    }
+  }
+
+  public static class PartialActivity implements PartialObject<Activity> {
+    private ObjectId id = new ObjectId();
+    private LocalDateTime occuredAt = LocalDateTime.now();
+    private User owner = EntityFactory.createUser().build();
+    private List<String> type = Collections.emptyList();
+
+    @Override
+    public Activity build() {
+      Activity newActivity = new Activity().setOccurredAt(occuredAt).setOwner(owner).setType(type);
+      return newActivity;
+    }
+
+    @Override
+    public Activity buildAndPersist(Dao<Activity> dao) {
+      Activity activity = this.build();
+      dao.save(activity);
+      return activity;
+    }
+
+    public PartialActivity withId(ObjectId id) {
+      this.id = id;
+      return this;
+    }
+
+    public PartialActivity withLocalDateTime(LocalDateTime occuredAt) {
+      this.occuredAt = occuredAt;
+      return this;
+    }
+
+    public PartialActivity withOwner(User owner) {
+      this.owner = owner;
+      return this;
+    }
+
+    public PartialActivity withType(List<String> type) {
+      this.type = type;
       return this;
     }
   }

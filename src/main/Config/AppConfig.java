@@ -1,6 +1,7 @@
 package Config;
 
 import Activity.ActivityController;
+import Admin.AdminController;
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
@@ -52,6 +53,7 @@ public class AppConfig {
     PdfController pdfController = new PdfController(db, userDao);
     IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController();
+    AdminController adminController = new AdminController(userDao, db);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -96,6 +98,8 @@ public class AppConfig {
 
     /* -------------- ADMIN DASHBOARD ------------------ */
     app.post("/get-usertype-count", orgController.findMembersOfOrgs);
+    app.post("/test-delete-org", adminController.testDeleteOrg);
+    app.post("/delete-org", adminController.deleteOrg);
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/get-all-orgs", orgController.listOrgs);
