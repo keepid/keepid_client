@@ -145,7 +145,7 @@ public class AppConfig {
 
               config.enableCorsForAllOrigins(); // enable cors for all origins
 
-              //              config.enableDevLogging(); // enable extensive development logging for
+              // config.enableDevLogging(); // enable extensive development logging for
               // http and
               // websocket
               config.enforceSsl =
