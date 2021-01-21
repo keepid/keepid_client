@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Home from '../../../components/Base/Home';
 
-window.sroll = jest.fn();
+window.scroll = jest.fn();
 test('Home page loads', () => {
   const { getByText } = render(<MemoryRouter><Home /></MemoryRouter>);
   getByText('Safeguarding identities of those experiencing homelessness');
