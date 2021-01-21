@@ -83,7 +83,7 @@ function BaseCard(props: Props): React.ReactElement {
                 }}
               />
               <div className={`p-4 d-flex flex-column ${(imageLoc === 'left') ? 'order-2' : 'order-1'}`}>
-                <div style={{ height: '100%', overflow: 'scroll' }}>
+                <div style={{ height: '100%' }}>
                   <Card.Title><h3>{cardTitle}</h3></Card.Title>
                   <Card.Text>{cardText}</Card.Text>
                   { typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null }
@@ -108,7 +108,7 @@ function BaseCard(props: Props): React.ReactElement {
           : null }
         { imageLoc === 'top' || typeof imageLoc === 'undefined'
           ? (
-            <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%', overflow: 'scroll' }}>
+            <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%' }}>
               { typeof imageLoc !== 'undefined'
                 ? (
                   <Image
