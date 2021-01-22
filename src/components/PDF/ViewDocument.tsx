@@ -60,14 +60,21 @@ class ViewDocument extends Component<Props, State> {
     const {
       pdfFile,
     } = this.state;
+    const {
+      documentName,
+    } = this.props;
     return (
       <div>
+        <div className="ml-5 mt-3">
+          <Link to="/my-documents">
+            <button type="button" className="btn btn-outline-primary">
+              Back
+            </button>
+          </Link>
+        </div>
+        <h1 className="text-center">{documentName}</h1>
+        <hr />
         { pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div /> }
-        <Link to="/my-documents">
-          <button type="button" className="btn btn-outline-success">
-            Back
-          </button>
-        </Link>
       </div>
     );
   }
