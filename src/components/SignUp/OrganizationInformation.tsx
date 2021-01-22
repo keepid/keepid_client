@@ -9,6 +9,7 @@ import {
   isValidPhoneNumber, isValidUSState, isValidZipCode, isValidOrgName,
   isValidEIN,
 } from '../../lib/Validations/Validations';
+import CompleteSignupFlow from './CompleteSignupFlow';
 
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 

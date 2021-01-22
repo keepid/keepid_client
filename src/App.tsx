@@ -6,9 +6,11 @@ import {
   Switch,
 } from 'react-router-dom';
 import './static/styles/App.scss';
+import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
+import { Type } from 'react-bootstrap-table2-editor';
 import Header from './components/Base/Header';
 import UploadDocs from './components/PDF/UploadDocs';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -44,6 +46,7 @@ import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
+import Table from './components/Base/Table';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -57,6 +60,67 @@ interface State {
   organization: string,
   autoLogout: boolean,
 }
+
+// for test table
+const products = [
+  {
+    name: 'TV',
+    price: 1000,
+  },
+  {
+    name: 'Mobile',
+    price: 500,
+  },
+  {
+    name: 'Book',
+    price: 20,
+  }];
+
+const data: any = [];
+for (let i = 0; i < 100; i += 1) {
+  const value = products[i % products.length];
+  const newValue = {
+    name: value.name,
+    price: value.price,
+    id: i,
+  };
+  data.push(newValue);
+}
+
+const columns = [{
+  dataField: 'id',
+  text: 'Product ID',
+  sort: true,
+},
+{
+  dataField: 'name',
+  text: 'Product Name',
+  editor: {
+    type: Type.SELECT,
+    options: [{
+      value: 'TV',
+      label: 'TV',
+    }, {
+      value: 'Mobile',
+      label: 'Mobile',
+    }, {
+      value: 'Book',
+      label: 'Book',
+    }],
+  },
+}, {
+  dataField: 'price',
+  text: 'Product Price',
+  sort: true,
+}];
+const cantEdit = new Set([0]);
+const emptyInfo = {
+  onPress: () => console.log('test'),
+  label: 'Invite members',
+  description: 'There are no members in this organization.',
+};
+const onEditSave = (row) => { console.log(`edit ${row.id}`); };
+const onDelete = (id) => { console.log(`delete ${id}`); };
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -124,6 +188,11 @@ class App extends React.Component<{}, State, {}> {
             {role !== Role.LoggedOut ? <AutoLogout logOut={this.logOut} setAutoLogout={this.setAutoLogout} /> : null}
 
             <Switch>
+              <Route
+                exact
+                path="/table-test"
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify canSelect={false} emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete} />}
+              />
               <Route
                 exact
                 path="/"

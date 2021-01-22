@@ -8,38 +8,42 @@ interface Props {
   changeCurrentPage: any,
 }
 
-const numPagesConst = 3;
+enum TPage {
+  EllipInd = -1,
+  Pg1 = 1,
+  Pg2 = 2,
+  Pg3 = 3,
+  ShowOn2Sides = 2,
+  ShowOn1Side = 3,
+  NeedEllip = 5,
+}
 
 function TablePageSelector(props: Props) : any {
   const {
-    currentPage,
+    currentPage, // indexed 0
     changeCurrentPage,
     numElements,
     itemsPerPage,
   } = props;
-  const numPages : number = Math.floor((numElements - 1) / itemsPerPage) + 1;
+  const numPagesDbl = numElements / itemsPerPage;
+  const numPages : number = (numElements % itemsPerPage === 0) ? numPagesDbl : Math.floor(numPagesDbl) + 1;
   const numPagesArray : number[] = [];
-
-  let numPagesLowerBound;
-  let numPagesUpperBound;
-  if (numPagesConst % 2 === 0) {
-    const numPagesRange = (numPagesConst / 2) - 1;
-    numPagesLowerBound = currentPage - numPagesRange;
-    numPagesUpperBound = currentPage + numPagesRange + 1;
-  } else {
-    const numPagesRange = (numPagesConst - 1) / 2;
-    numPagesLowerBound = currentPage - numPagesRange;
-    numPagesUpperBound = currentPage + numPagesRange;
-  }
-  if (numPagesLowerBound <= 0) {
-    numPagesLowerBound = 0;
-    numPagesUpperBound = (numPagesConst < numPages ? numPagesConst : numPages) - 1;
-  } else if (numPagesUpperBound >= numPages - 1) {
-    numPagesUpperBound = numPages - 1;
-    numPagesLowerBound = (numPagesConst < numPages ? numPages - numPagesConst : 0);
-  }
-  for (let i = numPagesLowerBound; i <= numPagesUpperBound; i += 1) {
+  const numPagesLowerBound = 0;
+  const numPagesUpperBound = numPagesLowerBound + numPages;
+  for (let i = numPagesLowerBound; i < numPagesUpperBound; i += 1) {
     numPagesArray.push(i + 1);
+  }
+  let pageDisplayNums : number[];
+  if (numPages < TPage.NeedEllip + 1) {
+    pageDisplayNums = numPagesArray;
+  } else if (currentPage < TPage.ShowOn2Sides || currentPage >= numPages - TPage.ShowOn2Sides) {
+    pageDisplayNums = [TPage.Pg1, TPage.Pg2, TPage.EllipInd, numPages - 1, numPages];
+  } else if (currentPage < TPage.ShowOn1Side) {
+    pageDisplayNums = [TPage.Pg1, TPage.Pg2, TPage.Pg3, TPage.EllipInd, numPages];
+  } else if (currentPage >= numPages - TPage.ShowOn1Side) {
+    pageDisplayNums = [TPage.Pg1, TPage.EllipInd, ...numPagesArray.slice(-TPage.ShowOn1Side)];
+  } else {
+    pageDisplayNums = [TPage.Pg1, TPage.EllipInd, currentPage + 1, TPage.EllipInd, numPages];
   }
 
   function handleClickToPage(index: number) {
@@ -57,12 +61,22 @@ function TablePageSelector(props: Props) : any {
   }
 
   return (
-    <div>
-      <nav aria-label="Page navigation example">
-        <ul className="pagination mr-5 mt-4 mb-1">
-          {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div />}
-          {numPagesArray.map((index) => <li key={uuid()} className="page-item"><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
-          {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div />}
+    <div className="pt-2">
+      <nav aria-label="Page navigation">
+        <ul className="pagination">
+          {(currentPage > 0 && numPages > TPage.NeedEllip) ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div style={{ width: '2.2em' }} />}
+          {pageDisplayNums.map((index) => {
+            if (index === TPage.EllipInd) return (<li key={uuid()} className="page-item disabled"><span className="page-link">...</span></li>);
+            const isActive : string = (index === currentPage + 1) ? 'page-item active' : 'page-item';
+            return (
+              <li key={uuid()} className={isActive}>
+                <span className="page-link" onClick={(event) => handleClickToPage(index)}>
+                  {index}
+                </span>
+              </li>
+            );
+          })}
+          {(currentPage < (numPages - 1) && numPages > TPage.NeedEllip) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div style={{ width: '2.2em' }} />}
         </ul>
       </nav>
     </div>
