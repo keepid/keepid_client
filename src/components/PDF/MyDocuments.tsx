@@ -12,6 +12,7 @@ import ViewDocument from './ViewDocument';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import DragAndDrop from './DragAndDrop';
 
 const { SearchBar } = Search;
 
@@ -397,8 +398,8 @@ class MyDocuments extends Component<Props, State> {
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <h1 className="display-4">View and Print Documents</h1>
-              <p className="lead pt-3">
+              <h1 className="display-5 font-weight-bold">My Documents</h1>
+              <p className="lead pt-0 text-muted font-weight-bold">
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
@@ -411,7 +412,7 @@ class MyDocuments extends Component<Props, State> {
               <form onSubmit={this.submitForm}>
                 <div className="form-row mt-3">
                   <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
-                    { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files' }
+                    { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Upload File' }
                     <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
                   </label>
                   { pdfFiles && pdfFiles.length > 0 ? (
