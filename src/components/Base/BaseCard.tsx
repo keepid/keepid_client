@@ -3,8 +3,26 @@ import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import { Link } from 'react-router-dom';
 
+// Codacy thinks exported enums have already been declared in the upper scope for some reason
+// eslint-disable-next-line no-shadow
+export enum CardImageLoc {
+  LEFT = 'left',
+  RIGHT = 'right',
+  TOP = 'top'
+}
+
+// eslint-disable-next-line no-shadow
+export enum CardSize {
+  LARGE_VERTICAL = 'large-vertical',
+  LARGE_HORIZONTAL = 'large-horizontal',
+  SMALL_VERTICAL = 'small-vertical',
+  SMALL_HORIZONTAL = 'small-horizontal',
+  MEDIUM_VERTICAL = 'medium-vertical',
+  MEDIUM_HORIZONTAL = 'medium-horizontal'
+}
+
 interface Props {
-  cardSize?: string,
+  cardSize?: CardSize,
   cardHeight?: string,
   cardWidth?: string,
   cardLink?: string,
@@ -12,7 +30,7 @@ interface Props {
   cardText: string,
   imageSrc?: any,
   imageAlt?: any,
-  imageLoc?: string,
+  imageLoc?: CardImageLoc,
   imageSize?: string,
   buttonText?: string,
   buttonOnClick?: () => void,
@@ -43,7 +61,7 @@ function BaseCard(props: Props): React.ReactElement {
     cardLink?: string,
     imageSrc?: any,
     imageAlt?: any,
-    imageLoc?: string,
+    imageLoc?: CardImageLoc,
     imageSize?: string,
     buttonText?: string,
     buttonOnClick?: () => void,
@@ -56,20 +74,20 @@ function BaseCard(props: Props): React.ReactElement {
     let borderBottomLeftRadius = 0;
     let borderTopRightRadius = 0;
     let borderBottomRightRadius = 0;
-    if (imageLoc === 'left') {
+    if (imageLoc === CardImageLoc.LEFT) {
       borderTopLeftRadius = cardBorderRadius;
       borderBottomLeftRadius = cardBorderRadius;
-    } else if (imageLoc === 'right') {
+    } else if (imageLoc === CardImageLoc.RIGHT) {
       borderTopRightRadius = cardBorderRadius;
       borderBottomRightRadius = cardBorderRadius;
     }
     return (
       <Card className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`} style={{ height: cardHeight, width: cardWidth, borderRadius: cardBorderRadius }}>
-        { imageLoc === 'left' || imageLoc === 'right'
+        { imageLoc === CardImageLoc.LEFT || imageLoc === CardImageLoc.RIGHT
           ? (
             <Card.Body className="p-0 d-flex flex-row">
               <Image
-                className={(imageLoc === 'left') ? 'order-1' : 'order-2'}
+                className={(imageLoc === CardImageLoc.LEFT) ? 'order-1' : 'order-2'}
                 src={imageSrc}
                 alt={imageAlt}
                 style={{
@@ -82,7 +100,7 @@ function BaseCard(props: Props): React.ReactElement {
                   borderBottomRightRadius,
                 }}
               />
-              <div className={`p-4 d-flex flex-column ${(imageLoc === 'left') ? 'order-2' : 'order-1'}`}>
+              <div className={`p-4 d-flex flex-column ${(imageLoc === CardImageLoc.LEFT) ? 'order-2' : 'order-1'}`}>
                 <div style={{ height: '100%' }}>
                   <Card.Title><h3>{cardTitle}</h3></Card.Title>
                   <Card.Text>{cardText}</Card.Text>
@@ -106,7 +124,7 @@ function BaseCard(props: Props): React.ReactElement {
             </Card.Body>
           )
           : null }
-        { imageLoc === 'top' || typeof imageLoc === 'undefined'
+        { imageLoc === CardImageLoc.TOP || typeof imageLoc === 'undefined'
           ? (
             <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%' }}>
               { typeof imageLoc !== 'undefined'
@@ -165,18 +183,24 @@ function BaseCard(props: Props): React.ReactElement {
   let cardHeight;
   let cardWidth;
   // default card sizes
-  if (cardSize === 'large-vertical') {
+  if (cardSize === CardSize.LARGE_VERTICAL) {
     cardHeight = '535px';
     cardWidth = '385px';
-  } else if (cardSize === 'large-horizontal') {
+  } else if (cardSize === CardSize.LARGE_HORIZONTAL) {
     cardHeight = '380px';
     cardWidth = '600px';
-  } else if (cardSize === 'small-vertical') {
+  } else if (cardSize === CardSize.SMALL_VERTICAL) {
     cardHeight = '435px';
     cardWidth = '265px';
-  } else if (cardSize === 'small-horizontal') {
+  } else if (cardSize === CardSize.SMALL_HORIZONTAL) {
     cardHeight = '250px';
     cardWidth = '400px';
+  } else if (cardSize === CardSize.MEDIUM_VERTICAL) {
+    cardHeight = '485px';
+    cardWidth = '325px';
+  } else if (cardSize === CardSize.MEDIUM_HORIZONTAL) {
+    cardHeight = '315px';
+    cardWidth = '500px';
   } else {
     cardHeight = props.cardHeight;
     cardWidth = props.cardWidth;

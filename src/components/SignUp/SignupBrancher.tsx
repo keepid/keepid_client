@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
-import BaseCard from '../../components/Base/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../../components/Base/BaseCard';
 
 class SignupBrancher extends Component<{}, {}, {}> {
   render() {
@@ -21,25 +20,25 @@ class SignupBrancher extends Component<{}, {}, {}> {
             <div className="d-flex justify-content-center">
               <div className="mr-5">
                 <BaseCard
-                  cardSize="large-vertical"
+                  cardSize={CardSize.LARGE_VERTICAL}
                   cardLink="/organization-signup"
                   cardTitle="Social Organization"
                   cardText="I am an organization that is looking to serve those experiencing homelessness."
                   imageSrc={Building}
                   imageAlt="building"
-                  imageLoc="top"
+                  imageLoc={CardImageLoc.TOP}
                   imageSize="70%"
                   buttonText="Try for Free"
                 />
               </div>
               <BaseCard
-                cardSize="large-vertical"
+                cardSize={CardSize.LARGE_VERTICAL}
                 cardLink="/find-organizations"
                 cardTitle="Individual"
                 cardText="I am experiencing homelessness or require secure identification storage."
                 imageSrc={Profile}
                 imageAlt="profile"
-                imageLoc="top"
+                imageLoc={CardImageLoc.TOP}
                 imageSize="70%"
                 buttonText="Find Organizations Near Me"
               />
