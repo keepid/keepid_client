@@ -1,6 +1,8 @@
 import React, { Component, ReactElement } from 'react';
 import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
+import $ from 'jquery';
+import 'jquery-mask-plugin';
 import USStates from '../../static/data/states_titlecase.json';
 import {
   isValidAddress, isValidCity, isValidEmail, isValidOrgWebsite,
@@ -8,8 +10,6 @@ import {
   isValidEIN,
 } from '../../lib/Validations/Validations';
 import CompleteSignupFlow from './CompleteSignupFlow';
-import 'jquery-mask-plugin';
-import $ from 'jquery';
 
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
 
@@ -63,41 +63,6 @@ class OrganizationInformation extends Component<Props, State, {}> {
       orgPhoneNumberValidator: '',
       orgEmailValidator: '',
     };
-  }
-
-  addHttp = (url: string):string => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
-  }
-
-  colorToggle = (inputString: string): string => {
-    if (inputString === 'true') {
-      return 'is-valid';
-    } if (inputString === 'false') {
-      return 'is-invalid';
-    }
-    return '';
-  }
-
-  generalMessage = (inputString:string): ReactElement<{}> => {
-    if (inputString === 'true') {
-      return (
-        <div className="valid-feedback">
-          Looks Great.
-        </div>
-      );
-    } if (inputString === 'false') {
-      return (
-        <div className="invalid-feedback">
-          Invalid or Blank field.
-        </div>
-      );
-    }
-    return (
-      <div />
-    );
   }
 
   validateOrgName = async ():Promise<void> => {
@@ -194,9 +159,45 @@ class OrganizationInformation extends Component<Props, State, {}> {
     window.scrollTo(0, 0);
   }
 
+  generalMessage = (inputString:string): ReactElement<{}> => {
+    if (inputString === 'true') {
+      return (
+        <div className="valid-feedback">
+          Looks Great.
+        </div>
+      );
+    } if (inputString === 'false') {
+      return (
+        <div className="invalid-feedback">
+          Invalid or Blank field.
+        </div>
+      );
+    }
+    return (
+      <div />
+    );
+  }
+
+  colorToggle = (inputString: string): string => {
+    if (inputString === 'true') {
+      return 'is-valid';
+    } if (inputString === 'false') {
+      return 'is-invalid';
+    }
+    return '';
+  }
+
+  addHttp = (url: string):string => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
   handleStepPrevious = (e) => {
+    const { handlePrevious } = this.props;
     e.preventDefault();
-    this.props.handlePrevious();
+    handlePrevious();
   }
 
   handleStepComplete = async (e) => {
@@ -204,8 +205,20 @@ class OrganizationInformation extends Component<Props, State, {}> {
     await Promise.all([this.validateOrgName(), this.validateOrgWebsite(), this.validateEIN(),
       this.validateOrgAddress(), this.validateOrgCity(), this.validateOrgState(), this.validateOrgZipcode(), this.validateOrgPhoneNumber(), this.validateOrgEmail()]);
     const {
-      orgNameValidator, orgWebsiteValidator, einValidator, orgAddressValidator, orgCityValidator, orgStateValidator, orgZipcodeValidator, orgPhoneNumberValidator, orgEmailValidator,
+      orgNameValidator,
+      orgWebsiteValidator,
+      einValidator,
+      orgAddressValidator,
+      orgCityValidator,
+      orgStateValidator,
+      orgZipcodeValidator,
+      orgPhoneNumberValidator,
+      orgEmailValidator,
     } = this.state;
+    const {
+      handleContinue,
+      alert,
+    } = this.props;
     // check if all elements are valid
     if (orgNameValidator === 'true'
     && orgWebsiteValidator === 'true'
@@ -216,21 +229,21 @@ class OrganizationInformation extends Component<Props, State, {}> {
     && orgZipcodeValidator === 'true'
     && orgPhoneNumberValidator === 'true'
     && orgEmailValidator === 'true') {
-      this.props.handleContinue();
+      handleContinue();
     } else {
-      this.props.alert.show('One or more fields are invalid');
+      alert.show('One or more fields are invalid');
     }
   }
 
-  maskEIN() {
+  maskEIN = () => {
     $('#ein').mask('00-0000000');
   }
 
-  maskPhone() {
+  maskPhone = () => {
     $('#phonenumber').mask('(000)000-0000');
   }
 
-  maskZipcode() {
+  maskZipcode = () => {
     $('#zipcode').mask('00000');
   }
 
@@ -281,7 +294,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
             </div>
             <form onSubmit={this.handleStepComplete}>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Organization name</label>
+                <label htmlFor="orgName" className="col-sm-3 col-form-label text-sm-right">Organization name</label>
                 <div className="col-sm-9">
                   <input
                     type="text"
@@ -331,7 +344,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label text-sm-right">Organization Address</label>
+                <label htmlFor="orgAddress" className="col-sm-3 col-form-label text-sm-right">Organization Address</label>
                 <div className="col-sm-9">
                   <label htmlFor="streetAddress" className="sr-only sr-only-focusable">Street Address</label>
                   <input
@@ -348,7 +361,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
                 </div>
               </div>
               <div className="form-group row">
-                <label htmlFor="" className="col-sm-3 col-form-label invisible" />
+                <label htmlFor="city" className="col-sm-3 col-form-label invisible" />
                 <div className="col-sm-3 mb-3 mb-sm-0">
                   <label htmlFor="city" className="sr-only sr-only-focusable">City</label>
                   <input

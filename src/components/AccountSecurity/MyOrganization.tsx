@@ -223,6 +223,7 @@ class MyOrganization extends Component<Props, State> {
             <option defaultValue="" disabled hidden aria-labelledby="role" />
             <option value="Admin">Admin</option>
             <option value="Worker">Worker</option>
+            <option value="Client">Client</option>
           </select>
         </div>
       );
@@ -279,8 +280,9 @@ class MyOrganization extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = responseJSON;
+        const responseObject = JSON.parse(responseJSON);
         const { status } = responseObject;
+
         if (status === 'SUCCESS') {
           this.setState((prevState) => ({
             showPopUp: true,
@@ -293,7 +295,7 @@ class MyOrganization extends Component<Props, State> {
           this.setState({ buttonLoadingState: false });
         }
       }).catch((error) => {
-        alert.show(`Network Failure: ${error}`);
+        alert.show(`Network Failure: ${error}. Logout and try again or report this issue to Keep.id`);
         this.setState({ buttonLoadingState: false });
       });
   }
@@ -341,6 +343,7 @@ class MyOrganization extends Component<Props, State> {
                   <option defaultValue="" disabled hidden aria-labelledby="exampleRole" />
                   <option>Admin</option>
                   <option>Worker</option>
+                  <option>Client</option>
                 </select>
               </label>
             </div>

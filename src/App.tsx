@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import './static/styles/App.scss';
 import './static/styles/Table.scss';
+import './static/styles/BaseCard.scss';
 import { Helmet } from 'react-helmet';
 import ReactGA from 'react-ga';
 import { Type } from 'react-bootstrap-table2-editor';
@@ -43,6 +44,7 @@ import AdminDashboard from './components/AccountSecurity/AdminDashboard';
 import Hubspot from './components/AboutUs/Hubspot';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
+import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 import Table from './components/Base/Table';
 
@@ -75,7 +77,7 @@ const products = [
   }];
 
 const data: any = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 100; i += 1) {
   const value = products[i % products.length];
   const newValue = {
     name: value.name,
@@ -117,8 +119,8 @@ const emptyInfo = {
   label: 'Invite members',
   description: 'There are no members in this organization.',
 };
-const onEditSave = row => { console.log("edit " + row.id)};
-const onDelete = id => { console.log("delete " + id)};
+const onEditSave = (row) => { console.log(`edit ${row.id}`); };
+const onDelete = (id) => { console.log(`delete ${id}`); };
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -189,7 +191,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/table-test"
-                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify canSelect={false} emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete}/>}
+                render={() => <Table columns={columns} data={data} cantEditCols={cantEdit} canModify canSelect={false} emptyInfo={emptyInfo} onEditSave={onEditSave} onDelete={onDelete} />}
               />
               <Route
                 exact
@@ -359,6 +361,16 @@ class App extends React.Component<{}, State, {}> {
               <Route path="/create-user/:jwt">
                 <InviteSignupJWT />
               </Route>
+              <Route
+                path="/profile/:username"
+                render={(props) => {
+                  const clientUsername = props.match.params.username;
+                  if (role !== Role.LoggedOut) {
+                    return <ClientProfilePage username={clientUsername} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
               <Route path="/error">
                 <Error />
               </Route>

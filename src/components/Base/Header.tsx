@@ -50,6 +50,11 @@ class Header extends Component<Props, State, {}> {
             </button>
             <div className="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarToggleLoggedIn">
               <ul className="navbar-nav ml-auto">
+                <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                  <Link className="nav-link" to="/">
+                    {(role === Role.Admin || role === Role.Director || role === Role.Worker) ? 'My Clients' : 'Home'}
+                  </Link>
+                </li>
                 {(role === Role.Admin || role === Role.Director)
                     && (
                     <li className="nav-item col-med-2 my-1 flex-fill mr-2">

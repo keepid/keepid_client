@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import Switch from 'react-switch';
-import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { withAlert } from 'react-alert';
-import DatePicker from 'react-datepicker';
-import uuid from 'react-uuid';
-import USStates from '../../static/data/states_titlecase.json';
+import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import getServerURL from '../../serverOverride';
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import RenderInput from './RenderInput';
 
 enum PasswordError {
   OldPasswordWrong = 1,
@@ -21,343 +21,6 @@ enum Section {
   BasicInfo = 'BasicInfo',
   AddressInfo = 'AddressInfo',
   PasswordChange = 'PasswordChange',
-  None = 'None',
-}
-
-// input field in the form
-interface InputProps {
-  inputLabel: string,
-  inputName: string,
-  inputValue: string | Date,
-  alert: any,
-  inputType: string,
-}
-
-interface InputState {
-  readOnly: boolean,
-  input: any,
-  originalInput: any,
-  wrongPasswordInModal: boolean,
-  showPasswordConfirm: boolean,
-  buttonState: string,
-}
-
-// one field e.g. birthDate, address, etc.
-class RenderInput extends Component<InputProps, InputState> {
-  static birthDateString(birthDate: Date) {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
-  }
-
-  constructor(props: InputProps) {
-    super(props);
-    this.state = {
-      readOnly: true,
-      input: '',
-      originalInput: '',
-      wrongPasswordInModal: false,
-      showPasswordConfirm: false,
-      buttonState: '',
-    };
-    this.handleEdit = this.handleEdit.bind(this);
-    this.handleCancel = this.handleCancel.bind(this);
-    this.handleSetReadOnly = this.handleSetReadOnly.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleOpenPasswordConfirmModal = this.handleOpenPasswordConfirmModal.bind(this);
-    this.handleClosePasswordConfirm = this.handleClosePasswordConfirm.bind(this);
-    this.handleSaveInfo = this.handleSaveInfo.bind(this);
-  }
-
-  componentDidUpdate(prevProps) {
-    const {
-      inputValue,
-    } = this.props;
-    if (inputValue !== prevProps.inputValue) {
-      this.setState({
-        input: inputValue,
-        originalInput: inputValue,
-      });
-    }
-  }
-
-  // edit input
-  handleEdit() {
-    this.setState({
-      readOnly: false,
-    });
-  }
-
-  // cancel the edit
-  handleCancel(event) {
-    this.setState({
-      readOnly: true,
-    });
-    const {
-      originalInput,
-    } = this.state;
-    this.setState({
-      input: originalInput,
-    });
-  }
-
-  handleSetReadOnly() {
-    this.setState({
-      readOnly: true,
-    });
-  }
-
-  handleInputChange(event) {
-    const {
-      inputType,
-    } = this.props;
-    // for date picker
-    if (inputType === 'date') {
-      this.setState({
-        input: event,
-      });
-      return;
-    }
-    const { target } = event;
-    const { value } = target;
-    this.setState({
-      input: value,
-    });
-  }
-
-  // opens up the password confirm modal
-  handleOpenPasswordConfirmModal(event) {
-    event.preventDefault();
-    this.setState({
-      showPasswordConfirm: true,
-    });
-  }
-
-  // close password confirm modal
-  handleClosePasswordConfirm() {
-    this.setState({
-      wrongPasswordInModal: false,
-      showPasswordConfirm: false,
-      buttonState: '',
-    });
-  }
-
-  // trigerred after correctly entering password in confirm modal
-  handleSaveInfo(password: string) {
-    this.setState({
-      buttonState: 'running',
-    });
-    const {
-      inputName,
-      inputLabel,
-      alert,
-      inputType,
-    } = this.props;
-
-    // API call to update information
-    let {
-      input,
-    } = this.state;
-
-    // format date
-    if (inputType === 'date') {
-      input = RenderInput.birthDateString(input);
-    }
-
-    const data = {
-      key: inputName,
-      value: input,
-      password,
-    };
-
-    fetch(`${getServerURL()}/change-account-setting`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const responseObject = responseJSON;
-        const { status } = responseObject;
-        const { message } = responseObject;
-        if (status === 'SUCCESS') { // successfully updated key and value
-          alert.show(`Successfully updated ${inputLabel}`);
-          this.setState({
-            originalInput: input,
-            showPasswordConfirm: false,
-            wrongPasswordInModal: false,
-            readOnly: true,
-          });
-        } else if (status === 'AUTH_FAILURE') {
-          // wrong password
-          this.setState({
-            wrongPasswordInModal: true,
-          });
-        } else {
-          alert.show(`Failed to update ${inputLabel}: ${message}`);
-          this.setState({
-            showPasswordConfirm: false,
-            wrongPasswordInModal: false,
-          });
-        }
-        this.setState({ buttonState: '' });
-      });
-  }
-
-  render() {
-    const {
-      inputLabel,
-      inputName,
-      inputType,
-    } = this.props;
-
-    const {
-      readOnly,
-      input,
-      showPasswordConfirm,
-      buttonState,
-      wrongPasswordInModal,
-    } = this.state;
-
-    return (
-      <div className="row mb-3 mt-3">
-        <div className="col-3 card-text mt-2 text-primary-theme">{inputLabel}</div>
-        <div className="col-6 card-text">
-          { inputType === 'select'
-            ? (
-              <select
-                className="form-control form-purple"
-                id={inputName}
-                name={inputName}
-                value={input}
-                onChange={this.handleInputChange}
-                disabled={readOnly}
-              >
-                {USStates.map((USState) => (<option key={uuid()}>{USState.abbreviation}</option>))}
-              </select>
-            ) : null}
-          { inputType === 'text' || inputType === 'tel'
-            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={this.handleInputChange} readOnly={readOnly} />
-            : null}
-          { inputType === 'date' ? (
-            <DatePicker
-              id={inputName}
-              onChange={this.handleInputChange}
-              selected={input}
-              className="form-control form-purple"
-              readOnly={readOnly}
-            />
-          ) : null}
-        </div>
-        <div className="col-3">
-          { readOnly ? <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={this.handleEdit}>Edit</button>
-            : (
-              <span className="float-right">
-                <button type="button" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
-                <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={this.handleOpenPasswordConfirmModal}>Save</button>
-              </span>
-            )}
-        </div>
-        <ConfirmPasswordModal show={showPasswordConfirm} section={inputName} buttonState={buttonState} wrongPasswordInModal={wrongPasswordInModal} handleSaveInfo={this.handleSaveInfo} handleClosePasswordConfirm={this.handleClosePasswordConfirm} />
-      </div>
-    );
-  }
-}
-
-// modal for confirming password before updating information
-interface ConfirmPasswordModalProps {
-  show: boolean,
-  section: string,
-  wrongPasswordInModal: boolean,
-  buttonState: string,
-  handleSaveInfo(password: string): any,
-  handleClosePasswordConfirm(): any,
-}
-
-interface ConfirmPasswordModalState {
-  enteredPasswordInModal: string,
-}
-
-class ConfirmPasswordModal extends Component<ConfirmPasswordModalProps, ConfirmPasswordModalState> {
-  constructor(props: ConfirmPasswordModalProps) {
-    super(props);
-    this.state = {
-      enteredPasswordInModal: '',
-    };
-    this.handlePasswordInput = this.handlePasswordInput.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.handlePasswordSubmit = this.handlePasswordSubmit.bind(this);
-  }
-
-  // entering password in modal
-  handlePasswordInput(event) {
-    const { target } = event;
-    const enteredPasswordInModal = target.value;
-    this.setState({
-      enteredPasswordInModal,
-    });
-  }
-
-  // submitted through the password confirm modal
-  async handlePasswordSubmit(event) {
-    event.preventDefault();
-    const {
-      enteredPasswordInModal,
-    } = this.state;
-
-    const {
-      handleSaveInfo,
-    } = this.props;
-
-    // this function makes API call
-    handleSaveInfo(enteredPasswordInModal);
-  }
-
-  // closing the modal
-  handleClose() {
-    this.setState({
-      enteredPasswordInModal: '',
-    });
-    const {
-      handleClosePasswordConfirm,
-    } = this.props;
-    handleClosePasswordConfirm();
-  }
-
-  render() {
-    const {
-      show,
-      buttonState,
-      wrongPasswordInModal,
-    } = this.props;
-
-    return (
-      <Modal show={show} backdrop="static" keyboard={false}>
-        <Modal.Header>
-          <Modal.Title>Confirm Password</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <p>Please enter your password to make these changes.</p>
-            { wrongPasswordInModal ? <p className="text-danger">Password is incorrect</p> : null }
-            <input type="password" className={wrongPasswordInModal ? 'form-control form-red' : 'form-control form-purple'} name="passwordConfirm" id="passwordConfirm" onChange={this.handlePasswordInput} />
-            <Modal.Footer>
-              <Button type="button" variant="light" onClick={this.handleClose}>Cancel</Button>
-              <Button type="submit" className={`ld-ext-right ${buttonState}`} variant="outline-dark" onClick={this.handlePasswordSubmit}>
-                Submit
-                <div className="ld ld-ring ld-spin" />
-              </Button>
-            </Modal.Footer>
-          </form>
-        </Modal.Body>
-      </Modal>
-    );
-  }
 }
 
 interface Props {
@@ -367,7 +30,6 @@ interface Props {
 interface State {
   // user info
   username: string,
-
   // basic info
   birthDate: Date,
   firstName: string,
@@ -391,7 +53,30 @@ interface State {
 
   // 2FA variable
   twoFactorOn: boolean,
+
+  // login history
+  loginHistory: any[]
 }
+
+const loginHistoryCols = [{
+  dataField: 'date',
+  text: 'Date',
+  sort: true,
+}, {
+  dataField: 'IP',
+  text: 'IP',
+  sort: true,
+},
+{
+  dataField: 'device',
+  text: 'Device',
+  sort: true,
+},
+{
+  dataField: 'location',
+  text: 'Location',
+  sort: true,
+}];
 
 class MyAccount extends Component<Props, State, {}> {
   constructor(props: Props) {
@@ -413,7 +98,7 @@ class MyAccount extends Component<Props, State, {}> {
       state: '',
       zipcode: '',
 
-      // pasword variables
+      // password variables
       enteredPassword: '',
       newPassword: '',
       newPasswordConfirm: '',
@@ -422,6 +107,9 @@ class MyAccount extends Component<Props, State, {}> {
       buttonState: '',
       // 2FA variable
       twoFactorOn: true,
+
+      // login history
+      loginHistory: [],
     };
 
     this.handleEditPassword = this.handleEditPassword.bind(this);
@@ -455,6 +143,29 @@ class MyAccount extends Component<Props, State, {}> {
           twoFactorOn: responseJSON.twoFactorOn,
         };
         this.setState(newState);
+      });
+
+    fetch(`${getServerURL()}/get-login-history`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const responseObject = responseJSON;
+        const { status } = responseObject;
+        if (status === 'SUCCESS') {
+          const loginHistory: any[] = [];
+          for (let i = 0; i < responseObject.history.length; i += 1) {
+            const row = responseObject.history[i];
+            row.id = i;
+            loginHistory.push(row);
+          }
+          this.setState({
+            loginHistory,
+          });
+        }
       });
   }
 
@@ -590,6 +301,8 @@ class MyAccount extends Component<Props, State, {}> {
       newPasswordConfirm,
       passwordError,
       buttonState,
+      loginHistory,
+      twoFactorOn,
     } = this.state;
 
     const {
@@ -697,40 +410,49 @@ class MyAccount extends Component<Props, State, {}> {
           </div>
         </div>
 
-        <div className="card mt-3 mb-3">
+        <div className="card mt-3 mb-3 pl-5 pr-5">
           <div className="card-body">
-            <h5 className="card-title pb-3">Two Factor Authentication</h5>
+            <div className="mb-3">
+              <h5 className="card-title float-left">Two-Factor Authentication</h5>
+            </div>
+            <br />
             <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Status:
-              </div>
-              <div className="input-group mb-3 col-6">
-                <label>
-                  <Switch onChange={this.handleChange2FA} checked={this.state.twoFactorOn} />
-                </label>
+              <div className="col-3 card-text mt-2 text-primary-theme">Status</div>
+              <div className="col-9 card-text">
+                <Switch onChange={this.handleChange2FA} checked={twoFactorOn} />
               </div>
             </div>
             <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Phone Number:
+              <div className="col-3 card-text mt-2 text-primary-theme">Phone Number</div>
+              <div className="col-9 card-text">
+                <div className="input-group mb-3">
+                  <input type="text" className="form-control form-purple" id="phoneNumber2" placeholder="(123)-456-7890" />
+                  <div className="input-group-append">
+                    <button className="btn btn-primary btn-primary-theme rounded-right" type="button">Submit</button>
+                  </div>
+                </div>
               </div>
-              <div className="col-6 card-text">
-                <input type="text" className="form-control form-purple" id="phoneNumber2" placeholder="(123)-456-7890" />
-              </div>
-              <button type="button" className="btn btn-outline-success">Submit</button>
             </div>
           </div>
         </div>
+
         <div className="card mt-3 mb-3">
           <div className="card-body">
-            <h5 className="card-title pb-3">Login History</h5>
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2">
-                Access Details:
-              </div>
-              <div className="col-9 card-text mt-2 text-success">
-                Some Date and Time here, Some Address here (make this a list)
-              </div>
+            <div className="mb-3">
+              <h5 className="card-title float-left">Login History</h5>
+            </div>
+            <br />
+            <div className="row m-3">
+              <BootstrapTable
+                keyField="id"
+                data={loginHistory}
+                columns={loginHistoryCols}
+                bootstrap4
+                hover
+                striped
+                noDataIndication="No login history"
+                pagination={paginationFactory()}
+              />
             </div>
           </div>
         </div>

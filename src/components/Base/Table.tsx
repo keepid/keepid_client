@@ -1,3 +1,6 @@
+/* eslint-disable react/no-unused-state */
+/* eslint-disable no-shadow */
+/* eslint-disable no-param-reassign */
 import React, { ReactElement, useState } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory, {
@@ -39,7 +42,7 @@ function EditFormatter(props: FormatterProps): React.ReactElement {
   return (
     <Button variant="link" className={canEdit ? 'save-text table-button action' : 'edit-text table-button action'} onClick={(e) => (canEdit ? handleSave(e) : handleEdit(e))}>
       <div className="row align-items-center">
-        <img className="px-1 table-svg" src={canEdit ? SaveSVG : EditSVG} alt={editable ? "save" : "edit"}/>
+        <img className="px-1 table-svg" src={canEdit ? SaveSVG : EditSVG} alt={editable ? 'save' : 'edit'} />
         <div className="d-none d-sm-block">{ canEdit ? 'Save' : 'Edit' }</div>
       </div>
 
@@ -93,7 +96,7 @@ interface Props {
       label: string,
       description: string,
     },
-    onDelete: (id: any) => void, //this should modify backend + re-retrieve data to pass into Table.
+    onDelete: (id: any) => void, // this should modify backend + re-retrieve data to pass into Table.
     onEditSave: (row: any) => void,
 }
 
@@ -112,7 +115,8 @@ class Table extends React.Component<Props, State, {}> {
   constructor(props) {
     super(props);
     const { columns } = props;
-    columns.forEach((col) => {
+    columns.forEach((column) => {
+      const col = column;
       col.formatter = this.inputFormatter;
       col.editorClasses = 'editor-input';
       col.style = (cell, row, rowIndex, colIndex) => {
@@ -132,20 +136,18 @@ class Table extends React.Component<Props, State, {}> {
             selectRows,
             editRows,
           });
-          
-        }
+        };
         col.sortCaret = (order, column) => {
           let sortAlt = 'sort';
           let classDef = 'px-2 sort-svg';
           if (!order) {
             classDef += ' lighten';
-          }
-          else {
-            sortAlt += ' ' + order;
+          } else {
+            sortAlt += ` ${order}`;
             classDef += (order === 'desc') ? ' rotate180' : '';
           }
-          return (<img className={classDef} src={ArrowSVG} alt={sortAlt}/>);
-        }
+          return (<img className={classDef} src={ArrowSVG} alt={sortAlt} />);
+        };
       }
     });
     this.state = {
@@ -234,8 +236,7 @@ class Table extends React.Component<Props, State, {}> {
       const member = { ...data[index] };
       this.setState({
         editRows,
-      },  () => onEditSave(row));
-      
+      }, () => onEditSave(row));
     }
 
     changeCurrentPage = (newCurrentPage: number): void => {
@@ -249,16 +250,16 @@ class Table extends React.Component<Props, State, {}> {
       });
     }
 
-    //displayed when table is empty
+    // displayed when table is empty
     NoDataIndication = (): React.ReactElement => {
       const { emptyInfo } = this.props;
       return (
-          <div className="empty-table d-flex flex-column justify-content-center">
-            <div className="hi"><p>{`${emptyInfo.description}`}</p></div>
-            <div className="hi">
-              <button type="button" className="btn btn-primary" onClick={emptyInfo.onPress}>{`${emptyInfo.label}`}</button>
-            </div> 
+        <div className="empty-table d-flex flex-column justify-content-center">
+          <div className="hi"><p>{`${emptyInfo.description}`}</p></div>
+          <div className="hi">
+            <button type="button" className="btn btn-primary" onClick={emptyInfo.onPress}>{`${emptyInfo.label}`}</button>
           </div>
+        </div>
       );
     }
 
@@ -283,7 +284,7 @@ class Table extends React.Component<Props, State, {}> {
       const lightPurple = '#E8E9FF';
       const numElements = data.length;
 
-      //custom results display for table
+      // custom results display for table
       const customTotal = (from, to, size) => (
         <span className="react-bootstrap-table-pagination-total">
           Showing
@@ -311,7 +312,7 @@ class Table extends React.Component<Props, State, {}> {
           ...provided,
           minWidth: (itemsPerPage === 5) ? '2.5rem' : '4.5rem',
         }),
-      }
+      };
       // pagination options
       const paginationOption = {
         custom: true,
@@ -378,30 +379,33 @@ class Table extends React.Component<Props, State, {}> {
         mode: 'checkbox',
         clickToSelect: false,
         headerColumnStyle: { width: '2.5rem' },
-        selectionHeaderRenderer: ({ indeterminate, mode, checked }) => 
-        (<div className="custom-control custom-checkbox mr-2">
-          <input
-            type={mode}
-            className="custom-control-input"
-            id={'selectAll'}
-            ref={ (input) => {
-              if (input) input.indeterminate = indeterminate;
-            } }
-            checked={checked}
-            onChange={() => {return}}
-          />
-          <label className="custom-control-label" htmlFor={'selectAll'}></label>
-        </div>),
-        selectionRenderer: ({ mode, checked, disabled, ...rest }) =>
-          (<div className="custom-control custom-checkbox mr-2">
+        selectionHeaderRenderer: ({ indeterminate, mode, checked }) => (
+          <div className="custom-control custom-checkbox mr-2">
+            <input
+              type={mode}
+              className="custom-control-input"
+              id="selectAll"
+              ref={(input) => {
+                if (input) input.indeterminate = indeterminate;
+              }}
+              checked={checked}
+              onChange={() => {}}
+            />
+            <label className="custom-control-label" htmlFor="selectAll" />
+          </div>
+        ),
+        selectionRenderer: ({
+          mode, checked, disabled, ...rest
+        }) => (
+          <div className="custom-control custom-checkbox mr-2">
             <input
               type={mode}
               className="custom-control-input"
               checked={checked}
               disabled={disabled}
-              onChange={() => {return}}
+              onChange={() => {}}
             />
-            <label className="custom-control-label"></label>
+            <label className="custom-control-label" />
           </div>
         ),
         onSelect: (row, isSelect, rowIndex, e) => {
@@ -427,11 +431,9 @@ class Table extends React.Component<Props, State, {}> {
         let classes = 'table-row';
         if (editRows.has(row.id) || selectRows.has(row.id)) {
           classes = ' table-edit-row';
-        } 
-        else if (data.length > 10 && rowIndex % 2 === 0) classes = ' table-zebra';
+        } else if (data.length > 10 && rowIndex % 2 === 0) classes = ' table-zebra';
         return classes;
       };
-
 
       return (
         <PaginationProvider
@@ -456,38 +458,39 @@ class Table extends React.Component<Props, State, {}> {
                             bodyClasses={(numElements === 0) ? 'empty-table' : ''}
                           />
                         </div>
-                        {(numElements === 0) ? <div /> :
-                          (<div className="row justify-content-end align-items-center">
-                            <div className="col-md-3 py-3 d-flex justify-content-center">
-                              <PaginationTotalStandalone
-                                {...paginationProps}
-                              />
-                            </div>
-                            <div className="col-md-3 form-inline py-2 d-flex justify-content-center">
-                              <Select
-                                options={listOptions}
-                                autoFocus
-                                closeMenuOnSelect={true}
-                                onChange={this.handleChangeItemsPerPage}
-                                value={itemsPerPageSelected}
-                                menuPlacement="top"
-                                styles={selectStyles}
-                              />
-                              {' '}
-                              <p className="my-auto ml-2">
+                        {(numElements === 0) ? <div />
+                          : (
+                            <div className="row justify-content-end align-items-center">
+                              <div className="col-md-3 py-3 d-flex justify-content-center">
+                                <PaginationTotalStandalone
+                                  {...paginationProps}
+                                />
+                              </div>
+                              <div className="col-md-3 form-inline py-2 d-flex justify-content-center">
+                                <Select
+                                  options={listOptions}
+                                  autoFocus
+                                  closeMenuOnSelect
+                                  onChange={this.handleChangeItemsPerPage}
+                                  value={itemsPerPageSelected}
+                                  menuPlacement="top"
+                                  styles={selectStyles}
+                                />
                                 {' '}
-                                results per page
-                              </p>
+                                <p className="my-auto ml-2">
+                                  {' '}
+                                  results per page
+                                </p>
+                              </div>
+                              <div className="col-md-3 mx-md-4 py-2 my-1 d-flex justify-content-center">
+                                <TablePageSelector
+                                  currentPage={currentPage}
+                                  itemsPerPage={itemsPerPage}
+                                  numElements={numElements}
+                                  changeCurrentPage={this.changeCurrentPage}
+                                />
+                              </div>
                             </div>
-                            <div className="col-md-3 mx-md-4 py-2 my-1 d-flex justify-content-center">
-                              <TablePageSelector
-                                currentPage={currentPage}
-                                itemsPerPage={itemsPerPage}
-                                numElements={numElements}
-                                changeCurrentPage={this.changeCurrentPage}
-                              />
-                            </div>
-                          </div>
                           )}
                         {showDeleteModal ? <TModal row={rowToDelete} handleClickClose={this.handleClickClose} handleDelete={(e) => this.handleDelete(e, rowToDelete)} /> : null}
                       </div>

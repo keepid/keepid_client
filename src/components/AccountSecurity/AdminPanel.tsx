@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import React, { Component } from 'react';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Helmet } from 'react-helmet';
@@ -109,11 +110,12 @@ class AdminPanel extends Component<Props, State> {
     }).then((res) => res.json())
       .then((responseJSON) => {
         const { people } = responseJSON;
-        if (people)
-        people.forEach(person => { 
-          person.id = person.username;
-          delete person.username;
-        });
+        if (people) {
+          people.forEach((person) => {
+            person.id = person.username;
+            delete person.username;
+          });
+        }
         this.setState({ workers: people });
       });
   }
@@ -189,8 +191,8 @@ class AdminPanel extends Component<Props, State> {
       label: 'Add members',
       description: 'There are no members in your organization.',
     };
-    const onEditSave = row => { console.log("edit " + row.id)};
-    const onDelete = id => { console.log("delete " + id)};
+    const onEditSave = (row) => { console.log(`edit ${row.id}`); };
+    const onDelete = (id) => { console.log(`delete ${id}`); };
     return (
       <div>
         <Helmet>

@@ -34,6 +34,12 @@ interface Props {
 }
 
 class LoginPage extends Component<Props, State> {
+  static enterKeyPressed(event, funct) {
+    if (event.key === 'Enter') {
+      funct();
+    }
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -93,7 +99,8 @@ class LoginPage extends Component<Props, State> {
 
   handleSubmitTwoFactorCode = (event: any) => {
     event.preventDefault();
-    const token = this.state.verificationCode;
+    const { verificationCode } = this.state;
+    const token = verificationCode;
     const {
       username,
     } = this.state;
@@ -112,10 +119,15 @@ class LoginPage extends Component<Props, State> {
       .then((responseJSON) => {
         const responseObject = responseJSON;
         const { status } = responseObject;
-
+        const {
+          userRole,
+          organization,
+          firstName,
+          lastName,
+        } = this.state;
         if (status === 'AUTH_SUCCESS') {
           const role = () => {
-            switch (this.state.userRole) {
+            switch (userRole) {
               case 'Director': return Role.Director;
               case 'Admin': return Role.Admin;
               case 'Worker': return Role.Worker;
@@ -123,13 +135,15 @@ class LoginPage extends Component<Props, State> {
               default: return Role.LoggedOut;
             }
           };
-          logIn(role(), username, this.state.organization, this.state.firstName.concat(this.state.lastName));
+          logIn(role(), username, organization, firstName.concat(lastName));
         } else if (status === 'AUTH_FAILURE') {
-          this.props.alert.show('Incorrect 2FA Token: Please Try Again');
+          const { alert } = this.props;
+          alert.show('Incorrect 2FA Token: Please Try Again');
           this.setState({ buttonState: '' });
         }
-      }).catch((error) => {
-        this.props.alert.show('Network Failure: Check Server Connection.');
+      }).catch(() => {
+        const { alert } = this.props;
+        alert.show('Network Failure: Check Server Connection. ');
         this.setState({ buttonState: '' });
       });
     this.resetRecaptcha();
@@ -146,7 +160,8 @@ class LoginPage extends Component<Props, State> {
       recaptchaPayload,
     } = this.state;
     if (username.trim() === '' || password.trim() === '') {
-      this.props.alert.show('Please enter a valid username or password');
+      const { alert } = this.props;
+      alert.show('Please enter a valid username or password');
       this.clearInput();
       this.setState({ buttonState: '' });
       this.resetRecaptcha();
@@ -170,6 +185,8 @@ class LoginPage extends Component<Props, State> {
             lastName,
           } = responseObject;
 
+          const { alert } = this.props;
+
           if (status === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
@@ -192,22 +209,23 @@ class LoginPage extends Component<Props, State> {
               userRole,
             });
           } else if (status === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Username or Password');
+            alert.show('Incorrect Username or Password');
             this.clearInput();
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
-            this.props.alert.show('Incorrect Username or Password');
+            alert.show('Incorrect Username or Password');
             this.clearInput();
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           } else {
-            this.props.alert.show('Server Failure: Please Try Again');
+            alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           }
-        }).catch((error) => {
-          this.props.alert.show('Network Failure: Check Server Connection');
+        }).catch(() => {
+          const { alert } = this.props;
+          alert.show('Network Failure: Check Server Connection.');
           this.setState({ buttonState: '' });
           this.resetRecaptcha();
         });
@@ -216,9 +234,12 @@ class LoginPage extends Component<Props, State> {
 
   resubmitVerificationCode(event: any) {
     event.preventDefault();
-    const { username } = this.state;
-    const { password } = this.state;
-    this.props.alert.show('Another verification code has been sent to your email.');
+    const {
+      username,
+      password,
+    } = this.state;
+    const { alert } = this.props;
+    alert.show('Another verification code has been sent to your email.');
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
       credentials: 'include',
@@ -229,17 +250,13 @@ class LoginPage extends Component<Props, State> {
     });
   }
 
-  static enterKeyPressed(event, funct) {
-    if (event.key === 'Enter') {
-      funct();
-    }
-  }
-
   render() {
     const {
       username,
       password,
       verificationCode,
+      twoFactorState,
+      buttonState,
     } = this.state;
     const {
       autoLogout,
@@ -303,9 +320,9 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
-                {(this.state.twoFactorState === 'show')
+                {(twoFactorState === 'show')
                   ? (
-                    <div className={`mt-3 mb-3 collapse ${this.state.twoFactorState}`}>
+                    <div className={`mt-3 mb-3 collapse ${twoFactorState}`}>
                       <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
                       <label htmlFor="username" className="w-100 font-weight-bold">
                         Verification Code
@@ -320,14 +337,14 @@ class LoginPage extends Component<Props, State> {
                         />
                       </label>
 
-                      <div className="row pl-3 pt-3">
+                      <div className="row pt-3">
                         <div className="col-6 pl-0">
                           <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
                             Resend Code
                           </button>
                         </div>
                         <div className="col-6 pl-0">
-                          <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                          <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${buttonState}`}>
                             Sign In
                             <div className="ld ld-ring ld-spin" />
                           </button>
@@ -336,15 +353,15 @@ class LoginPage extends Component<Props, State> {
                     </div>
                   )
                   : <div />}
-                <div className="row pl-3 pt-3">
-                  {(this.state.twoFactorState !== 'show')
+                <div className="row pt-3">
+                  {(twoFactorState !== 'show')
                     ? (
                       <div className="pb-2">
                         <button
                           type="submit"
                           onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.onSubmitWithReCAPTCHA)}
                           onClick={this.onSubmitWithReCAPTCHA}
-                          className={`btn btn-success px-5 loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}
+                          className={`btn btn-success px-5 loginButtonBackground w-100 ld-ext-right ${buttonState}`}
                         >
                           Sign In
                           <div className="ld ld-ring ld-spin" />
@@ -353,29 +370,29 @@ class LoginPage extends Component<Props, State> {
                     )
                     : <div />}
                 </div>
-                <div className="row pl-3 pb-3">
+                <div className="row pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
                     <span className="">Forgot your password?</span>
                   </Link>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Don&apos;t have an account?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
-                    <Link to="/find-organization">
+                    <Link to="/find-organizations">
                       <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
                     </Link>
                   </div>
                 </div>
-                <div className="row pl-3 pb-1">
+                <div className="row pb-1">
                   <span className="pt-3">
                     Are you a nonprofit organization?
                   </span>
                 </div>
-                <div className="row pl-3">
+                <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
                       <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>
