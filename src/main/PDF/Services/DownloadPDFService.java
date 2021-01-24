@@ -84,7 +84,8 @@ public class DownloadPDFService implements Service {
         this.inputStream = gridBucket.openDownloadStream(id);
         return PdfMessage.SUCCESS;
       }
-    } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
+    } else if (pdfType == PDFType.IDENTIFICATION
+        && (privilegeLevel == UserType.Client || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
         this.inputStream = gridBucket.openDownloadStream(id);
         return PdfMessage.SUCCESS;

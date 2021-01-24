@@ -72,7 +72,8 @@ public class DeletePDFService implements Service {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS;
       }
-    } else if (pdfType == PDFType.IDENTIFICATION && (privilegeLevel == UserType.Client)) {
+    } else if (pdfType == PDFType.IDENTIFICATION
+        && (privilegeLevel == UserType.Client || privilegeLevel == UserType.Worker)) {
       if (grid_out.getMetadata().getString("uploader").equals(user)) {
         gridBucket.delete(id);
         return PdfMessage.SUCCESS;

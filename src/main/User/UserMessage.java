@@ -21,7 +21,9 @@ public enum UserMessage implements Message {
   SUCCESS("SUCCESS:Success."),
   TOKEN_ISSUED("TOKEN_ISSUED:Token issued."),
   EMPTY_FIELD("EMPTY_FIELD:Cannot be empty."),
-  EMAIL_DOES_NOT_EXIST("EMAIL_DOES_NOT_EXIST:No email found for this user");
+  EMAIL_DOES_NOT_EXIST("EMAIL_DOES_NOT_EXIST:No email found for this user"),
+  CROSS_ORG_ACTION_DENIED(
+      "CROSS_ORG_ACTION_DENIED:You are trying to access another organization's client information");
 
   private String errorMessage;
 
