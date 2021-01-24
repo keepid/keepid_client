@@ -32,49 +32,58 @@ public class EncryptionTest {
 
   @Test
   public void testFileEncryption() throws IOException, GeneralSecurityException {
-    String username = "username";
 
-    File file =
-        new File(
-            Paths.get("").toAbsolutePath().toString()
-                + File.separator
-                + "src"
-                + File.separator
-                + "test"
-                + File.separator
-                + "resources"
-                + File.separator
-                + "Application_for_a_Birth_Certificate.pdf");
+    String[] filesToTest = {
+      "Application_for_a_Birth_Certificate.pdf",
+      "DL-54A.pdf",
+      "first-love.png",
+      "job_description.docx",
+      "ss-5_filled_out.pdf",
+      "loto.jpg"
+    };
 
-    InputStream fileStream = new FileInputStream(file);
+    String[] fileType = {"pdf", "pdf", "png", "docx", "pdf", "jpg"};
 
-    InputStream encryptedFile = encryptionController.encryptFile(fileStream, username);
-    InputStream decryptedFile = encryptionController.decryptFile(encryptedFile, username);
+    for (int i = 0; i < filesToTest.length; i++) {
+      String username = "username";
 
-    File returnFile =
-        new File(
-            Paths.get("").toAbsolutePath().toString()
-                + File.separator
-                + "src"
-                + File.separator
-                + "test"
-                + File.separator
-                + "resources"
-                + File.separator
-                + "TESTRETURNBIRTHCERT.pdf");
+      File file =
+          new File(
+              Paths.get("").toAbsolutePath().toString()
+                  + File.separator
+                  + "src"
+                  + File.separator
+                  + "test"
+                  + File.separator
+                  + "resources"
+                  + File.separator
+                  + filesToTest[i]);
 
-    Files.write(decryptedFile.readAllBytes(), returnFile);
+      InputStream fileStream = new FileInputStream(file);
 
-    boolean isEqualTo = Files.equal(returnFile, file);
-    assertEquals(isEqualTo, true);
+      InputStream encryptedFile = encryptionController.encryptFile(fileStream, username);
+      InputStream decryptedFile = encryptionController.decryptFile(encryptedFile, username);
 
-    // Delete created file
-    returnFile.delete();
+      File returnFile =
+          new File(
+              Paths.get("").toAbsolutePath().toString()
+                  + File.separator
+                  + "src"
+                  + File.separator
+                  + "test"
+                  + File.separator
+                  + "resources"
+                  + File.separator
+                  + "TESTRETURNFILE."
+                  + fileType[i]);
+
+      Files.write(decryptedFile.readAllBytes(), returnFile);
+
+      boolean isEqualTo = Files.equal(returnFile, file);
+      assertEquals(isEqualTo, true);
+
+      // Delete created file
+      returnFile.delete();
+    }
   }
-
-  //  @Test
-  //  public void generateKeyMongo() throws GeneralSecurityException, IOException {
-  //    generateAndUploadKeySet();
-  //  }
-
 }
