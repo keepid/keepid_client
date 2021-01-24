@@ -3,15 +3,12 @@ import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import { Link } from 'react-router-dom';
 
-// Codacy thinks exported enums have already been declared in the upper scope for some reason
-// eslint-disable-next-line no-shadow
 export enum CardImageLoc {
   LEFT = 'left',
   RIGHT = 'right',
   TOP = 'top'
 }
 
-// eslint-disable-next-line no-shadow
 export enum CardSize {
   LARGE_VERTICAL = 'large-vertical',
   LARGE_HORIZONTAL = 'large-horizontal',
