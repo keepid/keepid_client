@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import BSMJPG from '../../static/images/bsm.jpg';
-import BaseCard from '../../components/Base/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../../components/Base/BaseCard';
 
 interface State {}
 
@@ -25,13 +25,13 @@ class OurPartners extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="large-vertical"
+            cardSize={CardSize.LARGE_VERTICAL}
             cardTitle="Broad Street Ministries"
             cardText="We transform our city, our institutions,
             and ourselves when we embrace the individual needs of our most vulnerable sisters and brothers."
             imageSrc={BSMJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize="50%"
             renderAdditionalContent={() => (
               <div>

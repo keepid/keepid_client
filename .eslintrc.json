@@ -45,6 +45,7 @@
         "react/no-did-update-set-state": "off",
         "max-classes-per-file": 1,
         "react/jsx-props-no-spreading": 1,
-        "linebreak-style": 0
+        "linebreak-style": 0,
+        "no-shadow": "off"
     }
 }
