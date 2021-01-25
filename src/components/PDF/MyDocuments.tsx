@@ -403,28 +403,13 @@ class MyDocuments extends Component<Props, State> {
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
             </div>
-            <ul className="list-unstyled mt-5">
+            <ul className="list-unstyled">
               {
                 pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
               }
             </ul>
-            <div className="row justify-content-left form-group mb-5">
-              <form onSubmit={this.submitForm}>
-                <div className="form-row mt-3">
-                  <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
-                    { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Upload File' }
-                    <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
-                  </label>
-                  { pdfFiles && pdfFiles.length > 0 ? (
-                    <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-                      Upload
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  ) : null}
-                </div>
-              </form>
-            </div>
-            <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+
+            <div className="d-flex flex-row mb-3">
               <div className="w-100 pd-3">
                 <ToolkitProvider
                   keyField="id"
@@ -435,7 +420,27 @@ class MyDocuments extends Component<Props, State> {
                   {
                     (props) => (
                       <div>
-                        <SearchBar {...props.searchProps} />
+                        <div className="d-flex">
+                          <div className="mr-auto">
+                            <SearchBar {...props.searchProps} />
+                          </div>
+                          <div className="ml-auto">
+                            <form onSubmit={this.submitForm}>
+                              <div className="form-row">
+                                <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget">
+                                  { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Upload File' }
+                                  <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
+                                </label>
+                                { pdfFiles && pdfFiles.length > 0 ? (
+                                  <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
+                                    Upload
+                                    <div className="ld ld-ring ld-spin" />
+                                  </button>
+                                ) : null}
+                              </div>
+                            </form>
+                          </div>
+                        </div>
                         <hr />
                         <BootstrapTable
                           bootstrap4
@@ -451,6 +456,7 @@ class MyDocuments extends Component<Props, State> {
                 </ToolkitProvider>
               </div>
             </div>
+
           </div>
         </Route>
         <Route path="/my-documents/view">
