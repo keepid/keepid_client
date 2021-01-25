@@ -6,32 +6,35 @@ import RequestSVG from '../../static/images/request.svg';
 import AppSVG from '../../static/images/calendar.svg';
 import EmailSVG from '../../static/images/email.svg';
 import FileSVG from '../../static/images/file.svg';
+import BaseCard from '../Base/BaseCard';
 
-class ClientLanding extends Component<{}, {}, {}> {
+interface Props {
+  name: String
+}
+
+class ClientLanding extends Component<Props, {}, {}> {
   render() {
+    const { name } = this.props;
     return (
       <div id="Buttons" className="container pt-5">
         <Helmet>
           <title>Home</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+        <div className="d-flex p-2">
+          <h1>
+            Welcome,
+            {' '}
+            {name}
+            !
+          </h1>
+        </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
-            <Link to="/my-documents">
-              <div className="rectangle pt-2">
-                <img className="normalImage" src={FileSVG} alt="Print" />
-                <p className="textLanding mt-4 pt-3">My Documents</p>
-              </div>
-
-            </Link>
+            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" />
           </div>
           <div className="d-flex p-2" id="Applications container">
-            <Link to="/applications">
-              <div className="rectangle pt-2">
-                <img className="normalImage" src={AppSVG} alt="Applications" />
-                <p className="textLanding mt-5">My Applications</p>
-              </div>
-            </Link>
+            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" />
           </div>
         </div>
       </div>
