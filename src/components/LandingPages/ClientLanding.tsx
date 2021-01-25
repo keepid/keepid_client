@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import UploadSVG from '../../static/images/uploading-files-to-the-cloud.svg';
 import RequestSVG from '../../static/images/request.svg';
 import AppSVG from '../../static/images/calendar.svg';
 import EmailSVG from '../../static/images/email.svg';
 import FileSVG from '../../static/images/file.svg';
+import SignDoc from '../../static/images/sign-document.png';
 import BaseCard from '../Base/BaseCard';
 
-interface Props {
+interface Props extends RouteComponentProps {
   name: String
 }
 
@@ -31,10 +32,10 @@ class ClientLanding extends Component<Props, {}, {}> {
         </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
-            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" />
+            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" buttonText="My Documents" cardSize="small-horizontal" imageSrc={SignDoc} imageSize="40%" imageLoc="right" buttonOnClick={() => (this.props.history.push('/my-documents'))} />
           </div>
           <div className="d-flex p-2" id="Applications container">
-            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" />
+            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" buttonText="My Applications" cardSize="small-horizontal" imageSrc={SignDoc} imageSize="100%" imageLoc="right" buttonOnClick={() => (this.props.history.push('/applications'))} />
           </div>
         </div>
       </div>
@@ -42,4 +43,4 @@ class ClientLanding extends Component<Props, {}, {}> {
   }
 }
 
-export default ClientLanding;
+export default withRouter(ClientLanding);
