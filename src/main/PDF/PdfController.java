@@ -41,16 +41,41 @@ public class PdfController {
   */
   public Handler pdfDelete =
       ctx -> {
+        String username;
+        String orgName;
+        UserType userType;
         JSONObject req = new JSONObject(ctx.body());
-        PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-        String fileIDStr = req.getString("fileId");
-        String username = ctx.sessionAttribute("username");
-        String orgName = ctx.sessionAttribute("orgName");
-        UserType userType = ctx.sessionAttribute("privilegeLevel");
+        User check = userCheck(ctx.body());
+        if (check == null && req.has("targetUser")) {
+          ctx.result(UserMessage.USER_NOT_FOUND.toJSON().toString());
+        } else {
+          // TODO(xander) make this less hacky. Checks if client is in same org as worker.
+          boolean orgFlag;
+          if (check != null && req.has("targetUser")) {
+            logger.info("Target user found");
+            username = check.getUsername();
+            orgName = check.getOrganization();
+            userType = check.getUserType();
+            orgFlag = orgName.equals(ctx.sessionAttribute("orgName"));
+          } else {
+            username = ctx.sessionAttribute("username");
+            orgName = ctx.sessionAttribute("orgName");
+            userType = ctx.sessionAttribute("privilegeLevel");
+            // User is in same org as themselves
+            orgFlag = true;
+          }
 
-        DeletePDFService deletePDFService =
-            new DeletePDFService(db, logger, username, orgName, userType, pdfType, fileIDStr);
-        ctx.result(deletePDFService.executeAndGetResponse().toResponseString());
+          if (orgFlag) {
+            PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+            String fileIDStr = req.getString("fileId");
+
+            DeletePDFService deletePDFService =
+                new DeletePDFService(db, logger, username, orgName, userType, pdfType, fileIDStr);
+            ctx.result(deletePDFService.executeAndGetResponse().toResponseString());
+          } else {
+            ctx.result(UserMessage.CROSS_ORG_ACTION_DENIED.toResponseString());
+          }
+        }
       };
 
   /*
@@ -60,22 +85,47 @@ public class PdfController {
   */
   public Handler pdfDownload =
       ctx -> {
-        String username = ctx.sessionAttribute("username");
-        String orgName = ctx.sessionAttribute("orgName");
-        UserType userType = ctx.sessionAttribute("privilegeLevel");
+        String username;
+        String orgName;
+        UserType userType;
         JSONObject req = new JSONObject(ctx.body());
-        String fileIDStr = req.getString("fileId");
-
-        String pdfTypeString = req.getString("pdfType");
-        PDFType pdfType = PDFType.createFromString(pdfTypeString);
-        DownloadPDFService downloadPDFService =
-            new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
-        Message response = downloadPDFService.executeAndGetResponse();
-        if (response == PdfMessage.SUCCESS) {
-          ctx.header("Content-Type", "application/pdf");
-          ctx.result(downloadPDFService.getInputStream());
+        User check = userCheck(ctx.body());
+        if (check == null && req.has("targetUser")) {
+          logger.info("Target User not Found");
+          ctx.result(UserMessage.USER_NOT_FOUND.toJSON().toString());
         } else {
-          ctx.result(response.toResponseString());
+          // TODO(xander) make this less hacky. Checks if client is in same org as worker.
+          boolean orgFlag;
+          if (check != null && req.has("targetUser")) {
+            logger.info("Target user found");
+            username = check.getUsername();
+            orgName = check.getOrganization();
+            userType = check.getUserType();
+            orgFlag = orgName.equals(ctx.sessionAttribute("orgName"));
+          } else {
+            username = ctx.sessionAttribute("username");
+            orgName = ctx.sessionAttribute("orgName");
+            userType = ctx.sessionAttribute("privilegeLevel");
+            orgFlag = true;
+          }
+
+          if (orgFlag) {
+            String fileIDStr = req.getString("fileId");
+
+            String pdfTypeString = req.getString("pdfType");
+            PDFType pdfType = PDFType.createFromString(pdfTypeString);
+            DownloadPDFService downloadPDFService =
+                new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
+            Message response = downloadPDFService.executeAndGetResponse();
+            if (response == PdfMessage.SUCCESS) {
+              ctx.header("Content-Type", "application/pdf");
+              ctx.result(downloadPDFService.getInputStream());
+            } else {
+              ctx.result(response.toResponseString());
+            }
+          } else {
+            ctx.result(UserMessage.CROSS_ORG_ACTION_DENIED.toResponseString());
+          }
         }
       };
 
@@ -131,33 +181,40 @@ public class PdfController {
           logger.info("Target User not Found");
           responseJSON = UserMessage.USER_NOT_FOUND.toJSON();
         } else {
+          // TODO(xander) make this less hacky. Checks if client is in same org as worker.
+          boolean orgFlag;
           if (check != null && req.has("targetUser")) {
             logger.info("Target user found");
             username = check.getUsername();
             orgName = check.getOrganization();
             userType = check.getUserType();
+            orgFlag = orgName.equals(ctx.sessionAttribute("orgName"));
           } else {
             username = ctx.sessionAttribute("username");
             orgName = ctx.sessionAttribute("orgName");
             userType = ctx.sessionAttribute("privilegeLevel");
+            orgFlag = true;
           }
-          // System.out.println(username + ", " + orgName + ", " + userType.toString());
-          PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
-          boolean annotated = false;
-          if (pdfType == PDFType.FORM) {
-            annotated = Objects.requireNonNull(req.getBoolean("annotated"));
-          }
-          GetFilesInformationPDFService getFilesInformationPDFService =
-              new GetFilesInformationPDFService(
-                  db, logger, username, orgName, userType, pdfType, annotated);
-          Message response = getFilesInformationPDFService.executeAndGetResponse();
-          responseJSON = response.toJSON();
+          if (orgFlag) {
+            // System.out.println(username + ", " + orgName + ", " + userType.toString());
+            PDFType pdfType = PDFType.createFromString(req.getString("pdfType"));
+            boolean annotated = false;
+            if (pdfType == PDFType.FORM) {
+              annotated = Objects.requireNonNull(req.getBoolean("annotated"));
+            }
+            GetFilesInformationPDFService getFilesInformationPDFService =
+                new GetFilesInformationPDFService(
+                    db, logger, username, orgName, userType, pdfType, annotated);
+            Message response = getFilesInformationPDFService.executeAndGetResponse();
+            responseJSON = response.toJSON();
 
-          if (response == PdfMessage.SUCCESS) {
-            responseJSON.put("documents", getFilesInformationPDFService.getFiles());
+            if (response == PdfMessage.SUCCESS) {
+              responseJSON.put("documents", getFilesInformationPDFService.getFiles());
+            }
+          } else {
+            responseJSON = UserMessage.CROSS_ORG_ACTION_DENIED.toJSON();
           }
         }
-
         ctx.result(responseJSON.toString());
       };
 
@@ -188,47 +245,54 @@ public class PdfController {
           logger.info("Target User could not be found in the database");
           response = UserMessage.USER_NOT_FOUND;
         } else {
+          boolean orgFlag;
           if (req != null && req.has("targetUser") && check != null) {
             logger.info("Target User found, setting parameters.");
             username = check.getUsername();
             organizationName = check.getOrganization();
             privilegeLevel = check.getUserType();
+            orgFlag = organizationName.equals(ctx.sessionAttribute("orgName"));
           } else {
             username = ctx.sessionAttribute("username");
             organizationName = ctx.sessionAttribute("orgName");
             privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+            orgFlag = true;
           }
           // System.out.println(username + ", " + organizationName + ", " + privilegeLevel);
 
-          if (file == null) {
-            logger.info("File is null, invalid pdf");
-            response = PdfMessage.INVALID_PDF;
-          } else {
-            PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
-            // TODO: Replace with a title that is retrieved from the client (optionally)
-            String title = null;
-            try {
-              InputStream content = file.getContent();
-              PDDocument pdfDocument = PDDocument.load(content);
-              title = getPDFTitle(file.getFilename(), pdfDocument);
-              content.reset();
-              pdfDocument.close();
-            } catch (Exception exception) {
-              ctx.result(PdfMessage.INVALID_PDF.toResponseString());
+          if (orgFlag) {
+            if (file == null) {
+              logger.info("File is null, invalid pdf");
+              response = PdfMessage.INVALID_PDF;
+            } else {
+              PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
+              // TODO: Replace with a title that is retrieved from the client (optionally)
+              String title = null;
+              try {
+                InputStream content = file.getContent();
+                PDDocument pdfDocument = PDDocument.load(content);
+                title = getPDFTitle(file.getFilename(), pdfDocument);
+                content.reset();
+                pdfDocument.close();
+              } catch (Exception exception) {
+                ctx.result(PdfMessage.INVALID_PDF.toResponseString());
+              }
+              UploadPDFService uploadService =
+                  new UploadPDFService(
+                      db,
+                      logger,
+                      username,
+                      organizationName,
+                      privilegeLevel,
+                      pdfType,
+                      file.getFilename(),
+                      title,
+                      file.getContentType(),
+                      file.getContent());
+              response = uploadService.executeAndGetResponse();
             }
-            UploadPDFService uploadService =
-                new UploadPDFService(
-                    db,
-                    logger,
-                    username,
-                    organizationName,
-                    privilegeLevel,
-                    pdfType,
-                    file.getFilename(),
-                    title,
-                    file.getContentType(),
-                    file.getContent());
-            response = uploadService.executeAndGetResponse();
+          } else {
+            response = UserMessage.CROSS_ORG_ACTION_DENIED;
           }
         }
         ctx.result(response.toResponseString());
