@@ -72,21 +72,22 @@ class Dialogue extends React.Component<Props, State, {}> {
               animation={false}
               aria-labelledby="contained-modal-title-vcenter"
               centered
-          >
-            <Modal.Header>
-              <Modal.Title>{modalTitle}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div className="row mb-3 mt-3">
-                <div className="col">
-                  `This is irreversible. Are you sure you want to delete all the data for row ?`
+            >
+              <Modal.Header>
+                <Modal.Title>{modalTitle}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="row mb-3 mt-3">
+                  <div className="col">
+                    `This is irreversible. Are you sure you want to delete all the data for row ?`
+                  </div>
                 </div>
-              </div>
-            </Modal.Body>
-            <Modal.Footer>
-              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleClose}>Cancel</button>
-            </Modal.Footer>
-          </Modal>) : null}
+              </Modal.Body>
+              <Modal.Footer>
+                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleClose}>Cancel</button>
+              </Modal.Footer>
+            </Modal>
+          ) : null}
       </>
     );
   }
