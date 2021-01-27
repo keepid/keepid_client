@@ -126,7 +126,7 @@ class App extends React.Component<{}, State, {}> {
             {role !== Role.LoggedOut ? <AutoLogout logOut={this.logOut} setAutoLogout={this.setAutoLogout} /> : null}
 
             <Switch>
-            <Route
+              <Route
                 exact
                 path="/dialogue-test"
                 render={() => <Dialogue />}
