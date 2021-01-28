@@ -45,6 +45,8 @@ import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 
+import SearchBarTest from './components/Base/SearchBarTest';
+
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
   ReactGA.pageview(window.location.pathname + window.location.search);
@@ -145,6 +147,10 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Home />;
                 }}
+              />
+              <Route
+                path="/search-test"
+                render={() => (<SearchBarTest />)}
               />
               <Route
                 path="/find-organizations"
