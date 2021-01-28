@@ -193,9 +193,8 @@ public class UserController {
         JSONObject res = new JSONObject();
 
         String searchValue = req.getString("name").trim();
-        // TODO(xander) put back in ctx?
-        String orgName = req.getString("orgName");
-        UserType privilegeLevel = UserType.userTypeFromString(req.getString("privilegeLevel"));
+        String orgName = ctx.sessionAttribute("orgName");
+        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String listType = req.getString("listType").toUpperCase();
         int currentPage = req.getInt("currentPage");
         int itemsPerPage = req.getInt("itemsPerPage");

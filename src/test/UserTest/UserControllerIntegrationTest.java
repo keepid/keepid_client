@@ -57,7 +57,7 @@ public class UserControllerIntegrationTest {
     body.put("username", "adminBSM");
 
     HttpResponse<String> actualResponse =
-        Unirest.get(TestUtils.getServerUrl() + "/get-user-info").asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-user-info").body(body.toString()).asString();
     JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
     assertThat(actualResponseJson.get("city").toString()).isEqualTo("Philadelphia");
     assertThat(actualResponseJson.get("firstName").toString()).isEqualTo("Mike");
@@ -174,6 +174,8 @@ public class UserControllerIntegrationTest {
 
   @Test
   public void getClients() {
+    TestUtils.login("adminBSM", "adminBSM");
+
     JSONObject body = new JSONObject();
     body.put("name", "Worker Tff");
     body.put("orgName", "Test Org");
@@ -197,11 +199,13 @@ public class UserControllerIntegrationTest {
 
   @Test
   public void getMembers() {
+    TestUtils.login("adminBSM", "adminBSM");
+
     JSONObject body = new JSONObject();
     body.put("name", "Worker Tff");
     body.put("orgName", "Test Org");
-    body.put("privilegeLevel", "Client");
-    body.put("listType", "members");
+    body.put("privilegeLevel", "Admin");
+    body.put("listType", "clients");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
 
@@ -214,7 +218,7 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assert (actualResponseJSON.has("numPeople"));
-    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(7);
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(17);
     assert (actualResponseJSON.has("people"));
   }
 }
