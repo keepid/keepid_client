@@ -37,6 +37,7 @@ public class EncryptionController {
   }
 
   private Aead generateAead() throws GeneralSecurityException, IOException {
+    logger.info("Generating AEAD Prim");
     AeadConfig.register();
 
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
@@ -81,6 +82,7 @@ public class EncryptionController {
 
   public InputStream encryptFile(InputStream fileStream, String username)
       throws IOException, GeneralSecurityException {
+    logger.info("Encrypting File");
     try {
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
       byte[] aad = username.getBytes();
@@ -97,6 +99,7 @@ public class EncryptionController {
 
   public InputStream decryptFile(InputStream encryptedFile, String username)
       throws GeneralSecurityException, IOException {
+    logger.info("Decrypting File");
     byte[] aad = username.getBytes();
     byte[] encryptedBytes = encryptedFile.readAllBytes();
 

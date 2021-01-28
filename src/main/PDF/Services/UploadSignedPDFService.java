@@ -4,7 +4,7 @@ import Config.Message;
 import Config.Service;
 import PDF.PDFType;
 import PDF.PdfMessage;
-import Security.EncryptionUtils;
+import Security.EncryptionController;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -44,6 +44,7 @@ public class UploadSignedPDFService implements Service {
   PDFType pdfType;
   MongoDatabase db;
   Logger logger;
+  EncryptionController encryptionController;
 
   public UploadSignedPDFService(
       MongoDatabase db,
@@ -55,7 +56,8 @@ public class UploadSignedPDFService implements Service {
       String filename,
       String fileContentType,
       InputStream fileStream,
-      InputStream signatureFileStream) {
+      InputStream signatureFileStream,
+      EncryptionController encryptionController) {
     this.db = db;
     this.logger = logger;
     this.uploader = uploaderUsername;
@@ -66,6 +68,7 @@ public class UploadSignedPDFService implements Service {
     this.fileContentType = fileContentType;
     this.fileStream = fileStream;
     this.signatureFileStream = signatureFileStream;
+    this.encryptionController = encryptionController;
   }
 
   @Override
@@ -89,7 +92,7 @@ public class UploadSignedPDFService implements Service {
           InputStream signedPDF = signPDF(uploader, fileStream, signatureFileStream);
           return mongodbUpload(uploader, organizationName, filename, signedPDF, pdfType, db);
         } catch (GeneralSecurityException | IOException e) {
-          return PdfMessage.SERVER_ERROR;
+          return PdfMessage.ENCRYPTION_ERROR;
         }
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
@@ -106,9 +109,11 @@ public class UploadSignedPDFService implements Service {
       MongoDatabase db)
       throws GeneralSecurityException, IOException {
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+    inputStream = encryptionController.encryptFile(inputStream, uploader);
 
+    GridFSUploadOptions options;
     if (pdfType == PDFType.FORM) {
-      GridFSUploadOptions options =
+      options =
           new GridFSUploadOptions()
               .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
@@ -117,9 +122,8 @@ public class UploadSignedPDFService implements Service {
                       .append("annotated", false)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
-      gridBucket.uploadFromStream(filename, inputStream, options);
     } else {
-      GridFSUploadOptions options =
+      options =
           new GridFSUploadOptions()
               .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
@@ -127,11 +131,8 @@ public class UploadSignedPDFService implements Service {
                       .append("upload_date", String.valueOf(LocalDate.now()))
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
-      gridBucket.uploadFromStream(
-          EncryptionUtils.getInstance().encryptString(filename, uploader),
-          EncryptionUtils.getInstance().encryptFile(inputStream, uploader),
-          options);
     }
+    gridBucket.uploadFromStream(filename, inputStream, options);
     return PdfMessage.SUCCESS;
   }
 

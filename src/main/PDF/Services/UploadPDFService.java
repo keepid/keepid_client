@@ -4,7 +4,7 @@ import Config.Message;
 import Config.Service;
 import PDF.PDFType;
 import PDF.PdfMessage;
-import Security.EncryptionUtils;
+import Security.EncryptionController;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -31,6 +31,7 @@ public class UploadPDFService implements Service {
   PDFType pdfType;
   MongoDatabase db;
   Logger logger;
+  EncryptionController encryptionController;
 
   public UploadPDFService(
       MongoDatabase db,
@@ -42,7 +43,8 @@ public class UploadPDFService implements Service {
       String filename,
       String title,
       String fileContentType,
-      InputStream fileStream) {
+      InputStream fileStream,
+      EncryptionController encryptionController) {
     this.db = db;
     this.logger = logger;
     this.uploader = uploaderUsername;
@@ -53,6 +55,7 @@ public class UploadPDFService implements Service {
     this.title = title;
     this.fileContentType = fileContentType;
     this.fileStream = fileStream;
+    this.encryptionController = encryptionController;
   }
 
   @Override
@@ -94,9 +97,11 @@ public class UploadPDFService implements Service {
       PDFType pdfType,
       MongoDatabase db)
       throws GeneralSecurityException, IOException {
+    inputStream = encryptionController.encryptFile(inputStream, uploader);
     GridFSBucket gridBucket = GridFSBuckets.create(db, pdfType.toString());
+    GridFSUploadOptions options;
     if (pdfType == PDFType.FORM) {
-      GridFSUploadOptions options =
+      options =
           new GridFSUploadOptions()
               .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
@@ -106,9 +111,9 @@ public class UploadPDFService implements Service {
                       .append("annotated", false)
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
-      gridBucket.uploadFromStream(filename, inputStream, options);
+
     } else {
-      GridFSUploadOptions options =
+      options =
           new GridFSUploadOptions()
               .chunkSizeBytes(CHUNK_SIZE_BYTES)
               .metadata(
@@ -116,11 +121,8 @@ public class UploadPDFService implements Service {
                       .append("upload_date", String.valueOf(LocalDate.now()))
                       .append("uploader", uploader)
                       .append("organizationName", organizationName));
-      gridBucket.uploadFromStream(
-          EncryptionUtils.getInstance().encryptString(filename, uploader),
-          EncryptionUtils.getInstance().encryptFile(inputStream, uploader),
-          options);
     }
+    gridBucket.uploadFromStream(filename, inputStream, options);
     return PdfMessage.SUCCESS;
   }
 }

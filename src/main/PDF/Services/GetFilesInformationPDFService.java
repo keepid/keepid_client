@@ -4,7 +4,6 @@ import Config.Message;
 import Config.Service;
 import PDF.PDFType;
 import PDF.PdfMessage;
-import Security.EncryptionUtils;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -16,7 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.security.GeneralSecurityException;
 import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.and;
@@ -121,14 +119,7 @@ public class GetFilesInformationPDFService implements Service {
         fileMetadata.put("annotated", grid_out.getMetadata().getBoolean("annotated"));
 
       } else if (pdfType.equals(PDFType.APPLICATION) || pdfType.equals(PDFType.IDENTIFICATION)) {
-        try {
-          fileMetadata.put(
-              "filename",
-              EncryptionUtils.getInstance()
-                  .decryptString(grid_out.getFilename(), uploaderUsername));
-        } catch (GeneralSecurityException e) {
-          return PdfMessage.ENCRYPTION_ERROR;
-        }
+        fileMetadata.put("filename", grid_out.getFilename());
       }
       files.put(fileMetadata);
     }

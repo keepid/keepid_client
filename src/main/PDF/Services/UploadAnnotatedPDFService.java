@@ -4,6 +4,7 @@ import Config.Message;
 import Config.Service;
 import PDF.PDFType;
 import PDF.PdfMessage;
+import Security.EncryptionController;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -14,7 +15,9 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -31,6 +34,7 @@ public class UploadAnnotatedPDFService implements Service {
   InputStream fileStream;
   MongoDatabase db;
   Logger logger;
+  EncryptionController encryptionController;
 
   public UploadAnnotatedPDFService(
       MongoDatabase db,
@@ -41,7 +45,8 @@ public class UploadAnnotatedPDFService implements Service {
       String fileIDStr,
       String filename,
       String fileContentType,
-      InputStream fileStream) {
+      InputStream fileStream,
+      EncryptionController encryptionController) {
     this.db = db;
     this.logger = logger;
     this.uploader = uploaderUsername;
@@ -51,6 +56,7 @@ public class UploadAnnotatedPDFService implements Service {
     this.filename = filename;
     this.fileContentType = fileContentType;
     this.fileStream = fileStream;
+    this.encryptionController = encryptionController;
   }
 
   @Override
@@ -66,8 +72,19 @@ public class UploadAnnotatedPDFService implements Service {
           || privilegeLevel == UserType.Director
           || privilegeLevel == UserType.Admin
           || privilegeLevel == UserType.Developer)) {
-        return mongodbUploadAnnotatedForm(
-            uploader, organizationName, filename, fileIDStr, fileStream, db);
+
+        try {
+          return mongodbUploadAnnotatedForm(
+              uploader,
+              organizationName,
+              filename,
+              fileIDStr,
+              fileStream,
+              db,
+              encryptionController);
+        } catch (Exception e) {
+          return PdfMessage.ENCRYPTION_ERROR;
+        }
       } else {
         return PdfMessage.INSUFFICIENT_PRIVILEGE;
       }
@@ -80,11 +97,13 @@ public class UploadAnnotatedPDFService implements Service {
       String filename,
       String fileIDStr,
       InputStream inputStream,
-      MongoDatabase db) {
+      MongoDatabase db,
+      EncryptionController encryptionController)
+      throws IOException, GeneralSecurityException {
     ObjectId fileID = new ObjectId(fileIDStr);
     GridFSBucket gridBucket = GridFSBuckets.create(db, PDFType.FORM.toString());
     GridFSFile grid_out = gridBucket.find(eq("_id", fileID)).first();
-
+    inputStream = encryptionController.encryptFile(inputStream, uploader);
     if (grid_out == null || grid_out.getMetadata() == null) {
       return PdfMessage.NO_SUCH_FILE;
     }

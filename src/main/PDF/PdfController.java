@@ -4,6 +4,7 @@ import Config.Message;
 import Database.User.UserDao;
 import Logger.LogFactory;
 import PDF.Services.*;
+import Security.EncryptionController;
 import User.User;
 import User.UserMessage;
 import User.UserType;
@@ -26,18 +27,26 @@ public class PdfController {
   private MongoDatabase db;
   private UserDao userDao;
   private Logger logger;
+  private EncryptionController encryptionController;
 
   public PdfController(MongoDatabase db, UserDao userDao) {
     this.db = db;
     this.userDao = userDao;
     LogFactory l = new LogFactory();
     this.logger = l.createLogger("PdfController");
+    try {
+      this.encryptionController = new EncryptionController(db);
+    } catch (Exception e) {
+
+    }
   }
 
   /*
   REQUIRES JSON Body with:
     - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
     - "fileId": String giving id of file to be deleted
+    - OPTIONAL- "targetUser": User whose file you want to access.
+        - If left empty, defaults to original username.
   */
   public Handler pdfDelete =
       ctx -> {
@@ -82,6 +91,8 @@ public class PdfController {
   REQUIRES JSON Body:
     - "pdfType": String giving PDF Type ("FORM", "APPLICATION", "IDENTIFICATION")
     - "fileId": String giving id of file to be downloaded
+    - OPTIONAL- "targetUser": User whose file you want to access.
+        - If left empty, defaults to original username.
   */
   public Handler pdfDownload =
       ctx -> {
@@ -115,7 +126,15 @@ public class PdfController {
             String pdfTypeString = req.getString("pdfType");
             PDFType pdfType = PDFType.createFromString(pdfTypeString);
             DownloadPDFService downloadPDFService =
-                new DownloadPDFService(db, logger, username, orgName, userType, fileIDStr, pdfType);
+                new DownloadPDFService(
+                    db,
+                    logger,
+                    username,
+                    orgName,
+                    userType,
+                    fileIDStr,
+                    pdfType,
+                    encryptionController);
             Message response = downloadPDFService.executeAndGetResponse();
             if (response == PdfMessage.SUCCESS) {
               ctx.header("Content-Type", "application/pdf");
@@ -288,7 +307,8 @@ public class PdfController {
                       file.getFilename(),
                       title,
                       file.getContentType(),
-                      file.getContent());
+                      file.getContent(),
+                      encryptionController);
               response = uploadService.executeAndGetResponse();
             }
           } else {
@@ -321,7 +341,8 @@ public class PdfController {
                 fileIDStr,
                 file.getFilename(),
                 file.getContentType(),
-                file.getContent());
+                file.getContent(),
+                encryptionController);
         ctx.result(uploadService.executeAndGetResponse().toResponseString());
       };
 
@@ -353,7 +374,8 @@ public class PdfController {
                 file.getFilename(),
                 file.getContentType(),
                 file.getContent(),
-                signature.getContent());
+                signature.getContent(),
+                encryptionController);
         ctx.result(uploadService.executeAndGetResponse().toResponseString());
       };
 
@@ -376,7 +398,8 @@ public class PdfController {
                 organizationName,
                 privilegeLevel,
                 applicationId,
-                PDFType.FORM);
+                PDFType.FORM,
+                encryptionController);
         Message responseDownload = downloadPDFService.executeAndGetResponse();
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
@@ -421,7 +444,8 @@ public class PdfController {
                 organizationName,
                 privilegeLevel,
                 applicationId,
-                PDFType.FORM);
+                PDFType.FORM,
+                encryptionController);
         Message responseDownload = downloadPDFService.executeAndGetResponse();
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
