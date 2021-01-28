@@ -72,8 +72,7 @@ class WorkerLanding extends Component<Props, State> {
     this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getClients = this.getClients.bind(this);
     this.handleChangeClientPassword = this.handleChangeClientPassword.bind(this);
-    this.handleClickUploadDocuments = this.handleClickUploadDocuments.bind(this);
-    this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
+    this.handleClickManageDocuments = this.handleClickManageDocuments.bind(this);
     this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication = this.handleClickSendApplication.bind(this);
     this.handleClickAuthenticateClient = this.handleClickAuthenticateClient.bind(this);
@@ -176,15 +175,7 @@ class WorkerLanding extends Component<Props, State> {
       });
   }
 
-  handleClickUploadDocuments(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/upload-document',
-      showClientAuthModal: true,
-    });
-  }
-
-  handleClickViewDocuments(event: any, client: any) {
+  handleClickManageDocuments(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/my-documents',
@@ -259,16 +250,9 @@ class WorkerLanding extends Component<Props, State> {
               <button
                 type="button"
                 className="btn btn-success mb-2 btn-sm"
-                onClick={(event) => this.handleClickUploadDocuments(event, client)}
+                onClick={(event) => this.handleClickManageDocuments(event, client)}
               >
-                Upload Document
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger mb-2 btn-sm"
-                onClick={(event) => this.handleClickViewDocuments(event, client)}
-              >
-                View Documents
+                Manage Documents
               </button>
               {/* <button
                 type="button"
@@ -356,10 +340,12 @@ class WorkerLanding extends Component<Props, State> {
     } = this.state;
     const itemsPerPage = Number(itemsPerPageSelected.value);
 
-    if (clientCredentialsCorrect && redirectLink === '/upload-document') {
+    if (clientCredentialsCorrect && redirectLink !== '') {
+      console.log(clientUsername);
+      console.log(redirectLink);
       return (
         <Redirect to={{
-          pathname: '/upload-document',
+          pathname: redirectLink,
           state: { clientUsername },
         }}
         />

@@ -19,6 +19,7 @@ interface Props {
   alert: any,
   userRole: Role,
   username: string,
+  location: any,
 }
 
 interface State {
@@ -112,14 +113,20 @@ class MyDocuments extends Component<Props, State> {
     } else {
       pdfType = undefined;
     }
-
+    const body: any = {
+      pdfType,
+    };
+    const clientUsername = this.getTargetUser();
+    console.log('clientUsername');
+    console.log(clientUsername);
+    if (clientUsername !== null) {
+      body.targetUser = clientUsername;
+      body.pdfType = PDFType.IDENTIFICATION;
+    }
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        fileId: documentId,
-        pdfType,
-      }),
+      body: JSON.stringify(body),
     }).then((response) => response.blob())
       .then((response) => {
         const url = window.URL.createObjectURL(response);
@@ -158,14 +165,20 @@ class MyDocuments extends Component<Props, State> {
     } else {
       pdfType = undefined;
     }
-
+    const body: any = {
+      pdfType,
+    };
+    const clientUsername = this.getTargetUser();
+    console.log('clientUsername');
+    console.log(clientUsername);
+    if (clientUsername !== null) {
+      body.targetUser = clientUsername;
+      body.pdfType = PDFType.IDENTIFICATION;
+    }
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        fileId: documentId,
-        pdfType,
-      }),
+      body: JSON.stringify(body),
     }).then((response) => response.blob())
       .then((response) => {
         const pdfFile = new File([response], documentName, { type: 'application/pdf' });
@@ -193,6 +206,7 @@ class MyDocuments extends Component<Props, State> {
     this.onViewDocument = this.onViewDocument.bind(this);
     this.deleteDocument = this.deleteDocument.bind(this);
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
+    this.getTargetUser = this.getTargetUser.bind(this);
   }
 
   componentDidMount() {
@@ -226,18 +240,34 @@ class MyDocuments extends Component<Props, State> {
     } else {
       pdfType = undefined;
     }
-
+    const body: any = {
+      pdfType,
+    };
+    const clientUsername = this.getTargetUser();
+    console.log('clientUsername');
+    console.log(clientUsername);
+    if (clientUsername !== null) {
+      body.targetUser = clientUsername;
+      body.pdfType = PDFType.IDENTIFICATION;
+    }
     fetch(`${getServerURL()}/delete-document/`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        fileId: documentId,
-        pdfType,
-      }),
+      body: JSON.stringify(body),
     }).then((response) => response.json())
       .then((_responseJSON) => {
         this.getDocumentData();
       });
+  }
+
+  getTargetUser() {
+    const {
+      location,
+    } = this.props;
+    if (location.state !== undefined && location.state.clientUsername !== undefined) {
+      return location.state.clientUsername;
+    }
+    return null;
   }
 
   getDocumentData() {
@@ -252,14 +282,26 @@ class MyDocuments extends Component<Props, State> {
     } else {
       pdfType = undefined;
     }
+    const body: any = {
+      pdfType,
+    };
+    const clientUsername = this.getTargetUser();
+    console.log('clientUsername');
+    console.log(clientUsername);
+    if (clientUsername !== null) {
+      body.targetUser = clientUsername;
+      body.pdfType = PDFType.IDENTIFICATION;
+    }
+    console.log('body');
+    console.log(body);
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        pdfType,
-      }),
+      body: JSON.stringify(body),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        console.log('responseJSON');
+        console.log(responseJSON);
         const {
           documents,
         } = responseJSON;
@@ -297,30 +339,28 @@ class MyDocuments extends Component<Props, State> {
   )
 
   submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
     this.setState({ buttonState: 'running' });
     event.preventDefault();
     const {
       pdfFiles,
     } = this.state;
-
     const {
       alert,
+      userRole,
     } = this.props;
-
     if (pdfFiles) {
       // upload each pdf file
       for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
+        const clientUsername = this.getTargetUser();
+        if (clientUsername !== null) {
+          formData.append('targetUser', clientUsername);
           formData.append('pdfType', PDFType.IDENTIFICATION);
-        }
-        if (userRole === Role.Director || userRole === Role.Admin) {
+        } else if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        } else if (userRole === Role.Director || userRole === Role.Admin) {
           formData.append('pdfType', PDFType.APPLICATION);
         }
         fetch(`${getServerURL()}/upload`, {
@@ -372,18 +412,16 @@ class MyDocuments extends Component<Props, State> {
 
   render() {
     const {
-      pdfFiles,
-      buttonState,
-    } = this.state;
-
-    const {
       userRole,
     } = this.props;
     const {
       currentDocumentId,
       currentDocumentName,
       documentData,
+      pdfFiles,
+      buttonState,
     } = this.state;
+    const clientUsername = this.getTargetUser();
     return (
       <Switch>
         <Route exact path="/my-documents">
@@ -393,10 +431,24 @@ class MyDocuments extends Component<Props, State> {
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <h1 className="display-4">View and Print Documents</h1>
-              <p className="lead pt-3">
-                You can view, edit, print, and delete your documents you currently have stored on Keep.id.
-              </p>
+              {
+                clientUsername !== ''
+                  ? (
+                    <h1 className="display-4">
+                      View and Print Documents for
+                      {' '}
+                      {clientUsername}
+                    </h1>
+                  )
+                  : (
+                    <div>
+                      <h1 className="display-4">View and Print Documents</h1>
+                      <p className="lead pt-3">
+                        You can view, edit, print, and delete your documents you currently have stored on Keep.id.
+                      </p>
+                    </div>
+                  )
+              }
             </div>
             <ul className="list-unstyled mt-5">
               {
