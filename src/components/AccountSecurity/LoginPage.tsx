@@ -30,10 +30,11 @@ interface Props {
   role: Role,
   alert: any
   autoLogout: boolean, // whether or not the user was logged out automatically
-  setAutoLogout: (boolean) => void // stop showing the logged out automatically banner once user navigates away from the page
+  setAutoLogout: (boolean) => void, // stop showing the logged out automatically banner once user navigates away from the page
+  useRecaptcha: boolean
 }
 
-class LoginPage extends Component<Props, State> {
+export class LoginPage extends Component<Props, State> {
   static enterKeyPressed(event, funct) {
     if (event.key === 'Enter') {
       funct();
@@ -66,10 +67,14 @@ class LoginPage extends Component<Props, State> {
   // RECAPTCHA CODE
   onSubmitWithReCAPTCHA = async (e) => {
     e.preventDefault();
-    if (recaptchaRef !== null && recaptchaRef.current !== null) {
-      // @ts-ignore
-      const recaptchaPayload = await recaptchaRef.current.executeAsync();
-      this.setState({ recaptchaPayload }, this.handleLogin);
+    if (this.props.useRecaptcha) {
+      if (recaptchaRef !== null && recaptchaRef.current !== null) {
+        // @ts-ignore
+        const recaptchaPayload = await recaptchaRef.current.executeAsync();
+        this.setState({ recaptchaPayload }, this.handleLogin);
+      }
+    } else {
+      this.handleLogin();
     }
   }
 
@@ -223,7 +228,8 @@ class LoginPage extends Component<Props, State> {
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           }
-        }).catch(() => {
+        }).catch((e) => {
+          console.error(e);
           const { alert } = this.props;
           alert.show('Network Failure: Check Server Connection.');
           this.setState({ buttonState: '' });
