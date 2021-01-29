@@ -67,10 +67,10 @@ public class GetMembersService implements Service {
     if (searchValue.trim().isBlank()) {
       return UserMessage.USER_NOT_FOUND;
     }
-    if (!typeMatch(privilegeLevel, listType)) {
+    if (!userHasPermissionToAccess(privilegeLevel)) {
       return UserMessage.INSUFFICIENT_PRIVILEGE;
     }
-    List<User> allUsers = userDao.getAll();
+    List<User> allUsers = userDao.getAllFromOrg(orgName);
 
     JSONArray userList = new JSONArray();
 
@@ -125,13 +125,17 @@ public class GetMembersService implements Service {
     return 0;
   }
 
+  private boolean userHasPermissionToAccess(UserType userType) {
+    return userType != UserType.Client;
+  }
+
   private boolean typeMatch(UserType userType, ListType listType) {
     if (listType == ListType.CLIENTS) {
-      return userType == UserType.Worker
-          || userType == UserType.Admin
-          || userType == UserType.Director;
-    } else if (listType == ListType.MEMBERS) {
       return userType == UserType.Client;
+    } else if (listType == ListType.MEMBERS) {
+      return userType == UserType.Admin
+          || userType == UserType.Director
+          || userType == UserType.Worker;
     } else {
       return false;
     }
