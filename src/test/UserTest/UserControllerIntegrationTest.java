@@ -71,6 +71,43 @@ public class UserControllerIntegrationTest {
   }
 
   @Test
+  public void noUsernameInRequestUsesCtxUsername() {
+    TestUtils.login("adminBSM", "adminBSM");
+    JSONObject body = new JSONObject();
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-user-info").body(body.toString()).asString();
+    JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
+    assertThat(actualResponseJson.get("city").toString()).isEqualTo("Philadelphia");
+    assertThat(actualResponseJson.get("firstName").toString()).isEqualTo("Mike");
+    assertThat(actualResponseJson.get("lastName").toString()).isEqualTo("Dahl");
+    assertThat(actualResponseJson.get("zipcode").toString()).isEqualTo("19104");
+    assertThat(actualResponseJson.get("phone").toString()).isEqualTo("1234567890");
+    assertThat(actualResponseJson.get("address").toString()).isEqualTo("311 Broad Street");
+    assertThat(actualResponseJson.get("birthDate").toString()).isEqualTo("06-16-1960");
+    assertThat(actualResponseJson.get("email").toString())
+        .isEqualTo("mikedahl@broadstreetministry.org");
+  }
+
+  @Test
+  public void noBodyUsesCtxUsername() {
+    TestUtils.login("adminBSM", "adminBSM");
+
+    HttpResponse<String> actualResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/get-user-info").asString();
+    JSONObject actualResponseJson = TestUtils.responseStringToJSON(actualResponse.getBody());
+    assertThat(actualResponseJson.get("city").toString()).isEqualTo("Philadelphia");
+    assertThat(actualResponseJson.get("firstName").toString()).isEqualTo("Mike");
+    assertThat(actualResponseJson.get("lastName").toString()).isEqualTo("Dahl");
+    assertThat(actualResponseJson.get("zipcode").toString()).isEqualTo("19104");
+    assertThat(actualResponseJson.get("phone").toString()).isEqualTo("1234567890");
+    assertThat(actualResponseJson.get("address").toString()).isEqualTo("311 Broad Street");
+    assertThat(actualResponseJson.get("birthDate").toString()).isEqualTo("06-16-1960");
+    assertThat(actualResponseJson.get("email").toString())
+        .isEqualTo("mikedahl@broadstreetministry.org");
+  }
+
+  @Test
   public void testGetMembersEncryption() {
     TestUtils.login("adminBSM", "adminBSM");
     JSONObject body = new JSONObject();
@@ -178,8 +215,6 @@ public class UserControllerIntegrationTest {
 
     JSONObject body = new JSONObject();
     body.put("name", "Worker Tff");
-    body.put("orgName", "Test Org");
-    body.put("privilegeLevel", "Admin");
     body.put("listType", "clients");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
@@ -193,7 +228,7 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assert (actualResponseJSON.has("numPeople"));
-    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(17);
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(2);
     assert (actualResponseJSON.has("people"));
   }
 
@@ -203,9 +238,7 @@ public class UserControllerIntegrationTest {
 
     JSONObject body = new JSONObject();
     body.put("name", "Worker Tff");
-    body.put("orgName", "Test Org");
-    body.put("privilegeLevel", "Admin");
-    body.put("listType", "clients");
+    body.put("listType", "members");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
 
@@ -218,7 +251,7 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assert (actualResponseJSON.has("numPeople"));
-    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(17);
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(7);
     assert (actualResponseJSON.has("people"));
   }
 }

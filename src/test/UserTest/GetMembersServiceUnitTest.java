@@ -50,7 +50,7 @@ public class GetMembersServiceUnitTest {
               false,
               "testUsername",
               "testPassword",
-              UserType.Worker);
+              UserType.Client);
       user2 =
           new User(
               "Testfirssttwo",
@@ -66,7 +66,7 @@ public class GetMembersServiceUnitTest {
               false,
               "testUsername",
               "testPassword",
-              UserType.Worker);
+              UserType.Client);
     } catch (ValidationException ve) {
       logger.error("Validation exception");
     }
@@ -92,9 +92,10 @@ public class GetMembersServiceUnitTest {
   public void happyPath() {
 
     getMembersService =
-        new GetMembersService(userDao, logger, "Firstname", "", UserType.Admin, "CLIENTS", 1, 10);
+        new GetMembersService(
+            userDao, logger, "Firstname", "test", UserType.Admin, "CLIENTS", 1, 10);
 
-    when(userDao.getAll()).thenReturn(users);
+    when(userDao.getAllFromOrg("test")).thenReturn(users);
 
     Message result = getMembersService.executeAndGetResponse();
 
@@ -113,9 +114,9 @@ public class GetMembersServiceUnitTest {
 
     getMembersService =
         new GetMembersService(
-            userDao, logger, "Testfirssttwo", "", UserType.Admin, "CLIENTS", 1, 10);
+            userDao, logger, "Testfirssttwo", "test", UserType.Admin, "CLIENTS", 1, 10);
 
-    when(userDao.getAll()).thenReturn(users);
+    when(userDao.getAllFromOrg("test")).thenReturn(users);
 
     Message result = getMembersService.executeAndGetResponse();
 
