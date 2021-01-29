@@ -23,8 +23,6 @@ public class GetMembersService implements Service {
   private String searchValue;
   private ListType listType;
   private JSONArray people;
-  private int startIndex;
-  private int endIndex;
   private JSONArray peoplePage;
   private int numReturnedElements;
 
@@ -36,17 +34,13 @@ public class GetMembersService implements Service {
       String searchValue,
       String orgName,
       UserType privilegeLevel,
-      String listType,
-      int currentPage,
-      int itemsPerPage) {
+      String listType) {
     this.userDao = userDao;
     this.logger = logger;
     this.searchValue = searchValue;
     this.orgName = orgName;
     this.privilegeLevel = privilegeLevel;
     this.listType = ListType.valueOf(listType);
-    this.startIndex = currentPage * itemsPerPage;
-    this.endIndex = (currentPage + 1) * itemsPerPage;
   }
 
   public enum ListType {
@@ -99,19 +93,6 @@ public class GetMembersService implements Service {
   public JSONArray getPeoplePage() {
     Objects.requireNonNull(peoplePage);
     return peoplePage;
-  }
-
-  private static JSONArray getPage(JSONArray elements, int pageStartIndex, int pageEndIndex) {
-    JSONArray page = new JSONArray();
-    if (elements.length() > pageStartIndex && pageStartIndex >= 0) {
-      if (pageEndIndex > elements.length()) {
-        pageEndIndex = elements.length();
-      }
-      for (int i = pageStartIndex; i < pageEndIndex; i++) {
-        page.put(elements.get(i));
-      }
-    }
-    return page;
   }
 
   // Return 1 if added to list to keep total below threshold
