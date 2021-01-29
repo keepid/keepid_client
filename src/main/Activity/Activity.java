@@ -40,23 +40,26 @@ public class Activity {
     return type;
   }
 
-  public void setType(List<String> type) {
+  public Activity setType(List<String> type) {
     this.type = type;
+    return this;
   }
 
   public LocalDateTime getOccurredAt() {
     return occurredAt;
   }
 
-  public void setOccurredAt(LocalDateTime occurredAt) {
+  public Activity setOccurredAt(LocalDateTime occurredAt) {
     this.occurredAt = occurredAt;
+    return this;
   }
 
   public User getOwner() {
     return owner;
   }
 
-  public void setOwner(User owner) {
+  public Activity setOwner(User owner) {
     this.owner = owner;
+    return this;
   }
 }
