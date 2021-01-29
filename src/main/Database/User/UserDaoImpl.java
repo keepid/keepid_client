@@ -41,6 +41,11 @@ public class UserDaoImpl implements UserDao {
   }
 
   @Override
+  public List<User> getAllFromOrg(String orgName) {
+    return userCollection.find(eq("organization", orgName)).into(new ArrayList<>());
+  }
+
+  @Override
   public int size() {
     return (int) userCollection.countDocuments();
   }

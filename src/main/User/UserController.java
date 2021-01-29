@@ -173,8 +173,14 @@ public class UserController {
   public Handler getUserInfo =
       ctx -> {
         logger.info("Started getUserInfo handler");
-        JSONObject req = new JSONObject(ctx.body());
-        String username = req.getString("username");
+        String username;
+        try {
+          JSONObject req = new JSONObject(ctx.body());
+          username = req.getString("username");
+        } catch (Exception e) {
+          logger.info("Username not passed in request, using ctx username");
+          username = ctx.sessionAttribute("username");
+        }
         GetUserInfoService infoService = new GetUserInfoService(userDao, logger, username);
         Message response = infoService.executeAndGetResponse();
         if (response != UserMessage.SUCCESS) { // if fail return
