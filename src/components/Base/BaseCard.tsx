@@ -67,7 +67,15 @@ function BaseCard(props: Props): React.ReactElement {
       borderBottomRightRadius = cardBorderRadius;
     }
     return (
-      <Card className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`} style={{ height: cardHeight, width: cardWidth, borderRadius: cardBorderRadius }}>
+      <Card
+        className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`}
+        style={{
+          height: cardHeight,
+          width: 'auto',
+          borderRadius: cardBorderRadius,
+          maxWidth: cardWidth,
+        }}
+      >
         { imageLoc === 'left' || imageLoc === 'right'
           ? (
             <Card.Body className="p-0 d-flex flex-row">
@@ -77,7 +85,9 @@ function BaseCard(props: Props): React.ReactElement {
                 alt={imageAlt}
                 style={{
                   height: '100%',
-                  width: imageSize,
+                  width: 'auto',
+                  maxWidth: imageSize,
+                  overflow: 'hidden',
                   objectFit,
                   borderTopLeftRadius,
                   borderTopRightRadius,
@@ -120,6 +130,7 @@ function BaseCard(props: Props): React.ReactElement {
                     style={{
                       height: imageSize,
                       width: '100%',
+                      overflow: 'hidden',
                       objectFit,
                       borderTopLeftRadius: cardBorderRadius,
                       borderTopRightRadius: cardBorderRadius,
