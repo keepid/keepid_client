@@ -202,7 +202,6 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String listType = req.getString("listType").toUpperCase();
-        ;
 
         GetMembersService getMembersService =
             new GetMembersService(userDao, logger, searchValue, orgName, privilegeLevel, listType);
