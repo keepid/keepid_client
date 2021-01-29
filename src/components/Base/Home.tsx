@@ -1,3 +1,4 @@
+/* eslint-disable react/prefer-stateless-function */
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -17,8 +18,8 @@ import Access from '../../static/images/access-data.svg';
 import FileCloud from '../../static/images/file-cloud.svg';
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
-import HomepageGraphic from '../../static/images/homepage_graphic.svg';
-import RectangleSVG from '../static/images/rectangle.svg';
+import HomepageGraphic from '../../static/images/homePage/hero_graphic.svg';
+import RectangleSVG from '../../static/images/rectangle.svg';
 
 class Home extends Component<{}, {}, {}> {
   render() {

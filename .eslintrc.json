@@ -1,7 +1,8 @@
 {
     "env": {
         "browser": true,
-        "es6": true
+        "es6": true,
+        "jest": true
     },
     "extends": [
         "airbnb"
@@ -27,7 +28,8 @@
         "import/extensions": "off",
         "react/jsx-filename-extension": "off",
         "no-alert": 1,
-        "no-unused-vars": 1,
+        "no-unused-vars":"off",
+        "@typescript-eslint/no-unused-vars":1,
         "import/no-duplicates": 1,
         "import/no-unresolved": "off",
         "max-len": "off",
