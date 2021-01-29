@@ -39,6 +39,8 @@ session-store/*
 
 keepid-google-kms.json
 test_encryption_key.json
+google-credentials.json
+key.json
 
 # don't track the keys property file
 secretkeys.properties

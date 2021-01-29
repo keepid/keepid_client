@@ -202,19 +202,10 @@ public class UserController {
         String orgName = ctx.sessionAttribute("orgName");
         UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
         String listType = req.getString("listType").toUpperCase();
-        int currentPage = req.getInt("currentPage");
-        int itemsPerPage = req.getInt("itemsPerPage");
+        ;
 
         GetMembersService getMembersService =
-            new GetMembersService(
-                userDao,
-                logger,
-                searchValue,
-                orgName,
-                privilegeLevel,
-                listType,
-                currentPage,
-                itemsPerPage);
+            new GetMembersService(userDao, logger, searchValue, orgName, privilegeLevel, listType);
         Message message = getMembersService.executeAndGetResponse();
         if (message == UserMessage.SUCCESS) {
           res.put("people", getMembersService.getPeoplePage());

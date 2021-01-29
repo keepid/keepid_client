@@ -4,6 +4,7 @@ import Config.AppConfig;
 import Config.DeploymentLevel;
 import Config.MongoConfig;
 import Organization.Organization;
+import Security.EncryptionTools;
 import Security.EncryptionUtils;
 import Security.GoogleCredentials;
 import Security.Tokens;
@@ -52,6 +53,12 @@ public class TestUtils {
         // GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
         MongoConfig.getMongoClient();
         MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
+        try {
+          EncryptionTools encryptionTools = new EncryptionTools(db);
+          encryptionTools.generateAndUploadKeySet();
+        } catch (Exception e) {
+
+        }
         EncryptionUtils.initialize();
         encryptionUtils = EncryptionUtils.getInstance();
       } catch (Exception e) {
@@ -78,11 +85,7 @@ public class TestUtils {
   public static void setUpTestDB() {
     // If there are entries in the database, they should be cleared before more are added.
     MongoDatabase testDB = MongoConfig.getDatabase(DeploymentLevel.TEST);
-    //    try {
-    //      GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
-    //    } catch (GeneralSecurityException | IOException | ParseException e) {
-    //      e.printStackTrace();
-    //    }
+
     try {
       /* *********************** Broad Street Ministry ************************ */
       Organization broadStreetMinistry =
@@ -662,9 +665,6 @@ public class TestUtils {
               passwordResetTest,
               logInHistoryTest);
       // Need to encrypt users before upload
-      for (User user : users) {
-        encryptionUtils.encryptUser(user, user.getUsername());
-      }
       MongoCollection<User> userCollection = testDB.getCollection("user", User.class);
       userCollection.insertMany(
           Arrays.asList(

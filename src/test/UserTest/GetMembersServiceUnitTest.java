@@ -78,7 +78,7 @@ public class GetMembersServiceUnitTest {
   public void insufficientPrivileges() {
 
     getMembersService =
-        new GetMembersService(userDao, logger, "Firstname", "", UserType.Client, "CLIENTS", 1, 10);
+        new GetMembersService(userDao, logger, "Firstname", "", UserType.Client, "CLIENTS");
 
     when(userDao.getAll()).thenReturn(users);
 
@@ -92,8 +92,7 @@ public class GetMembersServiceUnitTest {
   public void happyPath() {
 
     getMembersService =
-        new GetMembersService(
-            userDao, logger, "Firstname", "test", UserType.Admin, "CLIENTS", 1, 10);
+        new GetMembersService(userDao, logger, "Firstname", "test", UserType.Admin, "CLIENTS");
 
     when(userDao.getAllFromOrg("test")).thenReturn(users);
 
@@ -113,8 +112,7 @@ public class GetMembersServiceUnitTest {
   public void happyPathSearchUser2First() {
 
     getMembersService =
-        new GetMembersService(
-            userDao, logger, "Testfirssttwo", "test", UserType.Admin, "CLIENTS", 1, 10);
+        new GetMembersService(userDao, logger, "Testfirssttwo", "test", UserType.Admin, "CLIENTS");
 
     when(userDao.getAllFromOrg("test")).thenReturn(users);
 
