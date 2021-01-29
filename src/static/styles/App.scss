@@ -59,12 +59,12 @@ body {
 	margin-bottom: 0;
 	padding-top: 0;
 	padding-bottom: 0;
+	color: $primary-theme !important;
 }
 
 .navbar-custom {
-	background: rgb(123, 150, 255);
-	background: linear-gradient(35deg, rgba(123, 150, 255, 1) 0%, rgba(123, 129, 255, 1) 45%, rgba(154, 100, 255, 1) 100%);
-	color: white
+	background: white;
+	color: $secondary-theme;
 }
 
 .bg-gray {
@@ -156,7 +156,7 @@ body {
 
 .btn-secondary {
 	color: #000000;
-	background-color: $secondary-theme;
+	background-color: white;
 	border-color: $secondary-theme;
 }
 
@@ -461,8 +461,8 @@ thead {
 	height: 8.75rem;
 }
 
-.navbar-dark .navbar-nav .nav-link {
-	color: white;
+.navbar-light .navbar-nav .nav-link {
+	font-size: 1rem;
 }
 
 @media screen and (max-width: 48.125rem) {
@@ -649,4 +649,12 @@ div.scrollbar {
 .row {
 	margin-left: 0rem;
 	margin-right: 0rem;
+}
+
+.partial-background {
+	z-index: 0;
+	min-height: 5rem;
+	height: inherit;
+	position: absolute;
+	min-width: #{"min(100vw, 31.25rem)"};
 }

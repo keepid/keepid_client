@@ -42,11 +42,8 @@ class Home extends Component<{}, {}, {}> {
                   for those experiencing homelessness
                 </p>
                 <Link to="/signup-branch">
-                  <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">Get Started</button>
+                  <button type="button" className="btn btn-primary btn-lg w-40 mr-2 mb-2">Get Started</button>
                 </Link>
-                <AnchorLink offset="100" href="#info">
-                  <button type="button" className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">Learn More</button>
-                </AnchorLink>
               </div>
             </div>
             <div className="col-md-5 px-5 custom-vertical-center">
@@ -68,16 +65,22 @@ class Home extends Component<{}, {}, {}> {
                   alt="rectangle"
                 />
                 <h3 className="hero-subtext text-grey pb-3">
-                  Lacking formal identification is a prevalent issue among
-                  homeless individuals that bars them from accessing many basic
-                  social and financial services in the United States.
+                  People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.
                 </h3>
-                <h3 className="hero-subtext text-black font-weight-medium">
-                  We are dedicated to empowering those who are experiencing
-                  homelessness to obtain, secure, and utilize identification.
+                <h3 className="hero-subtext text-black font-weight-medium pb-3">
+                  Keep.id seeks to help by providing a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, with low technological literacy needed.
                 </h3>
+                <AnchorLink offset="100" href="#info">
+                  <button type="button" className="btn btn-outline-secondary btn-lg w-40">Learn More</button>
+                </AnchorLink>
               </div>
             </div>
+          </div>
+        </div>
+        <div>
+          <div className="bg-primary w-sm-100 w-md-75 partial-background" />
+          <div className="container">
+            Focusing on People
           </div>
         </div>
         <div className="container mt-4 mb-4 pt-5 pb-5">

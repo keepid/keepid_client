@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withAlert } from 'react-alert';
-import Logo from '../../static/images/logo.svg';
+import Logo from '../../static/images/logo-purple.svg';
 import Role from '../../static/Role';
 import Logout from './Logout';
 
@@ -31,7 +31,7 @@ class Header extends Component<Props, State, {}> {
     } = this.props;
     if (isLoggedIn) {
       return (
-        <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
+        <nav className="navbar navbar-expand-lg navbar-light sticky-top navbar-custom">
           <div className="container">
             <Link className="pr-3" to="/home">
               <img
@@ -80,7 +80,7 @@ class Header extends Component<Props, State, {}> {
       );
     }
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
+      <nav className="navbar navbar-expand-lg navbar-light sticky-top navbar-custom">
         <div className="container">
           <Link className="pr-3" to="/home">
             <img
