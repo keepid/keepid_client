@@ -13,6 +13,8 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DragAndDrop from './DragAndDrop';
+import uploadIcon from '../../static/images/uploadIcon.svg';
+import cancel from '../../static/images/cancel.svg';
 
 const { SearchBar } = Search;
 
@@ -28,6 +30,7 @@ interface State {
   currentDocumentId: string | undefined,
   currentDocumentName: string | undefined,
   documentData: any,
+  showUploadComponent:boolean,
 }
 
 interface PDFProps {
@@ -79,6 +82,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentId: undefined,
       currentDocumentName: undefined,
       documentData: [],
+      showUploadComponent: false,
     };
     this.getDocumentData = this.getDocumentData.bind(this);
     this.onViewDocument = this.onViewDocument.bind(this);
@@ -156,6 +160,12 @@ class MyDocuments extends Component<Props, State> {
 
     </div>
   )
+
+  showDragNDropBox = () => (
+    <div>
+      <DragAndDrop />
+    </div>
+  );
 
   handleChangeFileUpload(event: any) {
     event.preventDefault();
@@ -388,6 +398,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentId,
       currentDocumentName,
       documentData,
+      showUploadComponent,
     } = this.state;
     return (
       <Switch>
@@ -408,7 +419,37 @@ class MyDocuments extends Component<Props, State> {
                 pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile) => <RenderPDF key={uuid()} pdfFile={pdfFile} />) : null
               }
             </ul>
-
+            {showUploadComponent
+              ? (
+                <div className="d-flex flex-column pb-4" style={{ border: '2 red' }}>
+                  <div className="d-flex flex-row">
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        height: 50,
+                        width: 50,
+                      }}
+                      type="button"
+                      className="btn-close ml-auto"
+                      aria-label="Close"
+                      onClick={() => this.setState({ showUploadComponent: false })}
+                    >
+                      <img
+                        alt="close upload file"
+                        src={cancel}
+                        width="25"
+                        height="25"
+                        className=""
+                      />
+                    </button>
+                  </div>
+                  <h3 className="mx-auto">
+                    UploadFile
+                  </h3>
+                  <DragAndDrop alert={this.props.alert} userRole={this.props.userRole} username={this.props.username} className="border border-danger" />
+                </div>
+              ) : null }
             <div className="d-flex flex-row mb-3">
               <div className="w-100 pd-3">
                 <ToolkitProvider
@@ -427,16 +468,22 @@ class MyDocuments extends Component<Props, State> {
                           <div className="ml-auto">
                             <form onSubmit={this.submitForm}>
                               <div className="form-row">
-                                <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget">
-                                  { pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Upload File' }
-                                  <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
-                                </label>
-                                { pdfFiles && pdfFiles.length > 0 ? (
-                                  <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-                                    Upload
-                                    <div className="ld ld-ring ld-spin" />
-                                  </button>
-                                ) : null}
+                                {/* was label tag with this attribute before : htmlFor="potentialPdf" */}
+                                { showUploadComponent
+                                  ? null
+                                  : (
+                                    <button type="button" className="btn btn-primary pr-3" onClick={() => this.setState({ showUploadComponent: true })}>
+                                      <img
+                                        alt="upload icon"
+                                        src={uploadIcon}
+                                        width="22"
+                                        height="22"
+                                        className="mr-1 mb-1"
+                                      />
+                                      Upload File
+                                      <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={this.handleChangeFileUpload} hidden />
+                                    </button>
+                                  )}
                               </div>
                             </form>
                           </div>
