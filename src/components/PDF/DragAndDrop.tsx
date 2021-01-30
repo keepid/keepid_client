@@ -2,8 +2,13 @@
 // @ts-nocheck
 import React, { useRef, useState, useEffect } from 'react';
 import './DragAndDrop.css';
+import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
+import PDFType from '../../static/PDFType';
+import axios from 'axios';
+import file2 from '../../static/images/file2.svg';
 
-const DragAndDrop = () => {
+const DragAndDrop = (props) => {
   const fileInputRef = useRef();
   const modalImageRef = useRef();
   const modalRef = useRef();
@@ -14,6 +19,8 @@ const DragAndDrop = () => {
   const [validFiles, setValidFiles] = useState([]);
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [buttonState] = useState('');
+  const [pdfFiles] = useState(FileList | undefined,);
 
   useEffect(() => {
     let filteredArr = selectedFiles.reduce((acc, current) => {
@@ -55,31 +62,33 @@ const fileDrop = (e) => {
 
 const filesSelected = () => {
     if (fileInputRef) {
-				//const length = fileInputRef?.current?.files.length
-        //handleFiles(fileInputRef?.current?.files);
+		const length = fileInputRef?.current?.files.length
+        handleFiles(fileInputRef?.current?.files);
     }
 }
 
 const fileInputClicked = () => {
-    //fileInputRef.current.click();
+    fileInputRef.current.click();
 }
 
 const handleFiles = (files) => {
     for(let i = 0; i < files.length; i++) {
         if (validateFile(files[i])) {
-            //setSelectedFiles(prevArray => [...prevArray, files[i]]);
+            setSelectedFiles(prevArray => [...prevArray, files[i]]);
         } else {
             files[i]['invalid'] = true;
-            //setSelectedFiles(prevArray => [...prevArray, files[i]]);
+            setSelectedFiles(prevArray => [...prevArray, files[i]]);
             setErrorMessage('File type not permitted');
-            //setUnsupportedFiles(prevArray => [...prevArray, files[i]]);
+            setUnsupportedFiles(prevArray => [...prevArray, files[i]]);
         }
     }
 }
 
 const validateFile = (file) => {
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/x-icon'];
+    const validTypes = ['application/pdf'];
     if (validTypes.indexOf(file.type) === -1) {
+        console.log(validTypes);
+        console.log(file.type)
         return false;
     }
 
@@ -116,48 +125,144 @@ const removeFile = (name) => {
 
 const openImageModal = (file) => {
     const reader = new FileReader();
-    //modalRef.current.style.display = "block";
+    modalRef.current.style.display = "block";
     reader.readAsDataURL(file);
     reader.onload = function(e) {
-        //modalImageRef.current.style.backgroundImage = `url(${e.target.result})`;
+        modalImageRef.current.style.backgroundImage = `url(${e.target.result})`;
     }
 }
 
 const closeModal = () => {
-    //modalRef.current.style.display = "none";
-    //modalImageRef.current.style.backgroundImage = 'none';
+    modalRef.current.style.display = "none";
+    modalImageRef.current.style.backgroundImage = 'none';
+}
+
+const submitForm = (event: any) => {
+    const {
+      userRole,
+    } = this.props;
+
+    this.setState({ buttonState: 'running' });
+    event.preventDefault();
+    const {
+      pdfFiles,
+    } = this.state;
+
+    const {
+      alert,
+    } = this.props;
+
+    if (pdfFiles) {
+      // upload each pdf file
+      for (let i = 0; i < pdfFiles.length; i += 1) {
+        const pdfFile = pdfFiles[i];
+        const formData = new FormData();
+        formData.append('file', pdfFile, pdfFile.name);
+        if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        }
+        if (userRole === Role.Director || userRole === Role.Admin) {
+          formData.append('pdfType', PDFType.APPLICATION);
+        }
+        fetch(`${getServerURL()}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        }).then((response) => response.json())
+          .then((responseJSON) => {
+            const {
+              status,
+            } = responseJSON;
+            if (status === 'SUCCESS') {
+              alert.show(`Successfully uploaded ${pdfFile.name}`);
+              this.setState({
+                buttonState: '',
+                pdfFiles: undefined,
+              }, () => this.getDocumentData());
+            } else {
+              alert.show(`Failure to upload ${pdfFile.name}`);
+              this.setState({ buttonState: '' });
+            }
+          });
+      }
+    } else {
+      alert.show('Please select a file');
+      this.setState({ buttonState: '' });
+    }
 }
 
 const uploadFiles = async () => {
-    //uploadModalRef.current.style.display = 'block';
-    //uploadRef.current.innerHTML = 'File(s) Uploading...';
+    uploadModalRef.current.style.display = 'block';
+    uploadRef.current.innerHTML = 'File(s) Uploading...';
+    const {
+      userRole,
+      alert,
+    } = props;
+
     for (let i = 0; i < validFiles.length; i++) {
+        const pdfFile = validFiles[i];
         const formData = new FormData();
-        formData.append('image', validFiles[i]);
-        formData.append('key', '');
+        formData.append('file', pdfFile, pdfFile.name);
+        if (userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        }
+        if (userRole === Role.Director || userRole === Role.Admin) {
+          formData.append('pdfType', PDFType.APPLICATION);
+        }
         /*
-        axios.post('https://api.imgbb.com/1/upload', formData, {
-            onUploadProgress: (progressEvent) => {
-                const uploadPercentage = Math.floor((progressEvent.loaded / progressEvent.total) * 100);
-                progressRef.current.innerHTML = `${uploadPercentage}%`;
-                progressRef.current.style.width = `${uploadPercentage}%`;
+        fetch(`${getServerURL()}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        }).then((response) => response.json())
+          .then((responseJSON) => {
+            const {
+              status,
+            } = responseJSON;
+            if (status === 'SUCCESS') {
+              alert.show(`Successfully uploaded ${pdfFile.name}`);
+              
+              this.setState({
+                buttonState: '',
+                pdfFiles: undefined,
+              }, () => this.getDocumentData());
+            } else {
+              alert.show(`Failure to upload ${pdfFile.name}`);
+              this.setState({ buttonState: '' });
+            }
+          });*/ 
+         
+        axios.post(`${getServerURL()}/upload`, formData, { withCredentials: true },{
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+        },{
+          onUploadProgress: (progressEvent) => {
+            const uploadPercentage = Math.floor((progressEvent.loaded / progressEvent.total) * 100);
+            progressRef.current.innerHTML = `${uploadPercentage}%`;
+            progressRef.current.style.width = `${uploadPercentage}%`;
 
-                if (uploadPercentage === 100) {
-                    uploadRef.current.innerHTML = 'File(s) Uploaded';
-                    validFiles.length = 0;
-                    setValidFiles([...validFiles]);
-                    setSelectedFiles([...validFiles]);
-                    setUnsupportedFiles([...validFiles]);
-                }
-            },
-        })
-
-        .catch(() => {
-            uploadRef.current.innerHTML = `<span class="error">Error Uploading File(s)</span>`;
-            progressRef.current.style.backgroundColor = 'red';
-        })*/
-    }
-}
+            if (uploadPercentage === 100) {
+                uploadRef.current.innerHTML = 'File(s) Uploaded';
+                validFiles.length = 0;
+                setValidFiles([...validFiles]);
+                setSelectedFiles([...validFiles]);
+                setUnsupportedFiles([...validFiles]);
+            }
+          }
+          }).then((response) => {
+              const {
+                status,
+              } = response.data;
+              console.log(status)
+              if (status === 'SUCCESS') {
+                props.alert.show(`Successfully uploaded ${pdfFile.name}`);
+              }
+              else {
+                props.alert.show(`Failure to upload ${pdfFile.name}`);
+              }
+          });
+}}
 
 const closeUploadModal = () => {
     uploadModalRef.current.style.display = 'none';
@@ -177,8 +282,21 @@ return (
                 onClick={fileInputClicked}
             >
                 <div className="drop-message">
-                    <div className="upload-icon"></div>
-                    Drag & Drop files here or click to select file(s)
+                    <div className="upload-file-icon">                                  
+                      <img
+                        alt="file icon"
+                        src={file2}
+                        width="42"
+                        height="42"
+                        className="mr-1 mb-1"
+                      />
+                    </div>
+                    Drag and drop or <span style={{color:"#445cec"}}>browse</span> your files
+                    <div style = {{fontSize:16}}>
+                      PDF files only
+                      <br />
+                      Supprts up to x MB
+                    </div>
                 </div>
                 <input
                     ref={fileInputRef}
@@ -224,4 +342,4 @@ return (
 );
 }
 
-export default DragAndDrop
+export default DragAndDrop;
