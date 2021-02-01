@@ -29,6 +29,7 @@ interface Props {
   imageAlt?: any,
   imageLoc?: CardImageLoc,
   imageSize?: string,
+  // string refers to how the image should be resized to fit its container: defaults to 'cover'; other values include: 'fill', 'contain', 'none' and 'scale-down'
   imageObjectFit?: string,
   buttonText?: string,
   buttonOnClick?: () => void,
