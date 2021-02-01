@@ -32,10 +32,10 @@ class ClientLanding extends Component<Props, {}, {}> {
         </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
-            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" buttonText="My Documents" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} objectFit="contain" buttonOnClick={() => (this.props.history.push('/my-documents'))} />
+            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" buttonText="My Documents" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (this.props.history.push('/my-documents'))} />
           </div>
           <div className="d-flex p-2" id="Applications container">
-            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" buttonText="My Applications" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} objectFit="contain" buttonOnClick={() => (this.props.history.push('/applications'))} />
+            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" buttonText="My Applications" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (this.props.history.push('/applications'))} />
           </div>
         </div>
       </div>
