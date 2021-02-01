@@ -7,6 +7,7 @@ import Role from '../../static/Role';
 import PDFType from '../../static/PDFType';
 import axios from 'axios';
 import file2 from '../../static/images/file2.svg';
+import cancel from '../../static/images/cancel.svg';
 
 const DragAndDrop = (props) => {
   const fileInputRef = useRef();
@@ -21,6 +22,8 @@ const DragAndDrop = (props) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [buttonState] = useState('');
   const [pdfFiles] = useState(FileList | undefined,);
+  const showUploadComponentProp = props.showUploadComponent;
+  const [showUploadComponent, setShowUploadComponent] = useState(showUploadComponentProp);
 
   useEffect(() => {
     let filteredArr = selectedFiles.reduce((acc, current) => {
@@ -268,9 +271,52 @@ const closeUploadModal = () => {
     uploadModalRef.current.style.display = 'none';
 }
 
+{/*        <div className="modal" ref={modalRef}>
+            <div className="overlay"></div>
+            <span className="close" onClick={(() => closeModal())}>X</span>
+            <div className="modal-image" ref={modalImageRef}></div>
+        </div>
+
+        <div className="upload-modal" ref={uploadModalRef}>
+            <div className="overlay"></div>
+            <div className="close" onClick={(() => closeUploadModal())}>X</div>
+            <div className="progress-container">
+                <span ref={uploadRef}></span>
+                <div className="progress">
+                    <div className="progress-bar" ref={progressRef}></div>
+                </div>
+            </div>
+        </div>*/}
 
 return (
-    <>
+  <div>
+  { showUploadComponent 
+    ? (<div className="p-5" style={{ borderStyle: 'none', boxShadow: '0px 0px 10px lightgray', borderColor:'red' }}>
+        <div className="d-flex flex-row">
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              height: 50,
+              width: 50,
+            }}
+            type="button"
+            className="btn-close ml-auto"
+            aria-label="Close"
+            onClick={() => setShowUploadComponent(false)}
+          >
+            <img
+              alt="close upload file"
+              src={cancel}
+              width="25"
+              height="25"
+              className=""
+            />
+          </button>
+        </div>
+        <h3 className="mx-auto">
+          Upload File
+        </h3>
         <div className="container-DragDrop">
             {unsupportedFiles.length === 0 && validFiles.length ? <button className="file-upload-btn" onClick={() => uploadFiles()}>Upload Files</button> : ''} 
             {unsupportedFiles.length ? <p className="red-text">Please remove all unsupported files.</p> : ''}
@@ -322,24 +368,8 @@ return (
                 }
             </div>
         </div>
-        <div className="modal" ref={modalRef}>
-            <div className="overlay"></div>
-            <span className="close" onClick={(() => closeModal())}>X</span>
-            <div className="modal-image" ref={modalImageRef}></div>
-        </div>
-
-        <div className="upload-modal" ref={uploadModalRef}>
-            <div className="overlay"></div>
-            <div className="close" onClick={(() => closeUploadModal())}>X</div>
-            <div className="progress-container">
-                <span ref={uploadRef}></span>
-                <div className="progress">
-                    <div className="progress-bar" ref={progressRef}></div>
-                </div>
-            </div>
-        </div>
-    </>
-);
+    </div> ): null } </div>
+  );
 }
 
 export default DragAndDrop;

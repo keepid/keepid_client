@@ -422,32 +422,7 @@ class MyDocuments extends Component<Props, State> {
             {showUploadComponent
               ? (
                 <div className="d-flex flex-column pb-4" style={{ border: '2 red' }}>
-                  <div className="d-flex flex-row">
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        height: 50,
-                        width: 50,
-                      }}
-                      type="button"
-                      className="btn-close ml-auto"
-                      aria-label="Close"
-                      onClick={() => this.setState({ showUploadComponent: false })}
-                    >
-                      <img
-                        alt="close upload file"
-                        src={cancel}
-                        width="25"
-                        height="25"
-                        className=""
-                      />
-                    </button>
-                  </div>
-                  <h3 className="mx-auto">
-                    UploadFile
-                  </h3>
-                  <DragAndDrop alert={this.props.alert} userRole={this.props.userRole} username={this.props.username} className="border border-danger" />
+                  <DragAndDrop alert={this.props.alert} showUploadComponent={showUploadComponent} userRole={this.props.userRole} username={this.props.username} className="border border-danger" />
                 </div>
               ) : null }
             <div className="d-flex flex-row mb-3">
