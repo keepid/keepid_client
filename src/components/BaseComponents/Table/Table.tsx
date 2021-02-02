@@ -263,6 +263,7 @@ const Table = ({
   // Update data when prop value changes
   useEffect(() => {
     setData(dataProp);
+    setInitialized(false);
   }, [dataProp]);
 
   useEffect(() => {
@@ -278,14 +279,14 @@ const Table = ({
         if (col.sort === true) {
           col.sortCaret = (order) => {
             let sortAlt = 'sort';
-            let classDef = 'px-2 sort-svg';
-            if (!order) {
-              classDef += ' lighten';
-            } else {
+            const className = classNames('px-2', 'sort-svg', {
+              lighten: !order,
+              rotate180: order === 'desc',
+            });
+            if (order) {
               sortAlt += ` ${order}`;
-              classDef += order === 'desc' ? ' rotate180' : '';
             }
-            return <img className={classDef} src={ArrowSVG} alt={sortAlt} />;
+            return <img className={className} src={ArrowSVG} alt={sortAlt} />;
           };
         }
       });
@@ -358,7 +359,7 @@ const Table = ({
     handleSave,
   );
 
-  return (
+  return initialized ? (
     <>
       <BootstrapTable
         keyField="id"
@@ -383,7 +384,7 @@ const Table = ({
         />
       ) : null}
     </>
-  );
+  ) : null;
 };
 
 Table.defaultProps = defaultProps;
@@ -420,14 +421,16 @@ const NoDataIndication = ({
   </div>
 );
 
-interface PaginatedTableProps extends TableProps {}
+interface PaginatedTableProps extends TableProps {
+  defaultPageSize?: number
+}
 
 /**
  * Wrapper providing pagination to the base Table component
  */
-const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
+const PaginatedTable = ({ data, defaultPageSize, ...props }: PaginatedTableProps) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(defaultPageSize || 5);
   data = data || [];
 
   if (itemsPerPage * currentPage >= data.length && currentPage > 0) {
@@ -468,6 +471,9 @@ const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
   );
 };
 
-PaginatedTable.defaultProps = defaultProps;
+PaginatedTable.defaultProps = {
+  defaultPageSize: 5,
+  ...defaultProps,
+};
 
 export default PaginatedTable;

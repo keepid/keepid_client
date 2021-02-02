@@ -23,6 +23,7 @@ const BaseInputFixture = ({
   const [description] = useValue<string>('description', {
     defaultValue: `${type} input description`,
   });
+  const [disabled] = useValue<boolean>('disabled', { defaultValue: false });
   const [placeholder] = useValue<string>('placeholder', {
     defaultValue: `${type} input placeholder`,
   });
@@ -61,11 +62,12 @@ const BaseInputFixture = ({
           name,
           label,
           description,
-          placeholder,
-          value,
-          onChange: logAndSetValue,
-          required,
-          ...rest,
+          disabled,
+        placeholder,
+        value,
+        onChange: logAndSetValue,
+        required,
+        ...rest,
         }}
       />
       <button type="submit">submit</button>

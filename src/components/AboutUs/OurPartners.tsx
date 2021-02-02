@@ -1,11 +1,11 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
+import BSMJPG from '../../static/images/bsm.jpg';
 import BaseCard, {
   CardImageLoc,
   CardSize,
-} from '../../components/BaseComponents/BaseCard';
-import BSMJPG from '../../static/images/bsm.jpg';
+} from '../BaseComponents/Card/BaseCard';
 
 interface State {}
 

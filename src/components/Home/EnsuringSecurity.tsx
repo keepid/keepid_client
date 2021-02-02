@@ -1,14 +1,13 @@
-import classNames from 'classnames';
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
 
-import BaseCard, {
-  CardImageLoc,
-  CardSize,
-} from '../../components/BaseComponents/BaseCard';
 import tinkPNG from '../../static/images/homePage/googletink.png';
 import hipaaBadgePNG from '../../static/images/homePage/HIPAA_badge.png';
 import mozillaPNG from '../../static/images/homePage/mozilla_observatory.png';
+import BaseCard, {
+  CardImageLoc,
+  CardSize,
+} from '../BaseComponents/Card/BaseCard';
 
 const EnsuringSecurityMessages = defineMessages({
   header: {

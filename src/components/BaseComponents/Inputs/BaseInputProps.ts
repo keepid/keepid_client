@@ -12,6 +12,10 @@ export default interface InputProps<T>
    */
   defaultValue?: T | undefined;
   /**
+   * Optional boolean indicating whether input should be disabled
+   */
+  disabled?: boolean;
+  /**
    * Optional callback invoked upon value change
    * @param value - The updated value of the input component
    */

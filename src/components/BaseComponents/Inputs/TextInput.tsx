@@ -19,6 +19,7 @@ export interface TextInputProps extends InputProps<string> {
 const TextInput = ({
   className: classNameProp,
   defaultValue,
+  disabled,
   label,
   name,
   onChange,
@@ -53,6 +54,7 @@ const TextInput = ({
           onBlur={validate}
           className={className}
           defaultValue={defaultValue}
+          disabled={disabled}
           id={name}
           isInvalid={validityChecked && !!invalidMessage}
           isValid={validityChecked && !invalidMessage}
