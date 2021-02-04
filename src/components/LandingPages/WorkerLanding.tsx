@@ -55,14 +55,13 @@ class WorkerLanding extends Component<Props, State> {
       redirectLink: '',
       clientUsername: '',
       clientPassword: '',
-      numClients: 0,
       clients: [{
         username: '',
         firstName: '',
         lastName: '',
       }],
-      itemsPerPageSelected: listOptions[0],
       currentPage: 0,
+      itemsPerPageSelected: listOptions[0],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
@@ -109,10 +108,7 @@ class WorkerLanding extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         listType: 'clients',
-        currentPage,
-        itemsPerPage,
         name: searchName,
-        lastName: '',
       }),
     }).then((res) => res.json())
       .then((responseJSON) => {
@@ -248,12 +244,6 @@ class WorkerLanding extends Component<Props, State> {
                 <button type="button" className="btn btn-primary">Client Profile</button>
               </Link>
             </div>
-            {/* <div className="d-flex flex-column mr-4">
-              <h5 className="card-title">Recent Actions</h5>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 1&quot; on &quot;example date 1&quot;</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 2&quot; on &quot;example date 2&quot;</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 3&quot; on &quot;example date 3&quot;</h6>
-            </div> */}
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
               <button
@@ -270,13 +260,6 @@ class WorkerLanding extends Component<Props, State> {
               >
                 View Documents
               </button>
-              {/* <button
-                type="button"
-                className="btn btn-info mb-2 btn-sm"
-                onClick={(event) => this.handleClickSendEmail(event, client)}
-              >
-                Send Email
-              </button> */}
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
