@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
-import BaseCard, { CardImageLoc, CardSize } from '../components/BaseComponent/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 class SignupBrancher extends Component<{}, {}, {}> {
   render() {
