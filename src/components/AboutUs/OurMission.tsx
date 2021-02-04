@@ -1,7 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-interface State {}
+interface State {
+}
 
 class OurMission extends React.Component<{}, State> {
   componentDidMount() {
@@ -58,12 +59,16 @@ class OurMission extends React.Component<{}, State> {
               <li className="pt-1">
                 <b>Purpose:</b>
                 {' '}
-                Purpose: We understand the particular position we are in to help a disadvantaged population. We aim to create sustainable, impact-driven technology that has beneficial implications for those who entrust us with their data.
+                Purpose: We understand the particular position we are in to help a disadvantaged population. We aim to
+                create sustainable, impact-driven technology that has beneficial implications for those who entrust us
+                with their data.
               </li>
               <li className="pt-1">
                 <b>Empathy:</b>
                 {' '}
-                Without practicing empathy, we begin to abandon our mission and will succumb to the capitalist forces of systemic greed and exploitation. We need empathy to ensure that we never demean or exploit those whom we are supposed to help.
+                Without practicing empathy, we begin to abandon our mission and will succumb to the capitalist forces of
+                systemic greed and exploitation. We need empathy to ensure that we never demean or exploit those whom we
+                are supposed to help.
               </li>
             </ul>
           </p>
@@ -71,7 +76,11 @@ class OurMission extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="mb-2">Product Vision</h1>
           <p className="lead-medium pt-2">
-            Our product, Keep.id, aims to build a safety net around experienced homelessness by providing electronic document storage and complementary features. We envision Keep.id as a financially sustainable, HIPAA-compliant application that serves partner organizations in the Philadelphia community, and in the future, scales to various regional hubs experiencing homelessness in the U.S. We have three main goals for achieving this vision:
+            Our product, Keep.id, aims to build a safety net around experienced homelessness by providing electronic
+            document storage and complementary features. We envision Keep.id as a financially sustainable,
+            HIPAA-compliant application that serves partner organizations in the Philadelphia community, and in the
+            future, scales to various regional hubs experiencing homelessness in the U.S. We have three main goals for
+            achieving this vision:
             <ul>
               <li className="pt-2">
                 <b>HIPAA Compliance</b>
@@ -81,12 +90,14 @@ class OurMission extends React.Component<{}, State> {
               <li className="pt-1">
                 <b>Receiving Funding</b>
                 {' '}
-                through competitions, grants, and contributions. This will ensure the financial sustainability of our venture, allowing for long term support, the addition of new features, and technical scalability.
+                through competitions, grants, and contributions. This will ensure the financial sustainability of our
+                venture, allowing for long term support, the addition of new features, and technical scalability.
               </li>
               <li className="pt-1">
                 <b>Achieve Local Buy-in</b>
                 {' '}
-                from local partner organizations in the regional hub we are focusing in. Our technology may not reach homeless populations directly, but local partners can.
+                from local partner organizations in the regional hub we are focusing in. Our technology may not reach
+                homeless populations directly, but local partners can.
               </li>
             </ul>
           </p>

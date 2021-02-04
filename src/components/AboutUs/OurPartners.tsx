@@ -1,9 +1,11 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import BSMJPG from '../../static/images/bsm.jpg';
-import BaseCard from '../../components/Base/BaseCard';
 
-interface State {}
+import BaseCard from '../../components/BaseComponents/BaseCard';
+import BSMJPG from '../../static/images/bsm.jpg';
+
+interface State {
+}
 
 class OurPartners extends React.Component<{}, State> {
   componentDidMount() {
@@ -20,7 +22,8 @@ class OurPartners extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="display-4">Our Partners</h1>
           <p className="lead pt-3">
-            The partner organizations of Keep.id who are working on the ground to maintain the safety and accessibility of your data.
+            The partner organizations of Keep.id who are working on the ground to maintain the safety and accessibility
+            of your data.
           </p>
         </div>
         <div className="d-flex flex-wrap">

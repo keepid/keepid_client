@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow } from 'react-google-maps';
+import { InfoWindow, Marker } from 'react-google-maps';
 
 interface Props {
   lat: number,

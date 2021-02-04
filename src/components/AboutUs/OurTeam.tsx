@@ -1,35 +1,36 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import ConnorJPG from '../../static/images/members/connor.jpg';
-import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
-import JacksonJPG from '../../static/images/members/jackson.jpg';
-import JackieJPG from '../../static/images/members/jackie.jpg';
-import JohnJPG from '../../static/images/members/john.jpg';
-import Cathy from '../../static/images/members/cathy.jpg';
-import Joey from '../../static/images/members/joey.jpg';
-import Melinda from '../../static/images/members/melinda.png';
+
+import BaseCard from '../../components/BaseComponents/BaseCard';
 import Abhai from '../../static/images/members/Abhai.jpg';
-import Austin from '../../static/images/members/austin.jpg';
-import Anna from '../../static/images/members/anna.jpg';
-import Jamie from '../../static/images/members/jamie.jpg';
-import Xander from '../../static/images/members/xander.png';
-import MaggieLin from '../../static/images/members/maggieLin.jpg';
-import JessicaHung from '../../static/images/members/jessicaHung.jpg';
-import EmilySu from '../../static/images/members/emilySu.jpg';
-import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
-import DanielJoo from '../../static/images/members/danielJoo.jpg';
-import NickRodriguez from '../../static/images/members/nickRodriguez.jpg';
-import AnnToo from '../../static/images/members/annToo.jpg';
-import GaganKang from '../../static/images/members/gaganKang.jpg';
-import DavidGlaser from '../../static/images/members/davidGlaser.jpg';
-import AnkitaSethi from '../../static/images/members/ankitaSethi.jpg';
-import KierenGill from '../../static/images/members/kierenGill.jpg';
 import AmandaYen from '../../static/images/members/amandaYen.png';
+import AnkitaSethi from '../../static/images/members/ankitaSethi.jpg';
+import Anna from '../../static/images/members/anna.jpg';
+import AnnToo from '../../static/images/members/annToo.jpg';
+import Austin from '../../static/images/members/austin.jpg';
+import Cathy from '../../static/images/members/cathy.jpg';
+import ConnorJPG from '../../static/images/members/connor.jpg';
+import DanielJoo from '../../static/images/members/danielJoo.jpg';
+import DavidGlaser from '../../static/images/members/davidGlaser.jpg';
+import EmilySu from '../../static/images/members/emilySu.jpg';
+import GaganKang from '../../static/images/members/gaganKang.jpg';
+import JackieJPG from '../../static/images/members/jackie.jpg';
+import JacksonJPG from '../../static/images/members/jackson.jpg';
+import Jamie from '../../static/images/members/jamie.jpg';
+import JessicaHung from '../../static/images/members/jessicaHung.jpg';
+import Joey from '../../static/images/members/joey.jpg';
+import JohnJPG from '../../static/images/members/john.jpg';
+import KierenGill from '../../static/images/members/kierenGill.jpg';
+import MaggieLin from '../../static/images/members/maggieLin.jpg';
+import Melinda from '../../static/images/members/melinda.png';
+import NickRodriguez from '../../static/images/members/nickRodriguez.jpg';
 import SamBarraza from '../../static/images/members/samBarraza.jpg';
+import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
+import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
+import Xander from '../../static/images/members/xander.png';
 
-import BaseCard from '../../components/Base/BaseCard';
-
-interface State {}
+interface State {
+}
 
 class OurTeam extends React.Component<{}, State> {
   componentDidMount() {
@@ -47,7 +48,8 @@ class OurTeam extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="mb-2">Our Team</h1>
           <p className="lead-medium pt-2">
-            The current team members of Keep.id who are striving to keep your data safe and secure through our electronic storage solution, listed alphabetically.
+            The current team members of Keep.id who are striving to keep your data safe and secure through our
+            electronic storage solution, listed alphabetically.
           </p>
         </div>
         <div className="jumbotron-fluid mt-5">

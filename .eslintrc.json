@@ -1,50 +1,52 @@
 {
-    "env": {
-        "browser": true,
-        "es6": true,
-        "jest": true
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jest": true
+  },
+  "extends": [
+    "airbnb"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
     },
-    "extends": [
-        "airbnb"
-    ],
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaFeatures": {
-            "jsx": true
-        },
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
-    "plugins": [
-        "react",
-        "@typescript-eslint"
-    ],
-    // rules: 1 is warning, 2 is error, off is ignore
-    "rules": {
-        "import/extensions": "off",
-        "react/jsx-filename-extension": "off",
-        "no-alert": 1,
-        "no-unused-vars":"off",
-        "@typescript-eslint/no-unused-vars":1,
-        "import/no-duplicates": 1,
-        "import/no-unresolved": "off",
-        "max-len": "off",
-        "react/prefer-stateless-function": 1,
-        "react/sort-comp": 1,
-        "jsx-a11y/label-has-associated-control": 1,
-        "react/destructuring-assignment": 1,
-        "jsx-a11y/control-has-associated-label": 1,
-        "jsx-a11y/click-events-have-key-events": 1,
-        "jsx-a11y/no-static-element-interactions": 1,
-        "jsx-a11y/img-redundant-alt": 1,
-        "jsx-a11y/anchor-is-valid": 1,
-        "react/no-did-update-set-state": "off",
-        "max-classes-per-file": 1,
-        "react/jsx-props-no-spreading": 1,
-        "linebreak-style": 0
-    }
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "@typescript-eslint",
+    "simple-import-sort"
+  ],
+  // rules: 1 is warning, 2 is error, off is ignore
+  "rules": {
+    "simple-import-sort/imports": 2,
+    "import/extensions": "off",
+    "react/jsx-filename-extension": "off",
+    "no-alert": 1,
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": 1,
+    "import/no-duplicates": 1,
+    "import/no-unresolved": "off",
+    "max-len": "off",
+    "react/prefer-stateless-function": 1,
+    "jsx-a11y/label-has-associated-control": 1,
+    "react/destructuring-assignment": 1,
+    "jsx-a11y/control-has-associated-label": 1,
+    "jsx-a11y/click-events-have-key-events": 1,
+    "jsx-a11y/no-static-element-interactions": 1,
+    "jsx-a11y/img-redundant-alt": 1,
+    "jsx-a11y/anchor-is-valid": 1,
+    "react/no-did-update-set-state": "off",
+    "max-classes-per-file": 1,
+    "react/jsx-props-no-spreading": 1,
+    "linebreak-style": 0,
+    "react/sort-comp": "off"
+  }
 }

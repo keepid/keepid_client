@@ -3,8 +3,7 @@ import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 
-import { reCaptchaKey } from '../../configVars';
-import Role from '../../static/Role';
+import { reCaptchaKey } from '../../../configVars';
 
 interface Props {
   username: string,
@@ -18,14 +17,21 @@ interface Props {
   zipcode: string,
   phonenumber: string,
   email: string,
+  orgName: string,
+  orgWebsite: string,
+  ein: string,
+  orgAddress: string,
+  orgCity: string,
+  orgState: string,
+  orgZipcode: string,
+  orgPhoneNumber: string,
+  orgEmail: string,
   handleSubmit: () => void,
   handlePrevious: () => void,
   handleFormJumpTo: (stageNumber: number) => void,
   alert: any,
   buttonState: string,
-  handleChangeRecaptcha: (recaptchaValue: string) => void,
-  privilegeLevel: Role,
-  orgName: string
+  handleChangeRecaptcha: (recaptchaValue: string) => void
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -33,10 +39,10 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 interface State {
 }
 
-class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
+class ReviewSubmit extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
-    e.preventDefault();
     const { handlePrevious } = this.props;
+    e.preventDefault();
     handlePrevious();
   }
 
@@ -68,6 +74,15 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
       zipcode,
       phonenumber,
       email,
+      orgName,
+      orgWebsite,
+      ein,
+      orgAddress,
+      orgCity,
+      orgState,
+      orgZipcode,
+      orgPhoneNumber,
+      orgEmail,
       handleFormJumpTo,
       buttonState,
     } = this.props;
@@ -89,15 +104,8 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 <thead className="thead-light">
                   <tr>
                     <th className="w-25" scope="col">Account Setup</th>
-                    <th aria-label="Your Account Information" className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(0)}>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0"
-                      >
-                        Edit
-                      </button>
-                    </th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(0)}><a href="#">Edit</a></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,15 +125,8 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 <thead className="thead-light">
                   <tr>
                     <th className="w-25" scope="col">Personal Information</th>
-                    <th aria-label="Your Personal Information" className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(1)}>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0"
-                      >
-                        Edit
-                      </button>
-                    </th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(1)}><a href="#">Edit</a></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -169,6 +170,56 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                   </tr>
                 </tbody>
               </table>
+              <table className="table mb-4">
+                <thead className="thead-light">
+                  <tr>
+                    <th className="w-25" scope="col">Organization Information</th>
+                    <th className="w-75" scope="col" />
+                    <th scope="col" onClick={() => handleFormJumpTo(2)}><a href="#">Edit</a></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Organization name</th>
+                    <td>{orgName}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization website</th>
+                    <td>{orgWebsite}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization address</th>
+                    <td>
+                      {orgAddress}
+                      {' '}
+                      {orgCity}
+                      ,
+                      {' '}
+                      {orgState}
+                      {' '}
+                      {orgZipcode}
+                    </td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization EIN</th>
+                    <td>{ein}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization phone number</th>
+                    <td>{orgPhoneNumber}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization email address</th>
+                    <td>{orgEmail}</td>
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
               <div className="mb-0">
                 <span className="text-muted recaptcha-login-text">
                   This page is protected by reCAPTCHA, and subject to the Google
@@ -196,7 +247,6 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                   Submit
                   <div className="ld ld-ring ld-spin" />
                 </button>
-                {/* <button type="button" className="ml-auto btn btn-primary mt-5" onClick={handleSubmit}>Submit</button> */}
               </div>
             </div>
           </div>
@@ -212,4 +262,4 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
   }
 }
 
-export default withAlert()(ReviewSubmitInviteSignupVersion);
+export default withAlert()(ReviewSubmit);

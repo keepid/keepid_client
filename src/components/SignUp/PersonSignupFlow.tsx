@@ -1,17 +1,19 @@
-import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import { withAlert } from 'react-alert';
+import 'antd/dist/antd.css';
+
 import { Steps } from 'antd';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
 import { ProgressBar } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
+
 import getServerURL from '../../serverOverride';
-import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import AccountSetup from './AccountSetup';
-import PersonalInformation from './PersonalInformation';
-import SignUserAgreement from './SignUserAgreement';
-import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import Role from '../../static/Role';
 import { birthDateStringConverter } from './CompleteSignupFlow';
+import AccountSetup from './pages/AccountSetup';
+import PersonalInformation from './pages/PersonalInformation';
+import SignUserAgreement from './pages/SignUserAgreement';
+import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 
 const { Step } = Steps;
 

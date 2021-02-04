@@ -1,8 +1,9 @@
-import React from 'react';
 import { render } from '@testing-library/react';
-import renderer from 'react-test-renderer';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import renderer from 'react-test-renderer';
+
 import Home from '../../../components/Base/Home';
 
 window.scroll = jest.fn();

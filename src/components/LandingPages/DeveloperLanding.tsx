@@ -1,14 +1,16 @@
-import React, { Component, useState } from 'react';
-import { Helmet } from 'react-helmet';
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import { Helmet } from 'react-helmet';
 import Select from 'react-select';
-import { withAlert } from 'react-alert';
-import TablePageSelector from '../Base/TablePageSelector';
+
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import TablePageSelector from '../BaseComponents/TablePageSelector';
 
 interface Props {
   alert: any,
@@ -45,32 +47,6 @@ interface State {
 }
 
 class DeveloperLanding extends Component<Props, State, {}> {
-  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
-    <div>
-      <label className="btn btn-filestack btn-widget ml-5 mr-5">
-        Re-Upload
-        <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={(event) => this.handleChangeFileUpload(event, rowIndex)} hidden />
-      </label>
-      <label className="btn btn-filestack btn-widget ml-5 mr-5">
-        Download
-        <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
-      </label>
-    </div>
-  )
-
-  tableCols = [{
-    dataField: 'filename',
-    text: 'Application Name',
-    sort: true,
-  }, {
-    dataField: 'category',
-    text: 'Category',
-    sort: true,
-  }, {
-    text: 'Actions',
-    formatter: this.ButtonFormatter,
-  }];
-
   constructor(props: Props) {
     super(props);
     this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
@@ -99,6 +75,39 @@ class DeveloperLanding extends Component<Props, State, {}> {
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
+
+  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+    <div>
+      <label className="btn btn-filestack btn-widget ml-5 mr-5">
+        Re-Upload
+        <input
+          type="file"
+          accept="application/pdf"
+          id="potentialPdf"
+          multiple
+          onChange={(event) => this.handleChangeFileUpload(event, rowIndex)}
+          hidden
+        />
+      </label>
+      <label className="btn btn-filestack btn-widget ml-5 mr-5">
+        Download
+        <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
+      </label>
+    </div>
+  )
+
+  tableCols = [{
+    dataField: 'filename',
+    text: 'Application Name',
+    sort: true,
+  }, {
+    dataField: 'category',
+    text: 'Category',
+    sort: true,
+  }, {
+    text: 'Actions',
+    formatter: this.ButtonFormatter,
+  }];
 
   componentDidMount() {
     this.getDocuments();
@@ -307,7 +316,10 @@ class DeveloperLanding extends Component<Props, State, {}> {
         <div className="jumbotron jumbotron-fluid bg-white pb-0">
           <div className="container">
             <h1 className="display-4">My Un-Annotated Forms</h1>
-            <p className="lead">See all of your un-annotated forms. Check the category of each of your forms here (TBI).</p>
+            <p className="lead">
+              See all of your un-annotated forms. Check the category of each of your forms here
+              (TBI).
+            </p>
           </div>
         </div>
         <div className="container">
@@ -321,7 +333,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
             />
           </form>
           <div className="row ml-1 mt-2 mb-2">
-            {numElements === 0 ? <div /> : tablePageSelector }
+            {numElements === 0 ? <div /> : tablePageSelector}
             {numElements === 0 ? <div />
               : (
                 <div className="w-25">

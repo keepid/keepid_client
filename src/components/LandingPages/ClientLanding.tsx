@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import UploadSVG from '../../static/images/uploading-files-to-the-cloud.svg';
-import RequestSVG from '../../static/images/request.svg';
+import { Link } from 'react-router-dom';
+
 import AppSVG from '../../static/images/calendar.svg';
-import EmailSVG from '../../static/images/email.svg';
 import FileSVG from '../../static/images/file.svg';
 
 class ClientLanding extends Component<{}, {}, {}> {

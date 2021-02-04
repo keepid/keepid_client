@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+
+import BaseCard from '../../components/BaseComponents/BaseCard';
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
-import BaseCard from '../../components/Base/BaseCard';
 
 class SignupBrancher extends Component<{}, {}, {}> {
   render() {
