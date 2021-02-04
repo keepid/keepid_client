@@ -5,7 +5,7 @@ import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import AppSVG from '../../static/images/calendar.svg';
 import FileSVG from '../../static/images/file.svg';
 import SignDoc from '../../static/images/sign-document.png';
-import BaseCard, { CardImageLoc, CardSize } from '../BaseComponent/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 interface Props extends RouteComponentProps {
   name: String
