@@ -136,7 +136,7 @@ class App extends React.Component<{}, State, {}> {
                     return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                   }
                   if (role === Role.Client) {
-                    return (<ClientLanding />);
+                    return (<ClientLanding name={name} />);
                   }
                   if (role === Role.Developer) {
                     return (<DevPanel name={name} organization={organization} username={username} role={role} />);

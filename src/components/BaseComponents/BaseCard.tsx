@@ -3,8 +3,23 @@ import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import { Link } from 'react-router-dom';
 
+export enum CardImageLoc {
+  LEFT = 'left',
+  RIGHT = 'right',
+  TOP = 'top'
+}
+
+export enum CardSize {
+  LARGE_VERTICAL = 'large-vertical',
+  LARGE_HORIZONTAL = 'large-horizontal',
+  SMALL_VERTICAL = 'small-vertical',
+  SMALL_HORIZONTAL = 'small-horizontal',
+  MEDIUM_VERTICAL = 'medium-vertical',
+  MEDIUM_HORIZONTAL = 'medium-horizontal'
+}
+
 interface Props {
-  cardSize?: string,
+  cardSize?: CardSize,
   cardHeight?: string,
   cardWidth?: string,
   cardLink?: string,
@@ -12,8 +27,10 @@ interface Props {
   cardText: string,
   imageSrc?: any,
   imageAlt?: any,
-  imageLoc?: string,
+  imageLoc?: CardImageLoc,
   imageSize?: string,
+  // string refers to how the image should be resized to fit its container: defaults to 'cover'; other values include: 'fill', 'contain', 'none' and 'scale-down'
+  imageObjectFit?: string,
   buttonText?: string,
   buttonOnClick?: () => void,
   renderAdditionalContent?: () => any,
@@ -28,6 +45,7 @@ interface DefaultProps {
   imageAlt?: any,
   imageLoc?: string,
   imageSize?: string,
+  imageObjectFit?: string,
   buttonText?: string,
   buttonOnClick?: () => void,
   renderAdditionalContent?: () => any,
@@ -44,8 +62,9 @@ function BaseCard(props: Props): React.ReactElement {
     cardLink?: string,
     imageSrc?: any,
     imageAlt?: any,
-    imageLoc?: string,
+    imageLoc?: CardImageLoc,
     imageSize?: string,
+    imageObjectFit?: any,
     buttonText?: string,
     buttonOnClick?: () => void,
     renderAdditionalContent?: () => any,
@@ -57,36 +76,43 @@ function BaseCard(props: Props): React.ReactElement {
     let borderBottomLeftRadius = 0;
     let borderTopRightRadius = 0;
     let borderBottomRightRadius = 0;
-    if (imageLoc === 'left') {
+    if (imageLoc === CardImageLoc.LEFT) {
       borderTopLeftRadius = cardBorderRadius;
       borderBottomLeftRadius = cardBorderRadius;
-    } else if (imageLoc === 'right') {
+    } else if (imageLoc === CardImageLoc.RIGHT) {
       borderTopRightRadius = cardBorderRadius;
       borderBottomRightRadius = cardBorderRadius;
     }
     return (
       <Card
         className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`}
-        style={{ height: cardHeight, width: cardWidth, borderRadius: cardBorderRadius }}
+        style={{
+          height: cardHeight,
+          width: 'auto',
+          borderRadius: cardBorderRadius,
+          maxWidth: cardWidth,
+        }}
       >
-        {imageLoc === 'left' || imageLoc === 'right'
+        { imageLoc === CardImageLoc.LEFT || imageLoc === CardImageLoc.RIGHT
           ? (
             <Card.Body className="p-0 d-flex flex-row">
               <Image
-                className={(imageLoc === 'left') ? 'order-1' : 'order-2'}
+                className={(imageLoc === CardImageLoc.LEFT) ? 'order-1' : 'order-2'}
                 src={imageSrc}
                 alt={imageAlt}
                 style={{
                   height: '100%',
-                  width: imageSize,
-                  objectFit: 'cover',
+                  width: 'auto',
+                  maxWidth: imageSize,
+                  overflow: 'hidden',
+                  objectFit: imageObjectFit,
                   borderTopLeftRadius,
                   borderTopRightRadius,
                   borderBottomLeftRadius,
                   borderBottomRightRadius,
                 }}
               />
-              <div className={`p-4 d-flex flex-column ${(imageLoc === 'left') ? 'order-2' : 'order-1'}`}>
+              <div className={`p-4 d-flex flex-column ${(imageLoc === CardImageLoc.LEFT) ? 'order-2' : 'order-1'}`}>
                 <div style={{ height: '100%' }}>
                   <Card.Title><h3>{cardTitle}</h3></Card.Title>
                   <Card.Text>{cardText}</Card.Text>
@@ -109,8 +135,8 @@ function BaseCard(props: Props): React.ReactElement {
               </div>
             </Card.Body>
           )
-          : null}
-        {imageLoc === 'top' || typeof imageLoc === 'undefined'
+          : null }
+        { imageLoc === CardImageLoc.TOP || typeof imageLoc === 'undefined'
           ? (
             <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%' }}>
               {typeof imageLoc !== 'undefined'
@@ -121,7 +147,8 @@ function BaseCard(props: Props): React.ReactElement {
                     style={{
                       height: imageSize,
                       width: '100%',
-                      objectFit: 'cover',
+                      overflow: 'hidden',
+                      objectFit: imageObjectFit,
                       borderTopLeftRadius: cardBorderRadius,
                       borderTopRightRadius: cardBorderRadius,
                     }}
@@ -163,6 +190,7 @@ function BaseCard(props: Props): React.ReactElement {
     imageAlt,
     imageLoc,
     imageSize,
+    imageObjectFit,
     buttonText,
     buttonOnClick,
     renderAdditionalContent,
@@ -170,18 +198,24 @@ function BaseCard(props: Props): React.ReactElement {
   let cardHeight;
   let cardWidth;
   // default card sizes
-  if (cardSize === 'large-vertical') {
+  if (cardSize === CardSize.LARGE_VERTICAL) {
     cardHeight = '535px';
     cardWidth = '385px';
-  } else if (cardSize === 'large-horizontal') {
+  } else if (cardSize === CardSize.LARGE_HORIZONTAL) {
     cardHeight = '380px';
     cardWidth = '600px';
-  } else if (cardSize === 'small-vertical') {
+  } else if (cardSize === CardSize.SMALL_VERTICAL) {
     cardHeight = '435px';
     cardWidth = '265px';
-  } else if (cardSize === 'small-horizontal') {
+  } else if (cardSize === CardSize.SMALL_HORIZONTAL) {
     cardHeight = '250px';
     cardWidth = '400px';
+  } else if (cardSize === CardSize.MEDIUM_VERTICAL) {
+    cardHeight = '485px';
+    cardWidth = '325px';
+  } else if (cardSize === CardSize.MEDIUM_HORIZONTAL) {
+    cardHeight = '315px';
+    cardWidth = '500px';
   } else {
     cardHeight = props.cardHeight;
     cardWidth = props.cardWidth;
@@ -202,6 +236,7 @@ function BaseCard(props: Props): React.ReactElement {
                 imageAlt,
                 imageLoc,
                 imageSize,
+                imageObjectFit,
                 buttonText,
                 buttonOnClick,
                 renderAdditionalContent,
@@ -219,6 +254,7 @@ function BaseCard(props: Props): React.ReactElement {
           imageAlt,
           imageLoc,
           imageSize,
+          imageObjectFit,
           buttonText,
           buttonOnClick,
           renderAdditionalContent,
@@ -236,6 +272,7 @@ const defaultProps: DefaultProps = {
   imageAlt: undefined,
   imageLoc: undefined,
   imageSize: undefined,
+  imageObjectFit: 'cover',
   buttonText: undefined,
   buttonOnClick: undefined,
   renderAdditionalContent: undefined,

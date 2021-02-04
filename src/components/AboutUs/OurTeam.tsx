@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-import BaseCard from '../../components/BaseComponents/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../../components/BaseComponents/BaseCard';
 import Abhai from '../../static/images/members/Abhai.jpg';
 import AmandaYen from '../../static/images/members/amandaYen.png';
 import AnkitaSethi from '../../static/images/members/ankitaSethi.jpg';
@@ -29,8 +29,7 @@ import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
 import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
 import Xander from '../../static/images/members/xander.png';
 
-interface State {
-}
+interface State {}
 
 class OurTeam extends React.Component<{}, State> {
   componentDidMount() {
@@ -57,48 +56,48 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="John Baek"
             cardText="Founder / COO / Legal Analyst"
             imageSrc={JohnJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Connor Chong"
             cardText="Founder / CEO / CTO"
             imageSrc={ConnorJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Steffen Cornwell"
             cardText="Founder / Executive Director / Product Manager"
             imageSrc={SteffenJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Jackson Foltz"
             cardText="Founder / Strategic Communications Lead"
             imageSrc={JacksonJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Jessica Hung"
             cardText="Donor Strategy Lead"
             imageSrc={JessicaHung}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -107,93 +106,93 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Melinda Cardenas"
             cardText="Software Engineer"
             imageSrc={Melinda}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Xander Cernek"
             cardText="Software Engineer"
             imageSrc={Xander}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Cathy Chen"
             cardText="Software Engineer"
             imageSrc={Cathy}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Ankita Sethi"
             cardText="Software Engineer"
             imageSrc={AnkitaSethi}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Jackie Peng"
             cardText="Software Engineer"
             imageSrc={JackieJPG}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Austin Wu"
             cardText="Software Engineer"
             imageSrc={Austin}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Joey Zhao"
             cardText="Software Engineer"
             imageSrc={Joey}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Nick Rodriguez"
             cardText="Software Engineer"
             imageSrc={NickRodriguez}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Daniel Joo"
             cardText="Software Engineer"
             imageSrc={DanielJoo}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Gagan Kang"
             cardText="Software Engineer"
             imageSrc={GaganKang}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -202,12 +201,12 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Anna Leong"
             cardText="UI/UX Design Lead"
             imageSrc={Anna}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -216,48 +215,48 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Jamie Lu"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={Jamie}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Amanda Yen"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={AmandaYen}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Kieren Gill"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={KierenGill}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Maggie Lin"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={MaggieLin}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Sam Barrazza"
             cardText="Nonprofit Strategy Analyst"
             imageSrc={SamBarraza}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -266,12 +265,12 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Seemran Rashid"
             cardText="Donor Strategy Analyst"
             imageSrc={SeemranRashid}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -280,21 +279,21 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Emily Su"
             cardText="Business Analyst"
             imageSrc={EmilySu}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="David Glaser"
             cardText="Business Analyst"
             imageSrc={DavidGlaser}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
@@ -303,21 +302,21 @@ class OurTeam extends React.Component<{}, State> {
         </div>
         <div className="d-flex flex-wrap">
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Abhai Shukla"
             cardText="ID Researcher"
             imageSrc={Abhai}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
           <BaseCard
-            cardSize="small-vertical"
+            cardSize={CardSize.MEDIUM_VERTICAL}
             cardTitle="Ann Too"
             cardText="Financial Accountant and ID Researcher"
             imageSrc={AnnToo}
             imageAlt="..."
-            imageLoc="top"
+            imageLoc={CardImageLoc.TOP}
             imageSize={imgSize}
           />
         </div>
