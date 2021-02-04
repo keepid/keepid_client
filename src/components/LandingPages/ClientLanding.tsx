@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
-import BaseCard, { CardImageLoc, CardSize } from '../../BaseComponent/BaseCard';
 import AppSVG from '../../static/images/calendar.svg';
 import FileSVG from '../../static/images/file.svg';
 import SignDoc from '../../static/images/sign-document.png';
+import BaseCard, { CardImageLoc, CardSize } from '../BaseComponent/BaseCard';
 
 interface Props extends RouteComponentProps {
   name: String
