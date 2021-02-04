@@ -4,7 +4,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import renderer from 'react-test-renderer';
 
-import Home from '../../../components/Base/Home';
+import Home from '../../../components/Home';
 
 window.scroll = jest.fn();
 test('Home page loads', () => {
