@@ -62,6 +62,17 @@ public class UserController {
         ctx.result(responseJSON.toString());
       };
 
+  public Handler authenticateUser =
+      ctx -> {
+        String sessionUsername = ctx.sessionAttribute("username");
+        JSONObject req = new JSONObject(ctx.body());
+        String username = req.getString("username");
+        AuthenticateUserService authenticateUserService =
+            new AuthenticateUserService(userDao, logger, username, sessionUsername);
+        Message response = authenticateUserService.executeAndGetResponse();
+        ctx.result(response.toResponseString());
+      };
+
   public Handler usernameExists =
       ctx -> {
         JSONObject req = new JSONObject(ctx.body());
