@@ -172,6 +172,18 @@ body {
 	border-color: $secondary-theme;
 }
 
+.btn-delete {
+	color: white;
+	background-color: #C9302C;
+	border-color: #C9302C;
+}
+
+.btn-cancel {
+	color: gray;
+	background-color: white;
+	border-color: gray;
+}
+
 .coreValues,.btn-primary-theme {
 	background: $primary-theme;
 	border-color: $primary-theme;
@@ -228,6 +240,16 @@ thead {
 
 .red-star {
 	color: $text-red
+}
+
+// modal border
+.no-border {
+	border: none;
+}
+
+// modal title
+.left-align {
+	text-align: left;
 }
 
 // Form elements

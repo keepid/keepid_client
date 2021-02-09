@@ -45,7 +45,8 @@ import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
 import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 
-import Dialogue from './components/Base/Dialogue'; // need to delete
+import Dialog from './components/Base/Dialog'; // need to delete
+// import { ModalTitle } from 'react-bootstrap';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -59,6 +60,12 @@ interface State {
   organization: string,
   autoLogout: boolean,
 }
+
+// for test dialogue
+// eslint-disable-next-line no-console
+const handleClose = () => { console.log('closing modal'); };
+// eslint-disable-next-line no-console
+const handleShow = () => { console.log('showing modal'); };
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -128,8 +135,14 @@ class App extends React.Component<{}, State, {}> {
             <Switch>
               <Route
                 exact
-                path="/dialogue-test"
-                render={() => <Dialogue />}
+                path="/dialog-test"
+                render={() => <Dialog modalType="DELETE" modalTitle="Delete this account?" modalDescription="I will not close if you click outside me. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" modalIcon="" />}
+              />
+
+              <Route
+                exact
+                path="/"
+
               />
 
               <Route
