@@ -46,7 +46,6 @@ import ClientProfilePage from './components/ClientProfilePage';
 import AutoLogout from './components/AccountSecurity/AutoLogout';
 
 import Dialog from './components/Base/Dialog'; // need to delete
-// import { ModalTitle } from 'react-bootstrap';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -60,12 +59,6 @@ interface State {
   organization: string,
   autoLogout: boolean,
 }
-
-// for test dialogue
-// eslint-disable-next-line no-console
-const handleClose = () => { console.log('closing modal'); };
-// eslint-disable-next-line no-console
-const handleShow = () => { console.log('showing modal'); };
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
