@@ -1,19 +1,13 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 import React, { Component } from 'react';
-import BootstrapTable from 'react-bootstrap-table-next';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
 
-// import TablePageSelector from '../Base/TablePageSelector';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
+import Table from '../BaseComponents/Table';
 import ApplicationForm from './ApplicationForm';
-
-interface PaginationOption {
-  value: string,
-  label: string,
-}
 
 interface DocumentInformation {
   uploader: string,
@@ -32,25 +26,14 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
-  documents: DocumentInformation[],
-  currentPage: number,
-  itemsPerPageSelected: PaginationOption,
-  numElements: number,
+  documents: DocumentInformation[]
 }
-
-const listOptions: PaginationOption[] = [
-  { value: '2', label: '2' },
-  { value: '5', label: '5' },
-  { value: '10', label: '10' },
-  { value: '25', label: '25' },
-  { value: '50', label: '50' },
-];
 
 class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
     <div>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, rowIndex)}>View Application</button>
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}>View Application</button>
       </Link>
     </div>
   )
@@ -89,9 +72,6 @@ class Applications extends Component<Props, State, {}> {
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
-      currentPage: 0,
-      itemsPerPageSelected: listOptions[0],
-      numElements: 0,
       documents: [],
     };
   }
@@ -120,26 +100,16 @@ class Applications extends Component<Props, State, {}> {
           }
           this.setState({
             documents: newDocuments,
-            numElements,
           });
         }
       });
   }
 
-  handleViewDocument = (event: any, rowIndex: number) => {
-    const {
-      documents,
-      currentPage,
-      itemsPerPageSelected,
-    } = this.state;
-
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    const index = rowIndex + currentPage * itemsPerPage;
-    const form = documents[index];
+  handleViewDocument = (event: any, row: any) => {
     const {
       id,
       filename,
-    } = form;
+    } = row;
     this.setState(
       {
         currentApplicationId: id,
@@ -148,41 +118,12 @@ class Applications extends Component<Props, State, {}> {
     );
   }
 
-  // TODO: Pagination
-  // changeCurrentPage = (newCurrentPage: number) => {
-  // this.setState({ currentPage: newCurrentPage }, this.getDocuments);
-  // }
-  // }
-  //
-  // handleChangeItemsPerPage = (itemsPerPageSelected: any) => {
-  //  this.setState({
-  //    currentPage: 0,
-  //  });
-  // }
-  // getDocuments = () => {
-  //   const {
-  //     itemsPerPageSelected,
-  //   } = this.state;
-  //   const itemsPerPage = Number(itemsPerPageSelected.value);
-  //   // fetch call here to get all the current Documents to fill
-  // }
-
   render() {
     const {
       currentApplicationFilename,
       currentApplicationId,
-      numElements,
       documents,
     } = this.state;
-
-    // TODO: Pagination
-    // const itemsPerPage = Number(itemsPerPageSelected.value);
-    // const tablePageSelector = TablePageSelector({
-    //   currentPage,
-    //   itemsPerPage,
-    //   numElements,
-    //   changeCurrentPage: this.changeCurrentPage,
-    // });
 
     return (
       <Switch>
@@ -201,14 +142,10 @@ class Applications extends Component<Props, State, {}> {
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
                 <div className="w-100 pd-3">
-                  <BootstrapTable
-                    bootstrap4
-                    keyField="id"
-                    data={documents}
-                    hover
-                    striped
-                    noDataIndication="No Applications Present"
+                  <Table
                     columns={this.tableCols}
+                    data={documents}
+                    emptyInfo={{ description: 'No Applications Present' }}
                   />
                 </div>
               </div>

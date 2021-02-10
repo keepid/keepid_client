@@ -1,128 +1,134 @@
 @import "App";
 // class for rows being edited
 .table-edit-row {
-    background-color: $primary-theme-light;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
+	background-color: $primary-theme-light;
+	font-family: 'Inter', sans-serif;
+	font-weight: 400;
 }
 
 .action:hover,
 .action:focus {
-    filter: brightness(0.6);
+	filter: brightness(0.6);
 }
 
 .table-svg {
-    max-width: 1.4rem;
+	max-width: 1.4rem;
 }
 
 .sort-svg {
-    max-width: 2rem;
+	max-width: 2rem;
 }
 
 .table-zebra {
-    background: #F4F4F4;
+	background: #F4F4F4;
 }
 
 .table-zebra:hover,
 .table-row:hover {
-    background: $primary-theme-light !important;
+	background: $primary-theme-light !important;
+}
+
+.table-row td {
+	word-break: break-word;
 }
 
 .lighten {
-    filter: opacity(0.3);
+	filter: opacity(0.3);
 }
 
 .rotate180 {
-    transform: rotate(180deg);
+	transform: rotate(180deg);
 }
 
 .select-row {
-    background: $primary-theme-light !important;
+	background: $primary-theme-light !important;
 }
 
 .editor-input {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    text-align: left;
-    font-weight: 400 !important;
-    color: $secondary-dark-theme !important;
-    background-color: white !important;
-    margin: auto;
+	font-family: 'Inter', sans-serif;
+	font-size: 0.9rem;
+	text-align: left;
+	font-weight: 400 !important;
+	color: $secondary-dark-theme !important;
+	background-color: white !important;
+	margin: auto;
 }
 
 @mixin table-mod-text($color) {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    line-height: 1rem;
-    color: $color;
+	font-family: 'Inter', sans-serif;
+	font-weight: 700;
+	line-height: 1rem;
+	color: $color;
 }
 
 .edit-text {
-    @include table-mod-text($primary-theme);
+	@include table-mod-text($primary-theme);
 }
 
 .save-text {
-    @include table-mod-text(#009000);
+	@include table-mod-text(#009000);
 }
 
 .delete-text {
-    @include table-mod-text($text-red);
+	@include table-mod-text($text-red);
 }
 
 .edit-text:hover,
 .edit-text:focus {
-    text-decoration: none;
-    color: darken($primary-theme, 40%);
+	text-decoration: none;
+	color: darken($primary-theme, 40%);
 }
 
 .save-text:hover,
 .save-text:focus {
-    text-decoration: none;
-    color: darken(#009000, 10%);
+	text-decoration: none;
+	color: darken(#009000, 10%);
 }
 
 .delete-text:hover,
 .delete-text:focus {
-    text-decoration: none;
-    color: darken($text-red, 30%);
+	text-decoration: none;
+	color: darken($text-red, 30%);
+}
+
+.page-item {
+	cursor: pointer;
 }
 
 .page-link {
-    text-align: center;
+	text-align: center;
 }
 
-.pagination>li>span,
-.pagination>.disabled>span {
-    background-color: white;
-    color: $primary-theme !important;
-    width: 2.4rem;
-    max-width: 2.4rem;
-    align-self: auto;
+.pagination > li > span,
+.pagination > .disabled > span {
+	background-color: white;
+	color: $primary-theme !important;
+	align-self: auto;
 }
 
-.pagination>li>span:hover {
-    background-color: $primary-theme-light;
-    color: $primary-theme;
+.pagination > li > span:hover {
+	background-color: $primary-theme-light;
+	color: $primary-theme;
 }
 
-.pagination>.active>span {
-    border: 1px solid $primary-theme !important;
-    background: $primary-theme !important;
-    color: white !important;
+.pagination > .active > span {
+	border: 1px solid $primary-theme !important;
+	background: $primary-theme !important;
+	color: white !important;
 }
 
-.pagination>li:first-of-type>span {
-    border-radius: 4px 0px 0px 4px !important;
+.pagination > li:first-of-type > span {
+	border-radius: 4px 0px 0px 4px !important;
 }
 
-.pagination>li:last-of-type>span {
-    border-radius: 0px 4px 4px 0px !important;
+.pagination > li:last-of-type > span {
+	border-radius: 0px 4px 4px 0px !important;
 }
 
 .empty-table {
-    background-color: #EEEEEE;
-    height: 34rem;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 1.2rem;
+	background-color: #EEEEEE;
+	height: 34rem;
+	font-family: 'Inter', sans-serif;
+	font-weight: 500;
+	font-size: 1.2rem;
 }
