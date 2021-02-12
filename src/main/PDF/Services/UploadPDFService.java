@@ -11,7 +11,6 @@ import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import org.bson.Document;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,12 +29,10 @@ public class UploadPDFService implements Service {
   InputStream fileStream;
   PDFType pdfType;
   MongoDatabase db;
-  Logger logger;
   EncryptionController encryptionController;
 
   public UploadPDFService(
       MongoDatabase db,
-      Logger logger,
       String uploaderUsername,
       String organizationName,
       UserType privilegeLevel,
@@ -46,7 +43,6 @@ public class UploadPDFService implements Service {
       InputStream fileStream,
       EncryptionController encryptionController) {
     this.db = db;
-    this.logger = logger;
     this.uploader = uploaderUsername;
     this.organizationName = organizationName;
     this.privilegeLevel = privilegeLevel;

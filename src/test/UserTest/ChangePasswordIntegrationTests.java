@@ -8,7 +8,6 @@ import Database.Token.TokenDaoFactory;
 import Database.Token.TokenDaoOld;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
-import Logger.LogFactory;
 import Security.SecurityUtils;
 import Security.Services.ChangePasswordService;
 import Security.Services.ForgotPasswordService;
@@ -25,7 +24,6 @@ import io.javalin.http.Context;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +48,6 @@ public class ChangePasswordIntegrationTests {
   MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
   UserDao userDao = UserDaoFactory.create(DeploymentLevel.TEST);
   TokenDao tokenDao = TokenDaoFactory.create(DeploymentLevel.TEST);
-  Logger logger = new LogFactory().createLogger();
 
   // Make sure to enable .env file configurations for these tests
 
@@ -74,7 +71,7 @@ public class ChangePasswordIntegrationTests {
   public void forgotPasswordCreatesTokenTest() {
     String username = "password-reset-test";
     ForgotPasswordService forgotPasswordService =
-        new ForgotPasswordService(userDao, tokenDao, logger, username);
+        new ForgotPasswordService(userDao, tokenDao, username);
     Message returnMessage = forgotPasswordService.executeAndGetResponse();
     assertEquals(UserMessage.SUCCESS, returnMessage);
     Tokens tokens = tokenDao.get(username).get();
@@ -90,7 +87,7 @@ public class ChangePasswordIntegrationTests {
         SecurityUtils.createJWT(
             id, "KeepID", username, "Password Reset Confirmation", EXPIRATION_TIME_2_HOURS);
     ResetPasswordService forgotPasswordService =
-        new ResetPasswordService(userDao, tokenDao, logger, jwt, username);
+        new ResetPasswordService(userDao, tokenDao, jwt, username);
     Message returnMessage = forgotPasswordService.executeAndGetResponse();
     assertEquals(UserMessage.AUTH_FAILURE, returnMessage);
     Tokens tokens = TokenDaoOld.getTokensOrNull(db, username);

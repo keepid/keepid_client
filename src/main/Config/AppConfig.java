@@ -7,7 +7,6 @@ import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
 import Issue.IssueController;
-import Logger.LogFactory;
 import Organization.OrganizationController;
 import PDF.PdfController;
 import Security.AccountSecurityController;
@@ -31,10 +30,6 @@ public class AppConfig {
     TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
     setApplicationHeaders(app);
-
-    /* Utilities to pass to route handlers */
-    LogFactory l = new LogFactory();
-    l.createLogger();
 
     EncryptionUtils.initialize();
     //    try {

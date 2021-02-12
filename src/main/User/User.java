@@ -1,17 +1,17 @@
 package User;
 
-import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class User {
   private ObjectId id;
 
@@ -286,59 +286,56 @@ public class User {
       String password,
       UserType userType) {
 
-    LogFactory l = new LogFactory();
-    Logger logger = l.createLogger("UserValidation");
-
     if (!ValidationUtils.isValidFirstName(firstName)) {
-      logger.error("Invalid firstName: " + firstName);
+      log.error("Invalid firstName: " + firstName);
       return UserValidationMessage.INVALID_FIRSTNAME;
     }
     if (!ValidationUtils.isValidLastName(lastName)) {
-      logger.error("Invalid lastName: " + lastName);
+      log.error("Invalid lastName: " + lastName);
       return UserValidationMessage.INVALID_LASTNAME;
     }
     if (!ValidationUtils.isValidBirthDate(birthDate)) {
-      logger.error("Invalid birthDate: " + birthDate);
+      log.error("Invalid birthDate: " + birthDate);
       return UserValidationMessage.INVALID_BIRTHDATE;
     }
     if (!ValidationUtils.isValidPhoneNumber(phone)) {
-      logger.error("Invalid orgContactPhoneNumber: " + phone);
+      log.error("Invalid orgContactPhoneNumber: " + phone);
       return UserValidationMessage.INVALID_PHONENUMBER;
     }
     if (!ValidationUtils.isValidOrganizationName(organization)) {
-      logger.error("Invalid organization: " + organization);
+      log.error("Invalid organization: " + organization);
       return UserValidationMessage.INVALID_ORGANIZATION;
     }
     if (!ValidationUtils.isValidEmail(email)) {
-      logger.error("Invalid email: " + email);
+      log.error("Invalid email: " + email);
       return UserValidationMessage.INVALID_EMAIL;
     }
     if (!ValidationUtils.isValidAddress(address)) {
-      logger.error("Invalid address: " + address);
+      log.error("Invalid address: " + address);
       return UserValidationMessage.INVALID_ADDRESS;
     }
     if (!ValidationUtils.isValidCity(city)) {
-      logger.error("Invalid city: " + city);
+      log.error("Invalid city: " + city);
       return UserValidationMessage.INVALID_CITY;
     }
     if (!ValidationUtils.isValidUSState(state)) {
-      logger.error("Invalid state: " + state);
+      log.error("Invalid state: " + state);
       return UserValidationMessage.INVALID_STATE;
     }
     if (!ValidationUtils.isValidZipCode(zipcode)) {
-      logger.error("Invalid zipcode: " + zipcode);
+      log.error("Invalid zipcode: " + zipcode);
       return UserValidationMessage.INVALID_ZIPCODE;
     }
     if (!ValidationUtils.isValidUsername(username)) {
-      logger.error("Invalid username: " + username);
+      log.error("Invalid username: " + username);
       return UserValidationMessage.INVALID_USERNAME;
     }
     if (!ValidationUtils.isValidPassword(password)) {
-      logger.error("Invalid password: " + password);
+      log.error("Invalid password: " + password);
       return UserValidationMessage.INVALID_PASSWORD;
     }
     if (!ValidationUtils.isValidUserType(userType.toString())) {
-      logger.error("Invalid UserType: " + userType);
+      log.error("Invalid UserType: " + userType);
       return UserValidationMessage.INVALID_USERTYPE;
     }
 

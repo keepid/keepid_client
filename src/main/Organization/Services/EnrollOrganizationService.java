@@ -17,9 +17,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,10 @@ import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
+@Slf4j
 public class EnrollOrganizationService implements Service {
   static final String newOrgActualURL = Objects.requireNonNull(System.getenv("NEW_ORG_ACTUALURL"));
   MongoDatabase db;
-  Logger logger;
   String firstName;
   String lastName;
   String birthDate;
@@ -57,7 +57,6 @@ public class EnrollOrganizationService implements Service {
 
   public EnrollOrganizationService(
       MongoDatabase db,
-      Logger logger,
       String firstName,
       String lastName,
       String birthDate,
@@ -81,7 +80,6 @@ public class EnrollOrganizationService implements Service {
       String orgEmail,
       String orgPhoneNumber) {
     this.db = db;
-    this.logger = logger;
     this.firstName = firstName;
     this.lastName = lastName;
     this.birthDate = birthDate;
@@ -107,30 +105,12 @@ public class EnrollOrganizationService implements Service {
     activityController = new ActivityController();
   }
 
-  //    // for testing
-  //    EnrollOrganizationService(MongoDatabase db, Logger logger, User user, String
-  // sessionUsername, UserType sessionUserLevel){
-  //        this.firstName = user.getFirstName();
-  //        this.lastName = user.getLastName();
-  //        this.birthDate = user.getBirthDate();
-  //        this.email = user.getEmail();
-  //        this.phone = user.getPhone();
-  //        this.address = user.getAddress();
-  //        this.city = user.getCity();
-  //        this.state = user.getState();
-  //        this.zipcode = user.getZipcode();
-  //        this.twoFactorOn = user.getTwoFactorOn();
-  //        this.username = user.getUsername();
-  //        this.password = user.getPassword();
-  //        this.userLevel = user.getUserType();
-  //    }
-
   @Override
   public Message executeAndGetResponse() {
     Organization org;
     User user;
 
-    logger.info("Attempting to create user and organization");
+    log.info("Attempting to create user and organization");
     try {
       org =
           new Organization(
@@ -162,11 +142,11 @@ public class EnrollOrganizationService implements Service {
       CreateOrgActivity createOrgActivity = new CreateOrgActivity(user, org);
       activityController.addActivity(createOrgActivity);
     } catch (ValidationException ve) {
-      logger.error("Could not create user and/or org");
+      log.error("Could not create user and/or org");
       return OrgEnrollmentStatus.FAIL_TO_CREATE;
     }
 
-    logger.info("Checking for existing user and organization");
+    log.info("Checking for existing user and organization");
     MongoCollection<Organization> orgCollection =
         db.getCollection("organization", Organization.class);
     Organization existingOrg = orgCollection.find(eq("orgName", org.getOrgName())).first();
@@ -175,29 +155,29 @@ public class EnrollOrganizationService implements Service {
     User existingUser = userCollection.find(eq("username", user.getUsername())).first();
 
     if (existingOrg != null) {
-      logger.error("Organization already exists");
+      log.error("Organization already exists");
       return OrgEnrollmentStatus.ORG_EXISTS;
     } else if (existingUser != null) {
-      logger.error("User already exists");
+      log.error("User already exists");
       return UserMessage.USERNAME_ALREADY_EXISTS;
     } else {
-      logger.info("Org and User are OK, hashing password");
+      log.info("Org and User are OK, hashing password");
       String passwordHash = SecurityUtils.hashPassword(password);
       if (passwordHash == null) {
         return OrgEnrollmentStatus.PASS_HASH_FAILURE;
       }
 
-      logger.info("Setting password and inserting user and org into Mongo");
+      log.info("Setting password and inserting user and org into Mongo");
       user.setPassword(passwordHash);
 
       List<IpObject> logInInfo = new ArrayList<IpObject>(1000);
       user.setLogInHistory(logInInfo);
       userCollection.insertOne(user);
       orgCollection.insertOne(org);
-      logger.info("Notifying Slack about new org");
+      log.info("Notifying Slack about new org");
       HttpResponse posted = makeBotMessage(org);
       if (!posted.isSuccess()) {
-        logger.error("Failed to notify Slack about new org");
+        log.error("Failed to notify Slack about new org");
         JSONObject body = new JSONObject();
         body.put(
             "text",
@@ -205,7 +185,7 @@ public class EnrollOrganizationService implements Service {
                 + "posted on Slack.");
         Unirest.post(IssueController.issueReportActualURL).body(body.toString()).asEmpty();
       }
-      logger.info("Done with enrollOrganization");
+      log.info("Done with enrollOrganization");
       return OrgEnrollmentStatus.SUCCESSFUL_ENROLLMENT;
     }
   }

@@ -9,7 +9,6 @@ import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationUtils;
-import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.Objects;
@@ -18,17 +17,14 @@ import java.util.Optional;
 public class TwoFactorAuthService implements Service {
   UserDao userDao;
   TokenDao tokenDao;
-  Logger logger;
   private String username;
   private String token;
   private UserType userType;
   private String orgName;
 
-  public TwoFactorAuthService(
-      UserDao userDao, TokenDao tokenDao, Logger logger, String username, String token) {
+  public TwoFactorAuthService(UserDao userDao, TokenDao tokenDao, String username, String token) {
     this.userDao = userDao;
     this.tokenDao = tokenDao;
-    this.logger = logger;
     this.username = username;
     this.token = token;
   }

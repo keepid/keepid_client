@@ -6,20 +6,17 @@ import Config.Service;
 import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public class Change2FAService implements Service {
   UserDao userDao;
-  Logger logger;
   private String username;
   private Boolean isTwoFactorOn;
 
-  public Change2FAService(UserDao userDao, Logger logger, String username, Boolean isTwoFactorOn) {
+  public Change2FAService(UserDao userDao, String username, Boolean isTwoFactorOn) {
     this.userDao = userDao;
-    this.logger = logger;
     this.username = username;
     this.isTwoFactorOn = isTwoFactorOn;
   }
