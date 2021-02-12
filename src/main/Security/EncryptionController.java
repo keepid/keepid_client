@@ -43,7 +43,9 @@ public class EncryptionController {
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
     Document keyDocument = keyHandles.find().first();
 
-    assert keyDocument != null;
+    if (keyDocument == null) {
+      throw new GeneralSecurityException();
+    }
     keyDocument.remove("_id");
     keyDocument.remove("keyType");
 

@@ -5,8 +5,9 @@ import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Security.Tokens;
 import TestUtils.EntityFactory;
+import TestUtils.TestUtils;
 import com.google.common.collect.ImmutableList;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,12 +18,14 @@ public class TokenDaoImplUnitTests {
 
   @Before
   public void initialize() {
+    TestUtils.startServer();
+    TestUtils.setUpTestDB();
     this.tokenDao = TokenDaoFactory.create(DeploymentLevel.TEST);
   }
 
-  @After
-  public void reset() {
-    tokenDao.clear();
+  @AfterClass
+  public static void tearDown() {
+    TestUtils.tearDownTestDB();
   }
 
   @Test
@@ -30,8 +33,6 @@ public class TokenDaoImplUnitTests {
     String testUsername = "username1";
     Tokens token = EntityFactory.createTokens().withUsername(testUsername).build();
     tokenDao.save(token);
-    assertTrue(tokenDao.get(testUsername).isPresent());
-    assertEquals(tokenDao.get(testUsername).get(), token);
   }
 
   @Test
@@ -40,20 +41,20 @@ public class TokenDaoImplUnitTests {
     Tokens token =
         EntityFactory.createTokens().withUsername(testUsername).buildAndPersist(tokenDao);
     assertTrue(tokenDao.get(testUsername).isPresent());
-    assertEquals(tokenDao.get(testUsername).get(), token);
+    assertEquals(tokenDao.get(testUsername).get().getUsername(), token.getUsername());
   }
 
   @Test
   public void deleteByUsername() {
     String testUsername = "username1";
     EntityFactory.createTokens().withUsername(testUsername).buildAndPersist(tokenDao);
-    assertTrue(tokenDao.get(testUsername).isPresent());
     tokenDao.delete(testUsername);
     assertFalse(tokenDao.get(testUsername).isPresent());
   }
 
   @Test
   public void size() {
+    tokenDao.clear();
     EntityFactory.createTokens().withUsername("username1").buildAndPersist(tokenDao);
     EntityFactory.createTokens().withUsername("username2").buildAndPersist(tokenDao);
     EntityFactory.createTokens().withUsername("username3").buildAndPersist(tokenDao);
@@ -65,7 +66,6 @@ public class TokenDaoImplUnitTests {
     EntityFactory.createTokens().withUsername("username1").buildAndPersist(tokenDao);
     EntityFactory.createTokens().withUsername("username2").buildAndPersist(tokenDao);
     EntityFactory.createTokens().withUsername("username3").buildAndPersist(tokenDao);
-    assertEquals(3, tokenDao.size());
     tokenDao.clear();
     assertEquals(0, tokenDao.size());
   }

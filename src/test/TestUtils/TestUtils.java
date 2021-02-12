@@ -697,8 +697,15 @@ public class TestUtils {
               createdAdmin));
 
       // Add the 2FA tokens to the test database
-      MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens", Tokens.class);
-      tokenCollection.insertMany(Arrays.asList(validToken, expiredToken));
+      //      MongoCollection<Tokens> tokenCollection = testDB.getCollection("tokens",
+      // Tokens.class);
+      //      tokenCollection.insertMany(Arrays.asList(validToken, expiredToken));
+
+      // Add an AED to the test database
+      MongoCollection<Document> keysCollection = testDB.getCollection("keys", Document.class);
+      Document aed = new Document();
+      aed.append("primaryKeyId", 1234567890);
+      keysCollection.insertOne(aed);
     } catch (Exception e) {
       e.printStackTrace();
     }
