@@ -19,11 +19,34 @@ interface State {
 }
 
 const activitiesCardStyles: CSSProperties = {
-  border: '1px solid black',
-  backgroundColor: '#d3d3d3',
+  border: '1px solid #D3D3D3',
+  backgroundColor: '#F8F8F8',
+  boxSizing: 'border-box',
   borderRadius: '1.5%',
   marginBottom: '1.5%',
   overflow: 'hidden',
+};
+
+const activityTitleStyles: CSSProperties = {
+  float: 'left',
+  color: '#6C757D',
+  fontFamily: 'Raleway',
+  fontStyle: 'normal',
+  fontWeight: 'bold',
+  fontSize: '16px',
+  lineHeight: '18px',
+  padding: '0.75%',
+};
+
+const activityDateStyles: CSSProperties = {
+  float: 'right',
+  color: '#6C757D',
+  fontFamily: 'Inter',
+  fontStyle: 'normal',
+  fontWeight: 'normal',
+  fontSize: '16px',
+  lineHeight: '18px',
+  padding: '0.75%',
 };
 
 interface ActivityProps {
@@ -40,8 +63,8 @@ function ActivitiesCard(props: ActivityProps) {
   // eslint-disable-next-line no-underscore-dangle
   return (
     <div style={activitiesCardStyles} className="ml-2">
-      <p style={{ float: 'left' }}>{type}</p>
-      <p style={{ float: 'right' }}>
+      <h6 style={activityTitleStyles}>{type}</h6>
+      <p style={activityDateStyles}>
         {daysDifference}
         {' '}
         days ago
@@ -60,11 +83,12 @@ class ClientLanding extends Component<Props, State, {}> {
   }
 
   renderActivitiesCard = (activities) => {
+    const { isLoading } = this.state;
     if (activities.length > 0) {
       // eslint-disable-next-line no-underscore-dangle
       return activities.map((activity) => (<ActivitiesCard key={JSON.parse(activity.info[0])._id.$oid} activity={activity} />));
     }
-    if (!this.state.isLoading) {
+    if (!isLoading) {
       return (<div className="ml-2"><h3>No activities found!</h3></div>);
     }
     return null;
