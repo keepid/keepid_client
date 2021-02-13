@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, CSSProperties } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
@@ -14,14 +14,40 @@ interface Props extends RouteComponentProps {
 }
 
 interface State {
-  activities: Array<any>
+  activities: Array<any>,
+  isLoading: Boolean
 }
 
-function renderActivitiesCard(activities) {
-  if (activities.length > 0) {
-    return activities.map((activity) => (<div><h3>{activity.type[0]}</h3></div>));
-  }
-  return (<div><h3>No activities found!</h3></div>);
+const activitiesCardStyles: CSSProperties = {
+  border: '1px solid black',
+  backgroundColor: '#d3d3d3',
+  borderRadius: '1.5%',
+  marginBottom: '1.5%',
+  overflow: 'hidden',
+};
+
+interface ActivityProps {
+  activity: any,
+}
+
+function ActivitiesCard(props: ActivityProps) {
+  const { activity } = props;
+  const parsedInfo = JSON.parse(activity.info[0]);
+  const type = activity.type[0];
+  const date = parsedInfo.occuredAt.$date;
+  const newDate = new Date(date);
+  const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+  // eslint-disable-next-line no-underscore-dangle
+  return (
+    <div style={activitiesCardStyles} className="ml-2">
+      <p style={{ float: 'left' }}>{type}</p>
+      <p style={{ float: 'right' }}>
+        {daysDifference}
+        {' '}
+        days ago
+      </p>
+    </div>
+  );
 }
 
 class ClientLanding extends Component<Props, State, {}> {
@@ -29,10 +55,23 @@ class ClientLanding extends Component<Props, State, {}> {
     super(props);
     this.state = {
       activities: [],
+      isLoading: false,
     };
   }
 
+  renderActivitiesCard = (activities) => {
+    if (activities.length > 0) {
+      // eslint-disable-next-line no-underscore-dangle
+      return activities.map((activity) => (<ActivitiesCard key={JSON.parse(activity.info[0])._id.$oid} activity={activity} />));
+    }
+    if (!this.state.isLoading) {
+      return (<div className="ml-2"><h3>No activities found!</h3></div>);
+    }
+    return null;
+  }
+
   componentDidMount() {
+    this.setState({ isLoading: true });
     fetch(`${getServerURL()}/get-all-activities`, {
       method: 'POST',
       credentials: 'include',
@@ -44,14 +83,14 @@ class ClientLanding extends Component<Props, State, {}> {
       .then((responseJSON) => {
         console.log(responseJSON);
         if (responseJSON.status === 'SUCCESS') {
-          this.setState({ activities: responseJSON.activities.allActivities });
+          this.setState({ isLoading: false, activities: responseJSON.activities.allActivities });
         }
       });
   }
 
   render() {
     const { name, history } = this.props;
-    const { activities } = this.state;
+    const { activities, isLoading } = this.state;
     return (
       <div id="Buttons" className="container pt-5">
         <Helmet>
@@ -79,8 +118,9 @@ class ClientLanding extends Component<Props, State, {}> {
             Recent Activity
           </h3>
         </div>
+        {isLoading ? <div className="ld ld-ring ld-spin ml-2" /> : <div />}
         <div>
-          { activities !== [] ? renderActivitiesCard(activities) : renderActivitiesCard([]) }
+          { this.renderActivitiesCard(activities) }
         </div>
       </div>
     );
