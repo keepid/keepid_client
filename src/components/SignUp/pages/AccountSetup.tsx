@@ -104,9 +104,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const { passwordValidator } = this.state;
     if (passwordValidator === 'true') {
       return (
-        <div className="valid-feedback">
-          Password looks great!
-        </div>
+        <div className="valid-feedback" />
       );
     } if (passwordValidator === 'false') {
       return (
@@ -134,9 +132,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const { confirmPasswordValidator } = this.state;
     if (confirmPasswordValidator === 'true') {
       return (
-        <div className="valid-feedback">
-          Passwords match.
-        </div>
+        <div className="valid-feedback" />
       );
     } if (confirmPasswordValidator === 'false') {
       return (

@@ -164,9 +164,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   generalMessage = (inputString:string): ReactElement<{}> => {
     if (inputString === 'true') {
       return (
-        <div className="valid-feedback">
-          Looks Great.
-        </div>
+        <div className="valid-feedback" />
       );
     } if (inputString === 'false') {
       return (
