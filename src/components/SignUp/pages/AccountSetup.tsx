@@ -179,6 +179,8 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
+    e.preventDefault();
+    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     const {
       alert,
       handleContinue,
@@ -188,8 +190,6 @@ class AccountSetup extends Component<Props, State, {}> {
       passwordValidator,
       confirmPasswordValidator,
     } = this.state;
-    e.preventDefault();
-    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (usernameValidator === 'true'
         && passwordValidator === 'true'
         && confirmPasswordValidator === 'true') {
