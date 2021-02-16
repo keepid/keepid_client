@@ -5,7 +5,6 @@ import Config.Message;
 import Config.MongoConfig;
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
-import Database.Token.TokenDaoOld;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
 import Security.SecurityUtils;
@@ -25,9 +24,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class ChangePasswordIntegrationTests {
@@ -76,7 +77,7 @@ public class ChangePasswordIntegrationTests {
     assertEquals(UserMessage.SUCCESS, returnMessage);
     Tokens tokens = tokenDao.get(username).get();
     assertEquals(1, tokens.numTokens());
-    TokenDaoOld.removeTokenIfLast(db, username, tokens, Tokens.TokenType.PASSWORD_RESET);
+    tokenDao.removeTokenIfLast(username, tokens, Tokens.TokenType.PASSWORD_RESET);
   }
 
   @Test
@@ -90,8 +91,8 @@ public class ChangePasswordIntegrationTests {
         new ResetPasswordService(userDao, tokenDao, jwt, username);
     Message returnMessage = forgotPasswordService.executeAndGetResponse();
     assertEquals(UserMessage.AUTH_FAILURE, returnMessage);
-    Tokens tokens = TokenDaoOld.getTokensOrNull(db, username);
-    assertNull(tokens);
+    Optional<Tokens> tokens = tokenDao.get(username);
+    assertTrue(tokens.isEmpty());
   }
   //
   //  @Test
