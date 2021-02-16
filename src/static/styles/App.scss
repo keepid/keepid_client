@@ -178,6 +178,18 @@ body {
 	border-color: #C9302C;
 }
 
+.btn-info {
+	color: white;
+	background-color: #445FEB;
+	border-color: #445FEB;
+}
+
+.btn-confirm {
+	color: white;
+	background-color: $secondary-theme;
+	border-color: $secondary-theme;
+}
+
 .btn-cancel {
 	color: gray;
 	background-color: white;
@@ -250,6 +262,16 @@ thead {
 // modal title
 .left-align {
 	text-align: left;
+}
+
+// modal full screen
+@media screen and (max-width: 576px) { // s and xs screens
+	.popup-full-screen {
+		height: 100%;
+		width: 100%;
+		margin: 0;
+    	padding: 0;
+	};
 }
 
 // Form elements

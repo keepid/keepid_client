@@ -2,10 +2,9 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image';
-// import SaveSVG from '../../static/images/check.svg';
-// import EditSVG from '../../static/images/edit.svg';
 import DeleteSVG from '../../static/images/delete.svg';
-// import ArrowSVG from '../../static/images/down-arrow.svg';
+import ConfirmSVG from '../../static/images/confirm.svg';
+import InfoSVG from '../../static/images/infoDialog.svg';
 
 interface Props {
   modalType: string,
@@ -13,8 +12,6 @@ interface Props {
   modalTitle: string,
   modalDescription: string,
   modalIcon: string,
-  // handleClose: (event: any) => void,
-  // handleShow: (event:any) => void,
 }
 
 // This is a "functional" component, rather than a "class" component
@@ -24,8 +21,6 @@ const Dialog = ({
   modalDescription,
   modalIcon: modalIconProp,
 //   modalSize,
-  // handleClose,
-  // handleShow,
 }: Props) => {
   const [show, setShow] = React.useState(false);
   const handleClose = () => setShow(false);
@@ -34,7 +29,7 @@ const Dialog = ({
   let modalIcon = modalIconProp;
 
   if (modalType === 'CONFIRM') {
-    modalIcon = DeleteSVG;
+    modalIcon = ConfirmSVG;
     return (
       <>
         <Button variant="primary" onClick={handleShow}>Launch Modal</Button>
@@ -55,7 +50,7 @@ const Dialog = ({
           </Modal.Body>
           <Modal.Footer className="no-border">
             <Button className="mb-3" variant="cancel" onClick={handleClose}>Cancel</Button>
-            <Button className="mb-3 mr-4" variant="primary">Confirm Action</Button>
+            <Button className="mb-3 mr-4" variant="confirm">Confirm Action</Button>
           </Modal.Footer>
         </Modal>
       </>
@@ -88,7 +83,7 @@ const Dialog = ({
       </>
     );
   } if (modalType === 'INFO') {
-    modalIcon = DeleteSVG;
+    modalIcon = InfoSVG;
     return (
       <>
         <Button variant="primary" onClick={handleShow}>Launch Modal</Button>
@@ -109,7 +104,7 @@ const Dialog = ({
           </Modal.Body>
           <Modal.Footer className="no-border">
             <Button className="mb-3" variant="cancel" onClick={handleClose}>Cancel</Button>
-            <Button className="mb-3 mr-4" variant="primary">Confirm Action</Button>
+            <Button className="mb-3 mr-4" variant="info">Confirm Action</Button>
           </Modal.Footer>
         </Modal>
       </>

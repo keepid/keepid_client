@@ -129,7 +129,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 exact
                 path="/dialog-test"
-                render={() => <Dialog modalType="DELETE" modalTitle="Delete this account?" modalDescription="I will not close if you click outside me. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" modalIcon="" />}
+                render={() => <Dialog modalType="CONFIRM" modalTitle="Here is some info you should know" modalDescription="I will not close if you click outside me. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah" modalIcon="" />}
               />
 
               <Route
