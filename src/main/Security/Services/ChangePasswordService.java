@@ -7,22 +7,19 @@ import Security.SecurityUtils;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public class ChangePasswordService implements Service {
   UserDao userDao;
-  Logger logger;
   String username;
   String oldPassword;
   String newPassword;
 
   public ChangePasswordService(
-      UserDao userDao, Logger logger, String username, String oldPassword, String newPassword) {
+      UserDao userDao, String username, String oldPassword, String newPassword) {
     this.userDao = userDao;
-    this.logger = logger;
     this.username = username;
     this.oldPassword = oldPassword;
     this.newPassword = newPassword;

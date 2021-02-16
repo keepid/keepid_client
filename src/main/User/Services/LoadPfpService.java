@@ -8,32 +8,31 @@ import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Filters;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
 
 import java.io.InputStream;
 
+@Slf4j
 public class LoadPfpService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private InputStream res;
   private String contentType;
 
-  public LoadPfpService(MongoDatabase db, Logger logger, String username) {
+  public LoadPfpService(MongoDatabase db, String username) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    logger.info("Started get pfp service");
+    log.info("Started get pfp service");
     Bson filter = Filters.eq("metadata.owner", username);
     GridFSBucket gridBucket = GridFSBuckets.create(db, "pfp");
     GridFSFile grid_out = gridBucket.find(filter).limit(1).first();
     if (grid_out == null || grid_out.getMetadata() == null) {
-      logger.info("No pfp found");
+      log.info("No pfp found");
       return UserMessage.USER_NOT_FOUND;
     }
     String fileName = grid_out.getFilename();
@@ -42,7 +41,7 @@ public class LoadPfpService implements Service {
     if (!contentType.equals("png")) {
       contentType = "jpeg";
     }
-    logger.info("Loaded profile pic with name " + grid_out.getFilename());
+    log.info("Loaded profile pic with name " + grid_out.getFilename());
     InputStream pfp = gridBucket.openDownloadStream(grid_out.getObjectId());
     res = pfp;
     return UserMessage.SUCCESS;

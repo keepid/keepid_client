@@ -13,7 +13,6 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,12 +32,10 @@ public class UploadAnnotatedPDFService implements Service {
   String fileContentType;
   InputStream fileStream;
   MongoDatabase db;
-  Logger logger;
   EncryptionController encryptionController;
 
   public UploadAnnotatedPDFService(
       MongoDatabase db,
-      Logger logger,
       String uploaderUsername,
       String organizationName,
       UserType privilegeLevel,
@@ -48,7 +45,6 @@ public class UploadAnnotatedPDFService implements Service {
       InputStream fileStream,
       EncryptionController encryptionController) {
     this.db = db;
-    this.logger = logger;
     this.uploader = uploaderUsername;
     this.organizationName = organizationName;
     this.privilegeLevel = privilegeLevel;

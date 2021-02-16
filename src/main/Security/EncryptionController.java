@@ -1,6 +1,5 @@
 package Security;
 
-import Logger.LogFactory;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.JsonKeysetReader;
 import com.google.crypto.tink.KeysetHandle;
@@ -8,10 +7,10 @@ import com.google.crypto.tink.aead.AeadConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.bson.Document;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,9 +18,9 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
+@Slf4j
 public class EncryptionController {
   private MongoDatabase db;
-  private Logger logger;
   private Aead aead;
 
   public static final String masterKeyUri = Objects.requireNonNull(System.getenv("MASTERKEYURI"));
@@ -31,13 +30,11 @@ public class EncryptionController {
 
   public EncryptionController(MongoDatabase db) throws GeneralSecurityException, IOException {
     this.db = db;
-    LogFactory l = new LogFactory();
-    logger = l.createLogger("EncryptionController");
     this.aead = generateAead();
   }
 
   private Aead generateAead() throws GeneralSecurityException, IOException {
-    logger.info("Generating AEAD Prim");
+    log.info("Generating AEAD Prim");
     AeadConfig.register();
 
     MongoCollection<Document> keyHandles = db.getCollection("keys", Document.class);
@@ -64,7 +61,7 @@ public class EncryptionController {
       return ciphertext;
 
     } catch (GeneralSecurityException e) {
-      logger.error("General Security Exception thrown, encrpytion unsuccessful");
+      log.error("General Security Exception thrown, encrpytion unsuccessful");
       throw e;
     }
   }
@@ -75,14 +72,14 @@ public class EncryptionController {
 
       return decrypted;
     } catch (GeneralSecurityException e) {
-      logger.error("Decryption Unsuccessful, double check aead");
+      log.error("Decryption Unsuccessful, double check aead");
       throw e;
     }
   }
 
   public InputStream encryptFile(InputStream fileStream, String username)
       throws IOException, GeneralSecurityException {
-    logger.info("Encrypting File");
+    log.info("Encrypting File");
     try {
       byte[] fileBytes = IOUtils.toByteArray(fileStream);
       byte[] aad = username.getBytes();
@@ -92,14 +89,14 @@ public class EncryptionController {
       return encryptedStream;
 
     } catch (IOException | GeneralSecurityException e) {
-      logger.error("Could not find file, or could not turn file into Byte Array");
+      log.error("Could not find file, or could not turn file into Byte Array");
       throw e;
     }
   }
 
   public InputStream decryptFile(InputStream encryptedFile, String username)
       throws GeneralSecurityException, IOException {
-    logger.info("Decrypting File");
+    log.info("Decrypting File");
     byte[] aad = username.getBytes();
     byte[] encryptedBytes = encryptedFile.readAllBytes();
 

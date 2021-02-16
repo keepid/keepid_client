@@ -8,38 +8,36 @@ import Security.EmailUtil;
 import Security.SecurityUtils;
 import User.UserMessage;
 import com.mongodb.client.MongoDatabase;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.security.SecureRandom;
 
+@Slf4j
 public class InviteUserService implements Service {
   MongoDatabase db;
-  Logger logger;
   JSONArray people;
   String sender;
-  String org;
+  String orgName;
 
-  public InviteUserService(
-      MongoDatabase db, Logger logger, JSONArray people, String sender, String org) {
+  public InviteUserService(MongoDatabase db, JSONArray people, String sender, String orgName) {
     this.db = db;
-    this.logger = logger;
     this.people = people;
     this.sender = sender;
-    this.org = org;
+    this.orgName = orgName;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    if (org.isEmpty()) {
-      logger.error("Empty organization field");
+    if (orgName.isEmpty()) {
+      log.error("Empty organization field");
       return UserMessage.EMPTY_FIELD;
     }
 
-    logger.info("Checking for empty fields");
+    log.info("Checking for empty fields");
     // Checking for any empty entries before sending out any emails
     for (int u = 0; u < people.length(); u++) {
 
@@ -54,24 +52,24 @@ public class InviteUserService implements Service {
       // for
       // each field.
       if (email.isEmpty()) {
-        logger.error("Empty email field");
+        log.error("Empty email field");
         return UserMessage.EMPTY_FIELD;
       }
       if (firstName.isEmpty()) {
-        logger.error("Empty first name field");
+        log.error("Empty first name field");
         return UserMessage.EMPTY_FIELD;
       }
       if (lastName.isEmpty()) {
-        logger.error("Empty last name field");
+        log.error("Empty last name field");
         return UserMessage.EMPTY_FIELD;
       }
       if (role.isEmpty()) {
-        logger.error("Empty role field");
+        log.error("Empty role field");
         return UserMessage.EMPTY_FIELD;
       }
     }
 
-    logger.info("Generating JWTs and emails for organization invites");
+    log.info("Generating JWTs and emails for organization invites");
     for (int i = 0; i < people.length(); i++) {
       JSONObject currInvite = people.getJSONObject(i);
 
@@ -87,7 +85,14 @@ public class InviteUserService implements Service {
       try {
         jwt =
             SecurityUtils.createOrgJWT(
-                id, sender, firstName, lastName, role, "Invite User to Org", org, expirationTime);
+                id,
+                sender,
+                firstName,
+                lastName,
+                role,
+                "Invite User to Org",
+                orgName,
+                expirationTime);
         String emailJWT =
             EmailUtil.getOrganizationInviteEmail(
                 "https://keep.id/create-user/" + jwt, sender, firstName + " " + lastName);
@@ -101,15 +106,15 @@ public class InviteUserService implements Service {
         //              throw new IllegalStateException("Unexpected value: " + role);
         //          }
       } catch (EmailExceptions e) {
-        logger.error("Email exception caught");
+        log.error("Email exception caught");
         return e;
       } catch (IOException e) {
         return EmailMessages.UNABLE_TO_SEND;
       }
     }
 
-    logger.info("All emails sent");
-    logger.info("Done with inviteUsers");
+    log.info("All emails sent");
+    log.info("Done with inviteUsers");
     return UserMessage.SUCCESS;
   }
 }

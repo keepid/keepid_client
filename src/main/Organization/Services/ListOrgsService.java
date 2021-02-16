@@ -6,23 +6,22 @@ import Organization.Organization;
 import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
+@Slf4j
 public class ListOrgsService implements Service {
   private MongoDatabase db;
-  private Logger logger;
   private JSONArray orgs = new JSONArray();
 
-  public ListOrgsService(MongoDatabase db, Logger logger) {
+  public ListOrgsService(MongoDatabase db) {
     this.db = db;
-    this.logger = logger;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    logger.info("Querying organizations from Mongo");
+    log.info("Querying organizations from Mongo");
     MongoCollection<Organization> orgCollection =
         db.getCollection("organization", Organization.class);
 
@@ -31,8 +30,8 @@ public class ListOrgsService implements Service {
       orgs.put(curr);
     }
 
-    logger.info("Done creating JSON array of organizations");
-    logger.info("Done with listOrgs");
+    log.info("Done creating JSON array of organizations");
+    log.info("Done with listOrgs");
     return UserMessage.SUCCESS;
   }
 

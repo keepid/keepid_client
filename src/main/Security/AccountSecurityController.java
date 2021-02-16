@@ -3,24 +3,20 @@ package Security;
 import Config.Message;
 import Database.Token.TokenDao;
 import Database.User.UserDao;
-import Logger.LogFactory;
 import Security.Services.*;
 import User.UserMessage;
 import io.javalin.http.Handler;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 public class AccountSecurityController {
   private UserDao userDao;
   private TokenDao tokenDao;
   private EncryptionUtils encryptionUtils;
-  private Logger logger;
 
   public AccountSecurityController(UserDao userDao, TokenDao tokenDao) {
     this.userDao = userDao;
     this.tokenDao = tokenDao;
     this.encryptionUtils = EncryptionUtils.getInstance();
-    logger = (new LogFactory()).createLogger("AccountSecurityController");
   }
 
   public Handler forgotPassword =
@@ -28,7 +24,7 @@ public class AccountSecurityController {
         JSONObject req = new JSONObject(ctx.body());
         String username = req.getString("username");
         ForgotPasswordService forgotPasswordService =
-            new ForgotPasswordService(userDao, tokenDao, logger, username);
+            new ForgotPasswordService(userDao, tokenDao, username);
         ctx.result(forgotPasswordService.executeAndGetResponse().toResponseString());
       };
 
@@ -40,7 +36,7 @@ public class AccountSecurityController {
         String oldPassword = req.getString("oldPassword");
         String newPassword = req.getString("newPassword");
         ChangePasswordService changePasswordService =
-            new ChangePasswordService(userDao, logger, username, oldPassword, newPassword);
+            new ChangePasswordService(userDao, username, oldPassword, newPassword);
         ctx.result(changePasswordService.executeAndGetResponse().toResponseString());
       };
 
@@ -52,7 +48,7 @@ public class AccountSecurityController {
         String key = req.getString("key");
         String value = req.getString("value");
         ChangeAccountSettingService changeAccountSettingService =
-            new ChangeAccountSettingService(userDao, logger, username, password, key, value);
+            new ChangeAccountSettingService(userDao, username, password, key, value);
         ctx.result(changeAccountSettingService.executeAndGetResponse().toResponseString());
       };
 
@@ -61,8 +57,7 @@ public class AccountSecurityController {
         JSONObject req = new JSONObject(ctx.body());
         Boolean isTwoFactorOn = req.getBoolean("twoFactorOn");
         String username = ctx.sessionAttribute("username");
-        Change2FAService change2FAService =
-            new Change2FAService(userDao, logger, username, isTwoFactorOn);
+        Change2FAService change2FAService = new Change2FAService(userDao, username, isTwoFactorOn);
         ctx.result(change2FAService.executeAndGetResponse().toResponseString());
       };
 
@@ -73,7 +68,7 @@ public class AccountSecurityController {
         String jwt = req.getString("jwt");
         String newPassword = req.getString("newPassword");
         ResetPasswordService resetPasswordService =
-            new ResetPasswordService(userDao, tokenDao, logger, jwt, newPassword);
+            new ResetPasswordService(userDao, tokenDao, jwt, newPassword);
         ctx.result(resetPasswordService.executeAndGetResponse().toResponseString());
       };
 
@@ -83,7 +78,7 @@ public class AccountSecurityController {
         String username = req.getString("username");
         String token = req.getString("token");
         TwoFactorAuthService twoFactorAuthService =
-            new TwoFactorAuthService(userDao, tokenDao, logger, username, token);
+            new TwoFactorAuthService(userDao, tokenDao, username, token);
         Message message = twoFactorAuthService.executeAndGetResponse();
         if (message == UserMessage.SUCCESS) {
           ctx.sessionAttribute("privilegeLevel", twoFactorAuthService.getUserType());
