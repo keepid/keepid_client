@@ -5,18 +5,14 @@ import Config.Service;
 import Database.User.UserDao;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import org.slf4j.Logger;
 
 public class AuthenticateUserService implements Service {
   UserDao userDao;
-  Logger logger;
   private String username;
   private String sesionUsername;
 
-  public AuthenticateUserService(
-      UserDao userDao, Logger logger, String username, String sessionUsername) {
+  public AuthenticateUserService(UserDao userDao, String username, String sessionUsername) {
     this.userDao = userDao;
-    this.logger = logger;
     this.username = username;
     this.sesionUsername = sessionUsername;
   }

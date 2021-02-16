@@ -1,6 +1,5 @@
 package Security;
 
-import Logger.LogFactory;
 import User.User;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.JsonKeysetReader;
@@ -9,9 +8,9 @@ import com.google.crypto.tink.config.TinkConfig;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,9 +21,9 @@ import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
+@Slf4j
 public class EncryptionUtils {
   private static EncryptionUtils instance;
-  private static Logger logger;
   private MongoDatabase db;
   private Aead aead;
 
@@ -39,8 +38,6 @@ public class EncryptionUtils {
 
   private EncryptionUtils(MongoDatabase db) throws GeneralSecurityException, IOException {
     this.db = db;
-    LogFactory l = new LogFactory();
-    logger = l.createLogger("EncryptionController");
     this.aead = generateAead();
   }
 
@@ -89,7 +86,7 @@ public class EncryptionUtils {
       return ciphertext;
 
     } catch (GeneralSecurityException e) {
-      logger.error("General Security Exception thrown, encrpytion unsuccessful");
+      log.error("General Security Exception thrown, encrpytion unsuccessful");
       throw e;
     }
   }
@@ -100,7 +97,7 @@ public class EncryptionUtils {
 
       return decrypted;
     } catch (GeneralSecurityException e) {
-      logger.error("Decryption Unsuccessful, double check aead");
+      log.error("Decryption Unsuccessful, double check aead");
       throw e;
     }
   }

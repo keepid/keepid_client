@@ -4,8 +4,6 @@ import Config.Message;
 import Config.Service;
 import Database.User.UserDao;
 import User.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,12 +11,10 @@ import java.util.stream.Collectors;
 public class DeleteUserService implements Service {
   UserDao userDao;
   String orgName;
-  Logger logger;
 
   public DeleteUserService(UserDao userDao, String orgName) {
     this.userDao = userDao;
     this.orgName = orgName;
-    logger = LoggerFactory.getLogger("App");
   }
 
   @Override

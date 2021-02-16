@@ -1,15 +1,15 @@
 package Organization;
 
-import Logger.LogFactory;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.Objects;
 
+@Slf4j
 public class Organization {
   private ObjectId id;
 
@@ -193,43 +193,41 @@ public class Organization {
       String orgEmail,
       String orgPhoneNumber)
       throws SecurityException {
-    LogFactory l = new LogFactory();
-    Logger logger = l.createLogger("OrganizationValidation");
 
     if (!ValidationUtils.isValidOrgName(orgName)) {
-      logger.error("Invalid orgname: " + orgName);
+      log.error("Invalid orgname: " + orgName);
       return OrganizationValidationMessage.INVALID_NAME;
     }
     if (!ValidationUtils.isValidOrgWebsite(orgWebsite)) {
-      logger.error("Invalid website: " + orgWebsite);
+      log.error("Invalid website: " + orgWebsite);
       return OrganizationValidationMessage.INVALID_WEBSITE;
     }
     if (!ValidationUtils.isValidEIN(orgEIN)) {
-      logger.error("Invalid taxCode: " + orgEIN);
+      log.error("Invalid taxCode: " + orgEIN);
       return OrganizationValidationMessage.INVALID_EIN;
     }
     if (!ValidationUtils.isValidPhoneNumber(orgPhoneNumber)) {
-      logger.error("Invalid orgContactPhoneNumber: " + orgPhoneNumber);
+      log.error("Invalid orgContactPhoneNumber: " + orgPhoneNumber);
       return OrganizationValidationMessage.INVALID_PHONE;
     }
     if (!ValidationUtils.isValidEmail(orgEmail)) {
-      logger.error("Invalid email: " + orgEmail);
+      log.error("Invalid email: " + orgEmail);
       return OrganizationValidationMessage.INVALID_EMAIL;
     }
     if (!ValidationUtils.isValidAddress(orgStreetAddress)) {
-      logger.error("Invalid address: " + orgStreetAddress);
+      log.error("Invalid address: " + orgStreetAddress);
       return OrganizationValidationMessage.INVALID_ADDRESS;
     }
     if (!ValidationUtils.isValidCity(orgCity)) {
-      logger.error("Invalid city: " + orgCity);
+      log.error("Invalid city: " + orgCity);
       return OrganizationValidationMessage.INVALID_CITY;
     }
     if (!ValidationUtils.isValidUSState(orgState)) {
-      logger.error("Invalid state: " + orgState);
+      log.error("Invalid state: " + orgState);
       return OrganizationValidationMessage.INVALID_STATE;
     }
     if (!ValidationUtils.isValidZipCode(orgZipcode)) {
-      logger.error("Invalid zipcode: " + orgZipcode);
+      log.error("Invalid zipcode: " + orgZipcode);
       return OrganizationValidationMessage.INVALID_ZIPCODE;
     }
     return OrganizationValidationMessage.VALID;

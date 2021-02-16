@@ -5,35 +5,33 @@ import Config.Service;
 import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 public class GetUserInfoService implements Service {
   private UserDao userDao;
-  private Logger logger;
   private String username;
   private User user;
 
-  public GetUserInfoService(UserDao userDao, Logger logger, String username) {
+  public GetUserInfoService(UserDao userDao, String username) {
     this.userDao = userDao;
-    this.logger = logger;
     this.username = username;
   }
 
   @Override
   public Message executeAndGetResponse() {
     Objects.requireNonNull(username);
-    Objects.requireNonNull(logger);
     Optional<User> optionalUser = userDao.get(username);
     if (optionalUser.isEmpty()) {
-      logger.error("Session Token Failure");
+      log.error("Session Token Failure");
       return UserMessage.USER_NOT_FOUND;
     } else {
       this.user = optionalUser.get();
-      logger.info("Successfully got user info");
+      log.info("Successfully got user info");
       return UserMessage.SUCCESS;
     }
   }

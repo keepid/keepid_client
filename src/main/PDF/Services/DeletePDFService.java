@@ -12,11 +12,9 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
 
 public class DeletePDFService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private String orgName;
   private UserType userType;
@@ -25,14 +23,12 @@ public class DeletePDFService implements Service {
 
   public DeletePDFService(
       MongoDatabase db,
-      Logger logger,
       String username,
       String orgName,
       UserType userType,
       PDFType pdfType,
       String fileId) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
     this.orgName = orgName;
     this.userType = userType;

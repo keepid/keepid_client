@@ -4,14 +4,11 @@ import Config.DeploymentLevel;
 import Config.Message;
 import Config.MongoConfig;
 import Database.User.UserDao;
-import Logger.LogFactory;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 public class AdminController {
-  Logger logger;
   UserDao userDao;
   MongoDatabase db;
 
@@ -19,8 +16,6 @@ public class AdminController {
     this.db = MongoConfig.getDatabase(DeploymentLevel.TEST);
     this.userDao = userDao;
     this.db = db;
-    LogFactory l = new LogFactory();
-    logger = l.createLogger("ActivityController");
   }
 
   // Shows you what you wanna delete before you do it :)

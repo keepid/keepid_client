@@ -2,7 +2,6 @@ package Organization;
 
 import Activity.ActivityController;
 import Config.Message;
-import Logger.LogFactory;
 import Organization.Services.EnrollOrganizationService;
 import Organization.Services.FindMemberService;
 import Organization.Services.InviteUserService;
@@ -11,15 +10,15 @@ import Security.EncryptionUtils;
 import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 
+@Slf4j
 public class OrganizationController {
 
-  Logger logger;
   MongoDatabase db;
   ActivityController activityController;
 
@@ -31,11 +30,8 @@ public class OrganizationController {
 
   public OrganizationController(MongoDatabase db) {
     this.db = db;
-    LogFactory l = new LogFactory();
-    logger = l.createLogger("OrgController");
     this.encryptionUtils = EncryptionUtils.getInstance();
     this.activityController = new ActivityController();
-    this.logger = l.createLogger("OrgController");
   }
   //
   //  public Handler organizationSignupValidator =
@@ -100,7 +96,7 @@ public class OrganizationController {
         JSONObject req = new JSONObject(ctx.body());
         JSONArray userTypes = req.getJSONArray("userTypes");
         JSONArray orgs = req.getJSONArray("organizations");
-        FindMemberService fm = new FindMemberService(db, logger, userTypes, orgs);
+        FindMemberService fm = new FindMemberService(db, userTypes, orgs);
         Message message = fm.executeAndGetResponse();
         JSONObject res = fm.getMembers();
         if (res == null) {
@@ -108,27 +104,27 @@ public class OrganizationController {
         }
         res.put("status", message.getErrorName());
         res.put("message", message.getErrorDescription());
-        ctx.json(res.toString());
+        ctx.result(res.toString());
       };
 
   public Handler listOrgs =
       ctx -> {
-        ListOrgsService loservice = new ListOrgsService(db, logger);
+        ListOrgsService loservice = new ListOrgsService(db);
         Message message = loservice.executeAndGetResponse();
         JSONArray orgs = loservice.getOrgs();
         JSONObject ret = new JSONObject();
         ret.put("status", message.getErrorName());
         ret.put("message", message.getErrorDescription());
         ret.put("organizations", orgs);
-        ctx.json(ret.toString());
+        ctx.result(ret.toString());
       };
 
   public Handler enrollOrganization =
       ctx -> {
-        logger.info("Starting enrollOrganization handler");
+        log.info("Starting enrollOrganization handler");
         JSONObject req = new JSONObject(ctx.body());
 
-        logger.info("Getting fields from form");
+        log.info("Getting fields from form");
         String firstName = req.getString("firstname").toUpperCase().strip();
         String lastName = req.getString("lastname").toUpperCase().strip();
         String birthDate = req.getString("birthDate").strip();
@@ -156,7 +152,6 @@ public class OrganizationController {
         EnrollOrganizationService eoService =
             new EnrollOrganizationService(
                 db,
-                logger,
                 firstName,
                 lastName,
                 birthDate,
@@ -179,7 +174,7 @@ public class OrganizationController {
                 orgZipcode,
                 orgEmail,
                 orgPhoneNumber);
-        ctx.json(eoService.executeAndGetResponse().toJSON().toString());
+        ctx.result(eoService.executeAndGetResponse().toJSON().toString());
       };
   /*  Invite users through email under an organization with a JSON Object formatted as:
       {“senderName”: “senderName”,
@@ -196,14 +191,14 @@ public class OrganizationController {
   */
   public Handler inviteUsers =
       ctx -> {
-        logger.info("Starting inviteUsers handler");
+        log.info("Starting inviteUsers handler");
         JSONObject req = new JSONObject(ctx.body());
         JSONArray people = req.getJSONArray("data");
 
         String sender = ctx.sessionAttribute("fullName");
         String org = ctx.sessionAttribute("orgName");
 
-        InviteUserService iuservice = new InviteUserService(db, logger, people, sender, org);
+        InviteUserService iuservice = new InviteUserService(db, people, sender, org);
         ctx.json(iuservice.executeAndGetResponse().toJSON().toString());
       };
 }

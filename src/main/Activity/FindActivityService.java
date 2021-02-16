@@ -9,20 +9,17 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
 
 public class FindActivityService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private JSONObject findActivity;
 
-  public FindActivityService(MongoDatabase db, Logger logger, String username) {
+  public FindActivityService(MongoDatabase db, String username) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
   }
 
