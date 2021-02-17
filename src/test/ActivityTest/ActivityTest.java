@@ -14,6 +14,7 @@ import com.mongodb.client.MongoDatabase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.bson.Document;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -105,8 +106,13 @@ public class ActivityTest {
   @Test
   public void testController() {
     TestUtils.login("createAdminOwner", "login-history-test");
+    JSONObject body = new JSONObject();
+    body.put("username", "createAdminOwner");
+
     HttpResponse<String> findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities")
+            .body(body.toString())
+            .asString();
     assert (findResponse.getBody().contains(LoginActivity.class.getSimpleName()));
     TestUtils.logout();
   }
