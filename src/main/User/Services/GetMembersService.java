@@ -52,13 +52,9 @@ public class GetMembersService implements Service {
       log.error("Session Token Failure");
       return UserMessage.SESSION_TOKEN_FAILURE;
     }
-    Objects.requireNonNull(searchValue);
     Objects.requireNonNull(orgName);
     Objects.requireNonNull(privilegeLevel);
     Objects.requireNonNull(listType);
-    if (searchValue.trim().isBlank()) {
-      return UserMessage.USER_NOT_FOUND;
-    }
     if (!userHasPermissionToAccess(privilegeLevel)) {
       return UserMessage.INSUFFICIENT_PRIVILEGE;
     }

@@ -228,7 +228,7 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assert (actualResponseJSON.has("numPeople"));
-    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(14);
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(2);
     assert (actualResponseJSON.has("people"));
   }
 
@@ -251,7 +251,7 @@ public class UserControllerIntegrationTest {
     assert (actualResponseJSON.has("status"));
     assertThat(actualResponseJSON.getString("status")).isEqualTo("SUCCESS");
     assert (actualResponseJSON.has("numPeople"));
-    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(49);
+    assertThat(actualResponseJSON.getInt("numPeople")).isEqualTo(7);
     assert (actualResponseJSON.has("people"));
   }
 }
