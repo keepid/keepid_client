@@ -19,6 +19,7 @@
     "@types/react-router-dom": "^5.1.5",
     "antd": "^4.7.3",
     "bootstrap": "^4.5.0",
+    "classnames": "^2.2.6",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "jquery": "^3.5.1",
     "jquery-mask-plugin": "^1.14.16",
@@ -60,6 +61,7 @@
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.9",
     "@types/enzyme": "3.10.8",
     "@types/enzyme-adapter-react-16": "1.0.6",
     "@types/jquery": "^3.5.3",

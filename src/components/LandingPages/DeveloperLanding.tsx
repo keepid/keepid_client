@@ -2,15 +2,12 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Helmet } from 'react-helmet';
-import Select from 'react-select';
 
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
-import TablePageSelector from '../BaseComponents/TablePageSelector';
+import Table from '../BaseComponents/Table';
 
 interface Props {
   alert: any,
@@ -25,22 +22,11 @@ interface State {
   currentApplicationFilename: string | undefined,
   documents: any,
   currentUser: any,
-  currentPage: number,
-  itemsPerPageSelected: any,
-  numElements: number,
   searchName: string,
   username: string,
   adminName: string,
   organization: string,
 }
-
-const listOptions = [
-  { value: '2', label: '2' },
-  { value: '5', label: '5' },
-  { value: '10', label: '10' },
-  { value: '25', label: '25' },
-  { value: '50', label: '50' },
-];
 
 interface State {
   pdfFiles: FileList | undefined,
@@ -58,9 +44,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
       currentUser: undefined,
-      currentPage: 0,
-      itemsPerPageSelected: listOptions[0],
-      numElements: 0,
       username: props.username,
       searchName: '',
       adminName: props.name,
@@ -69,25 +52,16 @@ class DeveloperLanding extends Component<Props, State, {}> {
     };
     this.onClickWorker = this.onClickWorker.bind(this);
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getDocuments = this.getDocuments.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
     this.ButtonFormatter = this.ButtonFormatter.bind(this);
   }
 
-  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+  ButtonFormatter = (cell, row, rowIndex) => (
     <div>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
         Re-Upload
-        <input
-          type="file"
-          accept="application/pdf"
-          id="potentialPdf"
-          multiple
-          onChange={(event) => this.handleChangeFileUpload(event, rowIndex)}
-          hidden
-        />
+        <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={(event) => this.handleChangeFileUpload(event, rowIndex)} hidden />
       </label>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
         Download
@@ -105,6 +79,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     text: 'Category',
     sort: true,
   }, {
+    dataField: '',
     text: 'Actions',
     formatter: this.ButtonFormatter,
   }];
@@ -120,13 +95,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
   handleChangeSearchName(event: any) {
     this.setState({
       searchName: event.target.value,
-      currentPage: 0,
-    });
-  }
-
-  handleChangeItemsPerPage(itemsPerPageSelected: any) {
-    this.setState({
-      currentPage: 0,
     });
   }
 
@@ -149,10 +117,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
     );
   }
 
-  changeCurrentPage(newCurrentPage: number) {
-    this.setState({ currentPage: newCurrentPage }, this.getDocuments);
-  }
-
   onChangeViewPermission(event: any) {
     const {
       currentUser,
@@ -164,10 +128,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
   getDocuments() {
     const {
       searchName,
-      currentPage,
-      itemsPerPageSelected,
     } = this.state;
-    const itemsPerPage = Number(itemsPerPageSelected.value);
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
@@ -290,22 +251,11 @@ class DeveloperLanding extends Component<Props, State, {}> {
       currentApplicationFilename,
       currentApplicationId,
       currentUser,
-      currentPage,
-      itemsPerPageSelected,
-      numElements,
       username,
       adminName,
       organization,
       documents,
     } = this.state;
-
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    const tablePageSelector = TablePageSelector({
-      currentPage,
-      itemsPerPage,
-      numElements,
-      changeCurrentPage: this.changeCurrentPage,
-    });
 
     return (
       <div className="container-fluid">
@@ -332,38 +282,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
               onChange={this.handleChangeSearchName}
             />
           </form>
-          <div className="row ml-1 mt-2 mb-2">
-            {numElements === 0 ? <div /> : tablePageSelector}
-            {numElements === 0 ? <div />
-              : (
-                <div className="w-25">
-                  <div className="card card-body mt-0 mb-4 border-0 p-0">
-                    <h5 className="card-text h6"># Items per page</h5>
-                    <Select
-                      options={listOptions}
-                      autoFocus
-                      closeMenuOnSelect={false}
-                      onChange={this.handleChangeItemsPerPage}
-                      value={itemsPerPageSelected}
-                    />
-                  </div>
-                </div>
-              )}
-          </div>
-          <div className="d-flex flex-row bd-highlight mb-3 pt-5">
-            <div className="w-100 pd-3">
-              <BootstrapTable
-                bootstrap4
-                keyField="id"
-                data={documents}
-                hover
-                striped
-                noDataIndication="No Forms Present"
-                columns={this.tableCols}
-                pagination={paginationFactory()}
-              />
-            </div>
-          </div>
+          <Table data={documents} columns={this.tableCols} emptyInfo={{ description: 'No Forms Present' }} />
         </div>
       </div>
     );
