@@ -5,6 +5,7 @@ import Database.Organization.OrgDao;
 import Database.Organization.OrgDaoFactory;
 import Organization.Organization;
 import TestUtils.EntityFactory;
+import TestUtils.TestUtils;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +18,8 @@ public class OrgDaoImplUnitTests {
 
   @Before
   public void initialize() {
+    TestUtils.startServer();
+    TestUtils.setUpTestDB();
     this.orgDao = OrgDaoFactory.create(DeploymentLevel.TEST);
   }
 
@@ -54,6 +57,7 @@ public class OrgDaoImplUnitTests {
 
   @Test
   public void size() {
+    orgDao.clear();
     EntityFactory.createOrganization().withOrgName("org1").buildAndPersist(orgDao);
     EntityFactory.createOrganization().withOrgName("org2").buildAndPersist(orgDao);
     EntityFactory.createOrganization().withOrgName("org3").buildAndPersist(orgDao);
@@ -62,6 +66,7 @@ public class OrgDaoImplUnitTests {
 
   @Test
   public void clear() {
+    orgDao.clear();
     EntityFactory.createOrganization().withOrgName("org1").buildAndPersist(orgDao);
     EntityFactory.createOrganization().withOrgName("org2").buildAndPersist(orgDao);
     EntityFactory.createOrganization().withOrgName("org3").buildAndPersist(orgDao);
@@ -72,6 +77,7 @@ public class OrgDaoImplUnitTests {
 
   @Test
   public void getAll() {
+    orgDao.clear();
     Organization org1 =
         EntityFactory.createOrganization().withOrgName("org1").buildAndPersist(orgDao);
     Organization org2 =

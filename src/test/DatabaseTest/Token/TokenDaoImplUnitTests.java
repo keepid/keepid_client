@@ -72,6 +72,7 @@ public class TokenDaoImplUnitTests {
 
   @Test
   public void getAll() {
+    tokenDao.clear();
     Tokens token1 =
         EntityFactory.createTokens().withUsername("username1").buildAndPersist(tokenDao);
     Tokens token2 =
