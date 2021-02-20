@@ -4,6 +4,7 @@ import Card from 'react-bootstrap/Card';
 import Geocode from 'react-geocode';
 
 import getServerURL from '../../serverOverride';
+import houseSearchingImage from '../../static/images/houseSearching.svg';
 import MapComponent from './MapComponent';
 
 interface Props {
@@ -17,6 +18,7 @@ interface State {
   zipcodeLatLng: any,
   distance: number,
   searchLoading: boolean,
+  showImage: boolean,
 }
 
 const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
@@ -56,6 +58,7 @@ class FindOrganization extends Component<Props, State> {
       zipcodeLatLng: {},
       distance: 25, // get organizations within this distance in km to the entered zipcode
       searchLoading: false,
+      showImage: true,
     };
     this.getOrganizations = this.getOrganizations.bind(this);
     this.searchOrganizationsByZipcode = this.searchOrganizationsByZipcode.bind(this);
@@ -70,6 +73,7 @@ class FindOrganization extends Component<Props, State> {
 
   // only show info for one org on card click or else the map view glitches
   handleOrgCardClick(org: any, index: number) {
+    console.log('handleOrgCardClick used');
     const {
       organizationsWithinDistance,
     } = this.state;
@@ -86,6 +90,7 @@ class FindOrganization extends Component<Props, State> {
   }
 
   onSubmitZipcode(event: any) {
+    console.log('onSubmitZipcode used');
     event.preventDefault();
     this.setState({
       searchLoading: true,
@@ -94,6 +99,8 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getOrganizations(zipcodeLatLng: number[]) {
+    console.log('getOrganizations used');
+    // runs
     fetch(`${getServerURL()}/get-all-orgs `, {
       method: 'POST',
       credentials: 'include',
@@ -106,6 +113,9 @@ class FindOrganization extends Component<Props, State> {
         const {
           organizations,
         } = JSON.parse(responseJSON);
+        console.log('just before get organizations within distance');
+        // does not show
+        console.log(responseJSON);
         this.getOrganizationsWithinDistance(organizations, zipcodeLatLng);
       });
   }
@@ -113,6 +123,7 @@ class FindOrganization extends Component<Props, State> {
   // gets all organizations within a fixed distance in km
   // also gets latitude and longitute from address and updates the organization
   getOrganizationsWithinDistance(organizations: any[], zipcodeLatLng: number[]) {
+    console.log('getOrganizationsWithinDistance used');
     const {
       distance,
     } = this.state;
@@ -161,6 +172,7 @@ class FindOrganization extends Component<Props, State> {
 
   // takes in inputted zipcode and returns organizations within distance
   searchOrganizationsByZipcode() {
+    console.log('searchOrganizationsByZipcode');
     const {
       zipcodeSearch,
     } = this.state;
@@ -176,14 +188,20 @@ class FindOrganization extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
+        console.log(responseJSON.results);
 
         if (status === 'OK') {
+          console.log('case 1');
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
+          this.setState({
+            searchLoading: false,
+          });
           this.setState({
             zipcodeLatLng,
           });
           this.getOrganizations([zipcodeLatLng.lat, zipcodeLatLng.lng]);
         } else {
+          console.log('case 3');
           const {
             alert,
           } = this.props;
@@ -203,6 +221,7 @@ class FindOrganization extends Component<Props, State> {
       organizationsWithinDistance,
       distance,
       searchLoading,
+      showImage,
     } = this.state;
 
     return (
@@ -230,6 +249,14 @@ class FindOrganization extends Component<Props, State> {
             </div>
           </div>
         </form>
+
+        {showImage
+          ? (
+            <div className="container">
+              <img src={houseSearchingImage} alt="House image" height={200} width={200} />
+            </div>
+          )
+          : <div />}
 
         {displayMap
           ? (
