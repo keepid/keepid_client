@@ -24,13 +24,6 @@ interface State {
   organization: string,
 }
 
-const listOptions = [
-  { value: '5', label: '5' },
-  { value: '10', label: '10' },
-  { value: '25', label: '25' },
-  { value: '50', label: '50' },
-];
-
 class AdminPanel extends Component<Props, State> {
   tableCols = [{
     dataField: 'id',
@@ -223,18 +216,6 @@ class AdminPanel extends Component<Props, State> {
           </ul>
         </div>
       );
-    const cantEdit = new Set<number>();
-    const emptyInfo = {
-      onPress: () => console.log('add members'),
-      label: 'Add members',
-      description: 'There are no members in your organization.',
-    };
-    const onEditSave = (row) => {
-      console.log(`edit ${row.id}`);
-    };
-    const onDelete = (id) => {
-      console.log(`delete ${id}`);
-    };
     return (
       <div>
         <Helmet>
@@ -278,12 +259,7 @@ class AdminPanel extends Component<Props, State> {
           <Table
             columns={this.tableCols}
             data={workers}
-            cantEditCols={cantEdit}
-            canSelect={false}
-            canModify={false}
-            emptyInfo={emptyInfo}
-            onEditSave={onEditSave}
-            onDelete={onDelete}
+            emptyInfo={{ description: 'There are no members in your organization.' }}
           />
         </div>
       </div>
