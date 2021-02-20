@@ -2,8 +2,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
+import { ButtonGroup } from 'react-bootstrap';
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
@@ -12,6 +11,7 @@ import uuid from 'react-uuid';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import Table from '../BaseComponents/Table';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 
@@ -278,7 +278,7 @@ class MyDocuments extends Component<Props, State> {
   ButtonFormatter = (cell: any, row: any, rowIndex) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
-    <div>
+    <ButtonGroup>
       {/* <Link to="/my-documents/print">
         <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
           Print
@@ -313,7 +313,7 @@ class MyDocuments extends Component<Props, State> {
         Delete
       </button>
 
-    </div>
+    </ButtonGroup>
   )
 
   tableCols = [{
@@ -464,13 +464,10 @@ class MyDocuments extends Component<Props, State> {
                       <div>
                         <SearchBar {...props.searchProps} />
                         <hr />
-                        <BootstrapTable
-                          bootstrap4
-                          hover
-                          striped
-                          noDataIndication="No Documents Present"
-                          pagination={paginationFactory()}
-                          {...props.baseProps}
+                        <Table
+                          data={documentData}
+                          columns={this.tableCols}
+                          emptyInfo={{ description: 'No documents found' }}
                         />
                       </div>
                     )

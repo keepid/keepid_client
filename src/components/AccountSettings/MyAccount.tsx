@@ -9,6 +9,7 @@ import { Helmet } from 'react-helmet';
 import Switch from 'react-switch';
 
 import getServerURL from '../../serverOverride';
+import Table from '../BaseComponents/Table';
 import RenderInput from './RenderInput';
 
 enum PasswordError {
@@ -549,16 +550,7 @@ class MyAccount extends Component<Props, State, {}> {
             </div>
             <br />
             <div className="row m-3">
-              <BootstrapTable
-                keyField="id"
-                data={loginHistory}
-                columns={loginHistoryCols}
-                bootstrap4
-                hover
-                striped
-                noDataIndication="No login history"
-                pagination={paginationFactory()}
-              />
+              <Table data={loginHistory} columns={loginHistoryCols} emptyInfo={{ description: 'No login history found' }} />
             </div>
           </div>
         </div>
