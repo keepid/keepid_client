@@ -1,19 +1,20 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable simple-import-sort/imports */
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-
 import getServerURL from '../../serverOverride';
 import Table from '../BaseComponents/Table';
+import Role from '../../static/Role';
 
 interface Props {
   username: string,
   name: string,
   organization: string,
   alert: any,
+  role: Role,
 }
 
 interface State {
@@ -95,10 +96,12 @@ class AdminPanel extends Component<Props, State> {
 
   getAdminWorkers() {
     const { searchName } = this.state;
+    const { role } = this.props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
+        role,
         listType: 'members',
         name: searchName,
       }),
