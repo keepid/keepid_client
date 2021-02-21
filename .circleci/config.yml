@@ -14,5 +14,4 @@ workflows:
   maven_test:
     jobs:
       - maven/test # checkout, build, test, and upload test results
-      - notify:
-          context: Keep.id Slack
+        context: Keep.id Slack
