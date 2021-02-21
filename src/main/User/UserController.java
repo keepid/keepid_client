@@ -205,7 +205,7 @@ public class UserController {
 
         String searchValue = req.getString("name").trim();
         String orgName = ctx.sessionAttribute("orgName");
-        UserType privilegeLevel = ctx.sessionAttribute("privilegeLevel");
+        UserType privilegeLevel = UserType.valueOf(req.getString("role"));
         String listType = req.getString("listType").toUpperCase();
 
         GetMembersService getMembersService =
