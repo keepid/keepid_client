@@ -20,7 +20,17 @@ jobs:
       - node/install-packages
       - run:
           command: npm run test
+  notify:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: always
 workflows:
   test_my_app:
     jobs:
       - test
+  send-notification:
+    jobs:
+      - notify:
+          context: slack-secrets
