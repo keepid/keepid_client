@@ -1,26 +1,25 @@
-version: 2
+version: '2.1'
+orbs:
+  node: circleci/node@4.1.1
 jobs:
-  build:
+  install-node:
     docker:
-      - image: circleci/node:12
-
-    working_directory: ~/repo
-
+      - image: 'cimg/base:stable'
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-
-      - run: npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
-      - run: npm test
-      - store_test_results:
-          path: 
-            - test-results
+      - node/install:
+          install-yarn: true
+      - run: node --version
+  test:
+    executor:
+      name: node/default
+      tag: '13.14'
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          command: npm run test
+workflows:
+  test_my_app:
+    jobs:
+      - test
