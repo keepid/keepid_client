@@ -1,8 +1,8 @@
 package Activity;
 
 import Config.DeploymentLevel;
-import Config.MongoConfig;
 import Config.Message;
+import Config.MongoConfig;
 import Logger.LogFactory;
 import User.UserMessage;
 import com.mongodb.client.MongoCollection;

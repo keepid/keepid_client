@@ -108,7 +108,7 @@ public class OrganizationController {
         }
         res.put("status", message.getErrorName());
         res.put("message", message.getErrorDescription());
-        ctx.json(res.toString());
+        ctx.result(res.toString());
       };
 
   public Handler listOrgs =
@@ -120,7 +120,7 @@ public class OrganizationController {
         ret.put("status", message.getErrorName());
         ret.put("message", message.getErrorDescription());
         ret.put("organizations", orgs);
-        ctx.json(ret.toString());
+        ctx.result(ret.toString());
       };
 
   public Handler enrollOrganization =
@@ -179,7 +179,7 @@ public class OrganizationController {
                 orgZipcode,
                 orgEmail,
                 orgPhoneNumber);
-        ctx.json(eoService.executeAndGetResponse().toJSON().toString());
+        ctx.result(eoService.executeAndGetResponse().toJSON().toString());
       };
   /*  Invite users through email under an organization with a JSON Object formatted as:
       {“senderName”: “senderName”,
@@ -204,6 +204,6 @@ public class OrganizationController {
         String org = ctx.sessionAttribute("orgName");
 
         InviteUserService iuservice = new InviteUserService(db, logger, people, sender, org);
-        ctx.json(iuservice.executeAndGetResponse().toJSON().toString());
+        ctx.result(iuservice.executeAndGetResponse().toResponseString());
       };
 }

@@ -43,7 +43,7 @@ public class IssueController {
         res.put("issueTitle", title);
         res.put("issueDescription", description);
         res.put("issueEmail", email);
-        ctx.json(res.toString());
+        ctx.result(res.toString());
         logger.info("Done with submitIssue");
       };
 
@@ -61,7 +61,7 @@ public class IssueController {
           res.put("issueTitle", "null");
           res.put("issueDescription", "null");
           res.put("issueEmail", "null");
-          ctx.json(res.toString());
+          ctx.result(res.toString());
           return;
         }
         res.put("issueTitle", title);
@@ -73,12 +73,12 @@ public class IssueController {
           logger.info("Target report is not found");
           res.put("issueDescription", "null");
           res.put("issueEmail", "null");
-          ctx.json(res.toString());
+          ctx.result(res.toString());
           return;
         }
         res.put("issueDescription", issueReport.getIssueDescription());
         res.put("issueEmail", issueReport.getIssueEmail());
-        ctx.json(res.toString());
+        ctx.result(res.toString());
         logger.info("Finished with findIssue");
       };
 }

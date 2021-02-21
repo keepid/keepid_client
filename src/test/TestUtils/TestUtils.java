@@ -50,7 +50,6 @@ public class TestUtils {
   public static void startServer() {
     if (app == null) {
       try {
-        // GoogleCredentials.generateAndUploadEncryptionKey(DeploymentLevel.TEST);
         MongoConfig.getMongoClient();
         MongoDatabase db = MongoConfig.getDatabase(DeploymentLevel.TEST);
         try {
