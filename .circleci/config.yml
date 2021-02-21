@@ -24,3 +24,7 @@ jobs:
       - store_test_results:
           path: 
             - test-results
+workflows:
+  build-and-notify:
+    jobs:
+      - build-test-and-notify
