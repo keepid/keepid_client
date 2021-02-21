@@ -156,10 +156,14 @@ class WorkerLanding extends Component<Props, State> {
     const {
       searchName,
     } = this.state;
+    const {
+      role,
+    } = this.props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
+        role,
         listType: 'clients',
         name: searchName,
       }),
