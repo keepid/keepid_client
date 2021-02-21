@@ -3,14 +3,6 @@ orbs:
   node: circleci/node@4.1.1
   slack: circleci/slack@4.3.0
 jobs:
-  install-node:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - checkout
-      - node/install:
-          install-yarn: true
-      - run: node --version
   test:
     executor:
       name: node/default
@@ -20,16 +12,12 @@ jobs:
       - node/install-packages
       - run:
           command: npm run test
-  notify:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
       - slack/notify:
           event: always
+      
 workflows:
   test_my_app:
     jobs:
       - test
-      - notify:
           context: Keep.id Slack
       
