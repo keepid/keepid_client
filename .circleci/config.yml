@@ -14,10 +14,9 @@ jobs:
           command: npm run test
       - slack/notify:
           event: always
-      
 workflows:
   test_my_app:
     jobs:
-      - test
+      - test:
           context: Keep.id Slack
       
