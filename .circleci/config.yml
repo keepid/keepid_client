@@ -30,7 +30,6 @@ workflows:
   test_my_app:
     jobs:
       - test
-  send-notification:
-    jobs:
       - notify:
           context: Keep.id Slack
+      
