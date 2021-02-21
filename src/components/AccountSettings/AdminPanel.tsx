@@ -95,6 +95,7 @@ class AdminPanel extends Component<Props, State> {
 
   getAdminWorkers() {
     const { searchName } = this.state;
+    const { role } = this.props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
