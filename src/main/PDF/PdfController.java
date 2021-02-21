@@ -2,7 +2,6 @@ package PDF;
 
 import Config.Message;
 import Database.User.UserDao;
-import Logger.LogFactory;
 import PDF.Services.*;
 import Security.EncryptionController;
 import User.User;
@@ -12,10 +11,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -23,17 +22,15 @@ import java.util.Objects;
 import static User.UserController.mergeJSON;
 import static com.mongodb.client.model.Filters.eq;
 
+@Slf4j
 public class PdfController {
   private MongoDatabase db;
   private UserDao userDao;
-  private Logger logger;
   private EncryptionController encryptionController;
 
   public PdfController(MongoDatabase db, UserDao userDao) {
     this.db = db;
     this.userDao = userDao;
-    LogFactory l = new LogFactory();
-    this.logger = l.createLogger("PdfController");
     try {
       this.encryptionController = new EncryptionController(db);
     } catch (Exception e) {
@@ -61,7 +58,7 @@ public class PdfController {
           // TODO(xander) make this less hacky. Checks if client is in same org as worker.
           boolean orgFlag;
           if (check != null && req.has("targetUser")) {
-            logger.info("Target user found");
+            log.info("Target user found");
             username = check.getUsername();
             orgName = check.getOrganization();
             userType = check.getUserType();
@@ -79,7 +76,7 @@ public class PdfController {
             String fileIDStr = req.getString("fileId");
 
             DeletePDFService deletePDFService =
-                new DeletePDFService(db, logger, username, orgName, userType, pdfType, fileIDStr);
+                new DeletePDFService(db, username, orgName, userType, pdfType, fileIDStr);
             ctx.result(deletePDFService.executeAndGetResponse().toResponseString());
           } else {
             ctx.result(UserMessage.CROSS_ORG_ACTION_DENIED.toResponseString());
@@ -102,13 +99,13 @@ public class PdfController {
         JSONObject req = new JSONObject(ctx.body());
         User check = userCheck(ctx.body());
         if (check == null && req.has("targetUser")) {
-          logger.info("Target User not Found");
+          log.info("Target User not Found");
           ctx.result(UserMessage.USER_NOT_FOUND.toJSON().toString());
         } else {
           // TODO(xander) make this less hacky. Checks if client is in same org as worker.
           boolean orgFlag;
           if (check != null && req.has("targetUser")) {
-            logger.info("Target user found");
+            log.info("Target user found");
             username = check.getUsername();
             orgName = check.getOrganization();
             userType = check.getUserType();
@@ -127,14 +124,7 @@ public class PdfController {
             PDFType pdfType = PDFType.createFromString(pdfTypeString);
             DownloadPDFService downloadPDFService =
                 new DownloadPDFService(
-                    db,
-                    logger,
-                    username,
-                    orgName,
-                    userType,
-                    fileIDStr,
-                    pdfType,
-                    encryptionController);
+                    db, username, orgName, userType, fileIDStr, pdfType, encryptionController);
             Message response = downloadPDFService.executeAndGetResponse();
             if (response == PdfMessage.SUCCESS) {
               ctx.header("Content-Type", "application/pdf");
@@ -160,7 +150,7 @@ public class PdfController {
   //  }
 
   public User userCheck(String req) {
-    logger.info("userCheck Helper started");
+    log.info("userCheck Helper started");
     String username;
     User user = null;
     try {
@@ -173,7 +163,7 @@ public class PdfController {
     } catch (JSONException e) {
 
     }
-    logger.info("userCheck done");
+    log.info("userCheck done");
     return user;
   }
 
@@ -188,7 +178,7 @@ public class PdfController {
   */
   public Handler pdfGetDocuments =
       ctx -> {
-        logger.info("Starting pdfGetDocuments");
+        log.info("Starting pdfGetDocuments");
         String username;
         String orgName;
         UserType userType;
@@ -197,13 +187,13 @@ public class PdfController {
         JSONObject responseJSON;
         User check = userCheck(ctx.body());
         if (check == null && req.has("targetUser")) {
-          logger.info("Target User not Found");
+          log.info("Target User not Found");
           responseJSON = UserMessage.USER_NOT_FOUND.toJSON();
         } else {
           // TODO(xander) make this less hacky. Checks if client is in same org as worker.
           boolean orgFlag;
           if (check != null && req.has("targetUser")) {
-            logger.info("Target user found");
+            log.info("Target user found");
             username = check.getUsername();
             orgName = check.getOrganization();
             userType = check.getUserType();
@@ -223,7 +213,7 @@ public class PdfController {
             }
             GetFilesInformationPDFService getFilesInformationPDFService =
                 new GetFilesInformationPDFService(
-                    db, logger, username, orgName, userType, pdfType, annotated);
+                    db, username, orgName, userType, pdfType, annotated);
             Message response = getFilesInformationPDFService.executeAndGetResponse();
             responseJSON = response.toJSON();
 
@@ -246,7 +236,7 @@ public class PdfController {
    */
   public Handler pdfUpload =
       ctx -> {
-        logger.info("pdfUpload");
+        log.info("pdfUpload");
         String username;
         String organizationName;
         UserType privilegeLevel;
@@ -261,12 +251,12 @@ public class PdfController {
         }
         User check = userCheck(body);
         if (req != null && req.has("targetUser") && check == null) {
-          logger.info("Target User could not be found in the database");
+          log.info("Target User could not be found in the database");
           response = UserMessage.USER_NOT_FOUND;
         } else {
           boolean orgFlag;
           if (req != null && req.has("targetUser") && check != null) {
-            logger.info("Target User found, setting parameters.");
+            log.info("Target User found, setting parameters.");
             username = check.getUsername();
             organizationName = check.getOrganization();
             privilegeLevel = check.getUserType();
@@ -281,7 +271,7 @@ public class PdfController {
 
           if (orgFlag) {
             if (file == null) {
-              logger.info("File is null, invalid pdf");
+              log.info("File is null, invalid pdf");
               response = PdfMessage.INVALID_PDF;
             } else {
               PDFType pdfType = PDFType.createFromString(ctx.formParam("pdfType"));
@@ -299,7 +289,6 @@ public class PdfController {
               UploadPDFService uploadService =
                   new UploadPDFService(
                       db,
-                      logger,
                       username,
                       organizationName,
                       privilegeLevel,
@@ -334,7 +323,6 @@ public class PdfController {
         UploadAnnotatedPDFService uploadService =
             new UploadAnnotatedPDFService(
                 db,
-                logger,
                 username,
                 organizationName,
                 privilegeLevel,
@@ -366,7 +354,6 @@ public class PdfController {
         UploadSignedPDFService uploadService =
             new UploadSignedPDFService(
                 db,
-                logger,
                 username,
                 organizationName,
                 privilegeLevel,
@@ -393,7 +380,6 @@ public class PdfController {
         DownloadPDFService downloadPDFService =
             new DownloadPDFService(
                 db,
-                logger,
                 username,
                 organizationName,
                 privilegeLevel,
@@ -404,7 +390,7 @@ public class PdfController {
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
           GetQuestionsPDFService getQuestionsPDFService =
-              new GetQuestionsPDFService(userDao, logger, privilegeLevel, username, inputStream);
+              new GetQuestionsPDFService(userDao, privilegeLevel, username, inputStream);
           Message response = getQuestionsPDFService.executeAndGetResponse();
           if (response == PdfMessage.SUCCESS) {
             JSONObject information = getQuestionsPDFService.getApplicationInformation();
@@ -439,7 +425,6 @@ public class PdfController {
         DownloadPDFService downloadPDFService =
             new DownloadPDFService(
                 db,
-                logger,
                 username,
                 organizationName,
                 privilegeLevel,
@@ -450,7 +435,7 @@ public class PdfController {
         if (responseDownload == PdfMessage.SUCCESS) {
           InputStream inputStream = downloadPDFService.getInputStream();
           FillPDFService fillPDFService =
-              new FillPDFService(db, logger, privilegeLevel, inputStream, formAnswers);
+              new FillPDFService(db, privilegeLevel, inputStream, formAnswers);
           Message response = fillPDFService.executeAndGetResponse();
           if (response == PdfMessage.SUCCESS) {
             ctx.header("Content-Type", "application/pdf");

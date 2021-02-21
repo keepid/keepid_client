@@ -7,12 +7,12 @@ import PDF.PdfMessage;
 import User.Services.GetUserInfoService;
 import User.UserMessage;
 import User.UserType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class GetQuestionsPDFService implements Service {
   public static final int DEFAULT_FIELD_NUM_LINES = 3;
 
@@ -28,17 +29,11 @@ public class GetQuestionsPDFService implements Service {
   JSONObject userInfo;
   InputStream fileStream;
   UserDao userDao;
-  Logger logger;
   JSONObject applicationInformation;
 
   public GetQuestionsPDFService(
-      UserDao userDao,
-      Logger logger,
-      UserType privilegeLevel,
-      String username,
-      InputStream fileStream) {
+      UserDao userDao, UserType privilegeLevel, String username, InputStream fileStream) {
     this.userDao = userDao;
-    this.logger = logger;
     this.privilegeLevel = privilegeLevel;
     this.username = username;
     this.fileStream = fileStream;
@@ -47,7 +42,7 @@ public class GetQuestionsPDFService implements Service {
   @Override
   public Message executeAndGetResponse() {
     // First, get the user's profile so we can autofill the field questions
-    GetUserInfoService userInfoService = new GetUserInfoService(userDao, logger, username);
+    GetUserInfoService userInfoService = new GetUserInfoService(userDao, username);
     Message userInfoServiceResponse = userInfoService.executeAndGetResponse();
     if (userInfoServiceResponse != UserMessage.SUCCESS) {
       return PdfMessage.SERVER_ERROR;
@@ -278,12 +273,12 @@ public class GetQuestionsPDFService implements Service {
         fieldIsMatched = true;
       } else {
         // Match not found
-        logger.error("Error in Annotation for Field: " + fieldName + " - Directive not Understood");
+        log.error("Error in Annotation for Field: " + fieldName + " - Directive not Understood");
         return null;
       }
     } else {
       // Error in annotation - treat as normal without annotation
-      logger.error("Error in Annotation for Field: " + fieldName + " - Invalid Format");
+      log.error("Error in Annotation for Field: " + fieldName + " - Invalid Format");
       return null;
     }
 

@@ -7,10 +7,10 @@ import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Slf4j
 public class GetMembersServiceUnitTest {
 
   private UserDao userDao;
-  private Logger logger;
 
   List<User> users = new ArrayList<>();
 
@@ -31,7 +31,6 @@ public class GetMembersServiceUnitTest {
   @Before
   public void setup() {
     userDao = mock(UserDao.class);
-    logger = mock(Logger.class);
     User user1 = new User();
     User user2 = new User();
     try {
@@ -68,7 +67,7 @@ public class GetMembersServiceUnitTest {
               "testPassword",
               UserType.Client);
     } catch (ValidationException ve) {
-      logger.error("Validation exception");
+      log.error("Validation exception");
     }
     users.add(user1);
     users.add(user2);
@@ -77,8 +76,7 @@ public class GetMembersServiceUnitTest {
   @Test
   public void insufficientPrivileges() {
 
-    getMembersService =
-        new GetMembersService(userDao, logger, "Firstname", "", UserType.Client, "CLIENTS");
+    getMembersService = new GetMembersService(userDao, "Firstname", "", UserType.Client, "CLIENTS");
 
     when(userDao.getAll()).thenReturn(users);
 
@@ -92,7 +90,7 @@ public class GetMembersServiceUnitTest {
   public void happyPath() {
 
     getMembersService =
-        new GetMembersService(userDao, logger, "Firstname", "test", UserType.Admin, "CLIENTS");
+        new GetMembersService(userDao, "Firstname", "test", UserType.Admin, "CLIENTS");
 
     when(userDao.getAllFromOrg("test")).thenReturn(users);
 
@@ -112,7 +110,7 @@ public class GetMembersServiceUnitTest {
   public void happyPathSearchUser2First() {
 
     getMembersService =
-        new GetMembersService(userDao, logger, "Testfirssttwo", "test", UserType.Admin, "CLIENTS");
+        new GetMembersService(userDao, "Testfirssttwo", "test", UserType.Admin, "CLIENTS");
 
     when(userDao.getAllFromOrg("test")).thenReturn(users);
 

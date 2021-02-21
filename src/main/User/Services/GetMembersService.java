@@ -6,18 +6,18 @@ import Database.User.UserDao;
 import User.User;
 import User.UserMessage;
 import User.UserType;
+import lombok.extern.slf4j.Slf4j;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class GetMembersService implements Service {
   UserDao userDao;
-  Logger logger;
   private String orgName;
   private UserType privilegeLevel;
   private String searchValue;
@@ -30,13 +30,11 @@ public class GetMembersService implements Service {
 
   public GetMembersService(
       UserDao userDao,
-      Logger logger,
       String searchValue,
       String orgName,
       UserType privilegeLevel,
       String listType) {
     this.userDao = userDao;
-    this.logger = logger;
     this.searchValue = searchValue;
     this.orgName = orgName;
     this.privilegeLevel = privilegeLevel;
@@ -51,16 +49,12 @@ public class GetMembersService implements Service {
   @Override
   public Message executeAndGetResponse() {
     if (privilegeLevel == null || orgName == null) {
-      logger.error("Session Token Failure");
+      log.error("Session Token Failure");
       return UserMessage.SESSION_TOKEN_FAILURE;
     }
-    Objects.requireNonNull(searchValue);
     Objects.requireNonNull(orgName);
     Objects.requireNonNull(privilegeLevel);
     Objects.requireNonNull(listType);
-    if (searchValue.trim().isBlank()) {
-      return UserMessage.USER_NOT_FOUND;
-    }
     if (!userHasPermissionToAccess(privilegeLevel)) {
       return UserMessage.INSUFFICIENT_PRIVILEGE;
     }
@@ -82,7 +76,7 @@ public class GetMembersService implements Service {
 
     this.numReturnedElements = numReturnedElements;
     this.peoplePage = userList;
-    logger.info("Successfully returned member information");
+    log.info("Successfully returned member information");
     return UserMessage.SUCCESS;
   }
 
@@ -98,7 +92,7 @@ public class GetMembersService implements Service {
   // Return 1 if added to list to keep total below threshold
   private int constructUserList(User user, ListType listType, JSONArray userList) {
     JSONObject userJSON = user.serialize();
-    logger.info("Getting member information");
+    log.info("Getting member information");
     if (typeMatch(user.getUserType(), listType)) {
       userList.put(userJSON);
       return 1;

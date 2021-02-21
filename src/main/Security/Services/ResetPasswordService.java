@@ -10,7 +10,6 @@ import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
 import io.jsonwebtoken.Claims;
-import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.Optional;
@@ -18,15 +17,12 @@ import java.util.Optional;
 public class ResetPasswordService implements Service {
   UserDao userDao;
   TokenDao tokenDao;
-  Logger logger;
   private String jwt;
   private String newPassword;
 
-  public ResetPasswordService(
-      UserDao userDao, TokenDao tokenDao, Logger logger, String jwt, String newPassword) {
+  public ResetPasswordService(UserDao userDao, TokenDao tokenDao, String jwt, String newPassword) {
     this.userDao = userDao;
     this.tokenDao = tokenDao;
-    this.logger = logger;
     this.jwt = jwt;
     this.newPassword = newPassword;
   }

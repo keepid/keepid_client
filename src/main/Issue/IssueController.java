@@ -1,25 +1,22 @@
 package Issue;
 
 import Config.Message;
-import Logger.LogFactory;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Handler;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 
 import static com.mongodb.client.model.Filters.eq;
 
+@Slf4j
 public class IssueController {
   MongoDatabase db;
-  Logger logger;
 
   public IssueController(MongoDatabase db) {
     this.db = db;
-    LogFactory l = new LogFactory();
-    this.logger = l.createLogger("IssueReportController");
   }
 
   public static final String issueReportActualURL =
@@ -29,35 +26,33 @@ public class IssueController {
 
   public Handler submitIssue =
       ctx -> {
-        logger.info("Starting submitIssue");
-        logger.info("Trying to get fields from form");
+        log.info("Starting submitIssue");
+        log.info("Trying to get fields from form");
         JSONObject req = new JSONObject(ctx.body());
         String title = req.getString("title");
         String description = req.getString("description");
         String email = req.getString("email");
-        SubmitIssueService siService =
-            new SubmitIssueService(db, logger, title, description, email);
+        SubmitIssueService siService = new SubmitIssueService(db, title, description, email);
         Message response = siService.executeAndGetResponse();
-        logger.info(response.toString() + response.getErrorDescription());
+        log.info(response.toString() + response.getErrorDescription());
         JSONObject res = response.toJSON();
         res.put("issueTitle", title);
         res.put("issueDescription", description);
         res.put("issueEmail", email);
         ctx.result(res.toString());
-        logger.info("Done with submitIssue");
       };
 
   // Exclusive for testing purposes.
   public Handler findIssue =
       ctx -> {
-        logger.info(
+        log.info(
             "Starting findIssue (This is never used in a real program. Good for testing purpose.)");
-        logger.info("Get title from the form");
+        log.info("Get title from the form");
         JSONObject req = new JSONObject(ctx.body());
         JSONObject res = new JSONObject();
         String title = req.getString("issueTitle");
         if (null == title || "".equals(title)) {
-          logger.error("The query has no title");
+          log.error("The query has no title");
           res.put("issueTitle", "null");
           res.put("issueDescription", "null");
           res.put("issueEmail", "null");
@@ -65,12 +60,12 @@ public class IssueController {
           return;
         }
         res.put("issueTitle", title);
-        logger.info("Trying to find target report from the database.");
+        log.info("Trying to find target report from the database.");
         MongoCollection<IssueReport> issueReportCollection =
             db.getCollection("IssueReport", IssueReport.class);
         IssueReport issueReport = issueReportCollection.find(eq("issueTitle", title)).first();
         if (issueReport == null) {
-          logger.info("Target report is not found");
+          log.info("Target report is not found");
           res.put("issueDescription", "null");
           res.put("issueEmail", "null");
           ctx.result(res.toString());
@@ -79,6 +74,6 @@ public class IssueController {
         res.put("issueDescription", issueReport.getIssueDescription());
         res.put("issueEmail", issueReport.getIssueEmail());
         ctx.result(res.toString());
-        logger.info("Finished with findIssue");
+        log.info("Finished with findIssue");
       };
 }

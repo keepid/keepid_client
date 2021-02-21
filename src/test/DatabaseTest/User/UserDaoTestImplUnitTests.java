@@ -3,25 +3,21 @@ package DatabaseTest.User;
 import Config.DeploymentLevel;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
-import Logger.LogFactory;
 import TestUtils.EntityFactory;
 import User.User;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import static org.junit.Assert.*;
 
 public class UserDaoTestImplUnitTests {
   public UserDao userDao;
-  public Logger logger;
 
   @Before
   public void initialize() {
     this.userDao = UserDaoFactory.create(DeploymentLevel.IN_MEMORY);
-    this.logger = new LogFactory().createLogger();
   }
 
   @After

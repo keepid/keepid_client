@@ -12,7 +12,6 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +20,6 @@ import java.util.Objects;
 
 public class DownloadPDFService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private String orgName;
   private UserType privilegeLevel;
@@ -32,7 +30,6 @@ public class DownloadPDFService implements Service {
 
   public DownloadPDFService(
       MongoDatabase db,
-      Logger logger,
       String username,
       String orgName,
       UserType privilegeLevel,
@@ -40,7 +37,6 @@ public class DownloadPDFService implements Service {
       PDFType pdfType,
       EncryptionController encryptionController) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
     this.orgName = orgName;
     this.privilegeLevel = privilegeLevel;

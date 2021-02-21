@@ -10,15 +10,15 @@ import User.User;
 import User.UserMessage;
 import User.UserType;
 import Validation.ValidationException;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public class CreateUserService implements Service {
   UserDao userDao;
-  Logger logger;
   UserType sessionUserLevel;
   String organizationName;
   String sessionUsername;
@@ -39,7 +39,6 @@ public class CreateUserService implements Service {
 
   public CreateUserService(
       UserDao userDao,
-      Logger logger,
       UserType sessionUserLevel,
       String organizationName,
       String sessionUsername,
@@ -57,7 +56,6 @@ public class CreateUserService implements Service {
       String password,
       UserType userType) {
     this.userDao = userDao;
-    this.logger = logger;
     this.sessionUserLevel = sessionUserLevel;
     this.organizationName = organizationName;
     this.sessionUsername = sessionUsername;
@@ -78,12 +76,7 @@ public class CreateUserService implements Service {
   }
 
   // for testing
-  CreateUserService(
-      UserDao userDao,
-      Logger logger,
-      User user,
-      String sessionUsername,
-      UserType sessionUserLevel) {
+  CreateUserService(UserDao userDao, User user, String sessionUsername, UserType sessionUserLevel) {
     this.sessionUserLevel = sessionUserLevel;
     this.organizationName = user.getOrganization();
     this.sessionUsername = sessionUsername;
@@ -106,11 +99,11 @@ public class CreateUserService implements Service {
   public Message executeAndGetResponse() {
     // validations
     if (organizationName == null) {
-      logger.info("Token failure");
+      log.info("Token failure");
       return UserMessage.SESSION_TOKEN_FAILURE;
     }
     if (userType == null) {
-      logger.info("Invalid privilege type");
+      log.info("Invalid privilege type");
       return UserMessage.INVALID_PRIVILEGE_TYPE;
     }
     // create user object
@@ -133,7 +126,7 @@ public class CreateUserService implements Service {
               password,
               userType);
     } catch (ValidationException ve) {
-      logger.error("Validation exception");
+      log.error("Validation exception");
       return ve;
     }
     // check some conditions
@@ -142,26 +135,26 @@ public class CreateUserService implements Service {
             || user.getUserType() == UserType.Worker)
         && sessionUserLevel != UserType.Admin
         && sessionUserLevel != UserType.Director) {
-      logger.error("Cannot enroll ADMIN/DIRECTOR as NON-ADMIN/NON-DIRECTOR");
+      log.error("Cannot enroll ADMIN/DIRECTOR as NON-ADMIN/NON-DIRECTOR");
       return UserMessage.NONADMIN_ENROLL_ADMIN;
     }
 
     if (user.getUserType() == UserType.Client && sessionUserLevel == UserType.Client) {
-      logger.error("Cannot enroll CLIENT as CLIENT");
+      log.error("Cannot enroll CLIENT as CLIENT");
       return UserMessage.CLIENT_ENROLL_CLIENT;
     }
 
     // add to database
     Optional<User> optionalUser = userDao.get(username);
     if (optionalUser.isPresent()) {
-      logger.info("Username already exists");
+      log.info("Username already exists");
       return UserMessage.USERNAME_ALREADY_EXISTS;
     }
 
     // create password hash
     String hash = SecurityUtils.hashPassword(password);
     if (hash == null) {
-      logger.error("Could not hash password");
+      log.error("Could not hash password");
       return UserMessage.HASH_FAILURE;
     }
     user.setPassword(hash);
@@ -192,7 +185,7 @@ public class CreateUserService implements Service {
         activityController.addActivity(cli);
         break;
     }
-    logger.info("Successfully created user, " + user.getUsername());
+    log.info("Successfully created user, " + user.getUsername());
     return UserMessage.ENROLL_SUCCESS;
   }
 }

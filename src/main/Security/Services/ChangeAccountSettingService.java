@@ -10,23 +10,20 @@ import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public class ChangeAccountSettingService implements Service {
   UserDao userDao;
-  Logger logger;
   private String username;
   private String password;
   private String key;
   private String value;
 
   public ChangeAccountSettingService(
-      UserDao userDao, Logger logger, String username, String password, String key, String value) {
+      UserDao userDao, String username, String password, String key, String value) {
     this.userDao = userDao;
-    this.logger = logger;
     this.username = username;
     this.password = password;
     this.key = key;

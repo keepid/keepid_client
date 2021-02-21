@@ -3,25 +3,21 @@ package DatabaseTest.Token;
 import Config.DeploymentLevel;
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
-import Logger.LogFactory;
 import Security.Tokens;
 import TestUtils.EntityFactory;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
 
 import static org.junit.Assert.*;
 
 public class TokenDaoTestImplUnitTests {
   public TokenDao tokenDao;
-  public Logger logger;
 
   @Before
   public void initialize() {
     this.tokenDao = TokenDaoFactory.create(DeploymentLevel.IN_MEMORY);
-    this.logger = new LogFactory().createLogger();
   }
 
   @After

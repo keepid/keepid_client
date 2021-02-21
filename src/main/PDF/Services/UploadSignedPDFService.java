@@ -19,7 +19,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.bson.Document;
-import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,12 +42,10 @@ public class UploadSignedPDFService implements Service {
   InputStream signatureFileStream;
   PDFType pdfType;
   MongoDatabase db;
-  Logger logger;
   EncryptionController encryptionController;
 
   public UploadSignedPDFService(
       MongoDatabase db,
-      Logger logger,
       String uploaderUsername,
       String organizationName,
       UserType privilegeLevel,
@@ -59,7 +56,6 @@ public class UploadSignedPDFService implements Service {
       InputStream signatureFileStream,
       EncryptionController encryptionController) {
     this.db = db;
-    this.logger = logger;
     this.uploader = uploaderUsername;
     this.organizationName = organizationName;
     this.privilegeLevel = privilegeLevel;

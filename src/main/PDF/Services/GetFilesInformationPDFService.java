@@ -13,7 +13,6 @@ import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 
@@ -22,7 +21,6 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class GetFilesInformationPDFService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private String orgName;
   private UserType userType;
@@ -32,14 +30,12 @@ public class GetFilesInformationPDFService implements Service {
 
   public GetFilesInformationPDFService(
       MongoDatabase db,
-      Logger logger,
       String username,
       String orgName,
       UserType userType,
       PDFType pdfType,
       boolean annotated) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
     this.orgName = orgName;
     this.userType = userType;

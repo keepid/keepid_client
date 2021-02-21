@@ -8,7 +8,6 @@ import com.mongodb.client.MongoDatabase;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,16 +23,10 @@ public class FillPDFService implements Service {
   JSONObject formAnswers;
   InputStream completedForm;
   MongoDatabase db;
-  Logger logger;
 
   public FillPDFService(
-      MongoDatabase db,
-      Logger logger,
-      UserType privilegeLevel,
-      InputStream fileStream,
-      JSONObject formAnswers) {
+      MongoDatabase db, UserType privilegeLevel, InputStream fileStream, JSONObject formAnswers) {
     this.db = db;
-    this.logger = logger;
     this.privilegeLevel = privilegeLevel;
     this.fileStream = fileStream;
     this.formAnswers = formAnswers;

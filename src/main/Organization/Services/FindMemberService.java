@@ -6,9 +6,9 @@ import User.User;
 import User.UserMessage;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +16,15 @@ import java.util.List;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
+@Slf4j
 public class FindMemberService implements Service {
   MongoDatabase db;
-  Logger logger;
   JSONArray userTypes;
   JSONArray orgs;
   JSONObject res = null;
 
-  public FindMemberService(MongoDatabase db, Logger logger, JSONArray userTypes, JSONArray orgs) {
+  public FindMemberService(MongoDatabase db, JSONArray userTypes, JSONArray orgs) {
     this.db = db;
-    this.logger = logger;
     this.userTypes = userTypes;
     this.orgs = orgs;
   }
@@ -33,12 +32,12 @@ public class FindMemberService implements Service {
   @Override
   public Message executeAndGetResponse() {
     if (userTypes.isEmpty()) {
-      logger.error("userTypes cannot be empty");
+      log.error("userTypes cannot be empty");
       return UserMessage.EMPTY_FIELD;
     }
     MongoCollection<User> userCollection = db.getCollection("user", User.class);
 
-    logger.info("Counting usertypes");
+    log.info("Counting usertypes");
     if (orgs.isEmpty()) {
       res = emptyOrgCountMembers(userTypes, userCollection);
     } else {
@@ -46,11 +45,11 @@ public class FindMemberService implements Service {
     }
     if (res.has("fail")) {
       String invalidType = res.getString("invalidType");
-      logger.error("Invalid Usertype: " + invalidType);
+      log.error("Invalid Usertype: " + invalidType);
       res = null;
       return UserMessage.INVALID_PARAMETER;
     }
-    logger.info("Successfully returned member information");
+    log.info("Successfully returned member information");
     return UserMessage.SUCCESS;
   }
 

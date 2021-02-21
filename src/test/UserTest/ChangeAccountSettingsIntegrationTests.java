@@ -15,6 +15,7 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.http.Context;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -104,12 +105,17 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
+    JSONObject body = new JSONObject();
+    body.put("username", username);
+
     AccountSecurityController asc = new AccountSecurityController(userDao, tokenDao);
     asc.changeAccountSetting.handle(ctx);
 
     TestUtils.login("account-settings-test", "account-settings-test");
     HttpResponse findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities")
+            .body(body.toString())
+            .asString();
     assert (findResponse
         .getBody()
         .toString()
@@ -164,11 +170,16 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
+    JSONObject body = new JSONObject();
+    body.put("username", username);
+
     AccountSecurityController asc = new AccountSecurityController(userDao, tokenDao);
     asc.changeAccountSetting.handle(ctx);
     TestUtils.login("account-settings-test", "account-settings-test");
     HttpResponse findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities")
+            .body(body.toString())
+            .asString();
     assert (findResponse.getBody().toString().contains("password"));
     TestUtils.logout();
     assert (isCorrectAttribute(username, "birthDate", newBirthDate));
@@ -220,11 +231,16 @@ public class ChangeAccountSettingsIntegrationTests {
     when(ctx.body()).thenReturn(inputString);
     when(ctx.sessionAttribute("username")).thenReturn(username);
 
+    JSONObject body = new JSONObject();
+    body.put("username", username);
+
     AccountSecurityController asc = new AccountSecurityController(userDao, tokenDao);
     asc.changeAccountSetting.handle(ctx);
     TestUtils.login("account-settings-test", "account-settings-test");
     HttpResponse findResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities").asString();
+        Unirest.post(TestUtils.getServerUrl() + "/get-all-activities")
+            .body(body.toString())
+            .asString();
     assert (findResponse.getBody().toString().contains(newEmail));
     TestUtils.logout();
     assert (isCorrectAttribute(username, "email", newEmail));

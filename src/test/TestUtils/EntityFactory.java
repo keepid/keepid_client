@@ -49,7 +49,7 @@ public class EntityFactory {
     private String zipcode = "19104";
     private String username = "testUser123";
     private String password = "testUser123";
-    private UserType userType = null;
+    private UserType userType = UserType.Client;
     private boolean twoFactorOn = false;
     private Date creationDate = new Date(TEST_DATE);
     private List<IpObject> logInHistory = new ArrayList<>();

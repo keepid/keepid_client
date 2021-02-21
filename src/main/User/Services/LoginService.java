@@ -20,16 +20,16 @@ import io.ipinfo.api.IPInfo;
 import io.ipinfo.api.errors.RateLimitedException;
 import io.ipinfo.api.model.IPResponse;
 import kong.unirest.Unirest;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 public class LoginService implements Service {
   public final String IP_INFO_TOKEN = Objects.requireNonNull(System.getenv("IPINFO_TOKEN"));
-  private Logger logger;
   private UserDao userDao;
   private TokenDao tokenDao;
   private String username;
@@ -43,14 +43,12 @@ public class LoginService implements Service {
   public LoginService(
       UserDao userDao,
       TokenDao tokenDao,
-      Logger logger,
       String username,
       String password,
       String ip,
       String userAgent) {
     this.userDao = userDao;
     this.tokenDao = tokenDao;
-    this.logger = logger;
     this.username = username;
     this.password = password;
     this.ip = ip;
@@ -63,7 +61,7 @@ public class LoginService implements Service {
     // validation
     if (!ValidationUtils.isValidUsername(this.username)
         || !ValidationUtils.isValidPassword(this.password)) {
-      logger.info("Invalid username and/or password");
+      log.info("Invalid username and/or password");
       return UserMessage.AUTH_FAILURE;
     }
     // get user
@@ -79,7 +77,7 @@ public class LoginService implements Service {
     }
     recordActivityLogin(); // record login activity
     getLocationOfLogin(user, ip, userAgent); // get ip location
-    logger.info("Login Successful!");
+    log.info("Login Successful!");
     // if two factor is on, run 2fa
     if (user.getTwoFactorOn()
         && (user.getUserType() == UserType.Director
@@ -103,7 +101,7 @@ public class LoginService implements Service {
     if (loginList.size() >= 1000) {
       loginList.remove(0);
     }
-    logger.info("Trying to add login to login history");
+    log.info("Trying to add login to login history");
 
     IpObject thisLogin = new IpObject();
     ZonedDateTime currentTime = ZonedDateTime.now();
@@ -122,7 +120,7 @@ public class LoginService implements Service {
       thisLogin.setLocation(
           response.getPostal() + ", " + response.getCity() + "," + response.getRegion());
     } catch (RateLimitedException ex) {
-      logger.error("Failed to retrieve login location due to limited rates for IPInfo.com");
+      log.error("Failed to retrieve login location due to limited rates for IPInfo.com");
       thisLogin.setLocation("Unknown");
       JSONObject body = new JSONObject();
       body.put(
@@ -138,7 +136,7 @@ public class LoginService implements Service {
   public void addLoginHistoryToDB(List<IpObject> loginList) {
     user.setLogInHistory(loginList);
     userDao.update(user);
-    logger.info("Added login to login history");
+    log.info("Added login to login history");
   }
 
   public Message perform2FA(String email) {
@@ -149,7 +147,7 @@ public class LoginService implements Service {
       EmailUtil.sendEmail("Keep Id", email, "Keepid Verification Code", emailContent);
       saveJWTToDb(randCode, expDate);
     } catch (EmailExceptions emailException) {
-      logger.error("Could not send email");
+      log.error("Could not send email");
       return emailException;
     }
     return UserMessage.TOKEN_ISSUED;
@@ -172,12 +170,12 @@ public class LoginService implements Service {
         return true;
       case ERROR:
         {
-          logger.error("Failed to hash password");
+          log.error("Failed to hash password");
           return false;
         }
       case FAILURE:
         {
-          logger.info("Incorrect password");
+          log.info("Incorrect password");
           return false;
         }
     }

@@ -10,24 +10,22 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import io.javalin.http.UploadedFile;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.time.LocalDate;
 
+@Slf4j
 public class UploadPfpService implements Service {
   MongoDatabase db;
-  Logger logger;
   private String username;
   private String fileName;
   private UploadedFile pfp;
 
-  public UploadPfpService(
-      MongoDatabase db, Logger logger, String username, UploadedFile pfp, String fileName) {
+  public UploadPfpService(MongoDatabase db, String username, UploadedFile pfp, String fileName) {
     this.db = db;
-    this.logger = logger;
     this.username = username;
     this.pfp = pfp;
     this.fileName = fileName;
@@ -50,7 +48,7 @@ public class UploadPfpService implements Service {
                     .append("upload_date", String.valueOf(LocalDate.now()))
                     .append("owner", username));
     gridBucket.uploadFromStream(fileName, content, options);
-    logger.info(username + " has successfully uploaded a profile picture with name  " + fileName);
+    log.info(username + " has successfully uploaded a profile picture with name  " + fileName);
     return UserMessage.SUCCESS.withMessage("Profile Picture uploaded Successfully");
   }
 }

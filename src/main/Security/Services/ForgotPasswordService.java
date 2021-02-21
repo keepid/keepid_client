@@ -11,7 +11,6 @@ import Security.Tokens;
 import User.User;
 import User.UserMessage;
 import Validation.ValidationUtils;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -20,14 +19,12 @@ public class ForgotPasswordService implements Service {
 
   UserDao userDao;
   TokenDao tokenDao;
-  Logger logger;
   private String username;
   public static final int EXPIRATION_TIME_2_HOURS = 7200000;
 
-  public ForgotPasswordService(UserDao userDao, TokenDao tokenDao, Logger logger, String username) {
+  public ForgotPasswordService(UserDao userDao, TokenDao tokenDao, String username) {
     this.userDao = userDao;
     this.tokenDao = tokenDao;
-    this.logger = logger;
     this.username = username;
   }
 
