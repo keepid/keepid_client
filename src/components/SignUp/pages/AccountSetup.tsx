@@ -187,13 +187,13 @@ class AccountSetup extends Component<Props, State, {}> {
       alert,
       handleContinue,
     } = this.props;
+    e.preventDefault();
+    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     const {
       usernameValidator,
       passwordValidator,
       confirmPasswordValidator,
     } = this.state;
-    e.preventDefault();
-    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (usernameValidator === 'true'
         && passwordValidator === 'true'
         && confirmPasswordValidator === 'true') {

@@ -102,6 +102,36 @@ class App extends React.Component<{}, State, {}> {
     });
   }
 
+  componentDidMount() {
+    fetch(`${getServerURL()}/authenticate`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+          userRole,
+          organization,
+          username,
+          firstName,
+          lastName,
+        } = responseJSON;
+        if (status === 'AUTH_SUCCESS') {
+          const role = () => {
+            switch (userRole) {
+              case 'Director': return Role.Director;
+              case 'Admin': return Role.Admin;
+              case 'Worker': return Role.Worker;
+              case 'Client': return Role.Client;
+              case 'Developer': return Role.Developer;
+              default: return Role.LoggedOut;
+            }
+          };
+          this.logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+        }
+      });
+  }
+
   render() {
     const {
       role,
