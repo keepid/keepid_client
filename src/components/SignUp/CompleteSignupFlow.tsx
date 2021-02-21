@@ -54,7 +54,7 @@ interface State {
   redirectLogin: boolean
 }
 
-class CompleteSignupFlow extends Component<Props, State, {}> {
+export class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {

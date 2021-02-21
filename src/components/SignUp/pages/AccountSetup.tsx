@@ -24,7 +24,7 @@ interface State {
   confirmPasswordValidator: string,
 }
 
-class AccountSetup extends Component<Props, State, {}> {
+export class AccountSetup extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {

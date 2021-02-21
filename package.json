@@ -25,6 +25,7 @@
     "jquery-mask-plugin": "^1.14.16",
     "jwt-decode": "^2.2.0",
     "lint-staged": "^9.4.2",
+    "msw": "^0.26.2",
     "nivo": "^0.31.0",
     "node-sass": "^4.14.1",
     "normalize.css": "^8.0.1",
