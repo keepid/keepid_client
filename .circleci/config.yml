@@ -14,7 +14,7 @@ workflows:
   maven_test:
     jobs:
       - maven/test # checkout, build, test, and upload test results
-    send-notification:
-      jobs:
-        - notify:
-            context: slack-secrets
+  send-notification:
+    jobs:
+      - notify:
+          context: slack-secrets
