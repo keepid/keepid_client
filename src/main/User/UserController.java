@@ -61,12 +61,26 @@ public class UserController {
   public Handler authenticateUser =
       ctx -> {
         String sessionUsername = ctx.sessionAttribute("username");
-        JSONObject req = new JSONObject(ctx.body());
-        String username = req.getString("username");
         AuthenticateUserService authenticateUserService =
-            new AuthenticateUserService(userDao, username, sessionUsername);
+            new AuthenticateUserService(userDao, sessionUsername);
         Message response = authenticateUserService.executeAndGetResponse();
-        ctx.result(response.toResponseString());
+        JSONObject responseJSON = response.toJSON();
+        if (response == UserMessage.AUTH_SUCCESS) {
+          responseJSON.put("username", authenticateUserService.getUsername());
+          responseJSON.put("userRole", authenticateUserService.getUserRole());
+          responseJSON.put("organization", authenticateUserService.getOrganization());
+          responseJSON.put("firstName", authenticateUserService.getFirstName());
+          responseJSON.put("lastName", authenticateUserService.getLastName());
+          responseJSON.put("twoFactorOn", authenticateUserService.isTwoFactorOn());
+        } else {
+          responseJSON.put("username", "");
+          responseJSON.put("userRole", "");
+          responseJSON.put("organization", "");
+          responseJSON.put("firstName", "");
+          responseJSON.put("lastName", "");
+          responseJSON.put("twoFactorOn", "");
+        }
+        ctx.result(responseJSON.toString());
       };
 
   public Handler usernameExists =

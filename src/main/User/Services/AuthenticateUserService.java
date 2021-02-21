@@ -3,31 +3,75 @@ package User.Services;
 import Config.Message;
 import Config.Service;
 import Database.User.UserDao;
+import User.User;
 import User.UserMessage;
+import User.UserType;
 import Validation.ValidationUtils;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public class AuthenticateUserService implements Service {
   UserDao userDao;
   private String username;
-  private String sesionUsername;
+  private String sessionUsername;
+  private User user;
 
-  public AuthenticateUserService(UserDao userDao, String username, String sessionUsername) {
+  public AuthenticateUserService(UserDao userDao, String sessionUsername) {
     this.userDao = userDao;
-    this.username = username;
-    this.sesionUsername = sessionUsername;
+    this.sessionUsername = sessionUsername;
   }
 
   @Override
   public Message executeAndGetResponse() {
-    if (!ValidationUtils.isValidUsername(username)) {
-      return UserMessage.USER_NOT_FOUND;
-    }
-    if (sesionUsername == null) {
+    if (!ValidationUtils.isValidUsername(sessionUsername)) {
       return UserMessage.AUTH_FAILURE;
-    } else if (!username.equals(sesionUsername)) {
+    }
+    if (sessionUsername == null) {
       return UserMessage.AUTH_FAILURE;
     } else {
+      Optional<User> maybeUser = userDao.get(sessionUsername);
+      if (maybeUser.isEmpty()) {
+        return UserMessage.AUTH_FAILURE;
+      }
+      this.user = maybeUser.get();
+      this.username = this.user.getUsername();
       return UserMessage.AUTH_SUCCESS;
     }
+  }
+
+  public UserType getUserRole() {
+    Objects.requireNonNull(user);
+    return user.getUserType();
+  }
+
+  public String getOrganization() {
+    Objects.requireNonNull(user);
+    return user.getOrganization();
+  }
+
+  public String getUsername() {
+    Objects.requireNonNull(user);
+    return user.getUsername();
+  }
+
+  public String getFirstName() {
+    Objects.requireNonNull(user);
+    return user.getFirstName();
+  }
+
+  public String getLastName() {
+    Objects.requireNonNull(user);
+    return user.getLastName();
+  }
+
+  public String getFullName() {
+    Objects.requireNonNull(user);
+    return user.getFirstName() + " " + user.getLastName();
+  }
+
+  public boolean isTwoFactorOn() {
+    Objects.requireNonNull(user);
+    return user.getTwoFactorOn();
   }
 }
