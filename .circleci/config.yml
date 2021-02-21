@@ -2,8 +2,19 @@ version: 2.1
 
 orbs:
   maven: circleci/maven@1.1.0
-
+  slack: circleci/slack@4.3.0
+jobs:
+  notify:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: always
 workflows:
   maven_test:
     jobs:
       - maven/test # checkout, build, test, and upload test results
+    send-notification:
+      jobs:
+        - notify:
+            context: slack-secrets
