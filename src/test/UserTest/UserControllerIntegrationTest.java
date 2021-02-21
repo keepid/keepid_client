@@ -115,6 +115,7 @@ public class UserControllerIntegrationTest {
     body.put("listType", "clients");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
+    body.put("role", "Director");
 
     HttpResponse<String> actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/get-organization-members")
@@ -218,6 +219,7 @@ public class UserControllerIntegrationTest {
     body.put("listType", "clients");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
+    body.put("role", "Worker");
 
     HttpResponse<String> actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/get-organization-members")
@@ -241,6 +243,7 @@ public class UserControllerIntegrationTest {
     body.put("listType", "members");
     body.put("currentPage", "1");
     body.put("itemsPerPage", "10");
+    body.put("role", "Worker");
 
     HttpResponse<String> actualResponse =
         Unirest.post(TestUtils.getServerUrl() + "/get-organization-members")
