@@ -17,4 +17,4 @@ workflows:
   send-notification:
     jobs:
       - notify:
-          context: slack-secrets
+          context: Keep.id Slack
