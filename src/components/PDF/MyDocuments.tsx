@@ -363,6 +363,10 @@ class MyDocuments extends Component<Props, State> {
     }
   }
 
+  handleChildClickCloseUploadComponent = () => {
+    this.setState({ showUploadComponent: false });
+  }
+
   // disabling because requires moving parts in a seemingly impossible way
   // eslint-disable-next-line
   tableCols = [{
@@ -422,7 +426,7 @@ class MyDocuments extends Component<Props, State> {
             {showUploadComponent
               ? (
                 <div className="d-flex flex-column pb-4" style={{ border: '2 red' }}>
-                  <DragAndDrop alert={this.props.alert} showUploadComponent={showUploadComponent} userRole={this.props.userRole} username={this.props.username} className="border border-danger" />
+                  <DragAndDrop alert={this.props.alert} showUploadComponent={showUploadComponent} userRole={this.props.userRole} username={this.props.username} onChildClickCloseUploadComponent={this.handleChildClickCloseUploadComponent} className="border border-danger" />
                 </div>
               ) : null }
             <div className="d-flex flex-row mb-3">
@@ -478,7 +482,6 @@ class MyDocuments extends Component<Props, State> {
                 </ToolkitProvider>
               </div>
             </div>
-
           </div>
         </Route>
         <Route path="/my-documents/view">

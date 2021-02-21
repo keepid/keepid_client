@@ -22,8 +22,8 @@ const DragAndDrop = (props) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [buttonState] = useState('');
   const [pdfFiles] = useState(FileList | undefined,);
-  const showUploadComponentProp = props.showUploadComponent;
-  const [showUploadComponent, setShowUploadComponent] = useState(showUploadComponentProp);
+  const [showUploadComponent, setShowUploadComponent] = useState(props.showUploadComponent);
+  const onChildClickCloseUploadComponent = props.onChildClickCloseUploadComponent;
 
   useEffect(() => {
     let filteredArr = selectedFiles.reduce((acc, current) => {
@@ -37,6 +37,11 @@ const DragAndDrop = (props) => {
     setValidFiles([...filteredArr]);
     
 }, [selectedFiles]);
+
+const handleClickCloseComponent = (e) => {
+  onChildClickCloseUploadComponent(false)
+  //setShowUploadComponent(false)
+}
 
 const preventDefault = (e) => {
     e.preventDefault();
@@ -303,7 +308,7 @@ return (
             type="button"
             className="btn-close ml-auto"
             aria-label="Close"
-            onClick={() => setShowUploadComponent(false)}
+            onClick={handleClickCloseComponent}
           >
             <img
               alt="close upload file"
