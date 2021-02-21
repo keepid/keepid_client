@@ -204,7 +204,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/admin-panel"
                 render={() => {
                   if (role === Role.Director || role === Role.Admin) {
-                    return (<AdminPanel name={name} organization={organization} username={username} />);
+                    return (<AdminPanel name={name} organization={organization} username={username} role={role} />);
                   }
                   return <Redirect to="/error" />;
                 }}
