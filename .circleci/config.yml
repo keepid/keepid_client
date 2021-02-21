@@ -18,5 +18,5 @@ jobs:
 workflows:
   test_my_app:
     jobs:
-      - test
-        context: Keep.id Slack
+      - test:
+          context: Keep.id Slack
