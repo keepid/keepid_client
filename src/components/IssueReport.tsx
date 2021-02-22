@@ -198,8 +198,7 @@ class IssueReport extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const responseObject = JSON.parse(responseJSON);
-        const { status } = responseObject;
+        const { status } = responseJSON;
 
         if (status === 'SUCCESS') {
           alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');

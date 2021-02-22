@@ -112,10 +112,7 @@ class FindOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const {
           organizations,
-        } = JSON.parse(responseJSON);
-        console.log('just before get organizations within distance');
-        // does not show
-        console.log(responseJSON);
+        } = responseJSON;
         this.getOrganizationsWithinDistance(organizations, zipcodeLatLng);
       });
   }

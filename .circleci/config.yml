@@ -1,23 +1,25 @@
-version: 2
+version: '2.1'
+orbs:
+  node: circleci/node@4.1.1
+  slack: circleci/slack@4.3.0
 jobs:
-  build:
-    docker:
-      - image: circleci/node:12
-
-    working_directory: ~/repo
-
+  test:
+    executor:
+      name: node/default
+      tag: '13.14'
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-
-      - run: npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
-      - run: npm test
+      - node/install-packages
+      - run:
+          command: npm run test
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+workflows:
+  test_my_app:
+    jobs:
+      - test:
+          context: Keep.id Slack
