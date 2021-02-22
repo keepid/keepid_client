@@ -19,6 +19,7 @@ interface State {
   distance: number,
   searchLoading: boolean,
   showImage: boolean,
+  showNoOrgAlert: boolean,
 }
 
 const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
@@ -59,6 +60,7 @@ class FindOrganization extends Component<Props, State> {
       distance: 25, // get organizations within this distance in km to the entered zipcode
       searchLoading: false,
       showImage: true,
+      showNoOrgAlert: false,
     };
     this.getOrganizations = this.getOrganizations.bind(this);
     this.searchOrganizationsByZipcode = this.searchOrganizationsByZipcode.bind(this);
@@ -159,11 +161,23 @@ class FindOrganization extends Component<Props, State> {
             }
           }
         }
-        this.setState({
-          organizationsWithinDistance,
-          displayMap: true,
-          searchLoading: false,
-        });
+        console.log(organizationsWithinDistance.length);
+        if (organizationsWithinDistance.length === 0) {
+          this.setState({
+            searchLoading: false,
+            showImage: true,
+            displayMap: false,
+            showNoOrgAlert: true,
+          });
+        } else {
+          this.setState({
+            organizationsWithinDistance,
+            displayMap: true,
+            searchLoading: false,
+            showImage: false,
+            showNoOrgAlert: false,
+          });
+        }
       });
   }
 
@@ -219,6 +233,7 @@ class FindOrganization extends Component<Props, State> {
       distance,
       searchLoading,
       showImage,
+      showNoOrgAlert,
     } = this.state;
 
     return (
@@ -247,6 +262,14 @@ class FindOrganization extends Component<Props, State> {
           </div>
         </form>
 
+        {showNoOrgAlert
+          ? (
+            <div className="Alert">
+              <h3 style={{ color: 'red' }}>This is the message when there are no results</h3>
+            </div>
+          )
+          : <div />}
+
         {showImage
           ? (
             <div className="container">
@@ -274,44 +297,42 @@ class FindOrganization extends Component<Props, State> {
                 </span>
               </h5>
               <div className="row">
-                <div className="col" style={{ overflow: 'scroll', height: '50vh' }}>
-                  {
-                    organizationsWithinDistance.map((org, index) => (
-                      <Card
-                        key={org.creationDate + org.orgAddress}
-                        style={{ width: '100%', cursor: 'pointer' }}
-                        className="mb-2 shadow"
-                        onClick={() => this.handleOrgCardClick(org, index)}
-                      >
-                        <Card.Body>
-                          <h5>{org.orgName}</h5>
-                          <small className="font-weight-bold">{org.orgAddress}</small>
-                          <br />
-                          <small>
-                            Website:
-                            <a
-                              href={org.orgWebsite}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-primary-theme"
-                            >
-                              {org.orgWebsite}
-                            </a>
-                          </small>
-                          <br />
-                          <small className="float-left">
-                            <span>Call: </span>
-                            <span className="text-primary-theme">{org.orgPhoneNumber}</span>
-                          </small>
-                          <small className="float-right">
-                            <span>Email: </span>
-                            <span className="text-primary-theme">{org.orgEmail}</span>
-                          </small>
-                        </Card.Body>
-                      </Card>
-                    ))
-                  }
-                </div>
+                {
+                  organizationsWithinDistance.map((org, index) => (
+                    <Card
+                      key={org.creationDate + org.orgAddress}
+                      style={{ width: '100%', cursor: 'pointer' }}
+                      className="mb-2 shadow"
+                      onClick={() => this.handleOrgCardClick(org, index)}
+                    >
+                      <Card.Body>
+                        <h5>{org.orgName}</h5>
+                        <small className="font-weight-bold">{org.orgAddress}</small>
+                        <br />
+                        <small>
+                          Website:
+                          <a
+                            href={org.orgWebsite}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary-theme"
+                          >
+                            {org.orgWebsite}
+                          </a>
+                        </small>
+                        <br />
+                        <small className="float-left">
+                          <span>Call: </span>
+                          <span className="text-primary-theme">{org.orgPhoneNumber}</span>
+                        </small>
+                        <small className="float-right">
+                          <span>Email: </span>
+                          <span className="text-primary-theme">{org.orgEmail}</span>
+                        </small>
+                      </Card.Body>
+                    </Card>
+                  ))
+                }
                 <div className="col">
                   <MapComponent
                     organizations={organizationsWithinDistance}
