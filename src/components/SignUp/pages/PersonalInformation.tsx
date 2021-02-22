@@ -52,7 +52,7 @@ interface State {
   emailValidator: string,
 }
 
-class PersonalInformation extends Component<Props, State, {}> {
+export class PersonalInformation extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {

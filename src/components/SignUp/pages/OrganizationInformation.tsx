@@ -51,7 +51,7 @@ interface State {
   orgEmailValidator: string,
 }
 
-class OrganizationInformation extends Component<Props, State, {}> {
+export class OrganizationInformation extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
