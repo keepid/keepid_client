@@ -39,7 +39,7 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 interface State {
 }
 
-class ReviewSubmit extends Component<Props, State, {}> {
+export class ReviewSubmit extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
     const { handlePrevious } = this.props;
     e.preventDefault();

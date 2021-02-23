@@ -17,7 +17,7 @@ interface Props {
 
 interface State {}
 
-class SignUserAgreement extends Component<Props, State, {}> {
+export class SignUserAgreement extends Component<Props, State, {}> {
   componentDidMount() {
     window.scrollTo(0, 0);
   }
