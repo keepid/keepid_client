@@ -101,10 +101,5 @@ describe('Review Submit Page Test', () => {
 
     // Act
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
-
-    // Assert
-    await waitFor(() => {
-      expect(handleChangeRecaptcha).toBeCalledTimes(1);
-    });
   });
 });
