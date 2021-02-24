@@ -10,6 +10,7 @@ import paginationFactory, {
   PaginationProvider,
 } from 'react-bootstrap-table2-paginator';
 
+import ArrowSVG from '../../../static/images/down-arrow.svg';
 import EditFormatter from './EditFormatter';
 import PaginatedTableFooter from './PaginatedTableFooter';
 import TModal from './TModal';
@@ -39,15 +40,6 @@ const defaultProps = {
   onDelete: () => {},
 };
 
-const createPaginationOptions = (data: any[], currentPage: number, itemsPerPage: number) => ({
-  custom: true,
-  totalSize: data.length,
-  paginationTotalRenderer: customTotal,
-  page: currentPage,
-  pageStartIndex: 0,
-  sizePerPage: itemsPerPage,
-});
-
 const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatter, handleEdit, handleSave) => {
   // add edit control for each column
   const columnsAll = columns.map((value, index) => {
@@ -62,7 +54,7 @@ const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatt
       dataField: 'edit',
       text: '',
       formatExtraData: editRows,
-      formatter: (cell, row, rowIndex, formatExtraData) => <EditFormatter handleEdit={handleEdit} handleSave={handleSave} row={row} />,
+      formatter: (cell, row) => <EditFormatter handleEdit={handleEdit} handleSave={handleSave} row={row} />,
       headerStyle: () => ({
         width: '10%',
         minWidth: '8rem',
@@ -170,6 +162,8 @@ type Column = {
   sort?: boolean;
   // Method to customize the sort caret
   sortCaret?: (order: 'asc' | 'desc' | undefined, column: Column) => any;
+  // Method to perform sorting; if unspecified, alphabetical sorting will be used
+  sortFunc?: (a: any, b: any, order: 'asc' | 'desc', dataField: string, rowA: any, rowB: any) => any;
 }
 
 interface TableProps extends NoDataIndicationProps {
@@ -241,7 +235,7 @@ const Table = ({
           paddingLeft: rowsBeingEdited.has(row.id) ? '1rem' : '2rem',
           alignItems: 'center',
         });
-        if ('sort' in col && col.sort === true) {
+        if (col.sort === true) {
           col.sortCaret = (order) => {
             let sortAlt = 'sort';
             let classDef = 'px-2 sort-svg';
@@ -251,7 +245,7 @@ const Table = ({
               sortAlt += ` ${order}`;
               classDef += (order === 'desc') ? ' rotate180' : '';
             }
-            //   return (<img className={classDef} src={ArrowSVG} alt={sortAlt}/>);
+            return (<img className={classDef} src={ArrowSVG} alt={sortAlt} />);
           };
         }
       });
@@ -368,9 +362,21 @@ const PaginatedTable = ({
   const [itemsPerPage, setItemsPerPage] = useState(5);
   data = data || [];
 
+  if ((itemsPerPage * currentPage) >= data.length && currentPage > 0) {
+    setCurrentPage(currentPage - 1);
+    return null;
+  }
+
   return (
     <PaginationProvider
-      pagination={paginationFactory(createPaginationOptions(data, currentPage, itemsPerPage))}
+      pagination={paginationFactory({
+        custom: true,
+        totalSize: data.length,
+        paginationTotalRenderer: customTotal,
+        page: currentPage,
+        pageStartIndex: 0,
+        sizePerPage: itemsPerPage,
+      })}
     >
       {
         ({
