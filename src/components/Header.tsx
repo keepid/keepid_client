@@ -19,7 +19,7 @@ interface Props {
 interface State {
 }
 
-class Header extends Component<Props, State, {}> {
+export class Header extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {};

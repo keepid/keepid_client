@@ -104,6 +104,7 @@
     "object-assign": "4.1.1",
     "postcss-loader": "1.2.2",
     "promise": "7.1.1",
+    "react-cosmos": "^5.5.3",
     "react-dev-utils": "^11.0.4",
     "react-hot-loader": "^4.12.21",
     "redirect": "^0.2.0",
@@ -111,6 +112,7 @@
     "stylelint": "^12.0.1",
     "ts-jest": "26.4.4",
     "url-loader": "^2.2.0",
+    "webpack": "^4.44.2",
     "whatwg-fetch": "2.0.2"
   },
   "scripts": {
@@ -121,7 +123,9 @@
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
     "lint:scss:fix": "stylelint 'src/**/*.scss' --syntax scss --fix",
     "lint:ts": "eslint . --ext .ts,.tsx",
-    "lint:ts:fix": "npm run lint:ts -- --fix"
+    "lint:ts:fix": "npm run lint:ts -- --fix",
+    "cosmos": "FAST_REFRESH=false cosmos",
+    "cosmos:export": "cosmos-export"
   },
   "jest": {
     "collectCoverageFrom": [

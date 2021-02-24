@@ -10,7 +10,6 @@ interface FormatterProps {
 // This function controls formatting on the edit/save column (needed because of a glitch with the Edit/Save text)
 export default function EditFormatter(props: FormatterProps): React.ReactElement {
   const [editing, setEditing] = useState(false);
-  const toggleEditState = () => setEditing(!editing);
 
   const handleEdit = (e): void => {
     setEditing(true);

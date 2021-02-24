@@ -42,7 +42,7 @@ const defaultProps = {
 
 const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatter, handleEdit, handleSave) => {
   // add edit control for each column
-  const columnsAll = columns.map((value, index) => {
+  const columnsAll = columns.map((value) => {
     value.editable = (cell: any, row: any, rowIndex: number, colIndex: number) => canModify && !!row && editRows.has(row.id) && !cantEditCols.has(colIndex);
 
     return value;
@@ -112,8 +112,8 @@ const constructSelectRowConfiguration = (canSelect: boolean, selectedRows: Set<n
         className="custom-control-input"
         checked={checked}
         disabled={disabled}
-        onChange={() => {
-        }}
+        // TODO: this should actually do something
+        onChange={() => {}}
       />
       <label className="custom-control-label" />
     </div>
@@ -255,13 +255,14 @@ const Table = ({
 
   const handleEdit = (e, row) => {
     e.preventDefault();
-    setRowsBeingEdited(rowsBeingEdited.add(row.id));
+    rowsBeingEdited.add(row.id);
+    setRowsBeingEdited(new Set(rowsBeingEdited));
   };
 
   const handleSave = (e, row) => {
     e.preventDefault();
     rowsBeingEdited.delete(row.id);
-    setRowsBeingEdited(rowsBeingEdited);
+    setRowsBeingEdited(new Set(rowsBeingEdited));
     if (onEditSave) {
       onEditSave(row);
     }
@@ -284,7 +285,7 @@ const Table = ({
 
     // update `editRows` state
     rowsBeingEdited.delete(id);
-    setRowsBeingEdited(rowsBeingEdited);
+    setRowsBeingEdited(new Set(rowsBeingEdited));
 
     // clear out `rowToDelete`
     setRowToDelete(null);
@@ -306,12 +307,14 @@ const Table = ({
     'table-zebra': data.length > 10 && rowIndex % 2 === 0,
   });
 
+  const tableColumns = formatColumns(columns, canModify, rowsBeingEdited, cantEditCols, createDeleteFormatter(handleTryDelete), handleEdit, handleSave);
+
   return (
     <>
       <BootstrapTable
         keyField="id"
         data={data}
-        columns={formatColumns(columns, canModify, rowsBeingEdited, cantEditCols, createDeleteFormatter(handleTryDelete), handleEdit, handleSave)}
+        columns={tableColumns}
         {...rest}
         cellEdit={createCellEditFactory(cantEditCols)}
         rowClasses={rowClasses}
@@ -356,7 +359,7 @@ interface PaginatedTableProps extends TableProps {}
  * Wrapper providing pagination to the base Table component
  */
 const PaginatedTable = ({
-  canModify, cantEditCols, columns, data, emptyInfo, onDelete, onEditSave,
+  data, ...props
 }: PaginatedTableProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -386,13 +389,8 @@ const PaginatedTable = ({
           <div>
             <div className="row mx-4 mt-md-4">
               <Table
-                columns={columns}
                 data={data}
-                emptyInfo={emptyInfo}
-                onDelete={onDelete}
-                onEditSave={onEditSave}
-                canModify={canModify}
-                cantEditCols={cantEditCols}
+                {...props}
                 {...paginationTableProps}
               />
             </div>
