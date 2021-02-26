@@ -101,5 +101,62 @@ describe('Review Submit Page Test', () => {
 
     // Act
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Previous Step' }));
+
+    await waitFor(() => {
+      expect(handlePrevious).toBeCalledTimes(1);
+    });
+  });
+  test('Test Jump To Form', async () => {
+    global.window.matchMedia = jest.fn(() => ({
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    }));
+    global.window.scrollTo = jest.fn();
+    render(
+      <MemoryRouter>
+        <Provider template={AlertTemplate} {...options}>
+          <ReviewSubmit
+            username={username}
+            password={password}
+            firstname={firstName}
+            lastname={lastName}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phoneNumber}
+            email={email}
+            orgName={organizationName}
+            orgWebsite={organizationWebsite}
+            ein={organizationEIN}
+            orgAddress={orgaddress}
+            orgCity={orgcity}
+            orgState={orgstate}
+            orgZipcode={orgzipcode}
+            orgPhoneNumber={orgphoneNumber}
+            orgEmail={orgemail}
+            handleSubmit={handleSubmit}
+            handlePrevious={handlePrevious}
+            handleFormJumpTo={handleFormJumpTo}
+            alert={{
+              show: alertShowFn,
+            }}
+            handleChangeRecaptcha={handleChangeRecaptcha}
+            buttonState=""
+          />
+        </Provider>
+      </MemoryRouter>,
+    );
+
+    // Act
+    const allEdits = screen.getAllByText('Edit');
+    for (let i = 0; i < allEdits.length; i += 1) {
+      fireEvent.click(allEdits[i]);
+    }
+    await waitFor(() => {
+      expect(handleFormJumpTo).toBeCalledTimes(3);
+    });
   });
 });
