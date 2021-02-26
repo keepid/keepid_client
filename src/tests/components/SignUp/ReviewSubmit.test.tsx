@@ -1,7 +1,6 @@
 import {
-  cleanup, fireEvent, render, screen, waitFor,
+  fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
-import { setupServer } from 'msw/node';
 import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
@@ -19,8 +18,6 @@ const options = {
     zIndex: 99999,
   },
 };
-
-const server = setupServer();
 
 describe('Review Submit Page Test', () => {
   const username = 'testOrg4';
@@ -48,14 +45,6 @@ describe('Review Submit Page Test', () => {
   const handleFormJumpTo = jest.fn();
   const handleChangeRecaptcha = jest.fn();
   const alertShowFn = jest.fn();
-  beforeAll(() => {
-    server.listen();
-  });
-  afterEach(() => {
-    cleanup();
-    server.resetHandlers();
-  });
-  afterAll(() => server.close());
   test('Successful setup', async () => {
     global.window.matchMedia = jest.fn(() => ({
       addListener: jest.fn(),

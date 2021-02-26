@@ -1,7 +1,6 @@
 import {
-  cleanup, fireEvent, render, screen, waitFor,
+  fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
-import { setupServer } from 'msw/node';
 import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
@@ -20,8 +19,6 @@ const options = {
   },
 };
 
-const server = setupServer();
-
 describe('Organization Information Page Tests', () => {
   const organizationName = 'test org';
   const organizationWebsite = 'org@gmail.com';
@@ -33,14 +30,6 @@ describe('Organization Information Page Tests', () => {
   const phoneNumber = '(000)000-0000';
   const email = 'testorg@gmail.com';
   const alertShowFn = jest.fn();
-  beforeAll(() => {
-    server.listen();
-  });
-  afterEach(() => {
-    cleanup();
-    server.resetHandlers();
-  });
-  afterAll(() => server.close());
   test('Successful setup', async () => {
     const handleContinue = jest.fn();
     const handlePrevious = jest.fn();
