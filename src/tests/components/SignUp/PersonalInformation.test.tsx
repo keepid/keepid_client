@@ -8,17 +8,6 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { PersonalInformation } from '../../../components/SignUp/pages/PersonalInformation';
 
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
-
 describe('Personal Information Page Tests', () => {
   const firstName = 'test';
   const lastName = 'org';
@@ -41,33 +30,31 @@ describe('Personal Information Page Tests', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <PersonalInformation
-            firstname={firstName}
-            lastname={lastName}
-            birthDate={birthDate}
-            address={address}
-            city={city}
-            state={state}
-            zipcode={zipcode}
-            phonenumber={phoneNumber}
-            email={email}
-            onChangeFirstname={jest.fn()}
-            onChangeLastname={jest.fn()}
-            onChangeBirthDate={jest.fn()}
-            onChangeAddress={jest.fn()}
-            onChangeCity={jest.fn()}
-            onChangeState={jest.fn()}
-            onChangeZipcode={jest.fn()}
-            onChangePhoneNumber={jest.fn()}
-            onChangeEmail={jest.fn()}
-            handlePrevious={handlePrevious}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-          />
-        </Provider>
+        <PersonalInformation
+          firstname={firstName}
+          lastname={lastName}
+          birthDate={birthDate}
+          address={address}
+          city={city}
+          state={state}
+          zipcode={zipcode}
+          phonenumber={phoneNumber}
+          email={email}
+          onChangeFirstname={jest.fn()}
+          onChangeLastname={jest.fn()}
+          onChangeBirthDate={jest.fn()}
+          onChangeAddress={jest.fn()}
+          onChangeCity={jest.fn()}
+          onChangeState={jest.fn()}
+          onChangeZipcode={jest.fn()}
+          onChangePhoneNumber={jest.fn()}
+          onChangeEmail={jest.fn()}
+          handlePrevious={handlePrevious}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+        />
       </MemoryRouter>,
     );
 
@@ -108,33 +95,31 @@ describe('Personal Information Page Tests', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <PersonalInformation
-            firstname={firstName}
-            lastname={lastName}
-            birthDate={birthDate}
-            address={address}
-            city={city}
-            state={state}
-            zipcode={zipcode}
-            phonenumber={phoneNumber}
-            email={email}
-            onChangeFirstname={jest.fn()}
-            onChangeLastname={jest.fn()}
-            onChangeBirthDate={jest.fn()}
-            onChangeAddress={jest.fn()}
-            onChangeCity={jest.fn()}
-            onChangeState={jest.fn()}
-            onChangeZipcode={jest.fn()}
-            onChangePhoneNumber={jest.fn()}
-            onChangeEmail={jest.fn()}
-            handlePrevious={handlePrevious}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-          />
-        </Provider>
+        <PersonalInformation
+          firstname={firstName}
+          lastname={lastName}
+          birthDate={birthDate}
+          address={address}
+          city={city}
+          state={state}
+          zipcode={zipcode}
+          phonenumber={phoneNumber}
+          email={email}
+          onChangeFirstname={jest.fn()}
+          onChangeLastname={jest.fn()}
+          onChangeBirthDate={jest.fn()}
+          onChangeAddress={jest.fn()}
+          onChangeCity={jest.fn()}
+          onChangeState={jest.fn()}
+          onChangeZipcode={jest.fn()}
+          onChangePhoneNumber={jest.fn()}
+          onChangeEmail={jest.fn()}
+          handlePrevious={handlePrevious}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+        />
       </MemoryRouter>,
     );
 

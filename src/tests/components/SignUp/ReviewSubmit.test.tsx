@@ -2,22 +2,9 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
 import React from 'react';
-import { Provider, transitions } from 'react-alert';
-import AlertTemplate from 'react-alert-template-basic';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ReviewSubmit } from '../../../components/SignUp/pages/ReviewSubmit';
-
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
 
 describe('Review Submit Page Test', () => {
   const username = 'testOrg4';
@@ -53,38 +40,36 @@ describe('Review Submit Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <ReviewSubmit
-            username={username}
-            password={password}
-            firstname={firstName}
-            lastname={lastName}
-            birthDate={birthDate}
-            address={address}
-            city={city}
-            state={state}
-            zipcode={zipcode}
-            phonenumber={phoneNumber}
-            email={email}
-            orgName={organizationName}
-            orgWebsite={organizationWebsite}
-            ein={organizationEIN}
-            orgAddress={orgaddress}
-            orgCity={orgcity}
-            orgState={orgstate}
-            orgZipcode={orgzipcode}
-            orgPhoneNumber={orgphoneNumber}
-            orgEmail={orgemail}
-            handleSubmit={handleSubmit}
-            handlePrevious={handlePrevious}
-            handleFormJumpTo={handleFormJumpTo}
-            alert={{
-              show: alertShowFn,
-            }}
-            handleChangeRecaptcha={handleChangeRecaptcha}
-            buttonState=""
-          />
-        </Provider>
+        <ReviewSubmit
+          username={username}
+          password={password}
+          firstname={firstName}
+          lastname={lastName}
+          birthDate={birthDate}
+          address={address}
+          city={city}
+          state={state}
+          zipcode={zipcode}
+          phonenumber={phoneNumber}
+          email={email}
+          orgName={organizationName}
+          orgWebsite={organizationWebsite}
+          ein={organizationEIN}
+          orgAddress={orgaddress}
+          orgCity={orgcity}
+          orgState={orgstate}
+          orgZipcode={orgzipcode}
+          orgPhoneNumber={orgphoneNumber}
+          orgEmail={orgemail}
+          handleSubmit={handleSubmit}
+          handlePrevious={handlePrevious}
+          handleFormJumpTo={handleFormJumpTo}
+          alert={{
+            show: alertShowFn,
+          }}
+          handleChangeRecaptcha={handleChangeRecaptcha}
+          buttonState=""
+        />
       </MemoryRouter>,
     );
 
@@ -104,38 +89,36 @@ describe('Review Submit Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <ReviewSubmit
-            username={username}
-            password={password}
-            firstname={firstName}
-            lastname={lastName}
-            birthDate={birthDate}
-            address={address}
-            city={city}
-            state={state}
-            zipcode={zipcode}
-            phonenumber={phoneNumber}
-            email={email}
-            orgName={organizationName}
-            orgWebsite={organizationWebsite}
-            ein={organizationEIN}
-            orgAddress={orgaddress}
-            orgCity={orgcity}
-            orgState={orgstate}
-            orgZipcode={orgzipcode}
-            orgPhoneNumber={orgphoneNumber}
-            orgEmail={orgemail}
-            handleSubmit={handleSubmit}
-            handlePrevious={handlePrevious}
-            handleFormJumpTo={handleFormJumpTo}
-            alert={{
-              show: alertShowFn,
-            }}
-            handleChangeRecaptcha={handleChangeRecaptcha}
-            buttonState=""
-          />
-        </Provider>
+        <ReviewSubmit
+          username={username}
+          password={password}
+          firstname={firstName}
+          lastname={lastName}
+          birthDate={birthDate}
+          address={address}
+          city={city}
+          state={state}
+          zipcode={zipcode}
+          phonenumber={phoneNumber}
+          email={email}
+          orgName={organizationName}
+          orgWebsite={organizationWebsite}
+          ein={organizationEIN}
+          orgAddress={orgaddress}
+          orgCity={orgcity}
+          orgState={orgstate}
+          orgZipcode={orgzipcode}
+          orgPhoneNumber={orgphoneNumber}
+          orgEmail={orgemail}
+          handleSubmit={handleSubmit}
+          handlePrevious={handlePrevious}
+          handleFormJumpTo={handleFormJumpTo}
+          alert={{
+            show: alertShowFn,
+          }}
+          handleChangeRecaptcha={handleChangeRecaptcha}
+          buttonState=""
+        />
       </MemoryRouter>,
     );
 

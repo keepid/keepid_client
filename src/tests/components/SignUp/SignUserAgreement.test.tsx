@@ -2,22 +2,9 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
 import React from 'react';
-import { Provider, transitions } from 'react-alert';
-import AlertTemplate from 'react-alert-template-basic';
 import { MemoryRouter } from 'react-router-dom';
 
 import { SignUserAgreement } from '../../../components/SignUp/pages/SignUserAgreement';
-
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
 
 describe('Sign User Agreement Test', () => {
   const hasSigned = true;
@@ -40,19 +27,17 @@ describe('Sign User Agreement Test', () => {
     }));
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <SignUserAgreement
-            handleContinue={handleContinue}
-            handlePrevious={handlePrevious}
-            handleChangeSignEULA={jest.fn()}
-            handleCanvasSign={jest.fn()}
-            canvasDataUrl={canvasDataUrl}
-            hasSigned={hasSigned}
-            alert={{
-              show: jest.fn(),
-            }}
-          />
-        </Provider>
+        <SignUserAgreement
+          handleContinue={handleContinue}
+          handlePrevious={handlePrevious}
+          handleChangeSignEULA={jest.fn()}
+          handleCanvasSign={jest.fn()}
+          canvasDataUrl={canvasDataUrl}
+          hasSigned={hasSigned}
+          alert={{
+            show: jest.fn(),
+          }}
+        />
       </MemoryRouter>,
     );
 
@@ -86,19 +71,17 @@ describe('Sign User Agreement Test', () => {
     }));
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <SignUserAgreement
-            handleContinue={handleContinue}
-            handlePrevious={handlePrevious}
-            handleChangeSignEULA={jest.fn()}
-            handleCanvasSign={jest.fn()}
-            canvasDataUrl={canvasDataUrl}
-            hasSigned={hasSigned}
-            alert={{
-              show: alertShowFn,
-            }}
-          />
-        </Provider>
+        <SignUserAgreement
+          handleContinue={handleContinue}
+          handlePrevious={handlePrevious}
+          handleChangeSignEULA={jest.fn()}
+          handleCanvasSign={jest.fn()}
+          canvasDataUrl={canvasDataUrl}
+          hasSigned={hasSigned}
+          alert={{
+            show: alertShowFn,
+          }}
+        />
       </MemoryRouter>,
     );
 

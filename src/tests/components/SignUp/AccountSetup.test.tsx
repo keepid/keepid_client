@@ -4,24 +4,11 @@ import {
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import React from 'react';
-import { Provider, transitions } from 'react-alert';
-import AlertTemplate from 'react-alert-template-basic';
 import { MemoryRouter } from 'react-router-dom';
 
 import { AccountSetup } from '../../../components/SignUp/pages/AccountSetup';
 import getServerURL from '../../../serverOverride';
 import Role from '../../../static/Role';
-
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
 
 const server = setupServer();
 
@@ -61,21 +48,19 @@ describe('Account Setup Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <AccountSetup
-            username={username}
-            password={password}
-            confirmPassword={password}
-            onChangeUsername={jest.fn()}
-            onChangePassword={jest.fn()}
-            onChangeConfirmPassword={jest.fn()}
-            handleContinue={handleContinue}
-            alert={{
-              show: jest.fn(),
-            }}
-            role={Role.LoggedOut}
-          />
-        </Provider>
+        <AccountSetup
+          username={username}
+          password={password}
+          confirmPassword={password}
+          onChangeUsername={jest.fn()}
+          onChangePassword={jest.fn()}
+          onChangeConfirmPassword={jest.fn()}
+          handleContinue={handleContinue}
+          alert={{
+            show: jest.fn(),
+          }}
+          role={Role.LoggedOut}
+        />
       </MemoryRouter>,
     );
 
@@ -105,21 +90,19 @@ describe('Account Setup Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <AccountSetup
-            username={username}
-            password={password}
-            confirmPassword={confirmPassword}
-            onChangeUsername={jest.fn()}
-            onChangePassword={jest.fn()}
-            onChangeConfirmPassword={jest.fn()}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-            role={Role.LoggedOut}
-          />
-        </Provider>
+        <AccountSetup
+          username={username}
+          password={password}
+          confirmPassword={confirmPassword}
+          onChangeUsername={jest.fn()}
+          onChangePassword={jest.fn()}
+          onChangeConfirmPassword={jest.fn()}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+          role={Role.LoggedOut}
+        />
       </MemoryRouter>,
     );
 
@@ -148,21 +131,19 @@ describe('Account Setup Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <AccountSetup
-            username={username}
-            password={password}
-            confirmPassword={confirmPassword}
-            onChangeUsername={jest.fn()}
-            onChangePassword={jest.fn()}
-            onChangeConfirmPassword={jest.fn()}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-            role={Role.LoggedOut}
-          />
-        </Provider>
+        <AccountSetup
+          username={username}
+          password={password}
+          confirmPassword={confirmPassword}
+          onChangeUsername={jest.fn()}
+          onChangePassword={jest.fn()}
+          onChangeConfirmPassword={jest.fn()}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+          role={Role.LoggedOut}
+        />
       </MemoryRouter>,
     );
 
@@ -190,21 +171,19 @@ describe('Account Setup Page Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <AccountSetup
-            username={username}
-            password={password}
-            confirmPassword={confirmPassword}
-            onChangeUsername={jest.fn()}
-            onChangePassword={jest.fn()}
-            onChangeConfirmPassword={jest.fn()}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-            role={Role.LoggedOut}
-          />
-        </Provider>
+        <AccountSetup
+          username={username}
+          password={password}
+          confirmPassword={confirmPassword}
+          onChangeUsername={jest.fn()}
+          onChangePassword={jest.fn()}
+          onChangeConfirmPassword={jest.fn()}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+          role={Role.LoggedOut}
+        />
       </MemoryRouter>,
     );
 

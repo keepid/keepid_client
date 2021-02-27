@@ -2,8 +2,7 @@ import {
   render,
 } from '@testing-library/react';
 import React from 'react';
-import { Provider, transitions } from 'react-alert';
-import AlertTemplate from 'react-alert-template-basic';
+import { Provider } from 'react-alert';
 import { MemoryRouter } from 'react-router-dom';
 
 import { addHttp, birthDateStringConverter, CompleteSignupFlow } from '../../../components/SignUp/CompleteSignupFlow';
@@ -23,17 +22,6 @@ describe('test birth date string converter function', () => {
   });
 });
 
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
-
 describe('Complete Signupflow Test', () => {
   test('Successful setup', async () => {
     global.window.matchMedia = jest.fn(() => ({
@@ -43,7 +31,7 @@ describe('Complete Signupflow Test', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
+        <Provider>
           <CompleteSignupFlow
             alert={{
               show: jest.fn(),

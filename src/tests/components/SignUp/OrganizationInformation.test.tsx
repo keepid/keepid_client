@@ -2,22 +2,9 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
 import React from 'react';
-import { Provider, transitions } from 'react-alert';
-import AlertTemplate from 'react-alert-template-basic';
 import { MemoryRouter } from 'react-router-dom';
 
 import { OrganizationInformation } from '../../../components/SignUp/pages/OrganizationInformation';
-
-const options = {
-  position: 'bottom left',
-  timeout: 5000,
-  offset: '10vh',
-  type: 'info',
-  transition: transitions.fade,
-  containerStyle: {
-    zIndex: 99999,
-  },
-};
 
 describe('Organization Information Page Tests', () => {
   const organizationName = 'test org';
@@ -41,33 +28,31 @@ describe('Organization Information Page Tests', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <OrganizationInformation
-            orgName={organizationName}
-            orgWebsite={organizationWebsite}
-            ein={organizationEIN}
-            orgAddress={address}
-            orgCity={city}
-            orgState={state}
-            orgZipcode={zipcode}
-            orgPhoneNumber={phoneNumber}
-            orgEmail={email}
-            onChangeOrgName={jest.fn()}
-            onChangeOrgWebsite={jest.fn()}
-            onChangeOrgEIN={jest.fn()}
-            onChangeOrgAddress={jest.fn()}
-            onChangeOrgCity={jest.fn()}
-            onChangeOrgState={jest.fn()}
-            onChangeOrgZipcode={jest.fn()}
-            onChangeOrgPhoneNumber={jest.fn()}
-            onChangeOrgEmail={jest.fn()}
-            handlePrevious={handlePrevious}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-          />
-        </Provider>
+        <OrganizationInformation
+          orgName={organizationName}
+          orgWebsite={organizationWebsite}
+          ein={organizationEIN}
+          orgAddress={address}
+          orgCity={city}
+          orgState={state}
+          orgZipcode={zipcode}
+          orgPhoneNumber={phoneNumber}
+          orgEmail={email}
+          onChangeOrgName={jest.fn()}
+          onChangeOrgWebsite={jest.fn()}
+          onChangeOrgEIN={jest.fn()}
+          onChangeOrgAddress={jest.fn()}
+          onChangeOrgCity={jest.fn()}
+          onChangeOrgState={jest.fn()}
+          onChangeOrgZipcode={jest.fn()}
+          onChangeOrgPhoneNumber={jest.fn()}
+          onChangeOrgEmail={jest.fn()}
+          handlePrevious={handlePrevious}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+        />
       </MemoryRouter>,
     );
 
@@ -109,33 +94,31 @@ describe('Organization Information Page Tests', () => {
     global.window.scrollTo = jest.fn();
     render(
       <MemoryRouter>
-        <Provider template={AlertTemplate} {...options}>
-          <OrganizationInformation
-            orgName={organizationName}
-            orgWebsite={organizationWebsite}
-            ein={organizationEIN}
-            orgAddress={address}
-            orgCity={city}
-            orgState={state}
-            orgZipcode={zipcode}
-            orgPhoneNumber={phoneNumber}
-            orgEmail={email}
-            onChangeOrgName={jest.fn()}
-            onChangeOrgWebsite={jest.fn()}
-            onChangeOrgEIN={jest.fn()}
-            onChangeOrgAddress={jest.fn()}
-            onChangeOrgCity={jest.fn()}
-            onChangeOrgState={jest.fn()}
-            onChangeOrgZipcode={jest.fn()}
-            onChangeOrgPhoneNumber={jest.fn()}
-            onChangeOrgEmail={jest.fn()}
-            handlePrevious={handlePrevious}
-            handleContinue={handleContinue}
-            alert={{
-              show: alertShowFn,
-            }}
-          />
-        </Provider>
+        <OrganizationInformation
+          orgName={organizationName}
+          orgWebsite={organizationWebsite}
+          ein={organizationEIN}
+          orgAddress={address}
+          orgCity={city}
+          orgState={state}
+          orgZipcode={zipcode}
+          orgPhoneNumber={phoneNumber}
+          orgEmail={email}
+          onChangeOrgName={jest.fn()}
+          onChangeOrgWebsite={jest.fn()}
+          onChangeOrgEIN={jest.fn()}
+          onChangeOrgAddress={jest.fn()}
+          onChangeOrgCity={jest.fn()}
+          onChangeOrgState={jest.fn()}
+          onChangeOrgZipcode={jest.fn()}
+          onChangeOrgPhoneNumber={jest.fn()}
+          onChangeOrgEmail={jest.fn()}
+          handlePrevious={handlePrevious}
+          handleContinue={handleContinue}
+          alert={{
+            show: alertShowFn,
+          }}
+        />
       </MemoryRouter>,
     );
 
