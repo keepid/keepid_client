@@ -24,7 +24,7 @@ interface State {
   confirmPasswordValidator: string,
 }
 
-class AccountSetup extends Component<Props, State, {}> {
+export class AccountSetup extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -104,9 +104,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const { passwordValidator } = this.state;
     if (passwordValidator === 'true') {
       return (
-        <div className="valid-feedback">
-          Password looks great!
-        </div>
+        <div className="valid-feedback" />
       );
     } if (passwordValidator === 'false') {
       return (
@@ -134,9 +132,7 @@ class AccountSetup extends Component<Props, State, {}> {
     const { confirmPasswordValidator } = this.state;
     if (confirmPasswordValidator === 'true') {
       return (
-        <div className="valid-feedback">
-          Passwords match.
-        </div>
+        <div className="valid-feedback" />
       );
     } if (confirmPasswordValidator === 'false') {
       return (
@@ -183,17 +179,19 @@ class AccountSetup extends Component<Props, State, {}> {
   }
 
   handleStepComplete = async (e) => {
+    e.preventDefault();
+    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     const {
       alert,
       handleContinue,
     } = this.props;
+    e.preventDefault();
+    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     const {
       usernameValidator,
       passwordValidator,
       confirmPasswordValidator,
     } = this.state;
-    e.preventDefault();
-    await Promise.all([this.validateUsername(), this.validatePassword(), this.validateConfirmPassword()]);
     if (usernameValidator === 'true'
         && passwordValidator === 'true'
         && confirmPasswordValidator === 'true') {

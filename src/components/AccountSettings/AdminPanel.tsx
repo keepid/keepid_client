@@ -1,19 +1,20 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable simple-import-sort/imports */
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-
 import getServerURL from '../../serverOverride';
 import Table from '../BaseComponents/Table';
+import Role from '../../static/Role';
 
 interface Props {
   username: string,
   name: string,
   organization: string,
   alert: any,
+  role: Role,
 }
 
 interface State {
@@ -23,13 +24,6 @@ interface State {
   adminName: string,
   organization: string,
 }
-
-const listOptions = [
-  { value: '5', label: '5' },
-  { value: '10', label: '10' },
-  { value: '25', label: '25' },
-  { value: '50', label: '50' },
-];
 
 class AdminPanel extends Component<Props, State> {
   tableCols = [{
@@ -102,10 +96,12 @@ class AdminPanel extends Component<Props, State> {
 
   getAdminWorkers() {
     const { searchName } = this.state;
+    const { role } = this.props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
+        role,
         listType: 'members',
         name: searchName,
       }),
@@ -223,18 +219,6 @@ class AdminPanel extends Component<Props, State> {
           </ul>
         </div>
       );
-    const cantEdit = new Set<number>();
-    const emptyInfo = {
-      onPress: () => console.log('add members'),
-      label: 'Add members',
-      description: 'There are no members in your organization.',
-    };
-    const onEditSave = (row) => {
-      console.log(`edit ${row.id}`);
-    };
-    const onDelete = (id) => {
-      console.log(`delete ${id}`);
-    };
     return (
       <div>
         <Helmet>
@@ -278,12 +262,7 @@ class AdminPanel extends Component<Props, State> {
           <Table
             columns={this.tableCols}
             data={workers}
-            cantEditCols={cantEdit}
-            canSelect={false}
-            canModify={false}
-            emptyInfo={emptyInfo}
-            onEditSave={onEditSave}
-            onDelete={onDelete}
+            emptyInfo={{ description: 'There are no members in your organization.' }}
           />
         </div>
       </div>

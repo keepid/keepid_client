@@ -1,5 +1,7 @@
+import 'jquery-mask-plugin';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import $ from 'jquery';
 import React, { Component, ReactElement } from 'react';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
@@ -50,7 +52,7 @@ interface State {
   emailValidator: string,
 }
 
-class PersonalInformation extends Component<Props, State, {}> {
+export class PersonalInformation extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -221,6 +223,10 @@ class PersonalInformation extends Component<Props, State, {}> {
     return '';
   }
 
+  maskPhone = () => {
+    $('#phonenumber').mask('(000)000-0000');
+  }
+
   render() {
     const {
       firstnameValidator,
@@ -382,6 +388,7 @@ class PersonalInformation extends Component<Props, State, {}> {
                     onBlur={this.validatePhonenumber}
 
                   />
+                  {this.maskPhone()}
                   {this.generalMessage(phonenumberValidator)}
                 </div>
               </div>
