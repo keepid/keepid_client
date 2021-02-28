@@ -11,11 +11,13 @@ interface Props {
   alert: any
   hasSigned: boolean,
   handleChangeSignEULA: () => void,
+  handleCanvasSign: () => void,
+  canvasDataUrl: string,
 }
 
 interface State {}
 
-class SignUserAgreement extends Component<Props, State, {}> {
+export class SignUserAgreement extends Component<Props, State, {}> {
   componentDidMount() {
     window.scrollTo(0, 0);
   }
@@ -40,7 +42,9 @@ class SignUserAgreement extends Component<Props, State, {}> {
   render() {
     const {
       hasSigned,
+      canvasDataUrl,
       handleChangeSignEULA,
+      handleCanvasSign,
     } = this.props;
     return (
       <div>
@@ -61,7 +65,7 @@ class SignUserAgreement extends Component<Props, State, {}> {
             <div className="d-flex justify-content-center pt-5">
               <div className="col-md-8">
                 <div className="pb-3">I agree to all terms and conditions to the EULA above.</div>
-                <SignaturePad acceptEULA={hasSigned} handleChangeAcceptEULA={handleChangeSignEULA} />
+                <SignaturePad acceptEULA={hasSigned} handleChangeAcceptEULA={handleChangeSignEULA} handleCanvasSign={handleCanvasSign} canvasDataUrl={canvasDataUrl} />
               </div>
             </div>
             <div className="d-flex">

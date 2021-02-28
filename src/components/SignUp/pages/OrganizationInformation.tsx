@@ -51,7 +51,7 @@ interface State {
   orgEmailValidator: string,
 }
 
-class OrganizationInformation extends Component<Props, State, {}> {
+export class OrganizationInformation extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -80,7 +80,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   validateOrgWebsite = async ():Promise<void> => {
     const { orgWebsite } = this.props;
     // ( if orgWebsite is valid here)
-    if (isValidOrgWebsite(this.addHttp(orgWebsite))) {
+    if (orgWebsite !== '' && isValidOrgWebsite(this.addHttp(orgWebsite))) {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'true' }, resolve));
     } else {
       await new Promise((resolve) => this.setState({ orgWebsiteValidator: 'false' }, resolve));
@@ -164,9 +164,7 @@ class OrganizationInformation extends Component<Props, State, {}> {
   generalMessage = (inputString:string): ReactElement<{}> => {
     if (inputString === 'true') {
       return (
-        <div className="valid-feedback">
-          Looks Great.
-        </div>
+        <div className="valid-feedback" />
       );
     } if (inputString === 'false') {
       return (
