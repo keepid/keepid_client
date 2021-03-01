@@ -245,7 +245,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-nosql</artifactId>
-      <version>9.4.35.v20201120</version>
+      <version>9.4.37.v20210219</version>
     </dependency>
     <!-- For Testing -->
     <!-- https://mvnrepository.com/artifact/com.konghq/unirest-java -->
