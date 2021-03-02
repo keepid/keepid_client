@@ -56,7 +56,6 @@ const PaginatedTableFooter = ({
           <Select
             aria-label="Select page size"
             options={listOptions}
-            autoFocus
             closeMenuOnSelect
             onChange={handleChangeItemsPerPage}
             value={listOptions.find((i) => i.value === `${itemsPerPage}`)}

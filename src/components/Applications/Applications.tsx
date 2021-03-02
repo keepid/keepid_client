@@ -30,7 +30,7 @@ interface State {
 }
 
 class Applications extends Component<Props, State, {}> {
-  ButtonFormatter = (cell, row, rowIndex, formatExtraData) => (
+  ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
         <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}>View Application</button>
@@ -38,7 +38,7 @@ class Applications extends Component<Props, State, {}> {
     </div>
   )
 
-  OverflowFormatter = (cell, row, rowIndex, formatExtraData) => (
+  OverflowFormatter = (cell) => (
     <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
       <small>{ cell }</small>
     </div>
