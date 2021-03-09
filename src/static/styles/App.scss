@@ -1,6 +1,8 @@
 @import "../../../node_modules/bootstrap/scss/bootstrap";
 @import "./ldbtn.scss";
 @import "./loading.scss";
+@import "./Inputs";
+
 // COLOR SYTEM
 $primary-theme: #7B81FF;
 $primary-theme-light: #e8e9ff;
@@ -359,7 +361,7 @@ thead {
 
 .footer-brand {
 	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
-	// outline-color: 
+	// outline-color:
 }
 
 .footer-brand-logo {
