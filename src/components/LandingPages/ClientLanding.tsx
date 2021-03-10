@@ -3,9 +3,10 @@ import { Helmet } from 'react-helmet';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import AtWorkPic from '../../static/images/atwork-rafiki.png';
 import AppSVG from '../../static/images/calendar.svg';
+import DocumentsPic from '../../static/images/documents-rafiki.png';
 import FileSVG from '../../static/images/file.svg';
-import SignDoc from '../../static/images/sign-document.png';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 interface Props extends RouteComponentProps {
@@ -131,10 +132,10 @@ class ClientLanding extends Component<Props, State, {}> {
         </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
-            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" buttonText="My Documents" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (history.push('/my-documents'))} />
+            <BaseCard cardTitle="Documents" cardText="Upload, view, and download your documents" buttonText="My Documents" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={DocumentsPic} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (history.push('/my-documents'))} />
           </div>
           <div className="d-flex p-2" id="Applications container">
-            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" buttonText="My Applications" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={SignDoc} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (history.push('/applications'))} />
+            <BaseCard cardTitle="Application" cardText="Upload, complete, and manage your applications" buttonText="My Applications" cardSize={CardSize.SMALL_HORIZONTAL} imageSrc={AtWorkPic} imageSize="50%" imageLoc={CardImageLoc.RIGHT} imageObjectFit="contain" buttonOnClick={() => (history.push('/applications'))} />
           </div>
         </div>
         <div className="d-flex p-2 mt-5">
