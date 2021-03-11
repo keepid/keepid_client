@@ -73,7 +73,7 @@ function ActivitiesCard(props: ActivityProps) {
           Activity
         </h6>
         <p style={activityDateStyles}>
-          Uploaded by
+          Completed by
           {' '}
           {uploaderUsername}
           {', '}
