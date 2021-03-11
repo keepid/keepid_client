@@ -1,12 +1,10 @@
 import React, { Component, CSSProperties } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import AtWorkPic from '../../static/images/atwork-rafiki.png';
-import AppSVG from '../../static/images/calendar.svg';
 import DocumentsPic from '../../static/images/documents-rafiki.png';
-import FileSVG from '../../static/images/file.svg';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 interface Props extends RouteComponentProps {
@@ -59,7 +57,7 @@ function ActivitiesCard(props: ActivityProps) {
   const parsedInfo = JSON.parse(activity.info[0]);
   const uploaderUsername = parsedInfo.owner.username;
   const type = activity.type[0];
-  if (type !== 'LoginActivity') {
+  if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
     const displayType = type.split('Activity');
     const newDate = new Date(parsedInfo.occuredAt.$date);
     // return mm/dd/yyyy version of date
