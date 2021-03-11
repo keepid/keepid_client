@@ -114,24 +114,22 @@ class MyDocuments extends Component<Props, State> {
     });
   }
 
-  handleChangeFileDownload(event: any, rowIndex: number) {
+  handleChangeFileDownload(event: any, row: any) {
     event.preventDefault();
     const { files } = event.target;
 
     this.setState({
       pdfFiles: files,
-    }, () => this.handleFileDownload(rowIndex));
+    }, () => this.handleFileDownload(row));
   }
 
-  handleFileDownload(rowIndex: number) {
+  handleFileDownload(row: any) {
     const {
       userRole,
       alert,
     } = this.props;
-    const { documentData } = this.state;
-
-    const documentId = documentData[rowIndex].id;
-    const documentName = documentData[rowIndex].filename;
+    const documentId = row.id;
+    const documentName = row.filename;
 
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
@@ -218,10 +216,9 @@ class MyDocuments extends Component<Props, State> {
     });
   }
 
-  deleteDocument(event: any, rowIndex: number) {
+  deleteDocument(event, row) {
     event.preventDefault();
-    const { documentData } = this.state;
-    const documentId = documentData[rowIndex].id;
+    const documentId = row.id;
 
     const {
       userRole,
@@ -300,14 +297,14 @@ class MyDocuments extends Component<Props, State> {
       </Link>
       <button
         type="button"
-        onClick={(event) => this.handleChangeFileDownload(event, rowIndex)}
+        onClick={(event) => this.handleChangeFileDownload(event, row)}
         className="btn btn-outline-success btn-sm ml-2"
       >
         Download
       </button>
       <button
         type="button"
-        onClick={(event) => this.deleteDocument(event, rowIndex)}
+        onClick={(event) => this.deleteDocument(event, row)}
         className="btn btn-outline-danger btn-sm ml-2"
       >
         Delete
@@ -324,6 +321,12 @@ class MyDocuments extends Component<Props, State> {
     dataField: 'uploadDate',
     text: 'Date Uploaded',
     sort: true,
+    sortFunc: (a, b, order) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      // @ts-ignore
+      return order === 'desc' ? (dateA - dateB) : (dateB - dateA);
+    },
   },
   {
     dataField: 'uploader',
