@@ -123,7 +123,6 @@ class ClientLanding extends Component<Props, State, {}> {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         if (responseJSON.status === 'SUCCESS') {
           this.setState({ isLoading: false, activities: responseJSON.activities.allActivities });
         }
@@ -140,7 +139,7 @@ class ClientLanding extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="d-flex p-2">
-          <h1>
+          <h1 id="welcome-title">
             Welcome,
             {' '}
             {name}
