@@ -57,21 +57,38 @@ interface ActivityProps {
 function ActivitiesCard(props: ActivityProps) {
   const { activity } = props;
   const parsedInfo = JSON.parse(activity.info[0]);
+  const uploaderUsername = parsedInfo.owner.username;
   const type = activity.type[0];
-  const date = parsedInfo.occuredAt.$date;
-  const newDate = new Date(date);
-  const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
-  // eslint-disable-next-line no-underscore-dangle
-  return (
-    <div style={activitiesCardStyles} className="ml-2">
-      <h6 style={activityTitleStyles}>{type}</h6>
-      <p style={activityDateStyles}>
-        {daysDifference}
-        {' '}
-        days ago
-      </p>
-    </div>
-  );
+  if (type !== 'LoginActivity') {
+    const displayType = type.split('Activity');
+    const newDate = new Date(parsedInfo.occuredAt.$date);
+    // return mm/dd/yyyy version of date
+    const dateString = newDate.toLocaleDateString();
+    // return difference number of days between current date and dateString for activity
+    const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+    // eslint-disable-next-line no-underscore-dangle
+    return (
+      <div style={activitiesCardStyles} className="ml-2">
+        <h6 style={activityTitleStyles}>
+          {displayType}
+          {' '}
+          Activity
+        </h6>
+        <p style={activityDateStyles}>
+          Uploaded by
+          {' '}
+          {uploaderUsername}
+          {', '}
+          {dateString}
+          {', '}
+          {daysDifference}
+          {' '}
+          days ago
+        </p>
+      </div>
+    );
+  }
+  return (<div />);
 }
 
 class ClientLanding extends Component<Props, State, {}> {
