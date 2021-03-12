@@ -112,17 +112,17 @@
 }
 
 .pagination > .active > span {
-	border: 1px solid $primary-theme !important;
+	border: 0.0625rem solid $primary-theme !important;
 	background: $primary-theme !important;
 	color: white !important;
 }
 
 .pagination > li:first-of-type > span {
-	border-radius: 4px 0px 0px 4px !important;
+	border-radius: 0.25rem 0rem 0rem 0.25rem !important;
 }
 
 .pagination > li:last-of-type > span {
-	border-radius: 0px 4px 4px 0px !important;
+	border-radius: 0rem 0.25rem 0.25rem 0rem !important;
 }
 
 .empty-table {

@@ -1,3 +1,5 @@
+import '../../static/styles/ClientLanding.scss';
+
 import React, { Component, CSSProperties } from 'react';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
@@ -17,37 +19,6 @@ interface State {
   isLoading: Boolean
 }
 
-const activitiesCardStyles: CSSProperties = {
-  border: '1px solid #D3D3D3',
-  backgroundColor: '#F8F8F8',
-  boxSizing: 'border-box',
-  borderRadius: '1.5%',
-  marginBottom: '1.5%',
-  overflow: 'hidden',
-};
-
-const activityTitleStyles: CSSProperties = {
-  float: 'left',
-  color: '#6C757D',
-  fontFamily: 'Raleway',
-  fontStyle: 'normal',
-  fontWeight: 'bold',
-  fontSize: '16px',
-  lineHeight: '18px',
-  padding: '0.75%',
-};
-
-const activityDateStyles: CSSProperties = {
-  float: 'right',
-  color: '#6C757D',
-  fontFamily: 'Inter',
-  fontStyle: 'normal',
-  fontWeight: 'normal',
-  fontSize: '16px',
-  lineHeight: '18px',
-  padding: '0.75%',
-};
-
 interface ActivityProps {
   activity: any,
 }
@@ -57,36 +28,36 @@ function ActivitiesCard(props: ActivityProps) {
   const parsedInfo = JSON.parse(activity.info[0]);
   const uploaderUsername = parsedInfo.owner.username;
   const type = activity.type[0];
-  if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
-    const displayType = type.split('Activity');
-    const newDate = new Date(parsedInfo.occuredAt.$date);
-    // return mm/dd/yyyy version of date
-    const dateString = newDate.toLocaleDateString();
-    // return difference number of days between current date and dateString for activity
-    const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
-    // eslint-disable-next-line no-underscore-dangle
-    return (
-      <div style={activitiesCardStyles} className="ml-2">
-        <h6 style={activityTitleStyles}>
-          {displayType}
-          {' '}
-          Activity
-        </h6>
-        <p style={activityDateStyles}>
-          Completed by
-          {' '}
-          {uploaderUsername}
-          {', '}
-          {dateString}
-          {', '}
-          {daysDifference}
-          {' '}
-          days ago
-        </p>
-      </div>
-    );
-  }
-  return (<div />);
+  // if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
+  const displayType = type.split('Activity');
+  const newDate = new Date(parsedInfo.occuredAt.$date);
+  // return mm/dd/yyyy version of date
+  const dateString = newDate.toLocaleDateString();
+  // return difference number of days between current date and dateString for activity
+  const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+  // eslint-disable-next-line no-underscore-dangle
+  return (
+    <div className="ml-2 activities-card-container">
+      <h6 id="activities-card-title">
+        {displayType}
+        {' '}
+        Activity
+      </h6>
+      <p id="activities-card-date">
+        Completed by
+        {' '}
+        {uploaderUsername}
+        {', '}
+        {dateString}
+        {', '}
+        {daysDifference}
+        {' '}
+        days ago
+      </p>
+    </div>
+  );
+  // }
+  // return (<div />);
 }
 
 class ClientLanding extends Component<Props, State, {}> {
@@ -122,6 +93,7 @@ class ClientLanding extends Component<Props, State, {}> {
       .then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON.status === 'SUCCESS') {
+          console.log(responseJSON);
           this.setState({ isLoading: false, activities: responseJSON.activities.allActivities });
         }
       });
