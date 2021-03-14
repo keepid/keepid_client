@@ -93,7 +93,6 @@ class ClientLanding extends Component<Props, State, {}> {
       .then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON.status === 'SUCCESS') {
-          console.log(responseJSON);
           this.setState({ isLoading: false, activities: responseJSON.activities.allActivities });
         }
       });
