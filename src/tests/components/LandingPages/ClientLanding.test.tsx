@@ -14,8 +14,25 @@ const server = setupServer();
 describe('Client Landing Page Tests', () => {
   const name = 'Test';
   const username = 'testOrg4';
+  const successFetchActivities = {
+    status: 'SUCCESS',
+    activities: {
+      allActivities: [{ type: ['ChangeUserAttributesActivity'], info: [JSON.stringify({ _id: { $oid: '604d4e4789690d4671992694' }, owner: { username }, occuredAt: { $date: 1615661047721 } })] }],
+    },
+  };
   beforeAll(() => {
     server.listen();
+  });
+  beforeEach(() => {
+    server.use(
+      rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
+        const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        if (reqBody.username === username) {
+          return res(ctx.json(successFetchActivities));
+        }
+        return null;
+      }),
+    );
   });
   afterEach(() => {
     cleanup();
@@ -31,21 +48,6 @@ describe('Client Landing Page Tests', () => {
     fireEvent.change(screen.getByText(`Welcome, ${name}!`));
   });
   test('Activity Card Render', async () => {
-    const successFetchActivities = {
-      status: 'SUCCESS',
-      activities: {
-        allActivities: [{ type: ['ChangeUserAttributesActivity'], info: [JSON.stringify({ _id: { $oid: '604d4e4789690d4671992694' }, owner: { username }, occuredAt: { $date: 1615661047721 } })] }],
-      },
-    };
-    server.use(
-      rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
-        const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-        if (reqBody.username === username) {
-          return res(ctx.json(successFetchActivities));
-        }
-        return null;
-      }),
-    );
     render(
       <MemoryRouter>
         <ClientLanding name={name} username={username} />
@@ -61,21 +63,16 @@ describe('Client Landing Page Tests', () => {
 describe('Client Failed Tests', () => {
   const name = 'Test';
   const username = 'testOrg4';
+  const successFetchActivities = {
+    status: 'SUCCESS',
+    activities: {
+      allActivities: [],
+    },
+  };
   beforeAll(() => {
     server.listen();
   });
-  afterEach(() => {
-    cleanup();
-    server.resetHandlers();
-  });
-  afterAll(() => server.close());
-  test('Empty Activities Array', async () => {
-    const successFetchActivities = {
-      status: 'SUCCESS',
-      activities: {
-        allActivities: [],
-      },
-    };
+  beforeEach(() => {
     server.use(
       rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
         const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
@@ -85,6 +82,13 @@ describe('Client Failed Tests', () => {
         return null;
       }),
     );
+  });
+  afterEach(() => {
+    cleanup();
+    server.resetHandlers();
+  });
+  afterAll(() => server.close());
+  test('Empty Activities Array', async () => {
     render(
       <MemoryRouter>
         <ClientLanding name={name} username={username} />
