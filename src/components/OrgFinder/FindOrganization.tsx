@@ -238,14 +238,15 @@ class FindOrganization extends Component<Props, State> {
 
     return (
       <div className="container">
-        <div className="jumbotron-fluid mt-3">
-          <h1 className="display-4">Find Organizations Near You</h1>
+        <div className="jumbotron-fluid mt-5 mb-4">
+          <h1 className="text-center mb-4">Find Organizations Near You</h1>
+          <p className="text-center font-weight-bold">Sign up with a partnering organization to get started with Keep.id</p>
         </div>
         <form onSubmit={this.onSubmitZipcode}>
           <div className="input-group mb-3">
             <input
               type="text"
-              className="form-control form-purple"
+              className="form-control form-  purple"
               placeholder="Enter your zip code here"
               value={zipcodeSearch}
               onChange={this.onHandleChangeZipcode}
@@ -272,8 +273,8 @@ class FindOrganization extends Component<Props, State> {
 
         {showImage
           ? (
-            <div className="container">
-              <img src={houseSearchingImage} alt="House image" height={200} width={200} />
+            <div className="container text-center mt-5">
+              <img src={houseSearchingImage} alt="House image" height={277} />
             </div>
           )
           : <div />}
