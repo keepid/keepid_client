@@ -1,6 +1,6 @@
 import {
   cleanup, fireEvent,
-  render, screen,
+  render, screen, waitFor,
 } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
@@ -12,27 +12,16 @@ import getServerURL from '../../../serverOverride';
 
 const server = setupServer();
 describe('Client Landing Page Tests', () => {
-  const successFetchActivities = {
-    status: 'SUCCESS',
-  };
   const name = 'Test';
   const username = 'testOrg4';
   beforeAll(() => {
     server.listen();
   });
-  beforeEach(() => server.use(
-    rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
-      const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      if (reqBody.username === username) {
-        return res(ctx.json(successFetchActivities));
-      }
-      return null;
-    }),
-  ));
   afterEach(() => {
     cleanup();
     server.resetHandlers();
   });
+  afterAll(() => server.close());
   test('Succesfully renders', () => {
     render(
       <MemoryRouter>
@@ -40,5 +29,70 @@ describe('Client Landing Page Tests', () => {
       </MemoryRouter>,
     );
     fireEvent.change(screen.getByText(`Welcome, ${name}!`));
+  });
+  test('Activity Card Render', async () => {
+    const successFetchActivities = {
+      status: 'SUCCESS',
+      activities: {
+        allActivities: [{ type: ['ChangeUserAttributesActivity'], info: [JSON.stringify({ _id: { $oid: '604d4e4789690d4671992694' }, owner: { username }, occuredAt: { $date: 1615661047721 } })] }],
+      },
+    };
+    server.use(
+      rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
+        const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        if (reqBody.username === username) {
+          return res(ctx.json(successFetchActivities));
+        }
+        return null;
+      }),
+    );
+    render(
+      <MemoryRouter>
+        <ClientLanding name={name} username={username} />
+      </MemoryRouter>,
+    );
+    // Assert
+    await waitFor(() => {
+      fireEvent.change(screen.getByText('ChangeUserAttributes Activity'));
+    });
+  });
+});
+
+describe('Client Failed Tests', () => {
+  const name = 'Test';
+  const username = 'testOrg4';
+  beforeAll(() => {
+    server.listen();
+  });
+  afterEach(() => {
+    cleanup();
+    server.resetHandlers();
+  });
+  afterAll(() => server.close());
+  test('Empty Activities Array', async () => {
+    const successFetchActivities = {
+      status: 'SUCCESS',
+      activities: {
+        allActivities: [],
+      },
+    };
+    server.use(
+      rest.post(`${getServerURL()}/get-all-activities`, (req, res, ctx) => {
+        const reqBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        if (reqBody.username === username) {
+          return res(ctx.json(successFetchActivities));
+        }
+        return null;
+      }),
+    );
+    render(
+      <MemoryRouter>
+        <ClientLanding name={name} username={username} />
+      </MemoryRouter>,
+    );
+    // Assert
+    await waitFor(() => {
+      fireEvent.change(screen.getByText('No activities found!'));
+    });
   });
 });

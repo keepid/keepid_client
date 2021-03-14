@@ -1,6 +1,6 @@
 import '../../static/styles/ClientLanding.scss';
 
-import React, { Component, CSSProperties } from 'react';
+import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
@@ -28,36 +28,36 @@ function ActivitiesCard(props: ActivityProps) {
   const parsedInfo = JSON.parse(activity.info[0]);
   const uploaderUsername = parsedInfo.owner.username;
   const type = activity.type[0];
-  // if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
-  const displayType = type.split('Activity');
-  const newDate = new Date(parsedInfo.occuredAt.$date);
-  // return mm/dd/yyyy version of date
-  const dateString = newDate.toLocaleDateString();
-  // return difference number of days between current date and dateString for activity
-  const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
-  // eslint-disable-next-line no-underscore-dangle
-  return (
-    <div className="ml-2 activities-card-container">
-      <h6 id="activities-card-title">
-        {displayType}
-        {' '}
-        Activity
-      </h6>
-      <p id="activities-card-date">
-        Completed by
-        {' '}
-        {uploaderUsername}
-        {', '}
-        {dateString}
-        {', '}
-        {daysDifference}
-        {' '}
-        days ago
-      </p>
-    </div>
-  );
-  // }
-  // return (<div />);
+  if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
+    const displayType = type.split('Activity');
+    const newDate = new Date(parsedInfo.occuredAt.$date);
+    // return mm/dd/yyyy version of date
+    const dateString = newDate.toLocaleDateString();
+    // return difference number of days between current date and dateString for activity
+    const daysDifference = Math.round((new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24));
+    // eslint-disable-next-line no-underscore-dangle
+    return (
+      <div className="ml-2 activities-card-container">
+        <h6 id="activities-card-title">
+          {displayType}
+          {' '}
+          Activity
+        </h6>
+        <p id="activities-card-date">
+          Completed by
+          {' '}
+          {uploaderUsername}
+          {', '}
+          {dateString}
+          {', '}
+          {daysDifference}
+          {' '}
+          days ago
+        </p>
+      </div>
+    );
+  }
+  return (<div />);
 }
 
 class ClientLanding extends Component<Props, State, {}> {
