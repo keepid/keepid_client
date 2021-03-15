@@ -75,7 +75,6 @@ class FindOrganization extends Component<Props, State> {
 
   // only show info for one org on card click or else the map view glitches
   handleOrgCardClick(org: any, index: number) {
-    console.log('handleOrgCardClick used');
     const {
       organizationsWithinDistance,
     } = this.state;
@@ -92,7 +91,6 @@ class FindOrganization extends Component<Props, State> {
   }
 
   onSubmitZipcode(event: any) {
-    console.log('onSubmitZipcode used');
     event.preventDefault();
     this.setState({
       searchLoading: true,
@@ -101,7 +99,6 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getOrganizations(zipcodeLatLng: number[]) {
-    console.log('getOrganizations used');
     // runs
     fetch(`${getServerURL()}/get-all-orgs `, {
       method: 'POST',
@@ -122,7 +119,6 @@ class FindOrganization extends Component<Props, State> {
   // gets all organizations within a fixed distance in km
   // also gets latitude and longitute from address and updates the organization
   getOrganizationsWithinDistance(organizations: any[], zipcodeLatLng: number[]) {
-    console.log('getOrganizationsWithinDistance used');
     const {
       distance,
     } = this.state;
@@ -136,12 +132,16 @@ class FindOrganization extends Component<Props, State> {
       orgUpdated.orgAddress = formattedAddress;
       orgUpdated.showInfo = false;
       let formattedPhoneNumber = '';
-      if (org.orgPhoneNumber.length === 10) {
-        formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
-      } else {
-        formattedPhoneNumber = org.orgPhoneNumber;
+      try {
+        if (org.orgPhoneNumber.length === 10) {
+          formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
+        } else {
+          formattedPhoneNumber = org.orgPhoneNumber;
+        }
+        orgUpdated.orgPhoneNumber = formattedPhoneNumber;
+      } catch (TypeError) {
+        orgUpdated.orgPhoneNumber = 'null';
       }
-      orgUpdated.orgPhoneNumber = formattedPhoneNumber;
       organizationsUpdated.push(orgUpdated);
     });
 
@@ -183,7 +183,6 @@ class FindOrganization extends Component<Props, State> {
 
   // takes in inputted zipcode and returns organizations within distance
   searchOrganizationsByZipcode() {
-    console.log('searchOrganizationsByZipcode');
     const {
       zipcodeSearch,
     } = this.state;
@@ -199,10 +198,8 @@ class FindOrganization extends Component<Props, State> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-        console.log(responseJSON.results);
 
         if (status === 'OK') {
-          console.log('case 1');
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
           this.setState({
             searchLoading: false,
@@ -212,7 +209,6 @@ class FindOrganization extends Component<Props, State> {
           });
           this.getOrganizations([zipcodeLatLng.lat, zipcodeLatLng.lng]);
         } else {
-          console.log('case 3');
           const {
             alert,
           } = this.props;
@@ -297,6 +293,17 @@ class FindOrganization extends Component<Props, State> {
                   {zipcodeSearch}
                 </span>
               </h5>
+              <div className="fixed-top">
+                <MapComponent
+                  organizations={organizationsWithinDistance}
+                  lat={zipcodeLatLng.lat}
+                  lng={zipcodeLatLng.lng}
+                  googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
+                  loadingElement={<div style={{ height: '100%' }} />}
+                  containerElement={<div style={{ height: '400px' }} />}
+                  mapElement={<div style={{ height: '100%' }} />}
+                />
+              </div>
               <div className="row">
                 {
                   organizationsWithinDistance.map((org, index) => (
@@ -334,17 +341,6 @@ class FindOrganization extends Component<Props, State> {
                     </Card>
                   ))
                 }
-                <div className="col">
-                  <MapComponent
-                    organizations={organizationsWithinDistance}
-                    lat={zipcodeLatLng.lat}
-                    lng={zipcodeLatLng.lng}
-                    googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
-                    loadingElement={<div style={{ height: '100%' }} />}
-                    containerElement={<div style={{ height: '400px' }} />}
-                    mapElement={<div style={{ height: '100%' }} />}
-                  />
-                </div>
               </div>
             </div>
           )
