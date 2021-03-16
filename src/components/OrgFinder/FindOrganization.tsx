@@ -126,12 +126,16 @@ class FindOrganization extends Component<Props, State> {
       orgUpdated.orgAddress = formattedAddress;
       orgUpdated.showInfo = false;
       let formattedPhoneNumber = '';
-      if (org.orgPhoneNumber.length === 10) {
-        formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
-      } else {
-        formattedPhoneNumber = org.orgPhoneNumber;
+      try {
+        if (org.orgPhoneNumber.length === 10) {
+          formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
+        } else {
+          formattedPhoneNumber = org.orgPhoneNumber;
+        }
+        orgUpdated.orgPhoneNumber = formattedPhoneNumber;
+      } catch (TypeError) {
+        orgUpdated.orgPhoneNumber = 'null';
       }
-      orgUpdated.orgPhoneNumber = formattedPhoneNumber;
       organizationsUpdated.push(orgUpdated);
     });
 
