@@ -134,7 +134,7 @@ class FindOrganization extends Component<Props, State> {
         }
         orgUpdated.orgPhoneNumber = formattedPhoneNumber;
       } catch (TypeError) {
-        orgUpdated.orgPhoneNumber = 'null';
+        orgUpdated.orgPhoneNumber = org.orgPhoneNumber;
       }
       organizationsUpdated.push(orgUpdated);
     });
