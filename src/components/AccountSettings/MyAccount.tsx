@@ -256,8 +256,20 @@ class MyAccount extends Component<Props, State, {}> {
           this.setState({
             passwordError: PasswordError.OldPasswordWrong,
           });
+        } else if (status === 'INVALID_PARAMETER') {
+          this.setState({
+            passwordError: PasswordError.NewPasswordInvalid,
+          });
+        } else {
+          alert.show('Failed resetting password, please try again.', { type: 'error' });
         }
 
+        this.setState({
+          buttonState: '',
+        });
+      })
+      .catch(() => {
+        alert.show('Failed resetting password, please try again.', { type: 'error' });
         this.setState({
           buttonState: '',
         });
