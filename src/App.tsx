@@ -43,6 +43,8 @@ import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
 
+import SearchBarTest from './components/Base/SearchBarTest';
+
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
   ReactGA.pageview(window.location.pathname + window.location.search);
@@ -173,6 +175,10 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Home />;
                 }}
+              />
+              <Route
+                path="/search-test"
+                render={() => (<SearchBarTest />)}
               />
               <Route
                 path="/find-organizations"
