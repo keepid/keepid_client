@@ -81,7 +81,7 @@ const loginHistoryCols = [{
   sort: true,
 }];
 
-class MyAccount extends Component<Props, State, {}> {
+export class MyAccount extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -432,6 +432,7 @@ class MyAccount extends Component<Props, State, {}> {
                     name="editPassword"
                     className="btn btn-outline-dark float-right"
                     onClick={this.handleEditPassword}
+                    data-testid="edit-change-password"
                   >
                     Edit
                   </button>
@@ -443,7 +444,7 @@ class MyAccount extends Component<Props, State, {}> {
               {passwordError === PasswordError.OldPasswordWrong
                 ? <p className="text-danger col-md-9 offset-md-3">Old password is incorrect</p> : null}
               <div className="row mb-3 mt-3">
-                <div className="col-3 card-text mt-2 text-primary-theme">Old password</div>
+                <label htmlFor="enteredPassword" className="col-3 card-text mt-2 text-primary-theme">Old password</label>
                 <div className="col-9 card-text">
                   <input
                     type="password"
@@ -466,7 +467,7 @@ class MyAccount extends Component<Props, State, {}> {
               {passwordError === PasswordError.NewPasswordInvalid
                 ? <p className="text-danger col-md-9 offset-md-3">The new password is invalid</p> : null}
               <div className="row mb-3 mt-3">
-                <div className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</div>
+                <label htmlFor="newPassword" className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</label>
                 <div className="col-9 card-text">
                   <input
                     type="password"
@@ -482,7 +483,7 @@ class MyAccount extends Component<Props, State, {}> {
               {passwordError === PasswordError.NewPasswordConfirmWrong
                 ? <p className="text-danger col-md-9 offset-md-3">The password does not match the one above</p> : null}
               <div className="row mb-3 mt-3">
-                <div className="col-3 card-text mt-2 text-primary-theme">Confirm new password</div>
+                <label htmlFor="newPasswordConfirm" className="col-3 card-text mt-2 text-primary-theme">Confirm new password</label>
                 <div className="col-9 card-text">
                   <input
                     type="password"
@@ -513,6 +514,7 @@ class MyAccount extends Component<Props, State, {}> {
                         className={`ld-ext-right ${buttonState}`}
                         variant="outline-dark"
                         onClick={this.handleChangePassword}
+                        data-testid="submit-change-password"
                       >
                         Submit
                         <div className="ld ld-ring ld-spin" />
