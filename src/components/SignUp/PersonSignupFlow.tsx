@@ -37,6 +37,7 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
+  canvasDataUrl: string,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean,
@@ -60,6 +61,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
+      canvasDataUrl: '',
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
@@ -91,6 +93,8 @@ class PersonSignupFlow extends Component<Props, State, {}> {
   handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
+
+  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
 
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
@@ -180,6 +184,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       phonenumber,
       email,
       hasSigned,
+      canvasDataUrl,
       buttonState,
       signupStage,
     } = this.state;
@@ -234,8 +239,10 @@ class PersonSignupFlow extends Component<Props, State, {}> {
           <SignUserAgreement
             hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
+            handleCanvasSign={this.handleCanvasSign}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
+            canvasDataUrl={canvasDataUrl}
           />
         );
       }
