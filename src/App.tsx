@@ -22,6 +22,7 @@ import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
 import MyDocuments from './components/Applications/MyDocuments';
 import UploadDocs from './components/Applications/UploadDocs';
+import SearchBarTest from './components/Base/SearchBarTest';
 import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -42,8 +43,6 @@ import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
-
-import SearchBarTest from './components/Base/SearchBarTest';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
