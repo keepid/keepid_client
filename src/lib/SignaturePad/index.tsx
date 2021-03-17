@@ -109,10 +109,10 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.handleMouseEvents();
       this.handleTouchEvents();
       this.resizeCanvas();
-
       if (this.props.canvasDataUrl !== "") {
         this.fromDataURL(this.props.canvasDataUrl); 
         this.handleChangeAcceptEULA(true);
+        this.padIsEmpty = false;
       }
     }
 
@@ -224,8 +224,13 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
     }
 
     off() {
-      const dataUrl = this.toDataURL(); 
-      this.handleCanvasSign(dataUrl); 
+      if (!this.padIsEmpty) {
+        const dataUrl = this.toDataURL(); 
+        this.handleCanvasSign(dataUrl); 
+      }
+      else {
+        this.handleCanvasSign("");
+      }
       this.canvas.removeEventListener('mousedown', this.handleMouseDown);
       this.canvas.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.handleMouseUp);
