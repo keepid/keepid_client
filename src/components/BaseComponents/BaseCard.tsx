@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import { Link } from 'react-router-dom';
@@ -118,9 +119,9 @@ function BaseCard(props: Props): React.ReactElement {
                   <Card.Text>{cardText}</Card.Text>
                   {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
                 </div>
-                {typeof buttonText !== 'undefined'
+                {buttonText
                   ? (
-                    <button
+                    <Button
                       className="btn btn-card mt-3"
                       onClick={buttonOnClick}
                       style={{
@@ -129,7 +130,7 @@ function BaseCard(props: Props): React.ReactElement {
                       type="button"
                     >
                       {buttonText}
-                    </button>
+                    </Button>
                   )
                   : null}
               </div>
@@ -160,9 +161,9 @@ function BaseCard(props: Props): React.ReactElement {
                 <Card.Text>{cardText}</Card.Text>
                 {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
               </div>
-              {typeof buttonText !== 'undefined'
+              {buttonText
                 ? (
-                  <button
+                  <Button
                     className="btn btn-card mt-auto mb-4 ml-4"
                     onClick={buttonOnClick}
                     style={{
@@ -171,7 +172,7 @@ function BaseCard(props: Props): React.ReactElement {
                     type="button"
                   >
                     {buttonText}
-                  </button>
+                  </Button>
                 )
                 : null}
             </Card.Body>
