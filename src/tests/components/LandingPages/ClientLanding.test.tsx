@@ -57,7 +57,7 @@ describe('Client Landing Page Tests', () => {
       // Assert
       await waitFor(() => {
         fireEvent.change(screen.getByText('ChangeUserAttributes Activity'));
-        fireEvent.change(screen.getByText(`Completed by ${username}, 3/13/2021, 4 days ago`));
+        fireEvent.change(screen.getByText(`Completed by ${username}, 3/13/2021, 6 days ago`));
       });
     });
   });
