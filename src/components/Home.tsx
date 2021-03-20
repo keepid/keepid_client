@@ -18,6 +18,7 @@ import SecureGraphic from '../static/images/security.svg';
 import SignUp from '../static/images/sign-up.svg';
 import Spreadsheet from '../static/images/spreadsheet.svg';
 import SyncFiles from '../static/images/sync-files.svg';
+import statementOfSolidarity from '../static/images/Team Keep AAPI Solidarity Statement.pdf';
 
 class Home extends Component<{}, {}, {}> {
   render() {
@@ -27,7 +28,14 @@ class Home extends Component<{}, {}, {}> {
           <title>Welcome</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-
+        <div className="w-100" style={{ backgroundColor: '#FFBB7B' }}>
+          <div className="container text-center py-2 font-weight-bold">
+            We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian
+            American Pacific Islander (AAPI) community. Read our Statement of Solidarity with
+            the AAPI Community&nbsp;
+            <a href={statementOfSolidarity} target="_blank" rel="noreferrer">here</a>
+          </div>
+        </div>
         <div className="container-fluid my-auto">
           <div className="row section1 mt-5 justify-content-center">
             <div className="col-md-5 px-4 custom-vertical-center">
