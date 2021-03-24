@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import FormControl from 'react-bootstrap/FormControl';
 import InputGroup from 'react-bootstrap/InputGroup';
 
-import searchIcon from '../../static/images/search.svg';
+import searchIcon from '../../../static/images/search.svg';
 
 interface Props {
   searchHeight?: string,
