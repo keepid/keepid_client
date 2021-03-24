@@ -129,6 +129,12 @@ body {
 	border-color: $primary-theme;
 }
 
+.loginButtonBackground:hover {
+	color: white;
+	background-color: #445FEB;
+	border-color: #445FEB;
+}
+
 .btn-primary:hover,
 .btn-primary:focus,
 .btn-primary:active,
