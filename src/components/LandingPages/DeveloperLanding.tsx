@@ -191,7 +191,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
             pdfFiles: undefined,
           }, () => this.getDocuments());
         } else {
-          alert.show(message);
+          alert.show(message, { timeout: 0 });
         }
       });
   }
