@@ -278,6 +278,10 @@ class FindOrganization extends Component<Props, State> {
         {displayMap
           ? (
             <div>
+              <div className="position-fixed jumbotron-fluid mt-5 mb-4">
+                <h1 className="text-center mb-4">Find Organizations Near You</h1>
+                <p className="text-center font-weight-bold">Sign up with a partnering organization to get started with Keep.id</p>
+              </div>
               <h5>
                 <span className="font-weight-bold">
                   {organizationsWithinDistance.length}
@@ -293,7 +297,7 @@ class FindOrganization extends Component<Props, State> {
                   {zipcodeSearch}
                 </span>
               </h5>
-              <div className="fixed-top">
+              <div className="row">
                 <MapComponent
                   organizations={organizationsWithinDistance}
                   lat={zipcodeLatLng.lat}
