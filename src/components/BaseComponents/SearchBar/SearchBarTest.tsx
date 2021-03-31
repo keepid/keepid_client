@@ -1,6 +1,6 @@
 import React from 'react';
 
-import getServerURL from '../../serverOverride';
+import getServerURL from '../../../serverOverride';
 import SearchBar from './SearchBar';
 
 interface Props {

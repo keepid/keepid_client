@@ -10,7 +10,7 @@ import uuid from 'react-uuid';
 import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
-import DocumentViewer from './DocumentViewer';
+import DocumentViewer from '../Documents/DocumentViewer';
 
 interface Field {
   fieldID: string, // Unique identifier id from frontend
