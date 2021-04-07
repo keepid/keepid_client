@@ -38,6 +38,27 @@ exports[`Home page snapshot test 1`] = `
     </div>
   </div>
   <div
+    className="w-100"
+    style={
+      Object {
+        "backgroundColor": "#FFBB7B",
+      }
+    }
+  >
+    <div
+      className="container text-center py-2 font-weight-bold"
+    >
+      We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
+      <a
+        href="Team Keep AAPI Solidarity Statement.pdf"
+        rel="noreferrer"
+        target="_blank"
+      >
+        here
+      </a>
+    </div>
+  </div>
+  <div
     className="container-fluid my-auto"
   >
     <div
