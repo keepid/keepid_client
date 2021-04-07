@@ -2,25 +2,39 @@
 
 exports[`Home page snapshot test 1`] = `
 <div>
-  <div
-    className="w-100"
-    style={
-      Object {
-        "backgroundColor": "#FFBB7B",
-      }
-    }
-  >
+  <div>
     <div
-      className="container text-center py-2 font-weight-bold"
+      className="w-100"
+      style={
+        Object {
+          "backgroundColor": "#FFBB7B",
+        }
+      }
     >
-      We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
-      <a
-        href="Team Keep AAPI Solidarity Statement.pdf"
-        rel="noreferrer"
-        target="_blank"
+      <button
+        aria-label="Close"
+        className="close float-right mr-5 mt-1"
+        onClick={[Function]}
+        type="button"
       >
-        here
-      </a>
+        <span
+          aria-hidden="true"
+        >
+          ×
+        </span>
+      </button>
+      <div
+        className="container text-center py-2 font-weight-bold"
+      >
+        We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
+        <a
+          href="Team Keep AAPI Solidarity Statement.pdf"
+          rel="noreferrer"
+          target="_blank"
+        >
+          here
+        </a>
+      </div>
     </div>
   </div>
   <div
