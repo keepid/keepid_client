@@ -20,7 +20,6 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
-import SearchBarTest from './components/BaseComponents/SearchBar/SearchBarTest';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -174,10 +173,6 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Home />;
                 }}
-              />
-              <Route
-                path="/search-test"
-                render={() => (<SearchBarTest />)}
               />
               <Route
                 path="/find-organizations"
