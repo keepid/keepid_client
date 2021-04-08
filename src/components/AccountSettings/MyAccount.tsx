@@ -123,7 +123,7 @@ class MyAccount extends Component<Props, State, {}> {
 
   componentDidMount() {
     fetch(`${getServerURL()}/get-user-info`, {
-      method: 'GET',
+      method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
