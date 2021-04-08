@@ -2,6 +2,8 @@ package Config;
 
 import Activity.ActivityController;
 import Admin.AdminController;
+import Database.Organization.OrgDao;
+import Database.Organization.OrgDaoFactory;
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
@@ -9,6 +11,7 @@ import Database.User.UserDaoFactory;
 import Issue.IssueController;
 import Organization.OrganizationController;
 import PDF.PdfController;
+import Production.ProductionController;
 import Security.AccountSecurityController;
 import Security.EncryptionUtils;
 import User.UserController;
@@ -26,6 +29,7 @@ public class AppConfig {
     MongoConfig.getMongoClient();
     UserDao userDao = UserDaoFactory.create(deploymentLevel);
     TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
+    OrgDao orgDao = OrgDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
     setApplicationHeaders(app);
 
@@ -47,6 +51,7 @@ public class AppConfig {
     IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController();
     AdminController adminController = new AdminController(userDao, db);
+    ProductionController productionController = new ProductionController(orgDao, userDao);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -99,6 +104,18 @@ public class AppConfig {
     app.post("/get-all-orgs", orgController.listOrgs);
     app.post("/get-all-activities", activityController.findMyActivities);
 
+    /* --------------- PRODUCTION API --------------- */
+    app.get("/organizations", productionController.readAllOrgs);
+    app.post("/organizations", productionController.createOrg);
+    app.get("/organizations/:orgId", productionController.readOrg);
+    app.patch("/organizations/:orgId", productionController.updateOrg);
+    app.delete("/organizations/:orgId", productionController.deleteOrg);
+    app.get("/organizations/:orgId/users", productionController.getUsersFromOrg);
+    app.get("/users", productionController.readAllUsers);
+    app.post("/users", productionController.createUser);
+    app.get("/users/:username", productionController.readUser);
+    app.patch("/users/:username", productionController.updateUser);
+    app.delete("/users/:username", productionController.deleteUser);
     return app;
   }
 
