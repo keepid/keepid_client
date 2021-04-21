@@ -20,9 +20,8 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
-import MyDocuments from './components/Applications/MyDocuments';
-import UploadDocs from './components/Applications/UploadDocs';
-import SearchBarTest from './components/Base/SearchBarTest';
+import MyDocuments from './components/Documents/MyDocuments';
+import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -174,10 +173,6 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Home />;
                 }}
-              />
-              <Route
-                path="/search-test"
-                render={() => (<SearchBarTest />)}
               />
               <Route
                 path="/find-organizations"

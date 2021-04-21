@@ -1,6 +1,11 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import '@testing-library/jest-dom/extend-expect';
+
 import {
-  cleanup, fireEvent,
-  render, screen, waitFor,
+  cleanup,
+  render,
+  screen,
+  waitFor,
 } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
@@ -9,6 +14,9 @@ import { MemoryRouter } from 'react-router-dom';
 
 import ClientLanding from '../../../components/LandingPages/ClientLanding';
 import getServerURL from '../../../serverOverride';
+
+const fourDaysInMS = 4 * 24 * 60 * 60 * 1000;
+const fourDaysAgoDate = new Date(+(new Date()) - fourDaysInMS);
 
 const server = setupServer();
 describe('Client Landing Page Tests', () => {
@@ -26,7 +34,7 @@ describe('Client Landing Page Tests', () => {
     const successFetchActivities = {
       status: 'SUCCESS',
       activities: {
-        allActivities: [{ type: ['ChangeUserAttributesActivity'], info: [JSON.stringify({ _id: { $oid: '604d4e4789690d4671992694' }, owner: { username }, occuredAt: { $date: 1615661047721 } })] }],
+        allActivities: [{ type: ['ChangeUserAttributesActivity'], info: [JSON.stringify({ _id: { $oid: '604d4e4789690d4671992694' }, owner: { username }, occuredAt: { $date: +fourDaysAgoDate } })] }],
       },
     };
     beforeEach(() => {
@@ -36,7 +44,7 @@ describe('Client Landing Page Tests', () => {
           if (reqBody.username === username) {
             return res(ctx.json(successFetchActivities));
           }
-          return null;
+          return res();
         }),
       );
     });
@@ -46,7 +54,7 @@ describe('Client Landing Page Tests', () => {
           <ClientLanding name={name} username={username} />
         </MemoryRouter>,
       );
-      fireEvent.change(screen.getByText(`Welcome, ${name}!`));
+      expect(screen.getByText(`Welcome, ${name}!`)).toBeInTheDocument();
     });
     test('Normal Activities Array', async () => {
       render(
@@ -56,8 +64,8 @@ describe('Client Landing Page Tests', () => {
       );
       // Assert
       await waitFor(() => {
-        fireEvent.change(screen.getByText('ChangeUserAttributes Activity'));
-        fireEvent.change(screen.getByText(`Completed by ${username}, 3/13/2021, 4 days ago`));
+        expect(screen.getByText('ChangeUserAttributes Activity')).toBeInTheDocument();
+        expect(screen.getByText(`Completed by ${username}, ${fourDaysAgoDate.toLocaleDateString()}, 4 days ago`)).toBeInTheDocument();
       });
     });
   });
@@ -75,7 +83,7 @@ describe('Client Landing Page Tests', () => {
           if (reqBody.username === username) {
             return res(ctx.json(successFetchActivities));
           }
-          return null;
+          return res();
         }),
       );
     });
@@ -87,7 +95,7 @@ describe('Client Landing Page Tests', () => {
       );
       // Assert
       await waitFor(() => {
-        fireEvent.change(screen.getByText('No activities found!'));
+        expect(screen.getByText('No activities found!')).toBeInTheDocument();
       });
     });
   });
