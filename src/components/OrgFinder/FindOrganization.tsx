@@ -19,7 +19,9 @@ interface State {
   searchLoading: boolean,
 }
 
-const APIKey = 'AIzaSyA4vdAgDjHcX0fVWh6I8IQ-Yy1FQ_Be8wc';
+const APIKey = 'AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw';
+// old key AIzaSyBS1seMnrtdwOxpcoezbN_QVwVp797Dxyw
+// new key AIzaSyA4vdAgDjHcX0fVWh6I8IQ-Yy1FQ_Be8wc
 
 Geocode.setApiKey(APIKey);
 Geocode.setLanguage('en');
