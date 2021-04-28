@@ -26,7 +26,7 @@ exports[`Home page snapshot test 1`] = `
       <div
         className="container text-center py-2 font-weight-bold"
       >
-        We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
+        We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
         <a
           href="Team Keep AAPI Solidarity Statement.pdf"
           rel="noreferrer"
@@ -106,7 +106,7 @@ exports[`Home page snapshot test 1`] = `
     </div>
   </div>
   <div
-    className="container-fluid mx-0 pt-5 pb-4  background"
+    className="container-fluid mx-0 pt-5 pb-4 background"
   >
     <div
       className="container section2"
@@ -138,7 +138,7 @@ exports[`Home page snapshot test 1`] = `
           </p>
         </div>
         <div
-          className="col-md-4 flex-column"
+          className="col-md-4 flex-column "
         >
           <h1
             className="font-weight-bold statistic-text mb-2"
@@ -161,7 +161,7 @@ exports[`Home page snapshot test 1`] = `
           </p>
         </div>
         <div
-          className="col-md-4 flex-column"
+          className="col-md-4 flex-column "
         >
           <h1
             className="font-weight-bold statistic-text mb-2"
@@ -199,15 +199,13 @@ exports[`Home page snapshot test 1`] = `
         <h1
           className="text-center m-3 pb-5"
         >
-          The lack of
-           
+          The lack of 
           <span
             className="text-primary-theme font-weight-bold"
           >
             identification
           </span>
-           
-          is a serious struggle for those experiencing homelessness.
+           is a serial struggle for those experiencing homelessness.
         </h1>
       </div>
       <div
@@ -427,7 +425,7 @@ exports[`Home page snapshot test 1`] = `
             <p
               className="text-center text-light pb-5 w-50 mx-auto"
             >
-              Nonprofits can utilize data to generate reports, create additional touch points for care, and streamline their filing operations.
+              Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.
             </p>
           </div>
         </div>
@@ -514,7 +512,7 @@ exports[`Home page snapshot test 1`] = `
             className="col-md-4 mb-2"
           >
             <img
-              alt="Database"
+              alt="Hubs"
               className="home-svgs float-right"
               src="database.svg"
             />
@@ -537,7 +535,7 @@ exports[`Home page snapshot test 1`] = `
             className="col-md-4 mb-2"
           >
             <img
-              alt="Aid platform"
+              alt="Hubs"
               className="home-svgs float-right"
               src="aidplatform.svg"
             />
@@ -548,9 +546,7 @@ exports[`Home page snapshot test 1`] = `
             <h3>
               Efficient and Relational
             </h3>
-            <span
-              className="home-text"
-            >
+            <span>
               Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
             </span>
           </div>
