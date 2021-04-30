@@ -719,7 +719,7 @@ public class TestUtils {
   }
 
   // A private method for hashing passwords.
-  private static String hashPassword(String plainPass) {
+  public static String hashPassword(String plainPass) {
     Argon2 argon2 = Argon2Factory.create();
     char[] passwordArr = plainPass.toCharArray();
     String passwordHash = null;
