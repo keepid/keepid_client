@@ -1,10 +1,12 @@
-import React from 'react';
 import { render } from '@testing-library/react';
-import renderer from 'react-test-renderer';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import Home from '../../../components/Base/Home';
+import renderer from 'react-test-renderer';
 
+import Home from '../../../components/Home';
+
+window.scroll = jest.fn();
 test('Home page loads', () => {
   const { getByText } = render(<MemoryRouter><Home /></MemoryRouter>);
   getByText('Safeguarding identities of those experiencing homelessness');

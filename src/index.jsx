@@ -1,10 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { transitions, Provider } from 'react-alert';
+import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import ReactDOM from 'react-dom';
+
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-// import { NONAME } from 'dns';
 
 const options = {
   position: 'bottom left',

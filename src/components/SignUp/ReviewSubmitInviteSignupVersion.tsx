@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Helmet } from 'react-helmet';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { Helmet } from 'react-helmet';
+
 import { reCaptchaKey } from '../../configVars';
 import Role from '../../static/Role';
 
@@ -18,8 +19,8 @@ interface Props {
   phonenumber: string,
   email: string,
   handleSubmit: () => void,
-  handlePrevious: ()=> void,
-  handleFormJumpTo:(stageNumber: number)=> void,
+  handlePrevious: () => void,
+  handleFormJumpTo: (stageNumber: number) => void,
   alert: any,
   buttonState: string,
   handleChangeRecaptcha: (recaptchaValue: string) => void,
@@ -29,7 +30,8 @@ interface Props {
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
-interface State {}
+interface State {
+}
 
 class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
   handleStepPrevious = (e) => {
@@ -88,7 +90,14 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                   <tr>
                     <th className="w-25" scope="col">Account Setup</th>
                     <th aria-label="Your Account Information" className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(0)}><button type="button" className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0">Edit</button></th>
+                    <th scope="col" onClick={() => handleFormJumpTo(0)}>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0"
+                      >
+                        Edit
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -109,7 +118,14 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                   <tr>
                     <th className="w-25" scope="col">Personal Information</th>
                     <th aria-label="Your Personal Information" className="w-75" scope="col" />
-                    <th scope="col" onClick={() => handleFormJumpTo(1)}><button type="button" className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0">Edit</button></th>
+                    <th scope="col" onClick={() => handleFormJumpTo(1)}>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-* shadow-none text-primary bg-transparent my-0 py-0"
+                      >
+                        Edit
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,8 +181,18 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 </span>
               </div>
               <div className="d-flex">
-                <button type="button" className="btn btn-outline-primary mt-5" onClick={this.handleStepPrevious}>Previous Step</button>
-                <button type="button" onClick={this.onSubmitWithReCAPTCHA} className={`mt-5 ml-auto btn btn-primary ld-ext-right ${buttonState}`}>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary mt-5"
+                  onClick={this.handleStepPrevious}
+                >
+                  Previous Step
+                </button>
+                <button
+                  type="button"
+                  onClick={this.onSubmitWithReCAPTCHA}
+                  className={`mt-5 ml-auto btn btn-primary ld-ext-right ${buttonState}`}
+                >
                   Submit
                   <div className="ld ld-ring ld-spin" />
                 </button>

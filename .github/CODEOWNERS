@@ -1,0 +1,37 @@
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+
+# Learn about code owners here:
+# https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/about-code-owners
+
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @crchong1 and @nrod80 will be requested for
+# review when someone opens a pull request.
+*       @crchong1 @nrod80
+
+# Team Keep
+/src/components/AboutUs/ @joeyszhao
+
+# Base Components
+/src/components/BaseComponents/ @MelindaCardenas
+
+# Shared Flows
+/src/components/AccountSettings/ @nrod80 @leonardtang
+/src/components/Documents/ @nrod80 @leonardtang
+/src/components/LandingPages/ @nrod80 @leonardtang
+/src/components/SignUp/ @nrod80 @leonardtang
+/src/components/UserAuthentication/ @nrod80 @leonardtang
+
+# Client Facing
+/src/components/Applications/ @danielsjoo @loafyyy
+/src/components/LandingPages/ClientLanding.tsx @danielsjoo @loafyyy
+/src/components/OrgFinder/ @danielsjoo @loafyyy
+
+# Non-Profit Facing
+/src/components/AccountSettings/MyOrganization.tsx @gkang2018
+/src/components/LandingPages/AdminDashboard.tsx @gkang2018
+/src/components/LandingPages/WorkerLanding.tsx @gkang2018
+/src/components/SignUp/CompleteSignupFlow.tsx @gkang2018
+/src/components/SignUp/pages/OrganizationInformation.tsx @gkang2018
+/src/components/SignUp/pages/ReviewSubmit.tsx @gkang2018

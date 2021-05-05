@@ -1,17 +1,19 @@
-import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import { withAlert } from 'react-alert';
+import 'antd/dist/antd.css';
+
 import { Steps } from 'antd';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
 import { ProgressBar } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
+
 import getServerURL from '../../serverOverride';
-import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import AccountSetup from './AccountSetup';
-import PersonalInformation from './PersonalInformation';
-import SignUserAgreement from './SignUserAgreement';
-import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import Role from '../../static/Role';
 import { birthDateStringConverter } from './CompleteSignupFlow';
+import AccountSetup from './pages/AccountSetup';
+import PersonalInformation from './pages/PersonalInformation';
+import SignUserAgreement from './pages/SignUserAgreement';
+import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 
 const { Step } = Steps;
 
@@ -35,6 +37,7 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
+  canvasDataUrl: string,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean,
@@ -58,6 +61,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
+      canvasDataUrl: '',
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
@@ -89,6 +93,8 @@ class PersonSignupFlow extends Component<Props, State, {}> {
   handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
+
+  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
 
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
@@ -178,6 +184,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       phonenumber,
       email,
       hasSigned,
+      canvasDataUrl,
       buttonState,
       signupStage,
     } = this.state;
@@ -232,8 +239,10 @@ class PersonSignupFlow extends Component<Props, State, {}> {
           <SignUserAgreement
             hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
+            handleCanvasSign={this.handleCanvasSign}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
+            canvasDataUrl={canvasDataUrl}
           />
         );
       }

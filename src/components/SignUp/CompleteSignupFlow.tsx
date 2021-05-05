@@ -1,18 +1,20 @@
-import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import { withAlert } from 'react-alert';
-import { Steps } from 'antd';
-import { ProgressBar } from 'react-bootstrap';
-import getServerURL from '../../serverOverride';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import AccountSetup from './AccountSetup';
-import PersonalInformation from './PersonalInformation';
-import OrganizationInformation from './OrganizationInformation';
-import SignUserAgreement from './SignUserAgreement';
-import ReviewSubmit from './ReviewSubmit';
+
+import { Steps } from 'antd';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
+import { ProgressBar } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
+
+import getServerURL from '../../serverOverride';
 import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
+import AccountSetup from './pages/AccountSetup';
+import OrganizationInformation from './pages/OrganizationInformation';
+import PersonalInformation from './pages/PersonalInformation';
+import ReviewSubmit from './pages/ReviewSubmit';
+import SignUserAgreement from './pages/SignUserAgreement';
 
 const { Step } = Steps;
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
@@ -46,19 +48,13 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
+  canvasDataUrl: string,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean
 }
 
-class CompleteSignupFlow extends Component<Props, State, {}> {
-  static addHttp = (url: string) => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
-  }
-
+export class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -85,10 +81,27 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
+      canvasDataUrl: '',
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
     };
+  }
+
+  static addHttp = (url: string) => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
+  static birthDateStringConverter = (birthDate: Date) => {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
   }
 
   handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
@@ -135,11 +148,13 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
+  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
+
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
   }
 
-  handleContinue = ():void => {
+  handleContinue = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
   };
 
@@ -223,16 +238,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       });
   }
 
-  static birthDateStringConverter = (birthDate: Date) => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
-  }
-
-  handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber: number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
     const {
@@ -259,6 +265,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       state,
       zipcode,
       hasSigned,
+      canvasDataUrl,
       buttonState,
     } = this.state;
     const { role } = this.props;
@@ -334,8 +341,10 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
           <SignUserAgreement
             hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
+            handleCanvasSign={this.handleCanvasSign}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
+            canvasDataUrl={canvasDataUrl}
           />
         );
       }
@@ -356,12 +365,12 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             orgName={organizationName}
             orgWebsite={organizationWebsite}
             ein={organizationEIN}
-            orgAddress={address}
-            orgCity={city}
-            orgState={state}
-            orgZipcode={zipcode}
-            orgPhoneNumber={phonenumber}
-            orgEmail={email}
+            orgAddress={organizationAddressStreet}
+            orgCity={organizationAddressCity}
+            orgState={organizationAddressState}
+            orgZipcode={organizationAddressZipcode}
+            orgPhoneNumber={organizationPhoneNumber}
+            orgEmail={organizationEmail}
             handleSubmit={this.handleFormSubmit}
             handlePrevious={this.handlePrevious}
             handleFormJumpTo={this.handleFormJumpTo}
@@ -411,6 +420,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
     );
   }
 }
+
 export const { birthDateStringConverter } = CompleteSignupFlow;
 export const { addHttp } = CompleteSignupFlow;
 export default withAlert()(CompleteSignupFlow);

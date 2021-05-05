@@ -1,49 +1,47 @@
-import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Redirect,
-  Switch,
-} from 'react-router-dom';
 import './static/styles/App.scss';
+import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
-import { Helmet } from 'react-helmet';
-import ReactGA from 'react-ga';
-import Header from './components/Base/Header';
-import UploadDocs from './components/PDF/UploadDocs';
-import ClientLanding from './components/LandingPages/ClientLanding';
-import Applications from './components/PDF/Applications';
-import Error from './components/Base/Error';
-import AdminPanel from './components/AccountSecurity/AdminPanel';
-import MyOrganization from './components/AccountSecurity/MyOrganization';
-import DevPanel from './components/LandingPages/DeveloperLanding';
-import MyDocuments from './components/PDF/MyDocuments';
-import OurTeam from './components/AboutUs/OurTeam';
-import Role from './static/Role';
-import MyAccount from './components/AccountSecurity/MyAccount';
-import Footer from './components/Base/Footer';
-import OurPartners from './components/AboutUs/OurPartners';
-import OurMission from './components/AboutUs/OurMission';
-import WorkerLanding from './components/LandingPages/WorkerLanding';
-import getServerURL from './serverOverride';
 
-import IssueReport from './components/AccountSecurity/IssueReport';
-import LoginPage from './components/AccountSecurity/LoginPage';
-import ForgotPassword from './components/AccountSecurity/ForgotPassword';
-import FindOrganization from './components/OrgFinder/FindOrganization';
-import Home from './components/Base/Home';
-import ResetPassword from './components/AccountSecurity/ResetPassword';
-import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
-import EULA from './components/AboutUs/EULA';
-import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
-import SignupBrancher from './components/SignUp/SignupBrancher';
+import React from 'react';
+import ReactGA from 'react-ga';
+import { Helmet } from 'react-helmet';
+import {
+  BrowserRouter as Router, Redirect, Route, Switch,
+} from 'react-router-dom';
+
 import Careers from './components/AboutUs/Careers';
-import AdminDashboard from './components/AccountSecurity/AdminDashboard';
-import Hubspot from './components/AboutUs/Hubspot';
+import EULA from './components/AboutUs/EULA';
+import OurMission from './components/AboutUs/OurMission';
+import OurPartners from './components/AboutUs/OurPartners';
+import OurTeam from './components/AboutUs/OurTeam';
+import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
+import AdminPanel from './components/AccountSettings/AdminPanel';
+import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
+import MyAccount from './components/AccountSettings/MyAccount';
+import MyOrganization from './components/AccountSettings/MyOrganization';
+import Applications from './components/Applications/Applications';
+import MyDocuments from './components/Documents/MyDocuments';
+import UploadDocs from './components/Documents/UploadDocs';
+import Error from './components/Error';
+import Footer from './components/Footer';
+import Header from './components/Header';
+import Home from './components/Home';
+import IssueReport from './components/IssueReport';
+import AdminDashboard from './components/LandingPages/AdminDashboard';
+import ClientLanding from './components/LandingPages/ClientLanding';
+import DevPanel from './components/LandingPages/DeveloperLanding';
+import WorkerLanding from './components/LandingPages/WorkerLanding';
+import FindOrganization from './components/OrgFinder/FindOrganization';
+import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
-import ClientProfilePage from './components/ClientProfilePage';
-import AutoLogout from './components/AccountSecurity/AutoLogout';
+import SignupBrancher from './components/SignUp/SignupBrancher';
+import AutoLogout from './components/UserAuthentication/AutoLogout';
+import ForgotPassword from './components/UserAuthentication/ForgotPassword';
+import LoginPage from './components/UserAuthentication/LoginPage';
+import ResetPassword from './components/UserAuthentication/ResetPassword';
+import getServerURL from './serverOverride';
+import Role from './static/Role';
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -104,6 +102,36 @@ class App extends React.Component<{}, State, {}> {
     });
   }
 
+  componentDidMount() {
+    fetch(`${getServerURL()}/authenticate`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+          userRole,
+          organization,
+          username,
+          firstName,
+          lastName,
+        } = responseJSON;
+        if (status === 'AUTH_SUCCESS') {
+          const role = () => {
+            switch (userRole) {
+              case 'Director': return Role.Director;
+              case 'Admin': return Role.Admin;
+              case 'Worker': return Role.Worker;
+              case 'Client': return Role.Client;
+              case 'Developer': return Role.Developer;
+              default: return Role.LoggedOut;
+            }
+          };
+          this.logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+        }
+      });
+  }
+
   render() {
     const {
       role,
@@ -138,7 +166,7 @@ class App extends React.Component<{}, State, {}> {
                     return (<WorkerLanding name={name} organization={organization} username={username} role={role} />);
                   }
                   if (role === Role.Client) {
-                    return (<ClientLanding />);
+                    return (<ClientLanding name={name} username={username} />);
                   }
                   if (role === Role.Developer) {
                     return (<DevPanel name={name} organization={organization} username={username} role={role} />);
@@ -155,7 +183,16 @@ class App extends React.Component<{}, State, {}> {
                 render={() => (
                   role !== Role.LoggedOut
                     ? <Redirect to="/home" />
-                    : <LoginPage isLoggedIn={role !== Role.LoggedOut} logIn={this.logIn} logOut={this.logOut} role={role} autoLogout={autoLogout} setAutoLogout={this.setAutoLogout} />
+                    : (
+                      <LoginPage
+                        isLoggedIn={role !== Role.LoggedOut}
+                        logIn={this.logIn}
+                        logOut={this.logOut}
+                        role={role}
+                        autoLogout={autoLogout}
+                        setAutoLogout={this.setAutoLogout}
+                      />
+                    )
                 )}
               />
               <Route path="/signup-branch">
@@ -197,7 +234,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/admin-panel"
                 render={() => {
                   if (role === Role.Director || role === Role.Admin) {
-                    return (<AdminPanel name={name} organization={organization} username={username} />);
+                    return (<AdminPanel name={name} organization={organization} username={username} role={role} />);
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -246,9 +283,6 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/our-mission">
                 <OurMission />
-              </Route>
-              <Route path="/hubspot">
-                <Hubspot />
               </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />
@@ -316,4 +350,5 @@ class App extends React.Component<{}, State, {}> {
     );
   }
 }
+
 export default App;

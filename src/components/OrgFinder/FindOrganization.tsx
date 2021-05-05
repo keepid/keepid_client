@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import Geocode from 'react-geocode';
 import Card from 'react-bootstrap/Card';
-import MapComponent from './MapComponent';
+import Geocode from 'react-geocode';
+
 import getServerURL from '../../serverOverride';
+import MapComponent from './MapComponent';
 
 interface Props {
   alert: any,
@@ -104,7 +105,7 @@ class FindOrganization extends Component<Props, State> {
       .then((responseJSON) => {
         const {
           organizations,
-        } = JSON.parse(responseJSON);
+        } = responseJSON;
         this.getOrganizationsWithinDistance(organizations, zipcodeLatLng);
       });
   }
@@ -125,12 +126,16 @@ class FindOrganization extends Component<Props, State> {
       orgUpdated.orgAddress = formattedAddress;
       orgUpdated.showInfo = false;
       let formattedPhoneNumber = '';
-      if (org.orgPhoneNumber.length === 10) {
-        formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
-      } else {
-        formattedPhoneNumber = org.orgPhoneNumber;
+      try {
+        if (org.orgPhoneNumber.length === 10) {
+          formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
+        } else {
+          formattedPhoneNumber = org.orgPhoneNumber;
+        }
+        orgUpdated.orgPhoneNumber = formattedPhoneNumber;
+      } catch (TypeError) {
+        orgUpdated.orgPhoneNumber = org.orgPhoneNumber;
       }
-      orgUpdated.orgPhoneNumber = formattedPhoneNumber;
       organizationsUpdated.push(orgUpdated);
     });
 
@@ -211,9 +216,18 @@ class FindOrganization extends Component<Props, State> {
         </div>
         <form onSubmit={this.onSubmitZipcode}>
           <div className="input-group mb-3">
-            <input type="text" className="form-control form-purple" placeholder="Enter your zip code here" value={zipcodeSearch} onChange={this.onHandleChangeZipcode} />
+            <input
+              type="text"
+              className="form-control form-purple"
+              placeholder="Enter your zip code here"
+              value={zipcodeSearch}
+              onChange={this.onHandleChangeZipcode}
+            />
             <div className="input-group-append">
-              <button className={`btn btn-primary btn-primary-theme rounded-right ld-ext-right ${searchLoading ? 'running' : ''}`} type="submit">
+              <button
+                className={`btn btn-primary btn-primary-theme rounded-right ld-ext-right ${searchLoading ? 'running' : ''}`}
+                type="submit"
+              >
                 Search
                 <div className="ld ld-ring ld-spin" />
               </button>
@@ -243,14 +257,26 @@ class FindOrganization extends Component<Props, State> {
                 <div className="col" style={{ overflow: 'scroll', height: '50vh' }}>
                   {
                     organizationsWithinDistance.map((org, index) => (
-                      <Card key={org.creationDate + org.orgAddress} style={{ width: '100%', cursor: 'pointer' }} className="mb-2 shadow" onClick={() => this.handleOrgCardClick(org, index)}>
+                      <Card
+                        key={org.creationDate + org.orgAddress}
+                        style={{ width: '100%', cursor: 'pointer' }}
+                        className="mb-2 shadow"
+                        onClick={() => this.handleOrgCardClick(org, index)}
+                      >
                         <Card.Body>
                           <h5>{org.orgName}</h5>
                           <small className="font-weight-bold">{org.orgAddress}</small>
                           <br />
                           <small>
                             Website:
-                            <a href={org.orgWebsite} target="_blank" rel="noreferrer" className="text-primary-theme">{org.orgWebsite}</a>
+                            <a
+                              href={org.orgWebsite}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary-theme"
+                            >
+                              {org.orgWebsite}
+                            </a>
                           </small>
                           <br />
                           <small className="float-left">
