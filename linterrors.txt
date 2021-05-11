@@ -1,0 +1,204 @@
+Compiled with warnings.
+
+src/components/AccountSettings/AdminPanel.tsx
+  Line 10:8:    'Role' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 128:11:  'workerPanel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/AccountSettings/MyAccount.tsx
+  Line 445:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 468:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 484:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+src/components/Applications/ApplicationForm.tsx
+  Line 269:32:  'formAnswers' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 290:31:  'formAnswers' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 313:7:   A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 389:29:  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+src/components/BaseComponents/Table/PaginatedTableFooter.tsx
+  Line 52:13:  Prop spreading is forbidden  react/jsx-props-no-spreading
+
+src/components/BaseComponents/Table/TModal.tsx
+  Line 19:92:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 24:67:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 25:89:  Must use destructuring props assignment  react/destructuring-assignment
+
+src/components/BaseComponents/Table/Table.tsx
+  Line 5:17:    'ReactElement' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 102:7:   A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 107:33:  'rest' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 118:7:   A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 121:19:  'isSelect' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 121:29:  'rowIndex' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 121:39:  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 126:33:  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 318:9:   Prop spreading is forbidden                     react/jsx-props-no-spreading
+  Line 393:17:  Prop spreading is forbidden                     react/jsx-props-no-spreading
+  Line 394:17:  Prop spreading is forbidden                     react/jsx-props-no-spreading
+
+src/components/BaseComponents/Table/TablePageSelector.tsx
+  Line 64:56:   Visible, non-interactive elements with click handlers must have at least one keyboard listener  jsx-a11y/click-events-have-key-events
+  Line 64:56:   Static HTML elements with event handlers require a role                                         jsx-a11y/no-static-element-interactions
+  Line 65:196:  Visible, non-interactive elements with click handlers must have at least one keyboard listener  jsx-a11y/click-events-have-key-events
+  Line 65:196:  Static HTML elements with event handlers require a role                                         jsx-a11y/no-static-element-interactions
+  Line 65:234:  'event' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  Line 66:69:   Visible, non-interactive elements with click handlers must have at least one keyboard listener  jsx-a11y/click-events-have-key-events
+  Line 66:69:   Static HTML elements with event handlers require a role                                         jsx-a11y/no-static-element-interactions
+
+src/components/Documents/MyDocuments.tsx
+  Line 159:17:  '_error' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 198:15:  'pdfFile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 199:17:  '_error' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 243:14:  '_responseJSON' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 275:43:  'rowIndex' is defined but never used          @typescript-eslint/no-unused-vars
+  Line 426:86:  'index' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 468:36:  Prop spreading is forbidden                   react/jsx-props-no-spreading
+
+src/components/Documents/ViewDocument.tsx
+  Line 55:17:  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Footer.tsx
+  Line 10:1:  Component should be written as a pure function  react/prefer-stateless-function
+
+src/components/Home.tsx
+  Line 23:1:  Component should be written as a pure function  react/prefer-stateless-function
+
+src/components/IssueReport.tsx
+  Line 1:28:    'ReactElement' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 211:17:  'error' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 261:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 282:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 302:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+src/components/LandingPages/AdminDashboard.tsx
+  Line 317:13:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 322:13:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 327:13:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 332:13:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+
+src/components/LandingPages/ClientLanding.tsx
+  Line 5:10:   'RouteComponentProps' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 90:19:  Must use destructuring props assignment          react/destructuring-assignment
+
+src/components/LandingPages/DeveloperLanding.tsx
+  Line 62:7:    A form label must be associated with a control                   jsx-a11y/label-has-associated-control
+  Line 66:7:    A form label must be associated with a control                   jsx-a11y/label-has-associated-control
+  Line 68:9:    A control must be associated with a text label                   jsx-a11y/control-has-associated-label
+  Line 130:7:   'searchName' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 156:7:   'alert' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  Line 170:9:   Must use destructuring state assignment                          react/destructuring-assignment
+  Line 171:21:  Must use destructuring state assignment                          react/destructuring-assignment
+  Line 176:31:  Must use destructuring state assignment                          react/destructuring-assignment
+  Line 201:7:   'alert' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  Line 215:24:  Must use destructuring state assignment                          react/destructuring-assignment
+  Line 216:26:  Must use destructuring state assignment                          react/destructuring-assignment
+  Line 236:15:  'pdfFile' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  Line 244:17:  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  Line 245:9:   Unexpected alert                                                 no-alert
+  Line 251:7:   'currentApplicationFilename' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 252:7:   'currentApplicationId' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  Line 253:7:   'currentUser' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  Line 254:7:   'username' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  Line 255:7:   'adminName' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  Line 256:7:   'organization' is assigned a value but never used                @typescript-eslint/no-unused-vars
+
+src/components/LandingPages/WorkerLanding.tsx
+  Line 77:20:   'event' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 100:9:   Unexpected console statement             no-console
+  Line 108:11:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 110:11:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 112:11:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 176:9:   Unexpected console statement             no-console
+  Line 187:48:  Must use destructuring state assignment  react/destructuring-assignment
+  Line 187:80:  'i' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 272:24:  Must use destructuring state assignment  react/destructuring-assignment
+  Line 287:24:  Must use destructuring state assignment  react/destructuring-assignment
+  Line 343:26:  Must use destructuring state assignment  react/destructuring-assignment
+
+src/components/SignUp/CompleteSignupFlow.tsx
+  Line 12:8:  'Role' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/SignUp/InviteSignupFlow.tsx
+  Line 11:8:  'Role' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/SignUp/PersonSignupFlow.tsx
+  Line 11:8:  'Role' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/SignUp/ReviewSubmitInviteSignupVersion.tsx
+  Line 7:8:  'Role' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/SignUp/SignupBrancher.tsx
+  Line 8:1:  Component should be written as a pure function  react/prefer-stateless-function
+
+src/components/SignUp/pages/AccountSetup.tsx
+  Line 1:28:  'ReactElement' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/SignUp/pages/OrganizationInformation.tsx
+  Line 4:28:    'ReactElement' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 297:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 313:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 329:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 347:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 349:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 364:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 366:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 380:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 394:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 410:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 427:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+src/components/SignUp/pages/PersonalInformation.tsx
+  Line 5:28:    'ReactElement' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 276:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 278:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 291:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 305:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 317:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 319:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 334:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 336:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 350:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 364:19:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 379:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  Line 396:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+src/components/SignUp/pages/ReviewSubmit.tsx
+  Line 107:21:  A control must be associated with a text label                                                                                                                                                                                                                                                                                                                    jsx-a11y/control-has-associated-label
+  Line 108:73:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 128:21:  A control must be associated with a text label                                                                                                                                                                                                                                                                                                                    jsx-a11y/control-has-associated-label
+  Line 129:73:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 177:21:  A control must be associated with a text label                                                                                                                                                                                                                                                                                                                    jsx-a11y/control-has-associated-label
+  Line 178:73:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+
+src/components/UserAuthentication/ForgotPassword.tsx
+  Line 42:7:     Must use destructuring props assignment  react/destructuring-assignment
+  Line 55:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 58:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 61:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 64:19:    'error' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 65:11:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 108:149:  Must use destructuring state assignment  react/destructuring-assignment
+
+src/components/UserAuthentication/ResetPassword.tsx
+  Line 64:7:     Must use destructuring props assignment  react/destructuring-assignment
+  Line 67:7:     Must use destructuring props assignment  react/destructuring-assignment
+  Line 70:7:     Must use destructuring props assignment  react/destructuring-assignment
+  Line 85:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 88:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 91:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 94:13:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 97:19:    'error' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 98:11:    Must use destructuring props assignment  react/destructuring-assignment
+  Line 165:19:   Must use destructuring state assignment  react/destructuring-assignment
+  Line 169:157:  Must use destructuring state assignment  react/destructuring-assignment
+  Line 176:55:   Must use destructuring state assignment  react/destructuring-assignment
+
+src/index.jsx
+  Line 21:38:  Prop spreading is forbidden  react/jsx-props-no-spreading
+
+src/serviceWorker.js
+  Line 45:11:  Unexpected console statement  no-console
+  Line 76:15:  Unexpected console statement  no-console
+  Line 89:15:  Unexpected console statement  no-console
+  Line 101:7:  Unexpected console statement  no-console
+  Line 127:7:  Unexpected console statement  no-console
