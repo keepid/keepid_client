@@ -47,12 +47,12 @@ function TablePageSelector(props: Props) : any {
     changeCurrentPage(index - 1);
   }
 
-  function handleClickPrevious(event: any) {
+  function handleClickPrevious() {
     const newCurrentPage = currentPage - 1;
     changeCurrentPage(newCurrentPage);
   }
 
-  function handleClickNext(event: any) {
+  function handleClickNext() {
     const newCurrentPage = currentPage + 1;
     changeCurrentPage(newCurrentPage);
   }
