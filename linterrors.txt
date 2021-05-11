@@ -6,6 +6,8 @@ src/components/AccountSettings/AdminPanel.tsx
 
 src/components/AccountSettings/MyAccount.tsx
   Line 445:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+    //so what is a text label and associated control? These are mentioned in the jsx-a11y docs
+    //https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/master/docs/rules/control-has-associated-label.md
   Line 468:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
   Line 484:17:  A form label must be associated with a control  jsx-a11y/label-has-associated-control
 
@@ -17,14 +19,18 @@ src/components/Applications/ApplicationForm.tsx
 
 src/components/BaseComponents/Table/PaginatedTableFooter.tsx
   Line 52:13:  Prop spreading is forbidden  react/jsx-props-no-spreading
+    //don't see how it is used here. I have a vague idea of prop spreading but why can't I just get rid of the ellipses here?
 
 src/components/BaseComponents/Table/TModal.tsx
-  Line 19:92:  Must use destructuring props assignment  react/destructuring-assignment
+  Line 19:92:  Must use destructuring props assignment  react/destraducturing-assignment
+    //what is destructuring props and how could I apply that to something like prop.row.id? how else would one access id from row from prop
   Line 24:67:  Must use destructuring props assignment  react/destructuring-assignment
   Line 25:89:  Must use destructuring props assignment  react/destructuring-assignment
 
 src/components/BaseComponents/Table/Table.tsx
   Line 5:17:    'ReactElement' is defined but never used        @typescript-eslint/no-unused-vars
+    //it clearly is used many times in the code. The code doesn't compile if i remove it so what the computer looking at that I don't?
+    //dont understand the syntax in line 83. why are we defining arrow funcitons in arrow functions
   Line 102:7:   A form label must be associated with a control  jsx-a11y/label-has-associated-control
   Line 107:33:  'rest' is defined but never used                @typescript-eslint/no-unused-vars
   Line 118:7:   A form label must be associated with a control  jsx-a11y/label-has-associated-control
@@ -38,7 +44,9 @@ src/components/BaseComponents/Table/Table.tsx
 
 src/components/BaseComponents/Table/TablePageSelector.tsx
   Line 64:56:   Visible, non-interactive elements with click handlers must have at least one keyboard listener  jsx-a11y/click-events-have-key-events
+    //Should we keep this rule? According to the docs, this is for universal accessibility (for the impaired who can't use a mouse)
   Line 64:56:   Static HTML elements with event handlers require a role                                         jsx-a11y/no-static-element-interactions
+    //I can't add role="link"
   Line 65:196:  Visible, non-interactive elements with click handlers must have at least one keyboard listener  jsx-a11y/click-events-have-key-events
   Line 65:196:  Static HTML elements with event handlers require a role                                         jsx-a11y/no-static-element-interactions
   Line 65:234:  'event' is defined but never used                                                               @typescript-eslint/no-unused-vars
@@ -47,7 +55,9 @@ src/components/BaseComponents/Table/TablePageSelector.tsx
 
 src/components/Documents/MyDocuments.tsx
   Line 159:17:  '_error' is defined but never used            @typescript-eslint/no-unused-vars
+    //I think is unecessary, but what was the programmer thinking?
   Line 198:15:  'pdfFile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    //don't see the problem. line is making a return and we are assigning the value of pdfFile
   Line 199:17:  '_error' is defined but never used            @typescript-eslint/no-unused-vars
   Line 243:14:  '_responseJSON' is defined but never used     @typescript-eslint/no-unused-vars
   Line 275:43:  'rowIndex' is defined but never used          @typescript-eslint/no-unused-vars
@@ -59,6 +69,7 @@ src/components/Documents/ViewDocument.tsx
 
 src/components/Footer.tsx
   Line 10:1:  Component should be written as a pure function  react/prefer-stateless-function
+    //I could write as export Footer = () => <div>...<div> but why would I?
 
 src/components/Home.tsx
   Line 23:1:  Component should be written as a pure function  react/prefer-stateless-function
