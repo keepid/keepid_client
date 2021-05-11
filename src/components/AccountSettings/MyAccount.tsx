@@ -3,8 +3,6 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Button from 'react-bootstrap/Button';
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
 import { Helmet } from 'react-helmet';
 import Switch from 'react-switch';
 
