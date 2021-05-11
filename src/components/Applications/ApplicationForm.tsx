@@ -405,7 +405,7 @@ class ApplicationForm extends Component<Props, State> {
         credentials: 'include',
         body: formData,
       }).then((response) => (response.json()))
-        .then((responseJSON) => {
+        .then(() => {
           this.setState({ submitSuccessful: true });
           alert.show('Successfully Completed PDF Application');
         });
@@ -587,10 +587,6 @@ class ApplicationForm extends Component<Props, State> {
   }
 
   render() {
-    const {
-      alert,
-    } = this.props;
-
     const {
       submitSuccessful,
       formError,
