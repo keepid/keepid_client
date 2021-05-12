@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import { IntlProvider } from 'react-intl';
 
 import App from '../App';
 
@@ -19,7 +20,9 @@ const options = {
 test('renders without crashing', () => {
   render(
     <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
-      <App />
+      <IntlProvider locale="en" defaultLocale="en">
+        <App />
+      </IntlProvider>
     </Provider>,
   );
 });
