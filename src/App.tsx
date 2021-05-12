@@ -32,6 +32,7 @@ import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
+import RecordVaccineForm from './components/RecordVaccine/RecordVaccineForm';
 import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
 import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
@@ -195,6 +196,7 @@ class App extends React.Component<{}, State, {}> {
                     )
                 )}
               />
+              <Route path="/record-vaccine" render={() => <RecordVaccineForm />} />
               <Route path="/signup-branch">
                 <SignupBrancher />
               </Route>
