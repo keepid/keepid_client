@@ -2,6 +2,8 @@ import './static/styles/App.scss';
 import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
 
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import React from 'react';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
@@ -20,6 +22,7 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
+import Billing from './components/Billing/Subscribe';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -42,6 +45,15 @@ import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+
+const publicKey = process.env.REACT_APP_PUBLISHABLE_KEY;
+let stripePromise;
+
+if (publicKey) {
+  stripePromise = loadStripe(publicKey);
+} else {
+  console.log('Stripe publishable key not found');
+}
 
 window.onload = () => {
   ReactGA.initialize('UA-176859431-1');
@@ -336,6 +348,11 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <Route path="/billing">
+                <Elements stripe={stripePromise}>
+                  <Billing />
+                </Elements>
+              </Route>
               <Route path="/error">
                 <Error />
               </Route>
