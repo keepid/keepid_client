@@ -100,6 +100,7 @@ class Subscribe extends React.Component<Props, State> {
       e.preventDefault();
 
       console.log('User clicked pay');
+      console.log('hi');
 
       // Create the customer Id
       const { customerName, customerEmail } = this.state;

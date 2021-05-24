@@ -49,6 +49,8 @@
     "react/jsx-props-no-spreading": 1,
     "linebreak-style": 0,
     "react/sort-comp": "off",
-    "no-shadow": "off"
+    "no-shadow": "off",
+    "no-use-before-define": "off",
+    "no-undef": "off"
   }
 }

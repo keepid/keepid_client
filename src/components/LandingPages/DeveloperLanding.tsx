@@ -26,9 +26,6 @@ interface State {
   username: string,
   adminName: string,
   organization: string,
-}
-
-interface State {
   pdfFiles: FileList | undefined,
 }
 
