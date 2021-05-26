@@ -1,5 +1,6 @@
 package User.V2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
@@ -13,7 +14,9 @@ import java.util.Map;
 @NoArgsConstructor
 public class BasicInfo {
 
+  @JsonProperty("middleName")
   private String middleName;
+
   private String suffix;
   private String gender;
   private Address mailingAddress;
