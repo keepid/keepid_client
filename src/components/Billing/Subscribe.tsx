@@ -3,8 +3,9 @@ import {
   ElementsConsumer,
 } from '@stripe/react-stripe-js';
 import { Stripe, StripeElements } from '@stripe/stripe-js';
-import React, { Component } from 'react';
+import React from 'react';
 import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import LoginSVG from '../../static/images/login-svg.svg';
@@ -36,7 +37,38 @@ class Subscribe extends React.Component<Props, State> {
       this.setState({ customerEmail: event.target.value });
     }
 
-    handleCreateSubscription = async (cusId, cusName) => {
+    handleConfirmCardPayment = async (customerEmail: string, clientSecret: string) => {
+      const { stripe, elements } = this.props;
+
+      if (!stripe || !elements) {
+        // Stripe.js has not loaded yet. Make sure to disable
+        // form submission until Stripe.js has loaded.
+        console.log('Stripe.js has not loaded yet');
+        return '';
+      }
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        { receipt_email: customerEmail },
+      );
+
+      if (error) {
+        // show error and collect new card details.
+        console.log(error.message);
+        return '';
+      }
+
+      if (paymentIntent) {
+        console.log(`Payment intent returned with id ${paymentIntent.id}`);
+        console.log(paymentIntent);
+        console.log(paymentIntent.receipt_email);
+      }
+      console.log('Redirecting');
+      // eslint-disable-next-line object-curly-spacing
+      return <Redirect to={{pathname: '/paymentConfirmation'}} />;
+    }
+
+    handleCreateSubscription = async (cusId, cusName, cusEmail) => {
       const { stripe, elements } = this.props;
 
       if (!stripe || !elements) {
@@ -61,7 +93,7 @@ class Subscribe extends React.Component<Props, State> {
       });
 
       if (error) {
-        // show error and collect new card details.
+        // show error
         console.log(error.message);
         return '';
       }
@@ -87,6 +119,7 @@ class Subscribe extends React.Component<Props, State> {
 
             if (subscriptionObject.subscriptionId) {
               console.log('Payment is successful, subscription has been created with subscription_id: ', subscriptionObject.subscriptionId);
+              this.handleConfirmCardPayment(cusEmail, subscriptionObject.clientSecret);
             } else {
               console.log('Payment has been unsuccessful, please try again');
             }
@@ -100,7 +133,6 @@ class Subscribe extends React.Component<Props, State> {
       e.preventDefault();
 
       console.log('User clicked pay');
-      console.log('hi');
 
       // Create the customer Id
       const { customerName, customerEmail } = this.state;
@@ -121,7 +153,7 @@ class Subscribe extends React.Component<Props, State> {
 
           if (customerObject) {
             console.log('Customer has been successfully created with customer_id of: ', customerObject.id);
-            this.handleCreateSubscription(customerObject.id, customerObject.email);
+            this.handleCreateSubscription(customerObject.id, customerName, customerEmail);
           } else {
             console.log('Customer creation has been unsuccessful, please try again');
           }

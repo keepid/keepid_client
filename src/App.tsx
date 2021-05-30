@@ -22,6 +22,8 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
+import Main from './components/Billing/Main';
+import PaymentConfirmation from './components/Billing/PaymentConfirmation';
 import Billing from './components/Billing/Subscribe';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
@@ -353,6 +355,8 @@ class App extends React.Component<{}, State, {}> {
                   <Billing />
                 </Elements>
               </Route>
+              <Route path="/paymentConfirmation" component={PaymentConfirmation} />
+              <Route path="/main" component={Main} />
               <Route path="/error">
                 <Error />
               </Route>
