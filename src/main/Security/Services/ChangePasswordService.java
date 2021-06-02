@@ -52,7 +52,8 @@ public class ChangePasswordService implements Service {
     } else if (hashStatus == SecurityUtils.PassHashEnum.FAILURE) {
       return UserMessage.AUTH_FAILURE;
     } else {
-      userDao.resetPassword(user, newPassword);
+      String newPasswordHash = SecurityUtils.hashPassword(newPassword);
+      userDao.resetPassword(user, newPasswordHash);
     }
     return UserMessage.AUTH_SUCCESS;
   }
