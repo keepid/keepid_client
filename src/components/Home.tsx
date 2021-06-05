@@ -20,7 +20,6 @@ import SecureGraphic from '../static/images/security.svg';
 import SignUp from '../static/images/sign-up.svg';
 import Spreadsheet from '../static/images/spreadsheet.svg';
 import SyncFiles from '../static/images/sync-files.svg';
-import StatementOfSolidarity from './statement';
 
 class Home extends Component<{}, {}, {}> {
   render() {
@@ -30,7 +29,6 @@ class Home extends Component<{}, {}, {}> {
           <title>Welcome</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <StatementOfSolidarity />
         <div className="container-fluid my-auto">
           <div className="row section1 mt-5 justify-content-center">
             <div className="col-md-5 px-4 custom-vertical-center">

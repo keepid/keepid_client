@@ -33,7 +33,7 @@ export class Header extends Component<Props, State, {}> {
     } = this.props;
     if (isLoggedIn) {
       return (
-        <nav className="navbar navbar-expand-lg navbar-light sticky-top navbar-custom">
+        <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
           <div className="container">
             <Link className="pr-3" to="/home">
               <img
@@ -90,7 +90,7 @@ export class Header extends Component<Props, State, {}> {
       );
     }
     return (
-      <nav className="navbar navbar-expand-lg navbar-light sticky-top navbar-custom">
+      <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom">
         <div className="container">
           <Link className="pr-3" to="/home">
             <img
@@ -132,13 +132,20 @@ export class Header extends Component<Props, State, {}> {
               <li className="nav-item my-1 mr-2 ml-2">
                 <Link className="nav-link" to="/our-mission">About</Link>
               </li>
-              <li className="nav-item my-1 mr-3 ml-2">
+              {/* <li className="nav-item my-1 mr-3 ml-2">
                 <Link className="nav-link" to="/login">Log in</Link>
-              </li>
+              </li> */}
             </ul>
             <div className="my-1">
+              <Link to="/login">
+                <button type="submit" className="btn btn-primary outline-white w-40 mr-2">
+                  Log in
+                </button>
+              </Link>
+            </div>
+            <div className="my-1">
               <Link to="/signup-branch">
-                <button type="submit" className="btn btn-secondary w-40 mr-2">
+                <button type="submit" className="btn btn-outline-secondary w-40 mr-2">
                   Sign Up
                 </button>
               </Link>

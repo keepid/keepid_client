@@ -25,7 +25,7 @@ import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import Home from './components/Home';
+import Home from './components/Home/index';
 import IssueReport from './components/IssueReport';
 import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';

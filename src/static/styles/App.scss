@@ -1,6 +1,8 @@
 @import "../../../node_modules/bootstrap/scss/bootstrap";
 @import "./ldbtn.scss";
 @import "./loading.scss";
+@import "./Inputs";
+
 // COLOR SYTEM
 $primary-theme: #445FEB;
 $primary-theme-light: #e8e9ff;
@@ -59,12 +61,11 @@ body {
 	margin-bottom: 0;
 	padding-top: 0;
 	padding-bottom: 0;
-	color: $primary-theme !important;
 }
 
 .navbar-custom {
-	background: white;
-	color: $secondary-theme;
+	background: $primary-theme;
+	color: $primary-theme-light;
 }
 
 .bg-gray {
@@ -157,7 +158,6 @@ body {
 .btn-secondary {
 	color: #000000;
 	background-color: white;
-	border-color: $secondary-theme;
 }
 
 .btn-secondary:hover,
@@ -183,7 +183,7 @@ body {
 .btn-outline-secondary:visited,
 .btn-outline-secondary.active,
 .open>.dropdown-toggle.btn-outline-secondary {
-	color: #000000;
+	color: $primary-theme-light;
 	background-color: $secondary-theme;
 	border-color: $secondary-theme;
 }
@@ -355,7 +355,7 @@ thead {
 
 .footer-brand {
 	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
-	// outline-color: 
+	// outline-color:
 }
 
 .footer-brand-logo {
@@ -660,4 +660,8 @@ div.scrollbar {
 .visualization-svg {
 	width: 25rem;
 	height: 25rem;
+}
+
+.outline-white {
+	border-color: $primary-theme-light;
 }
