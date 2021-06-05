@@ -1,7 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-interface State {}
+interface State {
+}
 
 class EULA extends React.Component<{}, State> {
   componentDidMount() {

@@ -652,9 +652,12 @@ div.scrollbar {
 }
 
 .partial-background {
-	z-index: 0;
+	background-color: #445FEB;
 	min-height: 5rem;
-	height: inherit;
-	position: absolute;
 	min-width: #{"min(100vw, 31.25rem)"};
+}
+
+.visualization-svg {
+	width: 25rem;
+	height: 25rem;
 }

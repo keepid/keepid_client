@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import Select from 'react-select';
-import makeAnimated from 'react-select/animated';
 import { withAlert } from 'react-alert';
 import Modal from 'react-bootstrap/Modal';
-import Role from '../../static/Role';
-import SearchSVG from '../../static/images/search.svg';
+import { Helmet } from 'react-helmet';
+import { Link, Redirect } from 'react-router-dom';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
+
 import getServerURL from '../../serverOverride';
-import TablePageSelector from '../Base/TablePageSelector';
 import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
+import SearchSVG from '../../static/images/search.svg';
+import VisualizationSVG from '../../static/images/visualization.svg';
+import Role from '../../static/Role';
 
 interface Props {
   username: string,
@@ -21,13 +22,10 @@ interface Props {
 
 interface State {
   clients: any,
-  numClients: number,
   searchName: string,
   redirectLink: string,
   clientUsername: string,
   clientPassword: string,
-  itemsPerPageSelected: any,
-  currentPage: number,
   clientCredentialsCorrect: boolean,
   showClientAuthModal: boolean,
 }
@@ -36,13 +34,6 @@ const options = [
   { value: 'name', label: 'Name' },
   { value: 'ssn', label: 'Social Security Number' },
   { value: 'phoneNumber', label: 'Phone Number' },
-];
-
-const listOptions = [
-  { value: '5', label: '5' },
-  { value: '10', label: '10' },
-  { value: '25', label: '25' },
-  { value: '50', label: '50' },
 ];
 
 const animatedComponents = makeAnimated();
@@ -55,21 +46,12 @@ class WorkerLanding extends Component<Props, State> {
       redirectLink: '',
       clientUsername: '',
       clientPassword: '',
-      numClients: 0,
-      clients: [{
-        username: '',
-        firstName: '',
-        lastName: '',
-      }],
-      itemsPerPageSelected: listOptions[0],
-      currentPage: 0,
+      clients: [],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.handleChangeItemsPerPage = this.handleChangeItemsPerPage.bind(this);
-    this.changeCurrentPage = this.changeCurrentPage.bind(this);
     this.getClients = this.getClients.bind(this);
     this.handleChangeClientPassword = this.handleChangeClientPassword.bind(this);
     this.handleClickUploadDocuments = this.handleClickUploadDocuments.bind(this);
@@ -86,53 +68,9 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients();
   }
 
-  changeCurrentPage(newCurrentPage: number) {
-    this.setState({ currentPage: newCurrentPage }, this.getClients);
-  }
-
-  handleChangeItemsPerPage(itemsPerPageSelected: any) {
-    this.setState({
-      itemsPerPageSelected,
-      currentPage: 0,
-    }, this.getClients);
-  }
-
-  getClients() {
-    const {
-      searchName,
-      currentPage,
-      itemsPerPageSelected,
-    } = this.state;
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-    fetch(`${getServerURL()}/get-organization-members`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        listType: 'clients',
-        currentPage,
-        itemsPerPage,
-        name: searchName,
-        lastName: '',
-      }),
-    }).then((res) => res.json())
-      .then((responseJSON) => {
-        const {
-          people,
-          numPeople,
-        } = responseJSON;
-        if (people) {
-          this.setState({
-            numClients: numPeople,
-            clients: people,
-          });
-        }
-      });
-  }
-
   handleChangeSearchName(event: any) {
     this.setState({
       searchName: event.target.value,
-      currentPage: 0,
     }, this.getClients);
   }
 
@@ -214,9 +152,39 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
+  getClients() {
+    const {
+      searchName,
+    } = this.state;
+    const {
+      role,
+    } = this.props;
+    fetch(`${getServerURL()}/get-organization-members`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        role,
+        listType: 'clients',
+        name: searchName,
+      }),
+    }).then((res) => res.json())
+      .then((responseJSON) => {
+        const {
+          people,
+          status,
+        } = responseJSON;
+        console.log(responseJSON);
+        if (status !== 'USER_NOT_FOUND') {
+          this.setState({
+            clients: people,
+          });
+        }
+      });
+  }
+
   renderClients() {
     const { showClientAuthModal } = this.state;
-    const clientCards : React.ReactFragment[] = this.state.clients.map((client, i) => (
+    const clientCards: React.ReactFragment[] = this.state.clients.map((client, i) => (
       <div key={client.username} className="card mb-3">
         <div className="card-body">
           <div className="d-flex flex-row">
@@ -248,12 +216,6 @@ class WorkerLanding extends Component<Props, State> {
                 <button type="button" className="btn btn-primary">Client Profile</button>
               </Link>
             </div>
-            {/* <div className="d-flex flex-column mr-4">
-              <h5 className="card-title">Recent Actions</h5>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 1&quot; on &quot;example date 1&quot;</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 2&quot; on &quot;example date 2&quot;</h6>
-              <h6 className="card-subtitle mb-2 text-muted">Uploaded &quot;Document 3&quot; on &quot;example date 3&quot;</h6>
-            </div> */}
             <div className="d-flex flex-column mr-4">
               <h5 className="card-title">Client Actions</h5>
               <button
@@ -270,13 +232,6 @@ class WorkerLanding extends Component<Props, State> {
               >
                 View Documents
               </button>
-              {/* <button
-                type="button"
-                className="btn btn-info mb-2 btn-sm"
-                onClick={(event) => this.handleClickSendEmail(event, client)}
-              >
-                Send Email
-              </button> */}
               <button
                 type="button"
                 className="btn btn-dark mb-2 btn-sm"
@@ -287,7 +242,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
-        { showClientAuthModal ? this.modalRender() : null }
+        {showClientAuthModal ? this.modalRender() : null}
       </div>
     ));
 
@@ -335,7 +290,14 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={this.handleClickClose}>Close</button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-dismiss="modal"
+            onClick={this.handleClickClose}
+          >
+            Close
+          </button>
           <button type="button" className="btn btn-primary" onClick={this.handleClickAuthenticateClient}>Submit</button>
         </Modal.Footer>
       </Modal>
@@ -347,15 +309,11 @@ class WorkerLanding extends Component<Props, State> {
       role,
     } = this.props;
     const {
-      itemsPerPageSelected,
-      currentPage,
-      numClients,
       redirectLink,
       clientCredentialsCorrect,
       clientUsername,
+      searchName,
     } = this.state;
-    const itemsPerPage = Number(itemsPerPageSelected.value);
-
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
         <Redirect to={{
@@ -366,12 +324,6 @@ class WorkerLanding extends Component<Props, State> {
       );
     }
 
-    const tablePageSelector = TablePageSelector({
-      currentPage,
-      itemsPerPage,
-      numElements: numClients,
-      changeCurrentPage: this.changeCurrentPage,
-    });
     return (
       <div>
         <Helmet>
@@ -391,7 +343,11 @@ class WorkerLanding extends Component<Props, State> {
                   value={this.state.searchName}
                   placeholder="Search Name"
                   aria-label="Search"
-                  onKeyPress={(event) => { if (event.key === 'Enter') { event.preventDefault(); } }}
+                  onKeyPress={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                    }
+                  }}
                 />
                 <img
                   alt="Search"
@@ -401,7 +357,14 @@ class WorkerLanding extends Component<Props, State> {
                   className="d-inline-block align-middle ml-1"
                 />
               </form>
-              <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#advancedSearch" aria-expanded="false" aria-controls="collapseExample">
+              <button
+                className="btn btn-primary"
+                type="button"
+                data-toggle="collapse"
+                data-target="#advancedSearch"
+                aria-expanded="false"
+                aria-controls="collapseExample"
+              >
                 Toggle Advanced Search
               </button>
             </div>
@@ -420,28 +383,22 @@ class WorkerLanding extends Component<Props, State> {
         </div>
         <div className="container">
           <div className="row mt-2 mb-2">
-            {(role === Role.Director || role === Role.Admin) ? <Link to="/person-signup/worker"><button type="button" className="btn btn-primary mr-4">Signup Worker</button></Link> : <div />}
-            <Link to="/person-signup/client"><button type="button" className="btn btn-primary">Signup Client</button></Link>
+            {(role === Role.Director || role === Role.Admin) ? (
+              <Link to="/person-signup/worker">
+                <button type="button" className="btn btn-primary mr-4">Signup Worker</button>
+              </Link>
+            ) : <div />}
+            <Link to="/person-signup/client">
+              <button type="button" className="btn btn-primary">Signup Client</button>
+            </Link>
           </div>
-          <div className="row mt-4 mb-2">
-            {numClients === 0 ? <div /> : tablePageSelector }
-            {numClients === 0 ? <div />
-              : (
-                <div className="w-25">
-                  <div className="card card-body mt-0 mb-4 border-0 p-0">
-                    <h5 className="card-text h6"># Items per page</h5>
-                    <Select
-                      options={listOptions}
-                      autoFocus
-                      closeMenuOnSelect={false}
-                      onChange={this.handleChangeItemsPerPage}
-                      value={itemsPerPageSelected}
-                    />
-                  </div>
-                </div>
-              )}
-          </div>
-          {numClients === 0 ? <h3>No Clients Found</h3> : this.renderClients()}
+          {searchName.length === 0
+            ? (
+              <div>
+                <h3 className="pt-4">Search a Client&apos;s name to get Started</h3>
+                <img className="pt-4 visualization-svg" src={VisualizationSVG} alt="Search a client" />
+              </div>
+            ) : this.renderClients()}
         </div>
       </div>
     );

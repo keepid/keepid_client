@@ -1,7 +1,8 @@
 import {
-  isValidAddress, isValidBirthDate, isValidCity, isValidEmail, isValidOrgWebsite,
-  isValidPhoneNumber, isValidUSState, isValidZipCode, isValidUsername, isValidPassword,
-  isValidOrgName, isValidEIN, isValidFirstName, isValidLastName,
+  isValidAddress, isValidBirthDate, isValidCity, isValidEIN, isValidEmail, isValidFirstName, isValidLastName,
+  isValidOrgName, isValidOrgWebsite,
+  isValidPassword,
+  isValidPhoneNumber, isValidUsername, isValidUSState, isValidZipCode,
 } from '../../../lib/Validations/Validations';
 
 test('valid website test', () => {

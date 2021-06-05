@@ -1,7 +1,8 @@
-import React from 'react';
 import { render } from '@testing-library/react';
-import { transitions, Provider } from 'react-alert';
+import React from 'react';
+import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+
 import App from '../App';
 
 const options = {
