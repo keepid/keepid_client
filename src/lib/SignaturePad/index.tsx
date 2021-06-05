@@ -15,6 +15,8 @@ interface ISignaturePadProps extends React.Props<any> {
     handleChangeAcceptEULA?: (accept: boolean) => void;
     acceptEULA?: boolean;
     minDistance?: number;
+    canvasDataUrl?: any;
+    handleCanvasSign?: (dataUrl: string) => void
 }
 
 const customStyles = {
@@ -58,6 +60,8 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
     private mouseButtonDown: any;
 
     handleChangeAcceptEULA: (accept: boolean) => void;
+    
+    handleCanvasSign: (dataUrl: string) => void;
 
     private data: Point[][];
 
@@ -75,6 +79,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
         onBegin,
         minDistance,
         handleChangeAcceptEULA,
+        handleCanvasSign,
       } = this.props;
 
       this.canvasRef = React.createRef();
@@ -90,6 +95,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.onBegin = onBegin;
       this.minDistance = minDistance || 5;
       this.handleChangeAcceptEULA = handleChangeAcceptEULA || ((accept) => {});
+      this.handleCanvasSign = handleCanvasSign || (() => {}); 
       this.data = [];
       this.handleChangeAcceptEULA(false);
       this.clear = this.clear.bind(this);
@@ -103,6 +109,11 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.handleMouseEvents();
       this.handleTouchEvents();
       this.resizeCanvas();
+      if (this.props.canvasDataUrl !== "") {
+        this.fromDataURL(this.props.canvasDataUrl); 
+        this.handleChangeAcceptEULA(true);
+        this.padIsEmpty = false;
+      }
     }
 
     componentWillUnmount() {
@@ -213,6 +224,13 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
     }
 
     off() {
+      if (!this.padIsEmpty) {
+        const dataUrl = this.toDataURL(); 
+        this.handleCanvasSign(dataUrl); 
+      }
+      else {
+        this.handleCanvasSign("");
+      }
       this.canvas.removeEventListener('mousedown', this.handleMouseDown);
       this.canvas.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.handleMouseUp);
@@ -222,6 +240,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       document.removeEventListener('touchend', this.handleTouchEnd);
 
       window.removeEventListener('resize', this.resizeCanvas);
+      
     }
 
     private handleMouseDown(event: any) {

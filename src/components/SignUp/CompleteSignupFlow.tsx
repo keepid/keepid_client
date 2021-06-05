@@ -1,18 +1,20 @@
-import React, { Component, ReactComponentElement } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import { withAlert } from 'react-alert';
-import { Steps } from 'antd';
-import { ProgressBar } from 'react-bootstrap';
-import getServerURL from '../../serverOverride';
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import AccountSetup from './AccountSetup';
-import PersonalInformation from './PersonalInformation';
-import OrganizationInformation from './OrganizationInformation';
-import SignUserAgreement from './SignUserAgreement';
-import ReviewSubmit from './ReviewSubmit';
+
+import { Steps } from 'antd';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
+import { ProgressBar } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
+
+import getServerURL from '../../serverOverride';
 import USStates from '../../static/data/states_titlecase.json';
 import Role from '../../static/Role';
+import AccountSetup from './pages/AccountSetup';
+import OrganizationInformation from './pages/OrganizationInformation';
+import PersonalInformation from './pages/PersonalInformation';
+import ReviewSubmit from './pages/ReviewSubmit';
+import SignUserAgreement from './pages/SignUserAgreement';
 
 const { Step } = Steps;
 const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
@@ -46,12 +48,13 @@ interface State {
   state: string,
   zipcode: string,
   hasSigned: boolean,
+  canvasDataUrl: string,
   recaptchaPayload: string,
   buttonState: string,
   redirectLogin: boolean
 }
 
-class CompleteSignupFlow extends Component<Props, State, {}> {
+export class CompleteSignupFlow extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -78,10 +81,27 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       password: '',
       confirmPassword: '',
       hasSigned: false,
+      canvasDataUrl: '',
       recaptchaPayload: '',
       buttonState: '',
       redirectLogin: false,
     };
+  }
+
+  static addHttp = (url: string) => {
+    if (!urlPattern.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  }
+
+  static birthDateStringConverter = (birthDate: Date) => {
+    const personBirthMonth = birthDate.getMonth() + 1;
+    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthDay = birthDate.getDate();
+    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+    return personBirthDateFormatted;
   }
 
   handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
@@ -128,23 +148,18 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
+  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
+
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
   }
 
-  handleContinue = ():void => {
+  handleContinue = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
   };
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-  }
-
-  static addHttp = (url: string) => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
   }
 
   handleFormSubmit = (): void => {
@@ -171,6 +186,7 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationEmail,
       recaptchaPayload,
     } = this.state;
+    const { alert } = this.props;
     const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
     const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
 
@@ -204,64 +220,82 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const {
           status,
           message,
         } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
           this.setState({ buttonState: '' });
-          this.props.alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
+          alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
           this.setState({ redirectLogin: true });
         } else {
-          this.props.alert.show(message);
+          alert.show(message);
           this.setState({ buttonState: '' });
         }
       }).catch((error) => {
-        this.props.alert.show(`Server Failure: ${error}`);
+        alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
   }
 
-  static birthDateStringConverter = (birthDate: Date) => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
-  }
-
-  handleFormJumpTo = (pageNumber:number) => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber: number) => this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
-    switch (this.state.signupStage) {
+    const {
+      signupStage,
+      username,
+      password,
+      confirmPassword,
+      organizationName,
+      organizationWebsite,
+      organizationEIN,
+      organizationAddressStreet,
+      organizationAddressCity,
+      organizationAddressState,
+      organizationAddressZipcode,
+      organizationEmail,
+      organizationPhoneNumber,
+      firstname,
+      lastname,
+      birthDate,
+      email,
+      phonenumber,
+      address,
+      city,
+      state,
+      zipcode,
+      hasSigned,
+      canvasDataUrl,
+      buttonState,
+    } = this.state;
+    const { role } = this.props;
+    switch (signupStage) {
       case 0: {
         return (
           <AccountSetup
-            username={this.state.username}
-            password={this.state.password}
-            confirmPassword={this.state.confirmPassword}
+            username={username}
+            password={password}
+            confirmPassword={confirmPassword}
             onChangeUsername={this.handleChangeUsername}
             onChangePassword={this.handleChangePassword}
             onChangeConfirmPassword={this.handleChangeConfirmPassword}
             handleContinue={this.handleContinue}
-            role={this.props.role}
+            role={role}
           />
         );
       }
       case 1: {
         return (
           <PersonalInformation
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
             onChangeFirstname={this.handleChangeFirstname}
             onChangeLastname={this.handleChangeLastname}
             onChangeBirthDate={this.handleChangeBirthdate}
@@ -279,15 +313,15 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       case 2: {
         return (
           <OrganizationInformation
-            orgName={this.state.organizationName}
-            orgWebsite={this.state.organizationWebsite}
-            ein={this.state.organizationEIN}
-            orgAddress={this.state.organizationAddressStreet}
-            orgCity={this.state.organizationAddressCity}
-            orgState={this.state.organizationAddressState}
-            orgZipcode={this.state.organizationAddressZipcode}
-            orgPhoneNumber={this.state.organizationPhoneNumber}
-            orgEmail={this.state.organizationEmail}
+            orgName={organizationName}
+            orgWebsite={organizationWebsite}
+            ein={organizationEIN}
+            orgAddress={organizationAddressStreet}
+            orgCity={organizationAddressCity}
+            orgState={organizationAddressState}
+            orgZipcode={organizationAddressZipcode}
+            orgPhoneNumber={organizationPhoneNumber}
+            orgEmail={organizationEmail}
             onChangeOrgName={this.handleChangeOrgName}
             onChangeOrgWebsite={this.handleChangeOrgWebsite}
             onChangeOrgEIN={this.handleChangeEIN}
@@ -305,40 +339,42 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
       case 3: {
         return (
           <SignUserAgreement
-            hasSigned={this.state.hasSigned}
+            hasSigned={hasSigned}
             handleChangeSignEULA={this.handleChangeSignEULA}
+            handleCanvasSign={this.handleCanvasSign}
             handleContinue={this.handleContinue}
             handlePrevious={this.handlePrevious}
+            canvasDataUrl={canvasDataUrl}
           />
         );
       }
       case 4: {
         return (
           <ReviewSubmit
-            username={this.state.username}
-            password={this.state.password}
-            firstname={this.state.firstname}
-            lastname={this.state.lastname}
-            birthDate={this.state.birthDate}
-            address={this.state.address}
-            city={this.state.city}
-            state={this.state.state}
-            zipcode={this.state.zipcode}
-            phonenumber={this.state.phonenumber}
-            email={this.state.email}
-            orgName={this.state.organizationName}
-            orgWebsite={this.state.organizationWebsite}
-            ein={this.state.organizationEIN}
-            orgAddress={this.state.address}
-            orgCity={this.state.city}
-            orgState={this.state.state}
-            orgZipcode={this.state.zipcode}
-            orgPhoneNumber={this.state.phonenumber}
-            orgEmail={this.state.email}
+            username={username}
+            password={password}
+            firstname={firstname}
+            lastname={lastname}
+            birthDate={birthDate}
+            address={address}
+            city={city}
+            state={state}
+            zipcode={zipcode}
+            phonenumber={phonenumber}
+            email={email}
+            orgName={organizationName}
+            orgWebsite={organizationWebsite}
+            ein={organizationEIN}
+            orgAddress={organizationAddressStreet}
+            orgCity={organizationAddressCity}
+            orgState={organizationAddressState}
+            orgZipcode={organizationAddressZipcode}
+            orgPhoneNumber={organizationPhoneNumber}
+            orgEmail={organizationEmail}
             handleSubmit={this.handleFormSubmit}
             handlePrevious={this.handlePrevious}
             handleFormJumpTo={this.handleFormJumpTo}
-            buttonState={this.state.buttonState}
+            buttonState={buttonState}
             handleChangeRecaptcha={this.handleChangeRecaptcha}
           />
         );
@@ -377,13 +413,14 @@ class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={this.state.signupStage * 25} label={`Step ${this.state.signupStage + 1} out of 5`} />
+          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 5`} />
           {this.handleSignupComponentRender()}
         </div>
       </div>
     );
   }
 }
+
 export const { birthDateStringConverter } = CompleteSignupFlow;
 export const { addHttp } = CompleteSignupFlow;
 export default withAlert()(CompleteSignupFlow);

@@ -1,16 +1,18 @@
-import React, { Component, ReactComponentElement } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import { withAlert } from 'react-alert';
+import 'antd/dist/antd.css';
+
 import { Steps } from 'antd';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
 import { ProgressBar } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
+import { Redirect } from 'react-router-dom';
+
 import getServerURL from '../../serverOverride';
-import AccountSetup from './AccountSetup';
-import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import PersonalInformation from './PersonalInformation';
-import SignUserAgreement from './SignUserAgreement';
-import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 import Role from '../../static/Role';
+import AccountSetup from './pages/AccountSetup';
+import PersonalInformation from './pages/PersonalInformation';
+import SignUserAgreement from './pages/SignUserAgreement';
+import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 
 const { Step } = Steps;
 
@@ -285,6 +287,9 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       signupStage,
       redirectLogin,
     } = this.state;
+    const {
+      personRole,
+    } = this.props;
     if (redirectLogin) {
       return (
         <Redirect to="/login" />
@@ -301,7 +306,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         </Helmet>
         <div className="container mt-5">
           <Steps className="d-none d-md-flex" progressDot current={signupStage}>
-            <Step title={`${this.props.personRole} Account Setup`} description="" />
+            <Step title={`${personRole} Account Setup`} description="" />
             <Step title="Personal Information" description="" />
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />

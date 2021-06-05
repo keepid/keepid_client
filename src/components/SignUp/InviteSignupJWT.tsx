@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router';
 import { Redirect } from 'react-router-dom';
+
 import InviteSignupFlow from './InviteSignupFlow';
 
 const jwtDecode = require('jwt-decode');

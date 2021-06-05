@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow } from 'react-google-maps';
+import { InfoWindow, Marker } from 'react-google-maps';
 
 interface Props {
   lat: number,
@@ -8,6 +8,8 @@ interface Props {
   address: string,
   phone: string,
   email: string,
+  website: string,
+  showInfo: boolean,
 }
 
 interface State {
@@ -18,7 +20,7 @@ class OrganizationMarker extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      open: false,
+      open: props.showInfo,
     };
     this.handleOpenInfoWindow = this.handleOpenInfoWindow.bind(this);
   }
@@ -38,6 +40,7 @@ class OrganizationMarker extends Component<Props, State> {
       address,
       phone,
       email,
+      website,
     } = this.props;
 
     const {
@@ -61,6 +64,7 @@ class OrganizationMarker extends Component<Props, State> {
                   <p>{address}</p>
                   <p>{phone}</p>
                   <p>{email}</p>
+                  <p>{website}</p>
                 </div>
               </InfoWindow>
               )}

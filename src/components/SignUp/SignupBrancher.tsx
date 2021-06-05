@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+
 import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
+import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 class SignupBrancher extends Component<{}, {}, {}> {
   render() {
@@ -17,39 +18,31 @@ class SignupBrancher extends Component<{}, {}, {}> {
             <div className="row mt-5 mx-4 text-center d-flex justify-content-center">
               <h1 className="font-weight-bold">Which option best describes you?</h1>
             </div>
-            <div className="row mt-3">
-              <div className="col-md-9 mx-auto">
-                <div className="row">
-                  <div className="col-md-6 mb-4">
-                    <Link to="/organization-signup" className="no-link-style">
-                      <div className="card h-100 mx-4 mx-sm-0 branch-card">
-                        <div className="embed-responsive embed-responsive-16by9 mt-2">
-                          <img className="img-fluid rounded embed-responsive-item" src={Building} alt="building" />
-                        </div>
-                        <div className="card-body">
-                          <h2 className="card-title font-weight-bold">Social Organization</h2>
-                          <p className="card-text">I am an organization that is looking to serve those experiencing homelessness.</p>
-                          <button type="button" className="btn btn-primary">Try for Free</button>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="col-md-6 mb-4">
-                    <Link to="/find-organizations" className="no-link-style">
-                      <div className="card h-100 mx-4 mx-sm-0 branch-card">
-                        <div className="embed-responsive embed-responsive-16by9 mt-2">
-                          <img className="img-fluid rounded embed-responsive-item" src={Profile} alt="profile" />
-                        </div>
-                        <div className="card-body">
-                          <h2 className="card-title font-weight-bold">Individual</h2>
-                          <p className="card-text">I am experiencing homelessness or require secure identification storage.</p>
-                          <button type="button" className="btn btn-primary">Find Organizations Near Me</button>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
+            <div className="d-flex justify-content-center">
+              <div className="mr-5">
+                <BaseCard
+                  cardSize={CardSize.LARGE_VERTICAL}
+                  cardLink="/organization-signup"
+                  cardTitle="Social Organization"
+                  cardText="I am an organization that is looking to serve those experiencing homelessness."
+                  imageSrc={Building}
+                  imageAlt="building"
+                  imageLoc={CardImageLoc.TOP}
+                  imageSize="70%"
+                  buttonText="Try for Free"
+                />
               </div>
+              <BaseCard
+                cardSize={CardSize.LARGE_VERTICAL}
+                cardLink="/find-organizations"
+                cardTitle="Individual"
+                cardText="I am experiencing homelessness or require secure identification storage."
+                imageSrc={Profile}
+                imageAlt="profile"
+                imageLoc={CardImageLoc.TOP}
+                imageSize="70%"
+                buttonText="Find Organizations Near Me"
+              />
             </div>
           </div>
         </div>

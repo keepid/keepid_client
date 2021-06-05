@@ -18,10 +18,11 @@
 .env.test.local
 .env.production.local
 
+.eslintcache
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-package-lock.json
 .idea
 stale_outputs_checked
