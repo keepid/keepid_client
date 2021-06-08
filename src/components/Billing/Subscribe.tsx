@@ -13,6 +13,8 @@ import LoginSVG from '../../static/images/login-svg.svg';
 interface State {
       customerName: string,
       customerEmail: string,
+      redirect: string | null,
+      subscriptionObject: any,
     }
 
 interface Props {
@@ -26,6 +28,8 @@ class Subscribe extends React.Component<Props, State> {
     this.state = {
       customerName: '',
       customerEmail: '',
+      redirect: null,
+      subscriptionObject: null,
     };
   }
 
@@ -37,7 +41,15 @@ class Subscribe extends React.Component<Props, State> {
       this.setState({ customerEmail: event.target.value });
     }
 
-    handleConfirmCardPayment = async (customerEmail: string, clientSecret: string) => {
+    setRedirect = (redirectTo) => {
+      this.setState({ redirect: redirectTo });
+    }
+
+    setSubscription = (subscription) => {
+      this.setState({ subscriptionObject: subscription });
+    }
+
+    handleConfirmCardPayment = async (customerEmail: string, subscriptionObject: any) => {
       const { stripe, elements } = this.props;
 
       if (!stripe || !elements) {
@@ -48,7 +60,7 @@ class Subscribe extends React.Component<Props, State> {
       }
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
+        subscriptionObject.clientSecret,
         { receipt_email: customerEmail },
       );
 
@@ -65,7 +77,9 @@ class Subscribe extends React.Component<Props, State> {
       }
       console.log('Redirecting');
       // eslint-disable-next-line object-curly-spacing
-      return <Redirect to={{pathname: '/paymentConfirmation'}} />;
+      this.setRedirect('/paymentConfirmation');
+
+      return '';
     }
 
     handleCreateSubscription = async (cusId, cusName, cusEmail) => {
@@ -119,7 +133,10 @@ class Subscribe extends React.Component<Props, State> {
 
             if (subscriptionObject.subscriptionId) {
               console.log('Payment is successful, subscription has been created with subscription_id: ', subscriptionObject.subscriptionId);
-              this.handleConfirmCardPayment(cusEmail, subscriptionObject.clientSecret);
+              console.log(subscriptionObject);
+              this.setSubscription(subscriptionObject);
+              console.log(this.state.subscriptionObject);
+              this.handleConfirmCardPayment(cusEmail, subscriptionObject);
             } else {
               console.log('Payment has been unsuccessful, please try again');
             }
@@ -134,9 +151,10 @@ class Subscribe extends React.Component<Props, State> {
 
       console.log('User clicked pay');
 
-      // Create the customer Id
+      // Create the customer object
       const { customerName, customerEmail } = this.state;
 
+      /*
       await fetch(`${getServerURL()}/create-customer`, {
         method: 'POST',
         headers: {
@@ -152,15 +170,49 @@ class Subscribe extends React.Component<Props, State> {
           // console.log(customerObject);
 
           if (customerObject) {
+            console.log(customerObject);
             console.log('Customer has been successfully created with customer_id of: ', customerObject.id);
             this.handleCreateSubscription(customerObject.id, customerName, customerEmail);
           } else {
             console.log('Customer creation has been unsuccessful, please try again');
           }
         });
+        */
+      await fetch(`${getServerURL()}/get-customer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerEmail,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const customerObject = responseJSON;
+          // console.log(customerObject);
+
+          if (customerObject) {
+            console.log(customerObject);
+            console.log('Customer found with customer_id of: ', customerObject.id);
+            this.handleCreateSubscription(customerObject.id, customerObject.name, customerObject.email);
+          } else {
+            console.log('Customer not found, are you sure it exists in the db?');
+          }
+        });
     }
 
     render() {
+      const { redirect, subscriptionObject } = this.state;
+      console.log('Redirect with: ', subscriptionObject);
+      if (redirect) {
+        return (
+          <Redirect to={{
+            pathname: redirect,
+            state: { subscriptionObj: subscriptionObject },
+          }}
+          />
+        );
+      }
       return (
         <div className="container">
           {/* Page Settings */}
