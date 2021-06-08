@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import { Button } from 'react-bootstrap';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -166,19 +167,19 @@ class ResetPassword extends Component<Props, State> {
                   ? (
                     <div className="row pt-3">
                       <div className="col-6">
-                        <button type="submit" onClick={this.handlePasswordJWTSubmit} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                        <Button type="submit" variant="primary" onClick={this.handlePasswordJWTSubmit} className={`w-100 ld-ext-right ${this.state.buttonState}`}>
                           Submit
                           <div className="ld ld-ring ld-spin" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : <div />}
                 <div className={`mt-3 mb-3 collapse ${this.state.collapseState}`}>
                   <div className="font-weight-normal mb-3">You have successfully reset your password. Return to the login page in order to log in with your new password.</div>
                   <Link to="/login">
-                    <button type="submit" className="mt-2 btn btn-success loginButtonBackground w-100">
+                    <Button type="submit" variant="primary" className="mt-2 w-100">
                       Return to Login Page
-                    </button>
+                    </Button>
                   </Link>
                 </div>
                 <div className="row pl-3 pb-3">

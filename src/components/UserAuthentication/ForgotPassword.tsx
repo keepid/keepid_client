@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import { Button } from 'react-bootstrap';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 
@@ -105,10 +106,10 @@ class ForgotPassword extends Component<Props, State> {
 
                 <div className="row pt-3">
                   <div className="col-6">
-                    <button type="submit" onClick={this.handlePasswordReset} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    <Button type="submit" onClick={this.handlePasswordReset} className={`w-100 ld-ext-right ${this.state.buttonState}`} variant="primary">
                       Submit
                       <div className="ld ld-ring ld-spin" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

@@ -2,6 +2,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import { Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
@@ -460,13 +461,14 @@ class ApplicationForm extends Component<Props, State> {
               }}
               />
               <div className="d-flex text-center my-5">
-                <button
+                <Button
                   type="submit"
-                  className="ml-auto btn btn-primary loginButtonBackground"
+                  variant="primary"
+                  className="ml-auto"
                   onClick={this.onSubmitPdfApplication}
                 >
                   Submit PDF
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -562,16 +564,17 @@ class ApplicationForm extends Component<Props, State> {
                 </div>
                 <div className="col-md-2 mr-xs-3 mr-sm-0">
                   {(currentPage !== numPages)
-                    ? <button type="submit" className="btn btn-primary" onClick={this.handleContinue}>Continue</button>
+                    ? <Button type="submit" variant="primary" onClick={this.handleContinue}>Continue</Button>
                     : (
-                      <button
+                      <Button
                         type="submit"
-                        className={`btn btn-success loginButtonBackground ld-ext-right ${buttonState}`}
+                        variant="primary"
+                        className={`ld-ext-right ${buttonState}`}
                         onClick={this.onSubmitFormAnswers}
                       >
                         Submit
                         <div className="ld ld-ring ld-spin" />
-                      </button>
+                      </Button>
                     )}
                 </div>
               </div>

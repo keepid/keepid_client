@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import { Button } from 'react-bootstrap';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -345,10 +346,10 @@ class LoginPage extends Component<Props, State> {
                           </button>
                         </div>
                         <div className="col-6 pl-0">
-                          <button type="submit" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right ${buttonState}`}>
+                          <Button type="submit" variant="primary" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 w-100 ld-ext-right ${buttonState}`}>
                             Sign In
                             <div className="ld ld-ring ld-spin" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -358,15 +359,16 @@ class LoginPage extends Component<Props, State> {
                   {(twoFactorState !== 'show')
                     ? (
                       <div className="pb-2">
-                        <button
+                        <Button
                           type="submit"
                           onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.onSubmitWithReCAPTCHA)}
                           onClick={this.onSubmitWithReCAPTCHA}
-                          className={`btn btn-success px-5 loginButtonBackground w-100 ld-ext-right ${buttonState}`}
+                          variant="primary"
+                          className={`px-5 w-100 ld-ext-right ${buttonState}`}
                         >
                           Sign In
                           <div className="ld ld-ring ld-spin" />
-                        </button>
+                        </Button>
                       </div>
                     )
                     : <div />}
