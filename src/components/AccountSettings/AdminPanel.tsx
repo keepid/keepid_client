@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import getServerURL from '../../serverOverride';
 import Table from '../BaseComponents/Table';
 import Role from '../../static/Role';
@@ -248,12 +249,12 @@ class AdminPanel extends Component<Props, State> {
               <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
                 <div className="btn-group mr-2" role="group" aria-label="Button group">
                   <Link to="/upload-document">
-                    <button type="button" className="btn btn-primary loginButtonBackground">Upload Form</button>
+                    <Button type="button" variant="primary">Upload Form</Button>
                   </Link>
                 </div>
                 <div className="btn-group" role="group" aria-label="Button group">
                   <Link to="/my-documents">
-                    <button type="button" className="btn btn-primary loginButtonBackground">View Applications</button>
+                    <Button type="button" variant="primary">View Applications</Button>
                   </Link>
                 </div>
               </div>
