@@ -2,41 +2,6 @@
 
 exports[`Home page snapshot test 1`] = `
 <div>
-  <div>
-    <div
-      className="w-100"
-      style={
-        Object {
-          "backgroundColor": "#FFBB7B",
-        }
-      }
-    >
-      <button
-        aria-label="Close"
-        className="close float-right mr-5 mt-1"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-      </button>
-      <div
-        className="container text-center py-2 font-weight-bold"
-      >
-        We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community 
-        <a
-          href="Team Keep AAPI Solidarity Statement.pdf"
-          rel="noreferrer"
-          target="_blank"
-        >
-          here
-        </a>
-      </div>
-    </div>
-  </div>
   <div
     className="container-fluid my-auto"
   >
@@ -56,34 +21,34 @@ exports[`Home page snapshot test 1`] = `
               className="brand-text"
               id="brand-header"
             >
-              Safeguarding identities of those experiencing homelessness
+              An identification platform
             </span>
           </div>
           <p
             className="pt-2 pb-2 home-subtext"
           >
-            A secure document storage platform for identification, reducing barriers in obtaining government aid, jobs, and homelessness services.
+            for those experiencing homelessness
           </p>
           <a
             href="/signup-branch"
             onClick={[Function]}
           >
             <button
-              className="btn btn-secondary btn-lg w-40 mr-2 mb-2"
-              type="button"
-            >
-              Get Started
-            </button>
-          </a>
-          <a
-            href="#info"
-            onClick={[Function]}
-          >
-            <button
-              className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+              className="btn btn-primary btn-lg w-40 mr-2 mb-2"
               type="button"
             >
               Learn More
+            </button>
+          </a>
+          <a
+            href="/signup-branch"
+            onClick={[Function]}
+          >
+            <button
+              className="btn btn-outline-primary btn-lg w-40 mr-2 mb-2"
+              type="button"
+            >
+              Donate
             </button>
           </a>
         </div>
@@ -106,84 +71,58 @@ exports[`Home page snapshot test 1`] = `
     </div>
   </div>
   <div
-    className="container-fluid mx-0 pt-5 pb-4 background"
+    className="container py-5"
   >
     <div
-      className="container section2"
+      className="row viewport-height-50"
     >
       <div
-        className="row text-center"
+        className="col-md-10 custom-vertical-center mx-auto text-center"
       >
         <div
-          className="col-md-4 flex-column "
+          id="info"
         >
-          <h1
-            className="font-weight-bold statistic-text mb-2"
+          <img
+            alt="rectangle"
+            className="svg-purple mb-5"
+            src="rectangle.svg"
+          />
+          <h3
+            className="hero-subtext text-grey pb-3"
           >
-            552,830
-          </h1>
-          <span
-            className="statistic-subtext"
+            People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.
+          </h3>
+          <h3
+            className="hero-subtext text-black font-weight-medium pb-3"
           >
-            Homeless Population in U.S.
-          </span>
-          <p
-            className="text-muted pt-2 pb-2"
+            Keep.id seeks to help by providing a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, with low technological literacy needed.
+          </h3>
+          <a
+            href="#info"
+            onClick={[Function]}
           >
-            <a
-              href="https://www.projecthome.org/about/facts-homelessness"
+            <button
+              className="btn btn-outline-secondary btn-lg w-40"
+              type="button"
             >
-              Source
-            </a>
-          </p>
-        </div>
-        <div
-          className="col-md-4 flex-column "
-        >
-          <h1
-            className="font-weight-bold statistic-text mb-2"
-          >
-            5,800
-          </h1>
-          <span
-            className="statistic-subtext"
-          >
-            Chronically Homeless Population in Philadelphia
-          </span>
-          <p
-            className="text-muted pt-2 pb-2"
-          >
-            <a
-              href="https://www.projecthome.org/about/facts-homelessness"
-            >
-              Source
-            </a>
-          </p>
-        </div>
-        <div
-          className="col-md-4 flex-column "
-        >
-          <h1
-            className="font-weight-bold statistic-text mb-2"
-          >
-            6,583
-          </h1>
-          <span
-            className="statistic-subtext"
-          >
-            Youth experiencing Homelessness in Philadelphia
-          </span>
-          <p
-            className="text-muted pt-2 pb-2"
-          >
-            <a
-              href="https://www.projecthome.org/about/facts-homelessness"
-            >
-              Source
-            </a>
-          </p>
+              Learn More
+            </button>
+          </a>
         </div>
       </div>
+    </div>
+  </div>
+  <div
+    className="w-100 partial-background"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="text-white pt-4 pb-4"
+      >
+        Focusing on People
+      </h1>
     </div>
   </div>
   <div
@@ -199,13 +138,15 @@ exports[`Home page snapshot test 1`] = `
         <h1
           className="text-center m-3 pb-5"
         >
-          The lack of 
+          The lack of
+           
           <span
             className="text-primary-theme font-weight-bold"
           >
             identification
           </span>
-           is a serial struggle for those experiencing homelessness.
+           
+          is a serious struggle for those experiencing homelessness.
         </h1>
       </div>
       <div
@@ -425,7 +366,7 @@ exports[`Home page snapshot test 1`] = `
             <p
               className="text-center text-light pb-5 w-50 mx-auto"
             >
-              Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.
+              Nonprofits can utilize data to generate reports, create additional touch points for care, and streamline their filing operations.
             </p>
           </div>
         </div>
@@ -512,7 +453,7 @@ exports[`Home page snapshot test 1`] = `
             className="col-md-4 mb-2"
           >
             <img
-              alt="Hubs"
+              alt="Database"
               className="home-svgs float-right"
               src="database.svg"
             />
@@ -535,7 +476,7 @@ exports[`Home page snapshot test 1`] = `
             className="col-md-4 mb-2"
           >
             <img
-              alt="Hubs"
+              alt="Aid platform"
               className="home-svgs float-right"
               src="aidplatform.svg"
             />
@@ -546,7 +487,9 @@ exports[`Home page snapshot test 1`] = `
             <h3>
               Efficient and Relational
             </h3>
-            <span>
+            <span
+              className="home-text"
+            >
               Keep.id becomes an aid platform to streamline access to assistance programs and strengthen relationships between organizations and people
             </span>
           </div>
