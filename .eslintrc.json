@@ -45,6 +45,13 @@
     "no-shadow": "off",
     "react/require-default-props": "off",
     "simple-import-sort/imports": 1,
-    "comma-dangle": 1
+    "comma-dangle": 1,
+    "indent": 1,
+    "no-confusing-arrow": "off",
+    "object-curly-newline": "off",
+    "react/jsx-curly-newline": "off",
+    "react/jsx-indent": "off",
+    "operator-linebreak": "off",
+    "implicit-arrow-linebreak": "off"
   }
 }
