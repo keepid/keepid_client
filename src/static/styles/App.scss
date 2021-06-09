@@ -1,21 +1,25 @@
-@import "../../../node_modules/bootstrap/scss/bootstrap";
-@import "./ldbtn.scss";
-@import "./loading.scss";
-@import "./Inputs";
+@import '../../../node_modules/bootstrap/scss/bootstrap';
+@import './ldbtn.scss';
+@import './loading.scss';
+@import './Inputs';
 
 // COLOR SYTEM
-$primary-theme: #7B81FF;
+$primary-theme: #445feb;
 $primary-theme-light: #e8e9ff;
-$primary-theme-dark: #6029A8;
-$secondary-theme: #FFBB7B;
-$secondary-theme-light: #FCE3B1;
-$secondary-theme-dark: #F9C784;
+$primary-theme-dark: #6029a8;
+$secondary-theme: #413f57;
+$secondary-theme-light: #fce3b1;
+$secondary-theme-dark: #f9c784;
 $secondary-dark-theme: #262867;
-$text-red: #F24D4D;
-$footer-color:#413f57;
-$footer-text-color: rgb(183, 183, 192);
+$text-red: #f24d4d;
+$footer-color: #413f57;
+$footer-text-color: #b7b7c0;
 $footer-text-color-accent: rgb(230, 230, 230);
-$theme-colors: ( "primary-theme": $primary-theme, "secondary-theme": $secondary-theme, "secondary-dark-theme": $secondary-dark-theme);
+$theme-colors: (
+'primary-theme': $primary-theme,
+'secondary-theme': $secondary-theme,
+'secondary-dark-theme': $secondary-dark-theme,
+);
 // import fonts
 @import url('https://fonts.googleapis.com/css?family=Inter&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
@@ -64,9 +68,8 @@ body {
 }
 
 .navbar-custom {
-	background: rgb(123, 150, 255);
-	background: linear-gradient(35deg, rgba(123, 150, 255, 1) 0%, rgba(123, 129, 255, 1) 45%, rgba(154, 100, 255, 1) 100%);
-	color: white
+	background: $primary-theme;
+	color: $primary-theme-light;
 }
 
 .bg-gray {
@@ -75,10 +78,7 @@ body {
 
 .background {
 	background: #e8e9ff;
-    ;
 }
-
-;
 
 .border {
 	border: 0.0625rem solid #262867 !important;
@@ -93,14 +93,12 @@ body {
 	.background {
 		margin-left: 0 !important;
 	}
-    ;
 }
 
 @media screen and (max-width: 48.125rem) {
 	.container-home-right {
 		margin-right: 0 !important;
 	}
-    ;
 }
 
 .progress-bar {
@@ -136,10 +134,10 @@ body {
 .btn-primary:active,
 .btn-primary:visited,
 .btn-primary.active,
-.open>.dropdown-toggle.btn-primary {
+.open > .dropdown-toggle.btn-primary {
 	color: white;
-	background-color: #4B4F9A;
-	border-color: #4B4F9A;
+	background-color: #4b4f9a;
+	border-color: #4b4f9a;
 }
 
 .btn-outline-primary {
@@ -152,7 +150,7 @@ body {
 .btn-outline-primary:focus,
 .btn-outline-primary:active,
 .btn-outline-primary.active,
-.open>.dropdown-toggle.btn-outline-primary {
+.open > .dropdown-toggle.btn-outline-primary {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
@@ -160,8 +158,7 @@ body {
 
 .btn-secondary {
 	color: #000000;
-	background-color: $secondary-theme;
-	border-color: $secondary-theme;
+	background-color: white;
 }
 
 .btn-secondary:hover,
@@ -169,10 +166,10 @@ body {
 .btn-secondary:active,
 .btn-secondary:visited,
 .btn-secondary.active,
-.open>.dropdown-toggle.btn-secondary {
+.open > .dropdown-toggle.btn-secondary {
 	color: #000000;
-	background-color: #D79E68;
-	border-color: #D79E68;
+	background-color: #d79e68;
+	border-color: #d79e68;
 }
 
 .btn-outline-secondary {
@@ -186,8 +183,8 @@ body {
 .btn-outline-secondary:active,
 .btn-outline-secondary:visited,
 .btn-outline-secondary.active,
-.open>.dropdown-toggle.btn-outline-secondary {
-	color: #000000;
+.open > .dropdown-toggle.btn-outline-secondary {
+	color: $primary-theme-light;
 	background-color: $secondary-theme;
 	border-color: $secondary-theme;
 }
@@ -205,8 +202,8 @@ body {
 }
 
 .m-signature-pad--body canvas {
-	border: .0625rem solid $primary-theme !important;
-	border-radius: .25rem;
+	border: 0.0625rem solid $primary-theme !important;
+	border-radius: 0.25rem;
 }
 
 // Landing
@@ -218,16 +215,12 @@ body {
 	color: #000000;
 }
 
-;
-
 .uploadImg {
 	display: block;
 	position: relative;
 	left: 25%;
 	width: 50%;
 }
-
-;
 
 .normalImage {
 	display: block;
@@ -236,8 +229,6 @@ body {
 	top: 10%;
 	width: 30%;
 }
-
-;
 
 td,
 th {
@@ -255,23 +246,23 @@ thead {
 }
 
 .red-star {
-	color: $text-red
+	color: $text-red;
 }
 
 // Form elements
-.custom-checkbox .custom-control-input:checked~.custom-control-label::after {
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
 	background-color: $primary-theme;
 	border-radius: 0.25rem;
 }
 
-.custom-radio .custom-control-input:checked~.custom-control-label::before {
+.custom-radio .custom-control-input:checked ~ .custom-control-label::before {
 	background-color: $primary-theme;
 	border-color: $primary-theme;
 }
 
 .form-purple {
 	border: 0.0625rem solid $primary-theme;
-	border-radius: .35rem;
+	border-radius: 0.35rem;
 }
 
 .form-red {
@@ -291,7 +282,7 @@ thead {
 
 .seeTable thead {
 	flex: 0 0 auto;
-	background: #7B81FF;
+	background: #7b81ff;
 }
 
 .seeTable tbody {
@@ -321,7 +312,6 @@ thead {
 	margin: 0;
 }
 
-
 /* Feel free to change the background-color and border-color to fit your website's color scheme */
 
 .btn-filestack {
@@ -340,7 +330,8 @@ thead {
 
 .btn-filestack:hover {
 	//background-color: #330000;
-	box-shadow: 0 0.125rem 0.125rem 0 rgba(256, 256, 256, 0.24), 0 0.375rem 0.375rem 0 rgba(120, 120, 120, 0.19);
+	box-shadow: 0 0.125rem 0.125rem 0 rgba(256, 256, 256, 0.24),
+	0 0.375rem 0.375rem 0 rgba(120, 120, 120, 0.19);
 }
 
 .btn.btn-filestack:focus {
@@ -360,14 +351,15 @@ thead {
 }
 
 .footer-brand {
-	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
+	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg)
+	brightness(104%) contrast(101%);
 	// outline-color:
 }
 
 .footer-brand-logo {
 	font-family: Raleway;
 	color: $footer-text-color-accent;
-	margin-top: .8rem;
+	margin-top: 0.8rem;
 	font-weight: bold;
 	font-size: 2.25rem;
 	line-height: 1.3525rem;
@@ -381,7 +373,8 @@ thead {
 }
 
 .list-social-icon {
-	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg) brightness(104%) contrast(101%);
+	filter: invert(45%) sepia(50%) saturate(1499%) hue-rotate(213deg)
+	brightness(104%) contrast(101%);
 	width: 1.25rem;
 	height: 1.25rem;
 }
@@ -411,12 +404,12 @@ thead {
 }
 
 .alert-provider-custom div div {
-	background-color: #F3F3F3 !important;
+	background-color: #f3f3f3 !important;
 	color: #212529 !important;
-	border-radius: .25rem !important;
-	border-color: #B7B7C0 !important;
+	border-radius: 0.25rem !important;
+	border-color: #b7b7c0 !important;
 	border-style: solid !important;
-	border-width: .125rem !important;
+	border-width: 0.125rem !important;
 	min-width: 18.75rem !important;
 	font-family: 'Inter', sans-serif !important;
 	font-size: 1rem !important;
@@ -424,7 +417,8 @@ thead {
 }
 
 .alert-provider-custom div div button svg {
-	filter: invert(47%) sepia(13%) saturate(298%) hue-rotate(166deg) brightness(93%) contrast(91%) !important;
+	filter: invert(47%) sepia(13%) saturate(298%) hue-rotate(166deg)
+	brightness(93%) contrast(91%) !important;
 	// fill: #6C757D !important;
 }
 
@@ -467,8 +461,8 @@ thead {
 	height: 8.75rem;
 }
 
-.navbar-dark .navbar-nav .nav-link {
-	color: white;
+.navbar-light .navbar-nav .nav-link {
+	font-size: 1rem;
 }
 
 @media screen and (max-width: 48.125rem) {
@@ -478,11 +472,10 @@ thead {
 		display: block !important;
 		margin: 0 auto !important;
 	}
-    ;
 }
 
 .color-bold {
-	color: $secondary-dark-theme
+	color: $secondary-dark-theme;
 }
 
 .home-text {
@@ -492,7 +485,7 @@ thead {
 
 .brand-text {
 	font-weight: bolder;
-	font-size: calc(2.2rem + (9 * (100vw - 25rem)/ 624));
+	font-size: calc(2.2rem + (9 * (100vw - 25rem) / 624));
 	line-height: 1.3;
 }
 
@@ -527,28 +520,31 @@ thead {
 }
 
 .home-subtext {
-	font-size: calc(.94rem + (4 * (100vw - 15rem)/ 624));
+	font-size: calc(0.94rem + (4 * (100vw - 15rem) / 624));
 }
 
 .statistic-text {
 	color: $secondary-dark-theme;
-	font-size: calc(2.5rem + (16 * (100vw - 50rem)/ 624));
+	font-size: calc(2.5rem + (16 * (100vw - 50rem) / 624));
 }
 
 .statistic-subtext {
 	color: $footer-color;
-	font-size: calc(.8rem + (4 * (100vw - 13rem)/ 624));
+	font-size: calc(0.8rem + (4 * (100vw - 13rem) / 624));
 }
 
 .react-datepicker-wrapper {
-	width: 100%
+	width: 100%;
 }
 
 .carousel-item {
 	min-height: 23.125rem;
 }
 
-.ant-steps-item-active .ant-steps-item-container .ant-steps-item-content .ant-steps-item-title {
+.ant-steps-item-active
+.ant-steps-item-container
+.ant-steps-item-content
+.ant-steps-item-title {
 	font-weight: bold;
 	color: $primary-theme !important;
 }
@@ -563,15 +559,15 @@ thead {
 
 .branch-card {
 	border-color: white;
-	border-width: .125rem;
-	border-radius: .5rem;
+	border-width: 0.125rem;
+	border-radius: 0.5rem;
 	box-shadow: 0rem 0.4475rem 0.85rem 0rem rgba(0, 0, 0, 0.2);
 }
 
 .branch-card:hover {
 	border-color: $primary-theme;
-	border-width: .125rem;
-	border-radius: .5rem;
+	border-width: 0.125rem;
+	border-radius: 0.5rem;
 	box-shadow: 0rem 0.4475rem 0.85rem 0rem rgba(0, 0, 0, 0.2);
 }
 
@@ -603,9 +599,7 @@ thead {
 	border-width: 0.0625rem;
 }
 
-@mixin scrollbars($size,
-$front-color,
-$back-color) {
+@mixin scrollbars($size, $front-color, $back-color) {
 	// For Google Chrome
 	&::-webkit-scrollbar {
 		width: $size;
@@ -627,9 +621,7 @@ $back-color) {
 }
 
 div.scrollbar {
-	@include scrollbars(0.75rem,
-	$primary-theme,
-	#ffffff);
+	@include scrollbars(0.75rem, $primary-theme, #ffffff);
 }
 
 .lead-medium {
@@ -643,7 +635,7 @@ div.scrollbar {
 }
 
 .modal-backdrop.fade {
-	opacity: .25;
+	opacity: 0.25;
 	filter: alpha(opacity=25);
 }
 
@@ -657,7 +649,34 @@ div.scrollbar {
 	margin-right: 0rem;
 }
 
+@media screen and (min-width: 48.125rem) {
+	.partial-background {
+		background: linear-gradient(90deg, $primary-theme 50%, white 50%);
+		min-height: 5rem;
+		min-width: #{'min(100vw, 31.25rem)'};
+	}
+}
+@media screen and (max-width: 48.125rem) {
+	.partial-background {
+		background: $primary-theme;
+		min-height: 5rem;
+		min-width: #{'min(100vw, 31.25rem)'};
+	}
+}
+
 .visualization-svg {
 	width: 25rem;
 	height: 25rem;
+}
+
+.outline-white {
+	border-color: $primary-theme-light;
+}
+
+.home-paragraph-text {
+	font-size: calc(0.94rem + (2 * (100vw - 15rem) / 624));
+}
+
+.statement-solidarity {
+	background-color: $secondary-theme-light;
 }

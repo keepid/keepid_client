@@ -5,7 +5,7 @@ import React from 'react';
 import { Provider } from 'react-alert';
 import { MemoryRouter } from 'react-router-dom';
 
-import { addHttp, birthDateStringConverter, CompleteSignupFlow } from '../../../components/SignUp/CompleteSignupFlow';
+import CompleteSignupFlow, { addHttp, birthDateStringConverter } from '../../../components/SignUp/CompleteSignupFlow';
 import Role from '../../../static/Role';
 
 test('add http test', () => {

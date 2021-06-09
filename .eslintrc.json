@@ -4,9 +4,7 @@
     "es6": true,
     "jest": true
   },
-  "extends": [
-    "airbnb"
-  ],
+  "extends": ["airbnb"],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -16,18 +14,13 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    
+
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "simple-import-sort"
-  ],
+  "plugins": ["react", "@typescript-eslint", "simple-import-sort"],
   // rules: 1 is warning, 2 is error, off is ignore
   "rules": {
-    "simple-import-sort/imports": 2,
     "import/extensions": "off",
     "react/jsx-filename-extension": "off",
     "no-alert": 1,
@@ -49,6 +42,9 @@
     "react/jsx-props-no-spreading": 1,
     "linebreak-style": 0,
     "react/sort-comp": "off",
-    "no-shadow": "off"
+    "no-shadow": "off",
+    "react/require-default-props": "off",
+    "simple-import-sort/imports": 1,
+    "comma-dangle": 1
   }
 }

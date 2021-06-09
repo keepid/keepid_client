@@ -7,7 +7,7 @@ const messages = defineMessages({
   statement: {
     id: 'home.statement-of-solidarity',
     defaultMessage:
-            'We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community <a>here</a>',
+      'We condemn the rising wave of violence and xenophobic rhetoric against members of the Asian American Pacific Islander (AAPI) community. Read our Statement of Solidarity with the AAPI Community <a>here</a>',
   },
 });
 
@@ -17,7 +17,7 @@ const StatementOfSolidarity = () => {
   return (
     <div>
       {showBanner && (
-        <div className="w-100" style={{ backgroundColor: '#FFBB7B' }}>
+        <div className="w-100 statement-solidarity">
           <button
             type="button"
             className="close float-right mr-5 mt-1"
@@ -29,7 +29,11 @@ const StatementOfSolidarity = () => {
           <div className="container text-center py-2 font-weight-bold">
             {intl.formatMessage(messages.statement, {
               a: (...chunks) => (
-                <a href={statementOfSolidarity} target="_blank" rel="noreferrer">
+                <a
+                  href={statementOfSolidarity}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {chunks}
                 </a>
               ),

@@ -23,6 +23,7 @@ import JohnJPG from '../../static/images/members/john.jpg';
 import KierenGill from '../../static/images/members/kierenGill.jpg';
 import MaggieLin from '../../static/images/members/maggieLin.jpg';
 import Melinda from '../../static/images/members/melinda.png';
+import Michelle from '../../static/images/members/michelle.jpg';
 import NickRodriguez from '../../static/images/members/nickRodriguez.jpg';
 import SamBarraza from '../../static/images/members/samBarraza.jpg';
 import SeemranRashid from '../../static/images/members/seemranRashid.jpg';
