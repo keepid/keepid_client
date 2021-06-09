@@ -1,159 +1,197 @@
 import classNames from 'classnames';
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
+import AnchorLink from 'react-anchor-link-smooth-scroll';
 
-import Access from '../../static/images/access-data.svg';
-import FileCloud from '../../static/images/file-cloud.svg';
-import SignUp from '../../static/images/sign-up.svg';
-import Spreadsheet from '../../static/images/spreadsheet.svg';
-import SyncFiles from '../../static/images/sync-files.svg';
+// import Access from '../../static/images/access-data.svg';
+import CreateAccount from '../../static/images/homePage/create_account.png';
+import UploadDocuments from '../../static/images/homePage/my_documents.png';
+import AccessDocuments from '../../static/images/homePage/access_documents.png';
+import StreamlineApplications from '../../static/images/homePage/streamline_applications.png';
 
-const clientJourneyMessages = defineMessages({
+// import FileCloud from '../../static/images/file-cloud.svg';
+// import SignUp from '../../static/images/sign-up.svg';
+// import Spreadsheet from '../../static/images/spreadsheet.svg';
+// import SyncFiles from '../../static/images/sync-files.svg';
+
+const FocusingOnPeopleMessages = defineMessages({
   header: {
     id: 'home.client-journey.header',
-    defaultMessage: 'Meaningful Client Journeys',
-  },
-  subHeader: {
-    id: 'home.client-journey.sub-header',
-    defaultMessage: 'Prioritizing the user experience and alleviating pain points.',
+    defaultMessage: 'Focusing on People',
   },
 
   step1Header: {
     id: 'home.client-journey.step-1-header',
-    defaultMessage: 'Step #1: Registration',
+    defaultMessage: 'Create an Account',
   },
   step1Detail: {
     id: 'home.client-journey.step-1-detail',
-    defaultMessage:
-            'Homeless create a Keep.id account at participating nonprofits. Nonprofits then help homeless obtain missing identification.',
+    defaultMessage: `Individuals experiencing homelessness (we call them clients)
+                create a Keep.id account at participating nonprofits. Nonprofits
+                then help homeless obtain missing identification.`,
   },
   step2Header: {
     id: 'home.client-journey.step-2-header',
-    defaultMessage: 'Step #2: Uploading',
+    defaultMessage: 'Upload Documents',
   },
   step2Detail: {
     id: 'home.client-journey.step-2-detail',
-    defaultMessage:
-            'Government identification, personal information, and prison health records are securely uploaded to our cloud databases. These documents are also cryptographically signed and encrypted.',
+    defaultMessage: `Government identification, personal information, and prison
+                health records are securely uploaded to our cloud databases.
+                These documents are also cryptographically signed and encrypted.`,
   },
   step3Header: {
     id: 'home.client-journey.step-3-header',
-    defaultMessage: 'Step #3: Access',
+    defaultMessage: 'Access Documents',
   },
   step3Detail: {
     id: 'home.client-journey.step-3-detail',
-    defaultMessage: 'Those experiencing homelessness can access their documents at public or nonprofit computers.',
+    defaultMessage: `Those experiencing homelessness can access their documents at
+                public or nonprofit computers.`,
   },
   step4Header: {
     id: 'home.client-journey.step-4-header',
-    defaultMessage: 'Step #4: Harnessing Data: Clients',
+    defaultMessage: 'Streamline Applications',
   },
-  step4Detail: {
-    id: 'home.client-journey.step-4-detail',
-    defaultMessage:
-            'Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.',
+  step4Detail1: {
+    id: 'home.client-journey.step-4-detail1',
+    defaultMessage: `Those experiencing homelessness can now use their data to apply
+                for jobs, print their documents, and send autofilled aid
+                applications.`,
+  },
+  step4Detail2: {
+    id: 'home.client-journey.step-4-detail2',
+    defaultMessage: `Nonprofits can utilize data to generate reports, create
+                additional touch points for care, and streamline their filing
+                operations.`,
   },
 
-  step5Header: {
+  buttonLearnMore: {
     id: 'home.client-journey.step-5-header',
-    defaultMessage: 'Step #5: Harnessing Data: Nonprofits',
-  },
-  step5Detail: {
-    id: 'home.client-journey.step-5-detail',
-    defaultMessage:
-            'Those experiencing homelessness (we call them clients) can now use their data to apply for jobs, print their documents, and send autofilled aid applications.',
-  },
-
-  carouselNext: {
-    id: 'home.client-journey.carousel-next',
-    defaultMessage: 'Next',
-  },
-  carouselPrevious: {
-    id: 'home.client-journey.carousel-previous',
-    defaultMessage: 'Previous',
+    defaultMessage: 'Learn More',
   },
 });
 
 const FocusingOnPeople = () => {
   const intl = useIntl();
   return (
-    <div className="bg-secondary">
-      <div className="container">
-        <div className="jumbotron jumbotron-fluid bg-transparent text-center pb-2 mb-2">
-          <h1 className="display-5 text-light">{intl.formatMessage(clientJourneyMessages.header)}</h1>
-          <p className="lead text-light">{intl.formatMessage(clientJourneyMessages.subHeader)}</p>
-        </div>
-        <div id="carouselExampleCaptions" className="carousel slide" data-ride="carousel">
-          <ol className="carousel-indicators">
-            <li data-target="#carouselExampleCaptions" data-slide-to="0" className="active" />
-            <li data-target="#carouselExampleCaptions" data-slide-to="1" />
-            <li data-target="#carouselExampleCaptions" data-slide-to="2" />
-            <li data-target="#carouselExampleCaptions" data-slide-to="3" />
-            <li data-target="#carouselExampleCaptions" data-slide-to="4" />
-          </ol>
-          <div className="carousel-inner">
-            <CarouselItem
-              active
-              img={SignUp}
-              header={intl.formatMessage(clientJourneyMessages.step1Header)}
-              detail={intl.formatMessage(clientJourneyMessages.step1Detail)}
-            />
-            <CarouselItem
-              img={SyncFiles}
-              header={intl.formatMessage(clientJourneyMessages.step2Header)}
-              detail={intl.formatMessage(clientJourneyMessages.step2Detail)}
-            />
-            <CarouselItem
-              img={Access}
-              header={intl.formatMessage(clientJourneyMessages.step3Header)}
-              detail={intl.formatMessage(clientJourneyMessages.step3Detail)}
-            />
-            <CarouselItem
-              img={FileCloud}
-              header={intl.formatMessage(clientJourneyMessages.step4Header)}
-              detail={intl.formatMessage(clientJourneyMessages.step4Detail)}
-            />
-            <CarouselItem
-              img={Spreadsheet}
-              header={intl.formatMessage(clientJourneyMessages.step5Header)}
-              detail={intl.formatMessage(clientJourneyMessages.step5Detail)}
-            />
-          </div>
-          <a
-            className="carousel-control-prev"
-            href="#carouselExampleCaptions"
-            role="button"
-            data-slide="prev"
-          >
-            <span className="carousel-control-prev-icon" aria-hidden="true" />
-            <span className="sr-only">{intl.formatMessage(clientJourneyMessages.carouselPrevious)}</span>
-          </a>
-          <a
-            className="carousel-control-next"
-            href="#carouselExampleCaptions"
-            role="button"
-            data-slide="next"
-          >
-            <span className="carousel-control-next-icon" aria-hidden="true" />
-            <span className="sr-only">{intl.formatMessage(clientJourneyMessages.carouselNext)}</span>
-          </a>
+    <div className="py-5">
+      <div className="w-100 partial-background">
+        <div className="container">
+          <h1 className="text-white pt-4 pb-4">
+            {intl.formatMessage(FocusingOnPeopleMessages.header)}
+          </h1>
         </div>
       </div>
-    </div>
-  );
-};
-
-// eslint-disable-next-line react/require-default-props
-const CarouselItem = (props: { active?: boolean; img: string; header: string; detail: string }): JSX.Element => {
-  const className = classNames({
-    'carousel-item': true,
-    active: props.active,
-  });
-  return (
-    <div className={className}>
-      <img src={props.img} className="d-block w-100 mx-auto my-4 d-block home-svgs" alt="..." />
-      <h4 className="text-center text-white">{props.header}</h4>
-      <p className="text-center text-light pb-5 w-50 mx-auto">{props.detail}</p>
+      <div className="container my-5">
+        <div className="row">
+          <div className="col-md-6 custom-vertical-center px-4">
+            <div>
+              <h3>
+                {intl.formatMessage(FocusingOnPeopleMessages.step1Header)}
+              </h3>
+              <p className="pt-2 pb-2 home-paragraph-text">
+                {intl.formatMessage(FocusingOnPeopleMessages.step1Detail)}
+              </p>
+            </div>
+          </div>
+          <div className="col-md-6 p-4">
+            <img
+              alt="Create an account image"
+              src={CreateAccount}
+              className="home-form-svg text-left"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="container my-5">
+        <div className="row">
+          <div className="col-md-6 p-4 d-none d-md-block">
+            <img
+              alt="Create an account image"
+              src={UploadDocuments}
+              className="home-form-svg text-left"
+            />
+          </div>
+          <div className="col-md-6 custom-vertical-center px-4">
+            <div>
+              <h3>
+                {intl.formatMessage(FocusingOnPeopleMessages.step2Header)}
+              </h3>
+              <p className="pt-2 pb-2 home-paragraph-text">
+                {intl.formatMessage(FocusingOnPeopleMessages.step2Detail)}
+              </p>
+            </div>
+          </div>
+          <div className="col-md-6 p-4 d-md-none">
+            <img
+              alt="Create an account image"
+              src={UploadDocuments}
+              className="home-form-svg text-left"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="container my-5">
+        <div className="row">
+          <div className="col-md-6 custom-vertical-center px-4">
+            <div>
+              <h3>
+                {intl.formatMessage(FocusingOnPeopleMessages.step3Header)}
+              </h3>
+              <p className="pt-2 pb-2 home-paragraph-text">
+                {intl.formatMessage(FocusingOnPeopleMessages.step3Detail)}
+              </p>
+            </div>
+          </div>
+          <div className="col-md-6 p-4">
+            <img
+              alt="Create an account image"
+              src={AccessDocuments}
+              className="home-form-svg text-left"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="container my-5">
+        <div className="row">
+          <div className="col-md-6 p-4 d-none d-md-block">
+            <img
+              alt="Create an account image"
+              src={StreamlineApplications}
+              className="home-form-svg text-left"
+            />
+          </div>
+          <div className="col-md-6 custom-vertical-center px-4">
+            <div>
+              <h3>
+                {intl.formatMessage(FocusingOnPeopleMessages.step4Header)}
+              </h3>
+              <p className="pt-2 pb-2 home-paragraph-text">
+                {intl.formatMessage(FocusingOnPeopleMessages.step4Detail1)}
+              </p>
+              <p className="pt-2 pb-2 home-paragraph-text">
+                {intl.formatMessage(FocusingOnPeopleMessages.step4Detail2)}
+              </p>
+              <AnchorLink offset="100" href="#info">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+                >
+                  {intl.formatMessage(FocusingOnPeopleMessages.buttonLearnMore)}
+                </button>
+              </AnchorLink>
+            </div>
+          </div>
+          <div className="col-md-6 p-4 d-md-none">
+            <img
+              alt="Create an account image"
+              src={StreamlineApplications}
+              className="home-form-svg text-left"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

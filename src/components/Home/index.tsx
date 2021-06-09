@@ -5,16 +5,19 @@ import { defineMessages, useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
 import HomepageGraphic from '../../static/images/homepage_graphic.svg';
-import RectangleSVG from '../../static/images/rectangle.svg';
-import Benefits from './Benefits';
-import CoreValues from './CoreValues';
+import EnsuringSecurity from './EnsuringSecurity';
 import FocusingOnPeople from './FocusingOnPeople';
-import HowItWorks from './HowItWorks';
+import HomelessStats from './HomelessStats';
 import IntroText from './IntroText';
 import StatementOfSolidarity from './StatementOfSolidarity';
+import WhoWeAreServing from './WhoWeAreServing';
 
 const messages = defineMessages({
-  title: { id: 'home.title', defaultMessage: 'Welcome', description: 'Home welcome message' },
+  title: {
+    id: 'home.title',
+    defaultMessage: 'Welcome',
+    description: 'Home welcome message',
+  },
   brandHeader: {
     id: 'home.brand-header',
     defaultMessage: 'An identification platform',
@@ -25,7 +28,7 @@ const messages = defineMessages({
     defaultMessage: 'for those experiencing homelessness',
   },
   getStarted: { id: 'home.get-started', defaultMessage: 'Get Started' },
-  learnMore: { id: 'home.learn-more', defaultMessage: 'Learn More' },
+  learnMore: { id: 'home.learn-more', defaultMessage: 'Donate' },
 });
 
 const Home = () => {
@@ -47,23 +50,34 @@ const Home = () => {
                   {intl.formatMessage(messages.brandHeader)}
                 </span>
               </div>
-              <p className="pt-2 pb-2 home-subtext">{intl.formatMessage(messages.subHeader)}</p>
+              <p className="pt-2 pb-2 home-subtext">
+                {intl.formatMessage(messages.subHeader)}
+              </p>
               <Link to="/signup-branch">
-                <button type="button" className="btn btn-secondary btn-lg w-40 mr-2 mb-2">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-lg w-40 mr-2 mb-2"
+                >
                   {intl.formatMessage(messages.getStarted)}
                 </button>
               </Link>
-              <AnchorLink offset="100" href="#info">
-                <button type="button" className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2">
-                  {intl.formatMessage(messages.learnMore)}
-                </button>
-              </AnchorLink>
+              <a
+                href="https://team.keep.id"
+                type="button"
+                className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+              >
+                {intl.formatMessage(messages.learnMore)}
+              </a>
             </div>
           </div>
           <div className="col-md-5 px-5 custom-vertical-center">
             <div className="pb-4 container-home-right">
               <div>
-                <img alt="Document Platform" src={HomepageGraphic} className="home-form-svg text-left" />
+                <img
+                  alt="Document Platform"
+                  src={HomepageGraphic}
+                  className="home-form-svg text-left"
+                />
               </div>
             </div>
           </div>
@@ -74,11 +88,11 @@ const Home = () => {
 
       <FocusingOnPeople />
 
-      <HowItWorks />
+      <EnsuringSecurity />
 
-      <CoreValues />
+      <HomelessStats />
 
-      <Benefits />
+      <WhoWeAreServing />
     </div>
   );
 };
