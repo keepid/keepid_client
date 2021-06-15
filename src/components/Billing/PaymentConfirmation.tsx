@@ -11,8 +11,10 @@ interface Props{
 // eslint-disable-next-line react/prefer-stateless-function
 class paymentConfirmation extends React.Component<Props, State> {
   render() {
-    const { subscriptionObj } = this.props.location.state;
+    const { location } = this.props;
+    const { subscription } = location.state;
     console.log(this.props);
+    console.log(subscription);
     return (
       <div className="container">
         <Helmet>
@@ -26,9 +28,21 @@ class paymentConfirmation extends React.Component<Props, State> {
           </div>
           <br />
           <div>
-            Subscription Id:
-            {' '}
-            { subscriptionObj.subscriptionId }
+            <p>
+              Subscription Id:
+              {' '}
+              { subscription.id }
+            </p>
+            <p>
+              Card last4:
+              {' '}
+              {subscription.default_payment_method?.card?.last4}
+            </p>
+            <p>
+              Current period end:
+              {' '}
+              {(new Date(subscription.current_period_end * 1000).toString())}
+            </p>
           </div>
         </div>
       </div>

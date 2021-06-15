@@ -14,7 +14,7 @@ interface State {
       customerName: string,
       customerEmail: string,
       redirect: string | null,
-      subscriptionObject: any,
+      subscription: any,
     }
 
 interface Props {
@@ -26,14 +26,16 @@ class Subscribe extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
+      // eslint-disable-next-line react/no-unused-state
       customerName: '',
       customerEmail: '',
       redirect: null,
-      subscriptionObject: null,
+      subscription: null,
     };
   }
 
     handleCustomerNameChange = (event: any) => {
+      // eslint-disable-next-line react/no-unused-state
       this.setState({ customerName: event.target.value });
     }
 
@@ -45,8 +47,57 @@ class Subscribe extends React.Component<Props, State> {
       this.setState({ redirect: redirectTo });
     }
 
-    setSubscription = (subscription) => {
-      this.setState({ subscriptionObject: subscription });
+    setSubscription = (sub) => {
+      this.setState({ subscription: sub });
+    }
+
+    getCustomer = async () => {
+      const { customerEmail } = this.state;
+
+      await fetch(`${getServerURL()}/get-customer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerEmail,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const customerObject = responseJSON;
+
+          if (customerObject) {
+            this.handleCreateSubscription(customerObject.id, customerObject.name, customerObject.email);
+          } else {
+            console.log('Customer not found, are you sure it exists in the db?');
+          }
+        });
+    }
+
+    getAndSetSubscription = async (subscriptionId: String) => {
+      await fetch(`${getServerURL()}/get-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subscriptionId,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const subscriptionObject = responseJSON;
+
+          if (subscriptionObject) {
+            this.setSubscription(subscriptionObject);
+
+            const { subscription } = this.state;
+            console.log('Current subscription is: ', subscription);
+
+            this.setRedirect('/paymentConfirmation');
+          } else {
+            console.log('Subscription not found, did you provide an invalid id?');
+          }
+        });
     }
 
     handleConfirmCardPayment = async (customerEmail: string, subscriptionObject: any) => {
@@ -77,8 +128,7 @@ class Subscribe extends React.Component<Props, State> {
       }
       console.log('Redirecting');
       // eslint-disable-next-line object-curly-spacing
-      this.setRedirect('/paymentConfirmation');
-
+      this.getAndSetSubscription(subscriptionObject.id);
       return '';
     }
 
@@ -131,11 +181,9 @@ class Subscribe extends React.Component<Props, State> {
             const subscriptionObject = responseJSON;
             // console.log(subscriptionObject);
 
-            if (subscriptionObject.subscriptionId) {
-              console.log('Payment is successful, subscription has been created with subscription_id: ', subscriptionObject.subscriptionId);
+            if (subscriptionObject.id) {
+              console.log('Payment is successful, subscription has been created with subscription_id: ', subscriptionObject.id);
               console.log(subscriptionObject);
-              this.setSubscription(subscriptionObject);
-              console.log(this.state.subscriptionObject);
               this.handleConfirmCardPayment(cusEmail, subscriptionObject);
             } else {
               console.log('Payment has been unsuccessful, please try again');
@@ -150,65 +198,17 @@ class Subscribe extends React.Component<Props, State> {
       e.preventDefault();
 
       console.log('User clicked pay');
-
-      // Create the customer object
-      const { customerName, customerEmail } = this.state;
-
-      /*
-      await fetch(`${getServerURL()}/create-customer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerName,
-          customerEmail,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const customerObject = responseJSON;
-          // console.log(customerObject);
-
-          if (customerObject) {
-            console.log(customerObject);
-            console.log('Customer has been successfully created with customer_id of: ', customerObject.id);
-            this.handleCreateSubscription(customerObject.id, customerName, customerEmail);
-          } else {
-            console.log('Customer creation has been unsuccessful, please try again');
-          }
-        });
-        */
-      await fetch(`${getServerURL()}/get-customer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerEmail,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const customerObject = responseJSON;
-          // console.log(customerObject);
-
-          if (customerObject) {
-            console.log(customerObject);
-            console.log('Customer found with customer_id of: ', customerObject.id);
-            this.handleCreateSubscription(customerObject.id, customerObject.name, customerObject.email);
-          } else {
-            console.log('Customer not found, are you sure it exists in the db?');
-          }
-        });
+      this.getCustomer();
     }
 
     render() {
-      const { redirect, subscriptionObject } = this.state;
-      console.log('Redirect with: ', subscriptionObject);
+      const { redirect, subscription } = this.state;
+      console.log('Redirect with: ', subscription);
       if (redirect) {
         return (
           <Redirect to={{
             pathname: redirect,
-            state: { subscriptionObj: subscriptionObject },
+            state: { subscription },
           }}
           />
         );

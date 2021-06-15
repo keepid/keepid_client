@@ -23,11 +23,16 @@ class Main extends React.Component<Props, State> {
   }
 
   render() {
-    if (this.state.redirect) {
+    console.log('hi 1');
+    const { redirect } = this.state;
+    if (redirect) {
+      console.log('hi');
       return (
         <Redirect to={{
-          pathname: this.state.redirect,
-          state: { subscriptionId: 10 },
+          pathname: redirect,
+          state: {
+            subscriptionObj: { subscriptionId: 10 },
+          },
         }}
         />
       );
