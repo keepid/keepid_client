@@ -11,7 +11,6 @@ import getServerURL from '../../serverOverride';
 import LoginSVG from '../../static/images/login-svg.svg';
 
 interface State {
-      customerName: string,
       customerEmail: string,
       redirect: string | null,
       subscription: any,
@@ -26,18 +25,11 @@ class Subscribe extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      // eslint-disable-next-line react/no-unused-state
-      customerName: '',
       customerEmail: '',
       redirect: null,
       subscription: null,
     };
   }
-
-    handleCustomerNameChange = (event: any) => {
-      // eslint-disable-next-line react/no-unused-state
-      this.setState({ customerName: event.target.value });
-    }
 
     handleCustomerEmailChange = (event: any) => {
       this.setState({ customerEmail: event.target.value });
