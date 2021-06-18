@@ -4,6 +4,8 @@ import {
 } from '@stripe/react-stripe-js';
 import { Stripe, StripeElements } from '@stripe/stripe-js';
 import React from 'react';
+import { withAlert } from 'react-alert';
+import Alert from 'react-bootstrap/Alert';
 import { Helmet } from 'react-helmet';
 import { Redirect } from 'react-router-dom';
 
@@ -14,6 +16,7 @@ interface State {
       customerEmail: string,
       redirect: string | null,
       subscription: any,
+      displayAlert: boolean,
     }
 
 interface Props {
@@ -28,6 +31,7 @@ class Subscribe extends React.Component<Props, State> {
       customerEmail: '',
       redirect: null,
       subscription: null,
+      displayAlert: false,
     };
   }
 
@@ -190,6 +194,10 @@ class Subscribe extends React.Component<Props, State> {
       e.preventDefault();
 
       console.log('User clicked pay');
+      console.log(this.props);
+      this.setState({ displayAlert: true });
+      // const { alert } = this.props;
+      // alert.show('You clicked pay');
       this.getCustomer();
     }
 
@@ -224,19 +232,13 @@ class Subscribe extends React.Component<Props, State> {
               </div>
 
               <div className="col">
+                {this.state.displayAlert && (
+                <Alert variant="info" onClose={() => console.log('You closed me!')} dismissible>
+                  This is an alert!
+                </Alert>
+                )}
                 <form id="payment-form" className="form-signin pt-10" onSubmit={this.handleSubmit}>
                   <h1 className="h3 mb-3 font-weight-normal">Please enter your information below</h1>
-                  <label htmlFor="fullname" className="w-100 font-weight-bold">
-                    Name
-                    <input
-                      type="text"
-                      className="form-control form-purple mt-1"
-                      id="fullname"
-                      placeholder="John Doe"
-                      onChange={this.handleCustomerNameChange}
-                      required
-                    />
-                  </label>
                   <label htmlFor="email" className="w-100 font-weight-bold">
                     Email
                     <input
@@ -259,12 +261,10 @@ class Subscribe extends React.Component<Props, State> {
     }
 }
 
-export default function InjectedCheckoutForm() {
-  return (
-    <ElementsConsumer>
-      {({ stripe, elements }) => (
-        <Subscribe stripe={stripe} elements={elements} />
-      )}
-    </ElementsConsumer>
-  );
-}
+export default withAlert()(() => (
+  <ElementsConsumer>
+    {({ stripe, elements }) => (
+      <Subscribe stripe={stripe} elements={elements} />
+    )}
+  </ElementsConsumer>
+));

@@ -1,4 +1,5 @@
 import React from 'react';
+import { withAlert } from 'react-alert';
 import { Redirect } from 'react-router-dom';
 
 interface State {
@@ -7,7 +8,7 @@ interface State {
 }
 
 interface Props {
-
+    alert: any,
 }
 
 class Main extends React.Component<Props, State> {
@@ -22,16 +23,23 @@ class Main extends React.Component<Props, State> {
     this.setState({ redirect: '/paymentConfirmation' });
   }
 
+  showError = (e) => {
+    e.preventDefault();
+    console.log(this.props);
+    console.log('Error button clicked');
+    const { alert } = this.props;
+    alert.show('Error');
+  }
+
   render() {
-    console.log('hi 1');
     const { redirect } = this.state;
     if (redirect) {
-      console.log('hi');
+      console.log('Redirecting');
       return (
         <Redirect to={{
           pathname: redirect,
           state: {
-            subscriptionObj: { subscriptionId: 10 },
+            subscription: { id: 10 },
           },
         }}
         />
@@ -43,9 +51,12 @@ class Main extends React.Component<Props, State> {
         <form id="payment-form" className="form-signin pt-10" onSubmit={this.setRedirect}>
           <button className="mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right" type="submit">Redirect</button>
         </form>
+        <form id="error-form" className="form-signin pt-10" onSubmit={this.showError}>
+          <button className="mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right" type="submit">Show error</button>
+        </form>
       </div>
     );
   }
 }
 
-export default Main;
+export default withAlert()(Main);
