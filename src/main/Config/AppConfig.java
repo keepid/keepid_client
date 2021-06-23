@@ -76,6 +76,7 @@ public class AppConfig {
     app.post("/upload-pfp", userController.uploadPfp);
     app.post("/load-pfp", userController.loadPfp);
     app.post("/username-exists", userController.usernameExists);
+    app.post("/delete-user", userController.deleteUser);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
