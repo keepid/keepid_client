@@ -45,12 +45,14 @@ public class DeleteUserService implements Service {
     // get user
     Optional<User> optionalUser = userDao.get(username);
     if (optionalUser.isEmpty()) {
-      return UserMessage.AUTH_FAILURE;
+      log.info(username + " not found");
+      return UserMessage.USER_NOT_FOUND;
     }
     user = optionalUser.get();
 
     // verify password
     if (!verifyPassword(password, user.getPassword())) {
+      log.info("Incorrect password");
       return UserMessage.AUTH_FAILURE;
     }
 

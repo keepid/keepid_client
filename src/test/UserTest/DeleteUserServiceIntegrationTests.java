@@ -21,28 +21,6 @@ public class DeleteUserServiceIntegrationTests {
   public void setUp() {
     TestUtils.startServer();
     userDao = UserDaoFactory.create(DeploymentLevel.TEST);
-
-    String username = "username1";
-    String password = "password1234";
-    String phone = "1231231234";
-    String email = "testemail@keep.id";
-    EntityFactory.createUser()
-        .withUsername(username)
-        .withPasswordToHash(password)
-        .withPhoneNumber(phone)
-        .withEmail(email)
-        .buildAndPersist(userDao);
-
-    JSONObject loginRequest = new JSONObject();
-    loginRequest.put("username", username);
-    loginRequest.put("password", password);
-
-    HttpResponse<String> actualResponse =
-        Unirest.post(TestUtils.getServerUrl() + "/login")
-            .header("Accept", "*/*")
-            .header("Content-Type", "text/plain")
-            .body(loginRequest.toString())
-            .asString();
   }
 
   @After
@@ -51,11 +29,59 @@ public class DeleteUserServiceIntegrationTests {
   }
 
   @Test
-  public void invalidPassword() {
-    String username = "username1";
-    String password = "wrong";
+  public void wrongPassword() {
+    String username = "testfishmir";
+    String password = "password1234";
+    EntityFactory.createUser()
+        .withUsername(username)
+        .withPasswordToHash(password)
+        .buildAndPersist(userDao);
+    JSONObject loginRequest = new JSONObject();
+    loginRequest.put("username", username);
+    loginRequest.put("password", password);
+    HttpResponse<String> loginResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/login")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(loginRequest.toString())
+            .asString();
+
+    String testPassword = "wrongPassword";
     JSONObject req = new JSONObject();
-    req.put("username", username);
+    req.put("password", testPassword);
+    HttpResponse<String> res =
+        Unirest.post(TestUtils.getServerUrl() + "/delete-user")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(req.toString())
+            .asString();
+    JSONObject resJSON = TestUtils.responseStringToJSON(res.getBody());
+
+    assertThat(resJSON.getString("status")).isEqualTo("AUTH_FAILURE");
+    assertThat(userDao.get(username).isEmpty()).isFalse();
+
+    userDao.delete(username);
+  }
+
+  @Test
+  public void successfulAccountDeletion() {
+    String username = "testfishmir";
+    String password = "password1234";
+    EntityFactory.createUser()
+        .withUsername(username)
+        .withPasswordToHash(password)
+        .buildAndPersist(userDao);
+    JSONObject loginRequest = new JSONObject();
+    loginRequest.put("username", username);
+    loginRequest.put("password", password);
+    HttpResponse<String> loginResponse =
+        Unirest.post(TestUtils.getServerUrl() + "/login")
+            .header("Accept", "*/*")
+            .header("Content-Type", "text/plain")
+            .body(loginRequest.toString())
+            .asString();
+
+    JSONObject req = new JSONObject();
     req.put("password", password);
     HttpResponse<String> res =
         Unirest.post(TestUtils.getServerUrl() + "/delete-user")
@@ -64,11 +90,8 @@ public class DeleteUserServiceIntegrationTests {
             .body(req.toString())
             .asString();
     JSONObject resJSON = TestUtils.responseStringToJSON(res.getBody());
-    assertThat(resJSON.getString("status")).isEqualTo("AUTH_FAILURE");
-  }
 
-  /**
-   * @Test public void nullPassword() {} @Test public void wrongPassword() {} @Test public void
-   * successfulUserDeletion() {}
-   */
+    assertThat(resJSON.getString("status")).isEqualTo("SUCCESS");
+    assertThat(userDao.get(username).isEmpty()).isTrue();
+  }
 }
