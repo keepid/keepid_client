@@ -19,6 +19,11 @@ class Main extends React.Component<Props, State> {
     };
   }
 
+  componentDidMount() {
+    // const { location } = this.props;
+    console.log('Props: ', this.props);
+  }
+
   setRedirect = () => {
     this.setState({ redirect: '/paymentConfirmation' });
   }

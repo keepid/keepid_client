@@ -17,6 +17,7 @@ interface State {
       redirect: string | null,
       subscription: any,
       displayAlert: boolean,
+      alertMessage: string,
     }
 
 interface Props {
@@ -27,12 +28,19 @@ interface Props {
 class Subscribe extends React.Component<Props, State> {
   constructor(props) {
     super(props);
+    console.log('These are the props: ', props);
     this.state = {
       customerEmail: '',
       redirect: null,
       subscription: null,
       displayAlert: false,
+      alertMessage: 'Default alert',
     };
+  }
+
+  componentDidMount() {
+    // const { location } = this.props;
+    console.log('Props: ', this.props);
   }
 
     handleCustomerEmailChange = (event: any) => {
@@ -45,6 +53,14 @@ class Subscribe extends React.Component<Props, State> {
 
     setSubscription = (sub) => {
       this.setState({ subscription: sub });
+    }
+
+    setAlertMessage = (message) => {
+      this.setState({ alertMessage: message });
+    }
+
+    displayAlert = () => {
+      this.setState({ displayAlert: true });
     }
 
     getCustomer = async () => {
@@ -65,7 +81,8 @@ class Subscribe extends React.Component<Props, State> {
           if (customerObject) {
             this.handleCreateSubscription(customerObject.id, customerObject.name, customerObject.email);
           } else {
-            console.log('Customer not found, are you sure it exists in the db?');
+            this.displayAlert();
+            this.setAlertMessage('Customer not found, are you sure it exists in the db?');
           }
         });
     }
@@ -85,13 +102,10 @@ class Subscribe extends React.Component<Props, State> {
 
           if (subscriptionObject) {
             this.setSubscription(subscriptionObject);
-
-            const { subscription } = this.state;
-            console.log('Current subscription is: ', subscription);
-
             this.setRedirect('/paymentConfirmation');
           } else {
-            console.log('Subscription not found, did you provide an invalid id?');
+            this.setAlertMessage('Subscription not found, did you provide an invalid id?');
+            this.displayAlert();
           }
         });
     }
@@ -159,8 +173,6 @@ class Subscribe extends React.Component<Props, State> {
       }
 
       if (paymentMethod) {
-        console.log(`Payment method created ${paymentMethod.id}`);
-
         // Create the subscription.
         await fetch(`${getServerURL()}/create-subscription`, {
           method: 'POST',
@@ -168,7 +180,7 @@ class Subscribe extends React.Component<Props, State> {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            priceId: 'price_1ImsqAGU0udYRJ6gNdM61eOB',
+            priceId: 'price_1IxlTyGU0udYRJ6gyphej5I6',
             paymentMethodId: paymentMethod.id,
             customerId: cusId,
           }),
@@ -178,32 +190,28 @@ class Subscribe extends React.Component<Props, State> {
             // console.log(subscriptionObject);
 
             if (subscriptionObject.id) {
-              console.log('Payment is successful, subscription has been created with subscription_id: ', subscriptionObject.id);
-              console.log(subscriptionObject);
+              this.setAlertMessage('Payment is successful, subscription has been created with subscription_id: ');
               this.handleConfirmCardPayment(cusEmail, subscriptionObject);
             } else {
-              console.log('Payment has been unsuccessful, please try again');
+              this.setAlertMessage('Payment has been unsuccessful, please try again');
+              this.displayAlert();
+              console.log('Subscription has failed to be made');
             }
           });
       }
-      // console.log(`Subscription created with status: ${subscription.status}`);
       return '';
     }
 
     handleSubmit = async (e) => {
       e.preventDefault();
 
-      console.log('User clicked pay');
-      console.log(this.props);
-      this.setState({ displayAlert: true });
-      // const { alert } = this.props;
-      // alert.show('You clicked pay');
+      // this.displayAlert();
+      // this.setAlertMessage('You clicked pay');
       this.getCustomer();
     }
 
     render() {
       const { redirect, subscription } = this.state;
-      console.log('Redirect with: ', subscription);
       if (redirect) {
         return (
           <Redirect to={{
@@ -232,11 +240,9 @@ class Subscribe extends React.Component<Props, State> {
               </div>
 
               <div className="col">
-                {this.state.displayAlert && (
-                <Alert variant="info" onClose={() => console.log('You closed me!')} dismissible>
-                  This is an alert!
+                <Alert variant="info" show={this.state.displayAlert} onClose={() => this.setState({ displayAlert: false })} dismissible>
+                  { this.state.alertMessage }
                 </Alert>
-                )}
                 <form id="payment-form" className="form-signin pt-10" onSubmit={this.handleSubmit}>
                   <h1 className="h3 mb-3 font-weight-normal">Please enter your information below</h1>
                   <label htmlFor="email" className="w-100 font-weight-bold">
