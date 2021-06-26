@@ -16,11 +16,11 @@
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.6.0",
     "@types/jest": "^24.9.1",
+    "@types/node": "^12.12.42",
     "@types/react": "^16.9.35",
     "@types/react-bootstrap": "^0.32.22",
     "@types/react-router-dom": "^5.1.5",
     "@typescript-eslint/parser": "^4.24.0",
-    "@types/node": "^12.12.42",
     "antd": "^4.7.3",
     "bootstrap": "^4.5.0",
     "classnames": "^2.2.6",
@@ -65,7 +65,8 @@
     "react-uuid": "^1.0.2",
     "switch": "0.0.0",
     "typescript": "^3.9.7",
-    "valid-url": "^1.0.9"
+    "valid-url": "^1.0.9",
+    "with-router": "^1.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.9",

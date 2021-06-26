@@ -5,10 +5,10 @@ import getServerURL from '../../serverOverride';
 
 const PriceOption = (Props) => {
   const { priceId } = Props;
-  console.log('PriceId is: ', priceId);
   const [price, setPrice] = useState(0);
   const [productName, setproductName] = useState('');
-  const [redirectTo, setRedirect] = useState('');
+  const [redirect, setRedirect] = useState(false);
+  const [test, setTest] = useState(false);
 
   useEffect(() => {
     fetchPriceObject();
@@ -60,10 +60,21 @@ const PriceOption = (Props) => {
       });
   };
 
-  if (redirectTo) {
+  if (redirect) {
     return (
       <Redirect to={{
-        pathname: redirectTo,
+        pathname: '/billing',
+        state: { priceId },
+      }}
+      />
+    );
+  }
+
+  if (test) {
+    return (
+      <Redirect to={{
+        pathname: '/main',
+        state: { priceId },
       }}
       />
     );
@@ -76,11 +87,11 @@ const PriceOption = (Props) => {
         Price: $
         { price }
       </p>
-      <button type="submit" onClick={() => setRedirect('/billing')}>
+      <button type="submit" onClick={() => setRedirect(true)}>
         Select
       </button>
       ---
-      <button type="submit" onClick={() => setRedirect('/main')}>
+      <button type="submit" onClick={() => setTest(true)}>
         Test button to home
       </button>
     </div>

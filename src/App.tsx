@@ -23,9 +23,9 @@ import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
 import Main from './components/Billing/Main';
+import Payment from './components/Billing/Payment';
 import PaymentConfirmation from './components/Billing/PaymentConfirmation';
 import Prices from './components/Billing/Prices';
-import Billing from './components/Billing/Subscribe';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -353,7 +353,7 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route path="/billing">
                 <Elements stripe={stripePromise}>
-                  <Billing />
+                  <Payment />
                 </Elements>
               </Route>
               <Route path="/subscriptions" component={Prices} />
