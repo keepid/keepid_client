@@ -135,7 +135,7 @@ class App extends React.Component<{}, State, {}> {
             role(),
             username,
             organization,
-            `${firstName} ${lastName}`
+            `${firstName} ${lastName}`,
           ); // Change
         }
       });
@@ -259,9 +259,9 @@ class App extends React.Component<{}, State, {}> {
                           userRole={role}
                           personRole={Role.Volunteer}
                         />
-                      ) : (
+                        ) : (
                         <Redirect to="/error" />
-                      );
+                        );
                     case 'client':
                       return role === Role.Director ||
                         role === Role.Admin ||
@@ -271,9 +271,9 @@ class App extends React.Component<{}, State, {}> {
                           userRole={role}
                           personRole={Role.Client}
                         />
-                      ) : (
+                        ) : (
                         <Redirect to="/error" />
-                      );
+                        );
                     default:
                       return <Redirect to="/error" />;
                   }

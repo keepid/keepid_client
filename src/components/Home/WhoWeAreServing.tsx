@@ -1,8 +1,9 @@
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
-import WhyNotProsperPNG from '../../static/images/homePage/whynotprosper.png';
-import VenturelabJPG from '../../static/images/homePage/venturelab.jpg';
+
 import RoxboroughPNG from '../../static/images/homePage/roxborough.png';
+import VenturelabJPG from '../../static/images/homePage/venturelab.jpg';
+import WhyNotProsperPNG from '../../static/images/homePage/whynotprosper.png';
 
 const messages = defineMessages({
   header: {

@@ -14,7 +14,7 @@ test('Home page loads', () => {
       <IntlProvider locale="en" defaultLocale="en">
         <Home />
       </IntlProvider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
   getByText('An identification platform');
 });
@@ -25,7 +25,7 @@ test('Home page buttons work', () => {
       <IntlProvider locale="en" defaultLocale="en">
         <Home />
       </IntlProvider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
   const button = getByText('Get Started');
   userEvent.click(button);
@@ -40,7 +40,7 @@ test('Home page snapshot test', () => {
         <IntlProvider locale="en" defaultLocale="en">
           <Home />
         </IntlProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
     .toJSON();
   expect(tree).toMatchSnapshot();
