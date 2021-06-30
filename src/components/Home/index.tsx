@@ -40,7 +40,7 @@ const Home = () => {
         <title>{intl.formatMessage(messages.title)}</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <StatementOfSolidarity />
+      {/* <StatementOfSolidarity /> */}
       <div className="container-fluid my-auto">
         <div className="row section1 mt-5 justify-content-center">
           <div className="col-md-5 px-4 custom-vertical-center">
