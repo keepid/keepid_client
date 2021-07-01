@@ -1,12 +1,12 @@
 import classNames from 'classnames';
 import React from 'react';
-import { defineMessages, useIntl } from 'react-intl';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
+import { defineMessages, useIntl } from 'react-intl';
 
+import AccessDocuments from '../../static/images/homePage/access_documents.png';
 // import Access from '../../static/images/access-data.svg';
 import CreateAccount from '../../static/images/homePage/create_account.png';
 import UploadDocuments from '../../static/images/homePage/my_documents.png';
-import AccessDocuments from '../../static/images/homePage/access_documents.png';
 import StreamlineApplications from '../../static/images/homePage/streamline_applications.png';
 
 // import FileCloud from '../../static/images/file-cloud.svg';

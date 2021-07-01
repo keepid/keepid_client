@@ -1,12 +1,13 @@
 import classNames from 'classnames';
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
+
 import BaseCard, {
   CardImageLoc,
   CardSize,
 } from '../../components/BaseComponents/BaseCard';
-import hipaaBadgePNG from '../../static/images/homePage/HIPAA_badge.png';
 import tinkPNG from '../../static/images/homePage/googletink.png';
+import hipaaBadgePNG from '../../static/images/homePage/HIPAA_badge.png';
 import mozillaPNG from '../../static/images/homePage/mozilla_observatory.png';
 
 const EnsuringSecurityMessages = defineMessages({
@@ -66,10 +67,10 @@ const EnsuringSecurity = () => {
             <BaseCard
               cardSize={CardSize.MEDIUM_VERTICAL}
               cardTitle={intl.formatMessage(
-                EnsuringSecurityMessages.card1Header
+                EnsuringSecurityMessages.card1Header,
               )}
               cardText={intl.formatMessage(
-                EnsuringSecurityMessages.card1Detail
+                EnsuringSecurityMessages.card1Detail,
               )}
               imageSrc={hipaaBadgePNG}
               imageAlt="..."
@@ -88,10 +89,10 @@ const EnsuringSecurity = () => {
             <BaseCard
               cardSize={CardSize.MEDIUM_VERTICAL}
               cardTitle={intl.formatMessage(
-                EnsuringSecurityMessages.card2Header
+                EnsuringSecurityMessages.card2Header,
               )}
               cardText={intl.formatMessage(
-                EnsuringSecurityMessages.card2Detail
+                EnsuringSecurityMessages.card2Detail,
               )}
               imageSrc={tinkPNG}
               imageAlt="..."
@@ -113,10 +114,10 @@ const EnsuringSecurity = () => {
             <BaseCard
               cardSize={CardSize.MEDIUM_VERTICAL}
               cardTitle={intl.formatMessage(
-                EnsuringSecurityMessages.card3Header
+                EnsuringSecurityMessages.card3Header,
               )}
               cardText={intl.formatMessage(
-                EnsuringSecurityMessages.card3Detail
+                EnsuringSecurityMessages.card3Detail,
               )}
               imageSrc={mozillaPNG}
               imageAlt="..."
