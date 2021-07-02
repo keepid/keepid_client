@@ -106,8 +106,8 @@ public class AppConfig {
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/signup", userControllerV2.signup);
-    app.patch("/users/:username", userControllerV2.addInformation);
-    app.get("/info/:username", userControllerV2.getInformation);
+    app.patch("/users/:id", userControllerV2.addInformation);
+    app.get("/info/:id", userControllerV2.getInformation);
 
     return app;
   }

@@ -30,11 +30,6 @@ public class UserV2DaoImpl implements UserV2Dao {
   }
 
   @Override
-  public Optional<BaseUser> get(String username) {
-    return Optional.ofNullable(userCollection.find(eq("username", username)).first());
-  }
-
-  @Override
   public Optional<BaseUser> get(ObjectId id) {
     return Optional.ofNullable(userCollection.find(eq("_id", id)).first());
   }
@@ -51,7 +46,7 @@ public class UserV2DaoImpl implements UserV2Dao {
 
   @Override
   public void delete(BaseUser user) {
-    userCollection.deleteOne(eq("username", user.getFirstName()));
+    userCollection.deleteOne(eq("_id", user.getId()));
   }
 
   @Override
@@ -73,7 +68,7 @@ public class UserV2DaoImpl implements UserV2Dao {
                 .filter(k -> keyValueMap.get(k) != null)
                 .map(k -> set(k, user.toMap().get(k)))
                 .collect(Collectors.toList()));
-    userCollection.updateOne(eq("username", user.getUsername()), statement);
+    userCollection.updateOne(eq("_id", user.getId()), statement);
   }
 
   @Override

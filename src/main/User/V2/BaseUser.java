@@ -1,12 +1,11 @@
 package User.V2;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
+import org.bson.types.ObjectId;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,38 +16,32 @@ import java.util.Map;
 @NoArgsConstructor
 public class BaseUser {
 
-  private String username;
-  private String firstName;
-  private String lastName;
-
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
-  private Date birthDate;
-
+  private ObjectId id;
+  private Person self;
   private String password;
   private BasicInfo basicInfo;
   private DemographicInfo demographicInfo;
   private FamilyInfo familyInfo;
   private VeteranStatus veteranStatus;
 
-  public String getUsername() {
-    return (null == username) ? (firstName + lastName) : username;
-  }
-
   @JsonIgnore
   public Map<String, Object> getBaseUser() {
     Map<String, Object> result = new HashMap<>();
-    result.put("username", getUsername());
-    result.put("firstName", getFirstName());
-    result.put("lastName", getLastName());
-    result.put("birthDate", getBirthDate());
+    if (self != null) {
+      result.put("firstName", self.getFirstName());
+      result.put("lastName", self.getLastName());
+      result.put("birthDate", self.getBirthDate());
+    }
     return result;
   }
 
+  @JsonIgnore
   public Map<String, Object> toMap() {
     ObjectMapper objectMapper = new ObjectMapper();
     return objectMapper.convertValue(this, new TypeReference<>() {});
   }
 
+  @JsonIgnore
   public Map<String, Object> getFromString(String key) {
     try {
       switch (key) {

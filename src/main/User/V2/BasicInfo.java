@@ -1,6 +1,5 @@
 package User.V2;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
@@ -14,15 +13,22 @@ import java.util.Map;
 @NoArgsConstructor
 public class BasicInfo {
 
-  @JsonProperty("middleName")
   private String middleName;
-
   private String suffix;
-  private String gender;
+  // false is male, true is female
+  private Boolean genderAssignedAtBirth;
   private Address mailingAddress;
+  private Address residentialAddress;
   private String emailAddress;
   private String phoneNumber;
-  private String ssn;
+  private Boolean differentBirthName;
+  private String birthFirstName;
+  private String birthMiddleName;
+  private String birthLastName;
+  private String birthSuffix;
+  @NonNull private String ssn;
+  private Boolean haveDisability;
+  private String idNumber;
 
   public Map<String, Object> toMap() {
     ObjectMapper objectMapper = new ObjectMapper();

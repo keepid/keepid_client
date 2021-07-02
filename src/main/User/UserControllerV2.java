@@ -6,6 +6,7 @@ import User.V2.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Handler;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class UserControllerV2 {
           log.error("Could not hash password");
           ctx.result(UserMessage.HASH_FAILURE.toResponseString());
         }
+        verifyBaseUser(payload);
         payload.setPassword(hash);
         userDao.save(payload);
         ctx.result(UserMessage.SUCCESS.toResponseString());
@@ -38,7 +40,7 @@ public class UserControllerV2 {
         JSONObject req = new JSONObject(ctx.body());
         Mask.MaskType maskType = Mask.MaskType.valueOf(req.getString("mask"));
         ObjectMapper objectMapper = new ObjectMapper();
-        BaseUser baseUser = BaseUser.builder().username(ctx.pathParam("username")).build();
+        BaseUser baseUser = BaseUser.builder().id(new ObjectId(ctx.pathParam("id"))).build();
         switch (maskType) {
           case basicInfo:
             BasicInfo basicInfo =
@@ -74,7 +76,7 @@ public class UserControllerV2 {
   public Handler getInformation =
       ctx -> {
         JSONObject result = new JSONObject();
-        Optional<BaseUser> userOptional = userDao.get(ctx.pathParam("username"));
+        Optional<BaseUser> userOptional = userDao.get(new ObjectId(ctx.pathParam("id")));
         if (userOptional.isPresent()) {
           BaseUser user = userOptional.get();
           result.put("Base", user.getBaseUser());
@@ -104,6 +106,18 @@ public class UserControllerV2 {
       } catch (Exception e) {
         return MaskType.UNKNOWN;
       }
+    }
+  }
+
+  private void verifyBaseUser(BaseUser baseUser) throws Exception {
+    if (baseUser.getSelf() == null) {
+      throw new Exception();
+    }
+    if (baseUser.getPassword() == null) {
+      throw new Exception();
+    }
+    if (baseUser.getPassword() != null && baseUser.getPassword().equals("")) {
+      throw new Exception();
     }
   }
 }

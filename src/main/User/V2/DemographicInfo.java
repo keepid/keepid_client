@@ -13,12 +13,13 @@ import java.util.Map;
 @NoArgsConstructor
 public class DemographicInfo {
   private String languagePreference;
-  private String ethnicity;
-  private String race;
-  private String cityOfBirth;
-  private String stateOfBirth;
-  private String countryOfBirth;
-  private boolean americanCitizen;
+  // false is Non-Hispanic/Latino, true is Hispanic/Latino
+  @NonNull private Boolean ethnicity;
+  @NonNull private Race race;
+  @NonNull private String cityOfBirth;
+  @NonNull private String stateOfBirth;
+  @NonNull private String countryOfBirth;
+  @NonNull private Citizenship americanCitizen;
 
   public Map<String, Object> toMap() {
     ObjectMapper objectMapper = new ObjectMapper();
