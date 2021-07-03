@@ -13,13 +13,13 @@ import getServerURL from '../../serverOverride';
 import LoginSVG from '../../static/images/login-svg.svg';
 
 interface props extends RouteComponentProps{
-    location: any,
+
 }
 
 // eslint-disable-next-line react/prop-types
 const Payment = ({ location }: props) => {
   useEffect(() => {
-    console.log('location: ', location);
+    console.log('Location: ', location);
   }, []);
 
   const [email, setEmail] = useState('');
@@ -35,8 +35,12 @@ const Payment = ({ location }: props) => {
   if (!stripe || !elements) {
     // Stripe.js has not loaded yet. Make sure to disable
     // form submission until Stripe.js has loaded.
+    console.log('Strip or elements has not been loaded');
     return '';
   }
+
+  console.log('Strip: ', stripe);
+  console.log('Elements: ', elements);
 
   const handleCustomerEmailChange = (e: any) => {
     setEmail(e.target.value);
@@ -54,49 +58,49 @@ const Payment = ({ location }: props) => {
 
   return (
     <>
-    <div className="container">
-      {/* Page Settings */}
-      <Helmet>
-        <title>Billing</title>
-        <meta name="description" content="Keep.id" />
-      </Helmet>
-
-      {/* Left hand side with the graphic */}
       <div className="container">
-        <div className="row mt-4">
+        {/* Page Settings */}
+        <Helmet>
+          <title>Billing</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
 
-          <div className="col mobile-hide">
-            <div className="float-right w-100">
-              <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " src={LoginSVG} />
+        {/* Left hand side with the graphic */}
+        <div className="container">
+          <div className="row mt-4">
+
+            <div className="col mobile-hide">
+              <div className="float-right w-100">
+                <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " src={LoginSVG} />
+              </div>
             </div>
-          </div>
 
-          <div className="col">
-            <Alert variant="info" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
-              { alertMessage }
-            </Alert>
-            <form id="payment-form" className="form-signin pt-10" onSubmit={() => console.log('User clicked submit')}>
-              <h1 className="h3 mb-3 font-weight-normal">Please enter your information below</h1>
-              <label htmlFor="email" className="w-100 font-weight-bold">
-                Email
-                <input
-                  type="email"
-                  className="form-control form-purple mt-1"
-                  id="email"
-                  placeholder="johnDoe@gmail.com"
-                  onChange={handleCustomerEmailChange}
-                  required
-                />
-              </label>
-              <CardElement />
-              <button className="mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right" type="submit">Pay</button>
-            </form>
+            <div className="col">
+              <Alert variant="info" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+                { alertMessage }
+              </Alert>
+              <form id="payment-form" className="form-signin pt-10" onSubmit={() => console.log('User clicked submit')}>
+                <h1 className="h3 mb-3 font-weight-normal">Please enter your information below</h1>
+                <label htmlFor="email" className="w-100 font-weight-bold">
+                  Email
+                  <input
+                    type="email"
+                    className="form-control form-purple mt-1"
+                    id="email"
+                    placeholder="johnDoe@gmail.com"
+                    onChange={handleCustomerEmailChange}
+                    required
+                  />
+                </label>
+                <CardElement />
+                <button className="mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right" type="submit">Pay</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
-  </>
 };
 
 export default withRouter(Payment);
