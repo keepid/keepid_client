@@ -4,14 +4,13 @@ import getServerURL from '../../../serverOverride';
 
 interface props{
     priceId: String,
-    handleSetSelectedPriceId: any,
+    setSelectedPriceId: any,
     handleContinue: any,
 }
 
-const PricingOption = ({ priceId, handleSetSelectedPriceId, handleContinue }: props) => {
+const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) => {
   const [price, setPrice] = useState(0);
   const [productName, setproductName] = useState('');
-  const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
     fetchPriceObject();
@@ -51,7 +50,6 @@ const PricingOption = ({ priceId, handleSetSelectedPriceId, handleContinue }: pr
 
   // gets the product object from stripe and sets its name
   const fetchProductObject = async (productId) => {
-    console.log('Product id is: ', productId);
     await fetch(`${getServerURL()}/get-product`, {
       method: 'POST',
       headers: {
@@ -74,7 +72,7 @@ const PricingOption = ({ priceId, handleSetSelectedPriceId, handleContinue }: pr
   };
 
   const handleOptionSelected = () => {
-    handleSetSelectedPriceId(priceId);
+    setSelectedPriceId(priceId);
     handleContinue();
   };
 

@@ -1,29 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import PaymentConfirmationPage from './pages/PaymentConfirmationPage';
 import PaymentPage from './pages/PaymentPage';
 import PricingPage from './pages/PricingPage';
 
 const CompleteBillingFlow = () => {
   const [billingStage, setBillingStage] = useState(0);
-
   const [selectedPriceId, setSelectedPriceId] = useState('');
+  const [customer, setCustomer] = useState(null);
+  const [subscription, setSubscription] = useState(null);
 
   /* Functions to handle rendering the proper page */
   const handleContinue = () => {
-    console.log('Next has been pressed');
     setBillingStage(billingStage + 1);
   };
 
   const handlePrevious = () => {
-    console.log('Previous has been pressed');
     setBillingStage(billingStage - 1);
   };
 
-  /* Functions to handle  */
-  const handleSetSelectedPriceId = (priceId) => {
-    console.log('PriceId has been updated: ', priceId);
-    setSelectedPriceId(priceId);
-  };
+  useEffect(() => {
+    console.log('User selected: ', selectedPriceId);
+  }, [selectedPriceId]);
 
   const handleBillingComponentRender = () => {
     switch (billingStage) {
@@ -31,7 +29,7 @@ const CompleteBillingFlow = () => {
         return (
           <PricingPage
             handleContinue={handleContinue}
-            handleSetSelectedPriceId={handleSetSelectedPriceId}
+            setSelectedPriceId={setSelectedPriceId}
           />
         );
       }
@@ -39,6 +37,19 @@ const CompleteBillingFlow = () => {
         return (
           <PaymentPage
             handlePrevious={handlePrevious}
+            handleContinue={handleContinue}
+            selectedPriceId={selectedPriceId}
+            customer={customer}
+            setCustomer={setCustomer}
+            subscription={subscription}
+            setSubscription={setSubscription}
+          />
+        );
+      }
+      case 2: {
+        return (
+          <PaymentConfirmationPage
+            subscription={subscription}
           />
         );
       }

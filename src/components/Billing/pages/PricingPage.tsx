@@ -4,10 +4,10 @@ import PricingOption from './PricingOption';
 
 interface props{
     handleContinue: any
-    handleSetSelectedPriceId: any,
+    setSelectedPriceId: any,
 }
 
-const PricingPage = ({ handleContinue, handleSetSelectedPriceId }: props) => {
+const PricingPage = ({ handleContinue, setSelectedPriceId }: props) => {
   const priceIds = ['price_1IxlTyGU0udYRJ6gyphej5I6', 'price_1ImspWGU0udYRJ6ghxMmXxI9', 'price_1ImsqAGU0udYRJ6gNdM61eOB'];
 
   return (
@@ -17,7 +17,7 @@ const PricingPage = ({ handleContinue, handleSetSelectedPriceId }: props) => {
         <PricingOption
           key={pId}
           priceId={pId}
-          handleSetSelectedPriceId={handleSetSelectedPriceId}
+          setSelectedPriceId={setSelectedPriceId}
           handleContinue={handleContinue}
         />
       ))}
