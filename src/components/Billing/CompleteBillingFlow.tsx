@@ -8,7 +8,8 @@ const CompleteBillingFlow = () => {
   const [billingStage, setBillingStage] = useState(0);
   const [selectedPriceId, setSelectedPriceId] = useState('');
   const [customer, setCustomer] = useState(null);
-  const [subscription, setSubscription] = useState(null);
+  const [subscriptionData, setSubscriptionData] = useState(null);
+  const [subscriptionId, setSubscriptionId] = useState('');
 
   /* Functions to handle rendering the proper page */
   const handleContinue = () => {
@@ -41,15 +42,16 @@ const CompleteBillingFlow = () => {
             selectedPriceId={selectedPriceId}
             customer={customer}
             setCustomer={setCustomer}
-            subscription={subscription}
-            setSubscription={setSubscription}
+            subscriptionData={subscriptionData}
+            setSubscriptionData={setSubscriptionData}
+            setSubscriptionId={setSubscriptionId}
           />
         );
       }
       case 2: {
         return (
           <PaymentConfirmationPage
-            subscription={subscription}
+            subscriptionId={subscriptionId}
           />
         );
       }
@@ -63,7 +65,12 @@ const CompleteBillingFlow = () => {
 
   return (
     <div className="container">
-      <h3>Complete billing flow</h3>
+      <h3>
+        Complete billing flow:
+        {' '}
+        {billingStage + 1}
+        /3
+      </h3>
       {handleBillingComponentRender()}
     </div>
   );

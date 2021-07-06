@@ -13,19 +13,11 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
   const [productName, setproductName] = useState('');
 
   useEffect(() => {
-    fetchPriceObject();
+    handleFetchPriceObject();
   }, []);
 
-  /*
-  useEffect(() => {
-    if (clicked) {
-      handleSetSelectedPriceId(priceId);
-    }
-  }, [clicked]);
-  */
-
   // gets the price object from stripe and then sets the price of the subscription as well as gets the productId
-  const fetchPriceObject = async () => {
+  const handleFetchPriceObject = async () => {
     await fetch(`${getServerURL()}/get-price`, {
       method: 'POST',
       headers: {
@@ -39,9 +31,8 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
         const priceObject = responseJSON;
 
         if (priceObject) {
-          // console.log('Price has been retrieved', priceObject);
           setPrice(priceObject.unit_amount / 100);
-          fetchProductObject(priceObject.product);
+          handleFetchProductObject(priceObject.product);
         } else {
           console.log('PriceId cant be found');
         }
@@ -49,7 +40,7 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
   };
 
   // gets the product object from stripe and sets its name
-  const fetchProductObject = async (productId) => {
+  const handleFetchProductObject = async (productId) => {
     await fetch(`${getServerURL()}/get-product`, {
       method: 'POST',
       headers: {
@@ -63,7 +54,6 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
         const productObject = responseJSON;
 
         if (productObject) {
-          // console.log('Product has been retrieved', productObject);
           setproductName(productObject.name);
         } else {
           console.log('Product cant be found');

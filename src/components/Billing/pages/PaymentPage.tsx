@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import getServerURL from '../../../serverOverride';
+import LoginSVG from '../../../static/images/login-svg.svg';
 
 interface props{
     handlePrevious: any,
@@ -10,21 +11,29 @@ interface props{
     selectedPriceId,
     customer: any,
     setCustomer: any,
-    subscription: any
-    setSubscription: any,
+    subscriptionData: any
+    setSubscriptionData: any,
+    setSubscriptionId: any,
 }
 
-// eslint-disable-next-line object-curly-newline
-const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer, setCustomer, subscription, setSubscription }: props) => {
+const PaymentPage = ({
+  handlePrevious, handleContinue, selectedPriceId, customer, setCustomer, subscriptionData, setSubscriptionData, setSubscriptionId,
+}: props) => {
   const [email, setEmail] = useState('');
-  // const [customerName, setCustomerName] = useState('');
-  // const [customerId, setCustomerId] = useState('');
-  // const [customer, setCustomer] = useState(null);
-  // const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
-    console.log('Subscription object is: ', subscription);
-  }, [subscription]);
+    console.log('Customer object is: ', customer);
+    if (customer !== null) {
+      handleCreateSubscription(customer);
+    }
+  }, [customer]);
+
+  useEffect(() => {
+    console.log('Subscription object is: ', subscriptionData);
+    if (subscriptionData !== null) {
+      handleConfirmCardPayment(email, subscriptionData);
+    }
+  }, [subscriptionData]);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -40,8 +49,9 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
     console.log('Stripe.js has not loaded yet');
     return (<div>Stripe has not loaded</div>);
   }
+  console.log('Stripe.js has loaded');
 
-  const handleConfirmCardPayment = async (customerEmail: string, subscription: any) => {
+  const handleConfirmCardPayment = async (customerEmail, subscription) => {
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       subscription.clientSecret,
       { receipt_email: customerEmail },
@@ -56,13 +66,12 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
       console.log('Payment intent returned: ', paymentIntent);
       console.log(paymentIntent.receipt_email);
     }
-    console.log('Redirecting');
     // eslint-disable-next-line object-curly-spacing
     // getAndSetSubscription(subscription.id);
     handleContinue();
   };
 
-  const handleCreateSubscription = async (customer: any) => {
+  const handleCreateSubscription = async (customer) => {
     const cardElement = elements.getElement(CardElement)!;
 
     // Use card Element to tokenize payment details
@@ -98,7 +107,8 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
         .then((responseJSON) => {
           if (responseJSON) {
             console.log('Subscription successfully created');
-            setSubscription(responseJSON);
+            setSubscriptionId(responseJSON.id);
+            setSubscriptionData(responseJSON);
           } else {
             console.log('Subscription has failed to be made');
           }
@@ -120,8 +130,6 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
     }).then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON) {
-          // setCustomerName(responseJSON.name);
-          // setCustomerId(responseJSON.id);
           setCustomer(responseJSON);
         } else {
           console.log('Customer not found, are you sure it exists in the db?');
@@ -132,11 +140,7 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await handleGetCustomer();
-    console.log('The customer object is: ', customer);
-    await handleCreateSubscription(customer);
-    console.log('The subscription object is: ', subscription);
-    await handleConfirmCardPayment(email, subscription);
+    handleGetCustomer();
   };
 
   return (
@@ -155,7 +159,7 @@ const PaymentPage = ({ handlePrevious, handleContinue, selectedPriceId, customer
 
             <div className="col mobile-hide">
               <div className="float-right w-100">
-                <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " />
+                <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " src={LoginSVG} />
               </div>
             </div>
 
