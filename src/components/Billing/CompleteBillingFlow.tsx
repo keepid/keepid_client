@@ -20,10 +20,11 @@ const CompleteBillingFlow = () => {
     setBillingStage(billingStage - 1);
   };
 
+  /*
   useEffect(() => {
     console.log('User selected: ', selectedPriceId);
   }, [selectedPriceId]);
-
+  */
   const handleBillingComponentRender = () => {
     switch (billingStage) {
       case 0: {

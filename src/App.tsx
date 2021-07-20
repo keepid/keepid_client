@@ -348,11 +348,19 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route path="/billing">
-                <Elements stripe={stripePromise}>
-                  <CompleteBillingFlow />
-                </Elements>
-              </Route>
+              <Route
+                path="/billing"
+                render={() => {
+                  if (role !== Role.LoggedOut) {
+                    return (
+                      <Elements stripe={stripePromise}>
+                        <CompleteBillingFlow />
+                      </Elements>
+                    );
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
               <Route path="/error">
                 <Error />
               </Route>

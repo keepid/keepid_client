@@ -1,4 +1,5 @@
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { response } from 'msw/lib/types';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -20,6 +21,13 @@ const PaymentPage = ({
   handlePrevious, handleContinue, selectedPriceId, customer, setCustomer, subscriptionData, setSubscriptionData, setSubscriptionId,
 }: props) => {
   const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    console.log('orgEmail is: ', email);
+    if (email !== '') {
+      handleGetCustomer();
+    }
+  }, [email]);
 
   useEffect(() => {
     console.log('Customer object is: ', customer);
@@ -137,10 +145,24 @@ const PaymentPage = ({
       });
   };
 
+  const handleGetOrgEmail = async () => {
+    await fetch(`${getServerURL()}/get-orgEmail`, {
+      method: 'GET',
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        if (responseJSON) {
+          console.log('ResponseJSON from handleGetOrgEmail: ', responseJSON);
+        // setEmail(responseJSON);
+        } else {
+          console.log('Customer not found, are you sure it exists in the db?');
+        }
+      });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    handleGetCustomer();
+    handleGetOrgEmail();
   };
 
   return (
@@ -174,7 +196,6 @@ const PaymentPage = ({
                     id="email"
                     placeholder="johnDoe@gmail.com"
                     onChange={handleEmailChange}
-                    required
                   />
                 </label>
                 <CardElement />

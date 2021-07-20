@@ -8,7 +8,6 @@ interface props{
 }
 
 const PaymentConfirmationPage = ({ subscriptionId }: props) => {
-  // const [subscription, setSubscription] = useState(null);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState(0);
 
   useEffect(() => {

@@ -80,6 +80,9 @@ export class Header extends Component<Props, State, {}> {
                     <Link className="nav-link" to="/my-organization">My Organization</Link>
                   </li>
                 )}
+                <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                  <Link className="nav-link" to="/billing">Billing</Link>
+                </li>
                 <div className="my-1 flex-fill">
                   <Logout logOut={logOut} />
                 </div>
