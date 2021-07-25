@@ -45,13 +45,7 @@ function ActivitiesCard(props: ActivityProps) {
           Activity
         </h6>
         <p id="activities-card-date">
-          Completed by
-          {uploaderUsername}
-          {', '}
-          {dateString}
-          {', '}
-          {daysDifference}
-          days ago
+          {`Completed by ${uploaderUsername}, ${dateString}, ${daysDifference} days ago`}
         </p>
       </div>
     );
@@ -119,11 +113,7 @@ class ClientLanding extends Component<Props, State, {}> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="d-flex p-2">
-          <h1 id="welcome-title">
-            Welcome,
-            {name}
-!
-          </h1>
+          <h1 id="welcome-title">{`Welcome, ${name}`}</h1>
         </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
