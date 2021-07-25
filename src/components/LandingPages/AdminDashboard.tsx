@@ -101,18 +101,19 @@ const barData = {
   ],
 };
 
-interface Props {
-}
+interface Props {}
 
-interface State {
-}
+interface State {}
 
 class AdminDashboard extends Component<Props, State, {}> {
   MyResponsivePie = () => (
     <ResponsivePieCanvas
       data={pieData}
       margin={{
-        top: 0, right: 100, bottom: 0, left: 100,
+        top: 0,
+        right: 100,
+        bottom: 0,
+        left: 100,
       }}
       pixelRatio={1.25}
       innerRadius={0.5}
@@ -149,31 +150,28 @@ class AdminDashboard extends Component<Props, State, {}> {
         },
       ]}
     />
-  )
+  );
 
   MyResponsiveLine = () => (
     <ResponsiveLine
       data={lineData}
       margin={{
-        top: 50, right: 50, bottom: 50, left: 50,
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50,
       }}
       xScale={{ type: 'linear' }}
       yScale={{
-        type: 'linear', stacked: true, min: 0, max: 50,
+        type: 'linear',
+        stacked: true,
+        min: 0,
+        max: 50,
       }}
       curve="monotoneX"
       colors={(d) => d.color}
       axisBottom={{
-        tickValues: [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-        ],
+        tickValues: [0, 1, 2, 3, 4, 5, 6, 7],
         tickSize: 1,
         tickPadding: 5,
         tickRotation: 0,
@@ -182,15 +180,7 @@ class AdminDashboard extends Component<Props, State, {}> {
         legendPosition: 'middle',
       }}
       axisLeft={{
-        tickValues: [
-          0,
-          10,
-          20,
-          30,
-          40,
-          50,
-          60,
-        ],
+        tickValues: [0, 10, 20, 30, 40, 50, 60],
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
@@ -238,7 +228,7 @@ class AdminDashboard extends Component<Props, State, {}> {
         },
       ]}
     />
-  )
+  );
 
   MyResponsiveBar = () => (
     <ResponsiveBar
@@ -246,7 +236,10 @@ class AdminDashboard extends Component<Props, State, {}> {
       keys={['applications']}
       indexBy="days"
       margin={{
-        top: 50, right: 130, bottom: 50, left: 60,
+        top: 50,
+        right: 130,
+        bottom: 50,
+        left: 60,
       }}
       padding={0.3}
       colors={barData.color}
@@ -300,7 +293,7 @@ class AdminDashboard extends Component<Props, State, {}> {
       motionStiffness={90}
       motionDamping={15}
     />
-  )
+  );
 
   render() {
     return (
@@ -316,22 +309,18 @@ class AdminDashboard extends Component<Props, State, {}> {
           <div className="row py-2">
             <a href="" className="mr-4">
               <img src={AddIcon} className="icon-svg" alt="" />
-              {' '}
               Add Worker
             </a>
             <a href="" className="mr-4">
               <img src={AddIcon} className="icon-svg" alt="" />
-              {' '}
               Add Client
             </a>
             <a href="" className="mr-4">
               <img src={SignDocumentIcon} className="icon-svg" alt="" />
-              {' '}
               Sign Documents
             </a>
             <a href="" className="mr-4">
               <img src={DocumentsIcon} className="icon-svg" alt="" />
-              {' '}
               View Apps
             </a>
           </div>
@@ -342,13 +331,21 @@ class AdminDashboard extends Component<Props, State, {}> {
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
                       <h1 className="card-title">20</h1>
-                      <h6 className="card-subtitle mb-2 text-muted">Documents to sign</h6>
+                      <h6 className="card-subtitle mb-2 text-muted">
+                        Documents to sign
+                      </h6>
                     </div>
                   </div>
                   <div className="col-sm-6 pl-0">
                     <div className="card-body text-right">
-                      <h6 className="text-primary-theme font-weight-bold">Sign Document</h6>
-                      <img className="w-100" src={SignDocumentPNG} alt="sign document" />
+                      <h6 className="text-primary-theme font-weight-bold">
+                        Sign Document
+                      </h6>
+                      <img
+                        className="w-100"
+                        src={SignDocumentPNG}
+                        alt="sign document"
+                      />
                     </div>
                   </div>
                 </div>
@@ -360,12 +357,16 @@ class AdminDashboard extends Component<Props, State, {}> {
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
                       <h1 className="card-title">320</h1>
-                      <h6 className="card-subtitle mb-2 text-muted">Workers in your Organization</h6>
+                      <h6 className="card-subtitle mb-2 text-muted">
+                        Workers in your Organization
+                      </h6>
                     </div>
                   </div>
                   <div className="col-sm-6 pl-0">
                     <div className="card-body text-right">
-                      <h6 className="text-primary-theme font-weight-bold">View Workers</h6>
+                      <h6 className="text-primary-theme font-weight-bold">
+                        View Workers
+                      </h6>
                       <img className="w-100" src={WorkerPNG} alt="workers" />
                     </div>
                   </div>
@@ -378,12 +379,16 @@ class AdminDashboard extends Component<Props, State, {}> {
                   <div className="col-sm-6 pr-0">
                     <div className="card-body">
                       <h1 className="card-title">250</h1>
-                      <h6 className="card-subtitle mb-2 text-muted">Clients in your Organization</h6>
+                      <h6 className="card-subtitle mb-2 text-muted">
+                        Clients in your Organization
+                      </h6>
                     </div>
                   </div>
                   <div className="col-sm-6 pl-0">
                     <div className="card-body text-right">
-                      <h6 className="text-primary-theme font-weight-bold">Sign Document</h6>
+                      <h6 className="text-primary-theme font-weight-bold">
+                        Sign Document
+                      </h6>
                       <img className="w-100" src={ClientsPNG} alt="clients" />
                     </div>
                   </div>
@@ -397,12 +402,16 @@ class AdminDashboard extends Component<Props, State, {}> {
                 <div className="row">
                   <div className="col-md-7 pr-0">
                     <div className="card-body pb-0">
-                      <h3 className="mb-0 font-weight-bold">Application Status</h3>
+                      <h3 className="mb-0 font-weight-bold">
+                        Application Status
+                      </h3>
                     </div>
                   </div>
                   <div className="col-md-5 pl-0 text-right">
                     <div className="card-body pb-0">
-                      <h6 className="text-primary-theme font-weight-bold">Sign Document</h6>
+                      <h6 className="text-primary-theme font-weight-bold">
+                        Sign Document
+                      </h6>
                     </div>
                   </div>
                 </div>
@@ -415,17 +424,17 @@ class AdminDashboard extends Component<Props, State, {}> {
               <div className="card primary-color-border p-2">
                 <div className="row">
                   <div className="card-body pb-0">
-                    <h3 className="mb-0 font-weight-bold">Applications Submitted Daily</h3>
+                    <h3 className="mb-0 font-weight-bold">
+                      Applications Submitted Daily
+                    </h3>
                   </div>
                 </div>
                 <div className="pie-chart-dimensions w-100 px-3 mt-n4">
                   {this.MyResponsiveBar()}
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
     );

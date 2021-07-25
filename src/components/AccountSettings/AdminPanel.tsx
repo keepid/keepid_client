@@ -11,40 +11,45 @@ import Table from '../BaseComponents/Table';
 import Role from '../../static/Role';
 
 interface Props {
-  username: string,
-  name: string,
-  organization: string,
-  alert: any,
-  role: Role,
+  username: string;
+  name: string;
+  organization: string;
+  alert: any;
+  role: Role;
 }
 
 interface State {
-  workers: any,
-  currentWorker: any,
-  searchName: string,
-  adminName: string,
-  organization: string,
+  workers: any;
+  currentWorker: any;
+  searchName: string;
+  adminName: string;
+  organization: string;
 }
 
 class AdminPanel extends Component<Props, State> {
-  tableCols = [{
-    dataField: 'id',
-    text: 'username',
-    sort: false,
-    hidden: true,
-  }, {
-    dataField: 'firstName',
-    text: 'First Name',
-    sort: true,
-  }, {
-    dataField: 'lastName',
-    text: 'Last Name',
-    sort: true,
-  }, {
-    dataField: 'privilegeLevel',
-    text: 'Worker Type',
-    sort: true,
-  }];
+  tableCols = [
+    {
+      dataField: 'id',
+      text: 'username',
+      sort: false,
+      hidden: true,
+    },
+    {
+      dataField: 'firstName',
+      text: 'First Name',
+      sort: true,
+    },
+    {
+      dataField: 'lastName',
+      text: 'Last Name',
+      sort: true,
+    },
+    {
+      dataField: 'privilegeLevel',
+      text: 'Worker Type',
+      sort: true,
+    },
+  ];
 
   constructor(props: Props) {
     super(props);
@@ -60,7 +65,8 @@ class AdminPanel extends Component<Props, State> {
     this.getAdminWorkers = this.getAdminWorkers.bind(this);
     this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
     this.onChangeEditPermission = this.onChangeEditPermission.bind(this);
-    this.onChangeRegisterPermission = this.onChangeRegisterPermission.bind(this);
+    this.onChangeRegisterPermission =
+      this.onChangeRegisterPermission.bind(this);
   }
 
   componentDidMount() {
@@ -72,15 +78,16 @@ class AdminPanel extends Component<Props, State> {
   }
 
   handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-    }, this.getAdminWorkers);
+    this.setState(
+      {
+        searchName: event.target.value,
+      },
+      this.getAdminWorkers,
+    );
   }
 
   onChangeViewPermission(event: any) {
-    const {
-      currentWorker,
-    } = this.state;
+    const { currentWorker } = this.state;
     currentWorker.viewPermission = event.target.ischecked;
     this.setState({ currentWorker });
   }
@@ -106,7 +113,8 @@ class AdminPanel extends Component<Props, State> {
         listType: 'members',
         name: searchName,
       }),
-    }).then((res) => res.json())
+    })
+      .then((res) => res.json())
       .then((responseJSON) => {
         const { people } = responseJSON;
         if (people) {
@@ -120,14 +128,9 @@ class AdminPanel extends Component<Props, State> {
   }
 
   render() {
-    const {
-      currentWorker,
-      adminName,
-      organization,
-      workers,
-    } = this.state;
-    const workerPanel = (currentWorker === undefined)
-      ? (
+    const { currentWorker, adminName, organization, workers } = this.state;
+    const workerPanel =
+      currentWorker === undefined ? (
         <div className="card">
           <div className="card-body">
             <h5 className="card-title">
@@ -177,7 +180,10 @@ class AdminPanel extends Component<Props, State> {
         <div className="card ml-5">
           <div className="card-body">
             <h5 className="card-title">
-              {currentWorker.firstName.concat(' ').concat(currentWorker.lastName).concat(': Worker Permissions')}
+              {currentWorker.firstName
+                .concat(' ')
+                .concat(currentWorker.lastName)
+                .concat(': Worker Permissions')}
             </h5>
           </div>
           <ul className="list-group list-group-flush">
@@ -228,11 +234,7 @@ class AdminPanel extends Component<Props, State> {
         </Helmet>
         <div className="container">
           <h1 className="mt-5">{organization}</h1>
-          <p className="lead">
-            {'Welcome, '}
-            {adminName}
-            !
-          </p>
+          <p className="lead">{`Welcome, ${adminName}`}</p>
           <div className="row">
             <div className="col-lg-7">
               <form className="form-inline my-2 my-lg-0">
@@ -246,15 +248,31 @@ class AdminPanel extends Component<Props, State> {
               </form>
             </div>
             <div className="col-lg-5">
-              <div className="btn-toolbar float-lg-right" role="toolbar" aria-label="Toolbar with button groups">
-                <div className="btn-group mr-2" role="group" aria-label="Button group">
+              <div
+                className="btn-toolbar float-lg-right"
+                role="toolbar"
+                aria-label="Toolbar with button groups"
+              >
+                <div
+                  className="btn-group mr-2"
+                  role="group"
+                  aria-label="Button group"
+                >
                   <Link to="/upload-document">
-                    <Button type="button" variant="primary">Upload Form</Button>
+                    <Button type="button" variant="primary">
+                      Upload Form
+                    </Button>
                   </Link>
                 </div>
-                <div className="btn-group" role="group" aria-label="Button group">
+                <div
+                  className="btn-group"
+                  role="group"
+                  aria-label="Button group"
+                >
                   <Link to="/my-documents">
-                    <Button type="button" variant="primary">View Applications</Button>
+                    <Button type="button" variant="primary">
+                      View Applications
+                    </Button>
                   </Link>
                 </div>
               </div>
@@ -263,7 +281,9 @@ class AdminPanel extends Component<Props, State> {
           <Table
             columns={this.tableCols}
             data={workers}
-            emptyInfo={{ description: 'There are no members in your organization.' }}
+            emptyInfo={{
+              description: 'There are no members in your organization.',
+            }}
           />
         </div>
       </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import AnchorLink from 'react-anchor-link-smooth-scroll';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
@@ -9,7 +8,6 @@ import EnsuringSecurity from './EnsuringSecurity';
 import FocusingOnPeople from './FocusingOnPeople';
 import HomelessStats from './HomelessStats';
 import IntroText from './IntroText';
-import StatementOfSolidarity from './StatementOfSolidarity';
 import WhoWeAreServing from './WhoWeAreServing';
 
 const messages = defineMessages({

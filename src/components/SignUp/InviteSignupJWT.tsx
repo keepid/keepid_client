@@ -12,7 +12,12 @@ function InviteSignupJWT() {
     const decoded = jwtDecode(jwt);
     const currentTime = Date.now() / 1000;
     if (decoded.exp > currentTime) {
-      return <InviteSignupFlow orgName={decoded.organization} personRole={decoded.role} />;
+      return (
+        <InviteSignupFlow
+          orgName={decoded.organization}
+          personRole={decoded.role}
+        />
+      );
     }
   } catch (err) {
     return <Redirect to="/error" />;

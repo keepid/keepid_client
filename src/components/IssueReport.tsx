@@ -8,18 +8,18 @@ import { isValidEmail } from '../lib/Validations/Validations';
 import getServerURL from '../serverOverride';
 
 interface Props {
-  alert: any,
+  alert: any;
 }
 
 interface State {
-  title: string,
-  description: string,
-  email: string,
-  buttonState: string,
-  titleValidator: string,
-  emailValidator: string
-  descriptionValidator: string,
-  recaptchaPayload: string,
+  title: string;
+  description: string;
+  email: string;
+  buttonState: string;
+  titleValidator: string;
+  emailValidator: string;
+  descriptionValidator: string;
+  recaptchaPayload: string;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -55,30 +55,30 @@ class IssueReport extends Component<Props, State, {}> {
       recaptchaPayload: '',
     });
     this.resetRecaptcha();
-  }
+  };
 
   resetRecaptcha = () => {
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       recaptchaRef.current.reset();
     }
     this.setState({ recaptchaPayload: '' });
-  }
+  };
 
   validateEmail = async (): Promise<void> => {
     const { email } = this.state;
     if (isValidEmail(email)) {
-      await new Promise((resolve) => this.setState({ emailValidator: 'true' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ emailValidator: 'true' }, resolve));
     } else {
-      await new Promise((resolve) => this.setState({ emailValidator: 'false' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ emailValidator: 'false' }, resolve));
     }
-  }
+  };
 
   emailMessage = (): ReactElement<{}> => {
     const { emailValidator } = this.state;
     if (emailValidator === 'true') {
-      return (
-        <div className="valid-feedback" />
-      );
+      return <div className="valid-feedback" />;
     }
     if (emailValidator === 'false') {
       return (
@@ -87,26 +87,24 @@ class IssueReport extends Component<Props, State, {}> {
         </div>
       );
     }
-    return (
-      <div />
-    );
-  }
+    return <div />;
+  };
 
   validateTitle = async (): Promise<void> => {
     const { title } = this.state;
     if (title !== '') {
-      await new Promise((resolve) => this.setState({ titleValidator: 'true' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ titleValidator: 'true' }, resolve));
     } else {
-      await new Promise((resolve) => this.setState({ titleValidator: 'false' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ titleValidator: 'false' }, resolve));
     }
-  }
+  };
 
   titleMessage = (): ReactElement<{}> => {
     const { emailValidator } = this.state;
     if (emailValidator === 'true') {
-      return (
-        <div className="valid-feedback" />
-      );
+      return <div className="valid-feedback" />;
     }
     if (emailValidator === 'false') {
       return (
@@ -115,26 +113,24 @@ class IssueReport extends Component<Props, State, {}> {
         </div>
       );
     }
-    return (
-      <div />
-    );
-  }
+    return <div />;
+  };
 
   validateDescription = async (): Promise<void> => {
     const { description } = this.state;
     if (description !== '') {
-      await new Promise((resolve) => this.setState({ descriptionValidator: 'true' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ descriptionValidator: 'true' }, resolve));
     } else {
-      await new Promise((resolve) => this.setState({ descriptionValidator: 'false' }, resolve));
+      await new Promise((resolve) =>
+        this.setState({ descriptionValidator: 'false' }, resolve));
     }
-  }
+  };
 
   descriptionMessage = (): ReactElement<{}> => {
     const { descriptionValidator } = this.state;
     if (descriptionValidator === 'true') {
-      return (
-        <div className="valid-feedback" />
-      );
+      return <div className="valid-feedback" />;
     }
     if (descriptionValidator === 'false') {
       return (
@@ -143,10 +139,8 @@ class IssueReport extends Component<Props, State, {}> {
         </div>
       );
     }
-    return (
-      <div />
-    );
-  }
+    return <div />;
+  };
 
   colorToggle = (inputString: string): string => {
     if (inputString === 'true') {
@@ -156,7 +150,7 @@ class IssueReport extends Component<Props, State, {}> {
       return 'is-invalid';
     }
     return '';
-  }
+  };
 
   handleSubmitWithRecaptcha = async (event: any) => {
     event.preventDefault();
@@ -179,10 +173,16 @@ class IssueReport extends Component<Props, State, {}> {
       recaptchaPayload,
     } = this.state;
 
-    await Promise.all([this.validateEmail(), this.validateTitle(), this.validateDescription()]);
-    if (emailValidator !== 'true'
-      || titleValidator !== 'true'
-      || descriptionValidator !== 'true') {
+    await Promise.all([
+      this.validateEmail(),
+      this.validateTitle(),
+      this.validateDescription(),
+    ]);
+    if (
+      emailValidator !== 'true' ||
+      titleValidator !== 'true' ||
+      descriptionValidator !== 'true'
+    ) {
       alert.show('Please fill out all fields correctly.');
       this.resetRecaptcha();
       this.setState({ buttonState: '' });
@@ -196,36 +196,40 @@ class IssueReport extends Component<Props, State, {}> {
         description,
         recaptchaPayload,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
 
         if (status === 'SUCCESS') {
-          alert.show('Thank you for bringing the issue to our attention. We will be working to address the problem.');
+          alert.show(
+            'Thank you for bringing the issue to our attention. We will be working to address the problem.',
+          );
           this.clearInput();
         } else {
           alert.show('Failed to submit. Please fill out all fields correctly.');
           this.setState({ buttonState: '' });
           this.resetRecaptcha();
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
         this.resetRecaptcha();
       });
-  }
+  };
 
   handleChangeTitle = (event: any) => {
     this.setState({ title: event.target.value });
-  }
+  };
 
   handleChangeDescription = (event: any) => {
     this.setState({ description: event.target.value });
-  }
+  };
 
   handleChangeEmail = (event: any) => {
     this.setState({ email: event.target.value });
-  }
+  };
 
   render() {
     const {
@@ -247,10 +251,12 @@ class IssueReport extends Component<Props, State, {}> {
           <div className="col-md-12">
             <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
               <div className="container">
-                <h1 className="display-5 text-left font-weight-bold mb-1"> Report an Issue</h1>
+                <h1 className="display-5 text-left font-weight-bold mb-1">
+                  {' '}
+                  Report an Issue
+                </h1>
                 <p className="lead text-left font-weight-bolder py-3">
-                  Thank you for helping us identify issues with our
-                  platform.
+                  Thank you for helping us identify issues with our platform.
                 </p>
               </div>
             </div>
@@ -258,13 +264,18 @@ class IssueReport extends Component<Props, State, {}> {
               <div className="col-md-12">
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
-                  <label htmlFor="email" className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3">
+                  <label
+                    htmlFor="email"
+                    className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
+                  >
                     Email
                   </label>
                   <div className="col-md-6">
                     <input
                       type="text"
-                      className={`w-100 form-control form-purple ${this.colorToggle(emailValidator)}`}
+                      className={`w-100 form-control form-purple ${this.colorToggle(
+                        emailValidator,
+                      )}`}
                       id="email"
                       placeholder="Enter your email"
                       value={email}
@@ -279,13 +290,18 @@ class IssueReport extends Component<Props, State, {}> {
 
                 <div className="form-row form-group d-flex align-content-start pb-3">
                   <div className="col-md-1" />
-                  <label htmlFor="title" className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3">
+                  <label
+                    htmlFor="title"
+                    className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
+                  >
                     Issue Title
                   </label>
                   <div className="col-md-6">
                     <input
                       type="text"
-                      className={`w-100 form-control form-purple ${this.colorToggle(titleValidator)}`}
+                      className={`w-100 form-control form-purple ${this.colorToggle(
+                        titleValidator,
+                      )}`}
                       id="title"
                       placeholder="What went wrong?"
                       value={title}
@@ -307,7 +323,9 @@ class IssueReport extends Component<Props, State, {}> {
                   </label>
                   <div className="col-md-6">
                     <textarea
-                      className={`w-100 form-control form-purple text-area-custom ${this.colorToggle(descriptionValidator)}`}
+                      className={`w-100 form-control form-purple text-area-custom ${this.colorToggle(
+                        descriptionValidator,
+                      )}`}
                       id="description"
                       placeholder="Please tell us more about the issue"
                       value={description}
@@ -322,12 +340,16 @@ class IssueReport extends Component<Props, State, {}> {
                 <div className="form-row mt-2">
                   <div className="col-md-10 pt-2 pb-2 d-flex justify-content-end">
                     <span className="text-muted recaptcha-login-text text-sm-left text-lg-right">
-                      This page is protected by reCAPTCHA, and subject to the Google
-                      {' '}
-                      <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                      This page is protected by reCAPTCHA, and subject to the
+                      Google
+                      <a href="https://www.google.com/policies/privacy/">
+                        Privacy Policy
+{' '}
+                      </a>
                       and
-                      {' '}
-                      <a href="https://www.google.com/policies/terms/">Terms of Service</a>
+                      <a href="https://www.google.com/policies/terms/">
+                        Terms of Service
+                      </a>
                       .
                     </span>
                   </div>

@@ -18,29 +18,29 @@ import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 const { Step } = Steps;
 
 interface Props {
-  alert: any,
-  personRole: Role,
+  alert: any;
+  personRole: Role;
 }
 
 interface State {
-  signupStage: number,
-  username: string,
-  password: string,
-  confirmPassword: string,
-  firstname: string,
-  lastname: string,
-  birthDate: Date,
-  email: string,
-  phonenumber: string,
-  address: string,
-  city: string,
-  state: string,
-  zipcode: string,
-  hasSigned: boolean,
-  canvasDataUrl: string,
-  recaptchaPayload: string,
-  buttonState: string,
-  redirectLogin: boolean,
+  signupStage: number;
+  username: string;
+  password: string;
+  confirmPassword: string;
+  firstname: string;
+  lastname: string;
+  birthDate: Date;
+  email: string;
+  phonenumber: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  hasSigned: boolean;
+  canvasDataUrl: string;
+  recaptchaPayload: string;
+  buttonState: string;
+  redirectLogin: boolean;
 }
 
 class PersonSignupFlow extends Component<Props, State, {}> {
@@ -68,45 +68,57 @@ class PersonSignupFlow extends Component<Props, State, {}> {
     };
   }
 
-  handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
+  handleChangeUsername = (e: { target: { value: string } }) =>
+    this.setState({ username: e.target.value });
 
-  handleChangePassword = (e: { target: { value: string; }; }) => this.setState({ password: e.target.value });
+  handleChangePassword = (e: { target: { value: string } }) =>
+    this.setState({ password: e.target.value });
 
-  handleChangeConfirmPassword = (e: { target: { value: string; }; }) => this.setState({ confirmPassword: e.target.value });
+  handleChangeConfirmPassword = (e: { target: { value: string } }) =>
+    this.setState({ confirmPassword: e.target.value });
 
-  handleChangeFirstname = (e: { target: { value: string; }; }) => this.setState({ firstname: e.target.value });
+  handleChangeFirstname = (e: { target: { value: string } }) =>
+    this.setState({ firstname: e.target.value });
 
-  handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
+  handleChangeLastname = (e: { target: { value: string } }) =>
+    this.setState({ lastname: e.target.value });
 
   handleChangeBirthdate = (date: Date) => this.setState({ birthDate: date });
 
-  handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
+  handleChangeUserAddress = (e: { target: { value: string } }) =>
+    this.setState({ address: e.target.value });
 
-  handleChangeUserCity = (e: { target: { value: string; }; }) => this.setState({ city: e.target.value });
+  handleChangeUserCity = (e: { target: { value: string } }) =>
+    this.setState({ city: e.target.value });
 
-  handleChangeUserState = (e: { target: { value: string; }; }) => this.setState({ state: e.target.value });
+  handleChangeUserState = (e: { target: { value: string } }) =>
+    this.setState({ state: e.target.value });
 
-  handleChangeUserZipcode = (e: { target: { value: string; }; }) => this.setState({ zipcode: e.target.value });
+  handleChangeUserZipcode = (e: { target: { value: string } }) =>
+    this.setState({ zipcode: e.target.value });
 
-  handleChangeUserPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ phonenumber: e.target.value });
+  handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
+    this.setState({ phonenumber: e.target.value });
 
-  handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
+  handleChangeUserEmail = (e: { target: { value: string } }) =>
+    this.setState({ email: e.target.value });
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
-  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
+  handleCanvasSign = (dataUrl: string) =>
+    this.setState({ canvasDataUrl: dataUrl });
 
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
-  }
+  };
 
-  handleContinue = ():void => {
+  handleContinue = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
   };
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-  }
+  };
 
   handleFormSubmit = (): void => {
     const {
@@ -144,32 +156,36 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         personRole,
         recaptchaPayload,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          status,
-          message,
-        } = responseJSON;
+        const { status, message } = responseJSON;
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          alert.show(`Successful ${personRole} signup to use Keep.id. You can login with the new username and password`);
+          alert.show(
+            `Successful ${personRole} signup to use Keep.id. You can login with the new username and password`,
+          );
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
-          alert.show('No organization found for this link. Try again with different link');
+          alert.show(
+            'No organization found for this link. Try again with different link',
+          );
         } else {
           alert.show(message);
           this.setState({ buttonState: '' });
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
-  }
+  };
 
-  handleFormJumpTo = (pageNumber:number):void => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber: number): void =>
+    this.setState({ signupStage: pageNumber });
 
-  handleSignupComponentRender = ():JSX.Element => {
+  handleSignupComponentRender = (): JSX.Element => {
     const {
       username,
       password,
@@ -189,9 +205,7 @@ class PersonSignupFlow extends Component<Props, State, {}> {
       signupStage,
     } = this.state;
 
-    const {
-      personRole,
-    } = this.props;
+    const { personRole } = this.props;
 
     switch (signupStage) {
       case 0: {
@@ -269,31 +283,22 @@ class PersonSignupFlow extends Component<Props, State, {}> {
         );
       }
       default: {
-        return (
-          <div />
-        );
+        return <div />;
       }
     }
-  }
+  };
 
   render() {
-    const {
-      signupStage,
-      redirectLogin,
-    } = this.state;
+    const { signupStage, redirectLogin } = this.state;
     const { personRole } = this.props;
     if (redirectLogin) {
-      return (
-        <Redirect to="/login" />
-      );
+      return <Redirect to="/login" />;
     }
 
     return (
       <div>
         <Helmet>
-          <title>
-            Sign Up
-          </title>
+          <title>Sign Up</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="container mt-5">
@@ -303,7 +308,11 @@ class PersonSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 4`} />
+          <ProgressBar
+            className="d-md-none"
+            now={signupStage * 25}
+            label={`Step ${signupStage + 1} out of 4`}
+          />
           {this.handleSignupComponentRender()}
         </div>
       </div>

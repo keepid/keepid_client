@@ -13,21 +13,21 @@ import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 
 interface Props {
-  username: string,
-  name: string,
-  organization: string,
-  role: Role,
-  alert: any
+  username: string;
+  name: string;
+  organization: string;
+  role: Role;
+  alert: any;
 }
 
 interface State {
-  clients: any,
-  searchName: string,
-  redirectLink: string,
-  clientUsername: string,
-  clientPassword: string,
-  clientCredentialsCorrect: boolean,
-  showClientAuthModal: boolean,
+  clients: any;
+  searchName: string;
+  redirectLink: string;
+  clientUsername: string;
+  clientPassword: string;
+  clientCredentialsCorrect: boolean;
+  showClientAuthModal: boolean;
 }
 
 const options = [
@@ -53,12 +53,16 @@ class WorkerLanding extends Component<Props, State> {
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
     this.getClients = this.getClients.bind(this);
-    this.handleChangeClientPassword = this.handleChangeClientPassword.bind(this);
-    this.handleClickUploadDocuments = this.handleClickUploadDocuments.bind(this);
+    this.handleChangeClientPassword =
+      this.handleChangeClientPassword.bind(this);
+    this.handleClickUploadDocuments =
+      this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
     this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
-    this.handleClickSendApplication = this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient = this.handleClickAuthenticateClient.bind(this);
+    this.handleClickSendApplication =
+      this.handleClickSendApplication.bind(this);
+    this.handleClickAuthenticateClient =
+      this.handleClickAuthenticateClient.bind(this);
     this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
     this.modalRender = this.modalRender.bind(this);
@@ -69,9 +73,12 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-    }, this.getClients);
+    this.setState(
+      {
+        searchName: event.target.value,
+      },
+      this.getClients,
+    );
   }
 
   handleClickClose(event: any) {
@@ -83,10 +90,7 @@ class WorkerLanding extends Component<Props, State> {
 
   handleClickAuthenticateClient(event: any) {
     event.preventDefault();
-    const {
-      clientUsername,
-      clientPassword,
-    } = this.state;
+    const { clientUsername, clientPassword } = this.state;
 
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
@@ -95,7 +99,8 @@ class WorkerLanding extends Component<Props, State> {
         username: clientUsername,
         password: clientPassword,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         console.log(responseJSON);
         const { status } = responseJSON;
@@ -153,12 +158,8 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   getClients() {
-    const {
-      searchName,
-    } = this.state;
-    const {
-      role,
-    } = this.props;
+    const { searchName } = this.state;
+    const { role } = this.props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
@@ -167,12 +168,10 @@ class WorkerLanding extends Component<Props, State> {
         listType: 'clients',
         name: searchName,
       }),
-    }).then((res) => res.json())
+    })
+      .then((res) => res.json())
       .then((responseJSON) => {
-        const {
-          people,
-          status,
-        } = responseJSON;
+        const { people, status } = responseJSON;
         console.log(responseJSON);
         if (status !== 'USER_NOT_FOUND') {
           this.setState({
@@ -184,67 +183,89 @@ class WorkerLanding extends Component<Props, State> {
 
   renderClients() {
     const { showClientAuthModal } = this.state;
-    const clientCards: React.ReactFragment[] = this.state.clients.map((client, i) => (
-      <div key={client.username} className="card mb-3">
-        <div className="card-body">
-          <div className="d-flex flex-row">
-            <div className="d-flex flex-column mr-4">
-              <img alt="a blank profile" className="profile-picture" src={GenericProfilePicture} />
-            </div>
-            <div className="d-flex flex-lg-column mr-4">
-              <h5 className="card-title mb-3 h4">
-                {client.firstName}
-                {' '}
-                {client.lastName}
-              </h5>
-              <h6 className="card-subtitle mb-2 text-muted">{client.username}</h6>
-              <h6 className="card-subtitle mb-2 text-muted">{client.email}</h6>
-              <h6 className="card-subtitle mb-2 text-muted">
-                #
-                {client.phone}
-              </h6>
-              <h6 className="card-subtitle mb-2 text-muted">{client.address}</h6>
-              <h6 className="card-subtitle mb-2 text-muted">
-                {client.city}
-                {', '}
-                {client.state}
-                {' '}
-                {client.zipcode}
-              </h6>
-              <p className="card-text">Some information about the client here.</p>
-              <Link to={`/profile/${client.username}`}>
-                <button type="button" className="btn btn-primary">Client Profile</button>
-              </Link>
-            </div>
-            <div className="d-flex flex-column mr-4">
-              <h5 className="card-title">Client Actions</h5>
-              <button
-                type="button"
-                className="btn btn-success mb-2 btn-sm"
-                onClick={(event) => this.handleClickUploadDocuments(event, client)}
-              >
-                Upload Document
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger mb-2 btn-sm"
-                onClick={(event) => this.handleClickViewDocuments(event, client)}
-              >
-                View Documents
-              </button>
-              <button
-                type="button"
-                className="btn btn-dark mb-2 btn-sm"
-                onClick={(event) => this.handleClickSendApplication(event, client)}
-              >
-                Send Application
-              </button>
+    const clientCards: React.ReactFragment[] = this.state.clients.map(
+      (client, i) => (
+        <div key={client.username} className="card mb-3">
+          <div className="card-body">
+            <div className="d-flex flex-row">
+              <div className="d-flex flex-column mr-4">
+                <img
+                  alt="a blank profile"
+                  className="profile-picture"
+                  src={GenericProfilePicture}
+                />
+              </div>
+              <div className="d-flex flex-lg-column mr-4">
+                <h5 className="card-title mb-3 h4">
+                  {client.firstName}
+
+                  {client.lastName}
+                </h5>
+                <h6 className="card-subtitle mb-2 text-muted">
+                  {client.username}
+                </h6>
+                <h6 className="card-subtitle mb-2 text-muted">
+                  {client.email}
+                </h6>
+                <h6 className="card-subtitle mb-2 text-muted">
+                  #
+{client.phone}
+                </h6>
+                <h6 className="card-subtitle mb-2 text-muted">
+                  {client.address}
+                </h6>
+                <h6 className="card-subtitle mb-2 text-muted">
+                  {client.city}
+                  {', '}
+                  {client.state}
+
+                  {client.zipcode}
+                </h6>
+                <p className="card-text">
+                  Some information about the client here.
+                </p>
+                <Link to={`/profile/${client.username}`}>
+                  <button type="button" className="btn btn-primary">
+                    Client Profile
+                  </button>
+                </Link>
+              </div>
+              <div className="d-flex flex-column mr-4">
+                <h5 className="card-title">Client Actions</h5>
+                <button
+                  type="button"
+                  className="btn btn-success mb-2 btn-sm"
+                  onClick={(event) =>
+                    this.handleClickUploadDocuments(event, client)
+                  }
+                >
+                  Upload Document
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger mb-2 btn-sm"
+                  onClick={(event) =>
+                    this.handleClickViewDocuments(event, client)
+                  }
+                >
+                  View Documents
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-dark mb-2 btn-sm"
+                  onClick={(event) =>
+                    this.handleClickSendApplication(event, client)
+                  }
+                >
+                  Send Application
+                </button>
+              </div>
             </div>
           </div>
+          {showClientAuthModal ? this.modalRender() : null}
         </div>
-        {showClientAuthModal ? this.modalRender() : null}
-      </div>
-    ));
+      ),
+    );
 
     return clientCards;
   }
@@ -259,9 +280,7 @@ class WorkerLanding extends Component<Props, State> {
 
         <Modal.Body>
           <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">
-              Client Username
-            </div>
+            <div className="col card-text mt-2">Client Username</div>
             <div className="col-6 card-text">
               <input
                 type="text"
@@ -274,9 +293,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
           <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">
-              Client Password
-            </div>
+            <div className="col card-text mt-2">Client Password</div>
             <div className="col-6 card-text">
               <input
                 type="password"
@@ -298,16 +315,20 @@ class WorkerLanding extends Component<Props, State> {
           >
             Close
           </button>
-          <button type="button" className="btn btn-primary" onClick={this.handleClickAuthenticateClient}>Submit</button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={this.handleClickAuthenticateClient}
+          >
+            Submit
+          </button>
         </Modal.Footer>
       </Modal>
     );
   }
 
   render() {
-    const {
-      role,
-    } = this.props;
+    const { role } = this.props;
     const {
       redirectLink,
       clientCredentialsCorrect,
@@ -316,10 +337,11 @@ class WorkerLanding extends Component<Props, State> {
     } = this.state;
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
-        <Redirect to={{
-          pathname: '/upload-document',
-          state: { clientUsername },
-        }}
+        <Redirect
+          to={{
+            pathname: '/upload-document',
+            state: { clientUsername },
+          }}
         />
       );
     }
@@ -383,22 +405,35 @@ class WorkerLanding extends Component<Props, State> {
         </div>
         <div className="container">
           <div className="row mt-2 mb-2">
-            {(role === Role.Director || role === Role.Admin) ? (
+            {role === Role.Director || role === Role.Admin ? (
               <Link to="/person-signup/worker">
-                <button type="button" className="btn btn-primary mr-4">Signup Worker</button>
+                <button type="button" className="btn btn-primary mr-4">
+                  Signup Worker
+                </button>
               </Link>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
             <Link to="/person-signup/client">
-              <button type="button" className="btn btn-primary">Signup Client</button>
+              <button type="button" className="btn btn-primary">
+                Signup Client
+              </button>
             </Link>
           </div>
-          {searchName.length === 0
-            ? (
-              <div>
-                <h3 className="pt-4">Search a Client&apos;s name to get Started</h3>
-                <img className="pt-4 visualization-svg" src={VisualizationSVG} alt="Search a client" />
-              </div>
-            ) : this.renderClients()}
+          {searchName.length === 0 ? (
+            <div>
+              <h3 className="pt-4">
+                Search a Client&apos;s name to get Started
+              </h3>
+              <img
+                className="pt-4 visualization-svg"
+                src={VisualizationSVG}
+                alt="Search a client"
+              />
+            </div>
+          ) : (
+            this.renderClients()
+          )}
         </div>
       </div>
     );

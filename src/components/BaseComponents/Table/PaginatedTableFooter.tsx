@@ -18,7 +18,6 @@ interface PaginatedTableFooterProps {
   itemsPerPage: number;
   currentPage: number;
   changeCurrentPage: (e, i) => void;
-
 }
 
 const PaginatedTableFooter = ({
@@ -40,44 +39,43 @@ const PaginatedTableFooter = ({
     }),
     container: (provided) => ({
       ...provided,
-      minWidth: (itemsPerPage === 5) ? '2.5rem' : '4.5rem',
+      minWidth: itemsPerPage === 5 ? '2.5rem' : '4.5rem',
     }),
   };
 
-  return (numElements === 0) ? <div />
-    : (
-      <div className="row justify-content-center align-items-center">
-        <div className="col-md-3 py-3 d-flex justify-content-center">
-          <PaginationTotalStandalone
-            {...paginationProps}
-          />
-        </div>
-        <div className="col-md-3 form-inline py-2 d-flex justify-content-center" data-testid="page-size-select-container">
-          <Select
-            aria-label="Select page size"
-            options={listOptions}
-            closeMenuOnSelect
-            onChange={handleChangeItemsPerPage}
-            value={listOptions.find((i) => i.value === `${itemsPerPage}`)}
-            menuPlacement="top"
-            styles={selectStyles}
-          />
-          {' '}
-          <p className="my-auto ml-2">
-            {' '}
-            results per page
-          </p>
-        </div>
-        <div className="col-md-3 mx-md-4 py-2 my-1 d-flex justify-content-center">
-          <TablePageSelector
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            numElements={numElements}
-            changeCurrentPage={changeCurrentPage}
-          />
-        </div>
+  return numElements === 0 ? (
+    <div />
+  ) : (
+    <div className="row justify-content-center align-items-center">
+      <div className="col-md-3 py-3 d-flex justify-content-center">
+        <PaginationTotalStandalone {...paginationProps} />
       </div>
-    );
+      <div
+        className="col-md-3 form-inline py-2 d-flex justify-content-center"
+        data-testid="page-size-select-container"
+      >
+        <Select
+          aria-label="Select page size"
+          options={listOptions}
+          closeMenuOnSelect
+          onChange={handleChangeItemsPerPage}
+          value={listOptions.find((i) => i.value === `${itemsPerPage}`)}
+          menuPlacement="top"
+          styles={selectStyles}
+        />
+
+        <p className="my-auto ml-2">results per page</p>
+      </div>
+      <div className="col-md-3 mx-md-4 py-2 my-1 d-flex justify-content-center">
+        <TablePageSelector
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          numElements={numElements}
+          changeCurrentPage={changeCurrentPage}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default PaginatedTableFooter;

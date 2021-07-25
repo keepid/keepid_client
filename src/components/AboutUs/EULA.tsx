@@ -1,8 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-interface State {
-}
+interface State {}
 
 class EULA extends React.Component<{}, State> {
   componentDidMount() {
@@ -20,7 +19,11 @@ class EULA extends React.Component<{}, State> {
           <h1 className="display-5">End User License Agreement</h1>
         </div>
         <div className="embed-responsive embed-responsive-16by9">
-          <iframe className="embed-responsive-item" src="EULA.pdf" title="EULA Agreement" />
+          <iframe
+            className="embed-responsive-item"
+            src="EULA.pdf"
+            title="EULA Agreement"
+          />
         </div>
       </div>
     );

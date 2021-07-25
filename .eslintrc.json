@@ -53,6 +53,8 @@
     "react/jsx-indent": "off",
     "operator-linebreak": "off",
     "implicit-arrow-linebreak": "off",
-    "import/no-extraneous-dependencies": "off"
+    "import/no-extraneous-dependencies": "off",
+    "no-underscore-dangle": "off",
+    "react/prop-types": "off"
   }
 }

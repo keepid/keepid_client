@@ -7,16 +7,16 @@ import getServerURL from '../../serverOverride';
 import MapComponent from './MapComponent';
 
 interface Props {
-  alert: any,
+  alert: any;
 }
 
 interface State {
-  organizationsWithinDistance: any[],
-  displayMap: boolean,
-  zipcodeSearch: string,
-  zipcodeLatLng: any,
-  distance: number,
-  searchLoading: boolean,
+  organizationsWithinDistance: any[];
+  displayMap: boolean;
+  zipcodeSearch: string;
+  zipcodeLatLng: any;
+  distance: number;
+  searchLoading: boolean;
 }
 
 const APIKey = 'AIzaSyA4vdAgDjHcX0fVWh6I8IQ-Yy1FQ_Be8wc';
@@ -30,7 +30,10 @@ Geocode.setRegion('us');
 const degToRad = (degree: number): number => degree * (Math.PI / 180);
 
 // haversine formula
-const getDistanceInKM = (coordinate1: number[], coordinate2: number[]): number => {
+const getDistanceInKM = (
+  coordinate1: number[],
+  coordinate2: number[],
+): number => {
   const lat1 = coordinate1[0];
   const lat2 = coordinate2[0];
   const lng1 = coordinate1[1];
@@ -38,9 +41,12 @@ const getDistanceInKM = (coordinate1: number[], coordinate2: number[]): number =
   const avgEarthRadiusInKM = 6371;
   const radLat = degToRad(lat2 - lat1);
   const radLng = degToRad(lng2 - lng1);
-  const a = Math.sin(radLat / 2) * Math.sin(radLat / 2)
-    + Math.cos(degToRad(lat1)) * Math.cos(degToRad(lat2))
-    * Math.sin(radLng / 2) * Math.sin(radLng / 2);
+  const a =
+    Math.sin(radLat / 2) * Math.sin(radLat / 2) +
+    Math.cos(degToRad(lat1)) *
+      Math.cos(degToRad(lat2)) *
+      Math.sin(radLng / 2) *
+      Math.sin(radLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distInKM = avgEarthRadiusInKM * c;
   return distInKM;
@@ -58,7 +64,8 @@ class FindOrganization extends Component<Props, State> {
       searchLoading: false,
     };
     this.getOrganizations = this.getOrganizations.bind(this);
-    this.searchOrganizationsByZipcode = this.searchOrganizationsByZipcode.bind(this);
+    this.searchOrganizationsByZipcode =
+      this.searchOrganizationsByZipcode.bind(this);
     this.onHandleChangeZipcode = this.onHandleChangeZipcode.bind(this);
     this.onSubmitZipcode = this.onSubmitZipcode.bind(this);
     this.handleOrgCardClick = this.handleOrgCardClick.bind(this);
@@ -70,9 +77,7 @@ class FindOrganization extends Component<Props, State> {
 
   // only show info for one org on card click or else the map view glitches
   handleOrgCardClick(org: any, index: number) {
-    const {
-      organizationsWithinDistance,
-    } = this.state;
+    const { organizationsWithinDistance } = this.state;
     for (let i = 0; i < organizationsWithinDistance.length; i += 1) {
       if (i === index) {
         organizationsWithinDistance[i].showInfo = true;
@@ -101,21 +106,21 @@ class FindOrganization extends Component<Props, State> {
         userTypes: [],
         organizations: [],
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          organizations,
-        } = responseJSON;
+        const { organizations } = responseJSON;
         this.getOrganizationsWithinDistance(organizations, zipcodeLatLng);
       });
   }
 
   // gets all organizations within a fixed distance in km
   // also gets latitude and longitute from address and updates the organization
-  getOrganizationsWithinDistance(organizations: any[], zipcodeLatLng: number[]) {
-    const {
-      distance,
-    } = this.state;
+  getOrganizationsWithinDistance(
+    organizations: any[],
+    zipcodeLatLng: number[],
+  ) {
+    const { distance } = this.state;
     const promises: any[] = [];
     const organizationsUpdated: any[] = [];
     organizations.forEach((org) => {
@@ -128,7 +133,13 @@ class FindOrganization extends Component<Props, State> {
       let formattedPhoneNumber = '';
       try {
         if (org.orgPhoneNumber.length === 10) {
-          formattedPhoneNumber = `(${org.orgPhoneNumber.slice(0, 3)}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(6, 10)}`;
+          formattedPhoneNumber = `(${org.orgPhoneNumber.slice(
+            0,
+            3,
+          )}) ${org.orgPhoneNumber.slice(3, 6)}-${org.orgPhoneNumber.slice(
+            6,
+            10,
+          )}`;
         } else {
           formattedPhoneNumber = org.orgPhoneNumber;
         }
@@ -140,44 +151,43 @@ class FindOrganization extends Component<Props, State> {
     });
 
     const organizationsWithinDistance: any[] = [];
-    Promise.allSettled(promises)
-      .then((responses) => {
-        for (let i = 0; i < responses.length; i += 1) {
-          const response = responses[i];
-          if (response.status === 'fulfilled') {
-            const { lat, lng } = response.value.results[0].geometry.location;
-            organizationsUpdated[i].orgLat = lat;
-            organizationsUpdated[i].orgLng = lng;
-            const orgCoordinate = [lat, lng];
-            const distBetween = getDistanceInKM(orgCoordinate, zipcodeLatLng);
-            if (distBetween <= distance) {
-              organizationsWithinDistance.push(organizationsUpdated[i]);
-            }
+    Promise.allSettled(promises).then((responses) => {
+      for (let i = 0; i < responses.length; i += 1) {
+        const response = responses[i];
+        if (response.status === 'fulfilled') {
+          const { lat, lng } = response.value.results[0].geometry.location;
+          organizationsUpdated[i].orgLat = lat;
+          organizationsUpdated[i].orgLng = lng;
+          const orgCoordinate = [lat, lng];
+          const distBetween = getDistanceInKM(orgCoordinate, zipcodeLatLng);
+          if (distBetween <= distance) {
+            organizationsWithinDistance.push(organizationsUpdated[i]);
           }
         }
-        this.setState({
-          organizationsWithinDistance,
-          displayMap: true,
-          searchLoading: false,
-        });
+      }
+      this.setState({
+        organizationsWithinDistance,
+        displayMap: true,
+        searchLoading: false,
       });
+    });
   }
 
   // takes in inputted zipcode and returns organizations within distance
   searchOrganizationsByZipcode() {
-    const {
-      zipcodeSearch,
-    } = this.state;
+    const { zipcodeSearch } = this.state;
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json?'); // Do in OrganizationSignup
     const search = `postal_code:${zipcodeSearch}`;
     const urlParams = {
       components: search,
       key: APIKey,
     };
-    Object.keys(urlParams).forEach((key) => url.searchParams.append(key, urlParams[key]));
+    Object.keys(urlParams).forEach((key) =>
+      url.searchParams.append(key, urlParams[key]));
     fetch(url.toString(), {
       method: 'GET',
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
 
@@ -188,9 +198,7 @@ class FindOrganization extends Component<Props, State> {
           });
           this.getOrganizations([zipcodeLatLng.lat, zipcodeLatLng.lng]);
         } else {
-          const {
-            alert,
-          } = this.props;
+          const { alert } = this.props;
           alert.show('Invalid zip code');
           this.setState({
             searchLoading: false,
@@ -225,7 +233,9 @@ class FindOrganization extends Component<Props, State> {
             />
             <div className="input-group-append">
               <button
-                className={`btn btn-primary btn-primary-theme rounded-right ld-ext-right ${searchLoading ? 'running' : ''}`}
+                className={`btn btn-primary btn-primary-theme rounded-right ld-ext-right ${
+                  searchLoading ? 'running' : ''
+                }`}
                 type="submit"
               >
                 Search
@@ -235,78 +245,81 @@ class FindOrganization extends Component<Props, State> {
           </div>
         </form>
 
-        {displayMap
-          ? (
-            <div>
-              <h5>
-                <span className="font-weight-bold">
-                  {organizationsWithinDistance.length}
-                  {' '}
-                </span>
-                <span className="font-weight-light">
-                  results within
-                  {' '}
-                  {distance}
-                  {' '}
-                  km of
-                  {' '}
-                  {zipcodeSearch}
-                </span>
-              </h5>
-              <div className="row">
-                <div className="col" style={{ overflow: 'scroll', height: '50vh' }}>
-                  {
-                    organizationsWithinDistance.map((org, index) => (
-                      <Card
-                        key={org.creationDate + org.orgAddress}
-                        style={{ width: '100%', cursor: 'pointer' }}
-                        className="mb-2 shadow"
-                        onClick={() => this.handleOrgCardClick(org, index)}
-                      >
-                        <Card.Body>
-                          <h5>{org.orgName}</h5>
-                          <small className="font-weight-bold">{org.orgAddress}</small>
-                          <br />
-                          <small>
-                            Website:
-                            <a
-                              href={org.orgWebsite}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-primary-theme"
-                            >
-                              {org.orgWebsite}
-                            </a>
-                          </small>
-                          <br />
-                          <small className="float-left">
-                            <span>Call: </span>
-                            <span className="text-primary-theme">{org.orgPhoneNumber}</span>
-                          </small>
-                          <small className="float-right">
-                            <span>Email: </span>
-                            <span className="text-primary-theme">{org.orgEmail}</span>
-                          </small>
-                        </Card.Body>
-                      </Card>
-                    ))
-                  }
-                </div>
-                <div className="col">
-                  <MapComponent
-                    organizations={organizationsWithinDistance}
-                    lat={zipcodeLatLng.lat}
-                    lng={zipcodeLatLng.lng}
-                    googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
-                    loadingElement={<div style={{ height: '100%' }} />}
-                    containerElement={<div style={{ height: '400px' }} />}
-                    mapElement={<div style={{ height: '100%' }} />}
-                  />
-                </div>
+        {displayMap ? (
+          <div>
+            <h5>
+              <span className="font-weight-bold">
+                {organizationsWithinDistance.length}
+              </span>
+              <span className="font-weight-light">
+                results within
+                {distance}
+                km of
+                {zipcodeSearch}
+              </span>
+            </h5>
+            <div className="row">
+              <div
+                className="col"
+                style={{ overflow: 'scroll', height: '50vh' }}
+              >
+                {organizationsWithinDistance.map((org, index) => (
+                  <Card
+                    key={org.creationDate + org.orgAddress}
+                    style={{ width: '100%', cursor: 'pointer' }}
+                    className="mb-2 shadow"
+                    onClick={() => this.handleOrgCardClick(org, index)}
+                  >
+                    <Card.Body>
+                      <h5>{org.orgName}</h5>
+                      <small className="font-weight-bold">
+                        {org.orgAddress}
+                      </small>
+                      <br />
+                      <small>
+                        Website:
+                        <a
+                          href={org.orgWebsite}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary-theme"
+                        >
+                          {org.orgWebsite}
+                        </a>
+                      </small>
+                      <br />
+                      <small className="float-left">
+                        <span>Call: </span>
+                        <span className="text-primary-theme">
+                          {org.orgPhoneNumber}
+                        </span>
+                      </small>
+                      <small className="float-right">
+                        <span>Email: </span>
+                        <span className="text-primary-theme">
+                          {org.orgEmail}
+                        </span>
+                      </small>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
+              <div className="col">
+                <MapComponent
+                  organizations={organizationsWithinDistance}
+                  lat={zipcodeLatLng.lat}
+                  lng={zipcodeLatLng.lng}
+                  googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${APIKey}&v=3.exp&libraries=geometry,drawing,places`}
+                  loadingElement={<div style={{ height: '100%' }} />}
+                  containerElement={<div style={{ height: '400px' }} />}
+                  mapElement={<div style={{ height: '100%' }} />}
+                />
               </div>
             </div>
-          )
-          : <div />}
+          </div>
+        ) : (
+          <div />
+        )}
       </div>
     );
   }
