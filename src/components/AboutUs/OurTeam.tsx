@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet';
 import BaseCard, { CardImageLoc, CardSize } from '../../components/BaseComponents/BaseCard';
 import ConnorJPG from '../../static/images/members/connor.jpg';
 import DanielJoo from '../../static/images/members/danielJoo.jpg';
-import DavidGlaser from '../../static/images/members/davidGlaser.jpg';
 import JacksonJPG from '../../static/images/members/jackson.jpg';
 import JessicaHung from '../../static/images/members/jessicaHung.jpg';
 import JohnJPG from '../../static/images/members/john.jpg';
