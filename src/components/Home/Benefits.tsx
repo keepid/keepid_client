@@ -12,12 +12,14 @@ const benefitsMessages = defineMessages({
 
   localHeader: {
     id: 'home.benefits.local.header',
-    defaultMessage: 'Local nonprofits achieve exponentially faster service times',
+    defaultMessage:
+      'Local nonprofits achieve exponentially faster service times',
   },
 
   localDetail1: {
     id: 'home.benefits.local.detail-1',
-    defaultMessage: 'Stronger client relationships lead to greater touch points',
+    defaultMessage:
+      'Stronger client relationships lead to greater touch points',
   },
   localDetail2: {
     id: 'home.benefits.local.detail-2',
@@ -54,20 +56,32 @@ const Benefits = () => {
     <div className="row">
       <div className="container py-2 my-auto">
         <div className="row mt-4 mx-4 text-center d-flex justify-content-center">
-          <h1 className="font-weight-bold">{intl.formatMessage(benefitsMessages.header)}</h1>
+          <h1 className="font-weight-bold">
+            {intl.formatMessage(benefitsMessages.header)}
+          </h1>
         </div>
       </div>
       <div className="container py-2 my-auto">
         <div className="row mt-4 mx-4 align-items-center">
           <div className="col-lg-5">
-            <img className="img-fluid rounded mb-4 mb-lg-0" src={Building} alt="building" />
+            <img
+              className="img-fluid rounded mb-4 mb-lg-0"
+              src={Building}
+              alt="building"
+            />
           </div>
           <div className="col-lg-7">
             <h3>{intl.formatMessage(benefitsMessages.localHeader)}</h3>
             <ul className="pl-4 mt-2">
-              <li className="home-text">{intl.formatMessage(benefitsMessages.localDetail1)}</li>
-              <li className="home-text">{intl.formatMessage(benefitsMessages.localDetail2)}</li>
-              <li className="home-text">{intl.formatMessage(benefitsMessages.localDetail3)}</li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.localDetail1)}
+              </li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.localDetail2)}
+              </li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.localDetail3)}
+              </li>
             </ul>
           </div>
         </div>
@@ -75,14 +89,24 @@ const Benefits = () => {
       <div className="container py-2 my-auto">
         <div className="row mt-4 mx-4 align-items-center">
           <div className="col-lg-5 d-flex content-justify-center">
-            <img className="img-fluid rounded mx-auto mb-4 " src={Profile} alt="profile pic" />
+            <img
+              className="img-fluid rounded mx-auto mb-4 "
+              src={Profile}
+              alt="profile pic"
+            />
           </div>
           <div className="col-lg-7">
             <h3>{intl.formatMessage(benefitsMessages.homelessHeader)}</h3>
             <ul className="pl-4 mt-2">
-              <li className="home-text">{intl.formatMessage(benefitsMessages.homelessDetail1)}</li>
-              <li className="home-text">{intl.formatMessage(benefitsMessages.homelessDetail2)}</li>
-              <li className="home-text">{intl.formatMessage(benefitsMessages.homelessDetail3)}</li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.homelessDetail1)}
+              </li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.homelessDetail2)}
+              </li>
+              <li className="home-text">
+                {intl.formatMessage(benefitsMessages.homelessDetail3)}
+              </li>
             </ul>
           </div>
         </div>

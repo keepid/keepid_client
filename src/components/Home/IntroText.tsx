@@ -7,12 +7,14 @@ import RectangleSVG from '../../static/images/rectangle.svg';
 const messages = defineMessages({
   problemDescription: {
     id: 'home.hero-problem-description',
-    defaultMessage: 'People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.',
+    defaultMessage:
+      'People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.',
   },
 
   solutionDescription: {
     id: 'home.hero-solution-description',
-    defaultMessage: 'We provide a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, designed for those with low technological literacy.',
+    defaultMessage:
+      'We provide a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, designed for those with low technological literacy.',
   },
 });
 
@@ -36,7 +38,12 @@ const IntroText = (): JSX.Element => {
               {intl.formatMessage(messages.solutionDescription)}
             </h3>
             <AnchorLink offset="100" href="#info">
-              <button type="button" className="btn btn-outline-secondary btn-lg w-40">Learn More</button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-lg w-40"
+              >
+                Learn More
+              </button>
             </AnchorLink>
           </div>
         </div>

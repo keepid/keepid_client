@@ -17,40 +17,42 @@ import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
 const { Step } = Steps;
 
 interface Props {
-  alert: any,
-  orgName: string,
-  personRole: Role,
+  alert: any;
+  orgName: string;
+  personRole: Role;
 }
 
 interface State {
-  signupStage: number,
-  username: string,
-  password: string,
-  confirmPassword: string,
-  firstname: string,
-  lastname: string,
-  birthDate: Date,
-  email: string,
-  phonenumber: string,
-  address: string,
-  city: string,
-  state: string,
-  zipcode: string,
-  hasSigned: boolean,
-  recaptchaPayload: string,
-  buttonState: string,
-  redirectLogin: boolean
+  signupStage: number;
+  username: string;
+  password: string;
+  confirmPassword: string;
+  firstname: string;
+  lastname: string;
+  birthDate: Date;
+  email: string;
+  phonenumber: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  hasSigned: boolean;
+  recaptchaPayload: string;
+  buttonState: string;
+  redirectLogin: boolean;
 }
 
 class InviteSignupFlow extends Component<Props, State, {}> {
-  static birthDateStringConverter = (birthDate: Date):string => {
+  static birthDateStringConverter = (birthDate: Date): string => {
     const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthMonthString =
+      personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth;
     const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDayString =
+      personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay;
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
     return personBirthDateFormatted;
-  }
+  };
 
   constructor(props: Props) {
     super(props);
@@ -75,43 +77,54 @@ class InviteSignupFlow extends Component<Props, State, {}> {
     };
   }
 
-  handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
+  handleChangeUsername = (e: { target: { value: string } }) =>
+    this.setState({ username: e.target.value });
 
-  handleChangePassword = (e: { target: { value: string; }; }) => this.setState({ password: e.target.value });
+  handleChangePassword = (e: { target: { value: string } }) =>
+    this.setState({ password: e.target.value });
 
-  handleChangeConfirmPassword = (e: { target: { value: string; }; }) => this.setState({ confirmPassword: e.target.value });
+  handleChangeConfirmPassword = (e: { target: { value: string } }) =>
+    this.setState({ confirmPassword: e.target.value });
 
-  handleChangeFirstname = (e: { target: { value: string; }; }) => this.setState({ firstname: e.target.value });
+  handleChangeFirstname = (e: { target: { value: string } }) =>
+    this.setState({ firstname: e.target.value });
 
-  handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
+  handleChangeLastname = (e: { target: { value: string } }) =>
+    this.setState({ lastname: e.target.value });
 
   handleChangeBirthdate = (date: Date) => this.setState({ birthDate: date });
 
-  handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
+  handleChangeUserAddress = (e: { target: { value: string } }) =>
+    this.setState({ address: e.target.value });
 
-  handleChangeUserCity = (e: { target: { value: string; }; }) => this.setState({ city: e.target.value });
+  handleChangeUserCity = (e: { target: { value: string } }) =>
+    this.setState({ city: e.target.value });
 
-  handleChangeUserState = (e: { target: { value: string; }; }) => this.setState({ state: e.target.value });
+  handleChangeUserState = (e: { target: { value: string } }) =>
+    this.setState({ state: e.target.value });
 
-  handleChangeUserZipcode = (e: { target: { value: string; }; }) => this.setState({ zipcode: e.target.value });
+  handleChangeUserZipcode = (e: { target: { value: string } }) =>
+    this.setState({ zipcode: e.target.value });
 
-  handleChangeUserPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ phonenumber: e.target.value });
+  handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
+    this.setState({ phonenumber: e.target.value });
 
-  handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
+  handleChangeUserEmail = (e: { target: { value: string } }) =>
+    this.setState({ email: e.target.value });
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
-  }
+  };
 
-  handleContinue = ():void => {
+  handleContinue = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
   };
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-  }
+  };
 
   handleFormSubmit = (): void => {
     const {
@@ -129,7 +142,8 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       recaptchaPayload,
     } = this.state;
     const { orgName, alert, personRole } = this.props;
-    const birthDateString = InviteSignupFlow.birthDateStringConverter(birthDate);
+    const birthDateString =
+      InviteSignupFlow.birthDateStringConverter(birthDate);
     // submit user information
 
     fetch(`${getServerURL()}/create-invited-user`, {
@@ -152,33 +166,37 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         orgName,
         recaptchaPayload,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          status,
-          message,
-        } = responseJSON;
+        const { status, message } = responseJSON;
 
         if (status === 'ENROLL_SUCCESS') {
           this.setState({ buttonState: '' });
-          alert.show('You successfully signed up to use Keep.id. Please login with your new username and password');
+          alert.show(
+            'You successfully signed up to use Keep.id. Please login with your new username and password',
+          );
           this.setState({ redirectLogin: true });
         } else if (status === 'INVALID_PARAMETER') {
           this.setState({ buttonState: '' });
-          alert.show('No organization found for this link. Try again with different link');
+          alert.show(
+            'No organization found for this link. Try again with different link',
+          );
         } else {
           alert.show(message);
           this.setState({ buttonState: '' });
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
-  }
+  };
 
-  handleFormJumpTo = (pageNumber:number):void => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber: number): void =>
+    this.setState({ signupStage: pageNumber });
 
-  handleSignupComponentRender = ():JSX.Element => {
+  handleSignupComponentRender = (): JSX.Element => {
     const {
       username,
       password,
@@ -197,9 +215,7 @@ class InviteSignupFlow extends Component<Props, State, {}> {
       signupStage,
     } = this.state;
 
-    const {
-      personRole,
-    } = this.props;
+    const { personRole } = this.props;
 
     switch (signupStage) {
       case 0: {
@@ -275,33 +291,22 @@ class InviteSignupFlow extends Component<Props, State, {}> {
         );
       }
       default: {
-        return (
-          <div />
-        );
+        return <div />;
       }
     }
-  }
+  };
 
   render() {
-    const {
-      signupStage,
-      redirectLogin,
-    } = this.state;
-    const {
-      personRole,
-    } = this.props;
+    const { signupStage, redirectLogin } = this.state;
+    const { personRole } = this.props;
     if (redirectLogin) {
-      return (
-        <Redirect to="/login" />
-      );
+      return <Redirect to="/login" />;
     }
 
     return (
       <div>
         <Helmet>
-          <title>
-            Sign Up
-          </title>
+          <title>Sign Up</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="container mt-5">
@@ -311,7 +316,11 @@ class InviteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 4`} />
+          <ProgressBar
+            className="d-md-none"
+            now={signupStage * 25}
+            label={`Step ${signupStage + 1} out of 4`}
+          />
           {this.handleSignupComponentRender()}
         </div>
       </div>

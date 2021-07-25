@@ -19,15 +19,11 @@ import TModal from './TModal';
 const customTotal = (from, to, size) => (
   <span className="react-bootstrap-table-pagination-total">
     Showing
-    {' '}
     {from}
-    -
-    {to}
-    {' '}
+-
+{to}
     of
-    {' '}
     {size}
-    {' '}
     Results
   </span>
 );
@@ -40,10 +36,24 @@ const defaultProps = {
   onDelete: () => {},
 };
 
-const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatter, handleEdit, handleSave) => {
+const formatColumns = (
+  columns,
+  canModify,
+  editRows,
+  cantEditCols,
+  deleteFormatter,
+  handleEdit,
+  handleSave,
+) => {
   // add edit control for each column
   const columnsAll = columns.map((value) => {
-    value.editable = (cell: any, row: any, rowIndex: number, colIndex: number) => canModify && !!row && editRows.has(row.id) && !cantEditCols.has(colIndex);
+    value.editable = (
+      cell: any,
+      row: any,
+      rowIndex: number,
+      colIndex: number,
+    ) =>
+      canModify && !!row && editRows.has(row.id) && !cantEditCols.has(colIndex);
 
     return value;
   });
@@ -54,7 +64,13 @@ const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatt
       dataField: 'edit',
       text: '',
       formatExtraData: editRows,
-      formatter: (cell, row) => <EditFormatter handleEdit={handleEdit} handleSave={handleSave} row={row} />,
+      formatter: (cell, row) => (
+        <EditFormatter
+          handleEdit={handleEdit}
+          handleSave={handleSave}
+          row={row}
+        />
+      ),
       headerStyle: () => ({
         width: '10%',
         minWidth: '8rem',
@@ -80,7 +96,11 @@ const formatColumns = (columns, canModify, editRows, cantEditCols, deleteFormatt
   return columnsAll;
 };
 
-const constructSelectRowConfiguration = (canSelect: boolean, selectedRows: Set<number>, setSelectedRows: (a: Set<number>) => void) => ({
+const constructSelectRowConfiguration = (
+  canSelect: boolean,
+  selectedRows: Set<number>,
+  setSelectedRows: (a: Set<number>) => void,
+) => ({
   hideSelectColumn: !canSelect,
   mode: 'checkbox',
   clickToSelect: false,
@@ -96,15 +116,16 @@ const constructSelectRowConfiguration = (canSelect: boolean, selectedRows: Set<n
           if (input) input.indeterminate = indeterminate;
         }}
         checked={checked}
-        onChange={() => {
-        }}
+        onChange={() => {}}
       />
       <label className="custom-control-label" htmlFor="selectAll" />
     </div>
   ),
   selectionRenderer: ({
-    // eslint-disable-next-line react/prop-types
-    mode, checked, disabled, ...rest
+    mode,
+    checked,
+    disabled,
+    ...rest
   }) => (
     <div className="custom-control custom-checkbox mr-2">
       <input
@@ -120,33 +141,48 @@ const constructSelectRowConfiguration = (canSelect: boolean, selectedRows: Set<n
   ),
   onSelect: (row, isSelect, rowIndex, e) => {
     // eslint-disable-next-line no-unused-expressions
-    selectedRows.has(row.id) ? selectedRows.delete(row.id) : selectedRows.add(row.id);
+    selectedRows.has(row.id)
+      ? selectedRows.delete(row.id)
+      : selectedRows.add(row.id);
     setSelectedRows(selectedRows);
   },
   onSelectAll: (isSelect, rows, e) => {
     // eslint-disable-next-line no-unused-expressions
-    isSelect ? rows.forEach((r) => selectedRows.add(r.id)) : selectedRows.clear();
+    isSelect
+      ? rows.forEach((r) => selectedRows.add(r.id))
+      : selectedRows.clear();
     setSelectedRows(selectedRows);
   },
 });
 
-const createDeleteFormatter = (handleTryDelete) => (cell: any, row: any) => (
-  <Button variant="link" className="delete-text table-button action" onClick={(e) => handleTryDelete(e, row)}>
-    <div className="row align-items-center">
-      {/* <img className="px-1 action-svg" src={DeleteSVG} alt="delete" /> */}
-      <div className="d-none d-sm-block">Delete</div>
-    </div>
-  </Button>
-);
+const createDeleteFormatter = (handleTryDelete) => (cell: any, row: any) =>
+  (
+    <Button
+      variant="link"
+      className="delete-text table-button action"
+      onClick={(e) => handleTryDelete(e, row)}
+    >
+      <div className="row align-items-center">
+        {/* <img className="px-1 action-svg" src={DeleteSVG} alt="delete" /> */}
+        <div className="d-none d-sm-block">Delete</div>
+      </div>
+    </Button>
+  );
 
-const createCellEditFactory = (cantEditCols: Set<number>) => cellEditFactory({
-  mode: 'click',
-  blurToSave: true,
-  nonEditableCols: () => Array.from(cantEditCols),
-  autoSelectText: true,
-});
+const createCellEditFactory = (cantEditCols: Set<number>) =>
+  cellEditFactory({
+    mode: 'click',
+    blurToSave: true,
+    nonEditableCols: () => Array.from(cantEditCols),
+    autoSelectText: true,
+  });
 
-type Formatter = (cell: any, row: any, rowIndex: number, formatExtraData: any) => JSX.Element | string;
+type Formatter = (
+  cell: any,
+  row: any,
+  rowIndex: number,
+  formatExtraData: any,
+) => JSX.Element | string;
 type Column = {
   // The name of the property on each Row object to be represented by this Column
   dataField: string;
@@ -163,24 +199,31 @@ type Column = {
   // Method to customize the sort caret
   sortCaret?: (order: 'asc' | 'desc' | undefined, column: Column) => any;
   // Method to perform sorting; if unspecified, alphabetical sorting will be used
-  sortFunc?: (a: any, b: any, order: 'asc' | 'desc', dataField: string, rowA: any, rowB: any) => any;
-}
+  sortFunc?: (
+    a: any,
+    b: any,
+    order: 'asc' | 'desc',
+    dataField: string,
+    rowA: any,
+    rowB: any,
+  ) => any;
+};
 
 interface TableProps extends NoDataIndicationProps {
   // An array of data, where each item represents a row in the Table and should contain properties corresponding to the Columns provided
-  data: any[],
+  data: any[];
   // An array of Columns
-  columns: Column[],
+  columns: Column[];
   // Boolean indicating whether this Table can be modified at all
-  canModify?: boolean,
+  canModify?: boolean;
   // Boolean indicating whether rows in this Table can be selected
-  canSelect?: boolean,
+  canSelect?: boolean;
   // Set containing the indexes of Columns containing non-editable data
-  cantEditCols?: Set<number>,
+  cantEditCols?: Set<number>;
   // Method called upon row deletion with the row ID
-  onDelete?: (id: any) => void,
+  onDelete?: (id: any) => void;
   // Method called upon Row modification save
-  onEditSave?: (row: any) => void,
+  onEditSave?: (row: any) => void;
 }
 
 /**
@@ -204,7 +247,8 @@ const Table = ({
   const [rowToDelete, setRowToDelete] = useState<any>(null);
   const [data, setData] = useState<any[]>(dataProp || []);
 
-  const cantEditCols = cantEditColsProp instanceof Set ? cantEditColsProp : new Set<number>();
+  const cantEditCols =
+    cantEditColsProp instanceof Set ? cantEditColsProp : new Set<number>();
 
   const inputFormatter = (cell: any, row: any): ReactElement<{}> => {
     if (rowsBeingEdited.has(row.id)) {
@@ -243,9 +287,9 @@ const Table = ({
               classDef += ' lighten';
             } else {
               sortAlt += ` ${order}`;
-              classDef += (order === 'desc') ? ' rotate180' : '';
+              classDef += order === 'desc' ? ' rotate180' : '';
             }
-            return (<img className={classDef} src={ArrowSVG} alt={sortAlt} />);
+            return <img className={classDef} src={ArrowSVG} alt={sortAlt} />;
           };
         }
       });
@@ -302,12 +346,21 @@ const Table = ({
   };
 
   // specifies design rules for row colors
-  const rowClasses = (row, rowIndex) => classNames('table-row', {
-    'table-edit-row': rowsBeingEdited.has(row.id) || selectedRows.has(row.id),
-    'table-zebra': data.length > 10 && rowIndex % 2 === 0,
-  });
+  const rowClasses = (row, rowIndex) =>
+    classNames('table-row', {
+      'table-edit-row': rowsBeingEdited.has(row.id) || selectedRows.has(row.id),
+      'table-zebra': data.length > 10 && rowIndex % 2 === 0,
+    });
 
-  const tableColumns = formatColumns(columns, canModify, rowsBeingEdited, cantEditCols, createDeleteFormatter(handleTryDelete), handleEdit, handleSave);
+  const tableColumns = formatColumns(
+    columns,
+    canModify,
+    rowsBeingEdited,
+    cantEditCols,
+    createDeleteFormatter(handleTryDelete),
+    handleEdit,
+    handleSave,
+  );
 
   return (
     <>
@@ -318,13 +371,21 @@ const Table = ({
         {...rest}
         cellEdit={createCellEditFactory(cantEditCols)}
         rowClasses={rowClasses}
-        selectRow={constructSelectRowConfiguration(!!canSelect, selectedRows, setSelectedRows)}
+        selectRow={constructSelectRowConfiguration(
+          !!canSelect,
+          selectedRows,
+          setSelectedRows,
+        )}
         noDataIndication={() => <NoDataIndication emptyInfo={emptyInfo} />}
-        bodyClasses={(data.length === 0) ? 'empty-table' : ''}
+        bodyClasses={data.length === 0 ? 'empty-table' : ''}
       />
-      {rowToDelete
-        ? <TModal row={rowToDelete} handleClickClose={handleClickClose} handleDelete={handleDelete} />
-        : null}
+      {rowToDelete ? (
+        <TModal
+          row={rowToDelete}
+          handleClickClose={handleClickClose}
+          handleDelete={handleDelete}
+        />
+      ) : null}
     </>
   );
 };
@@ -333,21 +394,31 @@ Table.defaultProps = defaultProps;
 
 interface NoDataIndicationProps {
   emptyInfo: {
-    onPress?: () => void,
-    label?: string,
-    description: string,
-  }
+    onPress?: () => void;
+    label?: string;
+    description: string;
+  };
 }
 
 /**
  * Component rendered when no data provided to Table
  */
-const NoDataIndication = ({ emptyInfo }: NoDataIndicationProps): React.ReactElement => (
+const NoDataIndication = ({
+  emptyInfo,
+}: NoDataIndicationProps): React.ReactElement => (
   <div className="empty-table d-flex flex-column justify-content-center">
-    <div><p>{`${emptyInfo.description}`}</p></div>
+    <div>
+      <p>{`${emptyInfo.description}`}</p>
+    </div>
     {emptyInfo.label && emptyInfo.onPress ? (
       <div className="hi">
-        <button type="button" className="btn btn-primary" onClick={emptyInfo.onPress}>{`${emptyInfo.label}`}</button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={emptyInfo.onPress}
+        >
+{`${emptyInfo.label}`}
+        </button>
       </div>
     ) : null}
   </div>
@@ -358,14 +429,12 @@ interface PaginatedTableProps extends TableProps {}
 /**
  * Wrapper providing pagination to the base Table component
  */
-const PaginatedTable = ({
-  data, ...props
-}: PaginatedTableProps) => {
+const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   data = data || [];
 
-  if ((itemsPerPage * currentPage) >= data.length && currentPage > 0) {
+  if (itemsPerPage * currentPage >= data.length && currentPage > 0) {
     setCurrentPage(currentPage - 1);
     return null;
   }
@@ -381,33 +450,24 @@ const PaginatedTable = ({
         sizePerPage: itemsPerPage,
       })}
     >
-      {
-        ({
-          paginationProps,
-          paginationTableProps,
-        }) => (
-          <div>
-            <div className="row mx-4 mt-md-4">
-              <Table
-                data={data}
-                {...props}
-                {...paginationTableProps}
-              />
-            </div>
-            <PaginatedTableFooter
-              changeCurrentPage={setCurrentPage}
-              currentPage={currentPage}
-              handleChangeItemsPerPage={(i) => {
-                setItemsPerPage(Number(i.value));
-                setCurrentPage(0);
-              }}
-              itemsPerPage={itemsPerPage}
-              numElements={data.length}
-              paginationProps={paginationProps}
-            />
+      {({ paginationProps, paginationTableProps }) => (
+        <div>
+          <div className="row mx-4 mt-md-4">
+            <Table data={data} {...props} {...paginationTableProps} />
           </div>
-        )
-      }
+          <PaginatedTableFooter
+            changeCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            handleChangeItemsPerPage={(i) => {
+              setItemsPerPage(Number(i.value));
+              setCurrentPage(0);
+            }}
+            itemsPerPage={itemsPerPage}
+            numElements={data.length}
+            paginationProps={paginationProps}
+          />
+        </div>
+      )}
     </PaginationProvider>
   );
 };

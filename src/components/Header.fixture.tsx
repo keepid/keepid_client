@@ -26,20 +26,31 @@ interface Props {
 
 const HeaderFixture = ({ isLoggedIn, role }: Props) => {
   const alert = useAlert();
-  return <Header logIn={console.log} logOut={console.log} isLoggedIn={isLoggedIn} role={role} alert={alert} />;
+  return (
+    <Header
+      logIn={console.log}
+      logOut={console.log}
+      isLoggedIn={isLoggedIn}
+      role={role}
+      alert={alert}
+    />
+  );
 };
 
 export default () => {
   const [isLoggedIn] = useValue<boolean>('isLoggedIn', { defaultValue: false });
   const [role] = useSelect('role', {
-    options:
-      Object.values(Role),
+    options: Object.values(Role),
     defaultValue: Role.LoggedOut,
   });
 
   return (
     <MemoryRouter>
-      <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
+      <Provider
+        template={AlertTemplate}
+        {...options}
+        className="alert-provider-custom"
+      >
         <HeaderFixture role={role} isLoggedIn={isLoggedIn} />
       </Provider>
     </MemoryRouter>

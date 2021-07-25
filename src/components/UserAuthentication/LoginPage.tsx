@@ -11,28 +11,33 @@ import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
 
 interface State {
-  username: string,
-  password: string,
-  buttonState: string,
-  twoFactorState: string, // either empty or show
-  verificationCode: string,
-  userRole: string,
-  firstName: string,
-  lastName: string,
-  organization: string,
-  recaptchaPayload: string
+  username: string;
+  password: string;
+  buttonState: string;
+  twoFactorState: string; // either empty or show
+  verificationCode: string;
+  userRole: string;
+  firstName: string;
+  lastName: string;
+  organization: string;
+  recaptchaPayload: string;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface Props {
-  logIn: (role: Role, username: string, organization: string, name: string) => void,
-  logOut: () => void,
-  isLoggedIn: boolean,
-  role: Role,
-  alert: any
-  autoLogout: boolean, // whether or not the user was logged out automatically
-  setAutoLogout: (boolean) => void // stop showing the logged out automatically banner once user navigates away from the page
+  logIn: (
+    role: Role,
+    username: string,
+    organization: string,
+    name: string,
+  ) => void;
+  logOut: () => void;
+  isLoggedIn: boolean;
+  role: Role;
+  alert: any;
+  autoLogout: boolean; // whether or not the user was logged out automatically
+  setAutoLogout: (boolean) => void; // stop showing the logged out automatically banner once user navigates away from the page
 }
 
 class LoginPage extends Component<Props, State> {
@@ -59,9 +64,7 @@ class LoginPage extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    const {
-      setAutoLogout,
-    } = this.props;
+    const { setAutoLogout } = this.props;
     setAutoLogout(false);
   }
 
@@ -73,43 +76,39 @@ class LoginPage extends Component<Props, State> {
       const recaptchaPayload = await recaptchaRef.current.executeAsync();
       this.setState({ recaptchaPayload }, this.handleLogin);
     }
-  }
+  };
 
   resetRecaptcha = () => {
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       recaptchaRef.current.reset();
     }
     this.setState({ recaptchaPayload: '' });
-  }
+  };
   // END RECAPTCHA CODE
 
   clearInput = async () => {
     this.setState({ username: '', password: '' });
-  }
+  };
 
   handleChangePassword = (event: any) => {
     this.setState({ password: event.target.value });
-  }
+  };
 
   handleChangeVerificationCode = (event: any) => {
     this.setState({ verificationCode: event.target.value });
-  }
+  };
 
   handleChangeUsername = (event: any) => {
     this.setState({ username: event.target.value });
-  }
+  };
 
   handleSubmitTwoFactorCode = (event: any) => {
     event.preventDefault();
     const { verificationCode } = this.state;
     const token = verificationCode;
-    const {
-      username,
-    } = this.state;
+    const { username } = this.state;
     this.setState({ buttonState: 'running' });
-    const {
-      logIn,
-    } = this.props;
+    const { logIn } = this.props;
     fetch(`${getServerURL()}/two-factor`, {
       method: 'POST',
       credentials: 'include',
@@ -117,24 +116,25 @@ class LoginPage extends Component<Props, State> {
         username,
         token,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         const responseObject = responseJSON;
         const { status } = responseObject;
-        const {
-          userRole,
-          organization,
-          firstName,
-          lastName,
-        } = this.state;
+        const { userRole, organization, firstName, lastName } = this.state;
         if (status === 'AUTH_SUCCESS') {
           const role = () => {
             switch (userRole) {
-              case 'Director': return Role.Director;
-              case 'Admin': return Role.Admin;
-              case 'Worker': return Role.Worker;
-              case 'Client': return Role.Client;
-              default: return Role.LoggedOut;
+              case 'Director':
+                return Role.Director;
+              case 'Admin':
+                return Role.Admin;
+              case 'Worker':
+                return Role.Worker;
+              case 'Client':
+                return Role.Client;
+              default:
+                return Role.LoggedOut;
             }
           };
           logIn(role(), username, organization, firstName.concat(lastName));
@@ -143,24 +143,19 @@ class LoginPage extends Component<Props, State> {
           alert.show('Incorrect 2FA Token: Please Try Again');
           this.setState({ buttonState: '' });
         }
-      }).catch(() => {
+      })
+      .catch(() => {
         const { alert } = this.props;
         alert.show('Network Failure: Check Server Connection. ');
         this.setState({ buttonState: '' });
       });
     this.resetRecaptcha();
-  }
+  };
 
   handleLogin = (): void => {
     this.setState({ buttonState: 'running' });
-    const {
-      logIn,
-    } = this.props;
-    const {
-      username,
-      password,
-      recaptchaPayload,
-    } = this.state;
+    const { logIn } = this.props;
+    const { username, password, recaptchaPayload } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       const { alert } = this.props;
       alert.show('Please enter a valid username or password');
@@ -176,28 +171,30 @@ class LoginPage extends Component<Props, State> {
           password,
           recaptchaPayload,
         }),
-      }).then((response) => response.json())
+      })
+        .then((response) => response.json())
         .then((responseJSON) => {
           const responseObject = responseJSON;
-          const {
-            status,
-            userRole,
-            organization,
-            firstName,
-            lastName,
-          } = responseObject;
+          const { status, userRole, organization, firstName, lastName } =
+            responseObject;
 
           const { alert } = this.props;
 
           if (status === 'AUTH_SUCCESS') {
             const role = () => {
               switch (userRole) {
-                case 'Director': return Role.Director;
-                case 'Admin': return Role.Admin;
-                case 'Worker': return Role.Worker;
-                case 'Client': return Role.Client;
-                case 'Developer': return Role.Developer;
-                default: return Role.LoggedOut;
+                case 'Director':
+                  return Role.Director;
+                case 'Admin':
+                  return Role.Admin;
+                case 'Worker':
+                  return Role.Worker;
+                case 'Client':
+                  return Role.Client;
+                case 'Developer':
+                  return Role.Developer;
+                default:
+                  return Role.LoggedOut;
               }
             };
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
@@ -225,21 +222,19 @@ class LoginPage extends Component<Props, State> {
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           }
-        }).catch(() => {
+        })
+        .catch(() => {
           const { alert } = this.props;
           alert.show('Network Failure: Check Server Connection.');
           this.setState({ buttonState: '' });
           this.resetRecaptcha();
         });
     }
-  }
+  };
 
   resubmitVerificationCode(event: any) {
     event.preventDefault();
-    const {
-      username,
-      password,
-    } = this.state;
+    const { username, password } = this.state;
     const { alert } = this.props;
     alert.show('Another verification code has been sent to your email.');
     fetch(`${getServerURL()}/login`, {
@@ -260,36 +255,39 @@ class LoginPage extends Component<Props, State> {
       twoFactorState,
       buttonState,
     } = this.state;
-    const {
-      autoLogout,
-    } = this.props;
+    const { autoLogout } = this.props;
     return (
       <div>
         <Helmet>
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        {autoLogout
-          ? (
-            <div className="alert alert-warning" role="alert">
-              You were automatically logged out and redirected to this page.
-            </div>
-          )
-          : null}
+        {autoLogout ? (
+          <div className="alert alert-warning" role="alert">
+            You were automatically logged out and redirected to this page.
+          </div>
+        ) : null}
         <div className="container">
           <div className="row mt-4">
             <div className="col mobile-hide">
               <div className="float-right w-100">
-                <img alt="Login graphic" className="w-75 pt-5 mt-5 mr-3 float-right " src={LoginSVG} />
+                <img
+                  alt="Login graphic"
+                  className="w-75 pt-5 mt-5 mr-3 float-right "
+                  src={LoginSVG}
+                />
               </div>
               <div className="row pl-3 pb-3">
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
                   This page is protected by reCAPTCHA, and subject to the Google
-                  {' '}
-                  <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                  <a href="https://www.google.com/policies/privacy/">
+                    Privacy Policy
+{' '}
+                  </a>
                   and
-                  {' '}
-                  <a href="https://www.google.com/policies/terms/">Terms of service</a>
+                  <a href="https://www.google.com/policies/terms/">
+                    Terms of service
+                  </a>
                   .
                 </span>
               </div>
@@ -310,7 +308,10 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
-                <label htmlFor="password" className="w-100 pt-2 font-weight-bold">
+                <label
+                  htmlFor="password"
+                  className="w-100 pt-2 font-weight-bold"
+                >
                   Password
                   <input
                     type="password"
@@ -322,56 +323,83 @@ class LoginPage extends Component<Props, State> {
                     required
                   />
                 </label>
-                {(twoFactorState === 'show')
-                  ? (
-                    <div className={`mt-3 mb-3 collapse ${twoFactorState}`}>
-                      <div className="font-weight-normal mb-3">A one-time verification code has been sent to your associated email address. Please enter the code below. </div>
-                      <label htmlFor="username" className="w-100 font-weight-bold">
-                        Verification Code
-                        <input
-                          type="text"
-                          className="form-control form-purple mt-1"
-                          id="verificationCode"
-                          placeholder="Enter your verification code here"
-                          value={verificationCode}
-                          onChange={this.handleChangeVerificationCode}
-                          required
-                        />
-                      </label>
-
-                      <div className="row pt-3">
-                        <div className="col-6 pl-0">
-                          <button type="submit" onClick={this.resubmitVerificationCode} className="mt-2 btn btn-danger w-100">
-                            Resend Code
-                          </button>
-                        </div>
-                        <div className="col-6 pl-0">
-                          <Button type="submit" variant="primary" onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.handleSubmitTwoFactorCode)} onClick={this.handleSubmitTwoFactorCode} className={`mt-2 w-100 ld-ext-right ${buttonState}`}>
-                            Sign In
-                            <div className="ld ld-ring ld-spin" />
-                          </Button>
-                        </div>
-                      </div>
+                {twoFactorState === 'show' ? (
+                  <div className={`mt-3 mb-3 collapse ${twoFactorState}`}>
+                    <div className="font-weight-normal mb-3">
+                      A one-time verification code has been sent to your
+                      associated email address. Please enter the code below.
+{' '}
                     </div>
-                  )
-                  : <div />}
-                <div className="row pt-3">
-                  {(twoFactorState !== 'show')
-                    ? (
-                      <div className="pb-2">
+                    <label
+                      htmlFor="username"
+                      className="w-100 font-weight-bold"
+                    >
+                      Verification Code
+                      <input
+                        type="text"
+                        className="form-control form-purple mt-1"
+                        id="verificationCode"
+                        placeholder="Enter your verification code here"
+                        value={verificationCode}
+                        onChange={this.handleChangeVerificationCode}
+                        required
+                      />
+                    </label>
+
+                    <div className="row pt-3">
+                      <div className="col-6 pl-0">
+                        <button
+                          type="submit"
+                          onClick={this.resubmitVerificationCode}
+                          className="mt-2 btn btn-danger w-100"
+                        >
+                          Resend Code
+                        </button>
+                      </div>
+                      <div className="col-6 pl-0">
                         <Button
                           type="submit"
-                          onKeyDown={(e) => LoginPage.enterKeyPressed(e, this.onSubmitWithReCAPTCHA)}
-                          onClick={this.onSubmitWithReCAPTCHA}
                           variant="primary"
-                          className={`px-5 w-100 ld-ext-right ${buttonState}`}
+                          onKeyDown={(e) =>
+                            LoginPage.enterKeyPressed(
+                              e,
+                              this.handleSubmitTwoFactorCode,
+                            )
+                          }
+                          onClick={this.handleSubmitTwoFactorCode}
+                          className={`mt-2 w-100 ld-ext-right ${buttonState}`}
                         >
                           Sign In
                           <div className="ld ld-ring ld-spin" />
                         </Button>
                       </div>
-                    )
-                    : <div />}
+                    </div>
+                  </div>
+                ) : (
+                  <div />
+                )}
+                <div className="row pt-3">
+                  {twoFactorState !== 'show' ? (
+                    <div className="pb-2">
+                      <Button
+                        type="submit"
+                        onKeyDown={(e) =>
+                          LoginPage.enterKeyPressed(
+                            e,
+                            this.onSubmitWithReCAPTCHA,
+                          )
+                        }
+                        onClick={this.onSubmitWithReCAPTCHA}
+                        variant="primary"
+                        className={`px-5 w-100 ld-ext-right ${buttonState}`}
+                      >
+                        Sign In
+                        <div className="ld ld-ring ld-spin" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
                 </div>
                 <div className="row pb-3">
                   <Link to="/forgot-password" className="text-decoration-none">
@@ -379,14 +407,17 @@ class LoginPage extends Component<Props, State> {
                   </Link>
                 </div>
                 <div className="row pb-1">
-                  <span className="pt-3">
-                    Don&apos;t have an account?
-                  </span>
+                  <span className="pt-3">Don&apos;t have an account?</span>
                 </div>
                 <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/find-organizations">
-                      <button type="button" className="btn btn-outline-primary w-100 ">Find Organizations</button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary w-100 "
+                      >
+                        Find Organizations
+                      </button>
                     </Link>
                   </div>
                 </div>
@@ -398,7 +429,12 @@ class LoginPage extends Component<Props, State> {
                 <div className="row">
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
-                      <button type="button" className="btn btn-outline-primary w-100">Sign Up with Us</button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary w-100"
+                      >
+                        Sign Up with Us
+                      </button>
                     </Link>
                   </div>
                 </div>

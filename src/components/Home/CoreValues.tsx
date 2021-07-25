@@ -9,14 +9,26 @@ import Profile from '../../static/images/profile-pic.svg';
 import SecureGraphic from '../../static/images/security.svg';
 
 const coreValuesMessages = defineMessages({
-  header: { id: 'home.core-values.header', defaultMessage: 'Our Core User Values:' },
-  secureAccess: { id: 'home.core-values.secure-access', defaultMessage: ' Secure Access' },
-  constantAvailability: { id: 'home.core-values.constant-availability', defaultMessage: ' Constant Availability' },
+  header: {
+    id: 'home.core-values.header',
+    defaultMessage: 'Our Core User Values:',
+  },
+  secureAccess: {
+    id: 'home.core-values.secure-access',
+    defaultMessage: ' Secure Access',
+  },
+  constantAvailability: {
+    id: 'home.core-values.constant-availability',
+    defaultMessage: ' Constant Availability',
+  },
   protectedDocumentTransfer: {
     id: 'home.core-values.protected-document-transfer',
     defaultMessage: ' Protected Document Transfer',
   },
-  easeOfUse: { id: 'home.core-values.ease-of-use', defaultMessage: ' Ease of Use' },
+  easeOfUse: {
+    id: 'home.core-values.ease-of-use',
+    defaultMessage: ' Ease of Use',
+  },
 });
 
 const CoreValues = () => {
@@ -31,29 +43,49 @@ const CoreValues = () => {
           <div className="col">
             <div className="row">
               <div className="col text-center d-flex justify-content-center">
-                <h1 className="font-weight-bold">{intl.formatMessage(coreValuesMessages.header)}</h1>
+                <h1 className="font-weight-bold">
+                  {intl.formatMessage(coreValuesMessages.header)}
+                </h1>
               </div>
             </div>
             <div className="row mt-4">
               <div className="col-md-3 mt-4 text-center">
                 <img alt="security" src={SecureGraphic} className="home-svgs" />
-                <h4 className="text-center">{intl.formatMessage(coreValuesMessages.secureAccess)}</h4>
+                <h4 className="text-center">
+                  {intl.formatMessage(coreValuesMessages.secureAccess)}
+                </h4>
               </div>
               <div className="col-md-3 mt-4 text-center">
-                <img alt="security" src={ConstantAvailabilityGraphic} className="home-svgs" />
+                <img
+                  alt="security"
+                  src={ConstantAvailabilityGraphic}
+                  className="home-svgs"
+                />
                 <h4 className="text-center">
                   {intl.formatMessage(coreValuesMessages.constantAvailability)}
                 </h4>
               </div>
               <div className="col-md-3 mt-4 text-center">
-                <img alt="security" src={DocTransferGraphic} className="home-svgs" />
+                <img
+                  alt="security"
+                  src={DocTransferGraphic}
+                  className="home-svgs"
+                />
                 <h4 className="text-center">
-                  {intl.formatMessage(coreValuesMessages.protectedDocumentTransfer)}
+                  {intl.formatMessage(
+                    coreValuesMessages.protectedDocumentTransfer,
+                  )}
                 </h4>
               </div>
               <div className="col-md-3 mt-4 text-center">
-                <img alt="security" src={ControlGraphic} className="home-svgs" />
-                <h4 className="text-center">{intl.formatMessage(coreValuesMessages.easeOfUse)}</h4>
+                <img
+                  alt="security"
+                  src={ControlGraphic}
+                  className="home-svgs"
+                />
+                <h4 className="text-center">
+                  {intl.formatMessage(coreValuesMessages.easeOfUse)}
+                </h4>
               </div>
             </div>
           </div>

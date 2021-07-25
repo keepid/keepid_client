@@ -8,7 +8,8 @@ import HubLogo from '../../static/images/hubs.svg';
 const howItWorksMessages = defineMessages({
   primaryText: {
     id: 'home.how-it-works.primary',
-    defaultMessage: 'We partner with aid organizations, leveraging existing resources and programming.',
+    defaultMessage:
+      'We partner with aid organizations, leveraging existing resources and programming.',
   },
   nonProfitHeader: {
     id: 'home.how-it-works.non-profit.header',
@@ -16,7 +17,8 @@ const howItWorksMessages = defineMessages({
   },
   nonProfitDetail: {
     id: 'home.how-it-works.non-profit.detail',
-    defaultMessage: 'Local nonprofits against homelessness become hubs for Keep.id services',
+    defaultMessage:
+      'Local nonprofits against homelessness become hubs for Keep.id services',
   },
   securityHeader: {
     id: 'home.how-it-works.security.header',
@@ -24,7 +26,8 @@ const howItWorksMessages = defineMessages({
   },
   securityDetail: {
     id: 'home.how-it-works.security.detail',
-    defaultMessage: 'Keep.id securely stores documents and records for those experiencing homelessness',
+    defaultMessage:
+      'Keep.id securely stores documents and records for those experiencing homelessness',
   },
   efficiencyHeader: {
     id: 'home.how-it-works.efficiency.header',
@@ -45,7 +48,8 @@ const HowItWorks = () => {
       <div className="row">
         <div className="col-md-6 custom-vertical-center">
           <h1 className="text-center font-weight-bold m-3 pb-5">
-            We partner with aid organizations, leveraging existing resources and programming.
+            We partner with aid organizations, leveraging existing resources and
+            programming.
           </h1>
         </div>
         <div className="col-md-6">
@@ -70,7 +74,11 @@ const HowItWorks = () => {
   );
 };
 
-const HowItWorksDetail = (props: { header: string; detail: string; image: string }) => (
+const HowItWorksDetail = (props: {
+  header: string;
+  detail: string;
+  image: string;
+}) => (
   <div className="row pb-5">
     <div className="col-md-4 mb-2">
       <img alt="Hubs" src={props.image} className="home-svgs float-right" />

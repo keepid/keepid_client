@@ -17,41 +17,43 @@ import ReviewSubmit from './pages/ReviewSubmit';
 import SignUserAgreement from './pages/SignUserAgreement';
 
 const { Step } = Steps;
-const urlPattern: RegExp = new RegExp('^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$');
+const urlPattern: RegExp = new RegExp(
+  '^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$',
+);
 
 interface Props {
-  alert: any
-  role: Role
+  alert: any;
+  role: Role;
 }
 
 interface State {
-  signupStage: number,
-  username: string,
-  password: string,
-  confirmPassword: string,
-  organizationName: string,
-  organizationWebsite: string,
-  organizationEIN: string,
-  organizationAddressStreet: string,
-  organizationAddressCity: string,
-  organizationAddressState: string,
-  organizationAddressZipcode: string,
-  organizationEmail: string,
-  organizationPhoneNumber: string,
-  firstname: string,
-  lastname: string,
-  birthDate: Date,
-  email: string,
-  phonenumber: string,
-  address: string,
-  city: string,
-  state: string,
-  zipcode: string,
-  hasSigned: boolean,
-  canvasDataUrl: string,
-  recaptchaPayload: string,
-  buttonState: string,
-  redirectLogin: boolean
+  signupStage: number;
+  username: string;
+  password: string;
+  confirmPassword: string;
+  organizationName: string;
+  organizationWebsite: string;
+  organizationEIN: string;
+  organizationAddressStreet: string;
+  organizationAddressCity: string;
+  organizationAddressState: string;
+  organizationAddressZipcode: string;
+  organizationEmail: string;
+  organizationPhoneNumber: string;
+  firstname: string;
+  lastname: string;
+  birthDate: Date;
+  email: string;
+  phonenumber: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  hasSigned: boolean;
+  canvasDataUrl: string;
+  recaptchaPayload: string;
+  buttonState: string;
+  redirectLogin: boolean;
 }
 
 export class CompleteSignupFlow extends Component<Props, State, {}> {
@@ -93,66 +95,90 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
       return `http://${url}`;
     }
     return url;
-  }
+  };
 
   static birthDateStringConverter = (birthDate: Date) => {
     const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
+    const personBirthMonthString =
+      personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth;
     const personBirthDay = birthDate.getDate();
-    const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
+    const personBirthDayString =
+      personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay;
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
     return personBirthDateFormatted;
-  }
+  };
 
-  handleChangeUsername = (e: { target: { value: string; }; }) => this.setState({ username: e.target.value });
+  handleChangeUsername = (e: { target: { value: string } }) =>
+    this.setState({ username: e.target.value });
 
-  handleChangePassword = (e: { target: { value: string; }; }) => this.setState({ password: e.target.value });
+  handleChangePassword = (e: { target: { value: string } }) =>
+    this.setState({ password: e.target.value });
 
-  handleChangeConfirmPassword = (e: { target: { value: string; }; }) => this.setState({ confirmPassword: e.target.value });
+  handleChangeConfirmPassword = (e: { target: { value: string } }) =>
+    this.setState({ confirmPassword: e.target.value });
 
-  handleChangeFirstname = (e: { target: { value: string; }; }) => this.setState({ firstname: e.target.value });
+  handleChangeFirstname = (e: { target: { value: string } }) =>
+    this.setState({ firstname: e.target.value });
 
-  handleChangeLastname = (e: { target: { value: string; }; }) => this.setState({ lastname: e.target.value });
+  handleChangeLastname = (e: { target: { value: string } }) =>
+    this.setState({ lastname: e.target.value });
 
-  handleChangeBirthdate = (date: Date, callback) => this.setState({ birthDate: date }, callback);
+  handleChangeBirthdate = (date: Date, callback) =>
+    this.setState({ birthDate: date }, callback);
 
-  handleChangeUserAddress = (e: { target: { value: string; }; }) => this.setState({ address: e.target.value });
+  handleChangeUserAddress = (e: { target: { value: string } }) =>
+    this.setState({ address: e.target.value });
 
-  handleChangeUserCity = (e: { target: { value: string; }; }) => this.setState({ city: e.target.value });
+  handleChangeUserCity = (e: { target: { value: string } }) =>
+    this.setState({ city: e.target.value });
 
-  handleChangeUserState = (e: { target: { value: string; }; }) => this.setState({ state: e.target.value });
+  handleChangeUserState = (e: { target: { value: string } }) =>
+    this.setState({ state: e.target.value });
 
-  handleChangeUserZipcode = (e: { target: { value: string; }; }) => this.setState({ zipcode: e.target.value });
+  handleChangeUserZipcode = (e: { target: { value: string } }) =>
+    this.setState({ zipcode: e.target.value });
 
-  handleChangeUserPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ phonenumber: e.target.value });
+  handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
+    this.setState({ phonenumber: e.target.value });
 
-  handleChangeUserEmail = (e: { target: { value: string; }; }) => this.setState({ email: e.target.value });
+  handleChangeUserEmail = (e: { target: { value: string } }) =>
+    this.setState({ email: e.target.value });
 
-  handleChangeOrgName = (e: { target: { value: string; }; }) => this.setState({ organizationName: e.target.value });
+  handleChangeOrgName = (e: { target: { value: string } }) =>
+    this.setState({ organizationName: e.target.value });
 
-  handleChangeOrgWebsite = (e: { target: { value: string; }; }) => this.setState({ organizationWebsite: e.target.value });
+  handleChangeOrgWebsite = (e: { target: { value: string } }) =>
+    this.setState({ organizationWebsite: e.target.value });
 
-  handleChangeEIN = (e: { target: { value: string; }; }) => this.setState({ organizationEIN: e.target.value });
+  handleChangeEIN = (e: { target: { value: string } }) =>
+    this.setState({ organizationEIN: e.target.value });
 
-  handleChangeOrgAddress = (e: { target: { value: string; }; }) => this.setState({ organizationAddressStreet: e.target.value });
+  handleChangeOrgAddress = (e: { target: { value: string } }) =>
+    this.setState({ organizationAddressStreet: e.target.value });
 
-  handleChangeOrgCity = (e: { target: { value: string; }; }) => this.setState({ organizationAddressCity: e.target.value });
+  handleChangeOrgCity = (e: { target: { value: string } }) =>
+    this.setState({ organizationAddressCity: e.target.value });
 
-  handleChangeOrgState = (e: { target: { value: string; }; }) => this.setState({ organizationAddressState: e.target.value });
+  handleChangeOrgState = (e: { target: { value: string } }) =>
+    this.setState({ organizationAddressState: e.target.value });
 
-  handleChangeOrgZipcode = (e: { target: { value: string; }; }) => this.setState({ organizationAddressZipcode: e.target.value });
+  handleChangeOrgZipcode = (e: { target: { value: string } }) =>
+    this.setState({ organizationAddressZipcode: e.target.value });
 
-  handleChangeOrgPhoneNumber = (e: { target: { value: string; }; }) => this.setState({ organizationPhoneNumber: e.target.value });
+  handleChangeOrgPhoneNumber = (e: { target: { value: string } }) =>
+    this.setState({ organizationPhoneNumber: e.target.value });
 
-  handleChangeOrgEmail = (e: { target: { value: string; }; }) => this.setState({ organizationEmail: e.target.value });
+  handleChangeOrgEmail = (e: { target: { value: string } }) =>
+    this.setState({ organizationEmail: e.target.value });
 
   handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
 
-  handleCanvasSign = (dataUrl: string) => this.setState({ canvasDataUrl: dataUrl });
+  handleCanvasSign = (dataUrl: string) =>
+    this.setState({ canvasDataUrl: dataUrl });
 
   handleChangeRecaptcha = (recaptchaPayload: string) => {
     this.setState({ recaptchaPayload }, this.handleFormSubmit);
-  }
+  };
 
   handleContinue = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
@@ -160,7 +186,7 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
 
   handlePrevious = (): void => {
     this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
-  }
+  };
 
   handleFormSubmit = (): void => {
     const {
@@ -187,7 +213,8 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
       recaptchaPayload,
     } = this.state;
     const { alert } = this.props;
-    const birthDateString = CompleteSignupFlow.birthDateStringConverter(birthDate);
+    const birthDateString =
+      CompleteSignupFlow.birthDateStringConverter(birthDate);
     const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
 
     // submit organization and director information
@@ -218,27 +245,29 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
         twoFactorOn: false,
         recaptchaPayload,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          status,
-          message,
-        } = responseJSON;
+        const { status, message } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
           this.setState({ buttonState: '' });
-          alert.show(`You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`);
+          alert.show(
+            `You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`,
+          );
           this.setState({ redirectLogin: true });
         } else {
           alert.show(message);
           this.setState({ buttonState: '' });
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         alert.show(`Server Failure: ${error}`);
         this.setState({ buttonState: '' });
       });
-  }
+  };
 
-  handleFormJumpTo = (pageNumber: number) => this.setState({ signupStage: pageNumber });
+  handleFormJumpTo = (pageNumber: number) =>
+    this.setState({ signupStage: pageNumber });
 
   handleSignupComponentRender = () => {
     const {
@@ -380,29 +409,20 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
         );
       }
       default: {
-        return (
-          <div />
-        );
+        return <div />;
       }
     }
-  }
+  };
 
   render() {
-    const {
-      signupStage,
-      redirectLogin,
-    } = this.state;
+    const { signupStage, redirectLogin } = this.state;
     if (redirectLogin) {
-      return (
-        <Redirect to="/login" />
-      );
+      return <Redirect to="/login" />;
     }
     return (
       <div>
         <Helmet>
-          <title>
-            Sign Up
-          </title>
+          <title>Sign Up</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="container mt-5">
@@ -413,7 +433,11 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
             <Step title="Sign User Agreement" description="" />
             <Step title="Review & Submit" description="" />
           </Steps>
-          <ProgressBar className="d-md-none" now={signupStage * 25} label={`Step ${signupStage + 1} out of 5`} />
+          <ProgressBar
+            className="d-md-none"
+            now={signupStage * 25}
+            label={`Step ${signupStage + 1} out of 5`}
+          />
           {this.handleSignupComponentRender()}
         </div>
       </div>

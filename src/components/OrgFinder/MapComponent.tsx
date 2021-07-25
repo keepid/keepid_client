@@ -5,17 +5,13 @@ import uuid from 'react-uuid';
 import OrganizationMarker from './OrganizationMarker';
 
 interface Props {
-  organizations: any,
-  lat: number,
-  lng: number,
+  organizations: any;
+  lat: number;
+  lng: number;
 }
 
 function MapComponent(props: Props): React.ReactElement {
-  const {
-    organizations,
-    lat,
-    lng,
-  } = props;
+  const { organizations, lat, lng } = props;
 
   return (
     <GoogleMap
@@ -25,21 +21,19 @@ function MapComponent(props: Props): React.ReactElement {
         lng,
       }}
     >
-      {organizations.map(
-        (organization) => (
-          <OrganizationMarker
-            key={uuid()}
-            lat={organization.orgLat}
-            lng={organization.orgLng}
-            orgName={organization.orgName}
-            address={organization.orgAddress}
-            phone={organization.orgPhoneNumber}
-            email={organization.orgEmail}
-            website={organization.orgWebsite}
-            showInfo={organization.showInfo}
-          />
-        ),
-      )}
+      {organizations.map((organization) => (
+        <OrganizationMarker
+          key={uuid()}
+          lat={organization.orgLat}
+          lng={organization.orgLng}
+          orgName={organization.orgName}
+          address={organization.orgAddress}
+          phone={organization.orgPhoneNumber}
+          email={organization.orgEmail}
+          website={organization.orgWebsite}
+          showInfo={organization.showInfo}
+        />
+      ))}
     </GoogleMap>
   );
 }

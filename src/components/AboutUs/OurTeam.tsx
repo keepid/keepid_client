@@ -1,7 +1,10 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-import BaseCard, { CardImageLoc, CardSize } from '../../components/BaseComponents/BaseCard';
+import BaseCard, {
+  CardImageLoc,
+  CardSize,
+} from '../../components/BaseComponents/BaseCard';
 import ConnorJPG from '../../static/images/members/connor.jpg';
 import DanielJoo from '../../static/images/members/danielJoo.jpg';
 import JacksonJPG from '../../static/images/members/jackson.jpg';
@@ -28,8 +31,9 @@ class OurTeam extends React.Component<{}, State> {
         <div className="jumbotron-fluid mt-5">
           <h1 className="mb-2">Our Team</h1>
           <p className="lead-medium pt-2">
-            The current team members of Keep.id who are striving to keep your data safe and secure through our
-            electronic storage solution, listed alphabetically.
+            The current team members of Keep.id who are striving to keep your
+            data safe and secure through our electronic storage solution, listed
+            alphabetically.
           </p>
         </div>
         <div className="jumbotron-fluid mt-5">
