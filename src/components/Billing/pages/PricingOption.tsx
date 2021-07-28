@@ -20,6 +20,7 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
   const handleFetchPriceObject = async () => {
     await fetch(`${getServerURL()}/get-price`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -43,6 +44,7 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
   const handleFetchProductObject = async (productId) => {
     await fetch(`${getServerURL()}/get-product`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

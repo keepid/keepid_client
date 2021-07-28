@@ -43,10 +43,6 @@ const PaymentPage = ({
     }
   }, [subscriptionData]);
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
-
   // Initializing stripe imports
   const stripe = useStripe();
   const elements = useElements();
@@ -148,11 +144,12 @@ const PaymentPage = ({
   const handleGetOrgEmail = async () => {
     await fetch(`${getServerURL()}/get-orgEmail`, {
       method: 'GET',
+      credentials: 'include',
     }).then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON) {
           console.log('ResponseJSON from handleGetOrgEmail: ', responseJSON);
-        // setEmail(responseJSON);
+          setEmail(responseJSON.orgEmail);
         } else {
           console.log('Customer not found, are you sure it exists in the db?');
         }
@@ -162,6 +159,13 @@ const PaymentPage = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    /*
+        Billing flow is:
+            1) Get organization email based on login user info
+            2) Retrieve stripe customer obj based on email
+            3) Create subscription using customer obj
+            4) Confirm card payment with subscription
+    */
     handleGetOrgEmail();
   };
 
@@ -188,16 +192,6 @@ const PaymentPage = ({
             <div className="col">
               <form id="payment-form" className="form-signin pt-10">
                 <h1 className="h3 mb-3 font-weight-normal">Please enter your information below</h1>
-                <label htmlFor="email" className="w-100 font-weight-bold">
-                  Email
-                  <input
-                    type="email"
-                    className="form-control form-purple mt-1"
-                    id="email"
-                    placeholder="johnDoe@gmail.com"
-                    onChange={handleEmailChange}
-                  />
-                </label>
                 <CardElement />
                 <button className="mt-2 btn btn-success loginButtonBackground w-50 ld-ext-left" type="submit" onClick={handlePrevious}>Back</button>
                 <br />

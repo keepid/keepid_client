@@ -21,7 +21,6 @@ const PricingPage = ({ handleContinue, setSelectedPriceId }: props) => {
           handleContinue={handleContinue}
         />
       ))}
-      <button className="mt-2 btn btn-success loginButtonBackground w-100 ld-ext-right" type="submit" onClick={handleContinue}>Continue</button>
     </div>
   );
 };
