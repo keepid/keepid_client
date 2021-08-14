@@ -19,12 +19,12 @@ interface State {
   searchLoading: boolean;
 }
 
-const APIKey = 'AIzaSyA4vdAgDjHcX0fVWh6I8IQ-Yy1FQ_Be8wc';
+const APIKey = 'AIzaSyChzn2pZqOxrpuHhFo20bbKi0Aw6gDdgXU';
 
 Geocode.setApiKey(APIKey);
 Geocode.setLanguage('en');
 Geocode.setRegion('us');
-// Geocode.enableDebug(); // for debugging
+Geocode.enableDebug(); // for debugging
 
 // helper function to convert degree to radian
 const degToRad = (degree: number): number => degree * (Math.PI / 180);
@@ -184,12 +184,15 @@ class FindOrganization extends Component<Props, State> {
     };
     Object.keys(urlParams).forEach((key) =>
       url.searchParams.append(key, urlParams[key]));
+    console.log('here1', url);
     fetch(url.toString(), {
       method: 'GET',
     })
       .then((response) => response.json())
       .then((responseJSON) => {
+        console.log('responseJSON', responseJSON);
         const { status } = responseJSON;
+        console.log('status', status);
 
         if (status === 'OK') {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
@@ -249,13 +252,10 @@ class FindOrganization extends Component<Props, State> {
           <div>
             <h5>
               <span className="font-weight-bold">
-                {organizationsWithinDistance.length}
+                {organizationsWithinDistance.length}{' '}
               </span>
               <span className="font-weight-light">
-                results within
-                {distance}
-                km of
-                {zipcodeSearch}
+                results within {distance} km of {zipcodeSearch}
               </span>
             </h5>
             <div className="row">
