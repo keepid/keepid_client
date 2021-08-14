@@ -109,6 +109,7 @@ const PaymentPage = ({
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
+          console.log('ResponseJSON: ', responseJSON);
           if (responseJSON) {
             console.log('Subscription successfully created');
             setSubscriptionId(responseJSON.id);
