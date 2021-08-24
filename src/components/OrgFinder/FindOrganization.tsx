@@ -24,7 +24,7 @@ const APIKey = 'AIzaSyChzn2pZqOxrpuHhFo20bbKi0Aw6gDdgXU';
 Geocode.setApiKey(APIKey);
 Geocode.setLanguage('en');
 Geocode.setRegion('us');
-Geocode.enableDebug(); // for debugging
+Geocode.enableDebug(false); // for debugging
 
 // helper function to convert degree to radian
 const degToRad = (degree: number): number => degree * (Math.PI / 180);
@@ -184,15 +184,12 @@ class FindOrganization extends Component<Props, State> {
     };
     Object.keys(urlParams).forEach((key) =>
       url.searchParams.append(key, urlParams[key]));
-    console.log('here1', url);
     fetch(url.toString(), {
       method: 'GET',
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        console.log('responseJSON', responseJSON);
         const { status } = responseJSON;
-        console.log('status', status);
 
         if (status === 'OK') {
           const zipcodeLatLng = responseJSON.results[0].geometry.location;
