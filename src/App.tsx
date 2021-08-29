@@ -3,6 +3,7 @@ import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
 
 import React from 'react';
+import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 import {
   BrowserRouter as Router,
@@ -44,6 +45,11 @@ import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+
+window.onload = () => {
+  ReactGA.initialize('G-Q79GHZ23KS');
+  ReactGA.pageview(window.location.pathname + window.location.search);
+};
 
 interface State {
   role: Role;
