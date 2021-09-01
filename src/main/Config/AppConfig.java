@@ -8,6 +8,8 @@ import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
+import Database.UserV2.UserV2Dao;
+import Database.UserV2.UserV2DaoFactory;
 import Issue.IssueController;
 import Organization.Organization;
 import Organization.OrganizationController;
@@ -17,7 +19,11 @@ import Security.AccountSecurityController;
 import Security.EncryptionUtils;
 import User.User;
 import User.UserController;
+<<<<<<< HEAD
 import User.UserType;
+=======
+import User.UserControllerV2;
+>>>>>>> master
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import io.javalin.http.HttpResponseException;
@@ -36,6 +42,7 @@ public class AppConfig {
     Javalin app = AppConfig.createJavalinApp(deploymentLevel);
     MongoConfig.getMongoClient();
     UserDao userDao = UserDaoFactory.create(deploymentLevel);
+    UserV2Dao userV2Dao = UserV2DaoFactory.create(deploymentLevel);
     TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
     OrgDao orgDao = OrgDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
@@ -59,7 +66,11 @@ public class AppConfig {
     IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController();
     AdminController adminController = new AdminController(userDao, db);
+<<<<<<< HEAD
     ProductionController productionController = new ProductionController(orgDao, userDao);
+=======
+    UserControllerV2 userControllerV2 = new UserControllerV2(userV2Dao);
+>>>>>>> master
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -112,6 +123,7 @@ public class AppConfig {
     app.post("/get-all-orgs", orgController.listOrgs);
     app.post("/get-all-activities", activityController.findMyActivities);
 
+<<<<<<< HEAD
     /* --------------- PRODUCTION API --------------- */
 
     // TODO use Access manager for this instead https://javalin.io/documentation#access-manager
@@ -173,6 +185,13 @@ public class AppConfig {
     app.get("/users/:username", productionController.readUser);
     app.patch("/users/:username", productionController.updateUser);
     app.delete("/users/:username", productionController.deleteUser);
+=======
+    /* --------------- SEARCH FUNCTIONALITY ------------- */
+    app.post("/signup", userControllerV2.signup);
+    app.patch("/users/:id", userControllerV2.addInformation);
+    app.get("/info/:id", userControllerV2.getInformation);
+
+>>>>>>> master
     return app;
   }
 
