@@ -139,6 +139,21 @@ public class UserController {
         ctx.result(response.toJSON().toString());
       };
 
+  public Handler deleteUser =
+      ctx -> {
+        log.info("Starting deleteUser handler");
+        JSONObject req = new JSONObject(ctx.body());
+        String sessionUsername = ctx.sessionAttribute("username");
+        String password = req.getString("password").strip();
+        log.info("Attempting to delete " + sessionUsername);
+
+        DeleteUserService deleteUserService =
+            new DeleteUserService(db, userDao, sessionUsername, password);
+        Message response = deleteUserService.executeAndGetResponse();
+        log.info(response.toString() + response.getErrorDescription());
+        ctx.result(response.toJSON().toString());
+      };
+
   public Handler createNewInvitedUser =
       ctx -> {
         log.info("Starting createNewUser handler");
