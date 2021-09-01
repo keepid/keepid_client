@@ -78,14 +78,18 @@ public class UserDaoImpl implements UserDao {
 
   @Override
   public void update(User user) {
-    Map<String, Object> keyValueMap = user.toMap();
-    Bson statement =
-        combine(
-            user.toMap().keySet().stream()
-                .filter(k -> keyValueMap.get(k) != null)
-                .map(k -> set(k, user.toMap().get(k)))
-                .collect(Collectors.toList()));
-    userCollection.updateOne(eq("username", user.getUsername()), statement);
+    userCollection.replaceOne(eq("username", user.getUsername()), user);
+//    User existingUser = userCollection.find(eq("username", user.getUsername())).first();
+//    Map<String, Object> existingUserMap = user.toMap();
+//
+//    Map<String, Object> keyValueMap = user.toMap();
+//    Bson statement =
+//        combine(
+//            keyValueMap.keySet().stream()
+//                .filter(k -> keyValueMap.get(k) != null && keyValueMap.get(k) != existingUserMap.get(k))
+//                .map(k -> set(k, keyValueMap.get(k)))
+//                .collect(Collectors.toList()));
+//    userCollection.updateOne(eq("username", user.getUsername()), statement);
   }
 
   @Override

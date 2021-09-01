@@ -1,5 +1,6 @@
 package Organization;
 
+import Organization.Requests.OrganizationUpdateRequest;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,11 +10,13 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Setter
@@ -88,6 +91,7 @@ public class Organization implements Serializable {
       throw new ValidationException(OrganizationValidationMessage.toOrganizationMessageJSON(ovm));
 
     Date date = new Date();
+    this.id = new ObjectId();
 
     this.orgName = orgName;
     this.orgWebsite = orgWebsite;
@@ -304,4 +308,62 @@ public class Organization implements Serializable {
     result.remove("id");
     return result;
   }
+
+  public JSONObject serialize() {
+    JSONObject orgJSON = new JSONObject();
+    orgJSON.put("orgName", orgName);
+    orgJSON.put("orgWebsite", orgWebsite);
+    orgJSON.put("orgEIN", orgEIN);
+    orgJSON.put("orgStreetAddress", orgStreetAddress);
+    orgJSON.put("orgCity", orgCity);
+    orgJSON.put("orgState", orgState);
+    orgJSON.put("orgZipcode", orgZipcode);
+    orgJSON.put("orgEmail", orgEmail);
+    orgJSON.put("orgPhoneNumber", orgPhoneNumber);
+//    orgJSON.put("id", id.toHexString());
+    orgJSON.put("creationDate", creationDate);
+    return orgJSON;
+  }
+
+  public Organization updateProperties (OrganizationUpdateRequest updateRequest) {
+    if (updateRequest.getOrgName() != null && updateRequest.getOrgName().isPresent()) {
+      this.setOrgName(updateRequest.getOrgName().get());
+    }
+
+    if (updateRequest.getOrgWebsite() != null && updateRequest.getOrgWebsite().isPresent()) {
+      this.setOrgWebsite(updateRequest.getOrgWebsite().get());
+    }
+
+    if (updateRequest.getOrgEIN() != null && updateRequest.getOrgEIN().isPresent()) {
+      this.setOrgEIN(updateRequest.getOrgEIN().get());
+    }
+
+    if (updateRequest.getOrgStreetAddress() != null && updateRequest.getOrgStreetAddress().isPresent()) {
+      this.setOrgStreetAddress(updateRequest.getOrgStreetAddress().get());
+    }
+
+    if (updateRequest.getOrgCity() != null && updateRequest.getOrgCity().isPresent()) {
+      this.setOrgCity(updateRequest.getOrgCity().get());
+    }
+
+    if (updateRequest.getOrgState() != null && updateRequest.getOrgState().isPresent()) {
+      this.setOrgState(updateRequest.getOrgState().get());
+    }
+
+    if (updateRequest.getOrgZipcode() != null && updateRequest.getOrgZipcode().isPresent()) {
+      this.setOrgZipcode(updateRequest.getOrgZipcode().get());
+    }
+
+    if (updateRequest.getOrgEmail() != null && updateRequest.getOrgEmail().isPresent()) {
+      this.setOrgEmail(updateRequest.getOrgEmail().get());
+    }
+
+    if (updateRequest.getOrgPhoneNumber() != null && updateRequest.getOrgPhoneNumber().isPresent()) {
+      this.setOrgPhoneNumber(updateRequest.getOrgPhoneNumber().get());
+    }
+
+    return this;
+  }
 }
+
+

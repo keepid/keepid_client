@@ -73,14 +73,16 @@ public class OrgDaoImpl implements OrgDao {
 
   @Override
   public void update(Organization organization) {
-    Map<String, Object> keyValueMap = organization.toMap();
-    Bson statement =
-        combine(
-            organization.toMap().keySet().stream()
-                .filter(k -> keyValueMap.get(k) != null)
-                .map(k -> set(k, organization.toMap().get(k)))
-                .collect(Collectors.toList()));
-    orgCollection.updateOne(eq(ORG_NAME_KEY, organization.getOrgName()), statement);
+    orgCollection.replaceOne(eq(ORG_NAME_KEY, organization.getOrgName()), organization);
+
+//    Map<String, Object> keyValueMap = organization.toMap();
+//    Bson statement =
+//        combine(
+//            organization.toMap().keySet().stream()
+//                .filter(k -> keyValueMap.get(k) != null)
+//                .map(k -> set(k, organization.toMap().get(k)))
+//                .collect(Collectors.toList()));
+//    orgCollection.updateOne(eq(ORG_NAME_KEY, organization.getOrgName()), statement);
   }
 
   @Override
