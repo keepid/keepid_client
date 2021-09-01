@@ -19,11 +19,8 @@ import Security.AccountSecurityController;
 import Security.EncryptionUtils;
 import User.User;
 import User.UserController;
-<<<<<<< HEAD
-import User.UserType;
-=======
 import User.UserControllerV2;
->>>>>>> master
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import io.javalin.http.HttpResponseException;
@@ -66,11 +63,9 @@ public class AppConfig {
     IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController();
     AdminController adminController = new AdminController(userDao, db);
-<<<<<<< HEAD
     ProductionController productionController = new ProductionController(orgDao, userDao);
-=======
     UserControllerV2 userControllerV2 = new UserControllerV2(userV2Dao);
->>>>>>> master
+
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -100,6 +95,7 @@ public class AppConfig {
     app.post("/upload-pfp", userController.uploadPfp);
     app.post("/load-pfp", userController.loadPfp);
     app.post("/username-exists", userController.usernameExists);
+    app.post("/delete-user", userController.deleteUser);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
@@ -123,75 +119,85 @@ public class AppConfig {
     app.post("/get-all-orgs", orgController.listOrgs);
     app.post("/get-all-activities", activityController.findMyActivities);
 
-<<<<<<< HEAD
     /* --------------- PRODUCTION API --------------- */
 
     // TODO use Access manager for this instead https://javalin.io/documentation#access-manager
-    app.before("/organizations*", ctx -> {
-      String sessionUsername = ctx.sessionAttribute("username");
+    app.before(
+        "/organizations*",
+        ctx -> {
+          String sessionUsername = ctx.sessionAttribute("username");
 
-      var sessionUser = userDao.get(sessionUsername);
+          var sessionUser = userDao.get(sessionUsername);
 
-      if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
-        throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
-      } else if (sessionUser.get().getUserType() != UserType.Developer) {
-        throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
-      }
-    });
+          if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
+            throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
+          } else if (sessionUser.get().getUserType() != UserType.Developer) {
+            throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
+          }
+        });
 
     app.get("/organizations", productionController.readAllOrgs);
     app.post("/organizations", productionController.createOrg);
 
-    app.before("/organizations/:orgId", ctx -> {
-      ObjectId objectId = new ObjectId(ctx.pathParam("orgId"));
-      Optional<Organization> organizationOptional = orgDao.get(objectId);
+    app.before(
+        "/organizations/:orgId",
+        ctx -> {
+          ObjectId objectId = new ObjectId(ctx.pathParam("orgId"));
+          Optional<Organization> organizationOptional = orgDao.get(objectId);
 
-      if (organizationOptional.isEmpty()) {
-        throw new HttpResponseException(404, "Organization with id '" + objectId.toHexString() + "' not found", new HashMap<>());
-      }
-    });
+          if (organizationOptional.isEmpty()) {
+            throw new HttpResponseException(
+                404,
+                "Organization with id '" + objectId.toHexString() + "' not found",
+                new HashMap<>());
+          }
+        });
     app.get("/organizations/:orgId", productionController.readOrg);
     app.patch("/organizations/:orgId", productionController.updateOrg);
     app.delete("/organizations/:orgId", productionController.deleteOrg);
     app.get("/organizations/:orgId/users", productionController.getUsersFromOrg);
 
-    app.before("/users*", ctx -> {
-      if (ctx.method().equals("OPTIONS")) {
-        return;
-      }
+    app.before(
+        "/users*",
+        ctx -> {
+          if (ctx.method().equals("OPTIONS")) {
+            return;
+          }
 
-      String sessionUsername = ctx.sessionAttribute("username");
-      var sessionUser = userDao.get(sessionUsername);
+          String sessionUsername = ctx.sessionAttribute("username");
+          var sessionUser = userDao.get(sessionUsername);
 
-      if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
-        throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
-      } else if (sessionUser.get().getUserType() != UserType.Developer) {
-        throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
-      }
-    });
+          if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
+            throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
+          } else if (sessionUser.get().getUserType() != UserType.Developer) {
+            throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
+          }
+        });
 
     app.get("/users", productionController.readAllUsers);
     app.post("/users", productionController.createUser);
 
-    app.before("/users/:username", ctx -> {
-      String username = ctx.pathParam("username");
-      Optional<User> userOptional = userDao.get(username);
+    app.before(
+        "/users/:username",
+        ctx -> {
+          String username = ctx.pathParam("username");
+          Optional<User> userOptional = userDao.get(username);
 
-      if (userOptional.isEmpty()) {
-        throw new HttpResponseException(404, "User with username '" + username + "' not found", new HashMap<>());
-      }
-    });
+          if (userOptional.isEmpty()) {
+            throw new HttpResponseException(
+                404, "User with username '" + username + "' not found", new HashMap<>());
+          }
+        });
 
     app.get("/users/:username", productionController.readUser);
     app.patch("/users/:username", productionController.updateUser);
     app.delete("/users/:username", productionController.deleteUser);
-=======
+
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/signup", userControllerV2.signup);
     app.patch("/users/:id", userControllerV2.addInformation);
     app.get("/info/:id", userControllerV2.getInformation);
 
->>>>>>> master
     return app;
   }
 
