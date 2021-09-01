@@ -2,6 +2,10 @@ package User;
 
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
@@ -9,9 +13,11 @@ import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
+@Setter
 public class User {
   private ObjectId id;
 
@@ -52,6 +58,7 @@ public class User {
   private String password;
 
   @BsonProperty(value = "privilegeLevel")
+  @JsonProperty("privilegeLevel")
   private UserType userType;
 
   @BsonProperty(value = "twoFactorOn")
@@ -345,7 +352,7 @@ public class User {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("User {");
-    sb.append("id=").append(this.id);
+    sb.append("id=").append(this.id.toHexString());
     sb.append(", firstName=").append(this.firstName);
     sb.append(", lastName=").append(this.lastName);
     sb.append(", birthDate=").append(this.birthDate);
@@ -418,5 +425,13 @@ public class User {
     userJSON.put("state", state);
     userJSON.put("zipcode", zipcode);
     return userJSON;
+  }
+
+  public Map<String, Object> toMap() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> result =
+        objectMapper.convertValue(this, new TypeReference<Map<String, Object>>() {});
+    result.remove("id");
+    return result;
   }
 }

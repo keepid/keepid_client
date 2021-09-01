@@ -58,6 +58,11 @@ public class OrgDaoTestImpl implements OrgDao {
   }
 
   @Override
+  public void delete(ObjectId objectId) {
+    // TODO
+  }
+
+  @Override
   public void update(Organization organization) {
     if (orgMap.containsKey(organization.getOrgName())) {
       orgMap.put(organization.getOrgName(), organization);

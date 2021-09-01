@@ -7,13 +7,18 @@ import User.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 public class UserDaoImpl implements UserDao {
   private MongoCollection<User> userCollection;
@@ -47,6 +52,11 @@ public class UserDaoImpl implements UserDao {
   }
 
   @Override
+  public List<User> getAllFromOrg(ObjectId objectId) {
+    return userCollection.find(eq("_id", objectId)).into(new ArrayList<>());
+  }
+
+  @Override
   public int size() {
     return (int) userCollection.countDocuments();
   }
@@ -68,7 +78,14 @@ public class UserDaoImpl implements UserDao {
 
   @Override
   public void update(User user) {
-    userCollection.replaceOne(eq("username", user.getUsername()), user);
+    Map<String, Object> keyValueMap = user.toMap();
+    Bson statement =
+        combine(
+            user.toMap().keySet().stream()
+                .filter(k -> keyValueMap.get(k) != null)
+                .map(k -> set(k, user.toMap().get(k)))
+                .collect(Collectors.toList()));
+    userCollection.updateOne(eq("username", user.getUsername()), statement);
   }
 
   @Override
