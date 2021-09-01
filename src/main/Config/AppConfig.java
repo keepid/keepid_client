@@ -8,6 +8,8 @@ import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
 import Database.User.UserDaoFactory;
+import Database.UserV2.UserV2Dao;
+import Database.UserV2.UserV2DaoFactory;
 import Issue.IssueController;
 import Organization.OrganizationController;
 import PDF.PdfController;
@@ -15,6 +17,7 @@ import Production.ProductionController;
 import Security.AccountSecurityController;
 import Security.EncryptionUtils;
 import User.UserController;
+import User.UserControllerV2;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 
@@ -28,6 +31,7 @@ public class AppConfig {
     Javalin app = AppConfig.createJavalinApp(deploymentLevel);
     MongoConfig.getMongoClient();
     UserDao userDao = UserDaoFactory.create(deploymentLevel);
+    UserV2Dao userV2Dao = UserV2DaoFactory.create(deploymentLevel);
     TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
     OrgDao orgDao = OrgDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
@@ -52,6 +56,7 @@ public class AppConfig {
     ActivityController activityController = new ActivityController();
     AdminController adminController = new AdminController(userDao, db);
     ProductionController productionController = new ProductionController(orgDao, userDao);
+    UserControllerV2 userControllerV2 = new UserControllerV2(userV2Dao);
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
 
@@ -116,6 +121,12 @@ public class AppConfig {
     app.get("/users/:username", productionController.readUser);
     app.patch("/users/:username", productionController.updateUser);
     app.delete("/users/:username", productionController.deleteUser);
+
+    /* --------------- SEARCH FUNCTIONALITY ------------- */
+    app.post("/signup", userControllerV2.signup);
+    app.patch("/users/:id", userControllerV2.addInformation);
+    app.get("/info/:id", userControllerV2.getInformation);
+
     return app;
   }
 
