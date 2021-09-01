@@ -2,42 +2,57 @@ package Organization;
 
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
-public class Organization {
+@Setter
+public class Organization implements Serializable {
   private ObjectId id;
 
   @BsonProperty(value = "orgName")
   private String orgName;
 
   @BsonProperty(value = "website")
+  @JsonProperty("website")
   private String orgWebsite;
 
   @BsonProperty(value = "ein")
+  @JsonProperty("ein")
   private String orgEIN;
 
   @BsonProperty(value = "address")
+  @JsonProperty("address")
   private String orgStreetAddress;
 
   @BsonProperty(value = "city")
+  @JsonProperty("city")
   private String orgCity;
 
   @BsonProperty(value = "state")
+  @JsonProperty("state")
   private String orgState;
 
   @BsonProperty(value = "zipcode")
+  @JsonProperty("zipcode")
   private String orgZipcode;
 
   @BsonProperty(value = "email")
+  @JsonProperty("email")
   private String orgEmail;
 
   @BsonProperty(value = "phone")
+  @JsonProperty("phone")
   private String orgPhoneNumber;
 
   @BsonProperty(value = "creationDate")
@@ -236,7 +251,7 @@ public class Organization {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("Organization {");
-    sb.append("id=").append(this.id);
+    sb.append("id=").append(this.id.toHexString());
     sb.append(", orgName=").append(this.orgName);
     sb.append(", orgWebsite=").append(this.orgWebsite);
     sb.append(", orgEIN=").append(this.orgEIN);
@@ -280,5 +295,13 @@ public class Organization {
         this.orgZipcode,
         this.orgEmail,
         this.orgPhoneNumber);
+  }
+
+  public Map<String, Object> toMap() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> result =
+        objectMapper.convertValue(this, new TypeReference<Map<String, Object>>() {});
+    result.remove("id");
+    return result;
   }
 }

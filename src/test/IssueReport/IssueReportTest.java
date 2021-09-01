@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class IssueReportTest {
   public static final String issueReportTestURL =
       Objects.requireNonNull(System.getenv("ISSUE_REPORT_TESTURL"));
@@ -50,7 +52,7 @@ public class IssueReportTest {
             .header("accept", "application/json")
             .body(input.toString())
             .asEmpty();
-    assert (posted.isSuccess());
+    assertThat(posted.isSuccess());
   }
 
   // I commented the test below as it would send a message in issue reports channel in slack when
