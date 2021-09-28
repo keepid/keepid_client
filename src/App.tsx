@@ -317,7 +317,7 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route
+              {/* <Route
                 path="/upload-document"
                 render={() => {
                   if (
@@ -329,7 +329,10 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Redirect to="/error" />;
                 }}
-              />
+              /> */}
+              <Route path="/upload-document">
+                <UploadDocs userRole={Role.Client} />
+              </Route>
               <Route
                 path="/my-documents"
                 render={() => {
