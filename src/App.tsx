@@ -23,6 +23,7 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
+import DropzoneTest from './components/Documents/DropzoneTest';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -331,7 +332,7 @@ class App extends React.Component<{}, State, {}> {
                 }}
               /> */}
               <Route path="/upload-document">
-                <UploadDocs userRole={Role.Client} />
+                <DropzoneTest userRole={Role.Client} />
               </Route>
               <Route
                 path="/my-documents"
