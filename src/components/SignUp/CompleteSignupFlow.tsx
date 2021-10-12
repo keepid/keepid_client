@@ -1,7 +1,7 @@
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 
 import { Steps } from 'antd';
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { ProgressBar } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
@@ -56,139 +56,150 @@ interface State {
   redirectLogin: boolean;
 }
 
-export class CompleteSignupFlow extends Component<Props, State, {}> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      signupStage: 0,
-      organizationName: '',
-      organizationWebsite: '',
-      organizationEIN: '',
-      organizationAddressStreet: '',
-      organizationAddressCity: '',
-      organizationAddressState: USStates[0].abbreviation,
-      organizationAddressZipcode: '',
-      organizationEmail: '',
-      organizationPhoneNumber: '',
-      firstname: '',
-      lastname: '',
-      birthDate: new Date(),
-      email: '',
-      phonenumber: '',
-      address: '',
-      city: '',
-      state: '',
-      zipcode: '',
-      username: '',
-      password: '',
-      confirmPassword: '',
-      hasSigned: false,
-      canvasDataUrl: '',
-      recaptchaPayload: '',
-      buttonState: '',
-      redirectLogin: false,
-    };
+export const addHttp = (url: string) => {
+  if (!urlPattern.test(url)) {
+    return `http://${url}`;
   }
+  return url;
+};
 
-  static addHttp = (url: string) => {
-    if (!urlPattern.test(url)) {
-      return `http://${url}`;
-    }
-    return url;
+export const birthDateStringConverter = (birthDate: Date) => {
+  const personBirthMonth = birthDate.getMonth() + 1;
+  const personBirthMonthString =
+    personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth;
+  const personBirthDay = birthDate.getDate();
+  const personBirthDayString =
+    personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay;
+  const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
+  return personBirthDateFormatted;
+};
+
+const CompleteSignupFlow: React.FC<Props> = (props) => {
+  const [stateObj, setState] = useState<State>({
+    signupStage: 0,
+    organizationName: '',
+    organizationWebsite: '',
+    organizationEIN: '',
+    organizationAddressStreet: '',
+    organizationAddressCity: '',
+    organizationAddressState: USStates[0].abbreviation,
+    organizationAddressZipcode: '',
+    organizationEmail: '',
+    organizationPhoneNumber: '',
+    firstname: '',
+    lastname: '',
+    birthDate: new Date(),
+    email: '',
+    phonenumber: '',
+    address: '',
+    city: '',
+    state: '',
+    zipcode: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    hasSigned: false,
+    canvasDataUrl: '',
+    recaptchaPayload: '',
+    buttonState: '',
+    redirectLogin: false,
+  });
+
+  const setStateHelper = (key, value) => {
+    setState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
   };
 
-  static birthDateStringConverter = (birthDate: Date) => {
-    const personBirthMonth = birthDate.getMonth() + 1;
-    const personBirthMonthString =
-      personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth;
-    const personBirthDay = birthDate.getDate();
-    const personBirthDayString =
-      personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay;
-    const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
-    return personBirthDateFormatted;
+  const handleChangeUsername = (e: { target: { value: string } }) =>
+    setStateHelper('username', e.target.value);
+
+  const handleChangePassword = (e: { target: { value: string } }) =>
+    setStateHelper('password', e.target.value);
+
+  const handleChangeConfirmPassword = (e: { target: { value: string } }) =>
+    setStateHelper('confirmPassword', e.target.value);
+
+  const handleChangeFirstname = (e: { target: { value: string } }) =>
+    setStateHelper('firstname', e.target.value);
+
+  const handleChangeLastname = (e: { target: { value: string } }) =>
+    setStateHelper('lastname', e.target.value);
+
+  const handleChangeBirthdate = (date: Date) =>
+    setStateHelper('birthDate', date);
+
+  const handleChangeUserAddress = (e: { target: { value: string } }) =>
+    setStateHelper('address', e.target.value);
+
+  const handleChangeUserCity = (e: { target: { value: string } }) =>
+    setStateHelper('city', e.target.value);
+
+  const handleChangeUserState = (e: { target: { value: string } }) =>
+    setStateHelper('state', e.target.value);
+
+  const handleChangeUserZipcode = (e: { target: { value: string } }) =>
+    setStateHelper('zipcode', e.target.value);
+
+  const handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
+    setStateHelper('phonenumber', e.target.value);
+
+  const handleChangeUserEmail = (e: { target: { value: string } }) =>
+    setStateHelper('email', e.target.value);
+
+  const handleChangeOrgName = (e: { target: { value: string } }) =>
+    setStateHelper('organizationName', e.target.value);
+
+  const handleChangeOrgWebsite = (e: { target: { value: string } }) =>
+    setStateHelper('organizationWebsite', e.target.value);
+
+  const handleChangeEIN = (e: { target: { value: string } }) => {
+    setStateHelper('organizationEIN', e.target.value);
   };
 
-  handleChangeUsername = (e: { target: { value: string } }) =>
-    this.setState({ username: e.target.value });
+  const handleChangeOrgAddress = (e: { target: { value: string } }) =>
+    setStateHelper('organizationAddressStreet', e.target.value);
 
-  handleChangePassword = (e: { target: { value: string } }) =>
-    this.setState({ password: e.target.value });
+  const handleChangeOrgCity = (e: { target: { value: string } }) =>
+    setStateHelper('organizationAddressCity', e.target.value);
 
-  handleChangeConfirmPassword = (e: { target: { value: string } }) =>
-    this.setState({ confirmPassword: e.target.value });
+  const handleChangeOrgState = (e: { target: { value: string } }) =>
+    setStateHelper('organizationAddressState', e.target.value);
 
-  handleChangeFirstname = (e: { target: { value: string } }) =>
-    this.setState({ firstname: e.target.value });
+  const handleChangeOrgZipcode = (e: { target: { value: string } }) =>
+    setStateHelper('organizationAddressZipcode', e.target.value);
 
-  handleChangeLastname = (e: { target: { value: string } }) =>
-    this.setState({ lastname: e.target.value });
+  const handleChangeOrgPhoneNumber = (e: { target: { value: string } }) =>
+    setStateHelper('organizationPhoneNumber', e.target.value);
 
-  handleChangeBirthdate = (date: Date, callback) =>
-    this.setState({ birthDate: date }, callback);
+  const handleChangeOrgEmail = (e: { target: { value: string } }) =>
+    setStateHelper('organizationEmail', e.target.value);
 
-  handleChangeUserAddress = (e: { target: { value: string } }) =>
-    this.setState({ address: e.target.value });
+  const handleChangeSignEULA = (hasSigned: boolean) => setStateHelper('hasSigned', hasSigned);
 
-  handleChangeUserCity = (e: { target: { value: string } }) =>
-    this.setState({ city: e.target.value });
+  const handleCanvasSign = (dataUrl: string) =>
+    setStateHelper('canvasDataUrl', dataUrl);
 
-  handleChangeUserState = (e: { target: { value: string } }) =>
-    this.setState({ state: e.target.value });
-
-  handleChangeUserZipcode = (e: { target: { value: string } }) =>
-    this.setState({ zipcode: e.target.value });
-
-  handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
-    this.setState({ phonenumber: e.target.value });
-
-  handleChangeUserEmail = (e: { target: { value: string } }) =>
-    this.setState({ email: e.target.value });
-
-  handleChangeOrgName = (e: { target: { value: string } }) =>
-    this.setState({ organizationName: e.target.value });
-
-  handleChangeOrgWebsite = (e: { target: { value: string } }) =>
-    this.setState({ organizationWebsite: e.target.value });
-
-  handleChangeEIN = (e: { target: { value: string } }) =>
-    this.setState({ organizationEIN: e.target.value });
-
-  handleChangeOrgAddress = (e: { target: { value: string } }) =>
-    this.setState({ organizationAddressStreet: e.target.value });
-
-  handleChangeOrgCity = (e: { target: { value: string } }) =>
-    this.setState({ organizationAddressCity: e.target.value });
-
-  handleChangeOrgState = (e: { target: { value: string } }) =>
-    this.setState({ organizationAddressState: e.target.value });
-
-  handleChangeOrgZipcode = (e: { target: { value: string } }) =>
-    this.setState({ organizationAddressZipcode: e.target.value });
-
-  handleChangeOrgPhoneNumber = (e: { target: { value: string } }) =>
-    this.setState({ organizationPhoneNumber: e.target.value });
-
-  handleChangeOrgEmail = (e: { target: { value: string } }) =>
-    this.setState({ organizationEmail: e.target.value });
-
-  handleChangeSignEULA = (hasSigned: boolean) => this.setState({ hasSigned });
-
-  handleCanvasSign = (dataUrl: string) =>
-    this.setState({ canvasDataUrl: dataUrl });
-
-  handleChangeRecaptcha = (recaptchaPayload: string) => {
-    this.setState({ recaptchaPayload }, this.handleFormSubmit);
+  const handleChangeRecaptcha = (recaptchaPayload: string) => {
+    setStateHelper('recaptchaPayload', recaptchaPayload);
   };
 
-  handleContinue = (): void => {
-    this.setState((prevState) => ({ signupStage: prevState.signupStage + 1 }));
+  const handleContinue = (): void => {
+    setState((prevState) => ({
+      ...prevState,
+      signupStage: prevState.signupStage + 1,
+    }));
   };
 
-  handlePrevious = (): void => {
-    this.setState((prevState) => ({ signupStage: prevState.signupStage - 1 }));
+  const handlePrevious = (): void => {
+    setState((prevState) => ({
+      ...prevState,
+      signupStage: prevState.signupStage - 1,
+    }));
   };
 
-  handleFormSubmit = (): void => {
+  const handleFormSubmit = (): void => {
     const {
       username,
       password,
@@ -211,11 +222,10 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
       organizationPhoneNumber,
       organizationEmail,
       recaptchaPayload,
-    } = this.state;
-    const { alert } = this.props;
-    const birthDateString =
-      CompleteSignupFlow.birthDateStringConverter(birthDate);
-    const revisedURL = CompleteSignupFlow.addHttp(organizationWebsite);
+    } = stateObj;
+    const { alert } = props;
+    const birthDateString = birthDateStringConverter(birthDate);
+    const revisedURL = addHttp(organizationWebsite);
 
     // submit organization and director information
     fetch(`${getServerURL()}/organization-signup`, {
@@ -250,26 +260,26 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
       .then((responseJSON) => {
         const { status, message } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
-          this.setState({ buttonState: '' });
+          setStateHelper('buttonState', '');
           alert.show(
             `You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`,
           );
-          this.setState({ redirectLogin: true });
+          setStateHelper('redirectLogin', true);
         } else {
           alert.show(message);
-          this.setState({ buttonState: '' });
+          setStateHelper('buttonState', '');
         }
       })
       .catch((error) => {
         alert.show(`Server Failure: ${error}`);
-        this.setState({ buttonState: '' });
+        setStateHelper('buttonState', '');
       });
   };
 
-  handleFormJumpTo = (pageNumber: number) =>
-    this.setState({ signupStage: pageNumber });
+  const handleFormJumpTo = (pageNumber: number) =>
+    setStateHelper('signupStage', pageNumber);
 
-  handleSignupComponentRender = () => {
+  const handleSignupComponentRender = () => {
     const {
       signupStage,
       username,
@@ -296,8 +306,8 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
       hasSigned,
       canvasDataUrl,
       buttonState,
-    } = this.state;
-    const { role } = this.props;
+    } = stateObj;
+    const { role } = props;
     switch (signupStage) {
       case 0: {
         return (
@@ -305,10 +315,10 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
             username={username}
             password={password}
             confirmPassword={confirmPassword}
-            onChangeUsername={this.handleChangeUsername}
-            onChangePassword={this.handleChangePassword}
-            onChangeConfirmPassword={this.handleChangeConfirmPassword}
-            handleContinue={this.handleContinue}
+            onChangeUsername={handleChangeUsername}
+            onChangePassword={handleChangePassword}
+            onChangeConfirmPassword={handleChangeConfirmPassword}
+            handleContinue={handleContinue}
             role={role}
           />
         );
@@ -325,17 +335,17 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
             zipcode={zipcode}
             phonenumber={phonenumber}
             email={email}
-            onChangeFirstname={this.handleChangeFirstname}
-            onChangeLastname={this.handleChangeLastname}
-            onChangeBirthDate={this.handleChangeBirthdate}
-            onChangeAddress={this.handleChangeUserAddress}
-            onChangeCity={this.handleChangeUserCity}
-            onChangeState={this.handleChangeUserState}
-            onChangeZipcode={this.handleChangeUserZipcode}
-            onChangePhoneNumber={this.handleChangeUserPhoneNumber}
-            onChangeEmail={this.handleChangeUserEmail}
-            handleContinue={this.handleContinue}
-            handlePrevious={this.handlePrevious}
+            onChangeFirstname={handleChangeFirstname}
+            onChangeLastname={handleChangeLastname}
+            onChangeBirthDate={handleChangeBirthdate}
+            onChangeAddress={handleChangeUserAddress}
+            onChangeCity={handleChangeUserCity}
+            onChangeState={handleChangeUserState}
+            onChangeZipcode={handleChangeUserZipcode}
+            onChangePhoneNumber={handleChangeUserPhoneNumber}
+            onChangeEmail={handleChangeUserEmail}
+            handleContinue={handleContinue}
+            handlePrevious={handlePrevious}
           />
         );
       }
@@ -351,17 +361,17 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
             orgZipcode={organizationAddressZipcode}
             orgPhoneNumber={organizationPhoneNumber}
             orgEmail={organizationEmail}
-            onChangeOrgName={this.handleChangeOrgName}
-            onChangeOrgWebsite={this.handleChangeOrgWebsite}
-            onChangeOrgEIN={this.handleChangeEIN}
-            onChangeOrgAddress={this.handleChangeOrgAddress}
-            onChangeOrgCity={this.handleChangeOrgCity}
-            onChangeOrgState={this.handleChangeOrgState}
-            onChangeOrgZipcode={this.handleChangeOrgZipcode}
-            onChangeOrgPhoneNumber={this.handleChangeOrgPhoneNumber}
-            onChangeOrgEmail={this.handleChangeOrgEmail}
-            handleContinue={this.handleContinue}
-            handlePrevious={this.handlePrevious}
+            onChangeOrgName={handleChangeOrgName}
+            onChangeOrgWebsite={handleChangeOrgWebsite}
+            onChangeOrgEIN={handleChangeEIN}
+            onChangeOrgAddress={handleChangeOrgAddress}
+            onChangeOrgCity={handleChangeOrgCity}
+            onChangeOrgState={handleChangeOrgState}
+            onChangeOrgZipcode={handleChangeOrgZipcode}
+            onChangeOrgPhoneNumber={handleChangeOrgPhoneNumber}
+            onChangeOrgEmail={handleChangeOrgEmail}
+            handleContinue={handleContinue}
+            handlePrevious={handlePrevious}
           />
         );
       }
@@ -369,10 +379,10 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
         return (
           <SignUserAgreement
             hasSigned={hasSigned}
-            handleChangeSignEULA={this.handleChangeSignEULA}
-            handleCanvasSign={this.handleCanvasSign}
-            handleContinue={this.handleContinue}
-            handlePrevious={this.handlePrevious}
+            handleChangeSignEULA={handleChangeSignEULA}
+            handleCanvasSign={handleCanvasSign}
+            handleContinue={handleContinue}
+            handlePrevious={handlePrevious}
             canvasDataUrl={canvasDataUrl}
           />
         );
@@ -400,11 +410,11 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
             orgZipcode={organizationAddressZipcode}
             orgPhoneNumber={organizationPhoneNumber}
             orgEmail={organizationEmail}
-            handleSubmit={this.handleFormSubmit}
-            handlePrevious={this.handlePrevious}
-            handleFormJumpTo={this.handleFormJumpTo}
+            handleSubmit={handleFormSubmit}
+            handlePrevious={handlePrevious}
+            handleFormJumpTo={handleFormJumpTo}
             buttonState={buttonState}
-            handleChangeRecaptcha={this.handleChangeRecaptcha}
+            handleChangeRecaptcha={handleChangeRecaptcha}
           />
         );
       }
@@ -414,37 +424,39 @@ export class CompleteSignupFlow extends Component<Props, State, {}> {
     }
   };
 
-  render() {
-    const { signupStage, redirectLogin } = this.state;
-    if (redirectLogin) {
-      return <Redirect to="/login" />;
+  useEffect(() => {
+    if (stateObj.recaptchaPayload !== '') {
+      handleFormSubmit();
     }
-    return (
-      <div>
-        <Helmet>
-          <title>Sign Up</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="container mt-5">
-          <Steps className="d-none d-md-flex" progressDot current={signupStage}>
-            <Step title="Account Setup" description="" />
-            <Step title="Personal Information" description="" />
-            <Step title="Organization Information" description="" />
-            <Step title="Sign User Agreement" description="" />
-            <Step title="Review & Submit" description="" />
-          </Steps>
-          <ProgressBar
-            className="d-md-none"
-            now={signupStage * 25}
-            label={`Step ${signupStage + 1} out of 5`}
-          />
-          {this.handleSignupComponentRender()}
-        </div>
-      </div>
-    );
-  }
-}
+  }, [stateObj.recaptchaPayload]);
 
-export const { birthDateStringConverter } = CompleteSignupFlow;
-export const { addHttp } = CompleteSignupFlow;
+  const { signupStage, redirectLogin } = stateObj;
+  if (redirectLogin) {
+    return <Redirect to="/login" />;
+  }
+  return (
+    <div>
+    <Helmet>
+      <title>Sign Up</title>
+      <meta name="description" content="Keep.id" />
+    </Helmet>
+    <div className="container mt-5">
+      <Steps className="d-none d-md-flex" progressDot current={signupStage}>
+        <Step title="Account Setup" description="" />
+        <Step title="Personal Information" description="" />
+        <Step title="Organization Information" description="" />
+        <Step title="Sign User Agreement" description="" />
+        <Step title="Review & Submit" description="" />
+      </Steps>
+      <ProgressBar
+        className="d-md-none"
+        now={stateObj.signupStage * 25}
+        label={`Step ${stateObj.signupStage + 1} out of 5`}
+      />
+      {handleSignupComponentRender()}
+    </div>
+    </div>
+  );
+};
+
 export default withAlert()(CompleteSignupFlow);

@@ -28,7 +28,7 @@ interface Props {
   email: string,
   onChangeFirstname: () => void,
   onChangeLastname: () => void,
-  onChangeBirthDate: (e: Date, callback) => void,
+  onChangeBirthDate: (e: Date) => void,
   onChangeAddress: () => void,
   onChangeCity: () => void,
   onChangeState: () => void,
@@ -86,13 +86,15 @@ export class PersonalInformation extends Component<Props, State, {}> {
     }
   }
 
-  validateBirthdate = async ():Promise<void> => {
-    const { birthDate } = this.props;
-    if (isValidBirthDate(birthDateStringConverter(birthDate))) {
-      await new Promise((resolve) => this.setState({ birthDateValidator: 'true' }, resolve));
+  validateBirthdate = async (birthDate = this.props.birthDate):Promise<void> => {
+    const { birthDateValidator } = this.state;
+    let isValid = birthDateValidator;
+    if (Object.prototype.toString.call(birthDate) === '[object Date]') {
+      isValid = isValidBirthDate(birthDateStringConverter(birthDate)) ? 'true' : 'false';
     } else {
-      await new Promise((resolve) => this.setState({ birthDateValidator: 'false' }, resolve));
+      isValid = 'false';
     }
+    await new Promise((resolve) => this.setState({ birthDateValidator: isValid }, resolve));
   }
 
   validateAddress = async ():Promise<void> => {
@@ -147,13 +149,6 @@ export class PersonalInformation extends Component<Props, State, {}> {
     } else {
       await new Promise((resolve) => this.setState({ emailValidator: 'false' }, resolve));
     }
-  }
-
-  customOnChangeBirthDate = (e) => {
-    const { onChangeBirthDate } = this.props;
-    onChangeBirthDate(e, () => {
-      this.validateBirthdate();
-    });
   }
 
   handleStepPrevious = (e) => {
@@ -227,6 +222,12 @@ export class PersonalInformation extends Component<Props, State, {}> {
     $('#phonenumber').mask('(000)000-0000');
   }
 
+  customOnChangeBirthDate = async (e) => {
+    await this.validateBirthdate(e);
+    const { onChangeBirthDate } = this.props;
+    onChangeBirthDate(e);
+  }
+
   render() {
     const {
       firstnameValidator,
@@ -249,6 +250,7 @@ export class PersonalInformation extends Component<Props, State, {}> {
       zipcode,
       phonenumber,
       email,
+      onChangeBirthDate,
       onChangeFirstname,
       onChangeLastname,
       onChangeAddress,
@@ -307,7 +309,6 @@ export class PersonalInformation extends Component<Props, State, {}> {
                   <DatePicker
                     id="birthDate"
                     onChange={this.customOnChangeBirthDate}
-                    onBlur={this.validateBirthdate}
                     selected={birthDate}
                     className={`form-control form-purple ${this.colorToggle(birthDateValidator)}`}
                   />
