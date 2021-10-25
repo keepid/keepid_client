@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { withAlert } from 'react-alert';
-import Dropzone, { useDropzone } from 'react-dropzone';
 import { Helmet } from 'react-helmet';
 import uuid from 'react-uuid';
 
@@ -8,7 +7,6 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
-import DropzoneComponent from './Dropzone';
 
 interface Props {
   alert: any,
@@ -206,15 +204,6 @@ class UploadDocs extends React.Component<Props, State> {
               </div>
             </form>
           </div>
-
-          <div>
-            <DropzoneComponent />
-          </div>
-
-          {/* <div>
-            <Dropzone onDrop={this.handleOnDrop} />
-          </div> */}
-
         </div>
       </div>
     );
