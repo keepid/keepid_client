@@ -318,7 +318,7 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              {/* <Route
+              <Route
                 path="/upload-document"
                 render={() => {
                   if (
@@ -326,14 +326,11 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Admin ||
                     role === Role.Director
                   ) {
-                    return <UploadDocs userRole={role} />;
+                    return <DropzoneTest userRole={role} />;
                   }
                   return <Redirect to="/error" />;
                 }}
-              /> */}
-              <Route path="/upload-document">
-                <DropzoneTest userRole={Role.Client} />
-              </Route>
+              />
               <Route
                 path="/my-documents"
                 render={() => {
@@ -342,7 +339,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Admin ||
                     role === Role.Director
                   ) {
-                    return <MyDocuments userRole={role} username={name} />;
+                    return <DropzoneTest userRole={role} />;
                   }
                   return <Redirect to="/error" />;
                 }}

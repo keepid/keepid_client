@@ -25,61 +25,6 @@ interface PDFProps {
 
 const MAX_NUM_OF_FILES: number = 5;
 
-const MyUploader = () => {
-  // OPTION 1: we can upload files in getUploadParams() one by one
-  const getUploadParams = (file) => {
-    const formData = new FormData();
-    formData.append('fileField', file);
-    formData.append('file', file);
-    // formData had issues adding new field types -> pdfType is not showing up in backend
-    formData.append('pdfType', PDFType.IDENTIFICATION);
-
-    const config = {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    };
-
-    // return { url: 'https://httpbin.org/post', formData, config };
-    return { url: `${getServerURL()}/upload`, formData, config };
-  };
-
-  const handleChangeStatus = ({ meta, file }, status) => {
-    console.log(status, meta, file);
-  };
-
-  // OPTION 2: we can upload all files at the end in the handleSubmit() instead of getUploadParams
-  const handleSubmit = (files, allFiles) => {
-    if (files) {
-      for (let i = 0; i < files.length; i += 1) {
-        const pdfFile = files[i];
-        const formData = new FormData();
-        formData.append('file', pdfFile);
-        // formData had issues adding new field types -> pdfType is not showing up in backend
-        formData.append('pdfType', PDFType.IDENTIFICATION);
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        });
-      }
-    }
-    console.log(files.map((f) => f.meta));
-    // will add more logic here later here once above pdfType is fixed
-    allFiles.forEach((f) => f.remove());
-  };
-
-  return (
-        <Dropzone
-          // getUploadParams={getUploadParams}
-          onChangeStatus={handleChangeStatus}
-          onSubmit={handleSubmit}
-          maxFiles={MAX_NUM_OF_FILES}
-          accept="image/*,.pdf,.png,.jpg"
-        />
-  );
-};
-
 class DropzoneTest extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -94,6 +39,74 @@ class DropzoneTest extends React.Component<Props, State> {
       pdfFiles,
       buttonState,
     } = this.state;
+
+    const {
+      alert,
+    } = this.props;
+
+    const {
+      userRole,
+    } = this.props;
+
+    console.log(`userRole: ${userRole}`);
+
+    const MyUploader = () => {
+      const handleChangeStatus = ({ meta, file }, status) => {
+        console.log(status, meta, file);
+      };
+
+      // OPTION 2: we can upload all files at the end in the handleSubmit() instead of getUploadParams
+      const handleSubmit = (files, allFiles) => {
+        console.log('SUBMITTING FILES, LISTING ALL FILES');
+        console.log(files.map((f) => f.meta));
+        if (files) {
+          for (let i = 0; i < files.length; i += 1) {
+            const pdfFile = files[i];
+            const formData = new FormData();
+            formData.append('file', pdfFile.file, pdfFile.name);
+            if (userRole === Role.Client) {
+              console.log('client!');
+              formData.append('pdfType', PDFType.IDENTIFICATION);
+            }
+            if (userRole === Role.Director || userRole === Role.Admin) {
+              console.log('form!');
+              formData.append('pdfType', PDFType.FORM);
+            }
+            console.log(...formData);
+            console.log(`userRole: ${userRole}`);
+            fetch(`${getServerURL()}/upload`, {
+              method: 'POST',
+              credentials: 'include',
+              body: formData,
+            }).then((response) => response.json())
+              .then((responseJSON) => {
+                const {
+                  status,
+                } = responseJSON;
+                if (status === 'SUCCESS') {
+                  alert.show(`Successfully uploaded ${pdfFile.file.name}`);
+                } else {
+                  alert.show(`Failed to upload ${pdfFile.file.name}`);
+                }
+              })
+              .finally(() => {
+                console.log(files.map((f) => f.meta));
+                allFiles.forEach((f) => f.remove());
+              });
+          }
+        }
+      };
+
+      return (
+            <Dropzone
+              onChangeStatus={handleChangeStatus}
+              onSubmit={handleSubmit}
+              maxFiles={MAX_NUM_OF_FILES}
+              inputWithFilesContent={(files) => `${MAX_NUM_OF_FILES - files.length} more`}
+              accept="image/*,.pdf,.png,.jpg"
+            />
+      );
+    };
 
     return (
       <div className="container">
