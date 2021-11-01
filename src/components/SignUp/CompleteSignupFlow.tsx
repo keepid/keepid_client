@@ -75,154 +75,42 @@ export const birthDateStringConverter = (birthDate: Date) => {
 };
 
 const CompleteSignupFlow: React.FC<Props> = (props) => {
-  const [stateObj, setState] = useState<State>({
-    signupStage: 0,
-    organizationName: '',
-    organizationWebsite: '',
-    organizationEIN: '',
-    organizationAddressStreet: '',
-    organizationAddressCity: '',
-    organizationAddressState: USStates[0].abbreviation,
-    organizationAddressZipcode: '',
-    organizationEmail: '',
-    organizationPhoneNumber: '',
-    firstname: '',
-    lastname: '',
-    birthDate: new Date(),
-    email: '',
-    phonenumber: '',
-    address: '',
-    city: '',
-    state: '',
-    zipcode: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-    hasSigned: false,
-    canvasDataUrl: '',
-    recaptchaPayload: '',
-    buttonState: '',
-    redirectLogin: false,
-  });
+  const [signupStage, setSignupStage] = useState(0);
+  const [organizationName, setOrganizationName] = useState('');
+  const [organizationWebsite, setOrganizationWebsite] = useState('');
+  const [organizationEIN, setOrganizationEIN] = useState('');
+  const [organizationAddressStreet, setOrganizationAddressStreet] = useState('');
+  const [organizationAddressCity, setOrganizationAddressCity] = useState('');
+  const [organizationAddressState, setOrganizationAddressState] = useState(USStates[0].abbreviation);
+  const [organizationAddressZipcode, setOrganizationAddressZipcode] = useState('');
+  const [organizationEmail, setOrganizationEmail] = useState('');
+  const [organizationPhoneNumber, setOrganizationPhoneNumber] = useState('');
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [birthDate, setBirthDate] = useState(new Date());
+  const [email, setEmail] = useState('');
+  const [phonenumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zipcode, setZipcode] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [hasSigned, setHasSigned] = useState(false);
+  const [canvasDataUrl, setCanvasDataUrl] = useState('');
+  const [recaptchaPayload, setRecaptchaPayload] = useState('');
+  const [buttonState, setButtonState] = useState('');
+  const [redirectLogin, setRedirectLogin] = useState(false);
 
-  const setStateHelper = (key, value) => {
-    setState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  const handleChangeUsername = (e: { target: { value: string } }) =>
-    setStateHelper('username', e.target.value);
-
-  const handleChangePassword = (e: { target: { value: string } }) =>
-    setStateHelper('password', e.target.value);
-
-  const handleChangeConfirmPassword = (e: { target: { value: string } }) =>
-    setStateHelper('confirmPassword', e.target.value);
-
-  const handleChangeFirstname = (e: { target: { value: string } }) =>
-    setStateHelper('firstname', e.target.value);
-
-  const handleChangeLastname = (e: { target: { value: string } }) =>
-    setStateHelper('lastname', e.target.value);
-
-  const handleChangeBirthdate = (date: Date) =>
-    setStateHelper('birthDate', date);
-
-  const handleChangeUserAddress = (e: { target: { value: string } }) =>
-    setStateHelper('address', e.target.value);
-
-  const handleChangeUserCity = (e: { target: { value: string } }) =>
-    setStateHelper('city', e.target.value);
-
-  const handleChangeUserState = (e: { target: { value: string } }) =>
-    setStateHelper('state', e.target.value);
-
-  const handleChangeUserZipcode = (e: { target: { value: string } }) =>
-    setStateHelper('zipcode', e.target.value);
-
-  const handleChangeUserPhoneNumber = (e: { target: { value: string } }) =>
-    setStateHelper('phonenumber', e.target.value);
-
-  const handleChangeUserEmail = (e: { target: { value: string } }) =>
-    setStateHelper('email', e.target.value);
-
-  const handleChangeOrgName = (e: { target: { value: string } }) =>
-    setStateHelper('organizationName', e.target.value);
-
-  const handleChangeOrgWebsite = (e: { target: { value: string } }) =>
-    setStateHelper('organizationWebsite', e.target.value);
-
-  const handleChangeEIN = (e: { target: { value: string } }) => {
-    setStateHelper('organizationEIN', e.target.value);
-  };
-
-  const handleChangeOrgAddress = (e: { target: { value: string } }) =>
-    setStateHelper('organizationAddressStreet', e.target.value);
-
-  const handleChangeOrgCity = (e: { target: { value: string } }) =>
-    setStateHelper('organizationAddressCity', e.target.value);
-
-  const handleChangeOrgState = (e: { target: { value: string } }) =>
-    setStateHelper('organizationAddressState', e.target.value);
-
-  const handleChangeOrgZipcode = (e: { target: { value: string } }) =>
-    setStateHelper('organizationAddressZipcode', e.target.value);
-
-  const handleChangeOrgPhoneNumber = (e: { target: { value: string } }) =>
-    setStateHelper('organizationPhoneNumber', e.target.value);
-
-  const handleChangeOrgEmail = (e: { target: { value: string } }) =>
-    setStateHelper('organizationEmail', e.target.value);
-
-  const handleChangeSignEULA = (hasSigned: boolean) => setStateHelper('hasSigned', hasSigned);
-
-  const handleCanvasSign = (dataUrl: string) =>
-    setStateHelper('canvasDataUrl', dataUrl);
-
-  const handleChangeRecaptcha = (recaptchaPayload: string) => {
-    setStateHelper('recaptchaPayload', recaptchaPayload);
-  };
-
-  const handleContinue = (): void => {
-    setState((prevState) => ({
-      ...prevState,
-      signupStage: prevState.signupStage + 1,
-    }));
-  };
-
-  const handlePrevious = (): void => {
-    setState((prevState) => ({
-      ...prevState,
-      signupStage: prevState.signupStage - 1,
-    }));
-  };
+  /**
+   * Returns a function that can be used as an onChange callback
+   * @param setStateFn - the function to call with the event.target.value onChange
+   * @return Function - the function to pass as the onChange handler
+   */
+  const stateUpdateWrapper = (setStateFn) => ({ target: { value } }) => setStateFn(value);
 
   const handleFormSubmit = (): void => {
-    const {
-      username,
-      password,
-      firstname,
-      lastname,
-      birthDate,
-      address,
-      city,
-      state,
-      zipcode,
-      phonenumber,
-      email,
-      organizationName,
-      organizationWebsite,
-      organizationEIN,
-      organizationAddressStreet,
-      organizationAddressCity,
-      organizationAddressState,
-      organizationAddressZipcode,
-      organizationPhoneNumber,
-      organizationEmail,
-      recaptchaPayload,
-    } = stateObj;
     const { alert } = props;
     const birthDateString = birthDateStringConverter(birthDate);
     const revisedURL = addHttp(organizationWebsite);
@@ -260,53 +148,23 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
       .then((responseJSON) => {
         const { status, message } = responseJSON;
         if (status === 'SUCCESSFUL_ENROLLMENT') {
-          setStateHelper('buttonState', '');
+          setButtonState('');
           alert.show(
             `You successfully signed up ${organizationName} to use Keep.id. Please login with your new username and password`,
           );
-          setStateHelper('redirectLogin', true);
+          setRedirectLogin(true);
         } else {
           alert.show(message);
-          setStateHelper('buttonState', '');
+          setButtonState('');
         }
       })
       .catch((error) => {
         alert.show(`Server Failure: ${error}`);
-        setStateHelper('buttonState', '');
+        setButtonState('');
       });
   };
 
-  const handleFormJumpTo = (pageNumber: number) =>
-    setStateHelper('signupStage', pageNumber);
-
   const handleSignupComponentRender = () => {
-    const {
-      signupStage,
-      username,
-      password,
-      confirmPassword,
-      organizationName,
-      organizationWebsite,
-      organizationEIN,
-      organizationAddressStreet,
-      organizationAddressCity,
-      organizationAddressState,
-      organizationAddressZipcode,
-      organizationEmail,
-      organizationPhoneNumber,
-      firstname,
-      lastname,
-      birthDate,
-      email,
-      phonenumber,
-      address,
-      city,
-      state,
-      zipcode,
-      hasSigned,
-      canvasDataUrl,
-      buttonState,
-    } = stateObj;
     const { role } = props;
     switch (signupStage) {
       case 0: {
@@ -315,10 +173,10 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
             username={username}
             password={password}
             confirmPassword={confirmPassword}
-            onChangeUsername={handleChangeUsername}
-            onChangePassword={handleChangePassword}
-            onChangeConfirmPassword={handleChangeConfirmPassword}
-            handleContinue={handleContinue}
+            onChangeUsername={stateUpdateWrapper(setUsername)}
+            onChangePassword={stateUpdateWrapper(setPassword)}
+            onChangeConfirmPassword={stateUpdateWrapper(setConfirmPassword)}
+            handleContinue={() => setSignupStage(signupStage + 1)}
             role={role}
           />
         );
@@ -335,17 +193,17 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
             zipcode={zipcode}
             phonenumber={phonenumber}
             email={email}
-            onChangeFirstname={handleChangeFirstname}
-            onChangeLastname={handleChangeLastname}
-            onChangeBirthDate={handleChangeBirthdate}
-            onChangeAddress={handleChangeUserAddress}
-            onChangeCity={handleChangeUserCity}
-            onChangeState={handleChangeUserState}
-            onChangeZipcode={handleChangeUserZipcode}
-            onChangePhoneNumber={handleChangeUserPhoneNumber}
-            onChangeEmail={handleChangeUserEmail}
-            handleContinue={handleContinue}
-            handlePrevious={handlePrevious}
+            onChangeFirstname={stateUpdateWrapper(setFirstname)}
+            onChangeLastname={stateUpdateWrapper(setLastname)}
+            onChangeBirthDate={setBirthDate}
+            onChangeAddress={stateUpdateWrapper(setAddress)}
+            onChangeCity={stateUpdateWrapper(setCity)}
+            onChangeState={stateUpdateWrapper(setState)}
+            onChangeZipcode={stateUpdateWrapper(setZipcode)}
+            onChangePhoneNumber={stateUpdateWrapper(setPhoneNumber)}
+            onChangeEmail={stateUpdateWrapper(setEmail)}
+            handleContinue={() => setSignupStage(signupStage + 1)}
+            handlePrevious={() => setSignupStage(signupStage - 1)}
           />
         );
       }
@@ -361,17 +219,17 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
             orgZipcode={organizationAddressZipcode}
             orgPhoneNumber={organizationPhoneNumber}
             orgEmail={organizationEmail}
-            onChangeOrgName={handleChangeOrgName}
-            onChangeOrgWebsite={handleChangeOrgWebsite}
-            onChangeOrgEIN={handleChangeEIN}
-            onChangeOrgAddress={handleChangeOrgAddress}
-            onChangeOrgCity={handleChangeOrgCity}
-            onChangeOrgState={handleChangeOrgState}
-            onChangeOrgZipcode={handleChangeOrgZipcode}
-            onChangeOrgPhoneNumber={handleChangeOrgPhoneNumber}
-            onChangeOrgEmail={handleChangeOrgEmail}
-            handleContinue={handleContinue}
-            handlePrevious={handlePrevious}
+            onChangeOrgName={stateUpdateWrapper(setOrganizationName)}
+            onChangeOrgWebsite={stateUpdateWrapper(setOrganizationWebsite)}
+            onChangeOrgEIN={stateUpdateWrapper(setOrganizationEIN)}
+            onChangeOrgAddress={stateUpdateWrapper(setOrganizationAddressStreet)}
+            onChangeOrgCity={stateUpdateWrapper(setOrganizationAddressCity)}
+            onChangeOrgState={stateUpdateWrapper(setOrganizationAddressState)}
+            onChangeOrgZipcode={stateUpdateWrapper(setOrganizationAddressZipcode)}
+            onChangeOrgPhoneNumber={stateUpdateWrapper(setOrganizationPhoneNumber)}
+            onChangeOrgEmail={stateUpdateWrapper(setOrganizationEmail)}
+            handleContinue={() => setSignupStage(signupStage + 1)}
+            handlePrevious={() => setSignupStage(signupStage - 1)}
           />
         );
       }
@@ -379,10 +237,10 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
         return (
           <SignUserAgreement
             hasSigned={hasSigned}
-            handleChangeSignEULA={handleChangeSignEULA}
-            handleCanvasSign={handleCanvasSign}
-            handleContinue={handleContinue}
-            handlePrevious={handlePrevious}
+            handleChangeSignEULA={setHasSigned}
+            handleCanvasSign={setCanvasDataUrl}
+            handleContinue={() => setSignupStage(signupStage + 1)}
+            handlePrevious={() => setSignupStage(signupStage - 1)}
             canvasDataUrl={canvasDataUrl}
           />
         );
@@ -411,10 +269,10 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
             orgPhoneNumber={organizationPhoneNumber}
             orgEmail={organizationEmail}
             handleSubmit={handleFormSubmit}
-            handlePrevious={handlePrevious}
-            handleFormJumpTo={handleFormJumpTo}
+            handlePrevious={() => setSignupStage(signupStage - 1)}
+            handleFormJumpTo={setSignupStage}
             buttonState={buttonState}
-            handleChangeRecaptcha={handleChangeRecaptcha}
+            handleChangeRecaptcha={setRecaptchaPayload}
           />
         );
       }
@@ -425,12 +283,11 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    if (stateObj.recaptchaPayload !== '') {
+    if (recaptchaPayload !== '') {
       handleFormSubmit();
     }
-  }, [stateObj.recaptchaPayload]);
+  }, [recaptchaPayload]);
 
-  const { signupStage, redirectLogin } = stateObj;
   if (redirectLogin) {
     return <Redirect to="/login" />;
   }
@@ -450,8 +307,8 @@ const CompleteSignupFlow: React.FC<Props> = (props) => {
       </Steps>
       <ProgressBar
         className="d-md-none"
-        now={stateObj.signupStage * 25}
-        label={`Step ${stateObj.signupStage + 1} out of 5`}
+        now={signupStage * 25}
+        label={`Step ${signupStage + 1} out of 5`}
       />
       {handleSignupComponentRender()}
     </div>
