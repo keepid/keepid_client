@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import BaseCard, {
@@ -15,14 +15,13 @@ import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
 
 interface State {}
 
-class OurTeam extends React.Component<{}, State> {
-  componentDidMount() {
+const OurTeam = () => {
+  const [imgSize, setImgSize] = useState('65%');
+  useEffect(() => {
     window.scrollTo(0, 0);
-  }
+  }, []);
 
-  render() {
-    const imgSize = '65%';
-    return (
+  return (
       <div className="container">
         <Helmet>
           <title>Our Team</title>
@@ -109,43 +108,8 @@ class OurTeam extends React.Component<{}, State> {
             imageSize={imgSize}
           />
         </div>
-        {/* <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Design and UI/UX</h3>
-        </div> */}
-        {/* <div className="d-flex flex-wrap">
-        </div> */}
-        {/* <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Strategic Communications</h3>
-        </div>
-        <div className="d-flex flex-wrap">
-        </div> */}
-        {/* <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Donor Strategy</h3>
-        </div>
-        <div className="d-flex flex-wrap">
-        </div>
-        <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Product Management</h3>
-        </div>
-        <div className="d-flex flex-wrap">
-          <BaseCard
-            cardSize={CardSize.MEDIUM_VERTICAL}
-            cardTitle="David Glaser"
-            cardText="Business Analyst"
-            imageSrc={DavidGlaser}
-            imageAlt="..."
-            imageLoc={CardImageLoc.TOP}
-            imageSize={imgSize}
-          />
-        </div>
-        <div className="jumbotron-fluid mt-5">
-          <h3 className="display-5">Operations and Legal</h3>
-        </div>
-        <div className="d-flex flex-wrap">
-        </div> */}
       </div>
-    );
-  }
-}
+  );
+};
 
 export default OurTeam;
