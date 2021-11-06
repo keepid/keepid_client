@@ -1,6 +1,6 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import DatePicker from 'react-datepicker';
 import uuid from 'react-uuid';
@@ -28,133 +28,80 @@ interface InputState {
 }
 
 // one field e.g. birthDate, address, etc.
-class RenderInput extends Component<InputProps, InputState> {
-  static birthDateString(birthDate: Date) {
+const RenderInput = (props: InputProps) => {
+  const [readOnly, setReadOnly] = useState<InputState['readOnly']>(true);
+  const [input, setInput] = useState<InputState['input']>('');
+  const [originalInput, setOriginalInput] = useState<InputState['originalInput']>('');
+  const [wrongPasswordInModal, setWrongPasswordInModal] = useState<InputState['wrongPasswordInModal']>(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState<InputState['showPasswordConfirm']>(false);
+  const [buttonState, setButtonState] = useState('');
+
+  const birthDateString = (birthDate) => {
     const personBirthMonth = birthDate.getMonth() + 1;
     const personBirthMonthString = (personBirthMonth < 10 ? `0${personBirthMonth}` : personBirthMonth);
     const personBirthDay = birthDate.getDate();
     const personBirthDayString = (personBirthDay < 10 ? `0${personBirthDay}` : personBirthDay);
     const personBirthDateFormatted = `${personBirthMonthString}-${personBirthDayString}-${birthDate.getFullYear()}`;
     return personBirthDateFormatted;
-  }
+  };
 
-  constructor(props: InputProps) {
-    super(props);
-    this.state = {
-      readOnly: true,
-      input: '',
-      originalInput: '',
-      wrongPasswordInModal: false,
-      showPasswordConfirm: false,
-      buttonState: '',
-    };
-    this.handleEdit = this.handleEdit.bind(this);
-    this.handleCancel = this.handleCancel.bind(this);
-    this.handleSetReadOnly = this.handleSetReadOnly.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleOpenPasswordConfirmModal = this.handleOpenPasswordConfirmModal.bind(this);
-    this.handleClosePasswordConfirm = this.handleClosePasswordConfirm.bind(this);
-    this.handleSaveInfo = this.handleSaveInfo.bind(this);
-  }
-
-  componentDidUpdate(prevProps) {
-    const {
-      inputValue,
-    } = this.props;
-    if (inputValue !== prevProps.inputValue) {
-      this.setState({
-        input: inputValue,
-        originalInput: inputValue,
-      });
-    }
-  }
+  useEffect(() => {
+    const { inputValue } = props;
+    setInput(inputValue);
+    setOriginalInput(inputValue);
+  });
 
   // edit input
-  handleEdit() {
-    this.setState({
-      readOnly: false,
-    });
-  }
+  const handleEdit = () => {
+    setReadOnly(false);
+  };
 
   // cancel the edit
-  handleCancel() {
-    this.setState({
-      readOnly: true,
-    });
-    const {
-      originalInput,
-    } = this.state;
-    this.setState({
-      input: originalInput,
-    });
-  }
+  const handleCancel = () => {
+    setReadOnly(true);
+    setInput(originalInput);
+  };
 
-  handleSetReadOnly() {
-    this.setState({
-      readOnly: true,
-    });
-  }
+  const handleSetReadOnly = () => {
+    setReadOnly(true);
+  };
 
-  handleInputChange(event) {
-    const {
-      inputType,
-    } = this.props;
-    // for date picker
+  const handleInputChange = (event) => {
+    const { inputType } = props;
     if (inputType === 'date') {
-      this.setState({
-        input: event,
-      });
-      return;
+      setInput(event);
+    } else {
+      setInput(event.target.value);
     }
-    const { target } = event;
-    const { value } = target;
-    this.setState({
-      input: value,
-    });
-  }
+  };
 
   // opens up the password confirm modal
-  handleOpenPasswordConfirmModal(event) {
+  const handleOpenPasswordConfirmModal = (event) => {
     event.preventDefault();
-    this.setState({
-      showPasswordConfirm: true,
-    });
-  }
+    setShowPasswordConfirm(true);
+  };
 
   // close password confirm modal
-  handleClosePasswordConfirm() {
-    this.setState({
-      wrongPasswordInModal: false,
-      showPasswordConfirm: false,
-      buttonState: '',
-    });
-  }
+  const handleClosePasswordConfirm = () => {
+    setWrongPasswordInModal(false);
+    setShowPasswordConfirm(false);
+    setButtonState('');
+  };
 
   // trigerred after correctly entering password in confirm modal
-  handleSaveInfo(password: string) {
-    this.setState({
-      buttonState: 'running',
-    });
+  const handleSaveInfo = (password: string) => {
+    setButtonState('running');
     const {
       inputName,
       inputLabel,
       alert,
       inputType,
-    } = this.props;
+    } = props;
 
     // API call to update information
-    let {
-      input,
-    } = this.state;
-
-    // format date
-    if (inputType === 'date') {
-      input = RenderInput.birthDateString(input);
-    }
-
     const data = {
       key: inputName,
-      value: input,
+      value: inputType === 'date' ? birthDateString(input) : input,
       password,
     };
 
@@ -172,44 +119,29 @@ class RenderInput extends Component<InputProps, InputState> {
         const { message } = responseObject;
         if (status === 'SUCCESS') { // successfully updated key and value
           alert.show(`Successfully updated ${inputLabel}`);
-          this.setState({
-            originalInput: input,
-            showPasswordConfirm: false,
-            wrongPasswordInModal: false,
-            readOnly: true,
-          });
+          setOriginalInput(input);
+          setShowPasswordConfirm(false);
+          setWrongPasswordInModal(false);
+          setReadOnly(true);
         } else if (status === 'AUTH_FAILURE') {
           // wrong password
-          this.setState({
-            wrongPasswordInModal: true,
-          });
+          setWrongPasswordInModal(true);
         } else {
           alert.show(`Failed to update ${inputLabel}: ${message}`);
-          this.setState({
-            showPasswordConfirm: false,
-            wrongPasswordInModal: false,
-          });
+          setShowPasswordConfirm(false);
+          setWrongPasswordInModal(false);
         }
-        this.setState({ buttonState: '' });
+        setButtonState('');
       });
-  }
+  };
 
-  render() {
-    const {
-      inputLabel,
-      inputName,
-      inputType,
-    } = this.props;
+  const {
+    inputLabel,
+    inputName,
+    inputType,
+  } = props;
 
-    const {
-      readOnly,
-      input,
-      showPasswordConfirm,
-      buttonState,
-      wrongPasswordInModal,
-    } = this.state;
-
-    return (
+  return (
       <div className="row mb-3 mt-3">
         <div className="col-3 card-text mt-2 text-primary-theme">{inputLabel}</div>
         <div className="col-6 card-text">
@@ -220,19 +152,19 @@ class RenderInput extends Component<InputProps, InputState> {
                 id={inputName}
                 name={inputName}
                 value={input}
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
                 disabled={readOnly}
               >
                 {USStates.map((USState) => (<option key={uuid()}>{USState.abbreviation}</option>))}
               </select>
             ) : null}
           { inputType === 'text' || inputType === 'tel'
-            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={this.handleInputChange} readOnly={readOnly} />
+            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={handleInputChange} readOnly={readOnly} />
             : null}
           { inputType === 'date' ? (
             <DatePicker
               id={inputName}
-              onChange={this.handleInputChange}
+              onChange={handleInputChange}
               selected={input}
               className="form-control form-purple"
               readOnly={readOnly}
@@ -240,18 +172,17 @@ class RenderInput extends Component<InputProps, InputState> {
           ) : null}
         </div>
         <div className="col-3">
-          { readOnly ? <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={this.handleEdit}>Edit</button>
+          { readOnly ? <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={handleEdit}>Edit</button>
             : (
               <span className="float-right">
-                <button type="button" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
-                <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={this.handleOpenPasswordConfirmModal}>Save</button>
+                <button type="button" name={inputName} className="btn btn-light mr-3" onClick={handleCancel}>Cancel</button>
+                <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={handleOpenPasswordConfirmModal}>Save</button>
               </span>
             )}
         </div>
-        <ConfirmPasswordModal show={showPasswordConfirm} section={inputName} buttonState={buttonState} wrongPasswordInModal={wrongPasswordInModal} handleSaveInfo={this.handleSaveInfo} handleClosePasswordConfirm={this.handleClosePasswordConfirm} />
+        <ConfirmPasswordModal show={showPasswordConfirm} section={inputName} buttonState={buttonState} wrongPasswordInModal={wrongPasswordInModal} handleSaveInfo={handleSaveInfo} handleClosePasswordConfirm={handleClosePasswordConfirm} />
       </div>
-    );
-  }
-}
+  );
+};
 
 export default withAlert()(RenderInput);

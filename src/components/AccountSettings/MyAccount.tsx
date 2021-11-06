@@ -1,6 +1,6 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import Button from 'react-bootstrap/Button';
 import BootstrapTable from 'react-bootstrap-table-next';
@@ -81,48 +81,27 @@ const loginHistoryCols = [{
   sort: true,
 }];
 
-export class MyAccount extends Component<Props, State, {}> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      // user info
-      username: '',
+const MyAccount = (props: Props) => {
+  const [username, setUsername] = useState<State['username']>('');
+  const [birthDate, setBirthDate] = useState<State['birthDate']>(new Date());
+  const [firstName, setFirstName] = useState<State['firstName']>('');
+  const [lastName, setLastName] = useState<State['lastName']>('');
+  const [email, setEmail] = useState<State['email']>('');
+  const [phone, setPhone] = useState<State['phone']>('');
+  const [address, setAddress] = useState<State['address']>('');
+  const [city, setCity] = useState<State['city']>('');
+  const [state, setState] = useState<State['state']>('');
+  const [zipcode, setZipcode] = useState<State['zipcode']>('');
+  const [enteredPassword, setEnteredPassword] = useState<State['enteredPassword']>('');
+  const [newPassword, setNewPassword] = useState<State['newPassword']>('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState<State['newPasswordConfirm']>('');
+  const [passwordError, setPasswordError] = useState<State['passwordError']>(PasswordError.NoError);
+  const [passwordChangeReadOnly, setPasswordChangeReadOnly] = useState<State['passwordChangeReadOnly']>(true);
+  const [buttonState, setButtonState] = useState<State['buttonState']>('');
+  const [twoFactorOn, setTwoFactorOn] = useState<State['twoFactorOn']>(true);
+  const [loginHistory, setLoginHistory] = useState<State['loginHistory']>([]);
 
-      // basic info
-      birthDate: new Date(),
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-
-      // address info
-      address: '',
-      city: '',
-      state: '',
-      zipcode: '',
-
-      // password variables
-      enteredPassword: '',
-      newPassword: '',
-      newPasswordConfirm: '',
-      passwordError: PasswordError.NoError,
-      passwordChangeReadOnly: true,
-      buttonState: '',
-      // 2FA variable
-      twoFactorOn: true,
-
-      // login history
-      loginHistory: [],
-    };
-
-    this.handleEditPassword = this.handleEditPassword.bind(this);
-    this.handleCancelPassword = this.handleCancelPassword.bind(this);
-    this.handleInputChangePassword = this.handleInputChangePassword.bind(this);
-    this.handleChangePassword = this.handleChangePassword.bind(this);
-    this.handleChange2FA = this.handleChange2FA.bind(this);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     fetch(`${getServerURL()}/get-user-info`, {
       method: 'POST',
       credentials: 'include',
@@ -132,20 +111,17 @@ export class MyAccount extends Component<Props, State, {}> {
     }).then((response) => response.json())
       .then((responseJSON) => {
         const date = responseJSON.birthDate.split('-');
-        const newState = {
-          username: responseJSON.username,
-          firstName: responseJSON.firstName,
-          lastName: responseJSON.lastName,
-          birthDate: new Date(date[2], date[0] - 1, date[1]),
-          email: responseJSON.email,
-          phone: responseJSON.phone,
-          city: responseJSON.city,
-          state: responseJSON.state,
-          address: responseJSON.address,
-          zipcode: responseJSON.zipcode,
-          twoFactorOn: responseJSON.twoFactorOn,
-        };
-        this.setState(newState);
+        setUsername(responseJSON.username);
+        setFirstName(responseJSON.firstName);
+        setLastName(responseJSON.lastName);
+        setBirthDate(new Date(date[2], date[0] - 1, date[1]));
+        setEmail(responseJSON.email);
+        setPhone(responseJSON.phone);
+        setCity(responseJSON.city);
+        setState(responseJSON.state);
+        setAddress(responseJSON.address);
+        setZipcode(responseJSON.zipcode);
+        setTwoFactorOn(responseJSON.twoFactorOn);
       });
 
     fetch(`${getServerURL()}/get-login-history`, {
@@ -165,64 +141,56 @@ export class MyAccount extends Component<Props, State, {}> {
             row.id = i;
             loginHistory.push(row);
           }
-          this.setState({
-            loginHistory,
-          });
+          setLoginHistory(loginHistory);
         }
       });
-  }
+  }, []);
 
-  handleEditPassword() {
-    this.setState({
-      passwordChangeReadOnly: false,
-    });
-  }
+  const handleEditPassword = () => {
+    setPasswordChangeReadOnly(false);
+  };
 
-  handleCancelPassword() {
-    this.setState({
-      passwordChangeReadOnly: true,
-      enteredPassword: '',
-      newPassword: '',
-      newPasswordConfirm: '',
-      passwordError: PasswordError.NoError,
-      buttonState: '',
-    });
-  }
+  const handleCancelPassword = () => {
+    setPasswordChangeReadOnly(true);
+    setEnteredPassword('');
+    setNewPassword('');
+    setNewPasswordConfirm('');
+    setPasswordError(PasswordError.NoError);
+    setButtonState('');
+  };
 
-  handleInputChangePassword(event) {
+  const handleInputChangePassword = (event) => {
     const { target } = event;
     const { value } = target;
     const { name } = target;
-    const newState = {
-      [name]: value,
-      passwordError: PasswordError.NoError,
-    } as Pick<State, keyof State>;
-    this.setState(newState);
-  }
+    switch (name) {
+      case 'enteredPassword':
+        setEnteredPassword(value);
+        setPasswordError(PasswordError.NoError);
+        break;
+      case 'newPassword':
+        setNewPassword(value);
+        setPasswordError(PasswordError.NoError);
+        break;
+      case 'newPasswordConfirm':
+        setNewPasswordConfirm(value);
+        setPasswordError(PasswordError.NoError);
+        break;
+      default:
+        console.log('No matches found');
+    }
+  };
 
   // change password section
-  handleChangePassword(event) {
+  const handleChangePassword = (event) => {
     event.preventDefault();
-    this.setState({
-      buttonState: 'running',
-    });
-
-    const {
-      enteredPassword,
-      newPassword,
-      newPasswordConfirm,
-    } = this.state;
-
-    const {
-      alert,
-    } = this.props;
+    setButtonState('running');
+    const { alert } = props;
 
     // confirm new passwor doesn't match
     if (newPassword !== newPasswordConfirm) {
-      this.setState({
-        buttonState: '',
-        passwordError: PasswordError.NewPasswordConfirmWrong,
-      });
+      setButtonState('');
+      setPasswordError(PasswordError.NewPasswordConfirmWrong);
       return;
     }
 
@@ -245,38 +213,27 @@ export class MyAccount extends Component<Props, State, {}> {
         if (status === 'AUTH_SUCCESS') {
           // new password is the same as the old password
           if (enteredPassword === newPassword) {
-            this.setState({
-              passwordError: PasswordError.NewPasswordSameAsOld,
-            });
+            setPasswordError(PasswordError.NewPasswordSameAsOld);
           } else { // no error - password changed succesfully
-            this.handleCancelPassword();
+            handleCancelPassword();
             alert.show('Successfully updated password');
           }
         } else if (status === 'AUTH_FAILURE') { // wrong old password
-          this.setState({
-            passwordError: PasswordError.OldPasswordWrong,
-          });
+          setPasswordError(PasswordError.OldPasswordWrong);
         } else if (status === 'INVALID_PARAMETER') {
-          this.setState({
-            passwordError: PasswordError.NewPasswordInvalid,
-          });
+          setPasswordError(PasswordError.NewPasswordInvalid);
         } else {
           alert.show('Failed resetting password, please try again.', { type: 'error' });
         }
-
-        this.setState({
-          buttonState: '',
-        });
+        setButtonState('');
       })
       .catch(() => {
         alert.show('Failed resetting password, please try again.', { type: 'error' });
-        this.setState({
-          buttonState: '',
-        });
+        setButtonState('');
       });
-  }
+  };
 
-  handleChange2FA(twoFactorOn) {
+  const handleChange2FA = (twoFactorOn) => {
     const data = {
       twoFactorOn,
     };
@@ -293,284 +250,259 @@ export class MyAccount extends Component<Props, State, {}> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') { // succesfully updated key and value
           // alert.show(`Successfully set 2FA Value`);
-          this.setState({ twoFactorOn });
+          setTwoFactorOn(twoFactorOn);
         }
       });
-  }
+  };
 
-  render() {
-    const {
-      username,
-      birthDate,
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      city,
-      state,
-      zipcode,
-      passwordChangeReadOnly,
-      enteredPassword,
-      newPassword,
-      newPasswordConfirm,
-      passwordError,
-      buttonState,
-      loginHistory,
-      twoFactorOn,
-    } = this.state;
+  const { alert } = props;
 
-    const {
-      alert,
-    } = this.props;
+  return (
+    <div className="container">
+      <Helmet>
+        <title>My Account</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
 
-    return (
-      <div className="container">
-        <Helmet>
-          <title>My Account</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">My Account</h5>
-              <small className="float-right text-muted">This field cannot be changed.</small>
-            </div>
-            <br />
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2 text-primary-theme">Username</div>
-              <div className="col-9 card-text">
-                <input
-                  type="text"
-                  className="form-control form-purple"
-                  name="username"
-                  id="username"
-                  value={username}
-                  readOnly
-                />
-              </div>
-            </div>
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">My Account</h5>
+            <small className="float-right text-muted">This field cannot be changed.</small>
           </div>
-        </div>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">Basic Information</h5>
-            </div>
-            <br />
-            <form>
-              <RenderInput
-                inputLabel="First Name"
-                inputName="firstName"
-                inputValue={firstName}
-                inputType="text"
-                alert={alert}
+          <br />
+          <div className="row mb-3 mt-3">
+            <div className="col-3 card-text mt-2 text-primary-theme">Username</div>
+            <div className="col-9 card-text">
+              <input
+                type="text"
+                className="form-control form-purple"
+                name="username"
+                id="username"
+                value={username}
+                readOnly
               />
-              <RenderInput
-                inputLabel="Last Name"
-                inputName="lastName"
-                inputValue={lastName}
-                inputType="text"
-                alert={alert}
-              />
-              <RenderInput
-                inputLabel="Birth Date"
-                inputName="birthDate"
-                inputValue={birthDate}
-                inputType="date"
-                alert={alert}
-              />
-              <RenderInput inputLabel="Email" inputName="email" inputValue={email} inputType="text" alert={alert} />
-              <RenderInput
-                inputLabel="Phone Number"
-                inputName="phone"
-                inputValue={phone}
-                inputType="tel"
-                alert={alert}
-              />
-            </form>
-          </div>
-        </div>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">Address Information</h5>
-            </div>
-            <br />
-            <form>
-              <RenderInput
-                inputLabel="Address"
-                inputName="address"
-                inputValue={address}
-                inputType="text"
-                alert={alert}
-              />
-              <RenderInput inputLabel="City" inputName="city" inputValue={city} inputType="text" alert={alert} />
-              <RenderInput inputLabel="State" inputName="state" inputValue={state} inputType="select" alert={alert} />
-              <RenderInput
-                inputLabel="Zip Code"
-                inputName="zipcode"
-                inputValue={zipcode}
-                inputType="text"
-                alert={alert}
-              />
-            </form>
-          </div>
-        </div>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">Change Password</h5>
-              {passwordChangeReadOnly
-                ? (
-                  <button
-                    type="button"
-                    name="editPassword"
-                    className="btn btn-outline-dark float-right"
-                    onClick={this.handleEditPassword}
-                    data-testid="edit-change-password"
-                  >
-                    Edit
-                  </button>
-                )
-                : null}
-            </div>
-            <br />
-            <form>
-              {passwordError === PasswordError.OldPasswordWrong
-                ? <p className="text-danger col-md-9 offset-md-3">Old password is incorrect</p> : null}
-              <div className="row mb-3 mt-3">
-                <label htmlFor="enteredPassword" className="col-3 card-text mt-2 text-primary-theme">Old password</label>
-                <div className="col-9 card-text">
-                  <input
-                    type="password"
-                    className="form-control form-purple"
-                    name="enteredPassword"
-                    id="enteredPassword"
-                    value={enteredPassword}
-                    onChange={this.handleInputChangePassword}
-                    readOnly={passwordChangeReadOnly}
-                  />
-                </div>
-              </div>
-              {passwordError === PasswordError.NewPasswordSameAsOld
-                ? (
-                  <p className="text-danger col-md-9 offset-md-3">
-                    The new password cannot match the old
-                    password
-                  </p>
-                ) : null}
-              {passwordError === PasswordError.NewPasswordInvalid
-                ? <p className="text-danger col-md-9 offset-md-3">The new password is invalid</p> : null}
-              <div className="row mb-3 mt-3">
-                <label htmlFor="newPassword" className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</label>
-                <div className="col-9 card-text">
-                  <input
-                    type="password"
-                    className="form-control form-purple"
-                    name="newPassword"
-                    id="newPassword"
-                    value={newPassword}
-                    onChange={this.handleInputChangePassword}
-                    readOnly={passwordChangeReadOnly}
-                  />
-                </div>
-              </div>
-              {passwordError === PasswordError.NewPasswordConfirmWrong
-                ? <p className="text-danger col-md-9 offset-md-3">The password does not match the one above</p> : null}
-              <div className="row mb-3 mt-3">
-                <label htmlFor="newPasswordConfirm" className="col-3 card-text mt-2 text-primary-theme">Confirm new password</label>
-                <div className="col-9 card-text">
-                  <input
-                    type="password"
-                    className="form-control form-purple"
-                    name="newPasswordConfirm"
-                    id="newPasswordConfirm"
-                    value={newPasswordConfirm}
-                    onChange={this.handleInputChangePassword}
-                    readOnly={passwordChangeReadOnly}
-                  />
-                </div>
-              </div>
-              <div>
-                {passwordChangeReadOnly ? null
-                  : (
-                    <span className="float-right">
-                      <Button
-                        type="button"
-                        name={Section.PasswordChange}
-                        className="mr-3"
-                        variant="light"
-                        onClick={this.handleCancelPassword}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        className={`ld-ext-right ${buttonState}`}
-                        variant="outline-dark"
-                        onClick={this.handleChangePassword}
-                        data-testid="submit-change-password"
-                      >
-                        Submit
-                        <div className="ld ld-ring ld-spin" />
-                      </Button>
-                    </span>
-                  )}
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">Two-Factor Authentication</h5>
-            </div>
-            <br />
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2 text-primary-theme">Status</div>
-              <div className="col-9 card-text">
-                <Switch onChange={this.handleChange2FA} checked={twoFactorOn} />
-              </div>
-            </div>
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2 text-primary-theme">Phone Number</div>
-              <div className="col-9 card-text">
-                <div className="input-group mb-3">
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    id="phoneNumber2"
-                    placeholder="(123)-456-7890"
-                  />
-                  <div className="input-group-append">
-                    <button className="btn btn-primary btn-primary-theme rounded-right" type="button">Submit</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card mt-3 mb-3">
-          <div className="card-body">
-            <div className="mb-3">
-              <h5 className="card-title float-left">Login History</h5>
-            </div>
-            <br />
-            <div className="row m-3">
-              <Table data={loginHistory} columns={loginHistoryCols} emptyInfo={{ description: 'No login history found' }} />
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">Basic Information</h5>
+          </div>
+          <br />
+          <form>
+            <RenderInput
+              inputLabel="First Name"
+              inputName="firstName"
+              inputValue={firstName}
+              inputType="text"
+              alert={alert}
+            />
+            <RenderInput
+              inputLabel="Last Name"
+              inputName="lastName"
+              inputValue={lastName}
+              inputType="text"
+              alert={alert}
+            />
+            <RenderInput
+              inputLabel="Birth Date"
+              inputName="birthDate"
+              inputValue={birthDate}
+              inputType="date"
+              alert={alert}
+            />
+            <RenderInput inputLabel="Email" inputName="email" inputValue={email} inputType="text" alert={alert} />
+            <RenderInput
+              inputLabel="Phone Number"
+              inputName="phone"
+              inputValue={phone}
+              inputType="tel"
+              alert={alert}
+            />
+          </form>
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">Address Information</h5>
+          </div>
+          <br />
+          <form>
+            <RenderInput
+              inputLabel="Address"
+              inputName="address"
+              inputValue={address}
+              inputType="text"
+              alert={alert}
+            />
+            <RenderInput inputLabel="City" inputName="city" inputValue={city} inputType="text" alert={alert} />
+            <RenderInput inputLabel="State" inputName="state" inputValue={state} inputType="select" alert={alert} />
+            <RenderInput
+              inputLabel="Zip Code"
+              inputName="zipcode"
+              inputValue={zipcode}
+              inputType="text"
+              alert={alert}
+            />
+          </form>
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">Change Password</h5>
+            {passwordChangeReadOnly
+              ? (
+                <button
+                  type="button"
+                  name="editPassword"
+                  className="btn btn-outline-dark float-right"
+                  onClick={handleEditPassword}
+                  data-testid="edit-change-password"
+                >
+                  Edit
+                </button>
+              )
+              : null}
+          </div>
+          <br />
+          <form>
+            {passwordError === PasswordError.OldPasswordWrong
+              ? <p className="text-danger col-md-9 offset-md-3">Old password is incorrect</p> : null}
+            <div className="row mb-3 mt-3">
+              <label htmlFor="enteredPassword" className="col-3 card-text mt-2 text-primary-theme">Old password</label>
+              <div className="col-9 card-text">
+                <input
+                  type="password"
+                  className="form-control form-purple"
+                  name="enteredPassword"
+                  id="enteredPassword"
+                  value={enteredPassword}
+                  onChange={handleInputChangePassword}
+                  readOnly={passwordChangeReadOnly}
+                />
+              </div>
+            </div>
+            {passwordError === PasswordError.NewPasswordSameAsOld
+              ? (
+                <p className="text-danger col-md-9 offset-md-3">
+                  The new password cannot match the old
+                  password
+                </p>
+              ) : null}
+            {passwordError === PasswordError.NewPasswordInvalid
+              ? <p className="text-danger col-md-9 offset-md-3">The new password is invalid</p> : null}
+            <div className="row mb-3 mt-3">
+              <label htmlFor="newPassword" className="col-3 card-text mt-2 text-primary-theme">New password (at least 8 characters)</label>
+              <div className="col-9 card-text">
+                <input
+                  type="password"
+                  className="form-control form-purple"
+                  name="newPassword"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={handleInputChangePassword}
+                  readOnly={passwordChangeReadOnly}
+                />
+              </div>
+            </div>
+            {passwordError === PasswordError.NewPasswordConfirmWrong
+              ? <p className="text-danger col-md-9 offset-md-3">The password does not match the one above</p> : null}
+            <div className="row mb-3 mt-3">
+              <label htmlFor="newPasswordConfirm" className="col-3 card-text mt-2 text-primary-theme">Confirm new password</label>
+              <div className="col-9 card-text">
+                <input
+                  type="password"
+                  className="form-control form-purple"
+                  name="newPasswordConfirm"
+                  id="newPasswordConfirm"
+                  value={newPasswordConfirm}
+                  onChange={handleInputChangePassword}
+                  readOnly={passwordChangeReadOnly}
+                />
+              </div>
+            </div>
+            <div>
+              {passwordChangeReadOnly ? null
+                : (
+                  <span className="float-right">
+                    <Button
+                      type="button"
+                      name={Section.PasswordChange}
+                      className="mr-3"
+                      variant="light"
+                      onClick={handleCancelPassword}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className={`ld-ext-right ${buttonState}`}
+                      variant="outline-dark"
+                      onClick={handleChangePassword}
+                      data-testid="submit-change-password"
+                    >
+                      Submit
+                      <div className="ld ld-ring ld-spin" />
+                    </Button>
+                  </span>
+                )}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">Two-Factor Authentication</h5>
+          </div>
+          <br />
+          <div className="row mb-3 mt-3">
+            <div className="col-3 card-text mt-2 text-primary-theme">Status</div>
+            <div className="col-9 card-text">
+              <Switch onChange={handleChange2FA} checked={twoFactorOn} />
+            </div>
+          </div>
+          <div className="row mb-3 mt-3">
+            <div className="col-3 card-text mt-2 text-primary-theme">Phone Number</div>
+            <div className="col-9 card-text">
+              <div className="input-group mb-3">
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  id="phoneNumber2"
+                  placeholder="(123)-456-7890"
+                />
+                <div className="input-group-append">
+                  <button className="btn btn-primary btn-primary-theme rounded-right" type="button">Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3">
+        <div className="card-body">
+          <div className="mb-3">
+            <h5 className="card-title float-left">Login History</h5>
+          </div>
+          <br />
+          <div className="row m-3">
+            <Table data={loginHistory} columns={loginHistoryCols} emptyInfo={{ description: 'No login history found' }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default withAlert()(MyAccount);

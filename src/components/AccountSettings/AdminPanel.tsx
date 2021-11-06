@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable simple-import-sort/imports */
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -11,7 +11,6 @@ import Table from '../BaseComponents/Table';
 import Role from '../../static/Role';
 
 interface Props {
-  username: string;
   name: string;
   organization: string;
   alert: any;
@@ -26,8 +25,8 @@ interface State {
   organization: string;
 }
 
-class AdminPanel extends Component<Props, State> {
-  tableCols = [
+const AdminPanel: React.FC<Props> = (props: Props) => {
+  const [tableCols, setTableCols] = useState([
     {
       dataField: 'id',
       text: 'username',
@@ -49,69 +48,23 @@ class AdminPanel extends Component<Props, State> {
       text: 'Worker Type',
       sort: true,
     },
-  ];
+  ]);
+  const [currentWorker, setCurrentWorker] = useState<State['workers']>(undefined);
+  const [searchName, setSearchName] = useState<State['searchName']>('');
+  const [adminName, setAdminName] = useState<State['adminName']>(props.name);
+  // eslint-disable-next-line react/destructuring-assignment
+  const [organization, setOrganization] = useState<State['organization']>(props.organization);
+  const [workers, setWorkers] = useState<State['workers']>([{}]);
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      currentWorker: undefined,
-      searchName: '',
-      adminName: props.name,
-      organization: props.organization,
-      workers: [{}],
-    };
-    this.onClickWorker = this.onClickWorker.bind(this);
-    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.getAdminWorkers = this.getAdminWorkers.bind(this);
-    this.onChangeViewPermission = this.onChangeViewPermission.bind(this);
-    this.onChangeEditPermission = this.onChangeEditPermission.bind(this);
-    this.onChangeRegisterPermission =
-      this.onChangeRegisterPermission.bind(this);
-  }
-
-  componentDidMount() {
-    this.getAdminWorkers();
-  }
-
-  onClickWorker(event: any) {
-    this.setState({ currentWorker: event });
-  }
-
-  handleChangeSearchName(event: any) {
-    this.setState(
-      {
-        searchName: event.target.value,
-      },
-      this.getAdminWorkers,
-    );
-  }
-
-  onChangeViewPermission(event: any) {
-    const { currentWorker } = this.state;
-    currentWorker.viewPermission = event.target.ischecked;
-    this.setState({ currentWorker });
-  }
-
-  // eslint-disable-next-line
-  onChangeEditPermission(event: any) {
-    // const thisCopy = this;
-  }
-
-  // eslint-disable-next-line
-  onChangeRegisterPermission(event: any) {
-    // const thisCopy = this;
-  }
-
-  getAdminWorkers() {
-    const { searchName } = this.state;
-    const { role } = this.props;
+  const getAdminWorkers = (search = searchName) => {
+    const { role } = props;
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         role,
         listType: 'members',
-        name: searchName,
+        name: search,
       }),
     })
       .then((res) => res.json())
@@ -123,13 +76,20 @@ class AdminPanel extends Component<Props, State> {
             delete person.username;
           });
         }
-        this.setState({ workers: people });
+        setWorkers(people);
       });
-  }
+  };
 
-  render() {
-    const { currentWorker, adminName, organization, workers } = this.state;
-    const workerPanel =
+  const handleChangeSearchName = (event: any) => {
+    setSearchName(event.target.value);
+    getAdminWorkers(event.target.value);
+  };
+
+  useEffect(() => {
+    getAdminWorkers();
+  }, []);
+
+  const workerPanel =
       currentWorker === undefined ? (
         <div className="card">
           <div className="card-body">
@@ -154,7 +114,7 @@ class AdminPanel extends Component<Props, State> {
                   type="submit"
                   className="btn btn-outline-primary"
                   onClick={(): void => {
-                    const { alert } = this.props;
+                    const { alert } = props;
                     alert.show('Save Changes feature coming soon...');
                   }}
                 >
@@ -167,7 +127,7 @@ class AdminPanel extends Component<Props, State> {
                 type="submit"
                 className="btn btn-danger"
                 onClick={(): void => {
-                  const { alert } = this.props;
+                  const { alert } = props;
                   alert.show('Delete Worker Account feature coming soon...');
                 }}
               >
@@ -203,7 +163,7 @@ class AdminPanel extends Component<Props, State> {
                   type="submit"
                   className="btn btn-outline-primary"
                   onClick={(): void => {
-                    const { alert } = this.props;
+                    const { alert } = props;
                     alert.show('Save Changes feature coming soon...');
                   }}
                 >
@@ -216,7 +176,7 @@ class AdminPanel extends Component<Props, State> {
                 type="submit"
                 className="btn btn-danger"
                 onClick={(): void => {
-                  const { alert } = this.props;
+                  const { alert } = props;
                   alert.show('Delete Worker Account feature coming soon...');
                 }}
               >
@@ -226,7 +186,7 @@ class AdminPanel extends Component<Props, State> {
           </ul>
         </div>
       );
-    return (
+  return (
       <div>
         <Helmet>
           <title>Admin Panel</title>
@@ -243,7 +203,7 @@ class AdminPanel extends Component<Props, State> {
                   type="search"
                   placeholder="Search by name"
                   aria-label="Search"
-                  onChange={this.handleChangeSearchName}
+                  onChange={handleChangeSearchName}
                 />
               </form>
             </div>
@@ -279,7 +239,7 @@ class AdminPanel extends Component<Props, State> {
             </div>
           </div>
           <Table
-            columns={this.tableCols}
+            columns={tableCols}
             data={workers}
             emptyInfo={{
               description: 'There are no members in your organization.',
@@ -287,8 +247,7 @@ class AdminPanel extends Component<Props, State> {
           />
         </div>
       </div>
-    );
-  }
-}
+  );
+};
 
 export default withAlert()(AdminPanel);
