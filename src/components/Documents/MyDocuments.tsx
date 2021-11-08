@@ -335,8 +335,11 @@ class MyDocuments extends Component<Props, State> {
               <p className="lead pt-3">
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
-              <h3>Upload Documents</h3>
-              <DropzoneTest userRole={userRole} />
+              <Link className="nav-link" to="/upload-document">
+                <button type="button" className="btn btn-outline-primary btn-sm mr-3">
+                  Upload Documents
+                </button>
+              </Link>
             </div>
 
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
