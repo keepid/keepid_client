@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 
+// import { Steps } from 'antd';
 import Role from '../../static/Role';
 import DropzoneTest from './DropzoneTest';
 
@@ -12,10 +13,20 @@ interface Props {
 
 interface State {
   pdfFiles: FileList | undefined,
-  buttonState: string
+  buttonState: string,
+  // currentStep: number
 }
 
+// const { Step } = Steps;
+
 class UploadDocs extends React.Component<Props, State> {
+  // constructor(props: Props) {
+  //   super(props);
+  //   this.state = {
+  //     currentStep: 0
+  //   };
+  // }
+
   static maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }
@@ -35,6 +46,10 @@ class UploadDocs extends React.Component<Props, State> {
       userRole,
     } = this.props;
 
+    // const {
+    //   currentStep,
+    // } = this.state;
+
     return (
       <div className="container">
         <Helmet>
@@ -45,12 +60,20 @@ class UploadDocs extends React.Component<Props, State> {
           <h1 className="display-4">
             Upload Documents
           </h1>
-          <p className="lead pt-3">
+          {/* <p className="lead pt-3">
             Select a PDF file to upload.
             The name of the PDF will appear when loaded.
             After confirming that you have chosen the correct file, click the &quot;Submit&quot; button to upload.
             Otherwise, choose a different file.
-          </p>
+          </p> */}
+
+          <div>
+            {/* <Steps className="d-none d-md-flex" progressDot current={currentStep}>
+              <Step title="Upload files" description="" />
+              <Step title="Document Information" description="" />
+              <Step title="Review & Submit" description="" />
+            </Steps> */}
+          </div>
 
           <DropzoneTest userRole={userRole} />
         </div>
