@@ -1,6 +1,6 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
-import React, { Component, useState } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { ButtonGroup } from 'react-bootstrap';
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
@@ -57,33 +57,16 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class MyDocuments extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.submitForm = this.submitForm.bind(this);
-    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
-    this.handleChangeFileDownload = this.handleChangeFileDownload.bind(this);
-    this.handleFileDownload = this.handleFileDownload.bind(this);
-    this.handleChangeFilePrint = this.handleChangeFilePrint.bind(this);
-    this.handleFilePrint = this.handleFilePrint.bind(this);
-    this.state = {
-      pdfFiles: undefined,
-      buttonState: '',
-      currentDocumentId: undefined,
-      currentDocumentName: undefined,
-      documentData: [],
-    };
-    this.getDocumentData = this.getDocumentData.bind(this);
-    this.onViewDocument = this.onViewDocument.bind(this);
-    this.deleteDocument = this.deleteDocument.bind(this);
-    this.ButtonFormatter = this.ButtonFormatter.bind(this);
-  }
+const MyDocuments = ({ alert, userRole, username }: Props) => {
+  const [pdfFiles, setPdfFiles] = useState<State['pdfFiles']>(undefined);
+  const [buttonState, setButtonState] = useState<State['buttonState']>('');
+  const [currentDocumentId, setCurrentDocumentId] = useState<State['currentDocumentId']>(undefined);
+  const [currentDocumentName, setCurrentDocumentName] = useState<State['currentDocumentName']>(undefined);
+  const [documentData, setDocumentData] = useState<State['documentData']>([]);
 
-  static maxFilesExceeded(files, maxNumFiles) {
-    return files.length > maxNumFiles;
-  }
+  const maxFilesExceeded = (files, maxNumFiles) => files.length > maxNumFiles;
 
-  static fileNamesUnique(files) {
+  const fileNamesUnique = (files) => {
     const fileNames: string[] = [];
     for (let i = 0; i < files.length; i += 1) {
       const fileName = files[i].name;
@@ -91,13 +74,34 @@ class MyDocuments extends Component<Props, State> {
     }
 
     return fileNames.length === new Set(fileNames).size;
-  }
+  };
 
-  handleChangeFileUpload(event: any) {
+  const getDocumentData = () => {
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = responseJSON;
+        setDocumentData(documents);
+      });
+  };
+
+  const handleChangeFileUpload = (event: any) => {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     // check that the number of files uploaded doesn't exceed the maximum
@@ -109,25 +113,10 @@ class MyDocuments extends Component<Props, State> {
     }
 
     // all validation met
-    this.setState({
-      pdfFiles: files,
-    });
-  }
+    setPdfFiles(files);
+  };
 
-  handleChangeFileDownload(event: any, row: any) {
-    event.preventDefault();
-    const { files } = event.target;
-
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFileDownload(row));
-  }
-
-  handleFileDownload(row: any) {
-    const {
-      userRole,
-      alert,
-    } = this.props;
+  const handleFileDownload = (row: any) => {
     const documentId = row.id;
     const documentName = row.filename;
 
@@ -159,21 +148,19 @@ class MyDocuments extends Component<Props, State> {
       }).catch((_error) => {
         alert.show('Error Fetching File');
       });
-  }
+  };
 
-  handleChangeFilePrint(event: any, rowIndex: number) {
+  const handleChangeFileDownload = (event: any, row: any) => {
     event.preventDefault();
     const { files } = event.target;
+    setPdfFiles(files);
+    handleFileDownload(row);
+    // this.setState({
+    //   pdfFiles: files,
+    // }, () => this.handleFileDownload(row));
+  };
 
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFilePrint(rowIndex));
-  }
-
-  handleFilePrint(rowIndex: number) {
-    const { userRole, alert } = this.props;
-    const { documentData } = this.state;
-
+  const handleFilePrint = (rowIndex: number) => {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
@@ -199,30 +186,35 @@ class MyDocuments extends Component<Props, State> {
       }).catch((_error) => {
         alert.show('Error Fetching File');
       });
-  }
+  };
 
-  componentDidMount() {
-    this.getDocumentData();
-  }
+  const handleChangeFilePrint = (event: any, rowIndex: number) => {
+    event.preventDefault();
+    const { files } = event.target;
+    setPdfFiles(files);
+    handleFilePrint(rowIndex);
+    // this.setState({
+    //   pdfFiles: files,
+    // }, () => this.handleFilePrint(rowIndex));
+  };
 
-  onViewDocument(event: any, row: any) {
+  useEffect(() => {
+    getDocumentData();
+  }, []);
+
+  const onViewDocument = (event: any, row: any) => {
     const {
       id,
       filename,
     } = row;
-    this.setState({
-      currentDocumentId: id,
-      currentDocumentName: filename,
-    });
-  }
+    setCurrentDocumentId(id);
+    setCurrentDocumentName(filename);
+  };
 
-  deleteDocument(event, row) {
+  const deleteDocument = (event, row) => {
     event.preventDefault();
     const documentId = row.id;
 
-    const {
-      userRole,
-    } = this.props;
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
       pdfType = PDFType.APPLICATION;
@@ -241,38 +233,11 @@ class MyDocuments extends Component<Props, State> {
       }),
     }).then((response) => response.json())
       .then((_responseJSON) => {
-        this.getDocumentData();
+        getDocumentData();
       });
-  }
+  };
 
-  getDocumentData() {
-    const {
-      userRole,
-    } = this.props;
-    let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
-    } else {
-      pdfType = undefined;
-    }
-    fetch(`${getServerURL()}/get-documents `, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        pdfType,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          documents,
-        } = responseJSON;
-        this.setState({ documentData: documents });
-      });
-  }
-
-  ButtonFormatter = (cell: any, row: any, rowIndex) => (
+  const ButtonFormatter = (cell: any, row: any, rowIndex) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <ButtonGroup>
@@ -289,7 +254,7 @@ class MyDocuments extends Component<Props, State> {
       <Link to="/my-documents/view">
         <button
           type="button"
-          onClick={(event) => this.onViewDocument(event, row)}
+          onClick={(event) => onViewDocument(event, row)}
           className="btn btn-outline-info btn-sm"
         >
           View
@@ -297,23 +262,23 @@ class MyDocuments extends Component<Props, State> {
       </Link>
       <button
         type="button"
-        onClick={(event) => this.handleChangeFileDownload(event, row)}
+        onClick={(event) => handleChangeFileDownload(event, row)}
         className="btn btn-outline-success btn-sm ml-2"
       >
         Download
       </button>
       <button
         type="button"
-        onClick={(event) => this.deleteDocument(event, row)}
+        onClick={(event) => deleteDocument(event, row)}
         className="btn btn-outline-danger btn-sm ml-2"
       >
         Delete
       </button>
 
     </ButtonGroup>
-  )
+  );
 
-  tableCols = [{
+  const tableCols = [{
     dataField: 'filename',
     text: 'File Name',
     sort: true,
@@ -336,23 +301,12 @@ class MyDocuments extends Component<Props, State> {
   {
     dataField: 'actions',
     text: 'Actions',
-    formatter: this.ButtonFormatter,
+    formatter: ButtonFormatter,
   }];
 
-  submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
-    this.setState({ buttonState: 'running' });
+  const submitForm = (event: any) => {
+    setButtonState('running');
     event.preventDefault();
-    const {
-      pdfFiles,
-    } = this.state;
-
-    const {
-      alert,
-    } = this.props;
 
     if (pdfFiles) {
       // upload each pdf file
@@ -377,37 +331,26 @@ class MyDocuments extends Component<Props, State> {
             } = responseJSON;
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
-              this.setState({
-                buttonState: '',
-                pdfFiles: undefined,
-              }, () => this.getDocumentData());
+              setButtonState('');
+              setPdfFiles(undefined);
+              getDocumentData();
+              // this.setState({
+              //   buttonState: '',
+              //   pdfFiles: undefined,
+              // }, () => this.getDocumentData());
             } else {
               alert.show(`Failure to upload ${pdfFile.name}`);
-              this.setState({ buttonState: '' });
+              setButtonState('');
             }
           });
       }
     } else {
       alert.show('Please select a file');
-      this.setState({ buttonState: '' });
+      setButtonState('');
     }
-  }
+  };
 
-  render() {
-    const {
-      pdfFiles,
-      buttonState,
-    } = this.state;
-
-    const {
-      userRole,
-    } = this.props;
-    const {
-      currentDocumentId,
-      currentDocumentName,
-      documentData,
-    } = this.state;
-    return (
+  return (
       <Switch>
         <Route exact path="/my-documents">
           <div className="container">
@@ -432,7 +375,7 @@ class MyDocuments extends Component<Props, State> {
               }
             </ul>
             <div className="row justify-content-left form-group mb-5">
-              <form onSubmit={this.submitForm}>
+              <form onSubmit={submitForm}>
                 <div className="form-row mt-3">
                   <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
                     {pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files'}
@@ -441,7 +384,7 @@ class MyDocuments extends Component<Props, State> {
                       accept="application/pdf"
                       id="potentialPdf"
                       multiple
-                      onChange={this.handleChangeFileUpload}
+                      onChange={handleChangeFileUpload}
                       hidden
                     />
                   </label>
@@ -459,7 +402,7 @@ class MyDocuments extends Component<Props, State> {
                 <ToolkitProvider
                   keyField="id"
                   data={documentData}
-                  columns={this.tableCols}
+                  columns={tableCols}
                   search
                 >
                   {
@@ -469,7 +412,7 @@ class MyDocuments extends Component<Props, State> {
                         <hr />
                         <Table
                           data={documentData}
-                          columns={this.tableCols}
+                          columns={tableCols}
                           emptyInfo={{ description: 'No documents found' }}
                         />
                       </div>
@@ -486,8 +429,7 @@ class MyDocuments extends Component<Props, State> {
             : <div />}
         </Route>
       </Switch>
-    );
-  }
-}
+  );
+};
 
 export default withAlert()(MyDocuments);

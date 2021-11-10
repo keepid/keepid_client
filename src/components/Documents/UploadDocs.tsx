@@ -44,24 +44,15 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-class UploadDocs extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.submitForm = this.submitForm.bind(this);
-    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
-    this.state = {
-      pdfFiles: undefined,
-      buttonState: '',
-    };
-    this.submitForm = this.submitForm.bind(this);
-    this.handleChangeFileUpload = this.handleChangeFileUpload.bind(this);
-  }
+const UploadDocs = ({ alert, userRole }: Props) => {
+  const [pdfFiles, setPDFFiles] = useState<State['pdfFiles']>(undefined);
+  const [buttonState, setButtonState] = useState<State['buttonState']>('');
 
-  static maxFilesExceeded(files, maxNumFiles) {
+  function maxFilesExceeded(files, maxNumFiles) {
     return files.length > maxNumFiles;
   }
 
-  static fileNamesUnique(files) {
+  function fileNamesUnique(files) {
     const fileNames: string[] = [];
     for (let i = 0; i < files.length; i += 1) {
       const fileName = files[i].name;
@@ -71,21 +62,9 @@ class UploadDocs extends React.Component<Props, State> {
     return fileNames.length === new Set(fileNames).size;
   }
 
-  submitForm(event: any) {
-    const {
-      userRole,
-    } = this.props;
-
-    this.setState({ buttonState: 'running' });
+  const submitForm = (event: any) => {
+    setButtonState('running');
     event.preventDefault();
-    const {
-      pdfFiles,
-    } = this.state;
-
-    const {
-      alert,
-    } = this.props;
-
     if (pdfFiles) {
       // upload each pdf file
       for (let i = 0; i < pdfFiles.length; i += 1) {
@@ -109,27 +88,22 @@ class UploadDocs extends React.Component<Props, State> {
             } = responseJSON;
             if (status === 'SUCCESS') {
               alert.show(`Successfully uploaded ${pdfFile.name}`);
-              this.setState({
-                buttonState: '',
-                pdfFiles: undefined,
-              });
+              setButtonState('');
+              setPDFFiles(undefined);
             } else {
               alert.show(`Failure to upload ${pdfFile.name}`);
-              this.setState({ buttonState: '' });
+              setButtonState('');
             }
           });
       }
     } else {
       alert.show('Please select a file');
-      this.setState({ buttonState: '' });
+      setButtonState('');
     }
-  }
+  };
 
-  handleChangeFileUpload(event: any) {
+  const handleChangeFileUpload = (event: any) => {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
     const { files } = event.target;
 
     // check that the number of files uploaded doesn't exceed the maximum
@@ -141,18 +115,9 @@ class UploadDocs extends React.Component<Props, State> {
     }
 
     // all validation met
-    this.setState({
-      pdfFiles: files,
-    });
-  }
-
-  render() {
-    const {
-      pdfFiles,
-      buttonState,
-    } = this.state;
-
-    return (
+    setPDFFiles(files);
+  };
+  return (
       <div className="container">
         <Helmet>
           <title>Upload Documents</title>
@@ -182,7 +147,7 @@ class UploadDocs extends React.Component<Props, State> {
           </ul>
 
           <div className="row justify-content-left form-group mb-5">
-            <form onSubmit={this.submitForm}>
+            <form onSubmit={submitForm}>
               <div className="form-row mt-3">
                 <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
                   {pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files'}
@@ -191,7 +156,7 @@ class UploadDocs extends React.Component<Props, State> {
                     accept="application/pdf"
                     id="potentialPdf"
                     multiple
-                    onChange={this.handleChangeFileUpload}
+                    onChange={handleChangeFileUpload}
                     hidden
                   />
                 </label>
@@ -206,8 +171,7 @@ class UploadDocs extends React.Component<Props, State> {
           </div>
         </div>
       </div>
-    );
-  }
-}
+  );
+};
 
 export default withAlert()(UploadDocs);
