@@ -4,7 +4,7 @@ import '../../static/styles/UploadDocs.scss';
 import { Steps } from 'antd';
 import React, { useCallback, useState } from 'react';
 import { withAlert } from 'react-alert';
-import { Card, Col, Container, Row } from 'react-bootstrap';
+import { Card, Col, Container, Dropdown, DropdownButton, Row } from 'react-bootstrap';
 import Dropzone from 'react-dropzone-uploader';
 import uuid from 'react-uuid';
 
@@ -20,8 +20,9 @@ interface Props {
 
 interface State {
   pdfFiles: File[] | undefined,
-  // buttonState: string,
-  currentStep: number
+  documentTypeList: string[]
+  currentStep: number,
+  userRole: Role | undefined
 }
 
 interface PDFProps {
@@ -43,7 +44,7 @@ function RenderPDF(props: PDFProps): React.ReactElement {
           type="button"
           onClick={() => setShowResults(!showResults)}
         >
-          {showResults ? 'Hide' : 'Preview'}
+          {showResults ? 'Hide' : 'View'}
         </button>
       </div>
       {showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null}
@@ -56,22 +57,103 @@ class DropzoneTest extends React.Component<Props, State> {
     super(props);
     this.state = {
       pdfFiles: undefined,
+      documentTypeList: [],
       currentStep: 0,
+      userRole: this.props.userRole,
     };
     this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleOnClickCard = this.handleOnClickCard.bind(this);
+    this.setTitle = this.setTitle.bind(this);
+  }
+
+  uploadFiles() {
+    // const files = this.state.pdfFiles;
+    if (this.state.pdfFiles) {
+      for (let i = 0; i < this.state.pdfFiles.length; i += 1) {
+        const pdfFile = this.state.pdfFiles[i];
+        const formData = new FormData();
+        const documentType = this.state.documentTypeList[i];
+        formData.append('file', pdfFile, pdfFile.name);
+        formData.append('documentType', documentType);
+        if (this.state.userRole === Role.Client) {
+          formData.append('pdfType', PDFType.IDENTIFICATION);
+        }
+        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin) {
+          formData.append('pdfType', PDFType.FORM);
+        }
+        // fileList.push(pdfFile.file);
+        console.log('file type: ', typeof (formData));
+        fetch(`${getServerURL()}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        }).then((response) => response.json())
+          .then((responseJSON) => {
+            const {
+              status,
+            } = responseJSON;
+            if (status === 'SUCCESS') {
+              alert(`Successfully uploaded ${pdfFile.name}`);
+            } else {
+              alert(`Failed to upload ${pdfFile.name}`);
+            }
+          });
+        // .finally(() => {
+        //   allFiles.forEach((f) => f.remove());
+        // });
+      }
+    }
   }
 
   handleOnClick(newCurrentStep: number) {
-    if (newCurrentStep < 0) {
+    let error = false;
+    if (newCurrentStep <= 0) {
       this.setState({
         currentStep: 0,
+        documentTypeList: [],
         pdfFiles: undefined,
       });
     } else if (newCurrentStep > MAX_NUM_STEPS) {
       this.setState({ currentStep: MAX_NUM_STEPS });
+    } else if (this.state.documentTypeList.length === 0) {
+      if (this.state.pdfFiles && this.state.documentTypeList.length < this.state.pdfFiles.length) {
+        alert('Please categorize each document');
+        error = true;
+      }
+      for (let i = 0; i < this.state.documentTypeList.length; i += 1) {
+        if (this.state.documentTypeList[i] === undefined) {
+          alert('Please categorize each document');
+          error = true;
+        }
+      }
+      if (error === false) {
+        this.uploadFiles();
+      }
+      // alert('Please upload documents before proceeding');
     } else {
       this.setState({ currentStep: newCurrentStep });
     }
+  }
+
+  handleOnClickCard(id: number, category: string) {
+    const test = this.state.documentTypeList;
+    console.log('document type for file ', id);
+    console.log(category);
+    test[id] = category;
+    this.setState(() => ({
+      documentTypeList: test,
+    }));
+    console.log(this.state.documentTypeList);
+  }
+
+  setTitle(id: number) {
+    if (this.state.documentTypeList && this.state.documentTypeList.length > id) {
+      if (this.state.documentTypeList[id] !== undefined) {
+        console.log('Setting Category button to ', this.state.documentTypeList[id]);
+        return this.state.documentTypeList[id];
+      }
+    }
+    return 'Category';
   }
 
   render() {
@@ -85,6 +167,7 @@ class DropzoneTest extends React.Component<Props, State> {
 
     const {
       pdfFiles,
+      documentTypeList,
       currentStep,
     } = this.state;
 
@@ -171,21 +254,34 @@ class DropzoneTest extends React.Component<Props, State> {
               </p>
               <Container>
                 {
-                  pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile) =>
+                  pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) =>
                     (
                       <Row xs={1} md={3} className="g-4 row-padding">
                         <Col>
-                          <Card style={{ width: '36rem' }}>
+                          <Card style={{ width: '48rem' }}>
                             <Card.Body>
-                              <Card.Title>{pdfFile.name}</Card.Title>
-                              <Card.Text>
-                                <p>Document Type: {pdfFile.type}</p>
-                                <p>Document Size: {pdfFile.size}</p>
-                              </Card.Text>
-                              <RenderPDF
-                                key={uuid()}
-                                pdfFile={pdfFile}
-                              />
+                              <Row>
+                                <Col sm={8}>
+                                  <Card.Title>{pdfFile.name}</Card.Title>
+                                  <Card.Text>
+                                    Document Type: {pdfFile.type}
+                                  </Card.Text>
+                                  <RenderPDF
+                                    key={uuid()}
+                                    pdfFile={pdfFile}
+                                  />
+                                </Col>
+                                <Col sm={4}>
+                                  <DropdownButton
+                                    title={this.setTitle(index)}
+                                  >
+                                    <Dropdown.Item eventKey="License" onClick={(event) => this.handleOnClickCard(index, 'Driver License')}>Driver&apos;s License</Dropdown.Item>
+                                    <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
+                                    <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
+                                    <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
+                                  </DropdownButton>
+                                </Col>
+                              </Row>
                             </Card.Body>
                           </Card>
                         </Col>
@@ -196,24 +292,30 @@ class DropzoneTest extends React.Component<Props, State> {
             </div>
           )}
         </div>
-        <div className="row pt-4">
-          <div className="col pl2 pt-3">
-            <button
-              className="float-left btn btn-outline-primary btn-md mr-3"
-              type="button"
-              onClick={(event) => this.handleOnClick(currentStep - 1)}
-            >
-              Previous
-            </button>
-            <button
-              className="float-right btn btn-outline-primary btn-md mr-3"
-              type="button"
-              onClick={(event) => this.handleOnClick(currentStep + 1)}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
+        {
+          currentStep > 0 && (
+            <div>
+              <div className="row pt-4">
+                <div className="col pl2 pt-3">
+                  <button
+                    className="float-left btn btn-outline-primary btn-md mr-3"
+                    type="button"
+                    onClick={(event) => this.handleOnClick(currentStep - 1)}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="float-right btn btn-outline-primary btn-md mr-3"
+                    type="button"
+                    onClick={(event) => this.handleOnClick(currentStep + 1)}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        }
       </div>
     );
   }
