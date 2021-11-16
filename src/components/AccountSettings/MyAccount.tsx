@@ -81,7 +81,7 @@ const loginHistoryCols = [{
   sort: true,
 }];
 
-const MyAccount = (props: Props) => {
+export const MyAccount = (props: Props) => {
   const [username, setUsername] = useState<State['username']>('');
   const [birthDate, setBirthDate] = useState<State['birthDate']>(new Date());
   const [firstName, setFirstName] = useState<State['firstName']>('');

@@ -10,7 +10,7 @@ import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 
-import MyAccount from '../../../components/AccountSettings/MyAccount';
+import { MyAccount } from '../../../components/AccountSettings/MyAccount';
 import getServerURL from '../../../serverOverride';
 import { fakeUser as generateFakeUser } from '../../test-utils/faker';
 
@@ -123,11 +123,11 @@ describe('MyAccount', () => {
       // Assert
       await waitFor(() => {
         expect(changePasswordAPIHandler).toHaveBeenCalledTimes(1);
-        // expect(alertShowFn).toBeCalledTimes(1);
+        expect(alertShowFn).toBeCalledTimes(1);
       });
 
       // expect(loginFn).toBeCalledTimes(0);
-      // expect(alertShowFn).toBeCalledWith('Successfully updated password');
+      expect(alertShowFn).toBeCalledWith('Successfully updated password');
     });
 
     test('should display expected error message when incorrect old password', async () => {
@@ -213,10 +213,10 @@ describe('MyAccount', () => {
       // Assert
       await waitFor(() => {
         // expect(changePasswordAPIHandler).toHaveBeenCalledTimes(1);
-        // expect(alertShowFn).toBeCalledTimes(1);
+        expect(alertShowFn).toBeCalledTimes(1);
       });
 
-      // expect(alertShowFn).toBeCalledWith('Failed resetting password, please try again.', { type: 'error' });
+      expect(alertShowFn).toBeCalledWith('Failed resetting password, please try again.', { type: 'error' });
     });
   });
 });
