@@ -13,8 +13,6 @@ import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 import DocumentViewer from './DocumentViewer';
-import DropzoneTest from './DropzoneTest';
-import UploadDocs from './UploadDocs';
 import ViewDocument from './ViewDocument';
 
 const { SearchBar } = Search;
@@ -335,11 +333,11 @@ class MyDocuments extends Component<Props, State> {
               <p className="lead pt-3">
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
-              <Link className="nav-link" to="/upload-document">
                 <button type="button" className="btn btn-outline-primary btn-sm mr-3">
-                  Upload Documents
+                  <Link className="nav-link" to="/upload-document">
+                    Upload Documents
+                  </Link>
                 </button>
-              </Link>
             </div>
 
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">

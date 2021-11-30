@@ -23,7 +23,6 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
-import DropzoneTest from './components/Documents/DropzoneTest';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -318,7 +317,7 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              {/* <Route
+              <Route
                 path="/upload-document"
                 render={() => {
                   if (
@@ -330,10 +329,7 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return <Redirect to="/error" />;
                 }}
-              /> */}
-              <Route path="/upload-document">
-                <UploadDocs userRole={role} />
-              </Route>
+              />
               <Route
                 path="/my-documents"
                 render={() => {
