@@ -217,7 +217,7 @@ class UploadDocs extends React.Component<Props, State> {
             </div>
           )}
           {currentStep === 1 && (
-            <div>
+            <div className="container">
               <p className="lead pt-3">
                 Please review the documents below. Click the &quot;Continue&quot; button to submit.
               </p>
@@ -225,32 +225,31 @@ class UploadDocs extends React.Component<Props, State> {
                 {
                   pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) =>
                     (
-                      <Card style={{ width: '48rem' }}>
-                        {/* <Row xs={1} md={3} className="g-4 row-padding"> */}
-                        <Row>
-                          <Col>
-                              <Card.Body>
-                                  <Col sm={10}>
-                                    <Card.Title>{pdfFile.name}</Card.Title>
-                                    <RenderPDF
-                                      key={uuid()}
-                                      pdfFile={pdfFile}
-                                    />
-                                  </Col>
-                                  <Col sm={2}>
-                                    <DropdownButton
-                                      title={this.setTitle(index)}
-                                    >
-                                      <Dropdown.Item eventKey="License" onClick={(event) => this.handleOnClickCard(index, 'Driver License')}>Driver&apos;s License</Dropdown.Item>
-                                      <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
-                                      <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
-                                      <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
-                                    </DropdownButton>
-                                  </Col>
-                              </Card.Body>
-                          </Col>
-                        </Row>
-                      </Card>
+                      <div className="container mb-3 card-alignment">
+                        <Card style={{ width: '48rem' }}>
+                          <Row className="row-padding g-4 md-3">
+                              <Col sm={8}>
+                                      <Col sm={10}>
+                                        <Card.Title>{pdfFile.name}</Card.Title>
+                                        <RenderPDF
+                                          key={uuid()}
+                                          pdfFile={pdfFile}
+                                        />
+                                      </Col>
+                              </Col>
+                            <Col sm={4}>
+                              <DropdownButton
+                                title={this.setTitle(index)}
+                              >
+                                <Dropdown.Item eventKey="License" onClick={(event) => this.handleOnClickCard(index, 'Driver License')}>Driver&apos;s License</Dropdown.Item>
+                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
+                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
+                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
+                              </DropdownButton>
+                            </Col>
+                          </Row>
+                        </Card>
+                      </div>
                     )) : null
                 }
               </Container>
