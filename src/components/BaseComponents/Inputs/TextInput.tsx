@@ -1,8 +1,9 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import { InputGroup } from 'react-bootstrap';
+import { Form, InputGroup } from 'react-bootstrap';
 
 import InputProps from './BaseInputProps';
+import { performValidation } from './Inputs.util';
 import InputWrapper from './InputWrapper';
 
 export enum TextInputType {
@@ -23,6 +24,7 @@ const TextInput = ({
   onChange,
   placeholder,
   type,
+  validate,
   value,
   ...rest
 }: TextInputProps) => {
@@ -30,15 +32,48 @@ const TextInput = ({
   const [showPassword, setShowPassword] = useState(false);
   const inputType =
     type === TextInputType.PASSWORD && showPassword ? TextInputType.TEXT : type;
+
+  const [invalidMessage, setInvalidMessage] = useState('');
+  const [validityChecked, setValidityChecked] = useState(false);
+
   return (
-    <InputWrapper label={label} name={name} {...rest}>
+    <InputWrapper
+      label={label}
+      name={name}
+      invalidMessage={invalidMessage}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...rest}
+    >
       <InputGroup>
-        <input
+        <Form.Control
+          as="input"
+          onBlur={(e) =>
+            performValidation(
+              e,
+              validate,
+              setInvalidMessage,
+              setValidityChecked,
+            )
+          }
           className={className}
           defaultValue={defaultValue}
           id={name}
+          isInvalid={validityChecked && !!invalidMessage}
+          isValid={validityChecked && !invalidMessage}
           name={name}
-          onChange={(e) => onChange && onChange(e.target.value)}
+          onChange={(e) => {
+            if (invalidMessage) {
+              performValidation(
+                e,
+                validate,
+                setInvalidMessage,
+                setValidityChecked,
+              );
+            }
+            if (onChange) {
+              onChange(e.target.value);
+            }
+          }}
           placeholder={placeholder}
           required={rest.required}
           type={inputType}
@@ -55,6 +90,14 @@ const TextInput = ({
           </InputGroup.Append>
         ) : null}
       </InputGroup>
+
+      {/* This hidden input is a hack to ensure that the `Form.Control.Feedback` in the `InputWrapper` component renders properly  */}
+      <Form.Control
+        data-testid={`hidden-text-input-${name}`}
+        className="d-none"
+        isInvalid={validityChecked && !!invalidMessage}
+        isValid={validityChecked && !invalidMessage}
+      />
     </InputWrapper>
   );
 };

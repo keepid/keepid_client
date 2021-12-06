@@ -27,6 +27,10 @@ export interface InputWrapperProps {
    * Children to render within the input wrapper
    */
   children: JSX.Element | JSX.Element[];
+  /**
+   * Validation failure message
+   */
+  invalidMessage?: string | undefined;
 }
 
 const InputWrapper = ({
@@ -36,12 +40,20 @@ const InputWrapper = ({
   name,
   required,
   labelClassName,
+  invalidMessage,
 }: InputWrapperProps) => {
   const className = classNames('input-label', labelClassName, { required });
   return (
     <Form.Group>
-      <Form.Label className={className} htmlFor={name}>{label}</Form.Label>
+      {label && (
+        <Form.Label className={className} htmlFor={name}>
+          {label}
+        </Form.Label>
+      )}
       {children}
+      <Form.Control.Feedback type="invalid">
+        {invalidMessage}
+      </Form.Control.Feedback>
       {description ? <Form.Text>{description}</Form.Text> : null}
     </Form.Group>
   );
