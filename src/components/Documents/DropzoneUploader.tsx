@@ -66,46 +66,37 @@ class DropzoneUploader extends React.Component<Props, State> {
       maxNumFiles,
     } = this.state;
 
-    const MyUploader = () => {
-      const fileList: File[] = [];
-      const handleSubmit = (files, allFiles) => {
-        if (files) {
-          for (let i = 0; i < files.length; i += 1) {
-            const pdfFile = files[i];
-            console.log('file ', pdfFile.file);
-            const formData = new FormData();
-            formData.append('file', pdfFile.file, pdfFile.name);
-            if (this.props.userRole === Role.Client) {
-              formData.append('pdfType', PDFType.IDENTIFICATION);
-            }
-            if (this.props.userRole === Role.Director || this.props.userRole === Role.Admin) {
-              formData.append('pdfType', PDFType.FORM);
-            }
-            fileList.push(pdfFile.file);
+    const fileList: File[] = [];
+    const handleSubmit = (files, allFiles) => {
+      if (files) {
+        for (let i = 0; i < files.length; i += 1) {
+          const pdfFile = files[i];
+          console.log('file ', pdfFile.file);
+          const formData = new FormData();
+          formData.append('file', pdfFile.file, pdfFile.name);
+          if (this.props.userRole === Role.Client) {
+            formData.append('pdfType', PDFType.IDENTIFICATION);
           }
-          const nextStep = currentStep + 1;
-          this.handleCurrentStepChange(nextStep);
-          this.handleFileStateChange(fileList);
-          console.log('file list size: ', fileList.length);
+          if (this.props.userRole === Role.Director || this.props.userRole === Role.Admin) {
+            formData.append('pdfType', PDFType.FORM);
+          }
+          fileList.push(pdfFile.file);
         }
-      };
-      return (
-                    <Dropzone
-                      onSubmit={handleSubmit}
-                      maxFiles={maxNumFiles}
-                      inputWithFilesContent={(files) => `${maxNumFiles - files.length} more`}
-                      accept=".pdf"
-                      submitButtonContent="Upload"
-                    />
-      );
+        const nextStep = currentStep + 1;
+        this.handleCurrentStepChange(nextStep);
+        this.handleFileStateChange(fileList);
+        console.log('file list size: ', fileList.length);
+      }
     };
 
     return (
-            <div className="container">
-                <div className="card-alignment mb-3 pt-5">
-                    <MyUploader />
-                </div>
-            </div>
+      <Dropzone
+        onSubmit={handleSubmit}
+        maxFiles={maxNumFiles}
+        inputWithFilesContent={(files) => `${maxNumFiles - files.length} more`}
+        accept=".pdf"
+        submitButtonContent="Upload"
+      />
     );
   }
 }

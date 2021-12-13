@@ -213,7 +213,13 @@ class UploadDocs extends React.Component<Props, State> {
                 After confirming that you have chosen the correct file, click the &quot;Submit&quot; button to upload.
                 Otherwise, choose a different file.
               </p>
-              <DropzoneUploader pdfFiles={this.state.pdfFiles} maxNumFiles={MAX_NUM_OF_FILES} currentStep={this.state.currentStep} updateStep={this.updateStep} updateFileList={this.updateFileList} />
+              <DropzoneUploader
+                pdfFiles={this.state.pdfFiles}
+                maxNumFiles={MAX_NUM_OF_FILES}
+                currentStep={this.state.currentStep}
+                updateStep={this.updateStep}
+                updateFileList={this.updateFileList}
+              />
             </div>
           )}
           {currentStep === 1 && (
