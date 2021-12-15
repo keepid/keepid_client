@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/extend-expect';
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
+import { ControlLabel } from 'react-bootstrap';
 
 import { DateInput } from '.';
 
@@ -45,13 +46,13 @@ describe('DateInput', () => {
     expect(args[0].getMonth()).toEqual(new Date().getMonth());
     expect(args[0].getDate()).toEqual(10);
 
-    value.setDate(args[0].getDate());
+    value.setDate(args[0].getUTCDate());
     rerender(<DateInput label={label} name={name} onChange={onChange} value={value} />);
     const month = new Date().getUTCMonth() + 1;
 
     await waitFor(() => {
       expect(getByLabelText(label).getAttribute('value')).toEqual(
-        [(month < 10 ? '0' : '') + month, 10, new Date().getFullYear()].join('/'),
+        [(month < 10 ? '0' : '') + month, 10, new Date().getUTCFullYear()].join('/'),
       );
     });
   });
