@@ -98,7 +98,6 @@ class UploadDocs extends React.Component<Props, State> {
         if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin) {
           formData.append('pdfType', PDFType.FORM);
         }
-        console.log('file type: ', typeof (formData));
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -127,7 +126,6 @@ class UploadDocs extends React.Component<Props, State> {
 
   handleOnClick(newCurrentStep: number) {
     let error = false;
-    console.log('new current step: ', newCurrentStep);
     if (newCurrentStep === 0) {
       this.setState({
         currentStep: 0,
@@ -152,7 +150,6 @@ class UploadDocs extends React.Component<Props, State> {
         }
       }
       if (error === false) {
-        console.log('Uploading files to DB');
         this.uploadFiles();
       }
     }
@@ -160,19 +157,15 @@ class UploadDocs extends React.Component<Props, State> {
 
   handleOnClickCard(id: number, category: string) {
     const test = this.state.documentTypeList;
-    console.log('document type for file ', id);
-    console.log(category);
     test[id] = category;
     this.setState(() => ({
       documentTypeList: test,
     }));
-    console.log(this.state.documentTypeList);
   }
 
   setTitle(id: number) {
     if (this.state.documentTypeList && this.state.documentTypeList.length > id) {
       if (this.state.documentTypeList[id] !== undefined) {
-        console.log('Setting Category button to ', this.state.documentTypeList[id]);
         return this.state.documentTypeList[id];
       }
     }
@@ -248,9 +241,9 @@ class UploadDocs extends React.Component<Props, State> {
                                 title={this.setTitle(index)}
                               >
                                 <Dropdown.Item eventKey="License" onClick={(event) => this.handleOnClickCard(index, 'Driver License')}>Driver&apos;s License</Dropdown.Item>
-                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
-                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
-                                <Dropdown.Item href="#" onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
                               </DropdownButton>
                             </Col>
                           </Row>
