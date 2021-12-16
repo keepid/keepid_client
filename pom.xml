@@ -282,5 +282,10 @@
       <version>1.18.16</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.braintreepayments.gateway</groupId>
+      <artifactId>braintree-java</artifactId>
+      <version>3.11.0</version>
+    </dependency>
   </dependencies>
 </project>
