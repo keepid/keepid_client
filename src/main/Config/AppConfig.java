@@ -2,12 +2,9 @@ package Config;
 
 import Activity.ActivityController;
 import Admin.AdminController;
-<<<<<<< HEAD
 import Billing.BillingController;
-=======
 import Database.Organization.OrgDao;
 import Database.Organization.OrgDaoFactory;
->>>>>>> master
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
@@ -69,10 +66,7 @@ public class AppConfig {
     AdminController adminController = new AdminController(userDao, db);
     ProductionController productionController = new ProductionController(orgDao, userDao);
     UserControllerV2 userControllerV2 = new UserControllerV2(userV2Dao);
-<<<<<<< HEAD
     BillingController billingController = new BillingController();
-=======
->>>>>>> master
 
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
