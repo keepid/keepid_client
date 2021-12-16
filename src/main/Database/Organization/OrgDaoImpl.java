@@ -5,13 +5,18 @@ import Config.MongoConfig;
 import Organization.Organization;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 public class OrgDaoImpl implements OrgDao {
   private MongoCollection<Organization> orgCollection;
@@ -57,6 +62,11 @@ public class OrgDaoImpl implements OrgDao {
   }
 
   @Override
+  public void delete(ObjectId objectId) {
+    orgCollection.deleteOne(eq(ORG_ID_KEY, objectId));
+  }
+
+  @Override
   public void clear() {
     orgCollection.drop();
   }
@@ -64,6 +74,15 @@ public class OrgDaoImpl implements OrgDao {
   @Override
   public void update(Organization organization) {
     orgCollection.replaceOne(eq(ORG_NAME_KEY, organization.getOrgName()), organization);
+
+//    Map<String, Object> keyValueMap = organization.toMap();
+//    Bson statement =
+//        combine(
+//            organization.toMap().keySet().stream()
+//                .filter(k -> keyValueMap.get(k) != null)
+//                .map(k -> set(k, organization.toMap().get(k)))
+//                .collect(Collectors.toList()));
+//    orgCollection.updateOne(eq(ORG_NAME_KEY, organization.getOrgName()), statement);
   }
 
   @Override

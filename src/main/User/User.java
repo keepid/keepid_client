@@ -1,17 +1,29 @@
 package User;
 
+import Organization.Organization;
+import Organization.Requests.OrganizationUpdateRequest;
+import User.Requests.UserUpdateRequest;
 import Validation.ValidationException;
 import Validation.ValidationUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
+@Setter
 public class User {
   private ObjectId id;
 
@@ -52,6 +64,7 @@ public class User {
   private String password;
 
   @BsonProperty(value = "privilegeLevel")
+  @JsonProperty("privilegeLevel")
   private UserType userType;
 
   @BsonProperty(value = "twoFactorOn")
@@ -345,7 +358,7 @@ public class User {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("User {");
-    sb.append("id=").append(this.id);
+    sb.append("id=").append(this.id.toHexString());
     sb.append(", firstName=").append(this.firstName);
     sb.append(", lastName=").append(this.lastName);
     sb.append(", birthDate=").append(this.birthDate);
@@ -409,6 +422,7 @@ public class User {
     userJSON.put("username", username);
     userJSON.put("birthDate", birthDate);
     userJSON.put("privilegeLevel", userType);
+    userJSON.put("userType", userType);
     userJSON.put("firstName", firstName);
     userJSON.put("lastName", lastName);
     userJSON.put("email", email);
@@ -417,6 +431,58 @@ public class User {
     userJSON.put("city", city);
     userJSON.put("state", state);
     userJSON.put("zipcode", zipcode);
+    userJSON.put("organization", organization);
+    userJSON.put("logInHistory", logInHistory);
+    userJSON.put("creationDate", creationDate);
+    userJSON.put("twoFactorOn", twoFactorOn);
     return userJSON;
+  }
+
+  public Map<String, Object> toMap() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> result =
+        objectMapper.convertValue(this, new TypeReference<Map<String, Object>>() {});
+    result.remove("id");
+    return result;
+  }
+
+  public User updateProperties (UserUpdateRequest updateRequest) {
+    if (updateRequest.getFirstName() != null && updateRequest.getFirstName().isPresent()) {
+      this.setFirstName(updateRequest.getFirstName().get());
+    }
+
+    if (updateRequest.getLastName() != null && updateRequest.getLastName().isPresent()) {
+      this.setLastName(updateRequest.getLastName().get());
+    }
+
+    if (updateRequest.getBirthDate() != null && updateRequest.getBirthDate().isPresent()) {
+      this.setBirthDate(updateRequest.getBirthDate().get());
+    }
+
+    if (updateRequest.getEmail() != null && updateRequest.getEmail().isPresent()) {
+      this.setEmail(updateRequest.getEmail().get());
+    }
+
+    if (updateRequest.getPhone() != null && updateRequest.getPhone().isPresent()) {
+      this.setPhone(updateRequest.getPhone().get());
+    }
+
+    if (updateRequest.getAddress() != null && updateRequest.getAddress().isPresent()) {
+      this.setAddress(updateRequest.getAddress().get());
+    }
+
+    if (updateRequest.getCity() != null && updateRequest.getCity().isPresent()) {
+      this.setCity(updateRequest.getCity().get());
+    }
+
+    if (updateRequest.getState() != null && updateRequest.getState().isPresent()) {
+      this.setState(updateRequest.getState().get());
+    }
+
+    if (updateRequest.getZipcode() != null && updateRequest.getZipcode().isPresent()) {
+      this.setZipcode(updateRequest.getZipcode().get());
+    }
+
+    return this;
   }
 }

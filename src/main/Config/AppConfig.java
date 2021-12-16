@@ -2,7 +2,12 @@ package Config;
 
 import Activity.ActivityController;
 import Admin.AdminController;
+<<<<<<< HEAD
 import Billing.BillingController;
+=======
+import Database.Organization.OrgDao;
+import Database.Organization.OrgDaoFactory;
+>>>>>>> master
 import Database.Token.TokenDao;
 import Database.Token.TokenDaoFactory;
 import Database.User.UserDao;
@@ -10,14 +15,23 @@ import Database.User.UserDaoFactory;
 import Database.UserV2.UserV2Dao;
 import Database.UserV2.UserV2DaoFactory;
 import Issue.IssueController;
+import Organization.Organization;
 import Organization.OrganizationController;
 import PDF.PdfController;
+import Production.ProductionController;
 import Security.AccountSecurityController;
 import Security.EncryptionUtils;
+import User.User;
 import User.UserController;
 import User.UserControllerV2;
+import User.UserType;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
+import io.javalin.http.HttpResponseException;
+import org.bson.types.ObjectId;
+
+import java.util.HashMap;
+import java.util.Optional;
 
 public class AppConfig {
   public static Long ASYNC_TIME_OUT = 10L;
@@ -31,6 +45,7 @@ public class AppConfig {
     UserDao userDao = UserDaoFactory.create(deploymentLevel);
     UserV2Dao userV2Dao = UserV2DaoFactory.create(deploymentLevel);
     TokenDao tokenDao = TokenDaoFactory.create(deploymentLevel);
+    OrgDao orgDao = OrgDaoFactory.create(deploymentLevel);
     MongoDatabase db = MongoConfig.getDatabase(deploymentLevel);
     setApplicationHeaders(app);
 
@@ -52,8 +67,12 @@ public class AppConfig {
     IssueController issueController = new IssueController(db);
     ActivityController activityController = new ActivityController();
     AdminController adminController = new AdminController(userDao, db);
+    ProductionController productionController = new ProductionController(orgDao, userDao);
     UserControllerV2 userControllerV2 = new UserControllerV2(userV2Dao);
+<<<<<<< HEAD
     BillingController billingController = new BillingController();
+=======
+>>>>>>> master
 
     /* -------------- DUMMY PATHS ------------------------- */
     app.get("/", ctx -> ctx.result("Welcome to the Keep.id Server"));
@@ -84,6 +103,7 @@ public class AppConfig {
     app.post("/upload-pfp", userController.uploadPfp);
     app.post("/load-pfp", userController.loadPfp);
     app.post("/username-exists", userController.usernameExists);
+    app.post("/delete-user", userController.deleteUser);
 
     /* -------------- ORGANIZATION SIGN UP ------------------ */
     //    app.post("/organization-signup-validator", orgController.organizationSignupValidator);
@@ -106,6 +126,80 @@ public class AppConfig {
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/get-all-orgs", orgController.listOrgs);
     app.post("/get-all-activities", activityController.findMyActivities);
+
+    /* --------------- PRODUCTION API --------------- */
+
+    // TODO use Access manager for this instead https://javalin.io/documentation#access-manager
+    app.before(
+        "/organizations*",
+        ctx -> {
+          String sessionUsername = ctx.sessionAttribute("username");
+
+          var sessionUser = userDao.get(sessionUsername);
+
+          if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
+            throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
+          } else if (sessionUser.get().getUserType() != UserType.Developer) {
+            throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
+          }
+        });
+
+    app.get("/organizations", productionController.readAllOrgs);
+    app.post("/organizations", productionController.createOrg);
+
+    app.before(
+        "/organizations/:orgId",
+        ctx -> {
+          ObjectId objectId = new ObjectId(ctx.pathParam("orgId"));
+          Optional<Organization> organizationOptional = orgDao.get(objectId);
+
+          if (organizationOptional.isEmpty()) {
+            throw new HttpResponseException(
+                404,
+                "Organization with id '" + objectId.toHexString() + "' not found",
+                new HashMap<>());
+          }
+        });
+    app.get("/organizations/:orgId", productionController.readOrg);
+    app.patch("/organizations/:orgId", productionController.updateOrg);
+    app.delete("/organizations/:orgId", productionController.deleteOrg);
+    app.get("/organizations/:orgId/users", productionController.getUsersFromOrg);
+
+    app.before(
+        "/users*",
+        ctx -> {
+          if (ctx.method().equals("OPTIONS")) {
+            return;
+          }
+
+          String sessionUsername = ctx.sessionAttribute("username");
+          var sessionUser = userDao.get(sessionUsername);
+
+          if (sessionUsername == null || sessionUsername.isEmpty() || sessionUser.isEmpty()) {
+            throw new HttpResponseException(401, "Authentication failed", new HashMap<>());
+          } else if (sessionUser.get().getUserType() != UserType.Developer) {
+            throw new HttpResponseException(403, "Insufficient permissions", new HashMap<>());
+          }
+        });
+
+    app.get("/users", productionController.readAllUsers);
+    app.post("/users", productionController.createUser);
+
+    app.before(
+        "/users/:username",
+        ctx -> {
+          String username = ctx.pathParam("username");
+          Optional<User> userOptional = userDao.get(username);
+
+          if (userOptional.isEmpty()) {
+            throw new HttpResponseException(
+                404, "User with username '" + username + "' not found", new HashMap<>());
+          }
+        });
+
+    app.get("/users/:username", productionController.readUser);
+    app.patch("/users/:username", productionController.updateUser);
+    app.delete("/users/:username", productionController.deleteUser);
 
     /* --------------- SEARCH FUNCTIONALITY ------------- */
     app.post("/signup", userControllerV2.signup);

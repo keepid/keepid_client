@@ -55,6 +55,17 @@ public class UserDaoTestImpl implements UserDao {
   }
 
   @Override
+  public List<User> getAllFromOrg(ObjectId objectId) {
+    List<User> result = new ArrayList<>();
+    for (User user : userMap.values()) {
+      if (user.getId().equals(objectId)) {
+        result.add(user);
+      }
+    }
+    return result;
+  }
+
+  @Override
   public int size() {
     return userMap.size();
   }
