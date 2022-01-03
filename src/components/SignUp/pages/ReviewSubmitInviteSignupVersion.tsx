@@ -3,8 +3,8 @@ import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 
-import { reCaptchaKey } from '../../configVars';
-import Role from '../../static/Role';
+import { reCaptchaKey } from '../../../configVars';
+import Role from '../../../static/Role';
 
 interface Props {
   username: string;

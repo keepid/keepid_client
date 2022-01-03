@@ -24,7 +24,7 @@ const TextInput = ({
   onChange,
   placeholder,
   type,
-  validate,
+  validate: validateProp,
   value,
   ...rest
 }: TextInputProps) => {
@@ -36,6 +36,9 @@ const TextInput = ({
   const [invalidMessage, setInvalidMessage] = useState('');
   const [validityChecked, setValidityChecked] = useState(false);
 
+  const validate = (e) =>
+    performValidation(e, validateProp, setInvalidMessage, setValidityChecked);
+
   return (
     <InputWrapper
       label={label}
@@ -44,17 +47,10 @@ const TextInput = ({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...rest}
     >
-      <InputGroup>
+      <InputGroup hasValidation>
         <Form.Control
           as="input"
-          onBlur={(e) =>
-            performValidation(
-              e,
-              validate,
-              setInvalidMessage,
-              setValidityChecked,
-            )
-          }
+          onBlur={validate}
           className={className}
           defaultValue={defaultValue}
           id={name}
@@ -63,16 +59,15 @@ const TextInput = ({
           name={name}
           onChange={(e) => {
             if (invalidMessage) {
-              performValidation(
-                e,
-                validate,
-                setInvalidMessage,
-                setValidityChecked,
-              );
+              validate(e);
             }
             if (onChange) {
               onChange(e.target.value);
             }
+          }}
+          onSubmit={(e) => {
+            console.log('omg on submit');
+            validate(e);
           }}
           placeholder={placeholder}
           required={rest.required}
@@ -81,11 +76,8 @@ const TextInput = ({
         />
         {type === TextInputType.PASSWORD ? (
           <InputGroup.Append>
-            <InputGroup.Text>
-              <i
-                onClick={() => setShowPassword(!showPassword)}
-                className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}
-              />
+            <InputGroup.Text onClick={() => setShowPassword(!showPassword)}>
+              <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} style={{ width: '1.25rem' }} />
             </InputGroup.Text>
           </InputGroup.Append>
         ) : null}

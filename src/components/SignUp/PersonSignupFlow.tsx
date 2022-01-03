@@ -1,19 +1,22 @@
 import 'antd/dist/antd.css';
 
 import { Steps } from 'antd';
-import React, { Component } from 'react';
-import { withAlert } from 'react-alert';
+import React, { Component, useContext, useEffect } from 'react';
+import { useAlert, withAlert } from 'react-alert';
 import { ProgressBar } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
 import { birthDateStringConverter } from './CompleteSignupFlow';
-import AccountSetup from './pages/AccountSetup';
+import AccountSetup, { AccountSetupV2 } from './pages/AccountSetup';
 import PersonalInformation from './pages/PersonalInformation';
-import SignUserAgreement from './pages/SignUserAgreement';
-import ReviewSubmitInviteSignupVersion from './ReviewSubmitInviteSignupVersion';
+import { ReviewSubmitV2 } from './pages/ReviewSubmit';
+import ReviewSubmitInviteSignupVersion from './pages/ReviewSubmitInviteSignupVersion';
+import SignUserAgreement, { SignUserAgreementV2 } from './pages/SignUserAgreement';
+import { signupUser } from './SignUp.api';
+import SignUpContext, { SignupStage } from './SignUp.context';
 
 const { Step } = Steps;
 
@@ -321,3 +324,88 @@ class PersonSignupFlow extends Component<Props, State, {}> {
 }
 
 export default withAlert()(PersonSignupFlow);
+
+export const PersonSignupFlowV2 = () => {
+  const { signUpStageStateContext, accountInformationContext, personRole } = useContext(
+    SignUpContext,
+  );
+  const alert = useAlert();
+  const history = useHistory();
+
+  const onSubmit = async (recaptchaToken: string): Promise<void> =>
+    signupUser({
+      accountInformation: accountInformationContext.values,
+      recaptchaPayload: recaptchaToken,
+      personRole: personRole || '',
+    })
+      .then((responseJSON) => {
+        const { status, message } = responseJSON;
+        if (status === 'ENROLL_SUCCESS') {
+          alert.show(
+            'You successfully signed up to use Keep.id. Please login with your new username and password',
+          );
+          history.push('/login');
+        } else if (status === 'INVALID_PARAMETER') {
+          alert.error(
+            'No organization found for this link. Try again with different link',
+          );
+        } else {
+          alert.error(message);
+        }
+      })
+      .catch((error) => {
+        alert.error(`Server Failure: ${error}`);
+      });
+
+  useEffect(() => {
+    if (signUpStageStateContext.stages?.length !== 3) {
+      signUpStageStateContext?.setSignupStages?.call(null, [
+        SignupStage.ACCOUNT_INFORMATION,
+        SignupStage.SIGN_USER_AGREEMENT,
+        SignupStage.REVIEW_SUBMIT,
+      ]);
+    }
+  });
+
+  // @ts-ignore
+  const currentStageIdx =
+    signUpStageStateContext.stages?.indexOf(
+      signUpStageStateContext.currentStage
+    ) || 0;
+
+  return (
+    <div>
+      <Helmet>
+        <title>Sign Up</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
+      <div className="container mt-5">
+        <Steps
+          className="d-none d-md-flex"
+          progressDot
+          current={currentStageIdx}
+        >
+          <Steps.Step title="Account Setup" description="" />
+          <Steps.Step title="Sign User Agreement" description="" />
+          <Steps.Step title="Review & Submit" description="" />
+        </Steps>
+        <ProgressBar
+          className="d-md-none"
+          now={currentStageIdx * 33.4}
+          label={`Step ${currentStageIdx + 1} out of 4`}
+        />
+        {signUpStageStateContext.currentStage ===
+        SignupStage.ACCOUNT_INFORMATION ? (
+          <AccountSetupV2 />
+          ) : null}
+        {signUpStageStateContext.currentStage ===
+        SignupStage.SIGN_USER_AGREEMENT ? (
+          <SignUserAgreementV2 />
+          ) : null}
+        {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
+          <ReviewSubmitV2 onSubmit={onSubmit} />
+        ) : null}
+      </div>
+    </div>
+  );
+};

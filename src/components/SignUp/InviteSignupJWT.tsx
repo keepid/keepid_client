@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router';
 import { Redirect } from 'react-router-dom';
 
-import InviteSignupFlow from './InviteSignupFlow';
+import { InviteSignupFlowV2 } from './InviteSignupFlow';
 
 const jwtDecode = require('jwt-decode');
 
@@ -13,7 +13,7 @@ function InviteSignupJWT() {
     const currentTime = Date.now() / 1000;
     if (decoded.exp > currentTime) {
       return (
-        <InviteSignupFlow
+        <InviteSignupFlowV2
           orgName={decoded.organization}
           personRole={decoded.role}
         />

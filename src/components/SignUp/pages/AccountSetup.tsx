@@ -1,6 +1,7 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, ReactElement, useContext } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
+import { defineMessages, useIntl } from 'react-intl';
 
 import {
   isValidPassword,
@@ -8,6 +9,11 @@ import {
 } from '../../../lib/Validations/Validations';
 import getServerURL from '../../../serverOverride';
 import Role from '../../../static/Role';
+import { InputType } from '../../BaseComponents/Inputs/FieldType';
+import StructuredFormFromFields, { FormRowType } from '../../BaseComponents/Inputs/StructuredFormWithRows';
+import SignUpContext from '../SignUp.context';
+import { validateConfirmPassword, validatePassword, validateUsername } from '../SignUp.validators';
+import * as validators from '../SignUp.validators';
 
 interface Props {
   username: string;
@@ -303,3 +309,147 @@ export class AccountSetup extends Component<Props, State, {}> {
 }
 
 export default withAlert()(AccountSetup);
+
+const messages = defineMessages({
+  title: {
+    id: 'signup.account-setup.title',
+    defaultMessage: 'Sign Up- Account Setup',
+  },
+
+  subheader: {
+    id: 'signup.account-setup.subheader',
+    defaultMessage: 'First, set up the {role} account login.',
+  },
+});
+
+export const AccountSetupV2 = (): JSX.Element => {
+  const {
+    accountInformationContext: {
+      values,
+      onPropertyChange,
+    },
+    signUpStageStateContext: {
+      moveToNextSignupStage,
+    },
+    personRole,
+  } = useContext(SignUpContext);
+
+  const intl = useIntl();
+
+  const rows: FormRowType[] = [
+    {
+      rowLabel: 'Name',
+      fields: [
+        {
+          label: '',
+          placeholder: 'First Name',
+          name: 'firstname',
+          type: InputType.TEXT,
+          validate: validators.validateFirstname,
+        },
+        {
+          label: '',
+          placeholder: 'Last Name',
+          name: 'lastname',
+          type: InputType.TEXT,
+          validate: validators.validateLastname,
+        },
+      ],
+    },
+    {
+      rowLabel: 'Birth Date',
+      fields: [
+        {
+          label: '',
+          placeholder: 'Birth Date',
+          name: 'birthDate',
+          type: InputType.DATE,
+          validate: validators.validateBirthdate,
+        },
+      ],
+    },
+    {
+      rowLabel: 'Username',
+      fields: [
+        {
+          label: '',
+          placeholder: 'Username',
+          name: 'username',
+          required: true,
+          type: InputType.TEXT,
+          validate: validateUsername,
+        },
+      ],
+    },
+    {
+      rowLabel: 'Password',
+      fields: [
+        {
+          label: '',
+          placeholder: 'Password',
+          name: 'password',
+          required: true,
+          type: InputType.PASSWORD,
+          validate: validatePassword,
+        },
+      ],
+    },
+    {
+      rowLabel: 'Confirm Password',
+      fields: [
+        {
+          label: '',
+          placeholder: 'Confirm Password',
+          name: 'confirmPassword',
+          required: true,
+          type: InputType.PASSWORD,
+          validate: (confirmPwd) =>
+            validateConfirmPassword(
+              confirmPwd,
+              values?.password || '',
+            ),
+        },
+      ],
+    },
+  ];
+
+  return (
+    <div>
+      <Helmet>
+        <title>{intl.formatMessage(messages.title)}</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
+      <div className="d-flex justify-content-center pt-5">
+        <div className="col-md-10">
+          <div className="text-center pb-4 mb-2">
+            <h2>
+              <b>{intl.formatMessage(messages.subheader, { role: personRole })}</b>
+            </h2>
+          </div>
+          <StructuredFormFromFields
+            rows={rows}
+            onSubmit={(e) => {
+              e.preventDefault();
+              console.log('validity: ', e.currentTarget.checkValidity());
+              if (moveToNextSignupStage) {
+                moveToNextSignupStage();
+              }
+            }}
+            // @ts-ignore
+            onPropertyChange={onPropertyChange}
+            values={values || {}}
+          >
+            <div className="d-flex">
+              <button
+                type="submit"
+                className="ml-auto btn btn-primary mt-5"
+              >
+                Continue
+              </button>
+            </div>
+          </StructuredFormFromFields>
+        </div>
+      </div>
+    </div>
+  );
+};
