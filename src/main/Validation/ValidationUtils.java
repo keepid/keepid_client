@@ -134,4 +134,6 @@ public class ValidationUtils {
   public static boolean isValidUserType(String userType) {
     return UserType.userTypeFromString(userType) != null;
   }
+
+  public static boolean hasValue(String input) { return input != null && !input.strip().isBlank(); }
 }
