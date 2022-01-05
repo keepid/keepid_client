@@ -14,8 +14,8 @@ import {
   isValidUSState,
   isValidZipCode,
 } from '../../lib/Validations/Validations';
-import { birthDateStringConverter } from './CompleteSignupFlow';
 import { isUsernameAvailable } from './SignUp.api';
+import { birthDateStringConverter } from './SignUp.util';
 
 export const validateFirstname = (firstname: string): string => {
   if (!isValidFirstName(firstname)) {
@@ -129,6 +129,9 @@ export const validateOrgWebsite = (orgWebsite: string): string => {
 };
 
 export const validateOrgName = (orgName: string): string => {
+  if (!orgName) {
+    return 'Organization Name cannot be blank';
+  }
   if (!isValidOrgName(orgName)) {
     return 'Invalid Organization Name';
   }

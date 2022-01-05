@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
-import { useParams } from 'react-router';
 import { Redirect, Route } from 'react-router-dom';
 
 import Role, { canAuthRoleCreateRole, roleFromString } from '../../static/Role';
-import { CompleteSignupFlowV2 } from './CompleteSignupFlow';
-import { InviteSignupFlowV2 } from './InviteSignupFlow';
+import { CompleteSignupFlow } from './CompleteSignupFlow';
+import { InviteSignupFlow } from './InviteSignupFlow';
 import InviteSignupJWT from './InviteSignupJWT';
-import PersonSignupFlow, { PersonSignupFlowV2 } from './PersonSignupFlow';
+import PersonSignupFlow from './PersonSignupFlow';
 import SignUpContext, {
   AccountInformationProperties,
   OrganizationInformationProperties,
@@ -116,7 +115,7 @@ const SignUpRouter = ({ role }: SignUpRouterProps) => {
         <SignupBrancher />
       </Route>
       <Route path="/organization-signup">
-        <CompleteSignupFlowV2 />
+        <CompleteSignupFlow />
       </Route>
       <Route
         path="/person-signup/:roleString"
@@ -129,7 +128,7 @@ const SignUpRouter = ({ role }: SignUpRouterProps) => {
           }
 
           if (canAuthRoleCreateRole(role, personRoleFromParams)) {
-            return <PersonSignupFlowV2 />;
+            return <PersonSignupFlow />;
           }
           alert.error(`A ${role} cannot sign up a new ${personRoleFromParams}`);
           return <Redirect to="/error" />;
@@ -144,7 +143,7 @@ const SignUpRouter = ({ role }: SignUpRouterProps) => {
             const currentTime = Date.now() / 1000;
             if (decoded.exp > currentTime) {
               return (
-              <InviteSignupFlowV2
+              <InviteSignupFlow
                 orgName={decoded.organization}
                 personRole={decoded.role}
               />

@@ -42,6 +42,7 @@ export function setupMockServer() {
       const reqBody =
         typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
+      // eslint-disable-next-line no-console
       console.log('Creating user with body:', reqBody);
 
       return res(ctx.json({ status: 'ENROLL_SUCCESS' }));
@@ -52,6 +53,7 @@ export function setupMockServer() {
       const reqBody =
         typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
+      // eslint-disable-next-line no-console
       console.log('Creating org/director with body:', reqBody);
 
       return res(ctx.json({ status: 'FAILED_ENROLLMENT', message: 'Manual Failure' }));
@@ -63,8 +65,7 @@ export function setupMockServer() {
 }
 
 type Props = {
-  v1Component: JSX.Element;
-  v2Component: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 }
 
 const defaultAccountInformation = {
@@ -88,8 +89,7 @@ const defaultOrganizationInformation = {
   orgZipcode: '60603',
 };
 
-const BaseSignupFixture = ({ v1Component, v2Component }: Props) => {
-  const [v2] = useValue('Use V2', { defaultValue: true });
+const BaseSignupFixture = ({ children }: Props) => {
   const [populateDefaultValues] = useValue('Use Default Values', { defaultValue: true });
   const [authRole] = useSelect('Auth Role', { defaultValue: Role.Admin, options: [Role.Director, Role.Admin, Role.Worker, Role.Volunteer, Role.Developer] });
   const [personRole] = useSelect('Person Role', { defaultValue: Role.Client, options: [Role.Client, Role.Director, Role.Admin, Role.Worker, Role.Volunteer, Role.Developer] });
@@ -153,7 +153,7 @@ const BaseSignupFixture = ({ v1Component, v2Component }: Props) => {
             personRole,
           }}
         >
-          {v2 ? v2Component : v1Component}
+          {children}
         </SignUpContext.Provider>
       </Provider>
     </IntlProvider>

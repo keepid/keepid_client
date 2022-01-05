@@ -1,25 +1,36 @@
 import { ChangeEvent } from 'react';
 
-export async function performValidationWithCustomTarget(
+export function performValidationWithCustomTarget(
   value: any,
   validate: ((value: any) => string | Promise<string>) | undefined,
   setInvalidMessage: (msg: string) => void,
   setValidityChecked: (check: boolean) => void,
   target: HTMLInputElement | undefined,
-) {
+): Promise<void> | null {
+  const handleMsg = (msg: string) => {
+    setInvalidMessage(msg);
+    setValidityChecked(true);
+    target?.setCustomValidity(msg || '');
+  };
+
   if (validate) {
-    const msgPromise = Promise.resolve(validate(value));
-    msgPromise
+    const msg = validate(value);
+
+    if (typeof msg === 'string') {
+      handleMsg(msg);
+      return null;
+    }
+
+    return msg
       .catch((err) => err.message)
       .then((msg) => {
-        setInvalidMessage(msg);
-        setValidityChecked(true);
-        target?.setCustomValidity(msg || '');
+        handleMsg(msg);
       });
   }
+  return null;
 }
 
-export async function performValidation(
+export function performValidation(
   e: ChangeEvent<any>,
   validate: ((value: any) => string | Promise<string>) | undefined,
   setInvalidMessage: (msg: string) => void,

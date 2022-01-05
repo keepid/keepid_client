@@ -44,13 +44,17 @@ const SelectInput = ({
         name={name}
         placeholder={placeholder}
         required={rest.required}
-        onChange={(e) => {
-          performValidation(
+        onChange={async (e) => {
+          const validationResult = performValidation(
             e,
             validate,
             setInvalidMessage,
             setValidityChecked,
           );
+          if (validationResult instanceof Promise) {
+            await validationResult;
+          }
+
           if (onChange) {
             onChange(e.target.value);
           }

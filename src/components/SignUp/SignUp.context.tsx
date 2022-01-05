@@ -106,9 +106,11 @@ export const defaultSignUpContextValue: SignUpContextType = {
   signUpStageStateContext: {
     currentStage: SignupStage.ACCOUNT_INFORMATION,
     stages: [],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setSignupStages: (stages: SignupStage[]) => {},
     moveToNextSignupStage: () => {},
     moveToPreviousSignupStage: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     moveToSignupStage: (stage: SignupStage) => {},
   },
   authRole: Role.LoggedOut,

@@ -1,8 +1,12 @@
 import React from 'react';
 
 import BaseSignupFixture from './BaseSignupFixture';
-import CompleteSignupFlow, { CompleteSignupFlowV2 } from './CompleteSignupFlow';
+import CompleteSignupFlow from './CompleteSignupFlow';
 
-const CompleteSignupFlowFixture = () => <BaseSignupFixture v1Component={<CompleteSignupFlow />} v2Component={<CompleteSignupFlowV2 />} />;
+const CompleteSignupFlowFixture = () => (
+<BaseSignupFixture>
+  <CompleteSignupFlow />
+</BaseSignupFixture>
+);
 
 export default CompleteSignupFlowFixture;

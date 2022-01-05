@@ -57,17 +57,16 @@ const TextInput = ({
           isInvalid={validityChecked && !!invalidMessage}
           isValid={validityChecked && !invalidMessage}
           name={name}
-          onChange={(e) => {
+          onChange={async (e) => {
             if (invalidMessage) {
-              validate(e);
+              const validationResult = validate(e);
+              if (validationResult instanceof Promise) {
+                await validationResult;
+              }
             }
             if (onChange) {
               onChange(e.target.value);
             }
-          }}
-          onSubmit={(e) => {
-            console.log('omg on submit');
-            validate(e);
           }}
           placeholder={placeholder}
           required={rest.required}

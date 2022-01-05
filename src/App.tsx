@@ -35,7 +35,6 @@ import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
-import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
 import SignUpRouter from './components/SignUp/SignUp.router';
 import AutoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';

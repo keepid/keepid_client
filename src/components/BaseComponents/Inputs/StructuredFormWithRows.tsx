@@ -1,6 +1,6 @@
 /* eslint-disable radix */
-import React, { useState } from 'react';
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import React from 'react';
+import { Col, Form, Row } from 'react-bootstrap';
 
 import { BaseInputFieldType } from './FieldType';
 import InputFromField from './InputFromField';
@@ -16,22 +16,23 @@ type Props = {
   onPropertyChange: (name: string, value: any) => void;
   values: Record<string, any>;
   children?: JSX.Element | JSX.Element[];
+  labelClassName?: string;
 };
 
-const StructuredFormWithRows = ({ onSubmit, rows, values, onPropertyChange, children }: Props) => (
+const StructuredFormWithRows = ({ onSubmit, rows, values, labelClassName, onPropertyChange, children }: Props) => (
   <Form onSubmit={onSubmit}>
     {rows.map((r) => (
       <Row key={`form-row-${r.rowLabel}`}>
-        <label className="col-sm-3 col-form-label text-sm-right">
+        <p className="col-sm-3 col-form-label text-sm-right">
           {r.rowLabel}
-        </label>
+        </p>
         {r.fields.map((f) => (
-          <Col>
+          <Col key={`input-${f.name}`}>
             <InputFromField
-              key={`input-${f.name}`}
               field={f}
               onChange={(value) => onPropertyChange(f.name, value)}
               value={values[f.name]}
+              labelClassName={labelClassName}
             />
           </Col>
         ))}

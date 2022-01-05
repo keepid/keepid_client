@@ -7,6 +7,7 @@ import DatePicker from 'react-datepicker';
 
 import InputProps from './BaseInputProps';
 import {
+  performValidation,
   performValidationWithCustomTarget,
 } from './Inputs.util';
 import InputWrapper from './InputWrapper';
@@ -58,14 +59,18 @@ const DateInput = ({
         isInvalid={validityChecked && !!invalidMessage}
         isValid={validityChecked && !invalidMessage}
         name={name}
-        onChange={(date) => {
-          performValidationWithCustomTarget(
+        onChange={async (date) => {
+          const validationResult = performValidationWithCustomTarget(
             date,
             validate,
             setInvalidMessage,
             setValidityChecked,
             target,
           );
+          if (validationResult instanceof Promise) {
+            await validationResult;
+          }
+
           if (onChange) {
             // @ts-ignore
             onChange(date);

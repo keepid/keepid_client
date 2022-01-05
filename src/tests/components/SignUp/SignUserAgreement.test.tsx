@@ -2,46 +2,65 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
 import React from 'react';
+import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 
-import { SignUserAgreement } from '../../../components/SignUp/pages/SignUserAgreement';
+import SignUserAgreement from '../../../components/SignUp/pages/SignUserAgreement';
+import SignUpContext, {
+  defaultSignUpContextValue,
+} from '../../../components/SignUp/SignUp.context';
 
 describe('Sign User Agreement Test', () => {
-  const hasSigned = true;
-  const canvasDataUrl = '';
-  test('Successful setup', async () => {
-    const handleContinue = jest.fn();
-    const handlePrevious = jest.fn();
-
+  beforeEach(() => {
+    // @ts-ignore
     global.window.matchMedia = jest.fn(() => ({
       addListener: jest.fn(),
       removeListener: jest.fn(),
     }));
     global.window.scrollTo = jest.fn();
     window.HTMLCanvasElement.prototype.toDataURL = jest.fn();
+    // @ts-ignore
     window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
       fillStyle: jest.fn(),
+      fill: jest.fn(),
       clearRect: jest.fn(),
       fillRect: jest.fn(),
       scale: jest.fn(),
+      beginPath: jest.fn(),
+      moveTo: jest.fn(),
+      arc: jest.fn(),
+      closePath: jest.fn(),
     }));
+  });
+  test('Successful setup', async () => {
+    const handleContinue = jest.fn();
+    const handlePrevious = jest.fn();
+
     render(
       <MemoryRouter>
-        <SignUserAgreement
-          handleContinue={handleContinue}
-          handlePrevious={handlePrevious}
-          handleChangeSignEULA={jest.fn()}
-          handleCanvasSign={jest.fn()}
-          canvasDataUrl={canvasDataUrl}
-          hasSigned={hasSigned}
-          alert={{
-            show: jest.fn(),
-          }}
-        />
+        <IntlProvider locale="en">
+          <SignUpContext.Provider
+            value={{
+              ...defaultSignUpContextValue,
+
+              signUpStageStateContext: {
+                ...defaultSignUpContextValue.signUpStageStateContext,
+                moveToNextSignupStage: handleContinue,
+                moveToPreviousSignupStage: handlePrevious,
+              },
+            }}
+          >
+            <SignUserAgreement />
+          </SignUpContext.Provider>
+        </IntlProvider>
       </MemoryRouter>,
     );
 
     // Act
+    fireEvent.mouseDown(screen.getByTestId('signature-canvas'), { which: 1 });
+    fireEvent.mouseMove(screen.getByTestId('signature-canvas'));
+    fireEvent.mouseUp(screen.getByTestId('signature-canvas'), { which: 1 });
+
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     fireEvent.click(screen.getByRole('button', { name: 'Previous Step' }));
 
@@ -52,36 +71,26 @@ describe('Sign User Agreement Test', () => {
     });
   });
   test('Testing signature not signed', async () => {
-    const hasSigned = false;
     const handleContinue = jest.fn();
     const handlePrevious = jest.fn();
-    const alertShowFn = jest.fn();
 
-    global.window.matchMedia = jest.fn(() => ({
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-    }));
-    global.window.scrollTo = jest.fn();
-    window.HTMLCanvasElement.prototype.toDataURL = jest.fn();
-    window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
-      fillStyle: jest.fn(),
-      clearRect: jest.fn(),
-      fillRect: jest.fn(),
-      scale: jest.fn(),
-    }));
     render(
       <MemoryRouter>
-        <SignUserAgreement
-          handleContinue={handleContinue}
-          handlePrevious={handlePrevious}
-          handleChangeSignEULA={jest.fn()}
-          handleCanvasSign={jest.fn()}
-          canvasDataUrl={canvasDataUrl}
-          hasSigned={hasSigned}
-          alert={{
-            show: alertShowFn,
-          }}
-        />
+        <IntlProvider locale="en">
+          <SignUpContext.Provider
+            value={{
+              ...defaultSignUpContextValue,
+
+              signUpStageStateContext: {
+                ...defaultSignUpContextValue.signUpStageStateContext,
+                moveToNextSignupStage: handleContinue,
+                moveToPreviousSignupStage: handlePrevious,
+              },
+            }}
+          >
+            <SignUserAgreement />
+          </SignUpContext.Provider>
+        </IntlProvider>
       </MemoryRouter>,
     );
 
@@ -89,10 +98,9 @@ describe('Sign User Agreement Test', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     // Assert
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await waitFor(() => {
       expect(handleContinue).toBeCalledTimes(0);
-      expect(alertShowFn).toBeCalledTimes(1);
     });
-    expect(alertShowFn).toBeCalledWith('Please sign the EULA');
   });
 });
