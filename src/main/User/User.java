@@ -311,7 +311,7 @@ public class User {
       log.error("Invalid birthDate: " + birthDate);
       return UserValidationMessage.INVALID_BIRTHDATE;
     }
-    if (!ValidationUtils.isValidPhoneNumber(phone)) {
+    if (ValidationUtils.hasValue(phone) && !ValidationUtils.isValidPhoneNumber(phone)) {
       log.error("Invalid orgContactPhoneNumber: " + phone);
       return UserValidationMessage.INVALID_PHONENUMBER;
     }
@@ -319,23 +319,23 @@ public class User {
       log.error("Invalid organization: " + organization);
       return UserValidationMessage.INVALID_ORGANIZATION;
     }
-    if (!ValidationUtils.isValidEmail(email)) {
+    if (ValidationUtils.hasValue(email) && !ValidationUtils.isValidEmail(email)) {
       log.error("Invalid email: " + email);
       return UserValidationMessage.INVALID_EMAIL;
     }
-    if (!ValidationUtils.isValidAddress(address)) {
+    if (ValidationUtils.hasValue(address) && !ValidationUtils.isValidAddress(address)) {
       log.error("Invalid address: " + address);
       return UserValidationMessage.INVALID_ADDRESS;
     }
-    if (!ValidationUtils.isValidCity(city)) {
+    if (ValidationUtils.hasValue(city) && !ValidationUtils.isValidCity(city)) {
       log.error("Invalid city: " + city);
       return UserValidationMessage.INVALID_CITY;
     }
-    if (!ValidationUtils.isValidUSState(state)) {
+    if (ValidationUtils.hasValue(state) &&!ValidationUtils.isValidUSState(state)) {
       log.error("Invalid state: " + state);
       return UserValidationMessage.INVALID_STATE;
     }
-    if (!ValidationUtils.isValidZipCode(zipcode)) {
+    if (ValidationUtils.hasValue(zipcode) && !ValidationUtils.isValidZipCode(zipcode)) {
       log.error("Invalid zipcode: " + zipcode);
       return UserValidationMessage.INVALID_ZIPCODE;
     }
