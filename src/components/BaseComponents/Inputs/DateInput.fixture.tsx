@@ -7,7 +7,23 @@ import BaseInputFixture from './BaseInputFixture';
 
 const DateInputFixture = () => {
   const [showTimeSelect] = useValue('showTimeSelect', { defaultValue: false });
-  return <BaseInputFixture fixture={DateInput} type="Date" otherProps={{ showTimeSelect }} />;
+
+  const validate = (date) => {
+    if (date < new Date('10-31-2021')) {
+      return 'date too early';
+    }
+    if (date > new Date('11-02-2021')) {
+      return 'date too late';
+    }
+    return '';
+  };
+  return (
+    <BaseInputFixture
+      fixture={DateInput}
+      type="Date"
+      otherProps={{ showTimeSelect, validate }}
+    />
+  );
 };
 
 export default DateInputFixture;
