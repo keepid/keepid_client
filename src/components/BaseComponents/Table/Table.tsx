@@ -18,13 +18,7 @@ import TModal from './TModal';
 // custom results display for table
 const customTotal = (from, to, size) => (
   <span className="react-bootstrap-table-pagination-total">
-    Showing
-    {from}
--
-{to}
-    of
-    {size}
-    Results
+    {`Showing ${from}-${to} of ${size} Results`}
   </span>
 );
 
@@ -224,6 +218,8 @@ interface TableProps extends NoDataIndicationProps {
   onDelete?: (id: any) => void;
   // Method called upon Row modification save
   onEditSave?: (row: any) => void;
+  // Default sort settings
+  defaultSorted?: { dataField: string, order: 'asc' | 'desc' }[]
 }
 
 /**

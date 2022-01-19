@@ -357,6 +357,7 @@ class MyDocuments extends Component<Props, State> {
                           data={documentData}
                           columns={this.tableCols}
                           emptyInfo={{ description: 'No documents found' }}
+                          defaultSorted={[{ dataField: 'uploadDate', order: 'asc' }]}
                         />
                       </div>
                     )
