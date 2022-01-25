@@ -1,6 +1,6 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
@@ -46,28 +46,21 @@ interface State {
 
 const MAX_Q_PER_PAGE = 10;
 
-class ApplicationForm extends Component<Props, State> {
-  signaturePad: any;
+const ApplicationForm = ({ alert, applicationId, applicationFilename }: Props) => {
+  let signaturePad: any;
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      fields: undefined,
-      formAnswers: {},
-      pdfApplication: undefined,
-      buttonState: '',
-      title: '',
-      description: '',
-      submitSuccessful: false,
-      currentPage: 1,
-      numPages: 1,
-      formError: false,
-    };
-  }
+  const [fields, setFields] = useState<State['fields']>(undefined);
+  const [formAnswers, setFormAnswers] = useState<State['formAnswers']>({});
+  const [pdfApplication, setPDFApplication] = useState<State['pdfApplication']>(undefined);
+  const [buttonState, setButtonState] = useState<State['buttonState']>('');
+  const [title, setTitle] = useState<State['title']>('');
+  const [description, setDescription] = useState<State['description']>('');
+  const [submitSuccessful, setSubmitSuccessful] = useState<State['submitSuccessful']>(false);
+  const [currentPage, setCurrentPage] = useState<State['currentPage']>(1);
+  const [numPages, setNumPages] = useState<State['numPages']>(1);
+  const [formError, setFormError] = useState<State['formError']>(false);
 
-  componentDidMount() {
-    const { applicationId } = this.props;
-    const { formAnswers } = this.state;
+  useEffect(() => {
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
       credentials: 'include',
@@ -91,80 +84,64 @@ class ApplicationForm extends Component<Props, State> {
               formAnswers[entry.fieldName] = entry.fieldDefaultValue;
             }
           }
-          this.setState({
-            fields,
-            title,
-            description,
-            formAnswers,
-            numPages:
-              fields.length === 0
-                ? 1
-                : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-          });
+          setFields(fields);
+          setTitle(title);
+          setDescription(description);
+          setFormAnswers(formAnswers);
+          setNumPages(fields.length === 0 ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE));
         } else {
-          this.setState({
-            formError: true,
-          });
+          setFormError(true);
         }
       });
-  }
+  }, []);
 
-  handleContinue = (e: any): void => {
+  const handleContinue = (e: any): void => {
     e.preventDefault();
-    this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage + 1 }),
-      () => window.scrollTo(0, 0),
-    );
+    setCurrentPage((prevPage) => prevPage + 1);
+    window.scrollTo(0, 0);
   };
 
-  handlePrevious = (e: any): void => {
+  const handlePrevious = (e: any): void => {
     e.preventDefault();
-    this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage - 1 }),
-      () => window.scrollTo(0, 0),
-    );
+    setCurrentPage((prevPage) => prevPage - 1);
+    window.scrollTo(0, 0);
   };
 
-  handleChangeFormValueTextField = (event: any) => {
-    const { formAnswers } = this.state;
+  const handleChangeFormValueTextField = (event: any) => {
     const { id, value } = event.target;
     formAnswers[id] = value;
-    this.setState({ formAnswers });
+    setFormAnswers(formAnswers);
   };
 
-  handleChangeFormValueCheckBox = (event: any) => {
-    const { formAnswers } = this.state;
+  const handleChangeFormValueCheckBox = (event: any) => {
     const { id } = event.target;
     const value: boolean = event.target.checked;
     formAnswers[id] = value;
-    this.setState({ formAnswers });
+    setFormAnswers(formAnswers);
   };
 
-  handleChangeFormValueRadioButton = (event: any) => {
-    const { formAnswers } = this.state;
+  const handleChangeFormValueRadioButton = (event: any) => {
     const { name, value } = event.target;
     formAnswers[name] = value;
-    this.setState({ formAnswers });
+    setFormAnswers(formAnswers);
   };
 
-  handleChangeFormValueListBox = (event: any) => {
-    const { formAnswers } = this.state;
+  const handleChangeFormValueListBox = (event: any) => {
     const values: string[] = Array.from(
       event.target.selectedOptions,
       (option: HTMLOptionElement) => option.value,
     );
     const { id } = event.target;
     formAnswers[id] = values;
-    this.setState({ formAnswers });
+    setFormAnswers(formAnswers);
   };
 
-  handleChangeFormValueDateField = (date: any, id: string) => {
-    const { formAnswers } = this.state;
+  const handleChangeFormValueDateField = (date: any, id: string) => {
     formAnswers[id] = date;
-    this.setState({ formAnswers });
+    setFormAnswers(formAnswers);
   };
 
-  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  const getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
     <div className="mt-2 mb-2">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
@@ -174,7 +151,7 @@ class ApplicationForm extends Component<Props, State> {
         className="form-control form-purple mt-1"
         id={entry.fieldName}
         placeholder={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
+        onChange={handleChangeFormValueTextField}
         value={formAnswers[entry.fieldName]}
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
@@ -189,7 +166,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getMultilineTextField = (
+  const getMultilineTextField = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
   ) => (
@@ -201,7 +178,7 @@ class ApplicationForm extends Component<Props, State> {
         className="form-control form-purple mt-1"
         id={entry.fieldName}
         placeholder={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
+        onChange={handleChangeFormValueTextField}
         value={formAnswers[entry.fieldName]}
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
@@ -216,7 +193,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  const getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
     <div className="mt-2 mb-2">
       <div className="checkbox-question">
         <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
@@ -231,7 +208,7 @@ class ApplicationForm extends Component<Props, State> {
               type="checkbox"
               className="custom-control-input mr-2"
               id={entry.fieldName}
-              onChange={this.handleChangeFormValueCheckBox}
+              onChange={handleChangeFormValueCheckBox}
               checked={formAnswers[entry.fieldName]}
               required={entry.fieldIsRequired}
               readOnly={entry.fieldIsMatched}
@@ -252,7 +229,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getRadioButton = (
+  const getRadioButton = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
   ) => (
@@ -275,7 +252,7 @@ class ApplicationForm extends Component<Props, State> {
             name={entry.fieldName}
             checked={formAnswers[entry.fieldName] === value}
             value={value}
-            onChange={this.handleChangeFormValueRadioButton}
+            onChange={handleChangeFormValueRadioButton}
             required={entry.fieldIsRequired}
             readOnly={entry.fieldIsMatched}
           />
@@ -290,7 +267,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  const getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
     <div className="dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
@@ -301,7 +278,7 @@ class ApplicationForm extends Component<Props, State> {
 
       <select
         id={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
+        onChange={handleChangeFormValueTextField}
         className="custom-select"
         required={entry.fieldIsRequired}
       >
@@ -317,7 +294,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  const getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
     <div className="multiple-dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
@@ -327,7 +304,7 @@ class ApplicationForm extends Component<Props, State> {
       </label>
       <select
         id={entry.fieldName}
-        onChange={this.handleChangeFormValueListBox}
+        onChange={handleChangeFormValueListBox}
         className="custom-select"
         multiple
         required={entry.fieldIsRequired}
@@ -344,7 +321,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getDateField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  const getDateField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
     <div className="date-question">
       <label htmlFor="date" className="w-100 font-weight-bold">
         Date
@@ -353,7 +330,7 @@ class ApplicationForm extends Component<Props, State> {
         id={entry.fieldName}
         selected={new Date(formAnswers[entry.fieldName])}
         onChange={(date) =>
-          this.handleChangeFormValueDateField(date, entry.fieldName)
+          handleChangeFormValueDateField(date, entry.fieldName)
         }
         className="form-control form-purple mt-1"
         required={entry.fieldIsRequired}
@@ -365,7 +342,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  toDateString = (date: Date) => {
+  const toDateString = (date: Date) => {
     // Source: https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
     const mm = date.getMonth() + 1; // getMonth() is zero-based
     const dd = date.getDate();
@@ -377,22 +354,18 @@ class ApplicationForm extends Component<Props, State> {
     return dateString;
   };
 
-  onSubmitFormAnswers = (event: any) => {
+  const onSubmitFormAnswers = (event: any) => {
     event.preventDefault();
-    const { applicationId, applicationFilename } = this.props;
-    const { fields, formAnswers } = this.state;
-
     if (fields) {
       for (let i = 0; i < fields.length; i += 1) {
         const entry = fields[i];
         if (entry.fieldType === 'DateField') {
           const date = formAnswers[entry.fieldName];
-          formAnswers[entry.fieldName] = this.toDateString(date);
+          formAnswers[entry.fieldName] = toDateString(date);
         }
       }
     }
-
-    this.setState({ buttonState: 'running' });
+    setButtonState('running');
 
     fetch(`${getServerURL()}/fill-application`, {
       method: 'POST',
@@ -407,18 +380,14 @@ class ApplicationForm extends Component<Props, State> {
         const pdfFile = new File([responseBlob], applicationFilename, {
           type: 'application/pdf',
         });
-        this.setState(
-          {
-            pdfApplication: pdfFile,
-            buttonState: '',
-          },
-          () => window.scrollTo(0, 0),
-        );
+        setPDFApplication(pdfFile);
+        setButtonState('');
+        window.scrollTo(0, 0);
       });
   };
 
   // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-  dataURLtoBlob = (dataURL: string) => {
+  const dataURLtoBlob = (dataURL: string) => {
     const arr = dataURL.split(',');
     const bstr = atob(arr[1]);
     let n = bstr.length;
@@ -430,13 +399,11 @@ class ApplicationForm extends Component<Props, State> {
     return new Blob([u8arr], { type: 'image/png' });
   };
 
-  onSubmitPdfApplication = (event: any) => {
-    const { pdfApplication } = this.state;
-    const { alert } = this.props;
+  const onSubmitPdfApplication = (event: any) => {
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
-      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+      const signature = dataURLtoBlob(signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.APPLICATION);
@@ -447,14 +414,13 @@ class ApplicationForm extends Component<Props, State> {
       })
         .then((response) => response.json())
         .then((responseJSON) => {
-          this.setState({ submitSuccessful: true });
+          setSubmitSuccessful(true);
           alert.show('Successfully Completed PDF Application');
         });
     }
   };
 
-  progressBarFill = (): number => {
-    const { fields, formAnswers } = this.state;
+  const progressBarFill = (): number => {
     const total = fields ? fields.length : 0;
     let answered = 0;
     Object.keys(formAnswers).forEach((questionId) => {
@@ -466,17 +432,7 @@ class ApplicationForm extends Component<Props, State> {
     return total === 0 ? 100 : Math.round((answered / total) * 100);
   };
 
-  getApplicationBody = () => {
-    const {
-      pdfApplication,
-      fields,
-      formAnswers,
-      title,
-      description,
-      currentPage,
-      buttonState,
-      numPages,
-    } = this.state;
+  const getApplicationBody = () => {
     let bodyElement;
     const fillAmt = (currentPage / numPages) * 100;
     // const fillAmt = this.progressBarFill();
@@ -500,7 +456,7 @@ class ApplicationForm extends Component<Props, State> {
               </div>
               <SignaturePad
                 ref={(ref) => {
-                  this.signaturePad = ref;
+                  signaturePad = ref;
                 }}
               />
               <div className="d-flex text-center my-5">
@@ -508,7 +464,7 @@ class ApplicationForm extends Component<Props, State> {
                   type="submit"
                   variant="primary"
                   className="ml-auto"
-                  onClick={this.onSubmitPdfApplication}
+                  onClick={onSubmitPdfApplication}
                 >
                   Submit PDF
                 </Button>
@@ -539,7 +495,7 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-            <form onSubmit={this.onSubmitFormAnswers}>
+            <form onSubmit={onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
                 return (
@@ -550,25 +506,25 @@ class ApplicationForm extends Component<Props, State> {
                         return <div />;
                       }
                       if (entry.fieldType === 'TextField') {
-                        return this.getTextField(entry, formAnswers);
+                        return getTextField(entry, formAnswers);
                       }
                       if (entry.fieldType === 'MultilineTextField') {
-                        return this.getMultilineTextField(entry, formAnswers);
+                        return getMultilineTextField(entry, formAnswers);
                       }
                       if (entry.fieldType === 'CheckBox') {
-                        return this.getCheckBox(entry, formAnswers);
+                        return getCheckBox(entry, formAnswers);
                       }
                       if (entry.fieldType === 'RadioButton') {
-                        return this.getRadioButton(entry, formAnswers);
+                        return getRadioButton(entry, formAnswers);
                       }
                       if (entry.fieldType === 'ComboBox') {
-                        return this.getComboBox(entry, formAnswers);
+                        return getComboBox(entry, formAnswers);
                       }
                       if (entry.fieldType === 'ListBox') {
-                        return this.getListBox(entry, formAnswers);
+                        return getListBox(entry, formAnswers);
                       }
                       if (entry.fieldType === 'DateField') {
-                        return this.getDateField(entry, formAnswers);
+                        return getDateField(entry, formAnswers);
                       }
                       return <div />;
                     })()}
@@ -582,7 +538,7 @@ class ApplicationForm extends Component<Props, State> {
                     <button
                       type="button"
                       className="mr-auto btn btn-outline-primary"
-                      onClick={this.handlePrevious}
+                      onClick={handlePrevious}
                     >
                       Previous
                     </button>
@@ -603,7 +559,7 @@ class ApplicationForm extends Component<Props, State> {
                     <Button
                       type="submit"
                       variant="primary"
-                      onClick={this.handleContinue}
+                      onClick={handleContinue}
                     >
                       Continue
                     </Button>
@@ -612,7 +568,7 @@ class ApplicationForm extends Component<Props, State> {
                       type="submit"
                       variant="primary"
                       className={`ld-ext-right ${buttonState}`}
-                      onClick={this.onSubmitFormAnswers}
+                      onClick={onSubmitFormAnswers}
                     >
                       Submit
                       <div className="ld ld-ring ld-spin" />
@@ -631,36 +587,30 @@ class ApplicationForm extends Component<Props, State> {
     return bodyElement;
   };
 
-  render() {
-    const { alert } = this.props;
-
-    const { submitSuccessful, formError } = this.state;
-
-    if (submitSuccessful) {
-      return <Redirect to="/applications" />;
-    }
-
-    const bodyElement = this.getApplicationBody();
-    return (
-      <div className="container">
-        <Helmet>
-          <title>Fill Application</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="ml-5 mt-3">
-          <Link to="/applications">
-            <button type="button" className="btn btn-primary">
-              Back
-            </button>
-          </Link>
-        </div>
-        {bodyElement}
-        {formError ? (
-          <div className="p-5">There was an error loading this form.</div>
-        ) : null}
-      </div>
-    );
+  if (submitSuccessful) {
+    return <Redirect to="/applications" />;
   }
-}
+
+  const bodyElement = getApplicationBody();
+  return (
+    <div className="container">
+      <Helmet>
+        <title>Fill Application</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
+      <div className="ml-5 mt-3">
+        <Link to="/applications">
+          <button type="button" className="btn btn-primary">
+            Back
+          </button>
+        </Link>
+      </div>
+      {bodyElement}
+      {formError ? (
+        <div className="p-5">There was an error loading this form.</div>
+      ) : null}
+    </div>
+  );
+};
 
 export default withAlert()(ApplicationForm);

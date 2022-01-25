@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import Alert from 'react-bootstrap/Alert';
 
@@ -26,37 +26,21 @@ interface State {
   buttonLoadingState: boolean;
 }
 
-class MyOrganization extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      personName: '',
-      personEmail: '',
-      personRole: '',
-      isInEditMode: false,
-      editedPersonEmail: '',
-      editedPersonName: '',
-      editedPersonRole: '',
-      memberArr: [],
-      showPopUp: false,
-      numInvitesSent: 0,
-      numInEditMode: 0,
-      buttonLoadingState: false,
-    };
-    this.editButtonToggle = this.editButtonToggle.bind(this);
-    this.getEmailCell = this.getEmailCell.bind(this);
-    this.getNameCell = this.getNameCell.bind(this);
-    this.getRoleDropDown = this.getRoleDropDown.bind(this);
-    this.saveEdits = this.saveEdits.bind(this);
-    this.addMember = this.addMember.bind(this);
-    this.deleteMember = this.deleteMember.bind(this);
-    this.renderSuccessPopUp = this.renderSuccessPopUp.bind(this);
-    this.saveMembersBackend = this.saveMembersBackend.bind(this);
-  }
+const MyOrganization = (props: Props) => {
+  const [personName, setPersonName] = useState<State['personName']>('');
+  const [personEmail, setPersonEmail] = useState<State['personEmail']>('');
+  const [personRole, setPersonRole] = useState<State['personRole']>('');
+  const [isInEditMode, setIsInEditMode] = useState<State['isInEditMode']>(false);
+  const [editedPersonEmail, setEditedPersonEmail] = useState<State['editedPersonEmail']>('');
+  const [editedPersonName, setEditedPersonName] = useState<State['editedPersonName']>('');
+  const [editedPersonRole, setEditedPersonRole] = useState<State['editedPersonRole']>('');
+  const [memberArr, setMemberArr] = useState<State['memberArr']>([]);
+  const [showPopUp, setShowPopUp] = useState<State['showPopUp']>(false);
+  const [numInvitesSent, setNumInvitesSent] = useState<State['numInvitesSent']>(0);
+  const [numInEditMode, setNumInEditMode] = useState<State['numInEditMode']>(0);
+  const [buttonLoadingState, setButtonLoadingState] = useState<State['buttonLoadingState']>(false);
 
-  addMember = (e: React.MouseEvent<HTMLElement>): void => {
-    const { personName, personEmail, personRole, isInEditMode } = this.state;
-
+  const addMember = (e: React.MouseEvent<HTMLElement>): void => {
     if (personName !== '' && personEmail !== '' && personRole !== '') {
       const dateID = Date.now();
       const newMember = {
@@ -67,83 +51,43 @@ class MyOrganization extends Component<Props, State> {
         dateID,
       };
 
-      this.setState((prevState) => ({
-        memberArr: prevState.memberArr.concat(newMember),
-        personName: '',
-        personEmail: '',
-        personRole: '',
-      }));
+      setMemberArr((prevMember) => [...memberArr, newMember]);
+      setPersonEmail('');
+      setPersonName('');
+      setPersonRole('');
     } else {
-      const { alert } = this.props;
+      const { alert } = props;
       alert.show('missing field. name, email, and role are required');
     }
     e.preventDefault();
   };
 
-  renderTableContents = (): JSX.Element => {
-    const { memberArr } = this.state;
-    if (memberArr.length === 0) {
-      return (
-        <tr>
-          <td colSpan={5} className="bg-white brand-text text-secondary py-5">
-            No new members
-          </td>
-        </tr>
-      );
-    }
-    const row = memberArr.map((member, i) => (
-      <tr key={member.dateID}>
-        <td>{this.getNameCell(member)}</td>
-        <td>{this.getEmailCell(member)}</td>
-        <td>{this.editButtonToggle(member.dateID)}</td>
-        <td>{this.getRoleDropDown(member)}</td>
-        <td>
-          <button
-            type="button"
-            className="close float-left"
-            aria-label="Close"
-            onClick={() => this.deleteMember(i)}
-          >
-            <span aria-hidden="true" className="mx-auto">
-              &times;
-            </span>
-          </button>
-        </td>
-      </tr>
-    ));
-    return row;
-  };
-
-  deleteMember = (userIndex: number): void => {
-    this.setState((prevState) => {
-      const members = prevState.memberArr.slice();
+  const deleteMember = (userIndex: number): void => {
+    setMemberArr((prevArr) => {
+      const members = prevArr.slice();
       members.splice(userIndex, 1);
       return { memberArr: members };
     });
   };
 
-  saveEdits = (dateID: Date): void => {
-    const { memberArr } = this.state;
+  const saveEdits = (dateID: Date): void => {
     const index = memberArr.findIndex((member) => member.dateID === dateID);
     const member = { ...memberArr[index] };
-    const { editedPersonEmail, editedPersonName, editedPersonRole } =
-      this.state;
     member.email = editedPersonEmail;
     member.name = editedPersonName;
     member.role = editedPersonRole;
     member.isInEditMode = !member.isInEditMode;
-    this.setState((prevState) => {
-      const members = prevState.memberArr.slice();
+    setMemberArr((prevArr) => {
+      const members = prevArr.slice();
       members[index] = member;
       return {
         memberArr: members,
-        numInEditMode: prevState.numInEditMode - 1,
       };
     });
+    setNumInEditMode((prevNum) => prevNum - 1);
   };
 
-  editButtonToggle = (dateID: Date): JSX.Element => {
-    const { memberArr } = this.state;
+  const editButtonToggle = (dateID: Date): JSX.Element => {
     const index = memberArr.findIndex((member) => member.dateID === dateID);
     const member = { ...memberArr[index] };
     const members = Object.assign([], memberArr);
@@ -153,7 +97,7 @@ class MyOrganization extends Component<Props, State> {
         <button
           type="button"
           className="btn btn-sm m-0 p-1 btn-outline-*"
-          onClick={() => this.saveEdits(dateID)}
+          onClick={() => saveEdits(dateID)}
         >
           <img
             alt="search"
@@ -171,17 +115,14 @@ class MyOrganization extends Component<Props, State> {
         type="button"
         className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent"
         onClick={() => {
-          const { numInEditMode } = this.state;
           if (numInEditMode === 0) {
             member.isInEditMode = !member.isInEditMode;
             members[index] = member;
-            this.setState((prevState) => ({
-              numInEditMode: prevState.numInEditMode + 1,
-              memberArr: members,
-              editedPersonEmail: member.email,
-              editedPersonName: member.name,
-              editedPersonRole: member.role,
-            }));
+            setNumInEditMode((prevNum) => prevNum + 1);
+            setMemberArr(members);
+            setEditedPersonEmail(member.email);
+            setEditedPersonName(member.name);
+            setEditedPersonRole(member.role);
           }
         }}
       >
@@ -190,38 +131,35 @@ class MyOrganization extends Component<Props, State> {
     );
   };
 
-  getNameCell = (member): JSX.Element => {
-    const { editedPersonName } = this.state;
+  const getNameCell = (member): JSX.Element => {
     if (member.isInEditMode) {
       return (
         <input
           className="form-purple form-control input-sm"
           type="text"
           value={editedPersonName}
-          onChange={(e) => this.setState({ editedPersonName: e.target.value })}
+          onChange={(e) => setEditedPersonName(e.target.value)}
         />
       );
     }
     return <div>{member.name}</div>;
   };
 
-  getEmailCell = (member): JSX.Element => {
-    const { editedPersonEmail } = this.state;
+  const getEmailCell = (member): JSX.Element => {
     if (member.isInEditMode) {
       return (
         <input
           className="form-purple form-control input-sm"
           type="text"
           value={editedPersonEmail}
-          onChange={(e) => this.setState({ editedPersonEmail: e.target.value })}
+          onChange={(e) => setEditedPersonEmail(e.target.value)}
         />
       );
     }
     return <div>{member.email}</div>;
   };
 
-  getRoleDropDown = (member): JSX.Element => {
-    const { editedPersonRole } = this.state;
+  const getRoleDropDown = (member): JSX.Element => {
     if (member.isInEditMode) {
       return (
         <div>
@@ -231,7 +169,7 @@ class MyOrganization extends Component<Props, State> {
             className="form-control form-purple"
             value={editedPersonRole}
             onChange={(e) =>
-              this.setState({ editedPersonRole: e.target.value })
+              setEditedPersonRole(e.target.value)
             }
           >
             <option defaultValue="" disabled hidden aria-labelledby="role" />
@@ -245,13 +183,13 @@ class MyOrganization extends Component<Props, State> {
     return <div>{member.role}</div>;
   };
 
-  renderSuccessPopUp = (numInvitesSent: number): JSX.Element => (
+  const renderSuccessPopUp = (numInvitesSent: number): JSX.Element => (
     <div>
       <Alert
         className="mt-2"
         variant="success"
         dismissible
-        onClose={() => this.setState({ showPopUp: false })}
+        onClose={() => setShowPopUp(false)}
       >
         <p className="mb-0">
           Congrats! You successfully invited
@@ -262,10 +200,42 @@ class MyOrganization extends Component<Props, State> {
     </div>
   );
 
-  saveMembersBackend = (e: React.MouseEvent<HTMLElement>): void => {
+  const renderTableContents = (): JSX.Element => {
+    if (memberArr.length === 0) {
+      return (
+        <tr>
+          <td colSpan={5} className="bg-white brand-text text-secondary py-5">
+            No new members
+          </td>
+        </tr>
+      );
+    }
+    const row = memberArr.map((member, i) => (
+      <tr key={member.dateID}>
+        <td>{getNameCell(member)}</td>
+        <td>{getEmailCell(member)}</td>
+        <td>{editButtonToggle(member.dateID)}</td>
+        <td>{getRoleDropDown(member)}</td>
+        <td>
+          <button
+            type="button"
+            className="close float-left"
+            aria-label="Close"
+            onClick={() => deleteMember(i)}
+          >
+            <span aria-hidden="true" className="mx-auto">
+              &times;
+            </span>
+          </button>
+        </td>
+      </tr>
+    ));
+    return row;
+  };
+
+  const saveMembersBackend = (e: React.MouseEvent<HTMLElement>): void => {
     e.preventDefault();
-    const { alert, name, organization } = this.props;
-    const { memberArr } = this.state;
+    const { alert, name, organization } = props;
     const members = Object.assign([], memberArr);
     try {
       Object.keys(members).forEach((key) => {
@@ -279,8 +249,7 @@ class MyOrganization extends Component<Props, State> {
     } catch (error) {
       alert.show(`Error Parsing Name : ${error}`);
     }
-
-    this.setState({ buttonLoadingState: true });
+    setButtonLoadingState(true);
     fetch(`${getServerURL()}/invite-user`, {
       method: 'POST',
       credentials: 'include',
@@ -295,179 +264,167 @@ class MyOrganization extends Component<Props, State> {
         const { status } = responseJSON;
 
         if (status === 'SUCCESS') {
-          this.setState((prevState) => ({
-            showPopUp: true,
-            numInvitesSent: prevState.memberArr.length,
-            memberArr: [],
-            buttonLoadingState: false,
-          }));
+          setNumInvitesSent(memberArr.length);
+          setShowPopUp(true);
+          setMemberArr([]);
+          setButtonLoadingState(false);
         } else if (status === 'EMPTY_FIELD') {
           alert.show(
             'Missing field. Make sure to include first name, last name, email, AND role)',
           );
-          this.setState({ buttonLoadingState: false });
+          setButtonLoadingState(false);
         }
       })
       .catch((error) => {
         alert.show(
           `Network Failure: ${error}. Logout and try again or report this issue to Keep.id`,
         );
-        this.setState({ buttonLoadingState: false });
+        setButtonLoadingState(false);
       });
   };
 
-  render() {
-    const {
-      showPopUp,
-      numInvitesSent,
-      personRole,
-      personName,
-      personEmail,
-      buttonLoadingState,
-    } = this.state;
-    return (
-      <div className="container">
-        {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
-        <p className="font-weight-bold text-dark my-3 h3">
-          Invite New Team Members
-        </p>
-        <form>
-          <div className="form-row">
-            <div className="form-group required col-xs">
-              <label htmlFor="exampleName">
-                Name
-                <input
-                  placeholder="Full Name Here"
-                  type="name"
-                  className="form-control form-purple"
-                  id="exampleName"
-                  value={personName}
-                  onChange={(e) =>
-                    this.setState({ personName: e.target.value })
-                  }
-                />
-              </label>
-            </div>
-            <div className="form-group required col-xs">
-              <label htmlFor="exampleEmail">
-                Email address
-                <input
-                  placeholder="Enter Valid Email"
-                  type="email"
-                  id="exampleEmail"
-                  className="form-control form-purple"
-                  value={personEmail}
-                  onChange={(e) =>
-                    this.setState({ personEmail: e.target.value })
-                  }
-                />
-              </label>
-            </div>
-            <div className="form-group required col-xs-4">
-              <label htmlFor="exampleRole">
-                Role
-                <select
-                  placeholder="Role"
-                  id="exampleRole"
-                  className="form-control form-purple"
-                  value={personRole}
-                  onChange={(e) =>
-                    this.setState({ personRole: e.target.value })
-                  }
-                >
-                  <option
-                    defaultValue=""
-                    disabled
-                    hidden
-                    aria-labelledby="exampleRole"
-                  />
-                  <option>Admin</option>
-                  <option>Worker</option>
-                  <option>Client</option>
-                </select>
-              </label>
-            </div>
-            <div className="col-xs mt-3">
-              <button
-                className="btn btn-primary mt-1"
-                type="submit"
-                onClick={(e) => this.addMember(e)}
-              >
-                Add Member
-              </button>
-            </div>
+  return (
+    <div className="container">
+      {showPopUp === true && renderSuccessPopUp(numInvitesSent)}
+      <p className="font-weight-bold text-dark my-3 h3">
+        Invite New Team Members
+      </p>
+      <form>
+        <div className="form-row">
+          <div className="form-group required col-xs">
+            <label htmlFor="exampleName">
+              Name
+              <input
+                placeholder="Full Name Here"
+                type="name"
+                className="form-control form-purple"
+                id="exampleName"
+                value={personName}
+                onChange={(e) =>
+                  setPersonName(e.target.value)
+                }
+              />
+            </label>
           </div>
-        </form>
-        <p className="font-weight-bold text-dark mb-2 h3">Recently Invited</p>
-        <div
-          className="scrollbar"
-          style={{
-            maxHeight: '15.625rem',
-            overflow: 'scroll',
-            scrollbarColor: '#7B81FF',
-          }}
-        >
-          <table className="table table-striped table-bordered">
-            <thead className="position-sticky border" style={{ top: '0' }}>
-              <tr>
-                <th
-                  aria-label="Name Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Name
-                </th>
-                <th
-                  aria-label="Email Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Email
-                </th>
-                <th
-                  aria-label="Edit Button Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Edit
-                </th>
-                <th
-                  aria-label="Role Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Role
-                </th>
-                <th
-                  aria-label="Delete Button Column"
-                  scope="col"
-                  style={{ top: '0', zIndex: 999 }}
-                  className="position-sticky bg-white border shadow-sm"
+          <div className="form-group required col-xs">
+            <label htmlFor="exampleEmail">
+              Email address
+              <input
+                placeholder="Enter Valid Email"
+                type="email"
+                id="exampleEmail"
+                className="form-control form-purple"
+                value={personEmail}
+                onChange={(e) =>
+                  setPersonEmail(e.target.value)
+                }
+              />
+            </label>
+          </div>
+          <div className="form-group required col-xs-4">
+            <label htmlFor="exampleRole">
+              Role
+              <select
+                placeholder="Role"
+                id="exampleRole"
+                className="form-control form-purple"
+                value={personRole}
+                onChange={(e) =>
+                  setPersonRole(e.target.value)
+                }
+              >
+                <option
+                  defaultValue=""
+                  disabled
+                  hidden
+                  aria-labelledby="exampleRole"
                 />
-              </tr>
-            </thead>
-            <tbody className="table-striped">
-              {this.renderTableContents()}
-            </tbody>
-          </table>
+                <option>Admin</option>
+                <option>Worker</option>
+                <option>Client</option>
+              </select>
+            </label>
+          </div>
+          <div className="col-xs mt-3">
+            <button
+              className="btn btn-primary mt-1"
+              type="submit"
+              onClick={(e) => addMember(e)}
+            >
+              Add Member
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary mt-1 float-right"
-          onClick={(e) => this.saveMembersBackend(e)}
-        >
-          {buttonLoadingState ? (
-            <div className="ld ld-ring ld-spin" />
-          ) : (
-            <div>Send Invites</div>
-          )}
-        </button>
+      </form>
+      <p className="font-weight-bold text-dark mb-2 h3">Recently Invited</p>
+      <div
+        className="scrollbar"
+        style={{
+          maxHeight: '15.625rem',
+          overflow: 'scroll',
+          scrollbarColor: '#7B81FF',
+        }}
+      >
+        <table className="table table-striped table-bordered">
+          <thead className="position-sticky border" style={{ top: '0' }}>
+            <tr>
+              <th
+                aria-label="Name Column"
+                scope="col"
+                style={{ top: '0' }}
+                className="position-sticky bg-white border shadow-sm"
+              >
+                Name
+              </th>
+              <th
+                aria-label="Email Column"
+                scope="col"
+                style={{ top: '0' }}
+                className="position-sticky bg-white border shadow-sm"
+              >
+                Email
+              </th>
+              <th
+                aria-label="Edit Button Column"
+                scope="col"
+                style={{ top: '0' }}
+                className="position-sticky bg-white border shadow-sm"
+              >
+                Edit
+              </th>
+              <th
+                aria-label="Role Column"
+                scope="col"
+                style={{ top: '0' }}
+                className="position-sticky bg-white border shadow-sm"
+              >
+                Role
+              </th>
+              <th
+                aria-label="Delete Button Column"
+                scope="col"
+                style={{ top: '0', zIndex: 999 }}
+                className="position-sticky bg-white border shadow-sm"
+              />
+            </tr>
+          </thead>
+          <tbody className="table-striped">
+            {renderTableContents()}
+          </tbody>
+        </table>
       </div>
-    );
-  }
-}
+      <button
+        type="button"
+        className="btn btn-primary mt-1 float-right"
+        onClick={(e) => saveMembersBackend(e)}
+      >
+        {buttonLoadingState ? (
+          <div className="ld ld-ring ld-spin" />
+        ) : (
+          <div>Send Invites</div>
+        )}
+      </button>
+    </div>
+  );
+};
 export default withAlert()(MyOrganization);
