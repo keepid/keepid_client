@@ -1,6 +1,6 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
-import React, { Component, useEffect, useState } from 'react';
+import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { ButtonGroup } from 'react-bootstrap';
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
@@ -57,16 +57,31 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-const MyDocuments = ({ alert, userRole, username }: Props) => {
-  const [pdfFiles, setPdfFiles] = useState<State['pdfFiles']>(undefined);
-  const [buttonState, setButtonState] = useState<State['buttonState']>('');
-  const [currentDocumentId, setCurrentDocumentId] = useState<State['currentDocumentId']>(undefined);
-  const [currentDocumentName, setCurrentDocumentName] = useState<State['currentDocumentName']>(undefined);
-  const [documentData, setDocumentData] = useState<State['documentData']>([]);
+class MyDocuments extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.handleChangeFileDownload = this.handleChangeFileDownload.bind(this);
+    this.handleFileDownload = this.handleFileDownload.bind(this);
+    this.handleChangeFilePrint = this.handleChangeFilePrint.bind(this);
+    this.handleFilePrint = this.handleFilePrint.bind(this);
+    this.state = {
+      pdfFiles: undefined,
+      buttonState: '',
+      currentDocumentId: undefined,
+      currentDocumentName: undefined,
+      documentData: [],
+    };
+    this.getDocumentData = this.getDocumentData.bind(this);
+    this.onViewDocument = this.onViewDocument.bind(this);
+    this.deleteDocument = this.deleteDocument.bind(this);
+    this.ButtonFormatter = this.ButtonFormatter.bind(this);
+  }
 
-  const maxFilesExceeded = (files, maxNumFiles) => files.length > maxNumFiles;
+  static maxFilesExceeded(files, maxNumFiles) {
+    return files.length > maxNumFiles;
+  }
 
-  const fileNamesUnique = (files) => {
+  static fileNamesUnique(files) {
     const fileNames: string[] = [];
     for (let i = 0; i < files.length; i += 1) {
       const fileName = files[i].name;
@@ -74,49 +89,22 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
     }
 
     return fileNames.length === new Set(fileNames).size;
-  };
+  }
 
-  const getDocumentData = () => {
-    let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
-    } else {
-      pdfType = undefined;
-    }
-    fetch(`${getServerURL()}/get-documents `, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        pdfType,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          documents,
-        } = responseJSON;
-        setDocumentData(documents);
-      });
-  };
-
-  const handleChangeFileUpload = (event: any) => {
+  handleChangeFileDownload(event: any, row: any) {
     event.preventDefault();
     const { files } = event.target;
 
-    // check that the number of files uploaded doesn't exceed the maximum
-    if (files.length > MAX_NUM_OF_FILES) {
-      // eslint-disable-next-line no-param-reassign
-      event.target.value = null; // discard selected files
-      alert.show(`A maximum of ${MAX_NUM_OF_FILES} files can be uploaded at a time`);
-      return;
-    }
+    this.setState({
+      pdfFiles: files,
+    }, () => this.handleFileDownload(row));
+  }
 
-    // all validation met
-    setPdfFiles(files);
-  };
-
-  const handleFileDownload = (row: any) => {
+  handleFileDownload(row: any) {
+    const {
+      userRole,
+      alert,
+    } = this.props;
     const documentId = row.id;
     const documentName = row.filename;
 
@@ -148,19 +136,21 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
       }).catch((_error) => {
         alert.show('Error Fetching File');
       });
-  };
+  }
 
-  const handleChangeFileDownload = (event: any, row: any) => {
+  handleChangeFilePrint(event: any, rowIndex: number) {
     event.preventDefault();
     const { files } = event.target;
-    setPdfFiles(files);
-    handleFileDownload(row);
-    // this.setState({
-    //   pdfFiles: files,
-    // }, () => this.handleFileDownload(row));
-  };
 
-  const handleFilePrint = (rowIndex: number) => {
+    this.setState({
+      pdfFiles: files,
+    }, () => this.handleFilePrint(rowIndex));
+  }
+
+  handleFilePrint(rowIndex: number) {
+    const { userRole, alert } = this.props;
+    const { documentData } = this.state;
+
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
@@ -186,35 +176,30 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
       }).catch((_error) => {
         alert.show('Error Fetching File');
       });
-  };
+  }
 
-  const handleChangeFilePrint = (event: any, rowIndex: number) => {
-    event.preventDefault();
-    const { files } = event.target;
-    setPdfFiles(files);
-    handleFilePrint(rowIndex);
-    // this.setState({
-    //   pdfFiles: files,
-    // }, () => this.handleFilePrint(rowIndex));
-  };
+  componentDidMount() {
+    this.getDocumentData();
+  }
 
-  useEffect(() => {
-    getDocumentData();
-  }, []);
-
-  const onViewDocument = (event: any, row: any) => {
+  onViewDocument(event: any, row: any) {
     const {
       id,
       filename,
     } = row;
-    setCurrentDocumentId(id);
-    setCurrentDocumentName(filename);
-  };
+    this.setState({
+      currentDocumentId: id,
+      currentDocumentName: filename,
+    });
+  }
 
-  const deleteDocument = (event, row) => {
+  deleteDocument(event, row) {
     event.preventDefault();
     const documentId = row.id;
 
+    const {
+      userRole,
+    } = this.props;
     let pdfType;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
       pdfType = PDFType.APPLICATION;
@@ -233,28 +218,45 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
       }),
     }).then((response) => response.json())
       .then((_responseJSON) => {
-        getDocumentData();
+        this.getDocumentData();
       });
-  };
+  }
 
-  const ButtonFormatter = (cell: any, row: any, rowIndex) => (
+  getDocumentData() {
+    const {
+      userRole,
+    } = this.props;
+    let pdfType;
+    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+      pdfType = PDFType.APPLICATION;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
+    fetch(`${getServerURL()}/get-documents `, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          documents,
+        } = responseJSON;
+        this.setState({ documentData: documents });
+      });
+  }
+
+  ButtonFormatter = (cell: any, row: any, rowIndex) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <ButtonGroup>
-      {/* <Link to="/my-documents/print">
-        <button type="button" className="btn btn-outline-secondary ml-2 btn-sm">
-          Print
-        </button>
-      </Link> */}
-      {/*
-      <button type="button" onClick={(event) => this.handleChangeFilePrint(event, rowIndex)} className="btn btn-outline-info ml-2 btn-sm">
-        Print
-      </button>
-      */}
       <Link to="/my-documents/view">
         <button
           type="button"
-          onClick={(event) => onViewDocument(event, row)}
+          onClick={(event) => this.onViewDocument(event, row)}
           className="btn btn-outline-info btn-sm"
         >
           View
@@ -262,23 +264,23 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
       </Link>
       <button
         type="button"
-        onClick={(event) => handleChangeFileDownload(event, row)}
+        onClick={(event) => this.handleChangeFileDownload(event, row)}
         className="btn btn-outline-success btn-sm ml-2"
       >
         Download
       </button>
       <button
         type="button"
-        onClick={(event) => deleteDocument(event, row)}
+        onClick={(event) => this.deleteDocument(event, row)}
         className="btn btn-outline-danger btn-sm ml-2"
       >
         Delete
       </button>
 
     </ButtonGroup>
-  );
+  )
 
-  const tableCols = [{
+  tableCols = [{
     dataField: 'filename',
     text: 'File Name',
     sort: true,
@@ -301,56 +303,24 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
   {
     dataField: 'actions',
     text: 'Actions',
-    formatter: ButtonFormatter,
+    formatter: this.ButtonFormatter,
   }];
 
-  const submitForm = (event: any) => {
-    setButtonState('running');
-    event.preventDefault();
+  render() {
+    const {
+      pdfFiles,
+      buttonState,
+    } = this.state;
 
-    if (pdfFiles) {
-      // upload each pdf file
-      for (let i = 0; i < pdfFiles.length; i += 1) {
-        const pdfFile = pdfFiles[i];
-        const formData = new FormData();
-        formData.append('file', pdfFile, pdfFile.name);
-        if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
-        }
-        if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.APPLICATION);
-        }
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        }).then((response) => response.json())
-          .then((responseJSON) => {
-            const {
-              status,
-            } = responseJSON;
-            if (status === 'SUCCESS') {
-              alert.show(`Successfully uploaded ${pdfFile.name}`);
-              setButtonState('');
-              setPdfFiles(undefined);
-              getDocumentData();
-              // this.setState({
-              //   buttonState: '',
-              //   pdfFiles: undefined,
-              // }, () => this.getDocumentData());
-            } else {
-              alert.show(`Failure to upload ${pdfFile.name}`);
-              setButtonState('');
-            }
-          });
-      }
-    } else {
-      alert.show('Please select a file');
-      setButtonState('');
-    }
-  };
-
-  return (
+    const {
+      userRole,
+    } = this.props;
+    const {
+      currentDocumentId,
+      currentDocumentName,
+      documentData,
+    } = this.state;
+    return (
       <Switch>
         <Route exact path="/my-documents">
           <div className="container">
@@ -363,46 +333,19 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
               <p className="lead pt-3">
                 You can view, edit, print, and delete your documents you currently have stored on Keep.id.
               </p>
+                <button type="button" className="btn btn-outline-primary btn-sm mr-3">
+                  <Link className="nav-link" to="/upload-document">
+                    Upload Documents
+                  </Link>
+                </button>
             </div>
-            <ul className="list-unstyled mt-5">
-              {
-                pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) => (
-                  <RenderPDF
-                    key={uuid()}
-                    pdfFile={pdfFile}
-                  />
-                )) : null
-              }
-            </ul>
-            <div className="row justify-content-left form-group mb-5">
-              <form onSubmit={submitForm}>
-                <div className="form-row mt-3">
-                  <label htmlFor="potentialPdf" className="btn btn-filestack btn-widget ml-5 mr-5">
-                    {pdfFiles && pdfFiles.length > 0 ? 'Choose New Files' : 'Choose Files'}
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      id="potentialPdf"
-                      multiple
-                      onChange={handleChangeFileUpload}
-                      hidden
-                    />
-                  </label>
-                  {pdfFiles && pdfFiles.length > 0 ? (
-                    <button type="submit" className={`btn btn-success ld-ext-right ${buttonState}`}>
-                      Upload
-                      <div className="ld ld-ring ld-spin" />
-                    </button>
-                  ) : null}
-                </div>
-              </form>
-            </div>
+
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
               <div className="w-100 pd-3">
                 <ToolkitProvider
                   keyField="id"
                   data={documentData}
-                  columns={tableCols}
+                  columns={this.tableCols}
                   search
                 >
                   {
@@ -412,8 +355,9 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
                         <hr />
                         <Table
                           data={documentData}
-                          columns={tableCols}
+                          columns={this.tableCols}
                           emptyInfo={{ description: 'No documents found' }}
+                          defaultSorted={[{ dataField: 'uploadDate', order: 'asc' }]}
                         />
                       </div>
                     )
@@ -429,7 +373,8 @@ const MyDocuments = ({ alert, userRole, username }: Props) => {
             : <div />}
         </Route>
       </Switch>
-  );
-};
+    );
+  }
+}
 
 export default withAlert()(MyDocuments);

@@ -22,9 +22,8 @@ describe('DateInput', () => {
 
   test('should show date picker on click and call onChange with selected value', async () => {
     const onChange = jest.fn();
-    const value = new Date();
     const { getByLabelText, getByText, rerender } = render(
-      <DateInput label={label} name={name} onChange={onChange} value={value} />,
+      <DateInput label={label} name={name} onChange={onChange} value={new Date()} />,
     );
 
     fireEvent.click(getByLabelText(label));
@@ -45,13 +44,12 @@ describe('DateInput', () => {
     expect(args[0].getMonth()).toEqual(new Date().getMonth());
     expect(args[0].getDate()).toEqual(10);
 
-    value.setDate(args[0].getDate());
-    rerender(<DateInput label={label} name={name} onChange={onChange} value={value} />);
+    rerender(<DateInput label={label} name={name} onChange={onChange} value={args[0]} />);
     const month = new Date().getUTCMonth() + 1;
 
     await waitFor(() => {
       expect(getByLabelText(label).getAttribute('value')).toEqual(
-        [(month < 10 ? '0' : '') + month, 10, new Date().getFullYear()].join('/'),
+        [(month < 10 ? '0' : '') + month, 10, new Date().getUTCFullYear()].join('/'),
       );
     });
   });

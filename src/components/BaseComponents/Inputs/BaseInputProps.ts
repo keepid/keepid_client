@@ -1,7 +1,8 @@
 /* eslint-disable semi */
 import { InputWrapperProps } from './InputWrapper';
 
-export default interface InputProps<T> extends Omit<InputWrapperProps, 'children'> {
+export default interface InputProps<T>
+  extends Omit<InputWrapperProps, 'children'|'invalidMessage'> {
   /**
    * Optional className to apply to input component
    */
@@ -19,6 +20,10 @@ export default interface InputProps<T> extends Omit<InputWrapperProps, 'children
    * Optional placeholder value passed to the input
    */
   placeholder?: string | undefined;
+  /**
+   * Optional validation function, that takes as parameter the value of the input and returns the applicable error message string if value is invalid
+   */
+  validate?: ((value: T) => string | Promise<string>) | undefined;
   /**
    * The optional controlled value to pass to the input component
    */
