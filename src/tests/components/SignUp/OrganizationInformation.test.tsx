@@ -92,10 +92,10 @@ describe('Organization Information Page Tests', () => {
 
     // Assert
     await waitFor(() => {
+      expect(setOrganizationInformation).toBeCalledTimes(9);
       expect(handleContinue).toBeCalledTimes(1);
       expect(handlePrevious).toBeCalledTimes(1);
-      expect(setOrganizationInformation).toBeCalledTimes(9);
-    });
+    }, { timeout: 100 });
   });
   test('Invalid Fields', async () => {
     const handleContinue = jest.fn();

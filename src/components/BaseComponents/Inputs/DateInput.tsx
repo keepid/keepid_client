@@ -60,21 +60,17 @@ const DateInput = ({
         isValid={validityChecked && !invalidMessage}
         name={name}
         onChange={async (date) => {
-          const validationResult = performValidationWithCustomTarget(
+          if (onChange) {
+            // @ts-ignore
+            onChange(date);
+          }
+          await performValidationWithCustomTarget(
             date,
             validate,
             setInvalidMessage,
             setValidityChecked,
             target,
           );
-          if (validationResult instanceof Promise) {
-            await validationResult;
-          }
-
-          if (onChange) {
-            // @ts-ignore
-            onChange(date);
-          }
         }}
         placeholderText={placeholder}
         required={rest.required}

@@ -98,7 +98,9 @@ describe('Sign User Agreement Test', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     // Assert
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 500);
+    });
     await waitFor(() => {
       expect(handleContinue).toBeCalledTimes(0);
     });

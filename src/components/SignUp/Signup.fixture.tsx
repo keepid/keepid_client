@@ -20,9 +20,20 @@ const SignupFixtureInner = ({ path, authRole }) => {
 };
 
 const SignupFixture = () => {
-  const [authRole] = useSelect('Auth Role', { defaultValue: Role.Admin, options: [Role.Director, Role.Admin, Role.Worker, Role.Volunteer, Role.Developer] });
+  const [authRole] = useSelect('Auth Role', {
+    defaultValue: Role.Admin,
+    options: [
+      Role.Director,
+      Role.Admin,
+      Role.Worker,
+      Role.Volunteer,
+      Role.Developer,
+    ],
+  });
 
-  const [path] = useValue('URL Path', { defaultValue: '/person-signup/client' });
+  const [path] = useValue('URL Path', {
+    defaultValue: '/person-signup/client',
+  });
 
   useEffect(() => {
     if (!mockServerIsSetup) {

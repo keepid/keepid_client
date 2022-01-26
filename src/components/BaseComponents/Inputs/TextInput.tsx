@@ -58,14 +58,11 @@ const TextInput = ({
           isValid={validityChecked && !invalidMessage}
           name={name}
           onChange={async (e) => {
-            if (invalidMessage) {
-              const validationResult = validate(e);
-              if (validationResult instanceof Promise) {
-                await validationResult;
-              }
-            }
             if (onChange) {
               onChange(e.target.value);
+            }
+            if (invalidMessage) {
+              await validate(e);
             }
           }}
           placeholder={placeholder}
@@ -76,7 +73,12 @@ const TextInput = ({
         {type === TextInputType.PASSWORD ? (
           <InputGroup.Append>
             <InputGroup.Text onClick={() => setShowPassword(!showPassword)}>
-              <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} style={{ width: '1.25rem' }} />
+              <i
+                className={classNames('fas', 'hide-text-input-icon', {
+                  'fa-eye-slash': showPassword,
+                  'fa-eye': !showPassword,
+                })}
+              />
             </InputGroup.Text>
           </InputGroup.Append>
         ) : null}

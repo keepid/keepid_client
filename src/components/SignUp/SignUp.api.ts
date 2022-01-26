@@ -123,15 +123,6 @@ export async function signupOrganization({
     username,
     password,
   } = accountInformation;
-  // const {
-  //
-  //   email,
-  //   phoneNumber,
-  //   address,
-  //   city,
-  //   state,
-  //   zipcode,
-  // } = personalInformation;
   const {
     orgWebsite: organizationWebsite,
     orgName: organizationName,
@@ -176,11 +167,4 @@ export async function signupOrganization({
       recaptchaPayload,
     }),
   }).then((response) => response.json());
-  // .then((responseJSON) => {
-  //   const { status, message } = responseJSON;
-  //   if (status === 'SUCCESSFUL_ENROLLMENT') {
-  //     return responseJSON;
-  //   }
-  //   throw new Error(message);
-  // });
 }

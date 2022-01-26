@@ -37,7 +37,7 @@ export function useSignupStageContext(): SignupStageContextInterface {
 
     moveToNextSignupStage() {
       const currentIdx = (signupStages || []).indexOf(currentSignupStage);
-      const nextIdx = Math.min(signupStages?.length - 1, currentIdx + 1);
+      const nextIdx = Math.min((signupStages?.length || 1) - 1, currentIdx + 1);
       setCurrentSignupStage(signupStages[nextIdx]);
     },
 
@@ -143,10 +143,10 @@ const SignUpRouter = ({ role }: SignUpRouterProps) => {
             const currentTime = Date.now() / 1000;
             if (decoded.exp > currentTime) {
               return (
-              <InviteSignupFlow
-                orgName={decoded.organization}
-                personRole={decoded.role}
-              />
+                <InviteSignupFlow
+                  orgName={decoded.organization}
+                  personRole={decoded.role}
+                />
               );
             }
           } catch (err) {

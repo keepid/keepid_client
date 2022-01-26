@@ -6,7 +6,7 @@ export function performValidationWithCustomTarget(
   setInvalidMessage: (msg: string) => void,
   setValidityChecked: (check: boolean) => void,
   target: HTMLInputElement | undefined,
-): Promise<void> | null {
+): Promise<void> {
   const handleMsg = (msg: string) => {
     setInvalidMessage(msg);
     setValidityChecked(true);
@@ -18,7 +18,7 @@ export function performValidationWithCustomTarget(
 
     if (typeof msg === 'string') {
       handleMsg(msg);
-      return null;
+      return Promise.resolve();
     }
 
     return msg
@@ -27,7 +27,7 @@ export function performValidationWithCustomTarget(
         handleMsg(msg);
       });
   }
-  return null;
+  return Promise.resolve();
 }
 
 export function performValidation(
