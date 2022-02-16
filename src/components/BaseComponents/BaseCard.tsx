@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 export enum CardImageLoc {
   LEFT = 'left',
   RIGHT = 'right',
-  TOP = 'top'
+  TOP = 'top',
 }
 
 export enum CardSize {
@@ -16,40 +16,42 @@ export enum CardSize {
   SMALL_VERTICAL = 'small-vertical',
   SMALL_HORIZONTAL = 'small-horizontal',
   MEDIUM_VERTICAL = 'medium-vertical',
-  MEDIUM_HORIZONTAL = 'medium-horizontal'
+  MEDIUM_HORIZONTAL = 'medium-horizontal',
 }
 
 interface Props {
-  cardSize?: CardSize,
-  cardHeight?: string,
-  cardWidth?: string,
-  cardLink?: string,
-  cardTitle: string,
-  cardText: string,
-  imageSrc?: any,
-  imageAlt?: any,
-  imageLoc?: CardImageLoc,
-  imageSize?: string,
+  cardSize?: CardSize;
+  cardHeight?: string;
+  cardWidth?: string;
+  cardLink?: string;
+  cardTitle: string;
+  cardText: string;
+  imageElement?: React.ReactElement;
+  imageSrc?: any;
+  imageAlt?: any;
+  imageLoc?: CardImageLoc;
+  imageSize?: string;
   // string refers to how the image should be resized to fit its container: defaults to 'cover'; other values include: 'fill', 'contain', 'none' and 'scale-down'
-  imageObjectFit?: string,
-  buttonText?: string,
-  buttonOnClick?: () => void,
-  renderAdditionalContent?: () => any,
+  imageObjectFit?: string;
+  buttonText?: string;
+  buttonOnClick?: () => void;
+  renderAdditionalContent?: () => any;
 }
 
 interface DefaultProps {
-  cardSize?: string,
-  cardHeight?: string,
-  cardWidth?: string,
-  cardLink?: string,
-  imageSrc?: any,
-  imageAlt?: any,
-  imageLoc?: string,
-  imageSize?: string,
-  imageObjectFit?: string,
-  buttonText?: string,
-  buttonOnClick?: () => void,
-  renderAdditionalContent?: () => any,
+  cardSize?: string;
+  cardHeight?: string;
+  cardWidth?: string;
+  cardLink?: string;
+  imageElement?: React.ReactElement;
+  imageSrc?: any;
+  imageAlt?: any;
+  imageLoc?: string;
+  imageSize?: string;
+  imageObjectFit?: string;
+  buttonText?: string;
+  buttonOnClick?: () => void;
+  renderAdditionalContent?: () => any;
 }
 
 function BaseCard(props: Props): React.ReactElement {
@@ -61,6 +63,7 @@ function BaseCard(props: Props): React.ReactElement {
     cardHeight?: string,
     cardWidth?: string,
     cardLink?: string,
+    imageElement?: React.ReactElement,
     imageSrc?: any,
     imageAlt?: any,
     imageLoc?: CardImageLoc,
@@ -86,7 +89,9 @@ function BaseCard(props: Props): React.ReactElement {
     }
     return (
       <Card
-        className={`border-0 ${hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'}`}
+        className={`border-0 ${
+          hover && cardLink !== undefined ? 'shadow-lg' : 'shadow'
+        }`}
         style={{
           height: cardHeight,
           width: 'auto',
@@ -94,11 +99,13 @@ function BaseCard(props: Props): React.ReactElement {
           maxWidth: cardWidth,
         }}
       >
-        { imageLoc === CardImageLoc.LEFT || imageLoc === CardImageLoc.RIGHT
-          ? (
-            <Card.Body className="p-0 d-flex flex-row">
+        {imageLoc === CardImageLoc.LEFT || imageLoc === CardImageLoc.RIGHT ? (
+          <Card.Body className="p-0 d-flex flex-row">
+            {imageElement || (
               <Image
-                className={(imageLoc === CardImageLoc.LEFT) ? 'order-1' : 'order-2'}
+                className={
+                  imageLoc === CardImageLoc.LEFT ? 'order-1' : 'order-2'
+                }
                 src={imageSrc}
                 alt={imageAlt}
                 style={{
@@ -113,71 +120,78 @@ function BaseCard(props: Props): React.ReactElement {
                   borderBottomRightRadius,
                 }}
               />
-              <div className={`p-4 d-flex flex-column ${(imageLoc === CardImageLoc.LEFT) ? 'order-2' : 'order-1'}`}>
-                <div style={{ height: '100%' }}>
-                  <Card.Title><h3>{cardTitle}</h3></Card.Title>
-                  <Card.Text>{cardText}</Card.Text>
-                  {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
-                </div>
-                {buttonText
-                  ? (
-                    <Button
-                      className="btn btn-card mt-3"
-                      onClick={buttonOnClick}
-                      style={{
-                        borderRadius: buttonBorderRadius,
-                      }}
-                      type="button"
-                    >
-                      {buttonText}
-                    </Button>
-                  )
+            )}
+            <div
+              className={`p-4 d-flex flex-column ${
+                imageLoc === CardImageLoc.LEFT ? 'order-2' : 'order-1'
+              }`}
+            >
+              <div style={{ height: '100%' }}>
+                <Card.Title>
+                  <h3>{cardTitle}</h3>
+                </Card.Title>
+                <Card.Text>{cardText}</Card.Text>
+                {typeof renderAdditionalContent === 'function'
+                  ? renderAdditionalContent()
                   : null}
               </div>
-            </Card.Body>
-          )
-          : null }
-        { imageLoc === CardImageLoc.TOP || typeof imageLoc === 'undefined'
-          ? (
-            <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%' }}>
-              {typeof imageLoc !== 'undefined'
-                ? (
-                  <Image
-                    src={imageSrc}
-                    alt={imageAlt}
-                    style={{
-                      height: imageSize,
-                      width: '100%',
-                      overflow: 'hidden',
-                      objectFit: imageObjectFit,
-                      borderTopLeftRadius: cardBorderRadius,
-                      borderTopRightRadius: cardBorderRadius,
-                    }}
-                  />
-                )
+              {buttonText ? (
+                <Button
+                  className="btn btn-card mt-3"
+                  onClick={buttonOnClick}
+                  style={{
+                    borderRadius: buttonBorderRadius,
+                  }}
+                  type="button"
+                >
+                  {buttonText}
+                </Button>
+              ) : null}
+            </div>
+          </Card.Body>
+        ) : null}
+        {imageLoc === CardImageLoc.TOP || typeof imageLoc === 'undefined' ? (
+          <Card.Body
+            className="p-0 d-flex flex-column align-items-start"
+            style={{ height: '100%' }}
+          >
+            {imageElement || (typeof imageLoc !== 'undefined' ? (
+              <Image
+                src={imageSrc}
+                alt={imageAlt}
+                style={{
+                  height: imageSize,
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  objectFit: imageObjectFit,
+                  borderTopLeftRadius: cardBorderRadius,
+                  borderTopRightRadius: cardBorderRadius,
+                }}
+              />
+            ) : null)}
+            <div className="p-4">
+              <Card.Title>
+                <h3>{cardTitle}</h3>
+              </Card.Title>
+              <Card.Text>{cardText}</Card.Text>
+              {typeof renderAdditionalContent === 'function'
+                ? renderAdditionalContent()
                 : null}
-              <div className="p-4">
-                <Card.Title><h3>{cardTitle}</h3></Card.Title>
-                <Card.Text>{cardText}</Card.Text>
-                {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
-              </div>
-              {buttonText
-                ? (
-                  <Button
-                    className="btn btn-card mt-auto mb-4 ml-4"
-                    onClick={buttonOnClick}
-                    style={{
-                      borderRadius: buttonBorderRadius,
-                    }}
-                    type="button"
-                  >
-                    {buttonText}
-                  </Button>
-                )
-                : null}
-            </Card.Body>
-          )
-          : null}
+            </div>
+            {buttonText ? (
+              <Button
+                className="btn btn-card mt-auto mb-4 ml-4"
+                onClick={buttonOnClick}
+                style={{
+                  borderRadius: buttonBorderRadius,
+                }}
+                type="button"
+              >
+                {buttonText}
+              </Button>
+            ) : null}
+          </Card.Body>
+        ) : null}
       </Card>
     );
   }
@@ -189,6 +203,7 @@ function BaseCard(props: Props): React.ReactElement {
     cardLink,
     imageSrc,
     imageAlt,
+    imageElement,
     imageLoc,
     imageSize,
     imageObjectFit,
@@ -222,35 +237,38 @@ function BaseCard(props: Props): React.ReactElement {
     cardWidth = props.cardWidth;
   }
   return (
-    <div className="ml-1 mr-1 mt-2 mb-2" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      {cardLink !== undefined
-        ? (
-          <Link to={cardLink} className="no-link-style">
-            {
-              renderCard(
-                cardTitle,
-                cardText,
-                cardHeight,
-                cardWidth,
-                cardLink,
-                imageSrc,
-                imageAlt,
-                imageLoc,
-                imageSize,
-                imageObjectFit,
-                buttonText,
-                buttonOnClick,
-                renderAdditionalContent,
-              )
-            }
-          </Link>
-        )
-        : renderCard(
+    <div
+      className="ml-1 mr-1 mt-2 mb-2"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {cardLink !== undefined ? (
+        <Link to={cardLink} className="no-link-style">
+          {renderCard(
+            cardTitle,
+            cardText,
+            cardHeight,
+            cardWidth,
+            cardLink,
+            imageElement,
+            imageSrc,
+            imageAlt,
+            imageLoc,
+            imageSize,
+            imageObjectFit,
+            buttonText,
+            buttonOnClick,
+            renderAdditionalContent,
+          )}
+        </Link>
+      ) : (
+        renderCard(
           cardTitle,
           cardText,
           cardHeight,
           cardWidth,
           cardLink,
+          imageElement,
           imageSrc,
           imageAlt,
           imageLoc,
@@ -259,7 +277,8 @@ function BaseCard(props: Props): React.ReactElement {
           buttonText,
           buttonOnClick,
           renderAdditionalContent,
-        )}
+        )
+      )}
     </div>
   );
 }

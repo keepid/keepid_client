@@ -8,6 +8,7 @@ import getServerURL from '../../serverOverride';
 import AtWorkPic from '../../static/images/atwork-rafiki.png';
 import DocumentsPic from '../../static/images/documents-rafiki.png';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
+import QuickAccessCards from '../QuickAccess/QuickAccessCards';
 
 interface Props extends RouteComponentProps {
   name: String;
@@ -114,6 +115,9 @@ class ClientLanding extends Component<Props, State, {}> {
         </Helmet>
         <div className="d-flex p-2">
           <h1 id="welcome-title">{`Welcome, ${name}`}</h1>
+        </div>
+        <div className="mb-5">
+          <QuickAccessCards />
         </div>
         <div className="row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">

@@ -350,9 +350,9 @@ exports[`Home page snapshot test 1`] = `
                       "borderTopLeftRadius": 20,
                       "borderTopRightRadius": 20,
                       "height": "50%",
+                      "maxWidth": "100%",
                       "objectFit": "cover",
                       "overflow": "hidden",
-                      "width": "100%",
                     }
                   }
                 />
@@ -422,9 +422,9 @@ exports[`Home page snapshot test 1`] = `
                       "borderTopLeftRadius": 20,
                       "borderTopRightRadius": 20,
                       "height": "50%",
+                      "maxWidth": "100%",
                       "objectFit": "cover",
                       "overflow": "hidden",
-                      "width": "100%",
                     }
                   }
                 />
@@ -494,9 +494,9 @@ exports[`Home page snapshot test 1`] = `
                       "borderTopLeftRadius": 20,
                       "borderTopRightRadius": 20,
                       "height": "50%",
+                      "maxWidth": "100%",
                       "objectFit": "cover",
                       "overflow": "hidden",
-                      "width": "100%",
                     }
                   }
                 />

@@ -5,6 +5,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import React from 'react';
+import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 
 import ClientLanding from '../../../components/LandingPages/ClientLanding';
@@ -57,9 +58,11 @@ describe('Client Landing Page Tests', () => {
     });
     test('Succesfully renders', () => {
       render(
-        <MemoryRouter>
-          <ClientLanding name={name} username={username} />
-        </MemoryRouter>,
+        <IntlProvider locale="en">a
+          <MemoryRouter>
+            <ClientLanding name={name} username={username} />
+          </MemoryRouter>
+        </IntlProvider>,
       );
       expect(
         screen.getByRole('heading', { name: /welcome/i }),
@@ -67,9 +70,11 @@ describe('Client Landing Page Tests', () => {
     });
     test('Normal Activities Array', async () => {
       render(
-        <MemoryRouter>
-          <ClientLanding name={name} username={username} />
-        </MemoryRouter>,
+        <IntlProvider locale="en">a
+          <MemoryRouter>
+            <ClientLanding name={name} username={username} />
+          </MemoryRouter>
+        </IntlProvider>,
       );
       // Assert
       await waitFor(() => {
@@ -100,9 +105,11 @@ describe('Client Landing Page Tests', () => {
     });
     test('Empty Activities Array', async () => {
       render(
-        <MemoryRouter>
-          <ClientLanding name={name} username={username} />
-        </MemoryRouter>,
+        <IntlProvider locale="en">a
+          <MemoryRouter>
+            <ClientLanding name={name} username={username} />
+          </MemoryRouter>
+        </IntlProvider>,
       );
       // Assert
       await waitFor(() => {

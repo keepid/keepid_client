@@ -35,7 +35,10 @@ import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
-import SignUpRouter from './components/SignUp/SignUp.router';
+import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
+import SignUpRouter, {
+  paths as SignUpRouterPaths,
+} from './components/SignUp/SignUp.router';
 import AutoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import LoginPage from './components/UserAuthentication/LoginPage';
@@ -226,7 +229,12 @@ class App extends React.Component<{}, State, {}> {
                   )
                 }
               />
-              <SignUpRouter role={role} />
+              <Route path="/quick-access">
+                <QuickAccessRouter />
+              </Route>
+              <Route path={SignUpRouterPaths}>
+                <SignUpRouter role={role} />
+              </Route>
               <Route
                 path="/admin-panel"
                 render={() => {
