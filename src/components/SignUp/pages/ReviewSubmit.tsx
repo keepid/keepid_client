@@ -10,16 +10,12 @@ const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 type Props = {
   onSubmit: (recaptchaPayload: string) => Promise<void>;
-}
+};
 
-export const ReviewSubmit = ({ onSubmit: onSubmitProp }: Props) => {
+export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
   const {
-    accountInformationContext: {
-      values: accountInformation,
-    },
-    organizationInformationContext: {
-      values: organizationInformation,
-    },
+    accountInformationContext: { values: accountInformation },
+    organizationInformationContext: { values: organizationInformation },
     signUpStageStateContext: {
       moveToSignupStage,
       moveToPreviousSignupStage,
@@ -58,106 +54,104 @@ export const ReviewSubmit = ({ onSubmit: onSubmitProp }: Props) => {
             </div>
             <table className="table mb-4">
               <thead className="thead-light">
-              <tr>
-                <th className="w-25" scope="col">
-                  Account Setup
-                </th>
-                <th className="w-75" scope="col" />
-                <th
-                  scope="col"
-                  onClick={() =>
-                    moveToSignupStage(SignupStage.ACCOUNT_INFORMATION)
-                  }
-                >
-                  <a href="#">Edit</a>
-                </th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr>
-                <th scope="row">Name</th>
-                <td>
-                  {`${accountInformation.firstname} ${accountInformation.lastname}`}
-                </td>
-                <td />
-              </tr>
-              <tr>
-                <th scope="row">Birthdate</th>
-                <td>
-                  {accountInformation.birthDate?.toLocaleDateString('en-US')}
-                </td>
-                <td />
-              </tr>
-              <tr>
-                <th scope="row">Username</th>
-                <td>{accountInformation.username}</td>
-                <td />
-              </tr>
-              <tr>
-                <th scope="row">Password</th>
-                <td>
-                  {accountInformation.password &&
-                  '*'.repeat(accountInformation.password.length - 1)}
-                </td>
-                <td />
-              </tr>
-              </tbody>
-            </table>
-            {stages?.includes(
-              SignupStage.ORGANIZATION_INFORMATION,
-            ) ? (
-              <table className="table mb-4">
-                <thead className="thead-light">
                 <tr>
                   <th className="w-25" scope="col">
-                    Organization Information
+                    Account Setup
                   </th>
                   <th className="w-75" scope="col" />
                   <th
                     scope="col"
                     onClick={() =>
-                      moveToSignupStage(SignupStage.ORGANIZATION_INFORMATION)
+                      moveToSignupStage(SignupStage.ACCOUNT_INFORMATION)
                     }
                   >
                     <a href="#">Edit</a>
                   </th>
                 </tr>
-                </thead>
-                <tbody>
+              </thead>
+              <tbody>
                 <tr>
-                  <th scope="row">Organization name</th>
-                  <td>{organizationInformation.orgName}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization website</th>
-                  <td>{organizationInformation.orgWebsite}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <th scope="row">Organization address</th>
+                  <th scope="row">Name</th>
                   <td>
-                    {organizationInformation.orgAddress}
-                    <br />
-                    {`${organizationInformation.orgCity}, ${organizationInformation.orgState} ${organizationInformation.orgZipcode}`}
+                    {`${accountInformation.firstname} ${accountInformation.lastname}`}
                   </td>
                   <td />
                 </tr>
                 <tr>
-                  <th scope="row">Organization EIN</th>
-                  <td>{organizationInformation.ein}</td>
+                  <th scope="row">Birthdate</th>
+                  <td>
+                    {accountInformation.birthDate?.toLocaleDateString('en-US')}
+                  </td>
                   <td />
                 </tr>
                 <tr>
-                  <th scope="row">Organization phone number</th>
-                  <td>{organizationInformation.orgPhoneNumber}</td>
+                  <th scope="row">Username</th>
+                  <td>{accountInformation.username}</td>
                   <td />
                 </tr>
                 <tr>
-                  <th scope="row">Organization email address</th>
-                  <td>{organizationInformation.orgEmail}</td>
+                  <th scope="row">Password</th>
+                  <td>
+                    {accountInformation.password &&
+                      '*'.repeat(accountInformation.password.length - 1)}
+                  </td>
                   <td />
                 </tr>
+              </tbody>
+            </table>
+            {stages?.includes(SignupStage.ORGANIZATION_INFORMATION) ? (
+              <table className="table mb-4">
+                <thead className="thead-light">
+                  <tr>
+                    <th className="w-25" scope="col">
+                      Organization Information
+                    </th>
+                    <th className="w-75" scope="col" />
+                    <th
+                      scope="col"
+                      onClick={() =>
+                        moveToSignupStage(SignupStage.ORGANIZATION_INFORMATION)
+                      }
+                    >
+                      <a href="#">Edit</a>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Organization name</th>
+                    <td>{organizationInformation.orgName}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization website</th>
+                    <td>{organizationInformation.orgWebsite}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization address</th>
+                    <td>
+                      {organizationInformation.orgAddress}
+                      <br />
+                      {`${organizationInformation.orgCity}, ${organizationInformation.orgState} ${organizationInformation.orgZipcode}`}
+                    </td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization EIN</th>
+                    <td>{organizationInformation.ein}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization phone number</th>
+                    <td>{organizationInformation.orgPhoneNumber}</td>
+                    <td />
+                  </tr>
+                  <tr>
+                    <th scope="row">Organization email address</th>
+                    <td>{organizationInformation.orgEmail}</td>
+                    <td />
+                  </tr>
                 </tbody>
               </table>
             ) : null}
@@ -185,7 +179,10 @@ export const ReviewSubmit = ({ onSubmit: onSubmitProp }: Props) => {
               <button
                 type="button"
                 onClick={onSubmit}
-                className={classNames('mt-5 ml-auto btn btn-primary ld-ext-right', { running: isLoading })}
+                className={classNames(
+                  'mt-5 ml-auto btn btn-primary ld-ext-right',
+                  { running: isLoading },
+                )}
               >
                 Submit
                 <div className="ld ld-ring ld-spin" />
@@ -202,6 +199,4 @@ export const ReviewSubmit = ({ onSubmit: onSubmitProp }: Props) => {
       </form>
     </div>
   );
-};
-
-export default ReviewSubmit;
+}

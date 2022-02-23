@@ -3,10 +3,10 @@ import React from 'react';
 import BaseSignupFixture from './BaseSignupFixture';
 import PersonSignupFlow from './PersonSignupFlow';
 
-const PersonSignupFlowFixture = () => (
-  <BaseSignupFixture>
-    <PersonSignupFlow />
-  </BaseSignupFixture>
-);
-
-export default PersonSignupFlowFixture;
+export default function PersonSignupFlowFixture() {
+  return (
+    <BaseSignupFixture>
+      <PersonSignupFlow />
+    </BaseSignupFixture>
+  );
+}

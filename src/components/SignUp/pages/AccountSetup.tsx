@@ -3,9 +3,15 @@ import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
 
 import { InputType } from '../../BaseComponents/Inputs/FieldType';
-import StructuredFormFromFields, { FormRowType } from '../../BaseComponents/Inputs/StructuredFormWithRows';
+import StructuredFormFromFields, {
+  FormRowType,
+} from '../../BaseComponents/Inputs/StructuredFormWithRows';
 import SignUpContext from '../SignUp.context';
-import { validateConfirmPassword, validatePassword, validateUsername } from '../SignUp.validators';
+import {
+  validateConfirmPassword,
+  validatePassword,
+  validateUsername,
+} from '../SignUp.validators';
 import * as validators from '../SignUp.validators';
 
 const messages = defineMessages({
@@ -20,15 +26,10 @@ const messages = defineMessages({
   },
 });
 
-export const AccountSetup = (): JSX.Element => {
+export default function AccountSetup(): JSX.Element {
   const {
-    accountInformationContext: {
-      values,
-      onPropertyChange,
-    },
-    signUpStageStateContext: {
-      moveToNextSignupStage,
-    },
+    accountInformationContext: { values, onPropertyChange },
+    signUpStageStateContext: { moveToNextSignupStage },
     personRole,
   } = useContext(SignUpContext);
 
@@ -102,10 +103,7 @@ export const AccountSetup = (): JSX.Element => {
           required: true,
           type: InputType.PASSWORD,
           validate: (confirmPwd) =>
-            validateConfirmPassword(
-              confirmPwd,
-              values?.password || '',
-            ),
+            validateConfirmPassword(confirmPwd, values?.password || ''),
         },
       ],
     },
@@ -121,7 +119,9 @@ export const AccountSetup = (): JSX.Element => {
         <div className="col-md-10">
           <div className="text-center pb-4 mb-2">
             <h2>
-              <b>{intl.formatMessage(messages.subheader, { role: personRole })}</b>
+              <b>
+                {intl.formatMessage(messages.subheader, { role: personRole })}
+              </b>
             </h2>
           </div>
           <StructuredFormFromFields
@@ -138,10 +138,7 @@ export const AccountSetup = (): JSX.Element => {
             labelClassName="d-none"
           >
             <div className="d-flex">
-              <button
-                type="submit"
-                className="ml-auto btn btn-primary mt-5"
-              >
+              <button type="submit" className="ml-auto btn btn-primary mt-5">
                 Continue
               </button>
             </div>
@@ -150,6 +147,4 @@ export const AccountSetup = (): JSX.Element => {
       </div>
     </div>
   );
-};
-
-export default AccountSetup;
+}

@@ -23,10 +23,13 @@ const messages = defineMessages({
   },
 });
 
-export const SignUserAgreement = () => {
+export default function SignUserAgreement() {
   const intl = useIntl();
   const {
-    signUpStageStateContext: { moveToPreviousSignupStage, moveToNextSignupStage },
+    signUpStageStateContext: {
+      moveToPreviousSignupStage,
+      moveToNextSignupStage,
+    },
   } = useContext(SignUpContext);
 
   const [hasSigned, setHasSigned] = useState(false);
@@ -86,6 +89,4 @@ export const SignUserAgreement = () => {
       </div>
     </div>
   );
-};
-
-export default SignUserAgreement;
+}

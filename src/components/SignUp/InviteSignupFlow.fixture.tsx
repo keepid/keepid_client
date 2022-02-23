@@ -4,10 +4,13 @@ import Role from '../../static/Role';
 import BaseSignupFixture from './BaseSignupFixture';
 import InviteSignupFlow from './InviteSignupFlow';
 
-const InviteSignupFlowFixture = () => (
-  <BaseSignupFixture>
-    <InviteSignupFlow orgName="My Test Organization" personRole={Role.Client} />
-  </BaseSignupFixture>
-);
-
-export default InviteSignupFlowFixture;
+export default function InviteSignupFlowFixture() {
+  return (
+    <BaseSignupFixture>
+      <InviteSignupFlow
+        orgName="My Test Organization"
+        personRole={Role.Client}
+      />
+    </BaseSignupFixture>
+  );
+}

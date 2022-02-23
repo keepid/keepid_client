@@ -19,27 +19,32 @@ type Props = {
   labelClassName?: string;
 };
 
-const StructuredFormWithRows = ({ onSubmit, rows, values, labelClassName, onPropertyChange, children }: Props) => (
-  <Form onSubmit={onSubmit}>
-    {rows.map((r) => (
-      <Row key={`form-row-${r.rowLabel}`}>
-        <p className="col-sm-3 col-form-label text-sm-right">
-          {r.rowLabel}
-        </p>
-        {r.fields.map((f) => (
-          <Col key={`input-${f.name}`}>
-            <InputFromField
-              field={f}
-              onChange={(value) => onPropertyChange(f.name, value)}
-              value={values[f.name]}
-              labelClassName={labelClassName}
-            />
-          </Col>
-        ))}
-      </Row>
-    ))}
-    {children}
-  </Form>
-);
-
-export default StructuredFormWithRows;
+export default function StructuredFormWithRows({
+  onSubmit,
+  rows,
+  values,
+  labelClassName,
+  onPropertyChange,
+  children,
+}: Props) {
+  return (
+    <Form onSubmit={onSubmit}>
+      {rows.map((r) => (
+        <Row key={`form-row-${r.rowLabel}`}>
+          <p className="col-sm-3 col-form-label text-sm-right">{r.rowLabel}</p>
+          {r.fields.map((f) => (
+            <Col key={`input-${f.name}`}>
+              <InputFromField
+                field={f}
+                onChange={(value) => onPropertyChange(f.name, value)}
+                value={values[f.name]}
+                labelClassName={labelClassName}
+              />
+            </Col>
+          ))}
+        </Row>
+      ))}
+      {children}
+    </Form>
+  );
+}

@@ -160,7 +160,7 @@ const rows: FormRowType[] = [
   },
 ];
 
-export const OrganizationInformation = (): JSX.Element => {
+export default function OrganizationInformation(): JSX.Element {
   const intl = useIntl();
 
   const {
@@ -214,6 +214,4 @@ export const OrganizationInformation = (): JSX.Element => {
       </div>
     </div>
   );
-};
-
-export default OrganizationInformation;
+}

@@ -14,7 +14,7 @@ import SignUserAgreement from './pages/SignUserAgreement';
 import { signupOrganization } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
-export const CompleteSignupFlow = () => {
+export default function CompleteSignupFlow() {
   const {
     signUpStageStateContext,
     accountInformationContext,
@@ -101,6 +101,4 @@ export const CompleteSignupFlow = () => {
       </div>
     </div>
   );
-};
-
-export default CompleteSignupFlow;
+}

@@ -11,15 +11,15 @@ import SignUpRouter from './SignUp.router';
 
 let mockServerIsSetup = false;
 
-const SignupFixtureInner = ({ path, authRole }) => {
+function SignupFixtureInner({ path, authRole }) {
   const history = useHistory();
   useEffect(() => {
     history.push(path);
   }, [path]);
   return <SignUpRouter role={authRole} />;
-};
+}
 
-const SignupFixture = () => {
+export default function SignupFixture() {
   const [authRole] = useSelect('Auth Role', {
     defaultValue: Role.Admin,
     options: [
@@ -51,6 +51,4 @@ const SignupFixture = () => {
       </IntlProvider>
     </MemoryRouter>
   );
-};
-
-export default SignupFixture;
+}

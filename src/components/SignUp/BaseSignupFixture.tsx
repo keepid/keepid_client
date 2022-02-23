@@ -56,7 +56,9 @@ export function setupMockServer() {
       // eslint-disable-next-line no-console
       console.log('Creating org/director with body:', reqBody);
 
-      return res(ctx.json({ status: 'FAILED_ENROLLMENT', message: 'Manual Failure' }));
+      return res(
+        ctx.json({ status: 'FAILED_ENROLLMENT', message: 'Manual Failure' }),
+      );
       // return res(ctx.json({ status: 'SUCCESSFUL_ENROLLMENT' }));
     }),
   );
@@ -66,7 +68,7 @@ export function setupMockServer() {
 
 type Props = {
   children: JSX.Element | JSX.Element[];
-}
+};
 
 const defaultAccountInformation = {
   firstname: 'John',
@@ -89,15 +91,40 @@ const defaultOrganizationInformation = {
   orgZipcode: '60603',
 };
 
-const BaseSignupFixture = ({ children }: Props) => {
-  const [populateDefaultValues] = useValue('Use Default Values', { defaultValue: true });
-  const [authRole] = useSelect('Auth Role', { defaultValue: Role.Admin, options: [Role.Director, Role.Admin, Role.Worker, Role.Volunteer, Role.Developer] });
-  const [personRole] = useSelect('Person Role', { defaultValue: Role.Client, options: [Role.Client, Role.Director, Role.Admin, Role.Worker, Role.Volunteer, Role.Developer] });
+export default function BaseSignupFixture({ children }: Props) {
+  const [populateDefaultValues] = useValue('Use Default Values', {
+    defaultValue: true,
+  });
+  const [authRole] = useSelect('Auth Role', {
+    defaultValue: Role.Admin,
+    options: [
+      Role.Director,
+      Role.Admin,
+      Role.Worker,
+      Role.Volunteer,
+      Role.Developer,
+    ],
+  });
+  const [personRole] = useSelect('Person Role', {
+    defaultValue: Role.Client,
+    options: [
+      Role.Client,
+      Role.Director,
+      Role.Admin,
+      Role.Worker,
+      Role.Volunteer,
+      Role.Developer,
+    ],
+  });
 
-  // @ts-ignore
-  const [accountInformation, setAccountInformation] = useState<AccountInformationProperties>({});
-  // @ts-ignore
-  const [organizationInformation, setOrganizationInformation] = useState<OrganizationInformationProperties>({});
+  const [
+    accountInformation,
+    setAccountInformation,
+  ] = useState<AccountInformationProperties>();
+  const [
+    organizationInformation,
+    setOrganizationInformation,
+  ] = useState<OrganizationInformationProperties>();
 
   useEffect(() => {
     if (!mockServerIsSetup) {
@@ -111,12 +138,14 @@ const BaseSignupFixture = ({ children }: Props) => {
       setAccountInformation(defaultAccountInformation);
       setOrganizationInformation(defaultOrganizationInformation);
     } else {
-      setAccountInformation({ firstname: '',
+      setAccountInformation({
+        firstname: '',
         lastname: '',
         birthDate: undefined,
         confirmPassword: '',
         password: '',
-        username: '' });
+        username: '',
+      });
       setOrganizationInformation({
         ein: '',
         orgAddress: '',
@@ -142,12 +171,18 @@ const BaseSignupFixture = ({ children }: Props) => {
             signUpStageStateContext: signUpStageState,
 
             accountInformationContext: {
-              values: accountInformation,
-              onPropertyChange: onPropertyChange(accountInformation, setAccountInformation),
+              values: accountInformation as AccountInformationProperties,
+              onPropertyChange: onPropertyChange(
+                accountInformation,
+                setAccountInformation,
+              ),
             },
             organizationInformationContext: {
-              values: organizationInformation,
-              onPropertyChange: onPropertyChange(organizationInformation, setOrganizationInformation),
+              values: organizationInformation as OrganizationInformationProperties,
+              onPropertyChange: onPropertyChange(
+                organizationInformation,
+                setOrganizationInformation,
+              ),
             },
             authRole,
             personRole,
@@ -158,6 +193,4 @@ const BaseSignupFixture = ({ children }: Props) => {
       </Provider>
     </IntlProvider>
   );
-};
-
-export default BaseSignupFixture;
+}

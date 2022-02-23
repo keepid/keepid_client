@@ -3,8 +3,8 @@ import { useAlert } from 'react-alert';
 import { Redirect, Route } from 'react-router-dom';
 
 import Role, { canAuthRoleCreateRole, roleFromString } from '../../static/Role';
-import { CompleteSignupFlow } from './CompleteSignupFlow';
-import { InviteSignupFlow } from './InviteSignupFlow';
+import CompleteSignupFlow from './CompleteSignupFlow';
+import InviteSignupFlow from './InviteSignupFlow';
 import InviteSignupJWT from './InviteSignupJWT';
 import PersonSignupFlow from './PersonSignupFlow';
 import SignUpContext, {

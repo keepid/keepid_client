@@ -6,10 +6,7 @@ import { Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 
 import InputProps from './BaseInputProps';
-import {
-  performValidation,
-  performValidationWithCustomTarget,
-} from './Inputs.util';
+import { performValidationWithCustomTarget } from './Inputs.util';
 import InputWrapper from './InputWrapper';
 
 interface DateInputProps extends InputProps<Date | undefined> {
@@ -46,13 +43,15 @@ const DateInput = ({
     >
       <Form.Control
         as={DatePicker}
-        onBlur={() => performValidationWithCustomTarget(
-          value || defaultValue,
-          validate,
-          setInvalidMessage,
-          setValidityChecked,
-          target,
-        )}
+        onBlur={() =>
+          performValidationWithCustomTarget(
+            value || defaultValue,
+            validate,
+            setInvalidMessage,
+            setValidityChecked,
+            target,
+          )
+        }
         onFocus={(e) => setTarget(e.target)}
         className={className}
         id={name}

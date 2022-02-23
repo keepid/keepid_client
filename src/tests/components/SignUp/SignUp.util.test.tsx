@@ -1,16 +1,16 @@
 import {
-  addHttp,
   birthDateStringConverter,
+  formatUrl,
 } from '../../../components/SignUp/SignUp.util';
 
 describe('SignUp.Util test', () => {
-  describe('addHttp', () => {
+  describe('formatUrl', () => {
     test('add http test', () => {
-      expect(addHttp('https://example.com')).toBe('https://example.com');
-      expect(addHttp('https://www.example.com')).toBe(
+      expect(formatUrl('https://example.com')).toBe('https://example.com');
+      expect(formatUrl('https://www.example.com')).toBe(
         'https://www.example.com',
       );
-      expect(addHttp('www.example.org/somethinghere')).toBe(
+      expect(formatUrl('www.example.org/somethinghere')).toBe(
         'http://www.example.org/somethinghere',
       );
     });

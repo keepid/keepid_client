@@ -19,7 +19,7 @@ interface Props {
   personRole: Role;
 }
 
-export const InviteSignupFlow = ({ orgName, personRole }: Props) => {
+export default function InviteSignupFlow({ orgName, personRole }: Props) {
   const { signUpStageStateContext, accountInformationContext } = useContext(
     SignUpContext,
   );
@@ -103,6 +103,4 @@ export const InviteSignupFlow = ({ orgName, personRole }: Props) => {
       </div>
     </div>
   );
-};
-
-export default InviteSignupFlow;
+}

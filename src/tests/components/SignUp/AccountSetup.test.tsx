@@ -14,7 +14,7 @@ import React from 'react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 
-import { AccountSetup } from '../../../components/SignUp/pages/AccountSetup';
+import AccountSetup from '../../../components/SignUp/pages/AccountSetup';
 import SignUpContext, {
   AccountInformationProperties,
   defaultSignUpContextValue,
@@ -174,7 +174,9 @@ describe('Account Setup Page Test', () => {
       expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
     expect(handleContinue).toBeCalledTimes(0);
   });
 
