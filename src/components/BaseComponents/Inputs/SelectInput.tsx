@@ -44,16 +44,16 @@ const SelectInput = ({
         name={name}
         placeholder={placeholder}
         required={rest.required}
-        onChange={(e) => {
-          performValidation(
+        onChange={async (e) => {
+          if (onChange) {
+            onChange(e.target.value);
+          }
+          await performValidation(
             e,
             validate,
             setInvalidMessage,
             setValidityChecked,
           );
-          if (onChange) {
-            onChange(e.target.value);
-          }
         }}
         value={options.find((i) => i.value === value)?.value}
       >

@@ -35,10 +35,7 @@ import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
-import CompleteSignupFlow from './components/SignUp/CompleteSignupFlow';
-import InviteSignupJWT from './components/SignUp/InviteSignupJWT';
-import PersonSignupFlow from './components/SignUp/PersonSignupFlow';
-import SignupBrancher from './components/SignUp/SignupBrancher';
+import SignUpRouter from './components/SignUp/SignUp.router';
 import AutoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import LoginPage from './components/UserAuthentication/LoginPage';
@@ -229,62 +226,7 @@ class App extends React.Component<{}, State, {}> {
                   )
                 }
               />
-              <Route path="/signup-branch">
-                <SignupBrancher />
-              </Route>
-              <Route path="/organization-signup">
-                <CompleteSignupFlow role={Role.Admin} />
-              </Route>
-              <Route
-                path="/person-signup/:roleString"
-                render={(props) => {
-                  switch (props.match.params.roleString) {
-                    case 'admin':
-                      return role === Role.Director ? (
-                        <PersonSignupFlow
-                          userRole={role}
-                          personRole={Role.Admin}
-                        />
-                      ) : (
-                        <Redirect to="/error" />
-                      );
-                    case 'worker':
-                      return role === Role.Director || role === Role.Admin ? (
-                        <PersonSignupFlow
-                          userRole={role}
-                          personRole={Role.Worker}
-                        />
-                      ) : (
-                        <Redirect to="/error" />
-                      );
-                    case 'volunteer':
-                      return role === Role.Director ||
-                        role === Role.Admin ||
-                        role === Role.Worker ? (
-                        <PersonSignupFlow
-                          userRole={role}
-                          personRole={Role.Volunteer}
-                        />
-                        ) : (
-                        <Redirect to="/error" />
-                        );
-                    case 'client':
-                      return role === Role.Director ||
-                        role === Role.Admin ||
-                        role === Role.Worker ||
-                        role === Role.Volunteer ? (
-                        <PersonSignupFlow
-                          userRole={role}
-                          personRole={Role.Client}
-                        />
-                        ) : (
-                        <Redirect to="/error" />
-                        );
-                    default:
-                      return <Redirect to="/error" />;
-                  }
-                }}
-              />
+              <SignUpRouter role={role} />
               <Route
                 path="/admin-panel"
                 render={() => {
@@ -408,9 +350,6 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route path="/create-user/:jwt">
-                <InviteSignupJWT />
-              </Route>
               <Route
                 path="/profile/:username"
                 render={(props) => {

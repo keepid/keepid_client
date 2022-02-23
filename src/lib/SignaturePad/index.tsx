@@ -60,7 +60,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
     private mouseButtonDown: any;
 
     handleChangeAcceptEULA: (accept: boolean) => void;
-    
+
     handleCanvasSign: (dataUrl: string) => void;
 
     private data: Point[][];
@@ -95,7 +95,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.onBegin = onBegin;
       this.minDistance = minDistance || 5;
       this.handleChangeAcceptEULA = handleChangeAcceptEULA || ((accept) => {});
-      this.handleCanvasSign = handleCanvasSign || (() => {}); 
+      this.handleCanvasSign = handleCanvasSign || (() => {});
       this.data = [];
       this.handleChangeAcceptEULA(false);
       this.clear = this.clear.bind(this);
@@ -110,7 +110,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       this.handleTouchEvents();
       this.resizeCanvas();
       if (this.props.canvasDataUrl !== "") {
-        this.fromDataURL(this.props.canvasDataUrl); 
+        this.fromDataURL(this.props.canvasDataUrl);
         this.handleChangeAcceptEULA(true);
         this.padIsEmpty = false;
       }
@@ -225,8 +225,8 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
 
     off() {
       if (!this.padIsEmpty) {
-        const dataUrl = this.toDataURL(); 
-        this.handleCanvasSign(dataUrl); 
+        const dataUrl = this.toDataURL();
+        this.handleCanvasSign(dataUrl);
       }
       else {
         this.handleCanvasSign("");
@@ -240,7 +240,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       document.removeEventListener('touchend', this.handleTouchEnd);
 
       window.removeEventListener('resize', this.resizeCanvas);
-      
+
     }
 
     private handleMouseDown(event: any) {
@@ -509,7 +509,7 @@ export default class SignaturePad extends React.Component<ISignaturePadProps, {}
       return (
         <div id="signature-pad" className="m-signature-pad">
           <div className="m-signature-pad--body">
-            <canvas style={customStyles} ref={this.canvasRef} />
+            <canvas data-testid="signature-canvas" style={customStyles} ref={this.canvasRef} />
           </div>
           <div className="d-flex justify-content-end">
             <button className="btn btn-outline-primary" onClick={this.clear}>Clear Signature</button>
