@@ -1,10 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-import BaseCard, {
-  CardImageLoc,
-  CardSize,
-} from '../../components/BaseComponents/BaseCard';
 import ConnorJPG from '../../static/images/members/connor.jpg';
 import DanielJoo from '../../static/images/members/danielJoo.jpg';
 import JacksonJPG from '../../static/images/members/jackson.jpg';
@@ -12,6 +8,10 @@ import JessicaHung from '../../static/images/members/jessicaHung.jpg';
 import JohnJPG from '../../static/images/members/john.jpg';
 import NickRodriguez from '../../static/images/members/nickRodriguez.jpg';
 import SteffenJPG from '../../static/images/members/steffenCornwell.jpg';
+import BaseCard, {
+  CardImageLoc,
+  CardSize,
+} from '../BaseComponents/Card/BaseCard';
 
 interface State {}
 

@@ -16,6 +16,7 @@ interface DateInputProps extends InputProps<Date | undefined> {
 const DateInput = ({
   className: classNameProp,
   defaultValue,
+  disabled,
   name,
   label,
   onChange,
@@ -54,6 +55,7 @@ const DateInput = ({
         }
         onFocus={(e) => setTarget(e.target)}
         className={className}
+        disabled={disabled}
         id={name}
         isInvalid={validityChecked && !!invalidMessage}
         isValid={validityChecked && !invalidMessage}

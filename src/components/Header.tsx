@@ -72,6 +72,13 @@ export class Header extends Component<Props, State, {}> {
                       : 'Home'}
                   </Link>
                 </li>
+                {(role === Role.Developer) && (
+                  <li className="nav-item col-med-2 my-1 flex-fill mr-2">
+                    <Link className="nav-link" to="/dashboard">
+                      Dashboard
+                    </Link>
+                  </li>
+                )}
                 {(role === Role.Admin || role === Role.Director) && (
                   <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                     <Link className="nav-link" to="/admin-panel">

@@ -29,6 +29,7 @@ import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import Home from './components/Home/index';
+import InternalDashboard from './components/InternalDashboard/InternalDashboard';
 import IssueReport from './components/IssueReport';
 import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -225,6 +226,15 @@ class App extends React.Component<{}, State, {}> {
                     />
                   )
                 }
+              />
+              <Route
+                path={[
+                  '/dashboard',
+                  '/dashboard/orgs/:orgName',
+                  '/dashboard/orgs/:orgName/users/:username',
+                ]}
+                exact
+                component={InternalDashboard}
               />
               <SignUpRouter role={role} />
               <Route

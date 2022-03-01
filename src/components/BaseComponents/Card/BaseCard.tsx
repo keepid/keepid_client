@@ -35,6 +35,7 @@ interface Props {
   buttonText?: string,
   buttonOnClick?: () => void,
   renderAdditionalContent?: () => any,
+  children?: JSX.Element | JSX.Element[]
 }
 
 interface DefaultProps {
@@ -50,6 +51,7 @@ interface DefaultProps {
   buttonText?: string,
   buttonOnClick?: () => void,
   renderAdditionalContent?: () => any,
+  children?: JSX.Element | JSX.Element[]
 }
 
 function BaseCard(props: Props): React.ReactElement {
@@ -69,6 +71,7 @@ function BaseCard(props: Props): React.ReactElement {
     buttonText?: string,
     buttonOnClick?: () => void,
     renderAdditionalContent?: () => any,
+    children?: JSX.Element | JSX.Element[],
   ): React.ReactElement {
     // if there is an image, adjust image corner radius size based on image location
     const cardBorderRadius = 20;
@@ -178,6 +181,7 @@ function BaseCard(props: Props): React.ReactElement {
             </Card.Body>
           )
           : null}
+        {children}
       </Card>
     );
   }
@@ -195,6 +199,7 @@ function BaseCard(props: Props): React.ReactElement {
     buttonText,
     buttonOnClick,
     renderAdditionalContent,
+    children,
   } = props;
   let cardHeight;
   let cardWidth;
@@ -241,6 +246,7 @@ function BaseCard(props: Props): React.ReactElement {
                 buttonText,
                 buttonOnClick,
                 renderAdditionalContent,
+                children,
               )
             }
           </Link>
@@ -259,6 +265,7 @@ function BaseCard(props: Props): React.ReactElement {
           buttonText,
           buttonOnClick,
           renderAdditionalContent,
+          children,
         )}
     </div>
   );
@@ -277,6 +284,7 @@ const defaultProps: DefaultProps = {
   buttonText: undefined,
   buttonOnClick: undefined,
   renderAdditionalContent: undefined,
+  children: undefined,
 };
 
 BaseCard.defaultProps = defaultProps;

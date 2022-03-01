@@ -18,6 +18,7 @@ export interface SelectInputProps extends InputProps<string> {
 const SelectInput = ({
   className: classNameProp,
   defaultValue,
+  disabled,
   name,
   onChange,
   options,
@@ -38,6 +39,7 @@ const SelectInput = ({
         as="select"
         className={className}
         defaultValue={options.find((i) => i.value === defaultValue)?.value}
+        disabled={disabled}
         id={name}
         isInvalid={validityChecked && !!invalidMessage}
         isValid={validityChecked && !invalidMessage}

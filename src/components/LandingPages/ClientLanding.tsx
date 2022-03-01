@@ -7,7 +7,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import AtWorkPic from '../../static/images/atwork-rafiki.png';
 import DocumentsPic from '../../static/images/documents-rafiki.png';
-import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
+import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/Card/BaseCard';
 
 interface Props extends RouteComponentProps {
   name: String;
