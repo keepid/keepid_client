@@ -3,28 +3,23 @@ import React from 'react';
 import uuid from 'react-uuid';
 
 interface Props {
-  currentPage: number,
-  itemsPerPage: number,
-  numElements: number,
-  changeCurrentPage: any,
+  currentPage: number;
+  itemsPerPage: number;
+  numElements: number;
+  changeCurrentPage: any;
 }
 
 const numPagesConst = 3;
 
-function TablePageSelector(props: Props) : any {
-  const {
-    currentPage,
-    changeCurrentPage,
-    numElements,
-    itemsPerPage,
-  } = props;
-  const numPages : number = Math.floor((numElements - 1) / itemsPerPage) + 1;
-  const numPagesArray : number[] = [];
+function TablePageSelector(props: Props): any {
+  const { currentPage, changeCurrentPage, numElements, itemsPerPage } = props;
+  const numPages: number = Math.floor((numElements - 1) / itemsPerPage) + 1;
+  const numPagesArray: number[] = [];
 
   let numPagesLowerBound;
   let numPagesUpperBound;
   if (numPagesConst % 2 === 0) {
-    const numPagesRange = (numPagesConst / 2) - 1;
+    const numPagesRange = numPagesConst / 2 - 1;
     numPagesLowerBound = currentPage - numPagesRange;
     numPagesUpperBound = currentPage + numPagesRange + 1;
   } else {
@@ -34,10 +29,12 @@ function TablePageSelector(props: Props) : any {
   }
   if (numPagesLowerBound <= 0) {
     numPagesLowerBound = 0;
-    numPagesUpperBound = (numPagesConst < numPages ? numPagesConst : numPages) - 1;
+    numPagesUpperBound =
+      (numPagesConst < numPages ? numPagesConst : numPages) - 1;
   } else if (numPagesUpperBound >= numPages - 1) {
     numPagesUpperBound = numPages - 1;
-    numPagesLowerBound = (numPagesConst < numPages ? numPages - numPagesConst : 0);
+    numPagesLowerBound =
+      numPagesConst < numPages ? numPages - numPagesConst : 0;
   }
   for (let i = numPagesLowerBound; i <= numPagesUpperBound; i += 1) {
     numPagesArray.push(i + 1);
@@ -61,9 +58,40 @@ function TablePageSelector(props: Props) : any {
     <div>
       <nav aria-label="Page navigation">
         <ul className="pagination mr-5 mt-4 mb-1">
-          {currentPage > 0 ? <li className="page-item"><span className="page-link" onClick={handleClickPrevious}>&laquo;</span></li> : <div />}
-          {numPagesArray.map((index) => <li key={uuid()} aria-label={index - 1 === currentPage ? 'active' : 'inactive'} className={classNames('page-item', { active: index - 1 === currentPage })}><span className="page-link" onClick={(event) => handleClickToPage(index)}>{index}</span></li>)}
-          {currentPage < (numPages - 1) ? <li className="page-item"><span className="page-link" onClick={handleClickNext}>&raquo;</span></li> : <div />}
+          {currentPage > 0 ? (
+            <li className="page-item">
+              <span className="page-link" onClick={handleClickPrevious}>
+                &laquo;
+              </span>
+            </li>
+          ) : (
+            <div />
+          )}
+          {numPagesArray.map((index) => (
+            <li
+              key={uuid()}
+              aria-label={index - 1 === currentPage ? 'active' : 'inactive'}
+              className={classNames('page-item', {
+                active: index - 1 === currentPage,
+              })}
+            >
+              <span
+                className="page-link"
+                onClick={(event) => handleClickToPage(index)}
+              >
+                {index}
+              </span>
+            </li>
+          ))}
+          {currentPage < numPages - 1 ? (
+            <li className="page-item">
+              <span className="page-link" onClick={handleClickNext}>
+                &raquo;
+              </span>
+            </li>
+          ) : (
+            <div />
+          )}
         </ul>
       </nav>
     </div>

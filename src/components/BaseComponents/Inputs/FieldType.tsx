@@ -18,4 +18,4 @@ export type BaseInputFieldType<T> = {
   validate?: ((value: T) => string | Promise<string>) | undefined;
   inputProps?: Record<string, any> | undefined;
   defaultValue?: T | undefined;
-}
+};

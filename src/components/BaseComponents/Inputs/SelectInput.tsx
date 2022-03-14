@@ -45,12 +45,7 @@ const SelectInput = ({
         placeholder={placeholder}
         required={rest.required}
         onChange={(e) => {
-          performValidation(
-            e,
-            validate,
-            setInvalidMessage,
-            setValidityChecked,
-          );
+          performValidation(e, validate, setInvalidMessage, setValidityChecked);
           if (onChange) {
             onChange(e.target.value);
           }

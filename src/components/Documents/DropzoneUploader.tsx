@@ -8,7 +8,14 @@ import Dropzone from 'react-dropzone-uploader';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 
-const DropzoneUploader = ({ alert, userRole, updateFileList, updateStep, maxNumFiles, currentStep }) => {
+const DropzoneUploader = ({
+  alert,
+  userRole,
+  updateFileList,
+  updateStep,
+  maxNumFiles,
+  currentStep,
+}) => {
   const list: File[] = [];
   const [fileList, setFileList] = useState(list);
   const [step, setStep] = useState(currentStep + 1);
@@ -35,13 +42,13 @@ const DropzoneUploader = ({ alert, userRole, updateFileList, updateStep, maxNumF
   }
 
   return (
-      <Dropzone
-        onSubmit={handleSubmit}
-        maxFiles={maxNumFiles}
-        inputWithFilesContent={(files) => `${maxNumFiles - files.length} more`}
-        accept=".pdf"
-        submitButtonContent="Upload"
-      />
+    <Dropzone
+      onSubmit={handleSubmit}
+      maxFiles={maxNumFiles}
+      inputWithFilesContent={(files) => `${maxNumFiles - files.length} more`}
+      accept=".pdf"
+      submitButtonContent="Upload"
+    />
   );
 };
 

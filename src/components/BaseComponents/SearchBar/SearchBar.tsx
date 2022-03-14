@@ -5,25 +5,20 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import searchIcon from '../../../static/images/search.svg';
 
 interface Props {
-  searchHeight?: string,
-  searchWidth?: string,
-  searchOnClick: (input: string) => void,
-  searchLoading: boolean,
+  searchHeight?: string;
+  searchWidth?: string;
+  searchOnClick: (input: string) => void;
+  searchLoading: boolean;
 }
 
 interface DefaultProps {
-  searchHeight?: string,
-  searchWidth?: string,
+  searchHeight?: string;
+  searchWidth?: string;
 }
 
 function SearchBar(props: Props): React.ReactElement {
   const [searchInput, setSearchInput] = useState('');
-  const {
-    searchHeight,
-    searchWidth,
-    searchOnClick,
-    searchLoading,
-  } = props;
+  const { searchHeight, searchWidth, searchOnClick, searchLoading } = props;
   return (
     <InputGroup style={{ width: searchWidth }}>
       <FormControl
@@ -42,9 +37,11 @@ function SearchBar(props: Props): React.ReactElement {
           }}
           onClick={() => searchOnClick(searchInput)}
         >
-          { searchLoading
-            ? <div className="ld ld-ring ld-spin" />
-            : <img src={searchIcon} alt="search" />}
+          {searchLoading ? (
+            <div className="ld ld-ring ld-spin" />
+          ) : (
+            <img src={searchIcon} alt="search" />
+          )}
         </button>
       </InputGroup.Append>
     </InputGroup>

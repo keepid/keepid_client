@@ -6,9 +6,7 @@ import { Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 
 import InputProps from './BaseInputProps';
-import {
-  performValidationWithCustomTarget,
-} from './Inputs.util';
+import { performValidationWithCustomTarget } from './Inputs.util';
 import InputWrapper from './InputWrapper';
 
 interface DateInputProps extends InputProps<Date | undefined> {

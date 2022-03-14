@@ -2,9 +2,9 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 
 interface TModalProps {
-  row: any,
-  handleClickClose: (event: any) => void,
-  handleDelete: (event: any) => void,
+  row: any;
+  handleClickClose: (event: any) => void;
+  handleDelete: (event: any) => void;
 }
 
 export default function TModal(props: TModalProps): React.ReactElement {
@@ -21,8 +21,21 @@ export default function TModal(props: TModalProps): React.ReactElement {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <button type="button" className="btn btn-danger" onClick={props.handleDelete}>Delete</button>
-        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={props.handleClickClose}>Cancel</button>
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={props.handleDelete}
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          data-dismiss="modal"
+          onClick={props.handleClickClose}
+        >
+          Cancel
+        </button>
       </Modal.Footer>
     </Modal>
   );

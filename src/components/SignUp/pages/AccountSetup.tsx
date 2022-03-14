@@ -219,11 +219,7 @@ export class AccountSetup extends Component<Props, State, {}> {
           <div className="col-md-8">
             <div className="text-center pb-4 mb-2">
               <h2>
-                <b>
-                  First, set up the
-                  {role}
-                  account login.
-                </b>
+                <b>First, set up the {role} account login.</b>
               </h2>
               <span>{this.returnAccountMessage()}</span>
             </div>

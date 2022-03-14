@@ -208,8 +208,7 @@ class WorkerLanding extends Component<Props, State> {
                   {client.email}
                 </h6>
                 <h6 className="card-subtitle mb-2 text-muted">
-                  #
-{client.phone}
+                  #{client.phone}
                 </h6>
                 <h6 className="card-subtitle mb-2 text-muted">
                   {client.address}

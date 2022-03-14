@@ -115,12 +115,7 @@ const constructSelectRowConfiguration = (
       <label className="custom-control-label" htmlFor="selectAll" />
     </div>
   ),
-  selectionRenderer: ({
-    mode,
-    checked,
-    disabled,
-    ...rest
-  }) => (
+  selectionRenderer: ({ mode, checked, disabled, ...rest }) => (
     <div className="custom-control custom-checkbox mr-2">
       <input
         type={mode}
@@ -175,7 +170,7 @@ type Formatter = (
   cell: any,
   row: any,
   rowIndex: number,
-  formatExtraData: any,
+  formatExtraData: any
 ) => JSX.Element | string;
 type Column = {
   // The name of the property on each Row object to be represented by this Column
@@ -199,7 +194,7 @@ type Column = {
     order: 'asc' | 'desc',
     dataField: string,
     rowA: any,
-    rowB: any,
+    rowB: any
   ) => any;
 };
 
@@ -219,7 +214,7 @@ interface TableProps extends NoDataIndicationProps {
   // Method called upon Row modification save
   onEditSave?: (row: any) => void;
   // Default sort settings
-  defaultSorted?: { dataField: string, order: 'asc' | 'desc' }[]
+  defaultSorted?: { dataField: string; order: 'asc' | 'desc' }[];
 }
 
 /**
@@ -413,7 +408,7 @@ const NoDataIndication = ({
           className="btn btn-primary"
           onClick={emptyInfo.onPress}
         >
-{`${emptyInfo.label}`}
+          {`${emptyInfo.label}`}
         </button>
       </div>
     ) : null}

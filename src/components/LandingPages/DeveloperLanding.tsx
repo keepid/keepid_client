@@ -168,7 +168,9 @@ class DeveloperLanding extends Component<Props, State, {}> {
   handleFileChange(rowIndex: number) {
     const { alert } = this.props;
 
-    if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
+    if (this.state.pdfFiles === undefined) {
+      throw new Error('Must upload a file');
+    }
     const pdfFile = this.state.pdfFiles[0];
     if (pdfFile === null) throw new Error('Must upload a file');
 

@@ -73,14 +73,14 @@ const FormFixture = () => {
         console.log(state);
       }}
     >
-        {fields.map((f) => (
-          <InputFromField
-            key={`input-${f.name}`}
-            field={f}
-            onChange={(val) => setState({ ...state, [f.name]: val })}
-            value={state[f.name]}
-          />
-        ))}
+      {fields.map((f) => (
+        <InputFromField
+          key={`input-${f.name}`}
+          field={f}
+          onChange={(val) => setState({ ...state, [f.name]: val })}
+          value={state[f.name]}
+        />
+      ))}
 
       <Form.Group>
         <Button variant="primary" type="submit">

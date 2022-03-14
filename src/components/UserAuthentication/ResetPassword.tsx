@@ -224,8 +224,7 @@ class ResetPassword extends Component<Props, State> {
                     This page is protected by reCAPTCHA, and subject to the
                     Google
                     <a href="https://www.google.com/policies/privacy/">
-                      Privacy Policy
-{' '}
+                      Privacy Policy{' '}
                     </a>
                     and
                     <a href="https://www.google.com/policies/terms/">

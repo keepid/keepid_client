@@ -30,7 +30,7 @@ interface Props {
     role: Role,
     username: string,
     organization: string,
-    name: string,
+    name: string
   ) => void;
   logOut: () => void;
   isLoggedIn: boolean;
@@ -281,8 +281,7 @@ class LoginPage extends Component<Props, State> {
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
                   This page is protected by reCAPTCHA, and subject to the Google
                   <a href="https://www.google.com/policies/privacy/">
-                    Privacy Policy
-{' '}
+                    Privacy Policy{' '}
                   </a>
                   and
                   <a href="https://www.google.com/policies/terms/">
@@ -327,8 +326,7 @@ class LoginPage extends Component<Props, State> {
                   <div className={`mt-3 mb-3 collapse ${twoFactorState}`}>
                     <div className="font-weight-normal mb-3">
                       A one-time verification code has been sent to your
-                      associated email address. Please enter the code below.
-{' '}
+                      associated email address. Please enter the code below.{' '}
                     </div>
                     <label
                       htmlFor="username"

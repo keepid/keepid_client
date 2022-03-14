@@ -158,9 +158,7 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                     <th scope="row">Mailing address</th>
                     <td>
                       {address}
-                      {city}
-,
-{state}
+                      {city},{state}
                       {zipcode}
                     </td>
                     <td />
@@ -181,8 +179,7 @@ class ReviewSubmitInviteSignupVersion extends Component<Props, State, {}> {
                 <span className="text-muted recaptcha-login-text">
                   This page is protected by reCAPTCHA, and subject to the Google
                   <a href="https://www.google.com/policies/privacy/">
-                    Privacy Policy
-{' '}
+                    Privacy Policy{' '}
                   </a>
                   and
                   <a href="https://www.google.com/policies/terms/">

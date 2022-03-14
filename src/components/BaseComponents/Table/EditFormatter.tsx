@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 
 interface FormatterProps {
-  row: any,
-  handleEdit: (event: any, row: any) => void,
-  handleSave: (event: any, row: any) => void,
+  row: any;
+  handleEdit: (event: any, row: any) => void;
+  handleSave: (event: any, row: any) => void;
 }
 
 // This function controls formatting on the edit/save column (needed because of a glitch with the Edit/Save text)
-export default function EditFormatter(props: FormatterProps): React.ReactElement {
+export default function EditFormatter(
+  props: FormatterProps,
+): React.ReactElement {
   const [editing, setEditing] = useState(false);
 
   const handleEdit = (e): void => {
@@ -28,7 +30,7 @@ export default function EditFormatter(props: FormatterProps): React.ReactElement
       onClick={(e) => (editing ? handleSave(e) : handleEdit(e))}
     >
       <div className="row align-items-center">
-        <div className="d-none d-sm-block">{ editing ? 'Save' : 'Edit' }</div>
+        <div className="d-none d-sm-block">{editing ? 'Save' : 'Edit'}</div>
       </div>
     </Button>
   );

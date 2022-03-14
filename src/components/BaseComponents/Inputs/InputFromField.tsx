@@ -12,7 +12,13 @@ export interface InputFromFieldProps {
   labelClassName?: string;
 }
 
-const InputFromField = ({ field, onChange, value, className, labelClassName }: InputFromFieldProps): JSX.Element => {
+const InputFromField = ({
+  field,
+  onChange,
+  value,
+  className,
+  labelClassName,
+}: InputFromFieldProps): JSX.Element => {
   switch (field.type) {
     case InputType.DATE:
       return (

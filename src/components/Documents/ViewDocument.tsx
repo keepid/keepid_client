@@ -8,21 +8,25 @@ import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
 
 interface Props {
-  alert: any,
-  userRole: Role,
-  documentId: string,
-  documentName: string,
+  alert: any;
+  userRole: Role;
+  documentId: string;
+  documentName: string;
 }
 
 interface State {
-  pdfFile: File | undefined,
+  pdfFile: File | undefined;
 }
 
 const ViewDocument = ({ alert, userRole, documentId, documentName }: Props) => {
   const [pdfFile, setPDFFile] = useState<State['pdfFile']>(undefined);
   useEffect(() => {
     let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+    if (
+      userRole === Role.Worker ||
+      userRole === Role.Admin ||
+      userRole === Role.Director
+    ) {
       pdfType = PDFType.APPLICATION;
     } else if (userRole === Role.Client) {
       pdfType = PDFType.IDENTIFICATION;
@@ -36,11 +40,15 @@ const ViewDocument = ({ alert, userRole, documentId, documentName }: Props) => {
         fileId: documentId,
         pdfType,
       }),
-    }).then((response) => response.blob())
+    })
+      .then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
+        const pdfFile = new File([response], documentName, {
+          type: 'application/pdf',
+        });
         setPDFFile(pdfFile);
-      }).catch((_error) => {
+      })
+      .catch((_error) => {
         alert.show('Error Fetching File');
       });
   }, []);

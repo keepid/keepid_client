@@ -50,9 +50,11 @@ const ClientProfilePage = (props: Props) => {
   const [organization, setOrganization] = useState<State['organization']>('');
   const [phone, setPhone] = useState<State['phone']>('');
   const [zipcode, setZipCode] = useState<State['zipcode']>('');
-  const [activitiesArr, setActivitiesArr] = useState<State['activitiesArr']>(null);
+  const [activitiesArr, setActivitiesArr] =
+    useState<State['activitiesArr']>(null);
   const [file, setFile] = useState<State['file']>(undefined);
-  const [photoAvailable, setPhotoAvailable] = useState<State['photoAvailable']>(false);
+  const [photoAvailable, setPhotoAvailable] =
+    useState<State['photoAvailable']>(false);
   const [photo, setPhoto] = useState<State['photo']>(null);
   const [crop, setCrop] = useState<State['crop']>({
     x: 0,
@@ -63,10 +65,12 @@ const ClientProfilePage = (props: Props) => {
   const [showCropper, setShowCropper] = useState<State['showCropper']>(false);
   const [fileSelected, setFileSelected] = useState<State['fileSelected']>(null);
   const [inputKey, setInputKey] = useState<State['inputKey']>(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<State['croppedAreaPixels']>(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] =
+    useState<State['croppedAreaPixels']>(0);
   const [loading, setLoading] = useState<State['loading']>(false);
   const [fileName, setFileName] = useState<State['fileName']>('');
-  const [backgroundColor, setBackgroundColor] = useState<State['backgroundColor']>('#7B81FF');
+  const [backgroundColor, setBackgroundColor] =
+    useState<State['backgroundColor']>('#7B81FF');
   const [color, setColor] = useState<State['color']>('#FFFFFF');
 
   const hiddenFileInput = useRef<HTMLInputElement>(null);
@@ -216,8 +220,9 @@ const ClientProfilePage = (props: Props) => {
 
   const dataURItoBlob = (dataURI: any): Blob => {
     let byteString;
-    if (dataURI.split(',')[0].indexOf('base64') >= 0) byteString = atob(dataURI.split(',')[1]);
-    else byteString = unescape(dataURI.split(',')[1]);
+    if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+      byteString = atob(dataURI.split(',')[1]);
+    } else byteString = unescape(dataURI.split(',')[1]);
     // separate out the mime component
     const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
     // write the bytes of the string to a typed array
@@ -266,10 +271,7 @@ const ClientProfilePage = (props: Props) => {
 
   const cropAndSave = async (): Promise<any> => {
     try {
-      const croppedImage = await getCroppedImg(
-        fileSelected,
-        croppedAreaPixels,
-      );
+      const croppedImage = await getCroppedImg(fileSelected, croppedAreaPixels);
       setFile(croppedImage);
       // this.setState(
       //   {
@@ -543,9 +545,7 @@ const ClientProfilePage = (props: Props) => {
                 <div className="col font-weight-bold">Address</div>
                 <div className="col text-right">
                   {address}
-                  {city}
-,
-{state}
+                  {city},{state}
                   {zipcode}
                 </div>
               </div>
@@ -568,22 +568,19 @@ const ClientProfilePage = (props: Props) => {
                 onMouseOver={() => {
                   setBackgroundColor('#FFFFFF');
                   setColor('#7B81FF');
-                }
-                }
+                }}
                 onFocus={() => undefined}
                 onMouseOut={() => {
                   setBackgroundColor('#7B81FF');
                   setColor('#FFFFFF');
-                }
-                }
+                }}
                 onBlur={() => undefined}
                 data-toggle="modal"
                 data-target="#exampleModal"
                 onClick={() => {
                   setShowCropper(false);
                   setInputKey(Date.now());
-                }
-                }
+                }}
               >
                 Edit Your Information
               </button>

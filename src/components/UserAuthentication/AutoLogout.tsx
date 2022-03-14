@@ -8,8 +8,8 @@ const timeUntilWarn: number = 1000 * 60 * 120; // two hours in milliseconds
 const timeFromWarnToLogout: number = 1000 * 60; // 1 minute in milliseconds
 
 interface Props {
-    logOut: () => void,
-    setAutoLogout: (boolean) => void,
+  logOut: () => void;
+  setAutoLogout: (boolean) => void;
 }
 
 function AutoLogout(props: Props): React.ReactElement {
@@ -51,7 +51,9 @@ function AutoLogout(props: Props): React.ReactElement {
     <div>
       <IdleTimer
         key="idleTimerWarn"
-        ref={(ref) => { setIdleTimerWarn(ref); }}
+        ref={(ref) => {
+          setIdleTimerWarn(ref);
+        }}
         element={document}
         onIdle={warnUserIdle}
         debounce={250}
