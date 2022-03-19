@@ -4,7 +4,7 @@
 @import './Inputs';
 
 // COLOR SYTEM
-$primary-theme: #445feb;
+$primary-theme: #2f48c4;
 $primary-theme-light: #e8e9ff;
 $primary-theme-dark: #6029a8;
 $secondary-theme: #413f57;
@@ -130,9 +130,10 @@ body {
 .btn-primary:visited,
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
-	color: white;
-	background-color: #4b4f9a;
-	border-color: #4b4f9a;
+	color: #2f48c4;
+	background-color: white;
+	border-color: white;
+	width: auto;
 }
 
 .btn-outline-primary {
@@ -486,11 +487,12 @@ thead {
 
 .btn-dark-custom,
 .btn-dark-custom:hover {
-	border-color: rgb(88, 28, 167);
-	background-color: rgb(96, 41, 168);
-	color: white;
+	border-color: rgb(255, 255, 255);
+	background-color: rgb(255, 255, 255);
+	color: #2f48c4;
 	text-decoration: none;
-	width: 8.75rem;
+	width: 6.75rem;
+	margin-left: 1rem;
 }
 
 .btn-dark-custom:hover {
@@ -499,6 +501,40 @@ thead {
 	color: white;
 	text-decoration: none;
 }
+
+.btn-blue-custom,
+.btn-blue-custom:hover {
+	border-color: #2f48c4;
+	background-color: #2f48c4;
+	color: white;
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
+.btn-white-blue-custom,
+.btn-white-blue-custom:hover {
+	border-color: #2f48c4;
+	background-color: white;
+	color: #2f48c4;
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
+.btn-white-red-custom,
+.btn-white-red-custom:hover {
+	border-color: rgb(192, 3, 3);
+	background-color: white;
+	color: rgb(192, 3, 3);
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
 
 .home-form-svg {
 	width: 100%;
@@ -674,4 +710,85 @@ div.scrollbar {
 
 .statement-solidarity {
 	background-color: $secondary-theme-light;
+}
+
+.search-bar-upload-file {
+	margin-left: 100px;
+	display: flex;
+	justify-content: left;
+}
+
+.search-bar, .upload-file
+{
+	display: inline;
+}
+
+.search-bar {
+	margin-left: 70px;
+}
+
+.upload-file {
+	margin-left: 512px;
+}
+
+.btn-primary .icon {
+	background: url(http://www.w3.org/2000/svg) no-repeat;
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px
+}  
+
+.btn-blue-custom .icon {
+	background: url(http://www.w3.org/2000/svg) no-repeat;
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px
+}  
+
+.btn-white-blue-custom .icon {
+	background: url(http://www.w3.org/2000/svg) no-repeat;
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px
+} 
+
+.btn-white-red-custom .icon {
+	background: url(http://www.w3.org/2000/svg) no-repeat;
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px
+} 
+
+.btn-blue-custom .span {
+	float: left;
+	width: 20px;
+	height: 20px;
+}  
+
+.three-buttons-plus-files-selected {
+	margin-top: 40px;
+	margin-left: 170px;
+	display: flex;
+	justify-content: left;
+}
+
+.download-button, .print-button, .delete-button
+{
+	display: inline;
+}
+
+.print-button {
+	margin-left: 30px;
+}
+
+.delete-button {
+	margin-left: 30px;
+}
+
+.files-selected {
+	margin-left: 30px;
 }
