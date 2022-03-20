@@ -50,31 +50,33 @@ class Applications extends Component<Props, State, {}> {
     </div>
   )
 
-  tableCols = [{
-    dataField: 'checkbox',
-    text: '',
-  }, {
-    dataField: 'filename',
-    text: 'Application Name',
-    sort: true,
-    formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
-  }, {
-    dataField: 'uploadDate',
-    text: 'Date Uploaded',
-    sort: true,
-  }, {
-    dataField: 'uploader',
-    text: 'Uploaded By',
-    sort: true,
-  }, {
-    dataField: 'view',
-    text: '',
-    formatter: this.ButtonFormatter,
-  }, {
-    dataField: 'actions',
-    text: '',
-    formatter: this.ButtonFormatter,
-  }];
+  tableCols = [
+  //   {
+  //   dataField: 'checkbox',
+  //   text: '',
+  // },
+    {
+      dataField: 'filename',
+      text: 'Application Name',
+      sort: true,
+      formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
+    }, {
+      dataField: 'uploadDate',
+      text: 'Date Uploaded',
+      sort: true,
+    }, {
+      dataField: 'uploader',
+      text: 'Uploaded By',
+      sort: true,
+    }, {
+      dataField: 'view',
+      text: '',
+      formatter: this.ButtonFormatter,
+    }, {
+      dataField: 'actions',
+      text: '',
+      formatter: this.ButtonFormatter,
+    }];
 
   constructor(props: Props) {
     super(props);
@@ -145,8 +147,8 @@ class Applications extends Component<Props, State, {}> {
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">My Applications</h1>
-                <p className="lead">See all of your applications. Check the status of each of your applications here.</p>
+                <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
+                <p className="lead">Here are all the applications that are available to you. Please click the “Apply Now” button to start applying.</p>
               </div>
             </div>
             <div className="search-bar-upload-file">
@@ -156,16 +158,16 @@ class Applications extends Component<Props, State, {}> {
                   searchLoading
                 />
               </div>
-              <div className="upload-file">
+              {/* <div className="upload-file">
                 <button type="button" className="btn btn-secondary btn-blue-custom">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                   <path fill="none" d="M0 0h24v24H0z" /><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4l6 6v10c0 1.1-.9 2-2 2H7.99C6.89 23 6 22.1 6 21l.01-14c0-1.1.89-2 1.99-2h7zm-1 7h5.5L14 6.5V12z" />
                   </svg>
                   Upload File
                 </button>
-              </div>
+              </div> */}
             </div>
-            <div className="three-buttons-plus-files-selected">
+            {/* <div className="three-buttons-plus-files-selected">
               <div className="download-button">
                 <button type="button" className="btn btn-secondary btn-white-blue-custom"><img src="https://api.iconify.design/ic-baseline-face.svg?height=24" aria-hidden="true" alt="description of image" /> Download</button>
               </div>
@@ -188,7 +190,7 @@ class Applications extends Component<Props, State, {}> {
               <div className="files-selected">
                 <p>2 files selected</p>
               </div>
-            </div>
+            </div> */}
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
                 <div className="w-100 pd-3">
