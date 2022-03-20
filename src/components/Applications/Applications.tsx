@@ -190,13 +190,11 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
                 <p className="lead">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
-              </div>
-            </div>
-            <div className="search-bar-div">
                 <SearchBar
                   searchOnClick={() => { }}
                   searchLoading
                 />
+              </div>
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
@@ -213,13 +211,11 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Completed Applications</h1>
                 <p className="lead">Here are all your available applications. <br />Check or manage your applications here.</p>
-              </div>
-            </div>
-            <div className="search-bar-div">
                 <SearchBar
                   searchOnClick={() => { }}
                   searchLoading
                 />
+              </div>
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-5">
