@@ -712,83 +712,80 @@ div.scrollbar {
 	background-color: $secondary-theme-light;
 }
 
-.search-bar-upload-file {
-	margin-left: 100px;
+.search-bar-div {
+	margin-left: 8rem;
 	display: flex;
 	justify-content: left;
 }
 
-.search-bar, .upload-file
-{
-	display: inline;
+.preview-button {
+	color: rgb(68, 95, 235);
+	font-weight: bolder;
 }
 
-.search-bar {
-	margin-left: 70px;
-}
+// .search-bar, .upload-file
+// {
+// 	display: inline;
+// }
 
-.upload-file {
-	margin-left: 512px;
-}
+// .btn-primary .icon {
+// 	background: url(http://www.w3.org/2000/svg) no-repeat;
+// 	float: left;
+// 	width: 20px;
+// 	height: 20px;
+// 	margin-right: 10px
+// }  
 
-.btn-primary .icon {
-	background: url(http://www.w3.org/2000/svg) no-repeat;
-	float: left;
-	width: 20px;
-	height: 20px;
-	margin-right: 10px
-}  
+// .btn-blue-custom .icon {
+// 	background: url(http://www.w3.org/2000/svg) no-repeat;
+// 	float: left;
+// 	width: 20px;
+// 	height: 20px;
+// 	margin-right: 10px
+// }  
 
-.btn-blue-custom .icon {
-	background: url(http://www.w3.org/2000/svg) no-repeat;
-	float: left;
-	width: 20px;
-	height: 20px;
-	margin-right: 10px
-}  
+// .btn-white-blue-custom .icon {
+// 	background: url(http://www.w3.org/2000/svg) no-repeat;
+// 	float: left;
+// 	width: 20px;
+// 	height: 20px;
+// 	margin-right: 10px
+// } 
 
-.btn-white-blue-custom .icon {
-	background: url(http://www.w3.org/2000/svg) no-repeat;
-	float: left;
-	width: 20px;
-	height: 20px;
-	margin-right: 10px
-} 
+// .btn-white-red-custom .icon {
+// 	background: url(http://www.w3.org/2000/svg) no-repeat;
+// 	float: left;
+// 	width: 20px;
+// 	height: 20px;
+// 	margin-right: 10px
+// } 
 
-.btn-white-red-custom .icon {
-	background: url(http://www.w3.org/2000/svg) no-repeat;
-	float: left;
-	width: 20px;
-	height: 20px;
-	margin-right: 10px
-} 
+// .btn-blue-custom .span {
+// 	float: left;
+// 	width: 20px;
+// 	height: 20px;
+// }  
 
-.btn-blue-custom .span {
-	float: left;
-	width: 20px;
-	height: 20px;
-}  
+// .three-buttons-plus-files-selected {
+// 	margin-top: 40px;
+// 	margin-left: 170px;
+// 	display: flex;
+// 	justify-content: left;
+// }
 
-.three-buttons-plus-files-selected {
-	margin-top: 40px;
-	margin-left: 170px;
-	display: flex;
-	justify-content: left;
-}
+// .download-button, .print-button, .delete-button
+// {
+// 	display: inline;
+// }
 
-.download-button, .print-button, .delete-button
-{
-	display: inline;
-}
+// .print-button {
+// 	margin-left: 30px;
+// }
 
-.print-button {
-	margin-left: 30px;
-}
+// .delete-button {
+// 	margin-left: 30px;
+// }
 
-.delete-button {
-	margin-left: 30px;
-}
-
-.files-selected {
-	margin-left: 30px;
-}
+// .files-selected {
+// 	margin-left: 30px;
+// }
