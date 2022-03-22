@@ -40,7 +40,18 @@ class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> Apply Now</button>
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Apply Now</b></button>
+      </Link>
+    </div>
+  )
+
+  DoubleButtonFormatter = (cell, row) => (
+    <div className="double-button-jawn">
+      <Link to="/applications/send">
+        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Download</b></button>
+      </Link>
+      <Link to="/applications/send">
+        <button type="button" className="btn btn-primary-sixers w-110 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Delete File</b></button>
       </Link>
     </div>
   )
@@ -116,7 +127,7 @@ class Applications extends Component<Props, State, {}> {
       }, {
         dataField: 'actions',
         text: 'Actions',
-        formatter: this.ButtonFormatter,
+        formatter: this.DoubleButtonFormatter,
       }];
 
     constructor(props: Props) {
@@ -190,14 +201,16 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
                 <p className="lead">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
-                <SearchBar
-                  searchOnClick={() => { }}
-                  searchLoading
-                />
               </div>
             </div>
+            <div className="search-pad">
+              <SearchBar
+                searchOnClick={() => { }}
+                searchLoading
+              />
+            </div>
             <div className="container">
-              <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+              <div className="d-flex flex-row bd-highlight mb-3 pt-1">
                 <div className="w-100 pd-3">
                   <Table
                     columns={this.availableTableCols}
@@ -211,14 +224,16 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Completed Applications</h1>
                 <p className="lead">Here are all your available applications. <br />Check or manage your applications here.</p>
-                <SearchBar
-                  searchOnClick={() => { }}
-                  searchLoading
-                />
               </div>
             </div>
+            <div className="search-pad">
+              <SearchBar
+                searchOnClick={() => { }}
+                searchLoading
+              />
+            </div>
             <div className="container">
-              <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+              <div className="d-flex flex-row bd-highlight mb-3 pt-1">
                 <div className="w-100 pd-3">
                   <Table
                     columns={this.completedTableCols}

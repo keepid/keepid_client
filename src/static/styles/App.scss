@@ -122,6 +122,14 @@ body {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+	font-weight: bold;
+}
+
+.btn-primary-sixers {
+	color: white;
+	background-color: rgb(228, 13, 13);
+	border-color: rgb(228, 13, 13);
+	font-weight: bold;
 }
 
 .btn-primary:hover,
@@ -131,6 +139,18 @@ body {
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
 	color: #2f48c4;
+	background-color: white;
+	border-color: white;
+	width: auto;
+}
+
+.btn-primary-sixers:hover,
+.btn-primary-sixers:focus,
+.btn-primary-sixers:active,
+.btn-primary-sixers:visited,
+.btn-primary-sixers.active,
+.open > .dropdown-toggle.btn-primary-sixers {
+	color: rgb(228, 13, 13);
 	background-color: white;
 	border-color: white;
 	width: auto;
@@ -789,3 +809,14 @@ div.scrollbar {
 // .files-selected {
 // 	margin-left: 30px;
 // }
+
+.double-button-jawn {
+	display: flex;
+	text-align: center;
+	justify-content: center;
+}
+
+.search-pad {
+	padding-left:150px;
+	padding-top: 50px;
+}
