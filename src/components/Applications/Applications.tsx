@@ -200,10 +200,10 @@ class Applications extends Component<Props, State, {}> {
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
-                <p className="lead">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
+                <p className="lead subheader">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
               </div>
             </div>
-            <div className="search-pad">
+            <div className="container">
               <SearchBar
                 searchOnClick={() => { }}
                 searchLoading
@@ -223,10 +223,10 @@ class Applications extends Component<Props, State, {}> {
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Completed Applications</h1>
-                <p className="lead">Here are all your available applications. <br />Check or manage your applications here.</p>
+                <p className="lead subheader">Here are all your completed applications. <br />Check or manage your applications here.</p>
               </div>
             </div>
-            <div className="search-pad">
+            <div className="container">
               <SearchBar
                 searchOnClick={() => { }}
                 searchLoading
