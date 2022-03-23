@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import SearchSVG from '../../static/images/search.svg';
 import View from '../../static/images/view-icon.png';
 import PDFType from '../../static/PDFType';
 import SearchBar from '../BaseComponents/SearchBar';
@@ -204,10 +205,24 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              <SearchBar
-                searchOnClick={() => { }}
-                searchLoading
-              />
+              <form className="form-inline mr-3 w-50">
+                <input
+                  className="form-control mr-2 w-75"
+                  type="text"
+                  id="search"
+                  // onChange={this.handleChangeSearchName}
+                  // value={this.state.searchName}
+                  background-size="contain"
+                  background-repeat="no-repeat"
+                  placeholder="Search"
+                  aria-label="Search"
+                  onKeyPress={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                    }
+                  }}
+                />
+              </form>
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">
@@ -227,10 +242,24 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              <SearchBar
-                searchOnClick={() => { }}
-                searchLoading
-              />
+              <form className="form-inline mr-3 w-50">
+                <input
+                  className="form-control mr-2 w-75"
+                  type="text"
+                  id="search"
+                  // onChange={this.handleChangeSearchName}
+                  // value={this.state.searchName}
+                  background-size="contain"
+                  background-repeat="no-repeat"
+                  placeholder="Search"
+                  aria-label="Search"
+                  onKeyPress={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                    }
+                  }}
+                />
+              </form>
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">
