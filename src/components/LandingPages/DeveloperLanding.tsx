@@ -133,7 +133,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: PDFType.BLANK_FORM,
         annotated: false,
       }),
     }).then((response) => response.json())
@@ -216,21 +216,12 @@ class DeveloperLanding extends Component<Props, State, {}> {
     const documentId = this.state.documents[rowIndex].id;
     const documentName = this.state.documents[rowIndex].filename;
 
-    let pdfType;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.FORM;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
-    } else {
-      pdfType = undefined;
-    }
-
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        pdfType: PDFType.BLANK_FORM,
       }),
     }).then((response) => response.blob())
       .then((response) => {

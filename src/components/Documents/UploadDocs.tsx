@@ -93,10 +93,10 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         formData.append('file', pdfFile, pdfFile.name);
         if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
+          formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
         if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.FORM);
+          formData.append('pdfType', PDFType.BLANK_FORM);
         }
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
