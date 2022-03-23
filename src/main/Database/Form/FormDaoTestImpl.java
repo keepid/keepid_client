@@ -16,6 +16,7 @@ public class FormDaoTestImpl implements FormDao {
           "Should not run in memory test database in production or staging");
     }
     formMap = new LinkedHashMap<>();
+    objectIdFormMap = new LinkedHashMap<>();
   }
 
   @Override

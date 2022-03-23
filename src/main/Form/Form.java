@@ -1,21 +1,26 @@
 package Form;
 
-import com.google.api.client.util.DateTime;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
-import org.json.JSONObject;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class Form {
   private ObjectId id;
   private ObjectId fileId;
 
+  private Metadata metadata;
+
+  private List<Section> body;
+
   @BsonProperty(value = "uploadedAt")
-  private DateTime uploadedAt;
+  private Date uploadedAt;
 
   @BsonProperty(value = "lastModifiedAt")
-  private DateTime lastModifiedAt;
+  private Date lastModifiedAt;
 
   @BsonProperty(value = "firstName")
   private String username;
@@ -29,23 +34,92 @@ public class Form {
   @BsonProperty(value = "isTemplate")
   private boolean isTemplate;
 
-  @BsonProperty(value = "isTemplate")
-  private JSONObject metadata;
-
-  @BsonProperty(value = "isTemplate")
-  private JSONObject body;
-
   public Form() {}
+
+  public static class Metadata {
+    String title;
+    String description;
+    String state;
+    String county;
+    Set<ObjectId> prerequisities;
+    Date lastRevisionDate;
+    // In order, amount of payment, method of payment,
+    // who to send money to, and address
+    List<String> paymentInfo;
+    int numLines;
+
+    public Metadata(
+        String title,
+        String description,
+        String state,
+        String county,
+        Set<ObjectId> prerequisities,
+        Date lastRevisionDate,
+        List<String> paymentInfo,
+        int numLines) {
+      this.title = title;
+      this.description = description;
+      this.state = state;
+      this.county = county;
+      this.prerequisities = prerequisities;
+      this.lastRevisionDate = lastRevisionDate;
+      this.numLines = numLines;
+      this.paymentInfo = paymentInfo;
+    }
+  }
+
+  public class Section {
+    String title;
+    String description;
+    ObjectId id;
+    FieldType type;
+    String question;
+    List<String> options;
+    String defaultValue;
+    boolean required;
+    int numLines;
+    boolean matched;
+    ObjectId conditionalOnField;
+    // true for positive, false for negative
+    boolean conditionalType;
+
+    public Section(
+        String title,
+        String description,
+        ObjectId id,
+        FieldType type,
+        String question,
+        List<String> options,
+        String defaultValue,
+        boolean required,
+        int numLines,
+        boolean matched,
+        ObjectId conditionalOnField,
+        boolean conditionalType) {
+      this.title = title;
+      this.description = description;
+      this.id = id;
+      this.type = type;
+      this.question = question;
+      this.options = options;
+      this.defaultValue = defaultValue;
+      this.required = required;
+      this.numLines = numLines;
+      this.matched = matched;
+      this.conditionalOnField = conditionalOnField;
+      this.conditionalType = conditionalType;
+    }
+  }
 
   public Form(
       String username,
       Optional<String> uploaderUsername,
-      DateTime uploadedAt,
-      Optional<DateTime> lastModifiedAt,
+      Date uploadedAt,
+      Optional<Date> lastModifiedAt,
       FormType formType,
       boolean isTemplate,
-      JSONObject metadata,
-      JSONObject body) {
+      Metadata metadata,
+      List<Section> body) {
     this.id = new ObjectId();
     this.fileId = new ObjectId();
     this.username = username;
@@ -67,11 +141,11 @@ public class Form {
     return this.fileId;
   }
 
-  public DateTime getLastModifiedAt() {
+  public Date getLastModifiedAt() {
     return lastModifiedAt;
   }
 
-  public DateTime getUploadedAt() {
+  public Date getUploadedAt() {
     return uploadedAt;
   }
 
@@ -91,11 +165,11 @@ public class Form {
     return isTemplate;
   }
 
-  public JSONObject getMetadata() {
+  public Metadata getMetadata() {
     return metadata;
   }
 
-  public JSONObject getBody() {
+  public List<Section> getBody() {
     return body;
   }
 
@@ -108,7 +182,7 @@ public class Form {
     this.id = id;
   }
 
-  public void setLastModifiedAt(DateTime lastModifiedAt) {
+  public void setLastModifiedAt(Date lastModifiedAt) {
     this.lastModifiedAt = lastModifiedAt;
   }
 
@@ -120,7 +194,7 @@ public class Form {
     this.uploaderUsername = uploaderUsername;
   }
 
-  public void setUploadedAt(DateTime uploadedAt) {
+  public void setUploadedAt(Date uploadedAt) {
     this.uploadedAt = uploadedAt;
   }
 
@@ -128,11 +202,11 @@ public class Form {
     this.username = username;
   }
 
-  public void setMetadata(JSONObject metadata) {
+  public void setMetadata(Metadata metadata) {
     this.metadata = metadata;
   }
 
-  public void setBody(JSONObject body) {
+  public void setBody(List<Section> body) {
     this.body = body;
   }
 }
