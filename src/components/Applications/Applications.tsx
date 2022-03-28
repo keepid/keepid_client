@@ -1,5 +1,7 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
+import { Modal, Button } from 'react-bootstrap';
+
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
@@ -34,7 +36,8 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
-  documents: DocumentInformation[]
+  documents: DocumentInformation[],
+  openModal: Boolean | false,
 }
 
 class Applications extends Component<Props, State, {}> {
@@ -59,17 +62,13 @@ class Applications extends Component<Props, State, {}> {
 
   PreviewFormatter = (cell, row) => (
     <div>
-      <Link to="/applications/send">
-        <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
-      </Link>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
     </div>
   )
 
   ViewFormatter = (cell, row) => (
     <div>
-      <Link to="/applications/send">
-        <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
-      </Link>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
     </div>
   )
 
@@ -137,6 +136,7 @@ class Applications extends Component<Props, State, {}> {
         currentApplicationId: undefined,
         currentApplicationFilename: undefined,
         documents: [],
+        openModal: false,
       };
     }
 
@@ -171,6 +171,7 @@ class Applications extends Component<Props, State, {}> {
   }
 
   handleViewDocument = (event: any, row: any) => {
+    console.log('IN HANDLE VIEW');
     const {
       id,
       filename,
@@ -179,20 +180,37 @@ class Applications extends Component<Props, State, {}> {
       {
         currentApplicationId: id,
         currentApplicationFilename: filename,
+        openModal: true,
       },
     );
+    console.log(this.state);
   }
+
+  openModalFunc = () => this.setState({ openModal: true });
+
+  closeModal = () => this.setState({ openModal: false });
 
   render() {
     const {
       currentApplicationFilename,
       currentApplicationId,
       documents,
+      openModal,
     } = this.state;
 
     return (
       <Switch>
         <Route exact path="/applications">
+          <Modal show={this.state.openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
+            <Modal.Header>
+              <Button variant="secondary" onClick={this.closeModal}>
+                X
+              </Button>
+            </Modal.Header>
+            <Modal.Body>
+              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="sixers buhl" width="100%" height="600" />
+            </Modal.Body>
+          </Modal>
           <div className="container-fluid">
             <Helmet>
               <title>Applications</title>
