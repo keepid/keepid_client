@@ -14,7 +14,7 @@ public class Form {
 
   private Metadata metadata;
 
-  private List<Section> body;
+  private Section body;
 
   @BsonProperty(value = "uploadedAt")
   private Date uploadedAt;
@@ -68,12 +68,25 @@ public class Form {
     }
   }
 
-  public class Section {
+  public static class Section {
     String title;
     String description;
+    List<Section> subsections;
+    List<Question> questions;
+
+    public Section(
+        String title, String description, List<Section> subsections, List<Question> questions) {
+      this.title = title;
+      this.description = description;
+      this.subsections = subsections;
+      this.questions = questions;
+    }
+  }
+
+  public class Question {
     ObjectId id;
     FieldType type;
-    String question;
+    String questionText;
     List<String> options;
     String defaultValue;
     boolean required;
@@ -83,12 +96,10 @@ public class Form {
     // true for positive, false for negative
     boolean conditionalType;
 
-    public Section(
-        String title,
-        String description,
+    public Question(
         ObjectId id,
         FieldType type,
-        String question,
+        String questionText,
         List<String> options,
         String defaultValue,
         boolean required,
@@ -96,11 +107,9 @@ public class Form {
         boolean matched,
         ObjectId conditionalOnField,
         boolean conditionalType) {
-      this.title = title;
-      this.description = description;
       this.id = id;
       this.type = type;
-      this.question = question;
+      this.questionText = questionText;
       this.options = options;
       this.defaultValue = defaultValue;
       this.required = required;
@@ -119,7 +128,7 @@ public class Form {
       FormType formType,
       boolean isTemplate,
       Metadata metadata,
-      List<Section> body) {
+      Section body) {
     this.id = new ObjectId();
     this.fileId = new ObjectId();
     this.username = username;
@@ -169,7 +178,7 @@ public class Form {
     return metadata;
   }
 
-  public List<Section> getBody() {
+  public Section getBody() {
     return body;
   }
 
@@ -206,7 +215,7 @@ public class Form {
     this.metadata = metadata;
   }
 
-  public void setBody(List<Section> body) {
+  public void setBody(Section body) {
     this.body = body;
   }
 }

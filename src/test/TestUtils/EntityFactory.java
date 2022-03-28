@@ -4,6 +4,7 @@ import Activity.Activity;
 import Database.Dao;
 import Form.Form;
 import Form.Form.Metadata;
+import Form.Form.Question;
 import Form.Form.Section;
 import Form.FormType;
 import Organization.Organization;
@@ -60,7 +61,8 @@ public class EntityFactory {
             new Date(),
             new ArrayList<String>(),
             defaultNumLines);
-    private List<Section> body = new ArrayList<Section>();
+    private Section body =
+        new Section("title", "description", new ArrayList<Section>(), new ArrayList<Question>());
 
     @Override
     public Form build() {
@@ -119,7 +121,7 @@ public class EntityFactory {
       return this;
     }
 
-    public PartialForm withBody(List<Section> body) {
+    public PartialForm withBody(Section body) {
       this.body = body;
       return this;
     }
