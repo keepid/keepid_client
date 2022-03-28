@@ -1,10 +1,14 @@
 package Config;
 
+import Form.Form;
+import Form.Form.SectionCodec;
+import Form.Form.MetadataCodec;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import org.bson.codecs.IntegerCodec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -20,11 +24,12 @@ public class MongoConfig {
 
   private static void startConnection() {
     ConnectionString connectionString = new ConnectionString(MONGO_URI);
+//    CodecRegistry sectionCodecRegistry = CodecRegistries.fromCodecs(new IntegerCodec(), new SectionCodec());
     CodecRegistry pojoCodecRegistry =
         CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build());
     CodecRegistry codecRegistry =
-        CodecRegistries.fromRegistries(
-            MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
+        CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(new IntegerCodec(), new MetadataCodec()), CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(new IntegerCodec(), new SectionCodec())
+            ,MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry));
     MongoClientSettings clientSettings =
         MongoClientSettings.builder()
             .applyConnectionString(connectionString)

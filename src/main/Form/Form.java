@@ -1,12 +1,14 @@
 package Form;
 
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class Form {
   private ObjectId id;
@@ -36,7 +38,36 @@ public class Form {
 
   public Form() {}
 
+  public static class MetadataCodec implements Codec<Metadata> {
+    @Override
+    public void encode(BsonWriter writer, Metadata value, EncoderContext encoderContext) {
+      if (value != null) {
+        writer.writeString("title");
+        System.out.println("encoded section");
+      }
+    }
+    @Override
+    public Metadata decode(BsonReader reader, DecoderContext decoderContext) {
+      System.out.println("decoded section");
+      return new Metadata(
+              "title",
+              "description",
+              "state",
+              "county",
+              new HashSet<ObjectId>(),
+              new Date(),
+              new ArrayList<String>(),
+              10);
+    }
+    @Override
+    public Class<Metadata> getEncoderClass() {
+      return Metadata.class;
+    }
+  }
+
   public static class Metadata {
+
+
     String title;
     String description;
     String state;
@@ -48,12 +79,13 @@ public class Form {
     List<String> paymentInfo;
     int numLines;
 
+
     public Metadata(
         String title,
         String description,
         String state,
         String county,
-        Set<ObjectId> prerequisities,
+        Set<ObjectId> prerequisites,
         Date lastRevisionDate,
         List<String> paymentInfo,
         int numLines) {
@@ -61,10 +93,29 @@ public class Form {
       this.description = description;
       this.state = state;
       this.county = county;
-      this.prerequisities = prerequisities;
+      this.prerequisities = prerequisites;
       this.lastRevisionDate = lastRevisionDate;
       this.numLines = numLines;
       this.paymentInfo = paymentInfo;
+    }
+  }
+
+  public static class SectionCodec implements Codec<Section> {
+    @Override
+    public void encode(BsonWriter writer, Section value, EncoderContext encoderContext) {
+      if (value != null) {
+        writer.writeString("title");
+        System.out.println("encoded section");
+      }
+    }
+    @Override
+    public Section decode(BsonReader reader, DecoderContext decoderContext) {
+      System.out.println("decoded section");
+      return new Section("title", "description", new ArrayList<Section>(), new ArrayList<Question>());
+    }
+    @Override
+    public Class<Section> getEncoderClass() {
+      return Section.class;
     }
   }
 
@@ -195,7 +246,7 @@ public class Form {
     this.lastModifiedAt = lastModifiedAt;
   }
 
-  public void setPdfType(FormType pdfType) {
+  public void setFormType(FormType formType) {
     this.formType = formType;
   }
 
