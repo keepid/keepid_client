@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 
 import Role from '../../static/Role';
 import AccountSetup from './pages/AccountSetup';
-import { ReviewSubmit } from './pages/ReviewSubmit';
+import ReviewSubmit from './pages/ReviewSubmit';
 import SignUserAgreement from './pages/SignUserAgreement';
 import { signupUserFromInvite } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
