@@ -766,3 +766,23 @@ input#search:focus {
 	background-image: none;
 	text-indent: 0
 }
+
+.modal-content {
+	background-color: transparent !important;
+	border: 0 !important;
+}
+  
+.modal-header {
+	border: 0 !important;
+}
+
+.modal {
+	background-color: rgba(0, 0, 0, 0.625);
+}
+
+.transparent-button {
+	background: transparent;
+	border: none;
+	margin-left: auto;
+	margin-right: 0;
+}

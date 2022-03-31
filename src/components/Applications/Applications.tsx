@@ -1,12 +1,12 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
-import { Modal, Button } from 'react-bootstrap';
-
 import React, { Component } from 'react';
+import { Button, Modal } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import Close from '../../static/images/closebutton.png';
 import SearchSVG from '../../static/images/search.svg';
 import View from '../../static/images/view-icon.png';
 import PDFType from '../../static/PDFType';
@@ -203,12 +203,12 @@ class Applications extends Component<Props, State, {}> {
         <Route exact path="/applications">
           <Modal show={this.state.openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
             <Modal.Header>
-              <Button variant="secondary" onClick={this.closeModal}>
-                X
+              <Button className="transparent-button" variant="secondary" onClick={this.closeModal}>
+              <img src={Close} alt="description of image" />
               </Button>
             </Modal.Header>
             <Modal.Body>
-              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="sixers buhl" width="100%" height="600" />
+              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="sixers buhl" width="100%" height="600" frameBorder="none" />
             </Modal.Body>
           </Modal>
           <div className="container-fluid">
@@ -220,6 +220,10 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
                 <p className="lead subheader">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
+                {/* <SearchBar
+                  searchOnClick={() => { }}
+                  searchLoading={false}
+                /> */}
               </div>
             </div>
             <div className="container">
