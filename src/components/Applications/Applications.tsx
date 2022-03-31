@@ -44,7 +44,7 @@ class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Apply Now</b></button>
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Apply Now</b></button>
       </Link>
     </div>
   )
@@ -52,10 +52,10 @@ class Applications extends Component<Props, State, {}> {
   DoubleButtonFormatter = (cell, row) => (
     <div className="double-button-jawn">
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Download</b></button>
+        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Download</b></button>
       </Link>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary-sixers w-110 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}> <b>Delete File</b></button>
+        <button type="button" className="btn btn-primary-sixers w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Delete File</b></button>
       </Link>
     </div>
   )
@@ -186,6 +186,8 @@ class Applications extends Component<Props, State, {}> {
     console.log(this.state);
   }
 
+  placeholderFunc = () => { };
+
   openModalFunc = () => this.setState({ openModal: true });
 
   closeModal = () => this.setState({ openModal: false });
@@ -195,7 +197,6 @@ class Applications extends Component<Props, State, {}> {
       currentApplicationFilename,
       currentApplicationId,
       documents,
-      openModal,
     } = this.state;
 
     return (
