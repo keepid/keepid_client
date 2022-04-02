@@ -1,4 +1,4 @@
-package Form;
+package Form.Services;
 
 public enum FormType {
   APPLICATION("application"),
