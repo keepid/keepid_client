@@ -221,14 +221,14 @@ class Applications extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Available Applications</h1>
                 <p className="lead subheader">Here are all the applications that are available to you. <br />Please click the “Apply Now” button to start applying.</p>
-                {/* <SearchBar
-                  searchOnClick={() => { }}
-                  searchLoading={false}
-                /> */}
               </div>
             </div>
             <div className="container">
-              <form className="form-inline mr-3 w-50">
+            <SearchBar
+              searchOnClick={() => { }}
+              searchLoading={false}
+            />
+              {/* <form className="form-inline mr-3 w-50">
                 <input
                   className="form-control mr-2 w-75"
                   type="text"
@@ -245,7 +245,7 @@ class Applications extends Component<Props, State, {}> {
                     }
                   }}
                 />
-              </form>
+              </form> */}
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">
@@ -265,7 +265,11 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              <form className="form-inline mr-3 w-50">
+            <SearchBar
+              searchOnClick={() => { }}
+              searchLoading={false}
+            />
+              {/* <form className="form-inline mr-3 w-50">
                 <input
                   className="form-control mr-2 w-75"
                   type="text"
@@ -282,7 +286,7 @@ class Applications extends Component<Props, State, {}> {
                     }
                   }}
                 />
-              </form>
+              </form> */}
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">
