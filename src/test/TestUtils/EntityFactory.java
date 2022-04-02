@@ -2,6 +2,7 @@ package TestUtils;
 
 import Activity.Activity;
 import Database.Dao;
+import Form.FieldType;
 import Form.Form;
 import Form.Form.Metadata;
 import Form.Form.Question;
@@ -61,11 +62,30 @@ public class EntityFactory {
             new Date(),
             new ArrayList<String>(),
             defaultNumLines);
-    private Section body =
-        new Section("title", "description", new ArrayList<Section>(), new ArrayList<Question>());
+    private Section child =
+        new Section(
+            "child", "childDescription", new ArrayList<Section>(), new ArrayList<Question>());
+    List<Section> subSections = new ArrayList<>();
+    private Section body;
 
     @Override
     public Form build() {
+      Question question =
+          new Question(
+              new ObjectId(),
+              FieldType.TEXT_FIELD,
+              "question text",
+              new ArrayList<>(),
+              "default",
+              true,
+              10,
+              true,
+              new ObjectId(),
+              true);
+      List<Question> questions = new ArrayList<>();
+      questions.add(question);
+      subSections.add(child);
+      body = new Section("title", "description", subSections, questions);
       Form newForm =
           new Form(
               username,

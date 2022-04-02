@@ -253,7 +253,6 @@ public class Form {
       String title = reader.readString();
       reader.readName();
       String description = reader.readString();
-      reader.readName();
       int SectionsSize = reader.readInt32();
       List<Section> sections = new ArrayList<>();
       for (int i = 0; i < SectionsSize; i++) {
@@ -262,7 +261,6 @@ public class Form {
       }
       reader.readName();
       int questionsSize = reader.readInt32();
-      reader.readEndDocument();
       List<Question> questions = new ArrayList<>();
       for (int i = 0; i < questionsSize; i++) {
         /*
@@ -288,7 +286,25 @@ public class Form {
         reader.readName();
         boolean conditionalType = reader.readBoolean();
         reader.readName();
-        FieldType type = FieldType.valueOf(reader.readString());
+        String enumType = reader.readString();
+        FieldType type;
+        switch (enumType) {
+          case "textField":
+            type = FieldType.TEXT_FIELD;
+            break;
+          case "checkBox":
+            type = FieldType.CHECKBOX;
+            break;
+          case "multipleChoice":
+            type = FieldType.MULTIPLE_CHOICE;
+            break;
+          case "signature":
+            type = FieldType.SIGNATURE;
+            break;
+          default:
+            type = FieldType.TEXT_FIELD;
+            break;
+        }
         reader.readName();
         int numLines = reader.readInt32();
         reader.readName();
@@ -312,6 +328,7 @@ public class Form {
                 conditionalType);
         questions.add(q);
       }
+      reader.readEndDocument();
       return new Section(title, description, sections, questions);
     }
 
