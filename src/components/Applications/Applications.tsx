@@ -202,6 +202,7 @@ class Applications extends Component<Props, State, {}> {
     return (
       <Switch>
         <Route exact path="/applications">
+          <div className="modal custom">
           <Modal show={this.state.openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
             <Modal.Header>
               <Button className="transparent-button" variant="secondary" onClick={this.closeModal}>
@@ -212,6 +213,7 @@ class Applications extends Component<Props, State, {}> {
               <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="sixers buhl" width="100%" height="600" frameBorder="none" />
             </Modal.Body>
           </Modal>
+          </div>
           <div className="container-fluid">
             <Helmet>
               <title>Applications</title>

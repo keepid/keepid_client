@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable */
 import '../../../static/styles/App.scss';
 
 import classNames from 'classnames';
@@ -9,6 +10,11 @@ import cellEditFactory from 'react-bootstrap-table2-editor';
 import paginationFactory, {
   PaginationProvider,
 } from 'react-bootstrap-table2-paginator';
+
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
+const { SearchBar } = Search;
+//import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
+
 
 import ArrowSVG from '../../../static/images/down-arrow.svg';
 import EditFormatter from './EditFormatter';
@@ -360,6 +366,24 @@ const Table = ({
 
   return (
     <>
+      <ToolkitProvider keyField="id" data={data} columns={columns} search>
+      
+    {props => (
+      <div>
+        <SearchBar
+          {...props.searchProps}
+          style={{ width: '400px', height: '40px' }}
+        />
+        <BootstrapTable
+          {...props.baseProps}
+          noDataIndication="There is no solution"
+          striped
+          hover
+          condensed
+        />
+      </div>
+    )}
+     </ToolkitProvider>
       <BootstrapTable
         keyField="id"
         data={data}
