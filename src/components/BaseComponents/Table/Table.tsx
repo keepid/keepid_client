@@ -367,45 +367,43 @@ const Table = ({
   return (
     <>
       <ToolkitProvider keyField="id" data={data} columns={columns} search>
-      
-    {props => (
-      <div>
-        <SearchBar
-          {...props.searchProps}
-          style={{ width: '400px', height: '40px' }}
-        />
-        <BootstrapTable
-          {...props.baseProps}
-          noDataIndication="There is no solution"
-          striped
-          hover
-          condensed
-        />
-      </div>
-    )}
-     </ToolkitProvider>
-      <BootstrapTable
-        keyField="id"
-        data={data}
-        columns={tableColumns}
-        {...rest}
-        cellEdit={createCellEditFactory(cantEditCols)}
-        rowClasses={rowClasses}
-        selectRow={constructSelectRowConfiguration(
-          !!canSelect,
-          selectedRows,
-          setSelectedRows,
+        {props => (
+          <div>
+            <SearchBar
+              {...props.searchProps}
+              placeholder="Search"
+              delay="1000"
+              style={{ width: '400px', height: '40px'}}
+            />
+            <BootstrapTable
+              {...props.baseProps}
+              striped
+              hover
+              condensed
+              keyField="id"
+              data={data}
+              columns={tableColumns}
+              {...rest}
+              cellEdit={createCellEditFactory(cantEditCols)}
+              rowClasses={rowClasses}
+              selectRow={constructSelectRowConfiguration(
+                !!canSelect,
+                selectedRows,
+                setSelectedRows,
+              )}
+              noDataIndication={() => <NoDataIndication emptyInfo={emptyInfo} />}
+              bodyClasses={data.length === 0 ? 'empty-table' : ''}
+            />
+            {rowToDelete ? (
+              <TModal
+                row={rowToDelete}
+                handleClickClose={handleClickClose}
+                handleDelete={handleDelete}
+              />
+            ) : null}
+          </div>
         )}
-        noDataIndication={() => <NoDataIndication emptyInfo={emptyInfo} />}
-        bodyClasses={data.length === 0 ? 'empty-table' : ''}
-      />
-      {rowToDelete ? (
-        <TModal
-          row={rowToDelete}
-          handleClickClose={handleClickClose}
-          handleDelete={handleDelete}
-        />
-      ) : null}
+     </ToolkitProvider>
     </>
   );
 };

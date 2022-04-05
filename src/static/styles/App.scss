@@ -786,3 +786,17 @@ input#search:focus {
 	margin-left: auto;
 	margin-right: 0;
 }
+
+input#search-bar-0.form-control {
+	background-image: url('https://cdn0.iconfinder.com/data/icons/very-basic-2-android-l-lollipop-icon-pack/24/search-512.png');
+	background-size: 1.6rem;
+	background-position-y: center;
+	background-repeat: no-repeat;
+	text-indent: 1rem;
+	transition: 0.3s;
+}
+
+label.search-label {
+	display: inline-block;
+    margin-bottom: 2rem;
+}

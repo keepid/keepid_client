@@ -226,10 +226,6 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-            <SearchBar
-              searchOnClick={() => { }}
-              searchLoading={false}
-            />
               {/* <form className="form-inline mr-3 w-50">
                 <input
                   className="form-control mr-2 w-75"
@@ -267,10 +263,6 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-            <SearchBar
-              searchOnClick={() => { }}
-              searchLoading={false}
-            />
               {/* <form className="form-inline mr-3 w-50">
                 <input
                   className="form-control mr-2 w-75"
