@@ -24,10 +24,10 @@ public class Form {
   @BsonProperty(value = "lastModifiedAt")
   private Date lastModifiedAt;
 
-  @BsonProperty(value = "firstName")
+  @BsonProperty(value = "username")
   private String username;
 
-  @BsonProperty(value = "lastName")
+  @BsonProperty(value = "uploaderUserName")
   private String uploaderUsername;
 
   @BsonProperty(value = "formType")
@@ -42,23 +42,91 @@ public class Form {
     @Override
     public void encode(BsonWriter writer, Metadata value, EncoderContext encoderContext) {
       if (value != null) {
-        writer.writeString("title");
-        System.out.println("encoded section");
+        writer.writeStartDocument();
+        writer.writeName("title");
+        writer.writeString(value.title);
+        writer.writeName("description");
+        writer.writeString(value.description);
+        writer.writeName("state");
+        writer.writeString(value.state);
+        writer.writeName("county");
+        writer.writeString(value.county);
+        writer.writeName("lines");
+        writer.writeInt32(value.numLines);
+        writer.writeName("date");
+        writer.writeDateTime(value.lastRevisionDate.getTime());
+        writer.writeName("prereqsSize");
+        writer.writeInt32(value.prerequisities.size());
+        for (ObjectId prereq : value.prerequisities) {
+
+          writer.writeObjectId(prereq);
+        }
+        writer.writeName("infoSize");
+        writer.writeInt32(value.paymentInfo.size());
+        for (String item : value.paymentInfo) {
+          writer.writeName(item);
+          writer.writeString(item);
+        }
+        writer.writeEndDocument();
       }
     }
+
     @Override
     public Metadata decode(BsonReader reader, DecoderContext decoderContext) {
-      System.out.println("decoded section");
+      /*
+       writer.writeString(value.title);
+       writer.writeString(value.description);
+       writer.writeString(value.state);
+       writer.writeString(value.county);
+       writer.writeInt32(value.numLines);
+       writer.writeDateTime(value.lastRevisionDate.getTime());
+       writer.writeInt32(value.prerequisities.size());
+       for (ObjectId prereq : value.prerequisities) {
+         writer.writeObjectId(prereq);
+       }
+       writer.writeInt32(value.paymentInfo.size());
+       for (String item : value.paymentInfo) {
+         writer.writeString(item);
+       }
+      */
+      reader.readStartDocument();
+      reader.readName();
+      String title = reader.readString();
+      reader.readName();
+      String description = reader.readString();
+      reader.readName();
+      String state = reader.readString();
+      reader.readName();
+      String county = reader.readString();
+      reader.readName();
+      int numLines = reader.readInt32();
+      reader.readName();
+      Date lastRevisionDate = new Date(reader.readDateTime());
+      reader.readName();
+      int prereqsSize = reader.readInt32();
+      Set<ObjectId> prerequisities = new TreeSet<>();
+      for (int i = 0; i < prereqsSize; i++) {
+        prerequisities.add(reader.readObjectId());
+      }
+      reader.readName();
+      int paymentInfoSize = reader.readInt32();
+      List<String> paymentInfo = new ArrayList<>();
+      for (int i = 0; i < paymentInfoSize; i++) {
+        reader.readName();
+        paymentInfo.add(reader.readString());
+      }
+      reader.readEndDocument();
       return new Metadata(
-              "title",
-              "description",
-              "state",
-              "county",
-              new HashSet<ObjectId>(),
-              new Date(),
-              new ArrayList<String>(),
-              10);
+          title,
+          description,
+          state,
+          county,
+          prerequisities,
+          lastRevisionDate,
+          paymentInfo,
+          numLines);
     }
+
     @Override
     public Class<Metadata> getEncoderClass() {
       return Metadata.class;
@@ -66,7 +134,6 @@ public class Form {
   }
 
   public static class Metadata {
-
 
     String title;
     String description;
@@ -78,7 +145,6 @@ public class Form {
     // who to send money to, and address
     List<String> paymentInfo;
     int numLines;
-
 
     public Metadata(
         String title,
@@ -98,21 +164,174 @@ public class Form {
       this.numLines = numLines;
       this.paymentInfo = paymentInfo;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (obj.getClass() != this.getClass()) {
+        return false;
+      }
+
+      final Metadata other = (Metadata) obj;
+
+      if (!this.title.equals(other.title)) {
+        return false;
+      }
+
+      if (!this.description.equals(other.description)) {
+        return false;
+      }
+      if (this.lastRevisionDate.getTime() != (other.lastRevisionDate.getTime())) {
+        return false;
+      }
+      if (this.numLines != other.numLines) return false;
+
+      if (!this.paymentInfo.equals(other.paymentInfo)) {
+        return false;
+      }
+      if (!this.prerequisities.equals(other.prerequisities)) {
+        return false;
+      }
+
+      return true;
+    }
   }
 
   public static class SectionCodec implements Codec<Section> {
     @Override
     public void encode(BsonWriter writer, Section value, EncoderContext encoderContext) {
       if (value != null) {
-        writer.writeString("title");
-        System.out.println("encoded section");
+        writer.writeStartDocument();
+        writer.writeName("title");
+        writer.writeString(value.title);
+        writer.writeName("description");
+        writer.writeString(value.description);
+        writer.writeName("sectionsSize");
+        writer.writeInt32(value.subsections.size());
+        for (Section sec : value.subsections) {
+          writer.writeName(sec.title);
+          encode(writer, sec, encoderContext);
+        }
+        writer.writeName("questionsSize");
+        writer.writeInt32(value.questions.size());
+        for (Question question : value.questions) {
+          writer.writeName("text");
+          writer.writeString(question.questionText);
+          writer.writeName("default");
+          writer.writeString(question.defaultValue);
+          writer.writeName("conditionalOnField");
+          writer.writeObjectId(question.conditionalOnField);
+          writer.writeName("id");
+          writer.writeObjectId(question.id);
+          writer.writeName("required");
+          writer.writeBoolean(question.required);
+          writer.writeName("matched");
+          writer.writeBoolean(question.matched);
+          writer.writeName("conditionalType");
+          writer.writeBoolean(question.conditionalType);
+          writer.writeName("type");
+          writer.writeString(question.type.toString());
+          writer.writeName("numLines");
+          writer.writeInt32(question.numLines);
+          writer.writeName("optionsSize");
+          writer.writeInt32(question.options.size());
+          for (String option : question.options) {
+            writer.writeName(option);
+            writer.writeString(option);
+          }
+        }
+        writer.writeEndDocument();
       }
     }
+
     @Override
     public Section decode(BsonReader reader, DecoderContext decoderContext) {
-      System.out.println("decoded section");
-      return new Section("title", "description", new ArrayList<Section>(), new ArrayList<Question>());
+      reader.readStartDocument();
+      reader.readName();
+      String title = reader.readString();
+      reader.readName();
+      String description = reader.readString();
+      int SectionsSize = reader.readInt32();
+      List<Section> sections = new ArrayList<>();
+      for (int i = 0; i < SectionsSize; i++) {
+        reader.readName();
+        sections.add(decode(reader, decoderContext));
+      }
+      reader.readName();
+      int questionsSize = reader.readInt32();
+      List<Question> questions = new ArrayList<>();
+      for (int i = 0; i < questionsSize; i++) {
+        /*
+         writer.writeName("optionsSize");
+         writer.writeInt32(question.options.size());
+         for (String option : question.options) {
+           writer.writeName(option);
+           writer.writeString(option);
+         }
+        */
+        reader.readName();
+        String questiontext = reader.readString();
+        reader.readName();
+        String defaultValue = reader.readString();
+        reader.readName();
+        ObjectId conditionalOnField = reader.readObjectId();
+        reader.readName();
+        ObjectId id = reader.readObjectId();
+        reader.readName();
+        boolean required = reader.readBoolean();
+        reader.readName();
+        boolean matched = reader.readBoolean();
+        reader.readName();
+        boolean conditionalType = reader.readBoolean();
+        reader.readName();
+        String enumType = reader.readString();
+        FieldType type;
+        switch (enumType) {
+          case "textField":
+            type = FieldType.TEXT_FIELD;
+            break;
+          case "checkBox":
+            type = FieldType.CHECKBOX;
+            break;
+          case "multipleChoice":
+            type = FieldType.MULTIPLE_CHOICE;
+            break;
+          case "signature":
+            type = FieldType.SIGNATURE;
+            break;
+          default:
+            type = FieldType.TEXT_FIELD;
+            break;
+        }
+        reader.readName();
+        int numLines = reader.readInt32();
+        reader.readName();
+        int optionsSize = reader.readInt32();
+        List<String> options = new ArrayList<>();
+        for (int j = 0; j < optionsSize; j++) {
+          reader.readName();
+          options.add(reader.readString());
+        }
+        Question q =
+            new Question(
+                id,
+                type,
+                questiontext,
+                options,
+                defaultValue,
+                required,
+                numLines,
+                matched,
+                conditionalOnField,
+                conditionalType);
+        questions.add(q);
+      }
+      reader.readEndDocument();
+      return new Section(title, description, sections, questions);
     }
+
     @Override
     public Class<Section> getEncoderClass() {
       return Section.class;
@@ -132,9 +351,37 @@ public class Form {
       this.subsections = subsections;
       this.questions = questions;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (obj.getClass() != this.getClass()) {
+        return false;
+      }
+
+      final Section other = (Section) obj;
+
+      if (!this.title.equals(other.title)) {
+        return false;
+      }
+
+      if (!this.description.equals(other.description)) {
+        return false;
+      }
+
+      if (!this.subsections.equals(other.subsections)) {
+        return false;
+      }
+      if (this.questions == null || !this.questions.equals(other.questions)) {
+        return false;
+      }
+      return true;
+    }
   }
 
-  public class Question {
+  public static class Question {
     ObjectId id;
     FieldType type;
     String questionText;
@@ -168,6 +415,55 @@ public class Form {
       this.matched = matched;
       this.conditionalOnField = conditionalOnField;
       this.conditionalType = conditionalType;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (obj.getClass() != this.getClass()) {
+        return false;
+      }
+
+      final Question other = (Question) obj;
+
+      if (!this.id.equals(other.id)) {
+        return false;
+      }
+
+      if (!this.type.equals(other.type)) {
+        return false;
+      }
+
+      if (!this.questionText.equals(other.questionText)) {
+        return false;
+      }
+
+      if (!this.options.equals(other.options)) {
+        return false;
+      }
+
+      if (!this.defaultValue.equals(other.defaultValue)) {
+        return false;
+      }
+
+      if (this.numLines != (other.numLines)) {
+        return false;
+      }
+
+      if (this.matched != (other.matched)) {
+        return false;
+      }
+
+      if (this.conditionalType != (other.conditionalType)) {
+        return false;
+      }
+
+      if (!this.conditionalOnField.equals(other.conditionalOnField)) {
+        return false;
+      }
+      return true;
     }
   }
 

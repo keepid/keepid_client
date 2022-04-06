@@ -33,6 +33,7 @@ public class FormDaoImplUnitTests {
     String testUsername = "username1";
     Form form = EntityFactory.createForm().withUsername(testUsername).build();
     formDao.save(form);
+    System.out.println(formDao.getAll().get(0));
     assertTrue(formDao.get(testUsername).isPresent());
     assertEquals(formDao.get(testUsername).get().getUsername(), form.getUsername());
     assertEquals(formDao.get(testUsername).get().getUploaderUsername(), form.getUploaderUsername());
@@ -52,8 +53,8 @@ public class FormDaoImplUnitTests {
     assertEquals(formDao.get(testUsername).get().getUploaderUsername(), form.getUploaderUsername());
     assertEquals(formDao.get(testUsername).get().getLastModifiedAt(), form.getLastModifiedAt());
     assertEquals(formDao.get(testUsername).get().getUploadedAt(), form.getUploadedAt());
-    assertEquals(formDao.get(testUsername).get().getBody(), form.getBody());
-    assertEquals(formDao.get(testUsername).get().getMetadata(), form.getMetadata());
+    assertTrue(formDao.get(testUsername).get().getMetadata().equals(form.getMetadata()));
+    assertTrue(formDao.get(testUsername).get().getBody().equals(form.getBody()));
     assertEquals(formDao.get(testUsername).get().getFormType(), form.getFormType());
   }
 

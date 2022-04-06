@@ -35,7 +35,9 @@ public class FormDaoImpl implements FormDao {
   }
 
   @Override
-  public void clear() {}
+  public void clear() {
+    formCollection.drop();
+  }
 
   @Override
   public void delete(Form form) {
