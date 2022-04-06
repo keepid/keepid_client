@@ -2,6 +2,7 @@ package Form.Services;
 
 import Config.Message;
 import Config.Service;
+import Database.Form.FormDao;
 import Form.FormMessage;
 import Form.FormType;
 import User.UserType;
@@ -14,6 +15,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
 
 public class DeleteFormService implements Service {
+  FormDao formDao;
   MongoDatabase db;
   private String username;
   private String orgName;
@@ -22,12 +24,14 @@ public class DeleteFormService implements Service {
   private String fileId;
 
   public DeleteFormService(
+      FormDao formDao,
       MongoDatabase db,
       String username,
       String orgName,
       UserType userType,
       FormType formType,
       String fileId) {
+    this.formDao = formDao;
     this.db = db;
     this.username = username;
     this.orgName = orgName;

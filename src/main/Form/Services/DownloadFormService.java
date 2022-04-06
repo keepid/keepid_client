@@ -2,6 +2,7 @@ package Form.Services;
 
 import Config.Message;
 import Config.Service;
+import Database.Form.FormDao;
 import Form.FormMessage;
 import Form.FormType;
 import Security.EncryptionController;
@@ -19,6 +20,7 @@ import java.security.GeneralSecurityException;
 import java.util.Objects;
 
 public class DownloadFormService implements Service {
+  FormDao formDao;
   MongoDatabase db;
   private String username;
   private String orgName;
@@ -29,6 +31,7 @@ public class DownloadFormService implements Service {
   private EncryptionController encryptionController;
 
   public DownloadFormService(
+      FormDao formDao,
       MongoDatabase db,
       String username,
       String orgName,
@@ -36,6 +39,7 @@ public class DownloadFormService implements Service {
       String fileId,
       FormType formType,
       EncryptionController encryptionController) {
+    this.formDao = formDao;
     this.db = db;
     this.username = username;
     this.orgName = orgName;
