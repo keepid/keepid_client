@@ -1,47 +1,50 @@
+/* eslint-disable */
+
 import 'react-datepicker/dist/react-datepicker.css';
 
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import { Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import uuid from 'react-uuid';
+import { Button } from 'react-bootstrap';
 
 import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
 
+
 interface Field {
-  fieldID: string; // Unique identifier id from frontend
-  fieldName: string; // Unique identifier name from backend
-  fieldType: string;
-  fieldValueOptions: string[];
-  fieldDefaultValue: any;
-  fieldIsRequired: boolean;
-  fieldNumLines: number;
-  fieldIsMatched: boolean;
-  fieldQuestion: string;
+  fieldID: string, // Unique identifier id from frontend
+  fieldName: string, // Unique identifier name from backend
+  fieldType: string,
+  fieldValueOptions: string[],
+  fieldDefaultValue: any,
+  fieldIsRequired: boolean,
+  fieldNumLines: number,
+  fieldIsMatched: boolean,
+  fieldQuestion: string,
 }
 
 interface Props {
-  alert: any;
-  applicationId: string;
-  applicationFilename: string;
+  alert: any,
+  applicationId: string,
+  applicationFilename: string,
 }
 
 interface State {
-  fields: Field[] | undefined;
-  formAnswers: { [fieldName: string]: any };
-  pdfApplication: File | undefined;
-  buttonState: string;
-  title: string;
-  description: string;
-  submitSuccessful: boolean;
-  currentPage: number;
-  numPages: number;
-  formError: boolean;
+  fields: Field[] | undefined,
+  formAnswers: { [fieldName: string]: any },
+  pdfApplication: File | undefined,
+  buttonState: string,
+  title: string,
+  description: string,
+  submitSuccessful: boolean,
+  currentPage: number,
+  numPages: number,
+  formError: boolean,
 }
 
 const MAX_Q_PER_PAGE = 10;
@@ -66,47 +69,90 @@ class ApplicationForm extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { applicationId } = this.props;
-    const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-application-questions`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        applicationId,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        if (status === 'SUCCESS') {
-          const { fields, title, description } = responseJSON;
-          // Get every field and give it a unique ID
-          for (let i = 0; i < fields.length; i += 1) {
-            fields[i].fieldID = uuid();
-            const entry = fields[i];
-            if (entry.fieldType === 'DateField') {
-              // Need to update default date value with the local date on the current computer
-              formAnswers[entry.fieldName] = new Date();
-            } else {
-              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-            }
+    const {
+      applicationId,
+    } = this.props;
+    const {
+      formAnswers,
+    } = this.state;
+    const JSONresponse = require('./application_birth.json');
+    console.log(JSONresponse);
+      const { status } = JSONresponse;
+      console.log(JSONresponse);
+      if (status === 'SUCCESS') {
+        const {
+          fields,
+          title,
+          description,
+        } = JSONresponse;
+        // Get every field and give it a unique ID
+        for (let i = 0; i < fields.length; i += 1) {
+          fields[i].fieldID = uuid();
+          const entry = fields[i];
+          if (entry.fieldType === 'DateField') {
+            // Need to update default date value with the local date on the current computer
+            formAnswers[entry.fieldName] = new Date();
+          } else {
+            formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           }
-          this.setState({
-            fields,
-            title,
-            description,
-            formAnswers,
-            numPages:
-              fields.length === 0
-                ? 1
-                : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-          });
-        } else {
-          this.setState({
-            formError: true,
-          });
         }
-      });
+        this.setState({
+          fields,
+          title,
+          description,
+          formAnswers,
+          numPages:
+            (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
+        });
+      } else {
+        this.setState({
+          formError: true,
+        });
+      }
+
+      
+
+    // fetch(`${getServerURL()}/get-application-questions`, {
+    //   method: 'POST',
+    //   credentials: 'include',
+    //   body: JSON.stringify({
+    //     applicationId,
+    //   }),
+    // }).then((response) => response.json())
+    //   .then((responseJSON) => {
+    //     const { status } = responseJSON;
+    //     console.log(responseJSON);
+    //     if (status === 'SUCCESS') {
+    //       const {
+    //         fields,
+    //         title,
+    //         description,
+    //       } = responseJSON;
+    //       // Get every field and give it a unique ID
+    //       for (let i = 0; i < fields.length; i += 1) {
+    //         fields[i].fieldID = uuid();
+    //         const entry = fields[i];
+    //         if (entry.fieldType === 'DateField') {
+    //           // Need to update default date value with the local date on the current computer
+    //           formAnswers[entry.fieldName] = new Date();
+    //         } else {
+    //           formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+    //         }
+    //       }
+    //       this.setState({
+    //         fields,
+    //         title,
+    //         description,
+    //         formAnswers,
+    //         numPages:
+    //           (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
+    //       });
+    //     } else {
+    //       this.setState({
+    //         formError: true,
+    //       });
+    //     }
+    //   });
   }
 
   handleContinue = (e: any): void => {
