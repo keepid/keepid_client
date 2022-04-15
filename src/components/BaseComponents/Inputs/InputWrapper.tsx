@@ -33,7 +33,7 @@ export interface InputWrapperProps {
   invalidMessage?: string | undefined;
 }
 
-const InputWrapper = ({
+function InputWrapper({
   children,
   description,
   label,
@@ -41,7 +41,7 @@ const InputWrapper = ({
   required,
   labelClassName,
   invalidMessage,
-}: InputWrapperProps) => {
+}: InputWrapperProps) {
   const className = classNames('input-label', labelClassName, { required });
   return (
     <Form.Group>
@@ -57,6 +57,6 @@ const InputWrapper = ({
       {description ? <Form.Text>{description}</Form.Text> : null}
     </Form.Group>
   );
-};
+}
 
 export default InputWrapper;

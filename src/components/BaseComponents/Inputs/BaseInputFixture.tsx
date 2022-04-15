@@ -9,11 +9,11 @@ interface BaseInputFixtureProps {
   otherProps?: object | undefined;
 }
 
-const BaseInputFixture = ({
+function BaseInputFixture({
   fixture: Fixture,
   type,
   otherProps,
-}: BaseInputFixtureProps) => {
+}: BaseInputFixtureProps) {
   const [name] = useValue<string>('name', {
     defaultValue: `${type}-input-name`,
   });
@@ -71,7 +71,7 @@ const BaseInputFixture = ({
       <button type="submit">submit</button>
     </Form>
   );
-};
+}
 
 BaseInputFixture.defaultProps = { otherProps: {} };
 

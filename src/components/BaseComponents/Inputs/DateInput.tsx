@@ -13,7 +13,7 @@ interface DateInputProps extends InputProps<Date | undefined> {
   showTimeSelect?: boolean | undefined;
 }
 
-const DateInput = ({
+function DateInput({
   className: classNameProp,
   defaultValue,
   name,
@@ -24,7 +24,7 @@ const DateInput = ({
   validate,
   value,
   ...rest
-}: DateInputProps) => {
+}: DateInputProps) {
   const [invalidMessage, setInvalidMessage] = useState('');
   const [validityChecked, setValidityChecked] = useState(false);
   const className = classNames('form-control', 'form-purple', classNameProp, {
@@ -86,7 +86,7 @@ const DateInput = ({
       />
     </InputWrapper>
   );
-};
+}
 
 DateInput.defaultProps = { showTimeSelect: false };
 

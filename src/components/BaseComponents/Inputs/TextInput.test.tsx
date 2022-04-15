@@ -69,7 +69,7 @@ describe('TextInput', () => {
 
   test('should use controlled value', async () => {
     const controlledValue = 'controlled value';
-    const { getByLabelText } = render(<><TextInput label={label} name={name} value={controlledValue} /></>);
+    const { getByLabelText } = render(<TextInput label={label} name={name} value={controlledValue} />);
 
     expect(getByLabelText(label)).toBeInTheDocument();
     fireEvent.input(getByLabelText(label), { target: { value: 'New Value' } });

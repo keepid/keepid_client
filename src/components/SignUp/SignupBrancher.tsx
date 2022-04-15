@@ -5,8 +5,9 @@ import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
-const SignupBrancher = () => (
-  <div>
+function SignupBrancher() {
+  return (
+<div>
     <Helmet>
       <title>Signup Options</title>
       <meta name="description" content="Keep.id" />
@@ -44,7 +45,8 @@ const SignupBrancher = () => (
         </div>
       </div>
     </div>
-  </div>
-);
+</div>
+  );
+}
 
 export default SignupBrancher;

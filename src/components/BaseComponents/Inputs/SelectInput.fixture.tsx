@@ -14,11 +14,13 @@ const validate = (opt) => {
   return '';
 };
 
-const SelectInputFixture = () => (
-  <BaseInputFixture
-    fixture={SelectInput}
-    otherProps={{ options, validate }}
-    type="Select"
-  />
-);
+function SelectInputFixture() {
+  return (
+<BaseInputFixture
+  fixture={SelectInput}
+  otherProps={{ options, validate }}
+  type="Select"
+/>
+  );
+}
 export default SelectInputFixture;

@@ -29,7 +29,7 @@ const messages = defineMessages({
   learnMore: { id: 'home.learn-more', defaultMessage: 'Donate' },
 });
 
-const Home = () => {
+function Home() {
   const intl = useIntl();
 
   return (
@@ -93,6 +93,6 @@ const Home = () => {
       <WhoWeAreServing />
     </div>
   );
-};
+}
 
 export default Home;

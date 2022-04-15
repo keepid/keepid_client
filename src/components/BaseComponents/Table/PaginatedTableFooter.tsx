@@ -20,14 +20,14 @@ interface PaginatedTableFooterProps {
   changeCurrentPage: (e, i) => void;
 }
 
-const PaginatedTableFooter = ({
+function PaginatedTableFooter({
   numElements,
   itemsPerPage,
   handleChangeItemsPerPage,
   paginationProps,
   currentPage,
   changeCurrentPage,
-}: PaginatedTableFooterProps) => {
+}: PaginatedTableFooterProps) {
   const lightPurple = '#E8E9FF';
 
   // styles for results per page Select element
@@ -76,6 +76,6 @@ const PaginatedTableFooter = ({
       </div>
     </div>
   );
-};
+}
 
 export default PaginatedTableFooter;

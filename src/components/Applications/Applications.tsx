@@ -76,7 +76,7 @@ class Applications extends Component<Props, State, {}> {
     };
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',

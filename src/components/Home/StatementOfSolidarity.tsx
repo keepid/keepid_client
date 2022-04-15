@@ -11,7 +11,7 @@ const messages = defineMessages({
   },
 });
 
-const StatementOfSolidarity = () => {
+function StatementOfSolidarity() {
   const intl = useIntl();
   const [showBanner, setShowBanner] = useState(true);
   return (
@@ -43,6 +43,6 @@ const StatementOfSolidarity = () => {
       )}
     </div>
   );
-};
+}
 
 export default StatementOfSolidarity;

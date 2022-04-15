@@ -55,7 +55,7 @@ export function useSignupStageContext(): SignupStageContextInterface {
   };
 }
 
-const SignUpRouter = ({ role }: SignUpRouterProps) => {
+function SignUpRouter({ role }: SignUpRouterProps) {
   const alert = useAlert();
   const [
     accountInformation,
@@ -159,6 +159,6 @@ const SignUpRouter = ({ role }: SignUpRouterProps) => {
       </Route>
     </SignUpContext.Provider>
   );
-};
+}
 
 export default SignUpRouter;

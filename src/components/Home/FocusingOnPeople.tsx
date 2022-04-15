@@ -72,7 +72,7 @@ const FocusingOnPeopleMessages = defineMessages({
   },
 });
 
-const FocusingOnPeople = () => {
+function FocusingOnPeople() {
   const intl = useIntl();
   return (
     <div className="py-5">
@@ -194,6 +194,6 @@ const FocusingOnPeople = () => {
       </div>
     </div>
   );
-};
+}
 
 export default FocusingOnPeople;

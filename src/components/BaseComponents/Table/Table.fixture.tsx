@@ -25,7 +25,7 @@ const generateRow = (idx) => ({
 });
 
 const data = [generateRow(1), generateRow(2), generateRow(3), generateRow(4)];
-const TableFixture = () => {
+function TableFixture() {
   const [canModify] = useValue<boolean>('canModify', {
     defaultValue: false,
   });
@@ -33,6 +33,6 @@ const TableFixture = () => {
     defaultValue: false,
   });
   return (<Table data={data} columns={columns} emptyInfo={{ description: 'empty' }} canModify={canModify} canSelect={canSelect} />);
-};
+}
 
 export default TableFixture;

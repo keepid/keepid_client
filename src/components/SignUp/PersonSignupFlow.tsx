@@ -14,11 +14,8 @@ import { signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
 export default function PersonSignupFlow() {
-  const {
-    signUpStageStateContext,
-    accountInformationContext,
-    personRole,
-  } = useContext(SignUpContext);
+  const { signUpStageStateContext, accountInformationContext, personRole } =
+    useContext(SignUpContext);
   const alert = useAlert();
   const history = useHistory();
 
