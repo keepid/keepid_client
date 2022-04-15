@@ -149,19 +149,20 @@ const constructSelectRowConfiguration = (
   },
 });
 
-const createDeleteFormatter = (handleTryDelete) => (cell: any, row: any) =>
-  (
-    <Button
-      variant="link"
-      className="delete-text table-button action"
-      onClick={(e) => handleTryDelete(e, row)}
-    >
+const createDeleteFormatter = (handleTryDelete) => function (cell: any, row: any) {
+  return (
+<Button
+  variant="link"
+  className="delete-text table-button action"
+  onClick={(e) => handleTryDelete(e, row)}
+>
       <div className="row align-items-center">
         {/* <img className="px-1 action-svg" src={DeleteSVG} alt="delete" /> */}
         <div className="d-none d-sm-block">Delete</div>
       </div>
-    </Button>
+</Button>
   );
+};
 
 const createCellEditFactory = (cantEditCols: Set<number>) =>
   cellEditFactory({
@@ -225,7 +226,7 @@ interface TableProps extends NoDataIndicationProps {
 /**
  * Base Table body component, without pagination
  */
-const Table = ({
+function Table({
   canModify,
   canSelect,
   cantEditCols: cantEditColsProp,
@@ -235,7 +236,7 @@ const Table = ({
   onDelete,
   onEditSave,
   ...rest
-}: TableProps) => {
+}: TableProps) {
   // Boolean indicating whether the `columns`
   const [initialized, setInitialized] = useState(false);
   const [rowsBeingEdited, setRowsBeingEdited] = useState(new Set<number>());
@@ -384,7 +385,7 @@ const Table = ({
       ) : null}
     </>
   );
-};
+}
 
 Table.defaultProps = defaultProps;
 
@@ -399,10 +400,11 @@ interface NoDataIndicationProps {
 /**
  * Component rendered when no data provided to Table
  */
-const NoDataIndication = ({
+function NoDataIndication({
   emptyInfo,
-}: NoDataIndicationProps): React.ReactElement => (
-  <div className="empty-table d-flex flex-column justify-content-center">
+}: NoDataIndicationProps): React.ReactElement {
+  return (
+<div className="empty-table d-flex flex-column justify-content-center">
     <div>
       <p>{`${emptyInfo.description}`}</p>
     </div>
@@ -417,15 +419,16 @@ const NoDataIndication = ({
         </button>
       </div>
     ) : null}
-  </div>
-);
+</div>
+  );
+}
 
 interface PaginatedTableProps extends TableProps {}
 
 /**
  * Wrapper providing pagination to the base Table component
  */
-const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
+function PaginatedTable({ data, ...props }: PaginatedTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   data = data || [];
@@ -466,7 +469,7 @@ const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
       )}
     </PaginationProvider>
   );
-};
+}
 
 PaginatedTable.defaultProps = defaultProps;
 

@@ -40,7 +40,7 @@ const howItWorksMessages = defineMessages({
   },
 });
 
-const HowItWorks = () => {
+function HowItWorks() {
   const intl = useIntl();
 
   return (
@@ -72,14 +72,15 @@ const HowItWorks = () => {
       </div>
     </div>
   );
-};
+}
 
-const HowItWorksDetail = (props: {
+function HowItWorksDetail(props: {
   header: string;
   detail: string;
   image: string;
-}) => (
-  <div className="row pb-5">
+}) {
+  return (
+<div className="row pb-5">
     <div className="col-md-4 mb-2">
       <img alt="Hubs" src={props.image} className="home-svgs float-right" />
     </div>
@@ -87,7 +88,8 @@ const HowItWorksDetail = (props: {
       <h3>{props.header}</h3>
       <span>{props.detail}</span>
     </div>
-  </div>
-);
+</div>
+  );
+}
 
 export default HowItWorks;

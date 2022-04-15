@@ -49,7 +49,7 @@ const benefitsMessages = defineMessages({
   },
 });
 
-const Benefits = () => {
+function Benefits() {
   const intl = useIntl();
 
   return (
@@ -113,6 +113,6 @@ const Benefits = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Benefits;

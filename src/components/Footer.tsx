@@ -7,8 +7,9 @@ import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
 
-const Footer = () => (
-  <footer className="footer custom-footer-color">
+function Footer() {
+  return (
+<footer className="footer custom-footer-color">
     <div className="container">
       <div className="d-flex flex-row bd-highlight py-8 py-md-11 flex-wrap">
         <div className="p-2 bd-highlight col-12 col-md-4 col-lg-4 mb-4">
@@ -125,7 +126,8 @@ const Footer = () => (
         </div>
       </div>
     </div>
-  </footer>
-);
+</footer>
+  );
+}
 
 export default Footer;

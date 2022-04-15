@@ -5,7 +5,7 @@ import { useValue } from 'react-cosmos/fixture';
 import { DateInput } from '.';
 import BaseInputFixture from './BaseInputFixture';
 
-const DateInputFixture = () => {
+function DateInputFixture() {
   const [showTimeSelect] = useValue('showTimeSelect', { defaultValue: false });
 
   const validate = (date) => {
@@ -24,6 +24,6 @@ const DateInputFixture = () => {
       otherProps={{ showTimeSelect, validate }}
     />
   );
-};
+}
 
 export default DateInputFixture;

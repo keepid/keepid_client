@@ -31,7 +31,7 @@ const coreValuesMessages = defineMessages({
   },
 });
 
-const CoreValues = () => {
+function CoreValues() {
   const intl = useIntl();
   return (
     <div className="fluid-container mb-4 pt-5 pb-5 mx-0 background">
@@ -93,6 +93,6 @@ const CoreValues = () => {
       </div>
     </div>
   );
-};
+}
 
 export default CoreValues;

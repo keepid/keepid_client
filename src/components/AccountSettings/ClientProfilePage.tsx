@@ -87,7 +87,7 @@ class ClientProfilePage extends Component<Props, State> {
     this.renderActivities = this.renderActivities.bind(this);
   }
 
-  componentDidMount = (): void => {
+  componentDidMount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
@@ -161,13 +161,13 @@ class ClientProfilePage extends Component<Props, State> {
             }
           });
       });
-  };
+  }
 
-  componentWillUnmount = (): void => {
+  componentWillUnmount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
-  };
+  }
 
   loadProfilePhoto = (): void => {
     const { username } = this.props;

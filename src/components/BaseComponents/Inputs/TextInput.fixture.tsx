@@ -6,7 +6,7 @@ import { TextInput } from '.';
 import BaseInputFixture from './BaseInputFixture';
 import { TextInputType } from './TextInput';
 
-const TextInputFixture = () => {
+function TextInputFixture() {
   const [type] = useSelect('type', {
     options: Object.values(TextInputType),
     defaultValue: TextInputType.TEXT,
@@ -29,6 +29,6 @@ const TextInputFixture = () => {
       otherProps={{ type, validate }}
     />
   );
-};
+}
 
 export default TextInputFixture;

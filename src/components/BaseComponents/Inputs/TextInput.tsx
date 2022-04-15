@@ -16,7 +16,7 @@ export interface TextInputProps extends InputProps<string> {
   type?: TextInputType;
 }
 
-const TextInput = ({
+function TextInput({
   className: classNameProp,
   defaultValue,
   label,
@@ -27,7 +27,7 @@ const TextInput = ({
   validate: validateProp,
   value,
   ...rest
-}: TextInputProps) => {
+}: TextInputProps) {
   const className = classNames('form-control', 'form-purple', classNameProp);
   const [showPassword, setShowPassword] = useState(false);
   const inputType =
@@ -93,7 +93,7 @@ const TextInput = ({
       />
     </InputWrapper>
   );
-};
+}
 
 TextInput.defaultProps = { type: TextInputType.TEXT };
 

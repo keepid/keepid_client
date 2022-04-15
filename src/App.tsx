@@ -141,6 +141,9 @@ class App extends React.Component<{}, State, {}> {
             `${firstName} ${lastName}`,
           ); // Change
         }
+      })
+      .catch((e) => {
+        console.log('Server is not running: ', e);
       });
   }
 
@@ -172,6 +175,36 @@ class App extends React.Component<{}, State, {}> {
 
             <Switch>
               <Route exact path="/" render={() => <Redirect to="/home" />} />
+              <Route path="/our-team">
+                <OurTeam />
+              </Route>
+              <Route path="/our-partners">
+                <OurPartners />
+              </Route>
+              <Route path="/our-mission">
+                <OurMission />
+              </Route>
+              <Route path="/privacy-policy">
+                <PrivacyPolicy />
+              </Route>
+              <Route path="/eula">
+                <EULA />
+              </Route>
+              <Route path="/dashboard-test">
+                <AdminDashboard />
+              </Route>
+              <Route path="/careers">
+                <Careers />
+              </Route>
+              <Route path="/issue-report">
+                <IssueReport />
+              </Route>
+              <Route path="/forgot-password">
+                <ForgotPassword />
+              </Route>
+              <Route path="/reset-password/:jwt">
+                <ResetPassword />
+              </Route>
               <Route
                 path="/home"
                 render={() => {
@@ -300,36 +333,6 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route path="/our-team">
-                <OurTeam />
-              </Route>
-              <Route path="/our-partners">
-                <OurPartners />
-              </Route>
-              <Route path="/our-mission">
-                <OurMission />
-              </Route>
-              <Route path="/privacy-policy">
-                <PrivacyPolicy />
-              </Route>
-              <Route path="/eula">
-                <EULA />
-              </Route>
-              <Route path="/dashboard-test">
-                <AdminDashboard />
-              </Route>
-              <Route path="/careers">
-                <Careers />
-              </Route>
-              <Route path="/issue-report">
-                <IssueReport />
-              </Route>
-              <Route path="/forgot-password">
-                <ForgotPassword />
-              </Route>
-              <Route path="/reset-password/:jwt">
-                <ResetPassword />
-              </Route>
               <Route
                 path="/settings"
                 render={() => {

@@ -31,11 +31,11 @@
     "max-len": "off",
     "react/prefer-stateless-function": 1,
     "jsx-a11y/label-has-associated-control": 1,
-    "react/destructuring-assignment": 1,
+    "react/destructuring-assignment": "off",
     "jsx-a11y/control-has-associated-label": 1,
     "jsx-a11y/click-events-have-key-events": 1,
     "jsx-a11y/no-static-element-interactions": 1,
-    "jsx-a11y/img-redundant-alt": 1,
+    "jsx-a11y/img-redundant-alt": "off",
     "jsx-a11y/anchor-is-valid": 1,
     "react/no-did-update-set-state": "off",
     "max-classes-per-file": 1,
@@ -57,6 +57,13 @@
     "no-underscore-dangle": "off",
     "react/prop-types": "off",
     "function-paren-newline": 1,
-    "react/jsx-one-expression-per-line": "off"
+    "react/jsx-one-expression-per-line": "off",
+    "react/no-unused-prop-types": 1,
+    "react/jsx-no-constructed-context-values": "off",
+    "no-promise-executor-return": "off",
+    "react/no-unused-class-component-methods": 1,
+    "react/no-unstable-nested-components": 1,
+    "react/jsx-no-bind": 1,
+    "react/default-props-match-prop-types": 1
   }
 }
