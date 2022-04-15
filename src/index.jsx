@@ -3,7 +3,6 @@ import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import ReactDOM from 'react-dom';
 import { IntlProvider } from 'react-intl';
-
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 

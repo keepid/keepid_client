@@ -8,17 +8,14 @@ import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 
 import AccountSetup from './pages/AccountSetup';
-import { ReviewSubmit } from './pages/ReviewSubmit';
-import { SignUserAgreement } from './pages/SignUserAgreement';
+import ReviewSubmit from './pages/ReviewSubmit';
+import SignUserAgreement from './pages/SignUserAgreement';
 import { signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
 export default function PersonSignupFlow() {
-  const {
-    signUpStageStateContext,
-    accountInformationContext,
-    personRole,
-  } = useContext(SignUpContext);
+  const { signUpStageStateContext, accountInformationContext, personRole } =
+    useContext(SignUpContext);
   const alert = useAlert();
   const history = useHistory();
 
