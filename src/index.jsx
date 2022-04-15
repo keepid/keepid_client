@@ -2,9 +2,10 @@ import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import { IntlProvider } from 'react-intl';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 import { createRoot } from 'react-dom/client';
+
+import reportWebVitals from './reportWebVitals';
+import App from './App';
 
 const options = {
   position: 'bottom left',
@@ -19,7 +20,11 @@ const options = {
 
 const root = createRoot(document.getElementById('root'));
 root.render(
-  <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
+  <Provider
+    template={AlertTemplate}
+    {...options}
+    className="alert-provider-custom"
+  >
     <IntlProvider locale="en" defaultLocale="en">
       <App />
     </IntlProvider>
