@@ -55,7 +55,7 @@ class Applications extends Component<Props, State, {}> {
         <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Download</b></button>
       </Link>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary-sixers w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Delete File</b></button>
+        <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Delete File</b></button>
       </Link>
     </div>
   )
@@ -210,7 +210,7 @@ class Applications extends Component<Props, State, {}> {
               </Button>
             </Modal.Header>
             <Modal.Body>
-              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="sixers buhl" width="100%" height="600" frameBorder="none" />
+              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="temp pdf" width="100%" height="600" frameBorder="none" />
             </Modal.Body>
           </Modal>
           </div>
@@ -296,9 +296,7 @@ class Applications extends Component<Props, State, {}> {
           </div>
         </Route>
         <Route path="/applications/send">
-          {currentApplicationId && currentApplicationFilename
-            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
-            : <div />}
+          <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
         </Route>
       </Switch>
     );

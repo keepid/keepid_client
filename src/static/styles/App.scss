@@ -125,7 +125,7 @@ body {
 	font-weight: bold;
 }
 
-.btn-primary-sixers {
+.btn-primary-red {
 	color: white;
 	background-color: rgb(228, 13, 13);
 	border-color: rgb(228, 13, 13);
@@ -144,12 +144,12 @@ body {
 	width: auto;
 }
 
-.btn-primary-sixers:hover,
-.btn-primary-sixers:focus,
-.btn-primary-sixers:active,
-.btn-primary-sixers:visited,
-.btn-primary-sixers.active,
-.open > .dropdown-toggle.btn-primary-sixers {
+.btn-primary-red:hover,
+.btn-primary-red:focus,
+.btn-primary-red:active,
+.btn-primary-red:visited,
+.btn-primary-red.active,
+.open > .dropdown-toggle.btn-primary-red {
 	color: rgb(228, 13, 13);
 	background-color: white;
 	border-color: white;
@@ -170,6 +170,25 @@ body {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+}
+
+
+.btn-outline-primary-continue {
+	color: $primary-theme;
+	background-color: white;
+	border-color: $primary-theme;
+	width: 120px;
+}
+
+.btn-outline-primary-continue:hover,
+.btn-outline-primary-continue:focus,
+.btn-outline-primary-continue:active,
+.btn-outline-primary-continue.active,
+.open > .dropdown-toggle.btn-outline-primary-continue {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+	width: 120px;
 }
 
 .btn-secondary {
@@ -274,6 +293,7 @@ thead {
 .custom-radio .custom-control-input:checked ~ .custom-control-label::before {
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+	border-radius: 100%;
 }
 
 .form-purple {

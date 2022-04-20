@@ -540,7 +540,7 @@ class ApplicationForm extends Component<Props, State> {
 
           <DocumentViewer pdfFile={pdfApplication} />
           <div className="d-flex justify-content-center pt-5">
-            <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+            <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
               <div className="pt-5 pb-3">
                 I agree to all terms and conditions in the form document above.
               </div>
@@ -584,7 +584,7 @@ class ApplicationForm extends Component<Props, State> {
               <p>{description}</p>
             </div>
           </div>
-          <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+          <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
@@ -627,31 +627,28 @@ class ApplicationForm extends Component<Props, State> {
                   {currentPage === 1 ? null : (
                     <button
                       type="button"
-                      className="mr-auto btn btn-outline-primary"
+                      className="mr-auto btn btn-outline-primary-continue"
                       onClick={this.handlePrevious}
                     >
-                      Previous
+                       <span>&#60;</span> Previous
                     </button>
                   )}
                 </div>
                 <div className="col-md-4 text-center my-1">
                   <p>
                     <b>
-                      Page
-                      {currentPage}
-                      of
-                      {numPages}
+                      Page {currentPage} of {numPages}
                     </b>
                   </p>
                 </div>
                 <div className="col-md-2 mr-xs-3 mr-sm-0">
                   {currentPage !== numPages ? (
                     <Button
-                      type="submit"
-                      variant="primary"
+                      type="button"
+                      className="mr-auto btn btn-outline-primary-continue"
                       onClick={this.handleContinue}
                     >
-                      Continue
+                      Continue <span>&#62;</span>
                     </Button>
                   ) : (
                     <Button
