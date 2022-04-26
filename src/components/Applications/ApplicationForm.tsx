@@ -291,12 +291,14 @@ class ApplicationForm extends Component<Props, State> {
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
       />
-      {entry.fieldIsRequired ? (
+      {(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? (
+        <small className="form-text unfilled-text mt-1">
+          This section cannot be blank. Please fill it
+        </small>
+      ) : (
         <small className="form-text text-muted mt-1">
           Please complete this field.
         </small>
-      ) : (
-        <div />
       )}
     </div>
   );
@@ -319,12 +321,14 @@ class ApplicationForm extends Component<Props, State> {
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
       />
-      {entry.fieldIsRequired ? (
+      {(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? (
+        <small className="form-text unfilled-text mt-1">
+          This section cannot be blank.
+        </small>
+      ) : (
         <small className="form-text text-muted mt-1">
           Please complete this field.
         </small>
-      ) : (
-        <div />
       )}
     </div>
   );
@@ -371,9 +375,15 @@ class ApplicationForm extends Component<Props, State> {
     <div className={(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? "mt-2 mb-2 form-red" : "mt-2 mb-2"}>
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option.
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
       {entry.fieldValueOptions.map((value) => (
         <div
@@ -406,9 +416,15 @@ class ApplicationForm extends Component<Props, State> {
     <div className="dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option.
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
 
       <select
@@ -433,9 +449,15 @@ class ApplicationForm extends Component<Props, State> {
     <div className="multiple-dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {((formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0)) && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option(s).
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
       <select
         id={entry.fieldName}
