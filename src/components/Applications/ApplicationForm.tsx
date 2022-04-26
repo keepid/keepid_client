@@ -14,6 +14,7 @@ import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
+import { SingleEntryPlugin } from 'webpack';
 
 
 interface Field {
@@ -26,6 +27,7 @@ interface Field {
   fieldNumLines: number,
   fieldIsMatched: boolean,
   fieldQuestion: string,
+  fieldIsCorrect: boolean
 }
 
 interface Props {
@@ -47,7 +49,7 @@ interface State {
   formError: boolean,
 }
 
-const MAX_Q_PER_PAGE = 10;
+const MAX_Q_PER_PAGE = 5;
 
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
@@ -88,12 +90,21 @@ class ApplicationForm extends Component<Props, State> {
         // Get every field and give it a unique ID
         for (let i = 0; i < fields.length; i += 1) {
           fields[i].fieldID = uuid();
+          
+          
+          
           const entry = fields[i];
           if (entry.fieldType === 'DateField') {
             // Need to update default date value with the local date on the current computer
             formAnswers[entry.fieldName] = new Date();
           } else {
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+          }
+
+          if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
+            fields[i].fieldIsCorrect = false;
+          } else {
+            fields[i].fieldIsCorrect = true;
           }
         }
         this.setState({
@@ -156,11 +167,32 @@ class ApplicationForm extends Component<Props, State> {
   }
 
   handleContinue = (e: any): void => {
-    e.preventDefault();
-    this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage + 1 }),
-      () => window.scrollTo(0, 0),
-    );
+    // if anything in the form has a wrong answer/is empty, you should not be able to increment state
+    const { fields, formAnswers, currentPage } = this.state;
+    var canContinue = true;
+    if (fields) {
+      for (let i = MAX_Q_PER_PAGE * (currentPage - 1); i < MAX_Q_PER_PAGE * currentPage; i += 1) {
+        const entry = fields[i];
+        if (entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+          canContinue = false;
+          entry.fieldIsCorrect = false;
+        }
+      }
+    }
+
+    if (canContinue){
+      e.preventDefault();
+      this.setState(
+        (prevState) => ({ currentPage: prevState.currentPage + 1 }),
+        () => window.scrollTo(0, 0),
+      );
+    }
+
+    else{
+      //change the color to red for the bad ones
+    }
+
+    
   };
 
   handlePrevious = (e: any): void => {
@@ -172,8 +204,18 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   handleChangeFormValueTextField = (event: any) => {
-    const { formAnswers } = this.state;
+    const { fields, formAnswers } = this.state;
     const { id, value } = event.target;
+    var currCorrect = true;
+    if (fields){
+      for (let i = 0; i < fields.length; i += 1){
+        if (fields[i].fieldName == id){
+          if (value.length > 0){
+            fields[i].fieldIsCorrect = true;
+          }
+        }
+      }
+    }
     formAnswers[id] = value;
     this.setState({ formAnswers });
   };
@@ -217,7 +259,7 @@ class ApplicationForm extends Component<Props, State> {
       </label>
       <input
         type="text"
-        className="form-control form-purple mt-1"
+        className={(entry.fieldIsCorrect) ? "form-control form-purple mt-1" : "form-control form-red mt-1"}
         id={entry.fieldName}
         placeholder={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
