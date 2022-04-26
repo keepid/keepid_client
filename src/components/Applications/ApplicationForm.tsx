@@ -15,6 +15,7 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
 import { SingleEntryPlugin } from 'webpack';
+import { FormattedDisplayName } from 'react-intl';
 
 
 interface Field {
@@ -47,6 +48,7 @@ interface State {
   currentPage: number,
   numPages: number,
   formError: boolean,
+  continueClicked: boolean
 }
 
 const MAX_Q_PER_PAGE = 5;
@@ -67,6 +69,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 1,
       numPages: 1,
       formError: false,
+      continueClicked: false,
     };
   }
 
@@ -100,12 +103,13 @@ class ApplicationForm extends Component<Props, State> {
           } else {
             formAnswers[entry.fieldName] = entry.fieldDefaultValue;
           }
-
+          /*
           if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
             fields[i].fieldIsCorrect = false;
           } else {
             fields[i].fieldIsCorrect = true;
           }
+          */
         }
         this.setState({
           fields,
@@ -168,22 +172,51 @@ class ApplicationForm extends Component<Props, State> {
 
   handleContinue = (e: any): void => {
     // if anything in the form has a wrong answer/is empty, you should not be able to increment state
-    const { fields, formAnswers, currentPage } = this.state;
+    const { fields, formAnswers, currentPage, continueClicked } = this.state;
+    this.setState(
+      () => ({ continueClicked: true }),
+    );
     var canContinue = true;
     if (fields) {
       for (let i = MAX_Q_PER_PAGE * (currentPage - 1); i < MAX_Q_PER_PAGE * currentPage; i += 1) {
         const entry = fields[i];
-        if (entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+        // text field check
+        if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
           canContinue = false;
           entry.fieldIsCorrect = false;
         }
+
+        //multiline
+        if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+          canContinue = false;
+          entry.fieldIsCorrect = false;
+        }
+
+        //check box
+        if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+          canContinue = false;
+          entry.fieldIsCorrect = false;
+        }
+
+        //combobox
+        if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+          canContinue = false;
+          entry.fieldIsCorrect = false;
+        }
+
+        //listbox
+        if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
+          canContinue = false;
+          entry.fieldIsCorrect = false;
+        }
+
       }
     }
 
     if (canContinue){
       e.preventDefault();
       this.setState(
-        (prevState) => ({ currentPage: prevState.currentPage + 1 }),
+        (prevState) => ({ currentPage: prevState.currentPage + 1, continueClicked: false }),
         () => window.scrollTo(0, 0),
       );
     }
@@ -207,15 +240,6 @@ class ApplicationForm extends Component<Props, State> {
     const { fields, formAnswers } = this.state;
     const { id, value } = event.target;
     var currCorrect = true;
-    if (fields){
-      for (let i = 0; i < fields.length; i += 1){
-        if (fields[i].fieldName == id){
-          if (value.length > 0){
-            fields[i].fieldIsCorrect = true;
-          }
-        }
-      }
-    }
     formAnswers[id] = value;
     this.setState({ formAnswers });
   };
@@ -252,14 +276,14 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   };
 
-  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="mt-2 mb-2">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
       </label>
       <input
         type="text"
-        className={(entry.fieldIsCorrect) ? "form-control form-purple mt-1" : "form-control form-red mt-1"}
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? "form-control form-red mt-1" : "form-control form-purple mt-1"}
         id={entry.fieldName}
         placeholder={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
@@ -280,13 +304,14 @@ class ApplicationForm extends Component<Props, State> {
   getMultilineTextField = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
+    continueClicked: boolean
   ) => (
     <div className="mt-2 mb-2">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
       </label>
       <textarea
-        className="form-control form-purple mt-1"
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? "form-control form-red mt-1" : "form-control form-purple mt-1"}
         id={entry.fieldName}
         placeholder={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
@@ -304,14 +329,12 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getCheckBox = (entry: Field, formAnswers: { [fieldName: string ]: any }) => (
     <div className="mt-2 mb-2">
       <div className="checkbox-question">
         <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
           {entry.fieldQuestion}
-          <small className="form-text text-muted mt-1">
-            Please complete this field.
-          </small>
+      
         </label>
         <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
           <div className="custom-control custom-checkbox mx-2">
@@ -343,8 +366,9 @@ class ApplicationForm extends Component<Props, State> {
   getRadioButton = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
+    continueClicked: boolean
   ) => (
-    <div className="mt-2 mb-2">
+    <div className={(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? "mt-2 mb-2 form-red" : "mt-2 mb-2"}>
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
         <small className="form-text text-muted mt-1">
@@ -378,7 +402,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
@@ -390,7 +414,7 @@ class ApplicationForm extends Component<Props, State> {
       <select
         id={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
-        className="custom-select"
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? "custom-select form-red" : "custom-select"} 
         required={entry.fieldIsRequired}
       >
         <option selected disabled value="">
@@ -405,7 +429,7 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="multiple-dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
@@ -416,7 +440,7 @@ class ApplicationForm extends Component<Props, State> {
       <select
         id={entry.fieldName}
         onChange={this.handleChangeFormValueListBox}
-        className="custom-select"
+        className={((formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0)) && continueClicked) ? "custom-select form-red" : "custom-select"} 
         multiple
         required={entry.fieldIsRequired}
       >
@@ -564,6 +588,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       buttonState,
       numPages,
+      continueClicked
     } = this.state;
     let bodyElement;
     const fillAmt = (currentPage / numPages) * 100;
@@ -638,22 +663,22 @@ class ApplicationForm extends Component<Props, State> {
                         return <div />;
                       }
                       if (entry.fieldType === 'TextField') {
-                        return this.getTextField(entry, formAnswers);
+                        return this.getTextField(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'MultilineTextField') {
-                        return this.getMultilineTextField(entry, formAnswers);
+                        return this.getMultilineTextField(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'CheckBox') {
                         return this.getCheckBox(entry, formAnswers);
                       }
                       if (entry.fieldType === 'RadioButton') {
-                        return this.getRadioButton(entry, formAnswers);
+                        return this.getRadioButton(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'ComboBox') {
-                        return this.getComboBox(entry, formAnswers);
+                        return this.getComboBox(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'ListBox') {
-                        return this.getListBox(entry, formAnswers);
+                        return this.getListBox(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'DateField') {
                         return this.getDateField(entry, formAnswers);
