@@ -48,7 +48,9 @@ interface State {
   currentPage: number,
   numPages: number,
   formError: boolean,
-  continueClicked: boolean
+  continueClicked: boolean,
+  isSubsection: boolean,
+  numQOnPage: number[]
 }
 
 const MAX_Q_PER_PAGE = 5;
@@ -70,6 +72,8 @@ class ApplicationForm extends Component<Props, State> {
       numPages: 1,
       formError: false,
       continueClicked: false,
+      isSubsection: false,
+      numQOnPage: []
     };
   }
 
@@ -93,40 +97,113 @@ class ApplicationForm extends Component<Props, State> {
         //   description,
         // } = JSONresponse;
         //const {fields} = JSONresponse;
-        const {questions} = newExample.body;
-        const fields = questions;
-        const {description,title} = newExample.metadata;
-        console.log(questions);
-        console.log(JSONresponse);
-        // Get every field and give it a unique ID
-        for (let i = 0; i < fields.length; i += 1) {
-          fields[i].fieldID = uuid();
-          
-          
-          
-          const entry = fields[i];
-          if (entry.fieldType === 'DateField') {
-            // Need to update default date value with the local date on the current computer
-            formAnswers[entry.fieldName] = new Date();
-          } else {
-            formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+
+
+
+
+
+        //SUBSECTIONS
+
+        if (newExample.body['subsections'] != null){
+          var currFields : Field[] = [];
+          var currentNumQOnPage : number[] = [];
+          const {description,title} = newExample.metadata;
+          for (var i = 0; i < newExample.body['subsections'].length; i++){
+            currentNumQOnPage.push(newExample.body['subsections'][i]['questions'].length);
+            for (var j = 0; j < newExample.body['subsections'][i]['questions'].length; j++){
+              currFields.push(newExample.body['subsections'][i]['questions'][j])
+              const entry = currFields[currFields.length - 1];
+              if (entry.fieldType === 'DateField') {
+                // Need to update default date value with the local date on the current computer
+                formAnswers[entry.fieldName] = new Date();
+              } else {
+                formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+              }
+            }
           }
-          /*
-          if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
-            fields[i].fieldIsCorrect = false;
-          } else {
-            fields[i].fieldIsCorrect = true;
+
+          const fields = currFields;
+
+          console.log("FORM ANSWERS 1")
+          console.log(formAnswers)
+
+
+          // Get every field and give it a unique ID
+          for (let i = 0; i < fields.length; i += 1) {
+            fields[i].fieldID = uuid();
+            
+            
+            
+            const entry = fields[i];
+            if (entry.fieldType === 'DateField') {
+              // Need to update default date value with the local date on the current computer
+              formAnswers[entry.fieldName] = new Date();
+            } else {
+              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+            }
+            /*
+            if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
+              fields[i].fieldIsCorrect = false;
+            } else {
+              fields[i].fieldIsCorrect = true;
+            }
+            */
           }
-          */
+
+          console.log("FORM ANSWERS 2")
+          console.log(formAnswers)
+
+          this.setState({
+            fields: currFields,
+            title,
+            description,
+            formAnswers,
+            numPages:
+              newExample.body['subsections'].length,
+            isSubsection: true,
+            numQOnPage : currentNumQOnPage
+          });
+
+          
+        } 
+        else{
+          console.log("HEEEEEEEEEE")
+          const {questions} = newExample.body;
+          const fields = questions;
+          const {description,title} = newExample.metadata;
+          console.log(questions);
+          console.log(JSONresponse);
+          // Get every field and give it a unique ID
+          for (let i = 0; i < fields.length; i += 1) {
+            fields[i].fieldID = uuid();
+            
+            
+            
+            const entry = fields[i];
+            if (entry.fieldType === 'DateField') {
+              // Need to update default date value with the local date on the current computer
+              formAnswers[entry.fieldName] = new Date();
+            } else {
+              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+            }
+            /*
+            if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
+              fields[i].fieldIsCorrect = false;
+            } else {
+              fields[i].fieldIsCorrect = true;
+            }
+            */
+          }
+          var curPages = (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE);
+          this.setState({
+            fields,
+            title,
+            description,
+            formAnswers,
+            numPages:
+              curPages,
+          });
         }
-        this.setState({
-          fields,
-          title,
-          description,
-          formAnswers,
-          numPages:
-            (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-        });
       } else {
         this.setState({
           formError: true,
@@ -618,12 +695,21 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       buttonState,
       numPages,
-      continueClicked
+      continueClicked,
+      isSubsection,
+      numQOnPage
     } = this.state;
+    console.log("STATEEE");
+    console.log(this.state);
     let bodyElement;
     const fillAmt = (currentPage / numPages) * 100;
     // const fillAmt = this.progressBarFill();
-    const qStartNum = (currentPage - 1) * MAX_Q_PER_PAGE;
+    var currSum = 0;
+    for (var i = 0; i < currentPage; i++){
+      currSum += numQOnPage[i];
+    }
+    const qStartNum = isSubsection ? currSum : (currentPage - 1) * MAX_Q_PER_PAGE;
+    const qEndNum = isSubsection ? qStartNum + numQOnPage[currentPage] : qStartNum + MAX_Q_PER_PAGE;
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
@@ -684,7 +770,7 @@ class ApplicationForm extends Component<Props, State> {
           <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
-                if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
+                if (index < qStartNum || index >= qEndNum) return null;
                 return (
                   <div className="my-5" key={entry.fieldID}>
                     {(() => {
