@@ -81,15 +81,23 @@ class ApplicationForm extends Component<Props, State> {
       formAnswers,
     } = this.state;
     const JSONresponse = require('./application_birth.json');
+    const newExample = require('./drivers_license.json');
     console.log(JSONresponse);
+    console.log(newExample);
       const { status } = JSONresponse;
-      console.log(JSONresponse);
+      console.log("status:" + status);
       if (status === 'SUCCESS') {
-        const {
-          fields,
-          title,
-          description,
-        } = JSONresponse;
+        // const {
+        //   fields,
+        //   title,
+        //   description,
+        // } = JSONresponse;
+        //const {fields} = JSONresponse;
+        const {questions} = newExample.body;
+        const fields = questions;
+        const {description,title} = newExample.metadata;
+        console.log(questions);
+        console.log(JSONresponse);
         // Get every field and give it a unique ID
         for (let i = 0; i < fields.length; i += 1) {
           fields[i].fieldID = uuid();
