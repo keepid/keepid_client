@@ -112,6 +112,12 @@ class ApplicationForm extends Component<Props, State> {
             currentNumQOnPage.push(newExample.body['subsections'][i]['questions'].length);
             for (var j = 0; j < newExample.body['subsections'][i]['questions'].length; j++){
               currFields.push(newExample.body['subsections'][i]['questions'][j])
+
+              /* 
+
+              trying to fix the form answers being undefined issue 
+
+              */ 
               const entry = currFields[currFields.length - 1];
               if (entry.fieldType === 'DateField') {
                 // Need to update default date value with the local date on the current computer
@@ -124,34 +130,10 @@ class ApplicationForm extends Component<Props, State> {
 
           const fields = currFields;
 
-          console.log("FORM ANSWERS 1")
-          console.log(formAnswers)
-
-
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
-            
-            
-            
-            const entry = fields[i];
-            if (entry.fieldType === 'DateField') {
-              // Need to update default date value with the local date on the current computer
-              formAnswers[entry.fieldName] = new Date();
-            } else {
-              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-            }
-            /*
-            if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
-              fields[i].fieldIsCorrect = false;
-            } else {
-              fields[i].fieldIsCorrect = true;
-            }
-            */
           }
-
-          console.log("FORM ANSWERS 2")
-          console.log(formAnswers)
 
           this.setState({
             fields: currFields,
@@ -167,12 +149,9 @@ class ApplicationForm extends Component<Props, State> {
           
         } 
         else{
-          console.log("HEEEEEEEEEE")
           const {questions} = newExample.body;
           const fields = questions;
           const {description,title} = newExample.metadata;
-          console.log(questions);
-          console.log(JSONresponse);
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
@@ -257,45 +236,95 @@ class ApplicationForm extends Component<Props, State> {
 
   handleContinue = (e: any): void => {
     // if anything in the form has a wrong answer/is empty, you should not be able to increment state
-    const { fields, formAnswers, currentPage, continueClicked } = this.state;
+    const { fields, formAnswers, currentPage, continueClicked, numQOnPage, isSubsection } = this.state;
     this.setState(
       () => ({ continueClicked: true }),
     );
     var canContinue = true;
     if (fields) {
-      for (let i = MAX_Q_PER_PAGE * (currentPage - 1); i < MAX_Q_PER_PAGE * currentPage; i += 1) {
-        const entry = fields[i];
-        // text field check
-        if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
-          canContinue = false;
-          entry.fieldIsCorrect = false;
+      if (isSubsection){
+        var currSum = 0;
+        for (var i = 0; i < currentPage - 1; i++){
+          currSum += numQOnPage[i];
+        }
+        const qStartNum = currSum
+        const qEndNum = qStartNum + numQOnPage[currentPage - 1];
+
+        // check if there are 0 questions, if there are, do nothing
+
+        if (numQOnPage[currentPage - 1] != 0){
+          for (let i = qStartNum; i < qEndNum; i += 1) {
+            const entry = fields[i];
+            // text field check
+            if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //multiline
+            if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //check box
+            if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //combobox
+            if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //listbox
+            if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+          }
         }
 
-        //multiline
-        if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
-          canContinue = false;
-          entry.fieldIsCorrect = false;
+      } 
+      else{
+        for (let i = MAX_Q_PER_PAGE * (currentPage - 1); i < MAX_Q_PER_PAGE * currentPage; i += 1) {
+          const entry = fields[i];
+          // text field check
+          if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //multiline
+          if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //check box
+          if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //combobox
+          if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //listbox
+          if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
         }
-
-        //check box
-        if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
-          canContinue = false;
-          entry.fieldIsCorrect = false;
-        }
-
-        //combobox
-        if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
-          canContinue = false;
-          entry.fieldIsCorrect = false;
-        }
-
-        //listbox
-        if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
-          canContinue = false;
-          entry.fieldIsCorrect = false;
-        }
-
       }
+      
     }
 
     if (canContinue){
@@ -705,11 +734,12 @@ class ApplicationForm extends Component<Props, State> {
     const fillAmt = (currentPage / numPages) * 100;
     // const fillAmt = this.progressBarFill();
     var currSum = 0;
-    for (var i = 0; i < currentPage; i++){
+    for (var i = 0; i < currentPage - 1; i++){
       currSum += numQOnPage[i];
     }
     const qStartNum = isSubsection ? currSum : (currentPage - 1) * MAX_Q_PER_PAGE;
-    const qEndNum = isSubsection ? qStartNum + numQOnPage[currentPage] : qStartNum + MAX_Q_PER_PAGE;
+    const qEndNum = isSubsection ? qStartNum + numQOnPage[currentPage - 1] : qStartNum + MAX_Q_PER_PAGE;
+    const includeQuestions = isSubsection ? numQOnPage[currentPage - 1] == 0 : true;
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
@@ -770,7 +800,7 @@ class ApplicationForm extends Component<Props, State> {
           <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
-                if (index < qStartNum || index >= qEndNum) return null;
+                if ((index < qStartNum || index >= qEndNum) && includeQuestions) return null;
                 return (
                   <div className="my-5" key={entry.fieldID}>
                     {(() => {
