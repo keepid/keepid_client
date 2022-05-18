@@ -50,7 +50,9 @@ interface State {
   formError: boolean,
   continueClicked: boolean,
   isSubsection: boolean,
-  numQOnPage: number[]
+  numQOnPage: number[],
+  titleArray: string[],
+  descriptionArray: string[]
 }
 
 const MAX_Q_PER_PAGE = 5;
@@ -73,7 +75,9 @@ class ApplicationForm extends Component<Props, State> {
       formError: false,
       continueClicked: false,
       isSubsection: false,
-      numQOnPage: []
+      numQOnPage: [],
+      titleArray: [],
+      descriptionArray: []
     };
   }
 
@@ -106,10 +110,16 @@ class ApplicationForm extends Component<Props, State> {
 
         if (newExample.body['subsections'] != null){
           var currFields : Field[] = [];
+          var currTitles : string[] = [];
+          var currDescriptions : string[] = [];
           var currentNumQOnPage : number[] = [];
           const {description,title} = newExample.metadata;
           for (var i = 0; i < newExample.body['subsections'].length; i++){
             currentNumQOnPage.push(newExample.body['subsections'][i]['questions'].length);
+            currTitles.push(newExample.body['subsections'][i]['title'])
+            currDescriptions.push(newExample.body['subsections'][i]['description'])
+            console.log("LENGTH");
+            console.log(newExample.body['subsections'][i]['questions'].length);
             for (var j = 0; j < newExample.body['subsections'][i]['questions'].length; j++){
               currFields.push(newExample.body['subsections'][i]['questions'][j])
 
@@ -143,7 +153,9 @@ class ApplicationForm extends Component<Props, State> {
             numPages:
               newExample.body['subsections'].length,
             isSubsection: true,
-            numQOnPage : currentNumQOnPage
+            numQOnPage : currentNumQOnPage,
+            titleArray : currTitles,
+            descriptionArray : currDescriptions
           });
 
           
@@ -726,7 +738,9 @@ class ApplicationForm extends Component<Props, State> {
       numPages,
       continueClicked,
       isSubsection,
-      numQOnPage
+      numQOnPage,
+      titleArray,
+      descriptionArray
     } = this.state;
     console.log("STATEEE");
     console.log(this.state);
@@ -739,7 +753,7 @@ class ApplicationForm extends Component<Props, State> {
     }
     const qStartNum = isSubsection ? currSum : (currentPage - 1) * MAX_Q_PER_PAGE;
     const qEndNum = isSubsection ? qStartNum + numQOnPage[currentPage - 1] : qStartNum + MAX_Q_PER_PAGE;
-    const includeQuestions = isSubsection ? numQOnPage[currentPage - 1] == 0 : true;
+    const includeQuestions = isSubsection ? numQOnPage[currentPage - 1] != 0 : true;
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
@@ -793,8 +807,8 @@ class ApplicationForm extends Component<Props, State> {
               />
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
-              <h2>{title}</h2>
-              <p>{description}</p>
+              <h2>{isSubsection ? titleArray[currentPage - 1] : title}</h2>
+              <p>{isSubsection ? descriptionArray[currentPage - 1] : description}</p>
             </div>
           </div>
           <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
