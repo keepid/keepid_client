@@ -259,7 +259,7 @@ class App extends React.Component<{}, State, {}> {
                   )
                 }
               />
-              <SignUpRouter role={role} />
+
               <Route
                 path="/admin-panel"
                 render={() => {
@@ -363,6 +363,7 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              <SignUpRouter role={role} />
               <Route path="/error">
                 <Error />
               </Route>
