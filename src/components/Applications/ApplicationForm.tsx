@@ -90,10 +90,9 @@ class ApplicationForm extends Component<Props, State> {
     } = this.state;
     const JSONresponse = require('./application_birth.json');
     const newExample = require('./drivers_license.json');
-    console.log(JSONresponse);
-    console.log(newExample);
-      const { status } = JSONresponse;
-      console.log("status:" + status);
+    const { status } = JSONresponse;
+    //make API call here to get application questions. newExample currently hardcoded 
+    //but is in the correct json format
       if (status === 'SUCCESS') {
         // const {
         //   fields,
@@ -101,9 +100,6 @@ class ApplicationForm extends Component<Props, State> {
         //   description,
         // } = JSONresponse;
         //const {fields} = JSONresponse;
-
-
-
 
 
         //SUBSECTIONS
@@ -201,49 +197,7 @@ class ApplicationForm extends Component<Props, State> {
         });
       }
 
-      
 
-    // fetch(`${getServerURL()}/get-application-questions`, {
-    //   method: 'POST',
-    //   credentials: 'include',
-    //   body: JSON.stringify({
-    //     applicationId,
-    //   }),
-    // }).then((response) => response.json())
-    //   .then((responseJSON) => {
-    //     const { status } = responseJSON;
-    //     console.log(responseJSON);
-    //     if (status === 'SUCCESS') {
-    //       const {
-    //         fields,
-    //         title,
-    //         description,
-    //       } = responseJSON;
-    //       // Get every field and give it a unique ID
-    //       for (let i = 0; i < fields.length; i += 1) {
-    //         fields[i].fieldID = uuid();
-    //         const entry = fields[i];
-    //         if (entry.fieldType === 'DateField') {
-    //           // Need to update default date value with the local date on the current computer
-    //           formAnswers[entry.fieldName] = new Date();
-    //         } else {
-    //           formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-    //         }
-    //       }
-    //       this.setState({
-    //         fields,
-    //         title,
-    //         description,
-    //         formAnswers,
-    //         numPages:
-    //           (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-    //       });
-    //     } else {
-    //       this.setState({
-    //         formError: true,
-    //       });
-    //     }
-    //   });
   }
 
   handleContinue = (e: any): void => {
@@ -795,6 +749,10 @@ class ApplicationForm extends Component<Props, State> {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+          <div className="container col-lg-10 col-md-10 col-sm-12">
+              <h2>{title}</h2>
+              <p>{description}</p>
+            </div>
             <div className="progress mb-4">
               <div
                 className="progress-bar"
