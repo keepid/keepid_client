@@ -1,3 +1,4 @@
+import { response } from 'msw/lib/types';
 import React, { useEffect, useState } from 'react';
 
 import getServerURL from '../../../serverOverride';
@@ -29,13 +30,14 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const priceObject = responseJSON;
+        if (responseJSON.status === 'SUCCESS') {
+          const priceObject = JSON.parse(responseJSON.price);
 
-        if (priceObject) {
           setPrice(priceObject.unit_amount / 100);
           handleFetchProductObject(priceObject.product);
         } else {
-          console.log('PriceId cant be found');
+          // Can add a alert to display status later
+          console.log('Error: ', responseJSON.status);
         }
       });
   };
@@ -53,12 +55,14 @@ const PricingOption = ({ priceId, setSelectedPriceId, handleContinue }: props) =
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const productObject = responseJSON;
+        if (responseJSON.status === 'SUCCESS') {
+          const productObject = JSON.parse(responseJSON.product);
 
-        if (productObject) {
+          // Set parameters we want to display from the stripe subscription object
           setproductName(productObject.name);
         } else {
-          console.log('Product cant be found');
+          // Can add a alert to display status later
+          console.log('Error: ', responseJSON.this.status);
         }
       });
   };

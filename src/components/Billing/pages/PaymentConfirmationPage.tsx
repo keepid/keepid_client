@@ -25,11 +25,14 @@ const PaymentConfirmationPage = ({ subscriptionId }: props) => {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON) {
+        if (responseJSON.status === 'SUCCESS') {
+          const subscriptionObject = JSON.parse(responseJSON.subscription);
+
           // Set parameters we want to display from the stripe subscription object
-          setSubscriptionEndDate(responseJSON.current_period_end);
+          setSubscriptionEndDate(subscriptionObject.current_period_end);
         } else {
-          console.log('Subscription not found, did you provide an invalid id?');
+          // Can add a alert to display status later
+          console.log('Error: ', responseJSON.this.status);
         }
       });
   };

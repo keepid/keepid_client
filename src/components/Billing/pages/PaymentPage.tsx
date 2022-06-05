@@ -23,21 +23,18 @@ const PaymentPage = ({
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    console.log('orgEmail is: ', email);
     if (email !== '') {
       handleGetCustomer();
     }
   }, [email]);
 
   useEffect(() => {
-    console.log('Customer object is: ', customer);
     if (customer !== null) {
       handleCreateSubscription(customer);
     }
   }, [customer]);
 
   useEffect(() => {
-    console.log('Subscription object is: ', subscriptionData);
     if (subscriptionData !== null) {
       handleConfirmCardPayment(email, subscriptionData);
     }
@@ -53,7 +50,6 @@ const PaymentPage = ({
     console.log('Stripe.js has not loaded yet');
     return (<div>Stripe has not loaded</div>);
   }
-  console.log('Stripe.js has loaded');
 
   const handleConfirmCardPayment = async (customerEmail, subscription) => {
     const { error, paymentIntent } = await stripe.confirmCardPayment(
@@ -67,7 +63,6 @@ const PaymentPage = ({
     }
 
     if (paymentIntent) {
-      console.log('Payment intent returned: ', paymentIntent);
       console.log(paymentIntent.receipt_email);
     }
     // eslint-disable-next-line object-curly-spacing
@@ -109,16 +104,19 @@ const PaymentPage = ({
         }),
       }).then((response) => response.json())
         .then((responseJSON) => {
-          console.log('ResponseJSON: ', responseJSON);
-          if (responseJSON) {
-            console.log('Subscription successfully created');
-            setSubscriptionId(responseJSON.id);
-            setSubscriptionData(responseJSON);
+          if (responseJSON.status === 'SUCCESS') {
+            const subscriptionObject = JSON.parse(responseJSON.subscription);
+
+            // Set parameters we want to display from the stripe subscription object
+            setSubscriptionId(subscriptionObject.id);
+            setSubscriptionData(subscriptionObject);
           } else {
-            console.log('Subscription has failed to be made');
+            // Can add a alert to display status later
+            console.log('Error: ', responseJSON.status);
           }
         });
     } else {
+      // Can add a alert to display later
       console.log('Payment method not found');
     }
   };
@@ -134,10 +132,14 @@ const PaymentPage = ({
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON) {
-          setCustomer(responseJSON);
+        if (responseJSON.status === 'SUCCESS') {
+          const customerObject = JSON.parse(responseJSON.customer);
+
+          // Set parameters we want to display from the stripe subscription object
+          setCustomer(customerObject);
         } else {
-          console.log('Customer not found, are you sure it exists in the db?');
+          // Can add a alert to display status later
+          console.log('Error: ', responseJSON.status);
         }
       });
   };
@@ -148,11 +150,12 @@ const PaymentPage = ({
       credentials: 'include',
     }).then((response) => response.json())
       .then((responseJSON) => {
-        if (responseJSON) {
-          console.log('ResponseJSON from handleGetOrgEmail: ', responseJSON);
+        if (responseJSON.status === 'SUCCESS') {
+          // Set parameters we want to display from the stripe subscription object
           setEmail(responseJSON.orgEmail);
         } else {
-          console.log('Customer not found, are you sure it exists in the db?');
+          // Can add a alert to display status later
+          console.log('Error: ', responseJSON.message);
         }
       });
   };
