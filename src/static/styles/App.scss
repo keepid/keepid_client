@@ -4,7 +4,7 @@
 @import './Inputs';
 
 // COLOR SYTEM
-$primary-theme: #2f48c4;
+$primary-theme: #445feb;
 $primary-theme-light: #e8e9ff;
 $primary-theme-dark: #6029a8;
 $secondary-theme: #413f57;
@@ -12,6 +12,7 @@ $secondary-theme-light: #fce3b1;
 $secondary-theme-dark: #f9c784;
 $secondary-dark-theme: #262867;
 $text-red: #f24d4d;
+$bright-red: rgb(228, 13, 13);
 $footer-color: #413f57;
 $footer-text-color: #b7b7c0;
 $footer-text-color-accent: rgb(230, 230, 230);
@@ -127,8 +128,8 @@ body {
 
 .btn-primary-red {
 	color: white;
-	background-color: rgb(228, 13, 13);
-	border-color: rgb(228, 13, 13);
+	background-color: $bright-red;
+	border-color: $bright-red;
 	font-weight: bold;
 }
 
@@ -150,7 +151,7 @@ body {
 .btn-primary-red:visited,
 .btn-primary-red.active,
 .open > .dropdown-toggle.btn-primary-red {
-	color: rgb(228, 13, 13);
+	color: $bright-red;
 	background-color: white;
 	border-color: white;
 	width: auto;
@@ -763,7 +764,7 @@ div.scrollbar {
 	font-weight: bolder;
 }
 
-.double-button-jawn {
+.side-by-side-buttons {
 	display: flex;
 	text-align: center;
 	justify-content: center;
@@ -801,7 +802,7 @@ input#search:focus {
 }
 
 .unfilled-text {
-	color:rgb(228, 13, 13)
+	color:$bright-red;
 }
 
 .transparent-button {

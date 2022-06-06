@@ -50,7 +50,7 @@ class Applications extends Component<Props, State, {}> {
   )
 
   DoubleButtonFormatter = (cell, row) => (
-    <div className="double-button-jawn">
+    <div className="side-by-side-buttons">
       <Link to="/applications/send">
         <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Download</b></button>
       </Link>
@@ -85,15 +85,6 @@ class Applications extends Component<Props, State, {}> {
       sort: true,
       formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
     },
-    // {
-    //   dataField: 'uploadDate',
-    //   text: 'Date Uploaded',
-    //   sort: true,
-    // }, {
-    //   dataField: 'uploader',
-    //   text: 'Uploaded By',
-    //   sort: true,
-    // },
     {
       dataField: 'apply',
       text: '',
@@ -150,7 +141,6 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const {
           status,
           documents,
@@ -171,7 +161,6 @@ class Applications extends Component<Props, State, {}> {
   }
 
   handleViewDocument = (event: any, row: any) => {
-    console.log('IN HANDLE VIEW');
     const {
       id,
       filename,
@@ -183,7 +172,6 @@ class Applications extends Component<Props, State, {}> {
         openModal: true,
       },
     );
-    console.log(this.state);
   }
 
   placeholderFunc = () => { };
@@ -226,26 +214,6 @@ class Applications extends Component<Props, State, {}> {
               </div>
             </div>
             <div className="container">
-              {/* <form className="form-inline mr-3 w-50">
-                <input
-                  className="form-control mr-2 w-75"
-                  type="text"
-                  id="search"
-                  // onChange={this.handleChangeSearchName}
-                  // value={this.state.searchName}
-                  background-size="contain"
-                  background-repeat="no-repeat"
-                  placeholder="Search"
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                    }
-                  }}
-                />
-              </form> */}
-            </div>
-            <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">
                 <div className="w-100 pd-3">
                   <Table
@@ -261,26 +229,6 @@ class Applications extends Component<Props, State, {}> {
                 <h1 className="display-4" style={{ fontWeight: 'bold' }}>My Completed Applications</h1>
                 <p className="lead subheader">Here are all your completed applications. <br />Check or manage your applications here.</p>
               </div>
-            </div>
-            <div className="container">
-              {/* <form className="form-inline mr-3 w-50">
-                <input
-                  className="form-control mr-2 w-75"
-                  type="text"
-                  id="search"
-                  // onChange={this.handleChangeSearchName}
-                  // value={this.state.searchName}
-                  background-size="contain"
-                  background-repeat="no-repeat"
-                  placeholder="Search"
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                    }
-                  }}
-                />
-              </form> */}
             </div>
             <div className="container">
               <div className="d-flex flex-row bd-highlight mb-3 pt-1">

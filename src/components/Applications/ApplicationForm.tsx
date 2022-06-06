@@ -750,7 +750,7 @@ class ApplicationForm extends Component<Props, State> {
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
           <div className="container col-lg-10 col-md-10 col-sm-12">
-              <h2>{title}</h2>
+              <h1>{title}</h1>
               <p>{description}</p>
             </div>
             <div className="progress mb-4">
