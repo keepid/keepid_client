@@ -12,6 +12,7 @@ $secondary-theme-light: #fce3b1;
 $secondary-theme-dark: #f9c784;
 $secondary-dark-theme: #262867;
 $text-red: #f24d4d;
+$bright-red: rgb(228, 13, 13);
 $footer-color: #413f57;
 $footer-text-color: #b7b7c0;
 $footer-text-color-accent: rgb(230, 230, 230);
@@ -122,6 +123,14 @@ body {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+	font-weight: bold;
+}
+
+.btn-primary-red {
+	color: white;
+	background-color: $bright-red;
+	border-color: $bright-red;
+	font-weight: bold;
 }
 
 .btn-primary:hover,
@@ -130,9 +139,22 @@ body {
 .btn-primary:visited,
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
-	color: white;
-	background-color: #4b4f9a;
-	border-color: #4b4f9a;
+	color: #2f48c4;
+	background-color: white;
+	border-color: white;
+	width: auto;
+}
+
+.btn-primary-red:hover,
+.btn-primary-red:focus,
+.btn-primary-red:active,
+.btn-primary-red:visited,
+.btn-primary-red.active,
+.open > .dropdown-toggle.btn-primary-red {
+	color: $bright-red;
+	background-color: white;
+	border-color: white;
+	width: auto;
 }
 
 .btn-outline-primary {
@@ -149,6 +171,25 @@ body {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+}
+
+
+.btn-outline-primary-continue {
+	color: $primary-theme;
+	background-color: white;
+	border-color: $primary-theme;
+	width: 120px;
+}
+
+.btn-outline-primary-continue:hover,
+.btn-outline-primary-continue:focus,
+.btn-outline-primary-continue:active,
+.btn-outline-primary-continue.active,
+.open > .dropdown-toggle.btn-outline-primary-continue {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+	width: 120px;
 }
 
 .btn-secondary {
@@ -253,6 +294,7 @@ thead {
 .custom-radio .custom-control-input:checked ~ .custom-control-label::before {
 	background-color: $primary-theme;
 	border-color: $primary-theme;
+	border-radius: 100%;
 }
 
 .form-purple {
@@ -261,8 +303,8 @@ thead {
 }
 
 .form-red {
-	border: 0.0625rem solid red;
-	border-radius: 0;
+	border: 0.1rem solid red;
+	border-radius: 0.35rem;
 }
 
 .text-primary-theme {
@@ -486,11 +528,12 @@ thead {
 
 .btn-dark-custom,
 .btn-dark-custom:hover {
-	border-color: rgb(88, 28, 167);
-	background-color: rgb(96, 41, 168);
-	color: white;
+	border-color: rgb(255, 255, 255);
+	background-color: rgb(255, 255, 255);
+	color: #2f48c4;
 	text-decoration: none;
-	width: 8.75rem;
+	width: 6.75rem;
+	margin-left: 1rem;
 }
 
 .btn-dark-custom:hover {
@@ -499,6 +542,40 @@ thead {
 	color: white;
 	text-decoration: none;
 }
+
+.btn-blue-custom,
+.btn-blue-custom:hover {
+	border-color: #2f48c4;
+	background-color: #2f48c4;
+	color: white;
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
+.btn-white-blue-custom,
+.btn-white-blue-custom:hover {
+	border-color: #2f48c4;
+	background-color: white;
+	color: #2f48c4;
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
+.btn-white-red-custom,
+.btn-white-red-custom:hover {
+	border-color: rgb(192, 3, 3);
+	background-color: white;
+	color: rgb(192, 3, 3);
+	text-decoration: none;
+	width: auto;
+	display: inline;
+	font-weight: bold;
+}
+
 
 .home-form-svg {
 	width: 100%;
@@ -674,4 +751,77 @@ div.scrollbar {
 
 .statement-solidarity {
 	background-color: $secondary-theme-light;
+}
+
+.search-bar-div {
+	margin-left: 8rem;
+	display: flex;
+	justify-content: left;
+}
+
+.preview-button {
+	color: rgb(68, 95, 235);
+	font-weight: bolder;
+}
+
+.side-by-side-buttons {
+	display: flex;
+	text-align: center;
+	justify-content: center;
+}
+
+.subheader {
+	color: #6C757D;
+}
+
+input#search {
+	background-image: url('https://cdn0.iconfinder.com/data/icons/very-basic-2-android-l-lollipop-icon-pack/24/search-512.png');
+	background-size: 1.6rem;
+	background-position-y: center;
+	background-repeat: no-repeat;
+	text-indent: 1rem;
+	transition: 0.3s;
+}
+
+input#search:focus {
+	background-image: none;
+	text-indent: 0
+}
+
+.modal-content {
+	background-color: transparent !important;
+	border: 0 !important;
+}
+  
+.modal-header {
+	border: 0 !important;
+}
+
+.modal {
+	background-color: rgba(0, 0, 0, 0.625);
+}
+
+.unfilled-text {
+	color:$bright-red;
+}
+
+.transparent-button {
+	background: transparent;
+	border: none;
+	margin-left: auto;
+	margin-right: 0;
+}
+
+input#search-bar-0.form-control {
+	background-image: url('https://cdn0.iconfinder.com/data/icons/very-basic-2-android-l-lollipop-icon-pack/24/search-512.png');
+	background-size: 1.6rem;
+	background-position-y: center;
+	background-repeat: no-repeat;
+	text-indent: 1rem;
+	transition: 0.3s;
+}
+
+label.search-label {
+	display: inline-block;
+    margin-bottom: 2rem;
 }

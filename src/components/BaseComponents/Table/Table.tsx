@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable */
 import '../../../static/styles/App.scss';
 
 import classNames from 'classnames';
@@ -9,6 +10,11 @@ import cellEditFactory from 'react-bootstrap-table2-editor';
 import paginationFactory, {
   PaginationProvider,
 } from 'react-bootstrap-table2-paginator';
+
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
+const { SearchBar } = Search;
+//import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
+
 
 import ArrowSVG from '../../../static/images/down-arrow.svg';
 import EditFormatter from './EditFormatter';
@@ -361,28 +367,44 @@ function Table({
 
   return (
     <>
-      <BootstrapTable
-        keyField="id"
-        data={data}
-        columns={tableColumns}
-        {...rest}
-        cellEdit={createCellEditFactory(cantEditCols)}
-        rowClasses={rowClasses}
-        selectRow={constructSelectRowConfiguration(
-          !!canSelect,
-          selectedRows,
-          setSelectedRows,
+      <ToolkitProvider keyField="id" data={data} columns={columns} search>
+        {props => (
+          <div>
+            <SearchBar
+              {...props.searchProps}
+              placeholder="Search"
+              delay="1000"
+              style={{ width: '400px', height: '40px'}}
+            />
+            <BootstrapTable
+              {...props.baseProps}
+              striped
+              hover
+              condensed
+              keyField="id"
+              data={data}
+              columns={tableColumns}
+              {...rest}
+              cellEdit={createCellEditFactory(cantEditCols)}
+              rowClasses={rowClasses}
+              selectRow={constructSelectRowConfiguration(
+                !!canSelect,
+                selectedRows,
+                setSelectedRows,
+              )}
+              noDataIndication={() => <NoDataIndication emptyInfo={emptyInfo} />}
+              bodyClasses={data.length === 0 ? 'empty-table' : ''}
+            />
+            {rowToDelete ? (
+              <TModal
+                row={rowToDelete}
+                handleClickClose={handleClickClose}
+                handleDelete={handleDelete}
+              />
+            ) : null}
+          </div>
         )}
-        noDataIndication={() => <NoDataIndication emptyInfo={emptyInfo} />}
-        bodyClasses={data.length === 0 ? 'empty-table' : ''}
-      />
-      {rowToDelete ? (
-        <TModal
-          row={rowToDelete}
-          handleClickClose={handleClickClose}
-          handleDelete={handleDelete}
-        />
-      ) : null}
+     </ToolkitProvider>
     </>
   );
 }

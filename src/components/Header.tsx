@@ -69,7 +69,7 @@ export class Header extends Component<Props, State, {}> {
                     role === Role.Director ||
                     role === Role.Worker
                       ? 'My Clients'
-                      : 'Home'}
+                      : 'Dashboard'}
                   </Link>
                 </li>
                 {(role === Role.Admin || role === Role.Director) && (
@@ -79,9 +79,14 @@ export class Header extends Component<Props, State, {}> {
                     </Link>
                   </li>
                 )}
+                <li className="nav-item col-med-2 my-1 ml-2 flex-fill mr-2">
+                  <Link className="nav-link" to="/my-organization">
+                    My Organization
+                  </Link>
+                </li>
                 <li className="nav-item col-med-2 my-1 flex-fill mr-2">
                   <Link className="nav-link" to="/settings">
-                    My Account Settings
+                    Account Settings
                   </Link>
                 </li>
                 {(role === Role.Admin || role === Role.Director) && (

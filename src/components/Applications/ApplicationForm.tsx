@@ -1,50 +1,61 @@
+/* eslint-disable */
+
 import 'react-datepicker/dist/react-datepicker.css';
 
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import { Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import uuid from 'react-uuid';
+import { Button } from 'react-bootstrap';
 
 import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
+import { SingleEntryPlugin } from 'webpack';
+import { FormattedDisplayName } from 'react-intl';
+
 
 interface Field {
-  fieldID: string; // Unique identifier id from frontend
-  fieldName: string; // Unique identifier name from backend
-  fieldType: string;
-  fieldValueOptions: string[];
-  fieldDefaultValue: any;
-  fieldIsRequired: boolean;
-  fieldNumLines: number;
-  fieldIsMatched: boolean;
-  fieldQuestion: string;
+  fieldID: string, // Unique identifier id from frontend
+  fieldName: string, // Unique identifier name from backend
+  fieldType: string,
+  fieldValueOptions: string[],
+  fieldDefaultValue: any,
+  fieldIsRequired: boolean,
+  fieldNumLines: number,
+  fieldIsMatched: boolean,
+  fieldQuestion: string,
+  fieldIsCorrect: boolean
 }
 
 interface Props {
-  alert: any;
-  applicationId: string;
-  applicationFilename: string;
+  alert: any,
+  applicationId: string,
+  applicationFilename: string,
 }
 
 interface State {
-  fields: Field[] | undefined;
-  formAnswers: { [fieldName: string]: any };
-  pdfApplication: File | undefined;
-  buttonState: string;
-  title: string;
-  description: string;
-  submitSuccessful: boolean;
-  currentPage: number;
-  numPages: number;
-  formError: boolean;
+  fields: Field[] | undefined,
+  formAnswers: { [fieldName: string]: any },
+  pdfApplication: File | undefined,
+  buttonState: string,
+  title: string,
+  description: string,
+  submitSuccessful: boolean,
+  currentPage: number,
+  numPages: number,
+  formError: boolean,
+  continueClicked: boolean,
+  isSubsection: boolean,
+  numQOnPage: number[],
+  titleArray: string[],
+  descriptionArray: string[]
 }
 
-const MAX_Q_PER_PAGE = 10;
+const MAX_Q_PER_PAGE = 5;
 
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
@@ -62,27 +73,99 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 1,
       numPages: 1,
       formError: false,
+      continueClicked: false,
+      isSubsection: false,
+      numQOnPage: [],
+      titleArray: [],
+      descriptionArray: []
     };
   }
 
   componentDidMount() {
-    const { applicationId } = this.props;
-    const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-application-questions`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        applicationId,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        if (status === 'SUCCESS') {
-          const { fields, title, description } = responseJSON;
+    const {
+      applicationId,
+    } = this.props;
+    const {
+      formAnswers,
+    } = this.state;
+    const JSONresponse = require('./application_birth.json');
+    const newExample = require('./drivers_license.json');
+    const { status } = JSONresponse;
+    //make API call here to get application questions. newExample currently hardcoded 
+    //but is in the correct json format
+      if (status === 'SUCCESS') {
+        // const {
+        //   fields,
+        //   title,
+        //   description,
+        // } = JSONresponse;
+        //const {fields} = JSONresponse;
+
+
+        //SUBSECTIONS
+
+        if (newExample.body['subsections'] != null){
+          var currFields : Field[] = [];
+          var currTitles : string[] = [];
+          var currDescriptions : string[] = [];
+          var currentNumQOnPage : number[] = [];
+          const {description,title} = newExample.metadata;
+          for (var i = 0; i < newExample.body['subsections'].length; i++){
+            currentNumQOnPage.push(newExample.body['subsections'][i]['questions'].length);
+            currTitles.push(newExample.body['subsections'][i]['title'])
+            currDescriptions.push(newExample.body['subsections'][i]['description'])
+            console.log("LENGTH");
+            console.log(newExample.body['subsections'][i]['questions'].length);
+            for (var j = 0; j < newExample.body['subsections'][i]['questions'].length; j++){
+              currFields.push(newExample.body['subsections'][i]['questions'][j])
+
+              /* 
+
+              trying to fix the form answers being undefined issue 
+
+              */ 
+              const entry = currFields[currFields.length - 1];
+              if (entry.fieldType === 'DateField') {
+                // Need to update default date value with the local date on the current computer
+                formAnswers[entry.fieldName] = new Date();
+              } else {
+                formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+              }
+            }
+          }
+
+          const fields = currFields;
+
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
+          }
+
+          this.setState({
+            fields: currFields,
+            title,
+            description,
+            formAnswers,
+            numPages:
+              newExample.body['subsections'].length,
+            isSubsection: true,
+            numQOnPage : currentNumQOnPage,
+            titleArray : currTitles,
+            descriptionArray : currDescriptions
+          });
+
+          
+        } 
+        else{
+          const {questions} = newExample.body;
+          const fields = questions;
+          const {description,title} = newExample.metadata;
+          // Get every field and give it a unique ID
+          for (let i = 0; i < fields.length; i += 1) {
+            fields[i].fieldID = uuid();
+            
+            
+            
             const entry = fields[i];
             if (entry.fieldType === 'DateField') {
               // Need to update default date value with the local date on the current computer
@@ -90,31 +173,139 @@ class ApplicationForm extends Component<Props, State> {
             } else {
               formAnswers[entry.fieldName] = entry.fieldDefaultValue;
             }
+            /*
+            if (fields[i].fieldIsRequired && formAnswers[entry.fieldName].length == 0){
+              fields[i].fieldIsCorrect = false;
+            } else {
+              fields[i].fieldIsCorrect = true;
+            }
+            */
           }
+          var curPages = (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE);
           this.setState({
             fields,
             title,
             description,
             formAnswers,
             numPages:
-              fields.length === 0
-                ? 1
-                : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-          });
-        } else {
-          this.setState({
-            formError: true,
+              curPages,
           });
         }
-      });
+      } else {
+        this.setState({
+          formError: true,
+        });
+      }
+
+
   }
 
   handleContinue = (e: any): void => {
-    e.preventDefault();
+    // if anything in the form has a wrong answer/is empty, you should not be able to increment state
+    const { fields, formAnswers, currentPage, continueClicked, numQOnPage, isSubsection } = this.state;
     this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage + 1 }),
-      () => window.scrollTo(0, 0),
+      () => ({ continueClicked: true }),
     );
+    var canContinue = true;
+    if (fields) {
+      if (isSubsection){
+        var currSum = 0;
+        for (var i = 0; i < currentPage - 1; i++){
+          currSum += numQOnPage[i];
+        }
+        const qStartNum = currSum
+        const qEndNum = qStartNum + numQOnPage[currentPage - 1];
+
+        // check if there are 0 questions, if there are, do nothing
+
+        if (numQOnPage[currentPage - 1] != 0){
+          for (let i = qStartNum; i < qEndNum; i += 1) {
+            const entry = fields[i];
+            // text field check
+            if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //multiline
+            if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //check box
+            if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //combobox
+            if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+            //listbox
+            if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
+              canContinue = false;
+              entry.fieldIsCorrect = false;
+            }
+    
+          }
+        }
+
+      } 
+      else{
+        for (let i = MAX_Q_PER_PAGE * (currentPage - 1); i < MAX_Q_PER_PAGE * currentPage; i += 1) {
+          const entry = fields[i];
+          // text field check
+          if (entry.fieldType == "TextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //multiline
+          if (entry.fieldType == "MultilineTextField" && entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //check box
+          if (entry.fieldType == "RadioButton" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //combobox
+          if (entry.fieldType == "ComboBox" && entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off") {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+          //listbox
+          if (entry.fieldType == "ListBox" && entry.fieldIsRequired && (formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0))) {
+            canContinue = false;
+            entry.fieldIsCorrect = false;
+          }
+  
+        }
+      }
+      
+    }
+
+    if (canContinue){
+      e.preventDefault();
+      this.setState(
+        (prevState) => ({ currentPage: prevState.currentPage + 1, continueClicked: false }),
+        () => window.scrollTo(0, 0),
+      );
+    }
+
+    else{
+      //change the color to red for the bad ones
+    }
+
+    
   };
 
   handlePrevious = (e: any): void => {
@@ -126,8 +317,9 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   handleChangeFormValueTextField = (event: any) => {
-    const { formAnswers } = this.state;
+    const { fields, formAnswers } = this.state;
     const { id, value } = event.target;
+    var currCorrect = true;
     formAnswers[id] = value;
     this.setState({ formAnswers });
   };
@@ -164,14 +356,14 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   };
 
-  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="mt-2 mb-2">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
       </label>
       <input
         type="text"
-        className="form-control form-purple mt-1"
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? "form-control form-red mt-1" : "form-control form-purple mt-1"}
         id={entry.fieldName}
         placeholder={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
@@ -179,12 +371,14 @@ class ApplicationForm extends Component<Props, State> {
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
       />
-      {entry.fieldIsRequired ? (
+      {(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? (
+        <small className="form-text unfilled-text mt-1">
+          This section cannot be blank. Please fill it
+        </small>
+      ) : (
         <small className="form-text text-muted mt-1">
           Please complete this field.
         </small>
-      ) : (
-        <div />
       )}
     </div>
   );
@@ -192,13 +386,14 @@ class ApplicationForm extends Component<Props, State> {
   getMultilineTextField = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
+    continueClicked: boolean
   ) => (
     <div className="mt-2 mb-2">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
       </label>
       <textarea
-        className="form-control form-purple mt-1"
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? "form-control form-red mt-1" : "form-control form-purple mt-1"}
         id={entry.fieldName}
         placeholder={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
@@ -206,24 +401,24 @@ class ApplicationForm extends Component<Props, State> {
         required={entry.fieldIsRequired}
         readOnly={entry.fieldIsMatched}
       />
-      {entry.fieldIsRequired ? (
+      {(entry.fieldIsRequired && formAnswers[entry.fieldName].length == 0 && continueClicked) ? (
+        <small className="form-text unfilled-text mt-1">
+          This section cannot be blank.
+        </small>
+      ) : (
         <small className="form-text text-muted mt-1">
           Please complete this field.
         </small>
-      ) : (
-        <div />
       )}
     </div>
   );
 
-  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getCheckBox = (entry: Field, formAnswers: { [fieldName: string ]: any }) => (
     <div className="mt-2 mb-2">
       <div className="checkbox-question">
         <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
           {entry.fieldQuestion}
-          <small className="form-text text-muted mt-1">
-            Please complete this field.
-          </small>
+      
         </label>
         <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
           <div className="custom-control custom-checkbox mx-2">
@@ -255,13 +450,20 @@ class ApplicationForm extends Component<Props, State> {
   getRadioButton = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
+    continueClicked: boolean
   ) => (
-    <div className="mt-2 mb-2">
+    <div className={(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? "mt-2 mb-2 form-red" : "mt-2 mb-2"}>
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option.
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
       {entry.fieldValueOptions.map((value) => (
         <div
@@ -290,19 +492,25 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option.
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
 
       <select
         id={entry.fieldName}
         onChange={this.handleChangeFormValueTextField}
-        className="custom-select"
+        className={(entry.fieldIsRequired && formAnswers[entry.fieldName] == "Off" && continueClicked) ? "custom-select form-red" : "custom-select"} 
         required={entry.fieldIsRequired}
       >
         <option selected disabled value="">
@@ -317,18 +525,24 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
+  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }, continueClicked: boolean) => (
     <div className="multiple-dropdown-question">
       <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
         {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
+        {((formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0)) && continueClicked) ? (
+          <small className="form-text unfilled-text mt-1">
+            Must select an option(s).
+          </small>
+        ) : (
+          <small className="form-text text-muted mt-1">
+            Please complete this field.
+          </small>
+        )}
       </label>
       <select
         id={entry.fieldName}
         onChange={this.handleChangeFormValueListBox}
-        className="custom-select"
+        className={((formAnswers[entry.fieldName] == "Off" || formAnswers[entry.fieldName].length == 0 || (formAnswers[entry.fieldName].length == 1 && formAnswers[entry.fieldName][0].length == 0)) && continueClicked) ? "custom-select form-red" : "custom-select"} 
         multiple
         required={entry.fieldIsRequired}
       >
@@ -476,11 +690,24 @@ class ApplicationForm extends Component<Props, State> {
       currentPage,
       buttonState,
       numPages,
+      continueClicked,
+      isSubsection,
+      numQOnPage,
+      titleArray,
+      descriptionArray
     } = this.state;
+    console.log("STATEEE");
+    console.log(this.state);
     let bodyElement;
     const fillAmt = (currentPage / numPages) * 100;
     // const fillAmt = this.progressBarFill();
-    const qStartNum = (currentPage - 1) * MAX_Q_PER_PAGE;
+    var currSum = 0;
+    for (var i = 0; i < currentPage - 1; i++){
+      currSum += numQOnPage[i];
+    }
+    const qStartNum = isSubsection ? currSum : (currentPage - 1) * MAX_Q_PER_PAGE;
+    const qEndNum = isSubsection ? qStartNum + numQOnPage[currentPage - 1] : qStartNum + MAX_Q_PER_PAGE;
+    const includeQuestions = isSubsection ? numQOnPage[currentPage - 1] != 0 : true;
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
@@ -494,7 +721,7 @@ class ApplicationForm extends Component<Props, State> {
 
           <DocumentViewer pdfFile={pdfApplication} />
           <div className="d-flex justify-content-center pt-5">
-            <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+            <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
               <div className="pt-5 pb-3">
                 I agree to all terms and conditions in the form document above.
               </div>
@@ -522,6 +749,10 @@ class ApplicationForm extends Component<Props, State> {
       bodyElement = (
         <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+          <div className="container col-lg-10 col-md-10 col-sm-12">
+              <h1>{title}</h1>
+              <p>{description}</p>
+            </div>
             <div className="progress mb-4">
               <div
                 className="progress-bar"
@@ -534,14 +765,14 @@ class ApplicationForm extends Component<Props, State> {
               />
             </div>
             <div className="container col-lg-10 col-md-10 col-sm-12">
-              <h2>{title}</h2>
-              <p>{description}</p>
+              <h2>{isSubsection ? titleArray[currentPage - 1] : title}</h2>
+              <p>{isSubsection ? descriptionArray[currentPage - 1] : description}</p>
             </div>
           </div>
-          <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+          <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
-                if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
+                if ((index < qStartNum || index >= qEndNum) && includeQuestions) return null;
                 return (
                   <div className="my-5" key={entry.fieldID}>
                     {(() => {
@@ -550,22 +781,22 @@ class ApplicationForm extends Component<Props, State> {
                         return <div />;
                       }
                       if (entry.fieldType === 'TextField') {
-                        return this.getTextField(entry, formAnswers);
+                        return this.getTextField(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'MultilineTextField') {
-                        return this.getMultilineTextField(entry, formAnswers);
+                        return this.getMultilineTextField(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'CheckBox') {
                         return this.getCheckBox(entry, formAnswers);
                       }
                       if (entry.fieldType === 'RadioButton') {
-                        return this.getRadioButton(entry, formAnswers);
+                        return this.getRadioButton(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'ComboBox') {
-                        return this.getComboBox(entry, formAnswers);
+                        return this.getComboBox(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'ListBox') {
-                        return this.getListBox(entry, formAnswers);
+                        return this.getListBox(entry, formAnswers, continueClicked);
                       }
                       if (entry.fieldType === 'DateField') {
                         return this.getDateField(entry, formAnswers);
@@ -581,31 +812,28 @@ class ApplicationForm extends Component<Props, State> {
                   {currentPage === 1 ? null : (
                     <button
                       type="button"
-                      className="mr-auto btn btn-outline-primary"
+                      className="mr-auto btn btn-outline-primary-continue"
                       onClick={this.handlePrevious}
                     >
-                      Previous
+                       <span>&#60;</span> Previous
                     </button>
                   )}
                 </div>
                 <div className="col-md-4 text-center my-1">
                   <p>
                     <b>
-                      Page
-                      {currentPage}
-                      of
-                      {numPages}
+                      Page {currentPage} of {numPages}
                     </b>
                   </p>
                 </div>
                 <div className="col-md-2 mr-xs-3 mr-sm-0">
                   {currentPage !== numPages ? (
                     <Button
-                      type="submit"
-                      variant="primary"
+                      type="button"
+                      className="mr-auto btn btn-outline-primary-continue"
                       onClick={this.handleContinue}
                     >
-                      Continue
+                      Continue <span>&#62;</span>
                     </Button>
                   ) : (
                     <Button
