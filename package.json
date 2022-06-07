@@ -6,7 +6,6 @@
     "node": "16.14.2"
   },
   "dependencies": {
-    "@fortawesome/react-fontawesome": "^0.1.18",
     "@nivo/bar": "^0.70.1",
     "@nivo/core": "^0.70.1",
     "@nivo/line": "^0.70.1",
