@@ -9,6 +9,8 @@ import { reCaptchaKey } from '../../configVars';
 import getServerURL from '../../serverOverride';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
+import Eye from '../../static/images/eye.svg';
+import SlashEye from '../../static/images/eye-slash.svg';
 
 interface State {
   username: string;
@@ -21,6 +23,7 @@ interface State {
   lastName: string;
   organization: string;
   recaptchaPayload: string;
+  showPassword: boolean;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -60,6 +63,7 @@ class LoginPage extends Component<Props, State> {
       lastName: '',
       organization: '',
       recaptchaPayload: '',
+      showPassword: false,
     };
   }
 
@@ -89,6 +93,11 @@ class LoginPage extends Component<Props, State> {
   clearInput = async () => {
     this.setState({ username: '', password: '' });
   };
+
+  togglePassword = () => {
+    const{ showPassword } = this.state;
+    this.setState({ showPassword: !showPassword });
+  }
 
   handleChangePassword = (event: any) => {
     this.setState({ password: event.target.value });
@@ -254,6 +263,7 @@ class LoginPage extends Component<Props, State> {
       verificationCode,
       twoFactorState,
       buttonState,
+      showPassword,
     } = this.state;
     const { autoLogout } = this.props;
     return (
@@ -294,7 +304,7 @@ class LoginPage extends Component<Props, State> {
             </div>
 
             <div className="col">
-              <form className="form-signin pt-5">
+              <div className="form-signin pt-5">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
@@ -313,15 +323,24 @@ class LoginPage extends Component<Props, State> {
                   className="w-100 pt-2 font-weight-bold"
                 >
                   Password
-                  <input
-                    type="password"
-                    className="form-control form-purple mt-1"
-                    id="password"
-                    placeholder="password"
-                    value={password}
-                    onChange={this.handleChangePassword}
-                    required
-                  />
+                  <div className="pass-wrapper form-control form-purple mt-1" >
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="pass-input"
+                      id="password"
+                      placeholder="password"
+                      value={password}
+                      onChange={this.handleChangePassword}
+                      required
+                    />
+                    <button className="pass-icon" onClick={this.togglePassword}>
+                      <img
+                        src={showPassword ? SlashEye : Eye}
+                        className="eye-size"
+                        alt={showPassword ? "Show" : "Hide"}
+                      />
+                    </button>
+                  </div>
                 </label>
                 {twoFactorState === 'show' ? (
                   <div className={`mt-3 mb-3 collapse ${twoFactorState}`}>
@@ -438,7 +457,7 @@ class LoginPage extends Component<Props, State> {
                     </Link>
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
