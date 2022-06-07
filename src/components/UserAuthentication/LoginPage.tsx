@@ -304,7 +304,7 @@ class LoginPage extends Component<Props, State> {
             </div>
 
             <div className="col">
-              <div className="form-signin pt-5">
+              <form className="form-signin pt-5">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
@@ -333,7 +333,7 @@ class LoginPage extends Component<Props, State> {
                       onChange={this.handleChangePassword}
                       required
                     />
-                    <button className="pass-icon" onClick={this.togglePassword}>
+                    <button type="button" className="pass-icon" onClick={this.togglePassword}>
                       <img
                         src={showPassword ? SlashEye : Eye}
                         className="eye-size"
@@ -457,7 +457,7 @@ class LoginPage extends Component<Props, State> {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
