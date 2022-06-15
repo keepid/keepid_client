@@ -5,12 +5,19 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 import getServerURL from '../../serverOverride';
-import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
+import GenericProfilePicture from '../../static/images/generalprofilepic.png';
+import UploadIcon from '../../static/images/upload-icon.png'
+import MenuDots from '../../static/images/menu-dots.png'
+import DocIcon from '../../static/images/doc-icon.png'
+//import TrashCan from '../../static/images/trash-can.png'
 import SearchSVG from '../../static/images/search.svg';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { NONAME } from 'dns';
 
 interface Props {
   username: string;
@@ -28,6 +35,9 @@ interface State {
   clientPassword: string;
   clientCredentialsCorrect: boolean;
   showClientAuthModal: boolean;
+  showClients: boolean;
+  currentPage: number;
+  postsPerPage: number;
 }
 
 const options = [
@@ -49,6 +59,9 @@ class WorkerLanding extends Component<Props, State> {
       clients: [],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
+      showClients: false,
+      currentPage: 1,
+      postsPerPage: 6,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -58,7 +71,7 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickUploadDocuments =
       this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    //this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
       this.handleClickSendApplication.bind(this);
     this.handleClickAuthenticateClient =
@@ -78,6 +91,17 @@ class WorkerLanding extends Component<Props, State> {
         searchName: event.target.value,
       },
       this.getClients,
+    );
+  }
+
+  showClientList = () => {
+    const { showClients } = this.state;
+    const { currentPage } = this.state;
+    this.setState(
+      {
+        showClients: true,
+        currentPage: 1,
+      },
     );
   }
 
@@ -135,13 +159,13 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  handleClickSendEmail(event: any, client: any) {
+  /*handleClickSendEmail(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
       showClientAuthModal: true,
     });
-  }
+  }*/
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
@@ -183,84 +207,107 @@ class WorkerLanding extends Component<Props, State> {
 
   renderClients() {
     const { showClientAuthModal } = this.state;
-    const clientCards: React.ReactFragment[] = this.state.clients.map(
+
+    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
+    const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
+
+    const pageNumbers : number[] = [];
+
+    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i++) {
+      pageNumbers.push(i);
+    }
+
+    const setPage = (pageNum) => {
+      this.setState({currentPage: pageNum})
+    }
+
+    const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
-        <div key={client.username} className="card mb-3">
-          <div className="card-body">
-            <div className="d-flex flex-row">
-              <div className="d-flex flex-column mr-4">
-                <img
-                  alt="a blank profile"
-                  className="profile-picture"
-                  src={GenericProfilePicture}
-                />
+        <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
+          <div className="dropdown" style={{ position: 'absolute', top: 24, right: 24 }}>
+            <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
+              <img alt="menu" src={MenuDots} style={{ height: 24 }}/>
+            </a>
+            <div className="dropdown-menu">
+              <button className="dropdown-item" onClick={(event) =>
+                  this.handleClickSendApplication(event, client)
+                }>
+                <div style={{ color: '#445feb', fontWeight: 'bold' }}> 
+                  <img src={DocIcon} style={{ height: 17 }}/>
+                  {" Complete Application"} 
+                </div>
+              </button>
+              {/*<div className="dropdown-item">        
+                <div style={{ color: '#C9302C', fontWeight: 'bold' }}> 
+                  <img src={TrashCan} style={{ height: 17 }}/>
+                  {" Delete Client"} 
               </div>
-              <div className="d-flex flex-lg-column mr-4">
-                <h5 className="card-title mb-3 h4">
-                  {client.firstName}
-
-                  {client.lastName}
-                </h5>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  {client.username}
-                </h6>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  {client.email}
-                </h6>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  #
-{client.phone}
-                </h6>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  {client.address}
-                </h6>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  {client.city}
-                  {', '}
-                  {client.state}
-
-                  {client.zipcode}
-                </h6>
-                <p className="card-text">
-                  Some information about the client here.
-                </p>
-                <Link to={`/profile/${client.username}`}>
-                  <button type="button" className="btn btn-primary">
-                    Client Profile
-                  </button>
-                </Link>
-              </div>
-              <div className="d-flex flex-column mr-4">
-                <h5 className="card-title">Client Actions</h5>
-                <button
-                  type="button"
-                  className="btn btn-success mb-2 btn-sm"
-                  onClick={(event) =>
-                    this.handleClickUploadDocuments(event, client)
-                  }
-                >
-                  Upload Document
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger mb-2 btn-sm"
-                  onClick={(event) =>
-                    this.handleClickViewDocuments(event, client)
-                  }
-                >
-                  View Documents
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-dark mb-2 btn-sm"
-                  onClick={(event) =>
-                    this.handleClickSendApplication(event, client)
-                  }
-                >
-                  Send Application
-                </button>
-              </div>
+              </div>*/}
             </div>
+          </div>
+          <Link to={`/profile/${client.username}`}>
+          <div className="card-body px-0 py-0" style={{ position: 'absolute', top: 24, left: 24, width: 288 }}>
+            <div className="d-flex flex-row mb-3">
+              <img
+                alt="a blank profile"
+                src={GenericProfilePicture}
+                style={{ height: 56, width: 56}}
+              />
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h5 className="card-title h4">
+                {client.firstName}
+                {' '}
+                {client.lastName}
+              </h5>
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h6 className="card-subtitle text-muted">
+                {client.phone}
+              </h6>
+            </div>
+            <div className="d-flex flex-row mb-3">
+              <h6 className="card-subtitle text-muted">
+                {"Birth Date: "}
+                {client.birthDate}
+              </h6>
+            </div>
+          </div>
+          </Link>
+          <div className="row" style={{ position: 'absolute', bottom: 24, left: 24 }}>
+            <button
+              type="button"
+              className="btn btn-primary mr-2 btn-sm"
+              style={{ height: 32, }}
+              onClick={(event) =>
+                this.handleClickUploadDocuments(event, client)
+              }
+            >
+              <div style={{ fontWeight: 'bold' }}>
+                <img src={UploadIcon} style={{ height: 14 }}/>
+                {' Upload'}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm primary-color-border"
+              style={{ height: 32, }}
+              onClick={(event) =>
+                this.handleClickViewDocuments(event, client)
+              }
+            >
+              <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
+            </button>
+            {/*<Link to={`/profile/${client.username}`}>
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-sm" 
+                style={{ height: 32 }}
+              >
+                View Profile
+              </button>
+            </Link>*/}
           </div>
           {showClientAuthModal ? this.modalRender() : null}
         </div>
@@ -334,7 +381,26 @@ class WorkerLanding extends Component<Props, State> {
       clientCredentialsCorrect,
       clientUsername,
       searchName,
+      showClients,
     } = this.state;
+
+    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
+    const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
+    const lastPage = Math.ceil(this.state.clients.length / this.state.postsPerPage);
+
+    //Implement page numbers
+    const pageNumbers : number[] = [];
+
+    for (let i = 1; i <= lastPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    //Set current page
+    const setPage = (pageNum) => {
+      this.setState({currentPage: pageNum})
+    }
+
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
         <Redirect
@@ -353,42 +419,55 @@ class WorkerLanding extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container">
+          <div className="container mb-4">
             <h1 className="display-5 pb-0">My Clients</h1>
-            <p className="lead">Use the search bar to help look up clients.</p>
-            <div className="d-flex flex-row">
-              <form className="form-inline mr-3 w-50">
+            <div className="d-flex flex-row justify-content-between">
+              <form className="form-inline mr-3">
                 <input
-                  className="form-control mr-2 w-75"
+                  className="form-control right-angle-right"
+                  style={{ width: 500 }}
                   type="text"
                   onChange={this.handleChangeSearchName}
                   value={this.state.searchName}
-                  placeholder="Search Name"
+                  placeholder="Search by name, phone number, email..."
                   aria-label="Search"
                   onKeyPress={(event) => {
                     if (event.key === 'Enter') {
+                      this.showClientList();
                       event.preventDefault();
                     }
                   }}
                 />
-                <img
-                  alt="Search"
-                  src={SearchSVG}
-                  width="22"
-                  height="22"
-                  className="d-inline-block align-middle ml-1"
-                />
+                <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
+                  <div style={{ fontWeight: 'bold' }}>Search</div>
+                </button>
               </form>
-              <button
-                className="btn btn-primary"
+              {/*<button
+                className="btn btn-secondary"
                 type="button"
                 data-toggle="collapse"
                 data-target="#advancedSearch"
                 aria-expanded="false"
                 aria-controls="collapseExample"
               >
-                Toggle Advanced Search
-              </button>
+                Advanced Search
+                </button>*/}
+              <div>
+                {role === Role.Director || role === Role.Admin ? (
+                <Link to="/person-signup/worker">
+                  <button type="button" className="btn btn-primary mr-2">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Worker</div>
+                  </button>
+                </Link>
+                ) : (
+                  <div />
+                )}
+                <Link to="/person-signup/client">
+                  <button type="button" style={{ marginLeft: "auto" }} className="btn btn-primary mr-4">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
+                  </button>
+                </Link>
+              </div>
             </div>
             <div className="collapse" id="advancedSearch">
               <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
@@ -404,23 +483,13 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          <div className="row mt-2 mb-2">
-            {role === Role.Director || role === Role.Admin ? (
-              <Link to="/person-signup/worker">
-                <button type="button" className="btn btn-primary mr-4">
-                  Signup Worker
-                </button>
-              </Link>
-            ) : (
-              <div />
-            )}
-            <Link to="/person-signup/client">
-              <button type="button" className="btn btn-primary">
-                Signup Client
-              </button>
-            </Link>
-          </div>
-          {searchName.length === 0 ? (
+          {(searchName.length != 0 || showClients) ? (
+            <div className="container px-0" >
+              <Row xs={1} md={3}>
+                {this.renderClients()}
+              </Row>
+            </div>
+          ) : (
             <div>
               <h3 className="pt-4">
                 Search a Client&apos;s name to get Started
@@ -431,9 +500,35 @@ class WorkerLanding extends Component<Props, State> {
                 alt="Search a client"
               />
             </div>
-          ) : (
-            this.renderClients()
+            
           )}
+        </div>
+        <div className="container">
+          <div className="flex row justify-content-left align-items-center mt-2">
+            {(searchName.length != 0 || showClients) ? (
+              <div className="text-muted align-items-center mr-4">
+                {this.state.clients.length} {"Results"}
+              </div>
+              ) : (null)
+            }
+            {(searchName.length != 0 || showClients) ? (
+              pageNumbers.map((pageNum, index) => (
+                <span 
+                  key={index} 
+                  className={
+                    pageNum === this.state.currentPage ? 
+                    (pageNum === 1 ? "active-pagination-link-1" : 
+                      (pageNum === lastPage ?
+                        "active-pagination-link-end" : "active-pagination-link")) : 
+                    (pageNum === 1 ? "pagination-link-1" : 
+                      ( pageNum === lastPage ?
+                        "pagination-link-end" : "pagination-link"))}
+                  onClick={() => {setPage(pageNum)}}>
+                  {pageNum}
+                </span>
+              ))) : (null)
+            }
+          </div>
         </div>
       </div>
     );
