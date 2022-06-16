@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import Image from 'react-bootstrap/Image';
 import Modal from 'react-bootstrap/Modal';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
@@ -9,6 +10,7 @@ import makeAnimated from 'react-select/animated';
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/blank-profile-picture.png';
 import SearchSVG from '../../static/images/search.svg';
+import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 
@@ -28,6 +30,8 @@ interface State {
   clientPassword: string;
   clientCredentialsCorrect: boolean;
   showClientAuthModal: boolean;
+  photo: any;
+  clientCards: any;
 }
 
 const options = [
@@ -39,8 +43,11 @@ const options = [
 const animatedComponents = makeAnimated();
 
 class WorkerLanding extends Component<Props, State> {
+  private controllerRef: React.MutableRefObject<AbortController | null>;
+
   constructor(props: Props) {
     super(props);
+    this.controllerRef = React.createRef();
     this.state = {
       searchName: '',
       redirectLink: '',
@@ -49,6 +56,8 @@ class WorkerLanding extends Component<Props, State> {
       clients: [],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
+      photo: null,
+      clientCards: null,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -70,6 +79,40 @@ class WorkerLanding extends Component<Props, State> {
 
   componentDidMount() {
     this.getClients();
+  }
+
+  loadProfilePhoto(username: string) {
+    const signal = this.controllerRef.current?.signal;
+    let url: any;
+
+    fetch(`${getServerURL()}/load-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        const { size } = blob;
+        if (size > 72) {
+          url = (URL || window.webkitURL).createObjectURL(blob);
+          this.setState({ photo: url });
+          console.log('photo in loadphoto function fetch, ', this.state.photo);
+        } else {
+          this.setState({ photo: null });
+        }
+      })
+      .catch((error) => {
+        if (error.toString() !== 'AbortError: The user aborted a request.') {
+          const { alert } = this.props;
+          alert.show(
+            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          );
+        }
+      });
+    console.log('photo in loadphoto function, ', this.state.photo);
   }
 
   handleChangeSearchName(event: any) {
@@ -172,16 +215,29 @@ class WorkerLanding extends Component<Props, State> {
       .then((res) => res.json())
       .then((responseJSON) => {
         const { people, status } = responseJSON;
-        console.log(responseJSON);
         if (status !== 'USER_NOT_FOUND') {
           this.setState({
             clients: people,
           });
         }
       });
+
+    /* update url of profile photos of clients */
+    const clients: Array<any> = [];
+    for (let i = 0; i < this.state.clients.length; i++) {
+      const obj = this.state.clients[i];
+      this.loadProfilePhoto(this.state.clients[i].username);
+      obj.photo = this.state.photo;
+      console.log('object photo', obj.photo);
+      clients.push(obj);
+      this.setState({ clients });
+    }
+    this.renderClients();
+    console.log('after get clients ', this.state.clients);
   }
 
   renderClients() {
+    console.log('in render ', this.state.clients);
     const { showClientAuthModal } = this.state;
     const clientCards: React.ReactFragment[] = this.state.clients.map(
       (client, i) => (
@@ -189,11 +245,21 @@ class WorkerLanding extends Component<Props, State> {
           <div className="card-body">
             <div className="d-flex flex-row">
               <div className="d-flex flex-column mr-4">
-                <img
-                  alt="a blank profile"
-                  className="profile-picture"
-                  src={GenericProfilePicture}
-                />
+                {client.photo === null ? (
+                    <img
+                      alt="a blank profile"
+                      className="profile-picture"
+                      src={GenericProfilePicture}
+                    />
+                ) : (
+                    <div id="profilePhoto">
+                      <img
+                        alt="a blank profile"
+                        className="profile-picture"
+                        src={client.photo}
+                      />
+                    </div>
+                )}
               </div>
               <div className="d-flex flex-lg-column mr-4">
                 <h5 className="card-title mb-3 h4">
@@ -267,7 +333,7 @@ class WorkerLanding extends Component<Props, State> {
       ),
     );
 
-    return clientCards;
+    this.setState({ clientCards });
   }
 
   modalRender() {
@@ -432,8 +498,8 @@ class WorkerLanding extends Component<Props, State> {
               />
             </div>
           ) : (
-            this.renderClients()
-          )}
+            this.state.clientCards
+          ) }
         </div>
       </div>
     );
