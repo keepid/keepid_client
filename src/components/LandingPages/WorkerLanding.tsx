@@ -32,6 +32,7 @@ interface State {
   showClientAuthModal: boolean;
   photo: any;
   clientCards: any;
+  profilePhotos: any;
 }
 
 const options = [
@@ -58,6 +59,7 @@ class WorkerLanding extends Component<Props, State> {
       showClientAuthModal: false,
       photo: null,
       clientCards: null,
+      profilePhotos: [],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -81,38 +83,42 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients();
   }
 
-  loadProfilePhoto(username: string) {
+  loadProfilePhoto() {
     const signal = this.controllerRef.current?.signal;
     let url: any;
 
-    fetch(`${getServerURL()}/load-pfp`, {
-      signal,
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username,
-      }),
-    })
-      .then((response) => response.blob())
-      .then((blob) => {
-        const { size } = blob;
-        if (size > 72) {
-          url = (URL || window.webkitURL).createObjectURL(blob);
-          this.setState({ photo: url });
-          console.log('photo in loadphoto function fetch, ', this.state.photo);
-        } else {
-          this.setState({ photo: null });
-        }
+    this.state.clients.forEach((client, i) => {
+      const { username } = client;
+      fetch(`${getServerURL()}/load-pfp`, {
+        signal,
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          username,
+        }),
       })
-      .catch((error) => {
-        if (error.toString() !== 'AbortError: The user aborted a request.') {
-          const { alert } = this.props;
-          alert.show(
-            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
-          );
-        }
-      });
-    console.log('photo in loadphoto function, ', this.state.photo);
+        .then((response) => response.blob())
+        .then((blob) => {
+          const { size } = blob;
+          const clients = this.state.clients.slice();
+          if (size > 72) {
+            url = (URL || window.webkitURL).createObjectURL(blob);
+            clients[i].photo = url;
+            this.setState({ clients });
+          } else {
+            clients[i].photo = null;
+            this.setState({ clients });
+          }
+        })
+        .catch((error) => {
+          if (error.toString() !== 'AbortError: The user aborted a request.') {
+            const { alert } = this.props;
+            alert.show(
+              `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+            );
+          }
+        });
+    });
   }
 
   handleChangeSearchName(event: any) {
@@ -220,20 +226,9 @@ class WorkerLanding extends Component<Props, State> {
             clients: people,
           });
         }
-      });
-
-    /* update url of profile photos of clients */
-    const clients: Array<any> = [];
-    for (let i = 0; i < this.state.clients.length; i++) {
-      const obj = this.state.clients[i];
-      this.loadProfilePhoto(this.state.clients[i].username);
-      obj.photo = this.state.photo;
-      console.log('object photo', obj.photo);
-      clients.push(obj);
-      this.setState({ clients });
-    }
+      })
+      .then(() => this.loadProfilePhoto());
     this.renderClients();
-    console.log('after get clients ', this.state.clients);
   }
 
   renderClients() {
