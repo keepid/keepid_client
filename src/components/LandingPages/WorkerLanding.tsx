@@ -492,7 +492,7 @@ class WorkerLanding extends Component<Props, State> {
           ) : (
             <div>
               <h3 className="pt-4">
-                Search a Client&apos;s name to get Started
+                Search a client&apos;s name to get started
               </h3>
               <img
                 className="pt-4 visualization-svg"
