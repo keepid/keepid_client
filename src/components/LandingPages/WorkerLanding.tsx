@@ -32,6 +32,7 @@ interface State {
   showClientAuthModal: boolean;
   clientCards: any;
   search: boolean;
+  loading: boolean;
 }
 
 const options = [
@@ -58,6 +59,7 @@ class WorkerLanding extends Component<Props, State> {
       showClientAuthModal: false,
       clientCards: null,
       search: false,
+      loading: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -80,7 +82,7 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.getClients().then(() => this.loadProfilePhoto());
+    this.getClients();
   }
 
   loadProfilePhoto(clientsArray: any) {
@@ -91,6 +93,7 @@ class WorkerLanding extends Component<Props, State> {
 
     const promises = clientsArray.map((client) => {
       const { username } = client;
+      this.setState({ loading: true });
       return fetch(`${getServerURL()}/load-pfp`, {
         signal,
         method: 'POST',
@@ -125,7 +128,10 @@ class WorkerLanding extends Component<Props, State> {
         clientsArray.forEach((client, i) => {
           clients[i].photo = photos[i];
         });
-        this.setState({ clients });
+        this.setState({
+          clients,
+          loading: false,
+        });
       });
   }
 
@@ -218,9 +224,6 @@ class WorkerLanding extends Component<Props, State> {
       .then(() => this.renderClients())
       .then(() => {
         this.setState({ search: true });
-      })
-      .then(() => {
-        console.log('clients', this.state.clients);
       });
   }
 
@@ -511,7 +514,12 @@ class WorkerLanding extends Component<Props, State> {
               </button>
             </Link>
           </div>
-          {this.state.search ? (
+          {this.state.loading && (
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden"></span>
+          </div>
+          )}
+          {this.state.search && !this.state.loading ? (
             this.state.clientCards
           ) : (
               <div>
