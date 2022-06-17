@@ -30,9 +30,8 @@ interface State {
   clientPassword: string;
   clientCredentialsCorrect: boolean;
   showClientAuthModal: boolean;
-  photo: any;
   clientCards: any;
-  profilePhotos: any;
+  search: boolean;
 }
 
 const options = [
@@ -57,13 +56,14 @@ class WorkerLanding extends Component<Props, State> {
       clients: [],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
-      photo: null,
       clientCards: null,
-      profilePhotos: [],
+      search: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
     this.getClients = this.getClients.bind(this);
+    this.handleSearch = this.handleSearch.bind(this);
+    this.clearSearch = this.clearSearch.bind(this);
     this.handleChangeClientPassword =
       this.handleChangeClientPassword.bind(this);
     this.handleClickUploadDocuments =
@@ -80,16 +80,18 @@ class WorkerLanding extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.getClients();
+    this.getClients().then(() => this.loadProfilePhoto());
   }
 
-  loadProfilePhoto() {
+  loadProfilePhoto(clientsArray: any) {
     const signal = this.controllerRef.current?.signal;
     let url: any;
+    let photos;
+    let clients;
 
-    this.state.clients.forEach((client, i) => {
+    const promises = clientsArray.map((client) => {
       const { username } = client;
-      fetch(`${getServerURL()}/load-pfp`, {
+      return fetch(`${getServerURL()}/load-pfp`, {
         signal,
         method: 'POST',
         credentials: 'include',
@@ -97,28 +99,34 @@ class WorkerLanding extends Component<Props, State> {
           username,
         }),
       })
-        .then((response) => response.blob())
-        .then((blob) => {
-          const { size } = blob;
-          const clients = this.state.clients.slice();
-          if (size > 72) {
-            url = (URL || window.webkitURL).createObjectURL(blob);
-            clients[i].photo = url;
-            this.setState({ clients });
-          } else {
-            clients[i].photo = null;
-            this.setState({ clients });
-          }
-        })
-        .catch((error) => {
-          if (error.toString() !== 'AbortError: The user aborted a request.') {
-            const { alert } = this.props;
-            alert.show(
-              `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
-            );
-          }
-        });
+        .then((response) => response.blob());
     });
+
+    return Promise.all(promises).then((results) => {
+      photos = results.map((blob) => {
+        const { size } = blob;
+        if (size > 72) {
+          url = (URL || window.webkitURL).createObjectURL(blob);
+          return url;
+        }
+        return null;
+      });
+    })
+      .catch((error) => {
+        if (error.toString() !== 'AbortError: The user aborted a request.') {
+          const { alert } = this.props;
+          alert.show(
+            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          );
+        }
+      })
+      .then(() => {
+        clients = clientsArray.slice();
+        clientsArray.forEach((client, i) => {
+          clients[i].photo = photos[i];
+        });
+        this.setState({ clients });
+      });
   }
 
   handleChangeSearchName(event: any) {
@@ -126,7 +134,6 @@ class WorkerLanding extends Component<Props, State> {
       {
         searchName: event.target.value,
       },
-      this.getClients,
     );
   }
 
@@ -206,10 +213,28 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
+  handleSearch() {
+    this.getClients()
+      .then(() => this.renderClients())
+      .then(() => {
+        this.setState({ search: true });
+      })
+      .then(() => {
+        console.log('clients', this.state.clients);
+      });
+  }
+
+  clearSearch() {
+    this.setState({
+      search: false,
+      searchName: '',
+    });
+  }
+
   getClients() {
     const { searchName } = this.state;
     const { role } = this.props;
-    fetch(`${getServerURL()}/get-organization-members`, {
+    return fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -222,17 +247,14 @@ class WorkerLanding extends Component<Props, State> {
       .then((responseJSON) => {
         const { people, status } = responseJSON;
         if (status !== 'USER_NOT_FOUND') {
-          this.setState({
-            clients: people,
-          });
+          return people;
         }
+        return [];
       })
-      .then(() => this.loadProfilePhoto());
-    this.renderClients();
+      .then((result) => this.loadProfilePhoto(result));
   }
 
   renderClients() {
-    console.log('in render ', this.state.clients);
     const { showClientAuthModal } = this.state;
     const clientCards: React.ReactFragment[] = this.state.clients.map(
       (client, i) => (
@@ -429,9 +451,11 @@ class WorkerLanding extends Component<Props, State> {
                   onKeyPress={(event) => {
                     if (event.key === 'Enter') {
                       event.preventDefault();
+                      this.handleSearch();
                     }
                   }}
                 />
+                <button type="button" className="btn btn-primary mr-4" onClick={this.handleSearch}>
                 <img
                   alt="Search"
                   src={SearchSVG}
@@ -439,7 +463,13 @@ class WorkerLanding extends Component<Props, State> {
                   height="22"
                   className="d-inline-block align-middle ml-1"
                 />
+                </button>
               </form>
+              {this.state.search && (
+                  <button type="button" className="btn btn-primary mr-4" onClick={this.clearSearch}>
+                    Clear Search
+                  </button>
+              )}
               <button
                 className="btn btn-primary"
                 type="button"
@@ -481,19 +511,19 @@ class WorkerLanding extends Component<Props, State> {
               </button>
             </Link>
           </div>
-          {searchName.length === 0 ? (
-            <div>
-              <h3 className="pt-4">
-                Search a Client&apos;s name to get Started
-              </h3>
-              <img
-                className="pt-4 visualization-svg"
-                src={VisualizationSVG}
-                alt="Search a client"
-              />
-            </div>
-          ) : (
+          {this.state.search ? (
             this.state.clientCards
+          ) : (
+              <div>
+                <h3 className="pt-4">
+                  Search a Client&apos;s name to get Started
+                </h3>
+                <img
+                  className="pt-4 visualization-svg"
+                  src={VisualizationSVG}
+                  alt="Search a client"
+                />
+              </div>
           ) }
         </div>
       </div>
