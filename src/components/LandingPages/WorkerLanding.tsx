@@ -23,7 +23,6 @@ interface Props {
 }
 
 interface State {
-  clients: any;
   searchName: string;
   redirectLink: string;
   clientUsername: string;
@@ -54,7 +53,6 @@ class WorkerLanding extends Component<Props, State> {
       redirectLink: '',
       clientUsername: '',
       clientPassword: '',
-      clients: [],
       clientCredentialsCorrect: false,
       showClientAuthModal: false,
       clientCards: null,
@@ -129,9 +127,9 @@ class WorkerLanding extends Component<Props, State> {
           clients[i].photo = photos[i];
         });
         this.setState({
-          clients,
           loading: false,
         });
+        return clients;
       });
   }
 
@@ -221,7 +219,7 @@ class WorkerLanding extends Component<Props, State> {
 
   handleSearch() {
     this.getClients()
-      .then(() => this.renderClients())
+      .then((result) => this.renderClients(result))
       .then(() => {
         this.setState({ search: true });
       });
@@ -257,9 +255,9 @@ class WorkerLanding extends Component<Props, State> {
       .then((result) => this.loadProfilePhoto(result));
   }
 
-  renderClients() {
+  renderClients(clients: any) {
     const { showClientAuthModal } = this.state;
-    const clientCards: React.ReactFragment[] = this.state.clients.map(
+    const clientCards: React.ReactFragment[] = clients.map(
       (client, i) => (
         <div key={client.username} className="card mb-3">
           <div className="card-body">
@@ -516,7 +514,7 @@ class WorkerLanding extends Component<Props, State> {
           </div>
           {this.state.loading && (
           <div className="spinner-border" role="status">
-            <span className="visually-hidden"></span>
+            <span className="visually-hidden" />
           </div>
           )}
           {this.state.search && !this.state.loading ? (
