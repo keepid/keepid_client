@@ -225,7 +225,7 @@ class WorkerLanding extends Component<Props, State> {
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
-          <div className="dropdown" style={{position: 'absolute', top: 24, right: 24}}>
+          <div className="dropdown lock-top-right">
             <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
               <img alt="menu" src={MenuDots} style={{ height: 24 }}/>
             </a>
@@ -275,7 +275,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
           </Link>
-          <div className="row" style={{ position: 'absolute', bottom: 24, left: 24 }}>
+          <div className="row lock-bottom-left">
             <button
               type="button"
               className="btn btn-primary mr-2 btn-sm"

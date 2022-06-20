@@ -808,3 +808,22 @@ div.scrollbar {
 .pagination-link-1:hover:not(.active) {background-color: #ddd;}
 
 .pagination-link-end:hover:not(.active) {background-color: #ddd;}
+
+.lock-top-right {
+	position: absolute;
+	top: 1.5rem;
+	right: 1.5rem;
+}
+
+.card-body-positioning {
+	position: absolute;
+	top: 1.5rem;
+	left: 1.5rem;
+	width: 18rem;
+}
+
+.lock-bottom-left {
+	position: absolute;
+	bottom: 1.5rem;
+	left: 1.5rem;
+}
