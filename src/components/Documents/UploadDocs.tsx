@@ -92,6 +92,7 @@ class UploadDocs extends React.Component<Props, State> {
         const prevStep = this.state.currentStep;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('documentType', documentType);
+        // SHOULD I ADD WHETHER ROLE COULD BE CLIENT
         if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION);
         }

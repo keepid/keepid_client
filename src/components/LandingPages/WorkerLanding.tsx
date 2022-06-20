@@ -26,7 +26,7 @@ interface State {
   redirectLink: string;
   clientUsername: string;
   clientPassword: string;
-  clientCredentialsCorrect: boolean;
+  // clientCredentialsCorrect: boolean;
   showClientAuthModal: boolean;
 }
 
@@ -47,7 +47,7 @@ class WorkerLanding extends Component<Props, State> {
       clientUsername: '',
       clientPassword: '',
       clients: [],
-      clientCredentialsCorrect: false,
+      // clientCredentialsCorrect: false,
       showClientAuthModal: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
@@ -61,8 +61,8 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
       this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient =
-      this.handleClickAuthenticateClient.bind(this);
+    // this.handleClickAuthenticateClient =
+    //   this.handleClickAuthenticateClient.bind(this);
     this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
     this.modalRender = this.modalRender.bind(this);
@@ -88,36 +88,37 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  handleClickAuthenticateClient(event: any) {
-    event.preventDefault();
-    const { clientUsername, clientPassword } = this.state;
+  // handleClickAuthenticateClient(event: any) {
+  //   event.preventDefault();
+  //   const { clientUsername, clientPassword } = this.state;
 
-    fetch(`${getServerURL()}/login`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username: clientUsername,
-        password: clientPassword,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        console.log(responseJSON);
-        const { status } = responseJSON;
-        if (status === 'AUTH_SUCCESS') {
-          // Allow worker privileges
-          this.setState({
-            clientCredentialsCorrect: true,
-          });
-        } else if (status === 'AUTH_FAILURE') {
-          this.props.alert.show('Incorrect Password');
-        } else if (status === 'USER_NOT_FOUND') {
-          this.props.alert.show('Username Does Not Exist');
-        } else {
-          this.props.alert.show('Server Failure: Please Try Again');
-        }
-      });
-  }
+  //   // Potentially change back to login
+  //   fetch(`${getServerURL()}/authenticate`, {
+  //     method: 'POST',
+  //     credentials: 'include',
+  //     body: JSON.stringify({
+  //       username: clientUsername,
+  //       password: clientPassword,
+  //     }),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((responseJSON) => {
+  //       console.log(responseJSON);
+  //       const { status } = responseJSON;
+  //       if (status === 'AUTH_SUCCESS') {
+  //         // Allow worker privileges
+  //         this.setState({
+  //           clientCredentialsCorrect: true,
+  //         });
+  //       } else if (status === 'AUTH_FAILURE') {
+  //         this.props.alert.show('Incorrect Password');
+  //       } else if (status === 'USER_NOT_FOUND') {
+  //         this.props.alert.show('Username Does Not Exist');
+  //       } else {
+  //         this.props.alert.show('Server Failure: Please Try Again');
+  //       }
+  //     });
+  // }
 
   handleClickUploadDocuments(event: any, client: any) {
     this.setState({
@@ -315,10 +316,15 @@ class WorkerLanding extends Component<Props, State> {
           >
             Close
           </button>
-          <button
+
+          {/* <button
             type="button"
             className="btn btn-primary"
             onClick={this.handleClickAuthenticateClient}
+          > */}
+          <button
+            type="button"
+            className="btn btn-primary"
           >
             Submit
           </button>
@@ -331,11 +337,12 @@ class WorkerLanding extends Component<Props, State> {
     const { role } = this.props;
     const {
       redirectLink,
-      clientCredentialsCorrect,
+      // clientCredentialsCorrect,
       clientUsername,
       searchName,
     } = this.state;
-    if (clientCredentialsCorrect && redirectLink === '/upload-document') {
+    // if (clientCredentialsCorrect && redirectLink === '/upload-document') {
+    if (redirectLink === '/upload-document') {
       return (
         <Redirect
           to={{

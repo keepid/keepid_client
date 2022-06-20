@@ -298,7 +298,8 @@ class App extends React.Component<{}, State, {}> {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
-                    role === Role.Director
+                    role === Role.Director ||
+                    role === Role.Worker
                   ) {
                     return <UploadDocs userRole={role} />;
                   }
