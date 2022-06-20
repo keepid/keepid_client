@@ -7,10 +7,10 @@ import { Link } from 'react-router-dom';
 
 import { reCaptchaKey } from '../../configVars';
 import getServerURL from '../../serverOverride';
+import EyeIcon from '../../static/images/eye.svg';
+import SlashEye from '../../static/images/eye-slash.svg';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
-import Eye from '../../static/images/eye.svg';
-import SlashEye from '../../static/images/eye-slash.svg';
 
 interface State {
   username: string;
@@ -95,7 +95,7 @@ class LoginPage extends Component<Props, State> {
   };
 
   togglePassword = () => {
-    const{ showPassword } = this.state;
+    const { showPassword } = this.state;
     this.setState({ showPassword: !showPassword });
   }
 
@@ -323,9 +323,9 @@ class LoginPage extends Component<Props, State> {
                   className="w-100 pt-2 font-weight-bold"
                 >
                   Password
-                  <div className="pass-wrapper form-control form-purple mt-1" >
+                  <div className="pass-wrapper form-control form-purple mt-1">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       className="pass-input"
                       id="password"
                       placeholder="password"
@@ -335,9 +335,9 @@ class LoginPage extends Component<Props, State> {
                     />
                     <button type="button" className="pass-icon" onClick={this.togglePassword}>
                       <img
-                        src={showPassword ? SlashEye : Eye}
+                        src={showPassword ? SlashEye : EyeIcon}
                         className="eye-size"
-                        alt={showPassword ? "Show" : "Hide"}
+                        alt={showPassword ? 'Show' : 'Hide'}
                       />
                     </button>
                   </div>
