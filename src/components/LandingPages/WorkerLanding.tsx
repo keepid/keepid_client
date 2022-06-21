@@ -216,30 +216,30 @@ class WorkerLanding extends Component<Props, State> {
                 <button type="button" className="btn btn-primary">Client Profile</button>
               </Link>
             </div>
-            <div className="d-flex flex-column mr-4">
-              <h5 className="card-title">Client Actions</h5>
-              <button
-                type="button"
-                className="btn btn-success mb-2 btn-sm"
-                onClick={(event) => this.handleClickUploadDocuments(event, client)}
-              >
-                Upload Document
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger mb-2 btn-sm"
-                onClick={(event) => this.handleClickViewDocuments(event, client)}
-              >
-                View Documents
-              </button>
-              <button
-                type="button"
-                className="btn btn-dark mb-2 btn-sm"
-                onClick={(event) => this.handleClickSendApplication(event, client)}
-              >
-                Send Application
-              </button>
-            </div>
+            {/* <div className="d-flex flex-column mr-4"> */}
+            {/*  <h5 className="card-title">Client Actions</h5> */}
+            {/*  <button */}
+            {/*    type="button" */}
+            {/*    className="btn btn-success mb-2 btn-sm" */}
+            {/*    onClick={(event) => this.handleClickUploadDocuments(event, client)} */}
+            {/*  > */}
+            {/*    Upload Document */}
+            {/*  </button> */}
+            {/*  <button */}
+            {/*    type="button" */}
+            {/*    className="btn btn-danger mb-2 btn-sm" */}
+            {/*    onClick={(event) => this.handleClickViewDocuments(event, client)} */}
+            {/*  > */}
+            {/*    View Documents */}
+            {/*  </button> */}
+            {/*  <button */}
+            {/*    type="button" */}
+            {/*    className="btn btn-dark mb-2 btn-sm" */}
+            {/*    onClick={(event) => this.handleClickSendApplication(event, client)} */}
+            {/*  > */}
+            {/*    Send Application */}
+            {/*  </button> */}
+            {/* </div> */}
           </div>
         </div>
         {showClientAuthModal ? this.modalRender() : null}

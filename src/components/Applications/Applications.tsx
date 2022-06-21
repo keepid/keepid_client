@@ -48,7 +48,7 @@ class Applications extends Component<Props, State, {}> {
     dataField: 'filename',
     text: 'Application Name',
     sort: true,
-    formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
+    // formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
   }, {
     dataField: 'organizationName',
     text: 'Organization',
