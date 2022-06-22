@@ -10,26 +10,26 @@ import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 
 interface Props {
-  alert: any,
-  userRole: Role,
-  username: string,
-  name: string,
-  organization: string,
+  alert: any;
+  userRole: Role;
+  username: string;
+  name: string;
+  organization: string;
 }
 
 interface State {
-  currentApplicationId: string | undefined,
-  currentApplicationFilename: string | undefined,
-  documents: any,
-  currentUser: any,
-  searchName: string,
-  username: string,
-  adminName: string,
-  organization: string,
+  currentApplicationId: string | undefined;
+  currentApplicationFilename: string | undefined;
+  documents: any;
+  currentUser: any;
+  searchName: string;
+  username: string;
+  adminName: string;
+  organization: string;
 }
 
 interface State {
-  pdfFiles: FileList | undefined,
+  pdfFiles: FileList | undefined;
 }
 
 class DeveloperLanding extends Component<Props, State, {}> {
@@ -61,28 +61,43 @@ class DeveloperLanding extends Component<Props, State, {}> {
     <div>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
         Re-Upload
-        <input type="file" accept="application/pdf" id="potentialPdf" multiple onChange={(event) => this.handleChangeFileUpload(event, rowIndex)} hidden />
+        <input
+          type="file"
+          accept="application/pdf"
+          id="potentialPdf"
+          multiple
+          onChange={(event) => this.handleChangeFileUpload(event, rowIndex)}
+          hidden
+        />
       </label>
       <label className="btn btn-filestack btn-widget ml-5 mr-5">
         Download
-        <button type="button" onClick={(event) => this.handleChangeFileDownload(event, rowIndex)} hidden />
+        <button
+          type="button"
+          onClick={(event) => this.handleChangeFileDownload(event, rowIndex)}
+          hidden
+        />
       </label>
     </div>
-  )
+  );
 
-  tableCols = [{
-    dataField: 'filename',
-    text: 'Application Name',
-    sort: true,
-  }, {
-    dataField: 'category',
-    text: 'Category',
-    sort: true,
-  }, {
-    dataField: '',
-    text: 'Actions',
-    formatter: this.ButtonFormatter,
-  }];
+  tableCols = [
+    {
+      dataField: 'filename',
+      text: 'Application Name',
+      sort: true,
+    },
+    {
+      dataField: 'category',
+      text: 'Category',
+      sort: true,
+    },
+    {
+      dataField: '',
+      text: 'Actions',
+      formatter: this.ButtonFormatter,
+    },
+  ];
 
   componentDidMount() {
     this.getDocuments();
@@ -99,49 +114,36 @@ class DeveloperLanding extends Component<Props, State, {}> {
   }
 
   handleViewDocument(event: any, rowIndex: number) {
-    const {
-      documents,
-    } = this.state;
+    const { documents } = this.state;
 
     const index = rowIndex;
     const form = documents[index];
-    const {
-      id,
-      filename,
-    } = form;
-    this.setState(
-      {
-        currentApplicationId: id,
-        currentApplicationFilename: filename,
-      },
-    );
+    const { id, filename } = form;
+    this.setState({
+      currentApplicationId: id,
+      currentApplicationFilename: filename,
+    });
   }
 
   onChangeViewPermission(event: any) {
-    const {
-      currentUser,
-    } = this.state;
+    const { currentUser } = this.state;
     currentUser.viewPermission = event.target.ischecked;
     this.setState({ currentUser }, this.getDocuments);
   }
 
   getDocuments() {
-    const {
-      searchName,
-    } = this.state;
+    const { searchName } = this.state;
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.BLANK_FORM,
+        pdfType: PDFType.FORM,
         annotated: false,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          status,
-          documents,
-        } = responseJSON;
+        const { status, documents } = responseJSON;
         if (status === 'SUCCESS') {
           this.setState({
             documents,
@@ -152,20 +154,19 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
   handleChangeFileUpload(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
+    const { alert } = this.props;
     const { files } = event.target;
 
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFileChange(rowIndex));
+    this.setState(
+      {
+        pdfFiles: files,
+      },
+      () => this.handleFileChange(rowIndex),
+    );
   }
 
   handleFileChange(rowIndex: number) {
-    const {
-      alert,
-    } = this.props;
+    const { alert } = this.props;
 
     if (this.state.pdfFiles === undefined) throw new Error('Must upload a file');
     const pdfFile = this.state.pdfFiles[0];
@@ -179,53 +180,69 @@ class DeveloperLanding extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: formData,
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
-        const {
-          status,
-          message,
-        } = responseJSON;
+        const { status } = responseJSON;
         if (status === 'SUCCESS') {
           alert.show(`Successfully uploaded ${pdfFile.name}`);
-          this.setState({
-            pdfFiles: undefined,
-          }, () => this.getDocuments());
+          this.setState(
+            {
+              pdfFiles: undefined,
+            },
+            () => this.getDocuments(),
+          );
         } else {
-          alert.show(message, { timeout: 0 });
+          alert.show(`Failure to upload ${pdfFile.name}`);
         }
       });
   }
 
   handleChangeFileDownload(event: any, rowIndex: number) {
     event.preventDefault();
-    const {
-      alert,
-    } = this.props;
+    const { alert } = this.props;
     const { files } = event.target;
 
-    this.setState({
-      pdfFiles: files,
-    }, () => this.handleFileDownload(rowIndex));
+    this.setState(
+      {
+        pdfFiles: files,
+      },
+      () => this.handleFileDownload(rowIndex),
+    );
   }
 
   handleFileDownload(rowIndex: number) {
-    const {
-      userRole,
-    } = this.props;
+    const { userRole } = this.props;
 
     const documentId = this.state.documents[rowIndex].id;
     const documentName = this.state.documents[rowIndex].filename;
+
+    let pdfType;
+    if (
+      userRole === Role.Worker ||
+      userRole === Role.Admin ||
+      userRole === Role.Director
+    ) {
+      pdfType = PDFType.FORM;
+    } else if (userRole === Role.Client) {
+      pdfType = PDFType.IDENTIFICATION;
+    } else {
+      pdfType = undefined;
+    }
 
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType: PDFType.BLANK_FORM,
+        pdfType,
       }),
-    }).then((response) => response.blob())
+    })
+      .then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
+        const pdfFile = new File([response], documentName, {
+          type: 'application/pdf',
+        });
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
@@ -233,7 +250,8 @@ class DeveloperLanding extends Component<Props, State, {}> {
         document.body.appendChild(a);
         a.click();
         a.remove();
-      }).catch((error) => {
+      })
+      .catch((error) => {
         alert('Error Fetching File');
       });
   }
@@ -259,8 +277,8 @@ class DeveloperLanding extends Component<Props, State, {}> {
           <div className="container">
             <h1 className="display-4">My Un-Annotated Forms</h1>
             <p className="lead">
-              See all of your un-annotated forms. Check the category of each of your forms here
-              (TBI).
+              See all of your un-annotated forms. Check the category of each of
+              your forms here (TBI).
             </p>
           </div>
         </div>
@@ -274,7 +292,11 @@ class DeveloperLanding extends Component<Props, State, {}> {
               onChange={this.handleChangeSearchName}
             />
           </form>
-          <Table data={documents} columns={this.tableCols} emptyInfo={{ description: 'No Forms Present' }} />
+          <Table
+            data={documents}
+            columns={this.tableCols}
+            emptyInfo={{ description: 'No Forms Present' }}
+          />
         </div>
       </div>
     );

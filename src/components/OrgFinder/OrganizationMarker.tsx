@@ -2,18 +2,18 @@ import React, { Component } from 'react';
 import { InfoWindow, Marker } from 'react-google-maps';
 
 interface Props {
-  lat: number,
-  lng: number,
-  orgName: string,
-  address: string,
-  phone: string,
-  email: string,
-  website: string,
-  showInfo: boolean,
+  lat: number;
+  lng: number;
+  orgName: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  showInfo: boolean;
 }
 
 interface State {
-  open: boolean,
+  open: boolean;
 }
 
 class OrganizationMarker extends Component<Props, State> {
@@ -33,41 +33,27 @@ class OrganizationMarker extends Component<Props, State> {
   }
 
   render() {
-    const {
-      orgName,
-      lat,
-      lng,
-      address,
-      phone,
-      email,
-      website,
-    } = this.props;
+    const { orgName, lat, lng, address, phone, email, website } = this.props;
 
-    const {
-      open,
-    } = this.state;
+    const { open } = this.state;
 
     return (
       <div>
-        <Marker
-          position={{ lat, lng }}
-          onClick={this.handleOpenInfoWindow}
-        >
-          {open
-              && (
-              <InfoWindow
-                onCloseClick={this.handleOpenInfoWindow}
-                position={{ lat, lng }}
-              >
-                <div>
-                  <p className="font-weight-bold">{orgName}</p>
-                  <p>{address}</p>
-                  <p>{phone}</p>
-                  <p>{email}</p>
-                  <p>{website}</p>
-                </div>
-              </InfoWindow>
-              )}
+        <Marker position={{ lat, lng }} onClick={this.handleOpenInfoWindow}>
+          {open && (
+            <InfoWindow
+              onCloseClick={this.handleOpenInfoWindow}
+              position={{ lat, lng }}
+            >
+              <div>
+                <p className="font-weight-bold">{orgName}</p>
+                <p>{address}</p>
+                <p>{phone}</p>
+                <p>{email}</p>
+                <p>{website}</p>
+              </div>
+            </InfoWindow>
+          )}
         </Marker>
       </div>
     );

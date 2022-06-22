@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import { Button } from 'react-bootstrap';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
 
@@ -10,12 +11,12 @@ import ForgotPasswordSVG from '../../static/images/forgot-password.svg';
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
 interface State {
-  username: string,
-  buttonState: string
+  username: string;
+  buttonState: string;
 }
 
 interface Props {
-  alert: any
+  alert: any;
 }
 class ForgotPassword extends Component<Props, State> {
   constructor(props: Props) {
@@ -35,9 +36,7 @@ class ForgotPassword extends Component<Props, State> {
   handlePasswordReset(event: any) {
     this.setState({ buttonState: 'running' });
     event.preventDefault();
-    const {
-      username,
-    } = this.state;
+    const { username } = this.state;
     if (username.trim() === '') {
       this.props.alert.show('Please enter a valid username or password');
       this.setState({ buttonState: '' });
@@ -48,11 +47,14 @@ class ForgotPassword extends Component<Props, State> {
         body: JSON.stringify({
           username,
         }),
-      }).then((response) => response.json())
+      })
+        .then((response) => response.json())
         .then((responseJSON) => {
           const { status } = responseJSON;
           if (status === 'SUCCESS') {
-            this.props.alert.show('A reset code has been sent to your email. Check your inbox.');
+            this.props.alert.show(
+              'A reset code has been sent to your email. Check your inbox.',
+            );
             this.setState({ buttonState: '' });
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
@@ -61,7 +63,8 @@ class ForgotPassword extends Component<Props, State> {
             this.props.alert.show('Server Failure: Please Try Again');
             this.setState({ buttonState: '' });
           }
-        }).catch((error) => {
+        })
+        .catch((error) => {
           this.props.alert.show('Network Failure: Check Server Connection');
           this.setState({ buttonState: '' });
         });
@@ -69,9 +72,7 @@ class ForgotPassword extends Component<Props, State> {
   }
 
   render() {
-    const {
-      username,
-    } = this.state;
+    const { username } = this.state;
     return (
       <div>
         <Helmet>
@@ -82,15 +83,28 @@ class ForgotPassword extends Component<Props, State> {
           <div className="row mt-5">
             <div className="col-4 mobile-hide">
               <div className="float-right w-100">
-                <img alt="Password Recovery" className="w-75 pt-5 mt-5 float-right " src={ForgotPasswordSVG} />
+                <img
+                  alt="Password Recovery"
+                  className="w-75 pt-5 mt-5 float-right "
+                  src={ForgotPasswordSVG}
+                />
               </div>
             </div>
 
             <div className="col-8">
               <form className="form-signin pt-5 ml-5">
-                <h1 className="h3 mb-3 font-weight-normal">Forgot Your Password?</h1>
-                <span className="text-muted">Enter your username to reset your password. Afterwards, check your email or contact your nonprofit to get your password recovery code.</span>
-                <label htmlFor="username" className="w-100 mt-3 font-weight-bold">
+                <h1 className="h3 mb-3 font-weight-normal">
+                  Forgot Your Password?
+                </h1>
+                <span className="text-muted">
+                  Enter your username to reset your password. Afterwards, check
+                  your email or contact your nonprofit to get your password
+                  recovery code.
+                </span>
+                <label
+                  htmlFor="username"
+                  className="w-100 mt-3 font-weight-bold"
+                >
                   Username
                   <input
                     type="text"
@@ -105,21 +119,30 @@ class ForgotPassword extends Component<Props, State> {
 
                 <div className="row pt-3">
                   <div className="col-6">
-                    <button type="submit" onClick={this.handlePasswordReset} className={`btn btn-success loginButtonBackground w-100 ld-ext-right ${this.state.buttonState}`}>
+                    <Button
+                      type="submit"
+                      onClick={this.handlePasswordReset}
+                      className={`w-100 ld-ext-right ${this.state.buttonState}`}
+                      variant="primary"
+                    >
                       Submit
                       <div className="ld ld-ring ld-spin" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 <div className="row pl-3 pb-3">
                   <span className="text-muted recaptcha-login-text mt-4">
-                    This page is protected by reCAPTCHA, and subject to the Google
-                    {' '}
-                    <a href="https://www.google.com/policies/privacy/">Privacy Policy </a>
+                    This page is protected by reCAPTCHA, and subject to the
+                    Google
+                    <a href="https://www.google.com/policies/privacy/">
+                      Privacy Policy
+{' '}
+                    </a>
                     and
-                    {' '}
-                    <a href="https://www.google.com/policies/terms/">Terms of service</a>
+                    <a href="https://www.google.com/policies/terms/">
+                      Terms of service
+                    </a>
                     .
                   </span>
                 </div>
@@ -128,11 +151,7 @@ class ForgotPassword extends Component<Props, State> {
           </div>
         </div>
 
-        <ReCAPTCHA
-          sitekey={reCaptchaKey}
-          ref={recaptchaRef}
-          size="invisible"
-        />
+        <ReCAPTCHA sitekey={reCaptchaKey} ref={recaptchaRef} size="invisible" />
       </div>
     );
   }

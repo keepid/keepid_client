@@ -16,7 +16,7 @@ export interface TextInputProps extends InputProps<string> {
   type?: TextInputType;
 }
 
-const TextInput = ({
+function TextInput({
   className: classNameProp,
   defaultValue,
   label,
@@ -24,16 +24,20 @@ const TextInput = ({
   onChange,
   placeholder,
   type,
-  validate,
+  validate: validateProp,
   value,
   ...rest
-}: TextInputProps) => {
+}: TextInputProps) {
   const className = classNames('form-control', 'form-purple', classNameProp);
   const [showPassword, setShowPassword] = useState(false);
-  const inputType = type === TextInputType.PASSWORD && showPassword ? TextInputType.TEXT : type;
+  const inputType =
+    type === TextInputType.PASSWORD && showPassword ? TextInputType.TEXT : type;
 
   const [invalidMessage, setInvalidMessage] = useState('');
   const [validityChecked, setValidityChecked] = useState(false);
+
+  const validate = (e) =>
+    performValidation(e, validateProp, setInvalidMessage, setValidityChecked);
 
   return (
     <InputWrapper
@@ -43,32 +47,22 @@ const TextInput = ({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...rest}
     >
-      <InputGroup>
+      <InputGroup hasValidation>
         <Form.Control
           as="input"
-          onBlur={(e) => performValidation(
-            e,
-            validate,
-            setInvalidMessage,
-            setValidityChecked,
-          )}
+          onBlur={validate}
           className={className}
           defaultValue={defaultValue}
           id={name}
           isInvalid={validityChecked && !!invalidMessage}
           isValid={validityChecked && !invalidMessage}
           name={name}
-          onChange={(e) => {
-            if (invalidMessage) {
-              performValidation(
-                e,
-                validate,
-                setInvalidMessage,
-                setValidityChecked,
-              );
-            }
+          onChange={async (e) => {
             if (onChange) {
               onChange(e.target.value);
+            }
+            if (invalidMessage) {
+              await validate(e);
             }
           }}
           placeholder={placeholder}
@@ -78,10 +72,12 @@ const TextInput = ({
         />
         {type === TextInputType.PASSWORD ? (
           <InputGroup.Append>
-            <InputGroup.Text>
+            <InputGroup.Text onClick={() => setShowPassword(!showPassword)}>
               <i
-                onClick={() => setShowPassword(!showPassword)}
-                className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}
+                className={classNames('fas', 'hide-text-input-icon', {
+                  'fa-eye-slash': showPassword,
+                  'fa-eye': !showPassword,
+                })}
               />
             </InputGroup.Text>
           </InputGroup.Append>
@@ -97,7 +93,7 @@ const TextInput = ({
       />
     </InputWrapper>
   );
-};
+}
 
 TextInput.defaultProps = { type: TextInputType.TEXT };
 

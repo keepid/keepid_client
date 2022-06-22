@@ -15,7 +15,7 @@ export interface SelectInputProps extends InputProps<string> {
   options: SelectOption[];
 }
 
-const SelectInput = ({
+function SelectInput({
   className: classNameProp,
   defaultValue,
   name,
@@ -25,7 +25,7 @@ const SelectInput = ({
   validate,
   value,
   ...rest
-}: SelectInputProps) => {
+}: SelectInputProps) {
   const [invalidMessage, setInvalidMessage] = useState('');
   const [validityChecked, setValidityChecked] = useState(false);
 
@@ -44,16 +44,16 @@ const SelectInput = ({
         name={name}
         placeholder={placeholder}
         required={rest.required}
-        onChange={(e) => {
-          performValidation(
+        onChange={async (e) => {
+          if (onChange) {
+            onChange(e.target.value);
+          }
+          await performValidation(
             e,
             validate,
             setInvalidMessage,
             setValidityChecked,
           );
-          if (onChange) {
-            onChange(e.target.value);
-          }
         }}
         value={options.find((i) => i.value === value)?.value}
       >
@@ -70,7 +70,7 @@ const SelectInput = ({
       </Form.Control>
     </InputWrapper>
   );
-};
+}
 
 SelectInput.defaultProps = { options: [] };
 

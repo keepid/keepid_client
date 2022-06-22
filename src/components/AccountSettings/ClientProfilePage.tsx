@@ -7,36 +7,36 @@ import getServerURL from '../../serverOverride';
 import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
 
 interface Props {
-  username: any,
-  alert: any,
+  username: any;
+  alert: any;
 }
 
 interface State {
-  activitiesArr: Array<any> | null,
-  firstName: string,
-  lastName: string,
-  birthDate: string,
-  address: string,
-  city: string,
-  state: string,
-  email: string,
-  organization: string,
-  phone: string,
-  zipcode: string,
-  file: File | undefined | null | any,
-  photoAvailable: boolean,
-  photo: any,
-  crop: any,
-  zoom: number,
-  aspect: any,
-  showCropper: boolean,
-  fileSelected: any,
-  inputKey: any,
-  croppedAreaPixels: number,
-  loading: boolean,
-  fileName: string,
-  backgroundColor: string,
-  color: string,
+  activitiesArr: Array<any> | null;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  address: string;
+  city: string;
+  state: string;
+  email: string;
+  organization: string;
+  phone: string;
+  zipcode: string;
+  file: File | undefined | null | any;
+  photoAvailable: boolean;
+  photo: any;
+  crop: any;
+  zoom: number;
+  aspect: any;
+  showCropper: boolean;
+  fileSelected: any;
+  inputKey: any;
+  croppedAreaPixels: number;
+  loading: boolean;
+  fileName: string;
+  backgroundColor: string;
+  color: string;
 }
 
 class ClientProfilePage extends Component<Props, State> {
@@ -87,7 +87,7 @@ class ClientProfilePage extends Component<Props, State> {
     this.renderActivities = this.renderActivities.bind(this);
   }
 
-  componentDidMount = (): void => {
+  componentDidMount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
@@ -104,7 +104,8 @@ class ClientProfilePage extends Component<Props, State> {
       body: JSON.stringify({
         username,
       }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         const responseObject = responseJSON;
         const {
@@ -140,23 +141,29 @@ class ClientProfilePage extends Component<Props, State> {
           method: 'POST',
           credentials: 'include',
           body: JSON.stringify({ username }),
-        }).then((response) => response.json())
+        })
+          .then((response) => response.json())
           .then((responseJSON) => {
             const responseObject = responseJSON;
             const activitiesArr = responseObject.activities.allActivities;
             this.setState({
               activitiesArr,
             });
-          }).catch((error) => {
-            if (error.toString() !== 'AbortError: The user aborted a request.') {
+          })
+          .catch((error) => {
+            if (
+              error.toString() !== 'AbortError: The user aborted a request.'
+            ) {
               const { alert } = this.props;
-              alert.show(`Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`);
+              alert.show(
+                `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+              );
             }
           });
       });
   }
 
-  componentWillUnmount = (): void => {
+  componentWillUnmount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
@@ -173,7 +180,8 @@ class ClientProfilePage extends Component<Props, State> {
       body: JSON.stringify({
         username,
       }),
-    }).then((response) => response.blob())
+    })
+      .then((response) => response.blob())
       .then((blob) => {
         const { size } = blob;
         if (size > 72) {
@@ -185,15 +193,20 @@ class ClientProfilePage extends Component<Props, State> {
             });
           }
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         if (error.toString() !== 'AbortError: The user aborted a request.') {
           const { alert } = this.props;
-          alert.show(`Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`);
+          alert.show(
+            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          );
         }
       });
-  }
+  };
 
-  fileSelectedHandler = async (event: React.ChangeEvent<HTMLInputElement>): Promise<any> => {
+  fileSelectedHandler = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<any> => {
     try {
       if (event.target.files != null) {
         const file = event.target.files[0];
@@ -206,44 +219,53 @@ class ClientProfilePage extends Component<Props, State> {
       }
     } catch (e) {
       const { alert } = this.props;
-      alert.show(`Trouble Selecting File. Try Again or Report This Error To Keep.id: ${e}`);
+      alert.show(
+        `Trouble Selecting File. Try Again or Report This Error To Keep.id: ${e}`,
+      );
     }
-  }
+  };
 
-  readFile = (file: File) => new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => resolve(reader.result), false);
-    reader.readAsDataURL(file);
-  })
+  readFile = (file: File) =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
 
   onZoomChange = (zoom: number): void => {
     this.setState({ zoom });
-  }
+  };
 
   onCropChange = (crop: any): void => {
     this.setState({ crop });
-  }
+  };
 
   onCropComplete = (croppedArea: any, croppedAreaPixels: any): void => {
     this.setState({
       croppedAreaPixels,
     });
-  }
+  };
 
   cropAndSave = async (): Promise<any> => {
     try {
       const { fileSelected, croppedAreaPixels } = this.state;
-      const croppedImage = await this.getCroppedImg(fileSelected, croppedAreaPixels);
-      this.setState({
-        file: croppedImage,
-      }, () => {
-        this.photoUploadHandler();
-      });
+      const croppedImage = await this.getCroppedImg(
+        fileSelected,
+        croppedAreaPixels,
+      );
+      this.setState(
+        {
+          file: croppedImage,
+        },
+        () => {
+          this.photoUploadHandler();
+        },
+      );
     } catch (e) {
       const { alert } = this.props;
       alert.show(`Could Not Crop Photo. Report This Error To Keep.id: ${e}`);
     }
-  }
+  };
 
   getCroppedImg = (imageSrc: any, pixelCrop: any): Blob => {
     const image = new (window as any).Image();
@@ -279,7 +301,7 @@ class ClientProfilePage extends Component<Props, State> {
     const dataURL = canvas.toDataURL('image/jpg');
     const file = this.dataURItoBlob(dataURL);
     return file;
-  }
+  };
 
   dataURItoBlob = (dataURI: any): Blob => {
     let byteString;
@@ -293,7 +315,7 @@ class ClientProfilePage extends Component<Props, State> {
       ia[i] = byteString.charCodeAt(i);
     }
     return new Blob([ia], { type: mimeString });
-  }
+  };
 
   photoUploadHandler = (): void => {
     const { file, fileName } = this.state;
@@ -315,33 +337,48 @@ class ClientProfilePage extends Component<Props, State> {
       method: 'POST',
       credentials: 'include',
       body: formData,
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status.toString() === 'SUCCESS') {
           this.loadProfilePhoto();
         }
         this.setState({ loading: false });
-      }).catch((error) => {
+      })
+      .catch((error) => {
         const { alert } = this.props;
-        alert.show(`Could Not Upload Photo. Report This Error To Keep.id: ${error}`);
+        alert.show(
+          `Could Not Upload Photo. Report This Error To Keep.id: ${error}`,
+        );
       });
-  }
+  };
 
-  renderActivities = (activitiesArr: Array<any>): JSX.Element[] | JSX.Element => {
+  renderActivities = (
+    activitiesArr: Array<any>,
+  ): JSX.Element[] | JSX.Element => {
     if (activitiesArr.length === 0) {
-      return (
-        <div className="row w-125 p-2 text-dark">
-          No activities
-        </div>
-      );
+      return <div className="row w-125 p-2 text-dark">No activities</div>;
     }
     const row = activitiesArr.map((activity, i) => {
       const info = JSON.parse(activity.info);
       const name = `${info.owner.firstName} ${info.owner.lastName}`;
       const unparsedTime = info.occuredAt.$date;
       const date = new Date(unparsedTime);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       const year = date.getFullYear();
       const month = months[date.getMonth()];
       const day = date.getDate();
@@ -352,7 +389,9 @@ class ClientProfilePage extends Component<Props, State> {
         return (
           <div className="row w-125 p-2 text-dark" key={activity.toString()}>
             <div className="row">
-              <div className="col text-left ml-3 font-weight-bold">{activity.type}</div>
+              <div className="col text-left ml-3 font-weight-bold">
+                {activity.type}
+              </div>
               <div className="col text-right mr-3">{name}</div>
             </div>
             <div className="row">
@@ -368,11 +407,18 @@ class ClientProfilePage extends Component<Props, State> {
           className="row w-125 p-2 text-dark"
           key={Math.random()}
           style={{
-            borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid', borderTop: 0, borderRight: 0, borderLeft: 0,
+            borderColor: '#7B81FF',
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderTop: 0,
+            borderRight: 0,
+            borderLeft: 0,
           }}
         >
           <div className="row">
-            <div className="col text-left ml-3 font-weight-bold">{activity.type}</div>
+            <div className="col text-left ml-3 font-weight-bold">
+              {activity.type}
+            </div>
             <div className="col text-right mr-3">{name}</div>
           </div>
           <div className="row">
@@ -383,7 +429,7 @@ class ClientProfilePage extends Component<Props, State> {
       );
     });
     return row;
-  }
+  };
 
   render() {
     const {
@@ -423,7 +469,12 @@ class ClientProfilePage extends Component<Props, State> {
         >
           <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
-              <h3 className="modal-title text-center mt-3 mb-2" id="ChangeProfilePhoto">Change Profile Photo</h3>
+              <h3
+                className="modal-title text-center mt-3 mb-2"
+                id="ChangeProfilePhoto"
+              >
+                Change Profile Photo
+              </h3>
               <button
                 type="button"
                 className="btn mb-3 mx-4 font-weight-bold btn-primary"
@@ -440,8 +491,7 @@ class ClientProfilePage extends Component<Props, State> {
                 accept=".jpg,.jpeg,.png"
               />
 
-              {showCropper
-              && (
+              {showCropper && (
                 <div>
                   <div className="position-relative py-5 mx-4">
                     <div className="crop-container py-5">
@@ -489,26 +539,37 @@ class ClientProfilePage extends Component<Props, State> {
         </h1>
         <div className="row">
           <div className="col-md-6 col-12 h-75 text-dark">
-            <div className="rounded px-5" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
+            <div
+              className="rounded px-5"
+              style={{
+                borderColor: '#7B81FF',
+                borderWidth: 1,
+                borderStyle: 'solid',
+              }}
+            >
               <div className="container pt-4">
-                {photoAvailable === false
-                  ? (
+                {photoAvailable === false ? (
+                  <Image
+                    src={DefaultProfilePhoto}
+                    className="w-50 mx-auto d-flex"
+                    alt="profile photo"
+                    roundedCircle
+                  />
+                ) : (
+                  <div id="profilePhoto">
                     <Image
-                      src={DefaultProfilePhoto}
+                      src={photo}
                       className="w-50 mx-auto d-flex"
                       alt="profile photo"
                       roundedCircle
                     />
-                  ) : (
-                    <div id="profilePhoto">
-                      <Image src={photo} className="w-50 mx-auto d-flex" alt="profile photo" roundedCircle />
-                    </div>
-                  )}
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="font-weight-bold mt-3 text-center">
                   {firstName}
-                  {' '}
+
                   {lastName}
                 </h3>
                 <div className="row pb-2">
@@ -535,12 +596,9 @@ class ClientProfilePage extends Component<Props, State> {
                   <div className="col font-weight-bold">Address</div>
                   <div className="col text-right">
                     {address}
-                    {' '}
                     {city}
-                    ,
-                    {' '}
-                    {state}
-                    {' '}
+,
+{state}
                     {zipcode}
                   </div>
                 </div>
@@ -554,15 +612,31 @@ class ClientProfilePage extends Component<Props, State> {
                   type="button"
                   className="btn m-5 font-weight-bold"
                   style={{
-                    backgroundColor, color, borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid',
+                    backgroundColor,
+                    color,
+                    borderColor: '#7B81FF',
+                    borderWidth: 1,
+                    borderStyle: 'solid',
                   }}
-                  onMouseOver={() => this.setState({ backgroundColor: '#FFFFFF', color: '#7B81FF' })}
+                  onMouseOver={() =>
+                    this.setState({
+                      backgroundColor: '#FFFFFF',
+                      color: '#7B81FF',
+                    })
+                  }
                   onFocus={() => undefined}
-                  onMouseOut={() => this.setState({ backgroundColor: '#7B81FF', color: '#FFFFFF' })}
+                  onMouseOut={() =>
+                    this.setState({
+                      backgroundColor: '#7B81FF',
+                      color: '#FFFFFF',
+                    })
+                  }
                   onBlur={() => undefined}
                   data-toggle="modal"
                   data-target="#exampleModal"
-                  onClick={() => this.setState({ showCropper: false, inputKey: Date.now() })}
+                  onClick={() =>
+                    this.setState({ showCropper: false, inputKey: Date.now() })
+                  }
                 >
                   Edit Your Information
                 </button>
@@ -570,8 +644,17 @@ class ClientProfilePage extends Component<Props, State> {
             </div>
           </div>
           <div className="col-md-6 col-12 h-75 mt-2 mt-md-0">
-            <div className="rounded-top" style={{ borderColor: '#7B81FF', borderWidth: 1, borderStyle: 'solid' }}>
-              <h3 className="font-weight-bold mt-3 text-center text-dark">Recent Activity</h3>
+            <div
+              className="rounded-top"
+              style={{
+                borderColor: '#7B81FF',
+                borderWidth: 1,
+                borderStyle: 'solid',
+              }}
+            >
+              <h3 className="font-weight-bold mt-3 text-center text-dark">
+                Recent Activity
+              </h3>
             </div>
             <div
               className="rounded-bottom border-top-0 text-center container"
@@ -584,11 +667,13 @@ class ClientProfilePage extends Component<Props, State> {
                 overflow: 'scroll',
               }}
             >
-              {activitiesArr === null
-                ? <div className="row w-125 p-2 text-dark"> Loading ... </div> : this.renderActivities(activitiesArr)}
+              {activitiesArr === null ? (
+                <div className="row w-125 p-2 text-dark"> Loading ... </div>
+              ) : (
+                this.renderActivities(activitiesArr)
+              )}
             </div>
           </div>
-
         </div>
       </div>
     );

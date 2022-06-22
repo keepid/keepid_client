@@ -9,7 +9,7 @@ const options = new Array(20)
   .fill('')
   .map((i, idx) => ({ label: `Option ${idx}`, value: `option-val-${idx}` }));
 
-const FormFixture = () => {
+function FormFixture() {
   const [state, setState] = useState({});
 
   const fields: BaseInputFieldType<any>[] = [
@@ -73,14 +73,14 @@ const FormFixture = () => {
         console.log(state);
       }}
     >
-      {fields.map((f) => (
-        <InputFromField
-          key={`input-${f.name}`}
-          field={f}
-          onChange={(val) => setState({ ...state, [f.name]: val })}
-          value={state[f.name]}
-        />
-      ))}
+        {fields.map((f) => (
+          <InputFromField
+            key={`input-${f.name}`}
+            field={f}
+            onChange={(val) => setState({ ...state, [f.name]: val })}
+            value={state[f.name]}
+          />
+        ))}
 
       <Form.Group>
         <Button variant="primary" type="submit">
@@ -89,6 +89,6 @@ const FormFixture = () => {
       </Form.Group>
     </Form>
   );
-};
+}
 
 export default FormFixture;

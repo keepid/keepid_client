@@ -4,11 +4,10 @@ import { Redirect } from 'react-router-dom';
 
 import NotFoundSVG from '../static/images/page-not-found.svg';
 
-interface Props {
-}
+interface Props {}
 
 interface State {
-  redirect: boolean,
+  redirect: boolean;
 }
 
 const timeUntilRedirect: number = 3 * 1000;
@@ -48,9 +47,7 @@ class Error extends React.Component<Props, State> {
   }
 
   render() {
-    const {
-      redirect,
-    } = this.state;
+    const { redirect } = this.state;
 
     if (redirect) {
       return <Redirect to="/home" />;
@@ -66,10 +63,15 @@ class Error extends React.Component<Props, State> {
           Redirecting you back to the login page...
         </div>
         <div className="jumbotron-fluid mt-2 text-center">
-          <img alt="404 Error Not Found" className="w-50 p-4" src={NotFoundSVG} />
+          <img
+            alt="404 Error Not Found"
+            className="w-50 p-4"
+            src={NotFoundSVG}
+          />
           <h1 className="display-5">Error: Page Not Found</h1>
           <p className="lead pt-3">
-            The page you tried to visit does not exist, or you do not have permission.
+            The page you tried to visit does not exist, or you do not have
+            permission.
           </p>
         </div>
       </div>

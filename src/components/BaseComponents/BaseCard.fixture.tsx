@@ -4,7 +4,7 @@ import { useSelect, useValue } from 'react-cosmos/fixture';
 
 import BaseCard, { CardImageLoc, CardSize } from './BaseCard';
 
-const BaseCardFixture = () => {
+function BaseCardFixture() {
   const [title] = useValue('title', { defaultValue: 'The Title of the Card' });
   const [text] = useValue('text', { defaultValue: 'The body text of the card. It should be kind of long so maybe something like this?' });
   const [cardSize] = useSelect('cardSize', {
@@ -20,6 +20,6 @@ const BaseCardFixture = () => {
 
   // @ts-ignore
   return <BaseCard cardTitle={title} cardText={text} cardSize={cardSize} imageSrc={image} imageLoc={imageLoc} buttonText={buttonText || undefined} />;
-};
+}
 
 export default BaseCardFixture;

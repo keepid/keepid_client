@@ -12,7 +12,8 @@ import React from 'react';
 
 import { SelectInput } from '.';
 
-const queryByNameAttributeQuery = (container, id, options) => queryHelpers.queryByAttribute('name', container, id, options);
+const queryByNameAttributeQuery = (container, id, options) =>
+  queryHelpers.queryByAttribute('name', container, id, options);
 
 describe('SelectInput', () => {
   const label = 'Test Input Label';

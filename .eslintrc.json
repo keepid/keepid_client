@@ -4,9 +4,7 @@
     "es6": true,
     "jest": true
   },
-  "extends": [
-    "airbnb"
-  ],
+  "extends": ["airbnb"],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -16,18 +14,26 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    
+
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
   "plugins": [
     "react",
     "@typescript-eslint",
-    "simple-import-sort"
+    "simple-import-sort",
+    "prefer-arrow"
   ],
   // rules: 1 is warning, 2 is error, off is ignore
   "rules": {
-    "simple-import-sort/imports": 2,
+    "prefer-arrow/prefer-arrow-functions": [
+      "warn",
+      {
+        "disallowPrototype": true,
+        "singleReturnOnly": false,
+        "classPropertiesAllowed": false
+      }
+    ],
     "import/extensions": "off",
     "react/jsx-filename-extension": "off",
     "no-alert": 1,
@@ -38,17 +44,39 @@
     "max-len": "off",
     "react/prefer-stateless-function": 1,
     "jsx-a11y/label-has-associated-control": 1,
-    "react/destructuring-assignment": 1,
+    "react/destructuring-assignment": "off",
     "jsx-a11y/control-has-associated-label": 1,
     "jsx-a11y/click-events-have-key-events": 1,
     "jsx-a11y/no-static-element-interactions": 1,
-    "jsx-a11y/img-redundant-alt": 1,
+    "jsx-a11y/img-redundant-alt": "off",
     "jsx-a11y/anchor-is-valid": 1,
     "react/no-did-update-set-state": "off",
     "max-classes-per-file": 1,
     "react/jsx-props-no-spreading": 1,
     "linebreak-style": 0,
     "react/sort-comp": "off",
-    "no-shadow": "off"
+    "no-shadow": "off",
+    "react/require-default-props": "off",
+    "simple-import-sort/imports": 1,
+    "comma-dangle": 1,
+    "indent": 1,
+    "no-confusing-arrow": "off",
+    "object-curly-newline": "off",
+    "react/jsx-curly-newline": "off",
+    "react/jsx-indent": "off",
+    "operator-linebreak": "off",
+    "implicit-arrow-linebreak": "off",
+    "import/no-extraneous-dependencies": "off",
+    "no-underscore-dangle": "off",
+    "react/prop-types": "off",
+    "function-paren-newline": 1,
+    "react/jsx-one-expression-per-line": "off",
+    "react/no-unused-prop-types": 1,
+    "react/jsx-no-constructed-context-values": "off",
+    "no-promise-executor-return": "off",
+    "react/no-unused-class-component-methods": 1,
+    "react/no-unstable-nested-components": 1,
+    "react/jsx-no-bind": 1,
+    "react/default-props-match-prop-types": 1
   }
 }
