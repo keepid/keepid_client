@@ -19,10 +19,10 @@ function DropzoneUploader({ alert, userRole, updateFileList, updateStep, maxNumF
         const formData = new FormData();
         formData.append('file', pdfFile.file, pdfFile.name);
         if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION);
+          formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
         if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.FORM);
+          formData.append('pdfType', PDFType.BLANK_FORM);
         }
         list.push(pdfFile.file);
       }
