@@ -35,7 +35,6 @@ interface State {
   showClients: boolean;
   currentPage: number;
   postsPerPage: number;
-  search: boolean;
   clientCards: any;
 }
 
@@ -64,7 +63,6 @@ class WorkerLanding extends Component<Props, State> {
       showClients: false,
       currentPage: 1,
       postsPerPage: 6,
-      search: false,
       clientCards: [],
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -105,7 +103,7 @@ class WorkerLanding extends Component<Props, State> {
           username,
         }),
       })
-          .then((response) => response.blob());
+        .then((response) => response.blob());
     });
 
     return Promise.all(promises).then((results) => {
@@ -118,44 +116,41 @@ class WorkerLanding extends Component<Props, State> {
         return null;
       });
     })
-        .catch((error) => {
-          if (error.toString() !== 'AbortError: The user aborted a request.') {
-            const { alert } = this.props;
-            alert.show(
-                `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
-            );
-          }
-        })
-        .then(() => {
-          clients = clientsArray.slice();
-          clientsArray.forEach((client, i) => {
-            clients[i].photo = photos[i];
-          });
-          this.setState({ clients });
+      .catch((error) => {
+        if (error.toString() !== 'AbortError: The user aborted a request.') {
+          const { alert } = this.props;
+          alert.show(
+            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          );
+        }
+      })
+      .then(() => {
+        clients = clientsArray.slice();
+        clientsArray.forEach((client, i) => {
+          clients[i].photo = photos[i];
         });
+        this.setState({ clients });
+      });
   }
 
   handleChangeSearchName(event: any) {
     this.setState(
-        {
-          searchName: event.target.value,
-        },
+      {
+        searchName: event.target.value,
+      },
     );
     this.getClients()
-        .then(() => this.renderClients())
-        .then(() => {
-          this.setState({ search: true });
-        });
+      .then(() => this.renderClients());
   }
 
   showClientList = () => {
     const { showClients } = this.state;
     const { currentPage } = this.state;
     this.setState(
-        {
-          showClients: true,
-          currentPage: 1,
-        },
+      {
+        showClients: true,
+        currentPage: 1,
+      },
     );
   }
 
@@ -178,23 +173,23 @@ class WorkerLanding extends Component<Props, State> {
         password: clientPassword,
       }),
     })
-        .then((response) => response.json())
-        .then((responseJSON) => {
-          console.log(responseJSON);
-          const { status } = responseJSON;
-          if (status === 'AUTH_SUCCESS') {
-            // Allow worker privileges
-            this.setState({
-              clientCredentialsCorrect: true,
-            });
-          } else if (status === 'AUTH_FAILURE') {
-            this.props.alert.show('Incorrect Password');
-          } else if (status === 'USER_NOT_FOUND') {
-            this.props.alert.show('Username Does Not Exist');
-          } else {
-            this.props.alert.show('Server Failure: Please Try Again');
-          }
-        });
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        console.log(responseJSON);
+        const { status } = responseJSON;
+        if (status === 'AUTH_SUCCESS') {
+          // Allow worker privileges
+          this.setState({
+            clientCredentialsCorrect: true,
+          });
+        } else if (status === 'AUTH_FAILURE') {
+          this.props.alert.show('Incorrect Password');
+        } else if (status === 'USER_NOT_FOUND') {
+          this.props.alert.show('Username Does Not Exist');
+        } else {
+          this.props.alert.show('Server Failure: Please Try Again');
+        }
+      });
   }
 
   handleClickUploadDocuments(event: any, client: any) {
@@ -237,7 +232,6 @@ class WorkerLanding extends Component<Props, State> {
 
   clearSearch() {
     this.setState({
-      search: false,
       searchName: '',
     });
   }
@@ -254,16 +248,16 @@ class WorkerLanding extends Component<Props, State> {
         name: searchName,
       }),
     })
-        .then((res) => res.json())
-        .then((responseJSON) => {
-          const { people, status } = responseJSON;
-          console.log(responseJSON);
-          if (status !== 'USER_NOT_FOUND') {
-            return people;
-          }
-          return [];
-        })
-        .then((result) => this.loadProfilePhoto(result));
+      .then((res) => res.json())
+      .then((responseJSON) => {
+        const { people, status } = responseJSON;
+        console.log(responseJSON);
+        if (status !== 'USER_NOT_FOUND') {
+          return people;
+        }
+        return [];
+      })
+      .then((result) => this.loadProfilePhoto(result));
   }
 
   renderClients() {
@@ -284,7 +278,7 @@ class WorkerLanding extends Component<Props, State> {
     };
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
-        (client, i) => (
+      (client, i) => (
             <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
               <div className="dropdown lock-top-right">
                 <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
@@ -292,9 +286,9 @@ class WorkerLanding extends Component<Props, State> {
                 </a>
                 <div className="dropdown-menu">
                   <button
-                      className="dropdown-item"
-                      onClick={(event) =>
-                          this.handleClickSendApplication(event, client)
+                    className="dropdown-item"
+                    onClick={(event) =>
+                      this.handleClickSendApplication(event, client)
                       }
                   >
                     <div style={{ color: '#445feb', fontWeight: 'bold' }}>
@@ -315,18 +309,18 @@ class WorkerLanding extends Component<Props, State> {
                   <div className="d-flex flex-row mb-3">
                     {client.photo === null ? (
                         <Image
-                            alt="a blank profile"
-                            src={GenericProfilePicture}
-                            style={{ height: 56, width: 56 }}
-                            roundedCircle
+                          alt="a blank profile"
+                          src={GenericProfilePicture}
+                          style={{ height: 56, width: 56 }}
+                          roundedCircle
                         />
                     ) : (
                         <div id="profilePhoto">
                           <Image
-                              alt="a blank profile"
-                              src={client.photo}
-                              style={{ height: 56, width: 56 }}
-                              roundedCircle
+                            alt="a blank profile"
+                            src={client.photo}
+                            style={{ height: 56, width: 56 }}
+                            roundedCircle
                           />
                         </div>
                     )}
@@ -353,11 +347,11 @@ class WorkerLanding extends Component<Props, State> {
               </Link>
               <div className="row lock-bottom-left">
                 <button
-                    type="button"
-                    className="btn btn-primary mr-2 btn-sm"
-                    style={{ height: 32 }}
-                    onClick={(event) =>
-                        this.handleClickUploadDocuments(event, client)
+                  type="button"
+                  className="btn btn-primary mr-2 btn-sm"
+                  style={{ height: 32 }}
+                  onClick={(event) =>
+                    this.handleClickUploadDocuments(event, client)
                     }
                 >
                   <div style={{ fontWeight: 'bold' }}>
@@ -366,11 +360,11 @@ class WorkerLanding extends Component<Props, State> {
                   </div>
                 </button>
                 <button
-                    type="button"
-                    className="btn btn-secondary btn-sm primary-color-border"
-                    style={{ height: 32 }}
-                    onClick={(event) =>
-                        this.handleClickViewDocuments(event, client)
+                  type="button"
+                  className="btn btn-secondary btn-sm primary-color-border"
+                  style={{ height: 32 }}
+                  onClick={(event) =>
+                    this.handleClickViewDocuments(event, client)
                     }
                 >
                   <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
@@ -387,7 +381,7 @@ class WorkerLanding extends Component<Props, State> {
               </div>
               {showClientAuthModal ? this.modalRender() : null}
             </div>
-        ),
+      ),
     );
 
     this.setState({ clientCards });
@@ -406,12 +400,12 @@ class WorkerLanding extends Component<Props, State> {
               <div className="col card-text mt-2">Client Username</div>
               <div className="col-6 card-text">
                 <input
-                    type="text"
-                    className="form-control form-purple"
-                    id="authenticateForm"
-                    readOnly
-                    placeholder="Enter Username Here"
-                    value={this.state.clientUsername}
+                  type="text"
+                  className="form-control form-purple"
+                  id="authenticateForm"
+                  readOnly
+                  placeholder="Enter Username Here"
+                  value={this.state.clientUsername}
                 />
               </div>
             </div>
@@ -419,29 +413,29 @@ class WorkerLanding extends Component<Props, State> {
               <div className="col card-text mt-2">Client Password</div>
               <div className="col-6 card-text">
                 <input
-                    type="password"
-                    className="form-control form-purple"
-                    id="passwordVerification"
-                    placeholder="Enter Password Here"
-                    onChange={this.handleChangeClientPassword}
-                    value={this.state.clientPassword}
+                  type="password"
+                  className="form-control form-purple"
+                  id="passwordVerification"
+                  placeholder="Enter Password Here"
+                  onChange={this.handleChangeClientPassword}
+                  value={this.state.clientPassword}
                 />
               </div>
             </div>
           </Modal.Body>
           <Modal.Footer>
             <button
-                type="button"
-                className="btn btn-secondary"
-                data-dismiss="modal"
-                onClick={this.handleClickClose}
+              type="button"
+              className="btn btn-secondary"
+              data-dismiss="modal"
+              onClick={this.handleClickClose}
             >
               Close
             </button>
             <button
-                type="button"
-                className="btn btn-primary"
-                onClick={this.handleClickAuthenticateClient}
+              type="button"
+              className="btn btn-primary"
+              onClick={this.handleClickAuthenticateClient}
             >
               Submit
             </button>
@@ -480,10 +474,10 @@ class WorkerLanding extends Component<Props, State> {
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
           <Redirect
-              to={{
-                pathname: '/upload-document',
-                state: { clientUsername },
-              }}
+            to={{
+              pathname: '/upload-document',
+              state: { clientUsername },
+            }}
           />
       );
     }
@@ -500,19 +494,19 @@ class WorkerLanding extends Component<Props, State> {
               <div className="d-flex flex-row justify-content-between">
                 <form className="form-inline mr-3">
                   <input
-                      className="form-control right-angle-right"
-                      style={{ width: 500 }}
-                      type="text"
-                      onChange={this.handleChangeSearchName}
-                      value={this.state.searchName}
-                      placeholder="Search by name, phone number, email..."
-                      aria-label="Search"
-                      onKeyPress={(event) => {
-                        if (event.key === 'Enter') {
-                          this.showClientList();
-                          event.preventDefault();
-                        }
-                      }}
+                    className="form-control right-angle-right"
+                    style={{ width: 500 }}
+                    type="text"
+                    onChange={this.handleChangeSearchName}
+                    value={this.state.searchName}
+                    placeholder="Search by name, phone number, email..."
+                    aria-label="Search"
+                    onKeyPress={(event) => {
+                      if (event.key === 'Enter') {
+                        this.showClientList();
+                        event.preventDefault();
+                      }
+                    }}
                   />
                   <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
                     <div style={{ fontWeight: 'bold' }}>Search</div>
@@ -549,10 +543,10 @@ class WorkerLanding extends Component<Props, State> {
                 <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
                   <h5 className="card-title">Search on multiple fields</h5>
                   <Select
-                      options={options}
-                      closeMenuOnSelect={false}
-                      components={animatedComponents}
-                      isMulti
+                    options={options}
+                    closeMenuOnSelect={false}
+                    components={animatedComponents}
+                    isMulti
                   />
                 </div>
               </div>
@@ -571,9 +565,9 @@ class WorkerLanding extends Component<Props, State> {
                     Search a client&apos;s name to get started
                   </h3>
                   <img
-                      className="pt-4 visualization-svg"
-                      src={VisualizationSVG}
-                      alt="Search a client"
+                    className="pt-4 visualization-svg"
+                    src={VisualizationSVG}
+                    alt="Search a client"
                   />
                 </div>
 
@@ -588,22 +582,22 @@ class WorkerLanding extends Component<Props, State> {
               ) : (null)
               }
               {(searchName.length !== 0 || showClients) ? (
-                  pageNumbers.map((pageNum, index) => (
+                pageNumbers.map((pageNum, index) => (
                       <span
-                          key={index}
-                          className={
+                        key={index}
+                        className={
                             pageNum === this.state.currentPage ?
-                                (pageNum === 1 ? 'active-pagination-link-1' :
-                                    (pageNum === lastPage ?
-                                        'active-pagination-link-end' : 'active-pagination-link')) :
-                                (pageNum === 1 ? 'pagination-link-1' :
-                                    (pageNum === lastPage ?
-                                        'pagination-link-end' : 'pagination-link'))}
-                          onClick={() => { setPage(pageNum); }}
+                              (pageNum === 1 ? 'active-pagination-link-1' :
+                                (pageNum === lastPage ?
+                                  'active-pagination-link-end' : 'active-pagination-link')) :
+                              (pageNum === 1 ? 'pagination-link-1' :
+                                (pageNum === lastPage ?
+                                  'pagination-link-end' : 'pagination-link'))}
+                        onClick={() => { setPage(pageNum); }}
                       >
                   {pageNum}
                       </span>
-                  ))) : (null)
+                ))) : (null)
               }
             </div>
           </div>
