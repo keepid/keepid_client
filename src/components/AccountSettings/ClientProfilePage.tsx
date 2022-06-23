@@ -236,6 +236,18 @@ class ClientProfilePage extends Component<Props, State> {
     this.setState({ zoom });
   };
 
+  zoomIn = () => {
+    if (this.state.zoom < 2) {
+      this.setState({ zoom: this.state.zoom + 0.1 });
+    }
+  }
+
+  zoomOut = () => {
+    if (this.state.zoom > 1) {
+      this.setState({ zoom: this.state.zoom - 0.1 });
+    }
+  }
+
   onCropChange = (crop: any): void => {
     this.setState({ crop });
   };
@@ -510,6 +522,24 @@ class ClientProfilePage extends Component<Props, State> {
                   </div>
                   <div>
                     <div className="text-center mx-4">
+                      <div className="btn-group mt-2">
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomIn}
+                          disabled={this.state.zoom >= 2}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomOut}
+                          disabled={this.state.zoom <= 1}
+                        >
+                          -
+                        </button>
+                      </div>
                       <button
                         className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                         type="submit"
