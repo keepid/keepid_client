@@ -1,23 +1,23 @@
+import { NONAME } from 'dns';
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
+import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
+import Row from 'react-bootstrap/Row';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 
 import getServerURL from '../../serverOverride';
+import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
-import UploadIcon from '../../static/images/upload-icon.png'
-import MenuDots from '../../static/images/menu-dots.png'
-import DocIcon from '../../static/images/doc-icon.png'
-//import TrashCan from '../../static/images/trash-can.png'
+import MenuDots from '../../static/images/menu-dots.png';
+// import TrashCan from '../../static/images/trash-can.png'
 import SearchSVG from '../../static/images/search.svg';
+import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { NONAME } from 'dns';
 
 interface Props {
   username: string;
@@ -71,7 +71,7 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickUploadDocuments =
       this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    //this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
       this.handleClickSendApplication.bind(this);
     this.handleClickAuthenticateClient =
@@ -159,13 +159,13 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  /*handleClickSendEmail(event: any, client: any) {
+  /* handleClickSendEmail(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
       showClientAuthModal: true,
     });
-  }*/
+  } */
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
@@ -219,31 +219,34 @@ class WorkerLanding extends Component<Props, State> {
     }
 
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
           <div className="dropdown lock-top-right">
             <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
-              <img alt="menu" src={MenuDots} style={{ height: 24 }}/>
+              <img alt="menu" src={MenuDots} style={{ height: 24 }} />
             </a>
             <div className="dropdown-menu">
-              <button className="dropdown-item" onClick={(event) =>
+              <button
+                className="dropdown-item"
+                onClick={(event) =>
                   this.handleClickSendApplication(event, client)
-                }>
-                <div style={{ color: '#445feb', fontWeight: 'bold' }}> 
-                  <img src={DocIcon} style={{ height: 17 }}/>
-                  {" Complete Application"} 
+                }
+              >
+                <div style={{ color: '#445feb', fontWeight: 'bold' }}>
+                  <img src={DocIcon} style={{ height: 17 }} />
+                  {' Complete Application'}
                 </div>
               </button>
-              {/*<div className="dropdown-item">        
-                <div style={{ color: '#C9302C', fontWeight: 'bold' }}> 
+              {/* <div className="dropdown-item">
+                <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
                   <img src={TrashCan} style={{ height: 17 }}/>
-                  {" Delete Client"} 
+                  {" Delete Client"}
               </div>
-              </div>*/}
+              </div> */}
             </div>
           </div>
           <Link to={`/profile/${client.username}`}>
@@ -252,7 +255,7 @@ class WorkerLanding extends Component<Props, State> {
               <img
                 alt="a blank profile"
                 src={GenericProfilePicture}
-                style={{ height: 56, width: 56}}
+                style={{ height: 56, width: 56 }}
               />
             </div>
             <div className="d-flex flex-row mb-2">
@@ -269,7 +272,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
             <div className="d-flex flex-row mb-3">
               <h6 className="card-subtitle text-muted">
-                {"Birth Date: "}
+                {'Birth Date: '}
                 {client.birthDate}
               </h6>
             </div>
@@ -279,35 +282,35 @@ class WorkerLanding extends Component<Props, State> {
             <button
               type="button"
               className="btn btn-primary mr-2 btn-sm"
-              style={{ height: 32, }}
+              style={{ height: 32 }}
               onClick={(event) =>
                 this.handleClickUploadDocuments(event, client)
               }
             >
               <div style={{ fontWeight: 'bold' }}>
-                <img src={UploadIcon} style={{ height: 14 }}/>
+                <img src={UploadIcon} style={{ height: 14 }} />
                 {' Upload'}
               </div>
             </button>
             <button
               type="button"
               className="btn btn-secondary btn-sm primary-color-border"
-              style={{ height: 32, }}
+              style={{ height: 32 }}
               onClick={(event) =>
                 this.handleClickViewDocuments(event, client)
               }
             >
               <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
             </button>
-            {/*<Link to={`/profile/${client.username}`}>
-              <button 
-                type="button" 
-                className="btn btn-secondary btn-sm" 
+            {/* <Link to={`/profile/${client.username}`}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
                 style={{ height: 32 }}
               >
                 View Profile
               </button>
-            </Link>*/}
+            </Link> */}
           </div>
           {showClientAuthModal ? this.modalRender() : null}
         </div>
@@ -389,17 +392,17 @@ class WorkerLanding extends Component<Props, State> {
     const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
     const lastPage = Math.ceil(this.state.clients.length / this.state.postsPerPage);
 
-    //Implement page numbers
+    // Implement page numbers
     const pageNumbers : number[] = [];
 
     for (let i = 1; i <= lastPage; i++) {
       pageNumbers.push(i);
     }
 
-    //Set current page
+    // Set current page
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
@@ -442,7 +445,7 @@ class WorkerLanding extends Component<Props, State> {
                   <div style={{ fontWeight: 'bold' }}>Search</div>
                 </button>
               </form>
-              {/*<button
+              {/* <button
                 className="btn btn-secondary"
                 type="button"
                 data-toggle="collapse"
@@ -451,7 +454,7 @@ class WorkerLanding extends Component<Props, State> {
                 aria-controls="collapseExample"
               >
                 Advanced Search
-                </button>*/}
+                </button> */}
               <div>
                 {role === Role.Director || role === Role.Admin ? (
                 <Link to="/person-signup/worker">
@@ -463,7 +466,7 @@ class WorkerLanding extends Component<Props, State> {
                   <div />
                 )}
                 <Link to="/person-signup/client">
-                  <button type="button" style={{ marginLeft: "auto" }} className="btn btn-primary mr-4">
+                  <button type="button" style={{ marginLeft: 'auto' }} className="btn btn-primary mr-4">
                     <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
                   </button>
                 </Link>
@@ -484,7 +487,7 @@ class WorkerLanding extends Component<Props, State> {
         </div>
         <div className="container">
           {(searchName.length != 0 || showClients) ? (
-            <div className="container px-0" >
+            <div className="container px-0">
               <Row xs={1} md={3}>
                 {this.renderClients()}
               </Row>
@@ -500,30 +503,31 @@ class WorkerLanding extends Component<Props, State> {
                 alt="Search a client"
               />
             </div>
-            
+
           )}
         </div>
         <div className="container">
           <div className="flex row justify-content-left align-items-center mt-2">
             {(searchName.length != 0 || showClients) ? (
               <div className="text-muted align-items-center mr-4">
-                {this.state.clients.length} {"Results"}
+                {this.state.clients.length} Results
               </div>
-              ) : (null)
+            ) : (null)
             }
             {(searchName.length != 0 || showClients) ? (
               pageNumbers.map((pageNum, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className={
-                    pageNum === this.state.currentPage ? 
-                    (pageNum === 1 ? "active-pagination-link-1" : 
-                      (pageNum === lastPage ?
-                        "active-pagination-link-end" : "active-pagination-link")) : 
-                    (pageNum === 1 ? "pagination-link-1" : 
-                      ( pageNum === lastPage ?
-                        "pagination-link-end" : "pagination-link"))}
-                  onClick={() => {setPage(pageNum)}}>
+                    pageNum === this.state.currentPage ?
+                      (pageNum === 1 ? 'active-pagination-link-1' :
+                        (pageNum === lastPage ?
+                          'active-pagination-link-end' : 'active-pagination-link')) :
+                      (pageNum === 1 ? 'pagination-link-1' :
+                        (pageNum === lastPage ?
+                          'pagination-link-end' : 'pagination-link'))}
+                  onClick={() => { setPage(pageNum); }}
+                >
                   {pageNum}
                 </span>
               ))) : (null)
