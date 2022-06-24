@@ -3,6 +3,7 @@ import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
@@ -15,6 +16,8 @@ import MenuDots from '../../static/images/menu-dots.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import SearchSVG from '../../static/images/search.svg';
+import { NONAME } from 'dns';
 
 interface Props {
   username: string;
