@@ -39,7 +39,10 @@ interface State {
   showClients: boolean;
   currentPage: number;
   postsPerPage: number;
+<<<<<<< HEAD
   clientCards: any;
+=======
+>>>>>>> master
 }
 
 const options = [
@@ -67,7 +70,10 @@ class WorkerLanding extends Component<Props, State> {
       showClients: false,
       currentPage: 1,
       postsPerPage: 6,
+<<<<<<< HEAD
       clientCards: [],
+=======
+>>>>>>> master
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -109,6 +115,17 @@ class WorkerLanding extends Component<Props, State> {
           showClients: true,
           currentPage: 1,
         },
+    );
+  }
+
+  showClientList = () => {
+    const { showClients } = this.state;
+    const { currentPage } = this.state;
+    this.setState(
+      {
+        showClients: true,
+        currentPage: 1,
+      },
     );
   }
 
@@ -276,6 +293,7 @@ class WorkerLanding extends Component<Props, State> {
     }
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
+<<<<<<< HEAD
         (client, i) => (
             <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
               <div className="dropdown lock-top-right">
@@ -377,6 +395,97 @@ class WorkerLanding extends Component<Props, State> {
               {showClientAuthModal ? this.modalRender() : null}
             </div>
         ),
+=======
+      (client, i) => (
+        <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
+          <div className="dropdown lock-top-right">
+            <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
+              <img alt="menu" src={MenuDots} style={{ height: 24 }}/>
+            </a>
+            <div className="dropdown-menu">
+              <button className="dropdown-item" onClick={(event) =>
+                  this.handleClickSendApplication(event, client)
+                }>
+                <div style={{ color: '#445feb', fontWeight: 'bold' }}> 
+                  <img src={DocIcon} style={{ height: 17 }}/>
+                  {" Complete Application"} 
+                </div>
+              </button>
+              {/*<div className="dropdown-item">        
+                <div style={{ color: '#C9302C', fontWeight: 'bold' }}> 
+                  <img src={TrashCan} style={{ height: 17 }}/>
+                  {" Delete Client"} 
+              </div>
+              </div>*/}
+            </div>
+          </div>
+          <Link to={`/profile/${client.username}`}>
+          <div className="card-body px-0 py-0 card-body-positioning">
+            <div className="d-flex flex-row mb-3">
+              <img
+                alt="a blank profile"
+                src={GenericProfilePicture}
+                style={{ height: 56, width: 56}}
+              />
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h5 className="card-title h4">
+                {client.firstName}
+                {' '}
+                {client.lastName}
+              </h5>
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h6 className="card-subtitle text-muted">
+                {client.phone}
+              </h6>
+            </div>
+            <div className="d-flex flex-row mb-3">
+              <h6 className="card-subtitle text-muted">
+                {"Birth Date: "}
+                {client.birthDate}
+              </h6>
+            </div>
+          </div>
+          </Link>
+          <div className="row lock-bottom-left">
+            <button
+              type="button"
+              className="btn btn-primary mr-2 btn-sm"
+              style={{ height: 32, }}
+              onClick={(event) =>
+                this.handleClickUploadDocuments(event, client)
+              }
+            >
+              <div style={{ fontWeight: 'bold' }}>
+                <img src={UploadIcon} style={{ height: 14 }}/>
+                {' Upload'}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm primary-color-border"
+              style={{ height: 32, }}
+              onClick={(event) =>
+                this.handleClickViewDocuments(event, client)
+              }
+            >
+              <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
+            </button>
+            {/*<Link to={`/profile/${client.username}`}>
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-sm" 
+                style={{ height: 32 }}
+              >
+                View Profile
+              </button>
+            </Link>*/}
+          </div>
+          {showClientAuthModal ? this.modalRender() : null}
+        </div>
+      ),
+>>>>>>> master
     );
 
     this.setState({ clientCards });
@@ -478,6 +587,7 @@ class WorkerLanding extends Component<Props, State> {
     }
 
     return (
+<<<<<<< HEAD
         <div>
           <Helmet>
             <title>Home</title>
@@ -508,6 +618,38 @@ class WorkerLanding extends Component<Props, State> {
                   </button>
                 </form>
                 {/*<button
+=======
+      <div>
+        <Helmet>
+          <title>Home</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
+          <div className="container mb-4">
+            <h1 className="display-5 pb-0">My Clients</h1>
+            <div className="d-flex flex-row justify-content-between">
+              <form className="form-inline mr-3">
+                <input
+                  className="form-control right-angle-right"
+                  style={{ width: 500 }}
+                  type="text"
+                  onChange={this.handleChangeSearchName}
+                  value={this.state.searchName}
+                  placeholder="Search by name, phone number, email..."
+                  aria-label="Search"
+                  onKeyPress={(event) => {
+                    if (event.key === 'Enter') {
+                      this.showClientList();
+                      event.preventDefault();
+                    }
+                  }}
+                />
+                <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
+                  <div style={{ fontWeight: 'bold' }}>Search</div>
+                </button>
+              </form>
+              {/*<button
+>>>>>>> master
                 className="btn btn-secondary"
                 type="button"
                 data-toggle="collapse"
@@ -517,6 +659,7 @@ class WorkerLanding extends Component<Props, State> {
               >
                 Advanced Search
                 </button>*/}
+<<<<<<< HEAD
                 <div>
                   {role === Role.Director || role === Role.Admin ? (
                       <Link to="/person-signup/worker">
@@ -596,6 +739,87 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
+=======
+              <div>
+                {role === Role.Director || role === Role.Admin ? (
+                <Link to="/person-signup/worker">
+                  <button type="button" className="btn btn-primary mr-2">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Worker</div>
+                  </button>
+                </Link>
+                ) : (
+                  <div />
+                )}
+                <Link to="/person-signup/client">
+                  <button type="button" style={{ marginLeft: "auto" }} className="btn btn-primary mr-4">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
+                  </button>
+                </Link>
+              </div>
+            </div>
+            <div className="collapse" id="advancedSearch">
+              <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
+                <h5 className="card-title">Search on multiple fields</h5>
+                <Select
+                  options={options}
+                  closeMenuOnSelect={false}
+                  components={animatedComponents}
+                  isMulti
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="container">
+          {(searchName.length != 0 || showClients) ? (
+            <div className="container px-0" >
+              <Row xs={1} md={3}>
+                {this.renderClients()}
+              </Row>
+            </div>
+          ) : (
+            <div>
+              <h3 className="pt-4">
+                Search a client&apos;s name to get started
+              </h3>
+              <img
+                className="pt-4 visualization-svg"
+                src={VisualizationSVG}
+                alt="Search a client"
+              />
+            </div>
+            
+          )}
+        </div>
+        <div className="container">
+          <div className="flex row justify-content-left align-items-center mt-2">
+            {(searchName.length != 0 || showClients) ? (
+              <div className="text-muted align-items-center mr-4">
+                {this.state.clients.length} {"Results"}
+              </div>
+              ) : (null)
+            }
+            {(searchName.length != 0 || showClients) ? (
+              pageNumbers.map((pageNum, index) => (
+                <span 
+                  key={index} 
+                  className={
+                    pageNum === this.state.currentPage ? 
+                    (pageNum === 1 ? "active-pagination-link-1" : 
+                      (pageNum === lastPage ?
+                        "active-pagination-link-end" : "active-pagination-link")) : 
+                    (pageNum === 1 ? "pagination-link-1" : 
+                      ( pageNum === lastPage ?
+                        "pagination-link-end" : "pagination-link"))}
+                  onClick={() => {setPage(pageNum)}}>
+                  {pageNum}
+                </span>
+              ))) : (null)
+            }
+          </div>
+        </div>
+      </div>
+>>>>>>> master
     );
   }
 }

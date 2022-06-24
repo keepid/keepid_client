@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 import { reCaptchaKey } from '../../configVars';
 import getServerURL from '../../serverOverride';
-import Eye from '../../static/images/eye.svg';
+import EyeIcon from '../../static/images/eye.svg';
 import SlashEye from '../../static/images/eye-slash.svg';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
@@ -338,7 +338,7 @@ class LoginPage extends Component<Props, State> {
                       onClick={this.togglePassword}
                     >
                       <img
-                        src={showPassword ? SlashEye : Eye}
+                        src={showPassword ? SlashEye : EyeIcon}
                         className="eye-size"
                         alt={showPassword ? 'Show' : 'Hide'}
                       />
