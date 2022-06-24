@@ -1,4 +1,3 @@
-import { NONAME } from 'dns';
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Col from 'react-bootstrap/Col';
