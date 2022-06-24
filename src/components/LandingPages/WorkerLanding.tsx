@@ -233,12 +233,6 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  clearSearch() {
-    this.setState({
-      searchName: '',
-    });
-  }
-
   getClients() {
     const { searchName } = this.state;
     const { role } = this.props;
