@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
@@ -16,7 +17,6 @@ import SearchSVG from '../../static/images/search.svg';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { NONAME } from 'dns';
 
 interface Props {
   username: string;
@@ -70,7 +70,7 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickUploadDocuments =
       this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    //this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
       this.handleClickSendApplication.bind(this);
     this.handleClickAuthenticateClient =
@@ -158,13 +158,13 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  /*handleClickSendEmail(event: any, client: any) {
+  /* handleClickSendEmail(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
       showClientAuthModal: true,
     });
-  }*/
+  } */
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
@@ -218,8 +218,8 @@ class WorkerLanding extends Component<Props, State> {
     }
 
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
@@ -467,7 +467,7 @@ class WorkerLanding extends Component<Props, State> {
                 aria-controls="collapseExample"
               >
                 Advanced Search
-                </button>*/}
+                </button> */}
               <div>
                 {role === Role.Director || role === Role.Admin ? (
                 <Link to="/person-signup/worker">
@@ -527,9 +527,28 @@ class WorkerLanding extends Component<Props, State> {
             ) : (null)
             }
             {(searchName.length !== 0 || showClients) ? (
-              pageNumbers.map((pageNum, index) => (
+              pageNumbers.map((pageNum) => (
                 <span
-                  className={paginationClassName(pageNum)}
+                  key={uuid()}
+                  className={(() => {
+                    if (pageNum === this.state.currentPage) {
+                      if (pageNum === 1) {
+                        return 'active-pagination-link-1';
+                      }
+                      if (pageNum === lastPage) {
+                        return 'active-pagination-link-end';
+                      }
+                      return 'active-pagination-link';
+                    }
+                    if (pageNum === 1) {
+                      return 'pagination-link-1';
+                    }
+                    if (pageNum === lastPage) {
+                      return 'pagination-link-end';
+                    }
+                    return 'pagination-link';
+                  })()
+                    }
                   onClick={() => { setPage(pageNum); }}
                 >
                   {pageNum}
