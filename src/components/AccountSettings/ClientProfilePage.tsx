@@ -576,10 +576,10 @@ class ClientProfilePage extends Component<Props, State> {
                   <div className="col font-weight-bold">Username</div>
                   <div className="col text-right">{username}</div>
                 </div>
-                <div className="row pb-2">
+                {/* <div className="row pb-2">
                   <div className="col font-weight-bold">Password</div>
                   <div className="col text-right">******</div>
-                </div>
+                </div> */}
                 <div className="row pb-2">
                   <div className="col font-weight-bold">Birthdate</div>
                   <div className="col text-right">{birthDate}</div>

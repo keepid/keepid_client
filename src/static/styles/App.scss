@@ -857,3 +857,9 @@ div.scrollbar {
 	color: $primary-theme; 
 	font-weight: bold; 
 }
+
+.transparent-button {
+	background-color: transparent;
+	border: none;
+	background-repeat: no-repeat;
+}
