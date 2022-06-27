@@ -625,6 +625,7 @@ class WorkerLanding extends Component<Props, State> {
             </div>
           </div>
         </div>
+        </div>
     );
   }
 }
