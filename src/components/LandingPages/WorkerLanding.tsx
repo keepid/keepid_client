@@ -527,28 +527,9 @@ class WorkerLanding extends Component<Props, State> {
             ) : (null)
             }
             {(searchName.length !== 0 || showClients) ? (
-              pageNumbers.map((pageNum) => (
+              pageNumbers.map((pageNum, index) => (
                 <span
-                  key={uuid()}
-                  className={(() => {
-                    if (pageNum === this.state.currentPage) {
-                      if (pageNum === 1) {
-                        return 'active-pagination-link-1';
-                      }
-                      if (pageNum === lastPage) {
-                        return 'active-pagination-link-end';
-                      }
-                      return 'active-pagination-link';
-                    }
-                    if (pageNum === 1) {
-                      return 'pagination-link-1';
-                    }
-                    if (pageNum === lastPage) {
-                      return 'pagination-link-end';
-                    }
-                    return 'pagination-link';
-                  })()
-                    }
+                  className={paginationClassName(pageNum)}
                   onClick={() => { setPage(pageNum); }}
                 >
                   {pageNum}
