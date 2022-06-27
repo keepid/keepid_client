@@ -2,23 +2,20 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Modal from 'react-bootstrap/Modal';
+import Row from 'react-bootstrap/Row';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
-import UploadIcon from '../../static/images/upload-icon.png'
-import MenuDots from '../../static/images/menu-dots.png'
-import DocIcon from '../../static/images/doc-icon.png'
-//import TrashCan from '../../static/images/trash-can.png'
-import SearchSVG from '../../static/images/search.svg';
+import MenuDots from '../../static/images/menu-dots.png';
+import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { NONAME } from 'dns';
 
 interface Props {
   username: string;
@@ -77,7 +74,7 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickUploadDocuments =
         this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    //this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
         this.handleClickSendApplication.bind(this);
     this.handleClickAuthenticateClient =
@@ -166,13 +163,13 @@ class WorkerLanding extends Component<Props, State> {
     });
   }
 
-  /*handleClickSendEmail(event: any, client: any) {
+  /* handleClickSendEmail(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
       showClientAuthModal: true,
     });
-  }*/
+  } */
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
@@ -267,31 +264,33 @@ class WorkerLanding extends Component<Props, State> {
 
     const pageNumbers : number[] = [];
 
-    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i += 1) {
       pageNumbers.push(i);
     }
 
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
-        (client, i) => (
-            <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
-              <div className="dropdown lock-top-right">
-                <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
-                  <img alt="menu" src={MenuDots} style={{ height: 24 }}/>
-                </a>
-                <div className="dropdown-menu">
-                  <button className="dropdown-item" onClick={(event) =>
-                      this.handleClickSendApplication(event, client)
-                  }>
-                    <div style={{ color: '#445feb', fontWeight: 'bold' }}>
-                      <img src={DocIcon} style={{ height: 17 }}/>
-                      {" Complete Application"}
-                    </div>
-                  </button>
-                  {/*<div className="dropdown-item">
+      (client, i) => (
+        <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
+          <div className="dropdown lock-top-right">
+            <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
+              <img alt="menu" src={MenuDots} style={{ height: 24 }} />
+            </a>
+            <div className="dropdown-menu">
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={(event) => this.handleClickSendApplication(event, client)}
+              >
+                <div style={{ color: '#445feb', fontWeight: 'bold' }}>
+                  <img src={DocIcon} alt="docicon" style={{ height: 17 }} />
+                  Complete Application
+                </div>
+              </button>
+              {/* <div className="dropdown-item">
                 <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
                   <img src={TrashCan} style={{ height: 17 }}/>
                   {" Delete Client"}
@@ -372,11 +371,11 @@ class WorkerLanding extends Component<Props, State> {
               >
                 View Profile
               </button>
-            </Link>*/}
-              </div>
-              {showClientAuthModal ? this.modalRender() : null}
-            </div>
-        ),
+            </Link> */}
+          </div>
+          {showClientAuthModal ? this.modalRender() : null}
+        </div>
+      ),
     );
 
     this.setState({ clientCards });
@@ -454,17 +453,17 @@ class WorkerLanding extends Component<Props, State> {
     const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
     const lastPage = Math.ceil(this.state.clients.length / this.state.postsPerPage);
 
-    //Implement page numbers
+    // Implement page numbers
     const pageNumbers : number[] = [];
 
-    for (let i = 1; i <= lastPage; i++) {
+    for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
     }
 
-    //Set current page
+    // Set current page
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
       return (
@@ -538,8 +537,7 @@ class WorkerLanding extends Component<Props, State> {
                   <div style={{ fontWeight: 'bold' }}>Search</div>
                 </button>
               </form>
-              {/*<button
->>>>>>> master
+              {/* <button
                 className="btn btn-secondary"
                 type="button"
                 data-toggle="collapse"
@@ -548,23 +546,22 @@ class WorkerLanding extends Component<Props, State> {
                 aria-controls="collapseExample"
               >
                 Advanced Search
-                </button>*/}
-                <div>
-                  {role === Role.Director || role === Role.Admin ? (
-                      <Link to="/person-signup/worker">
-                        <button type="button" className="btn btn-primary mr-2">
-                          <div style={{ fontWeight: 'bold' }}>Sign Up Worker</div>
-                        </button>
-                      </Link>
-                  ) : (
-                      <div />
-                  )}
-                  <Link to="/person-signup/client">
-                    <button type="button" style={{ marginLeft: "auto" }} className="btn btn-primary mr-4">
-                      <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
-                    </button>
-                  </Link>
-                </div>
+                </button> */}
+              <div>
+                {role === Role.Director || role === Role.Admin ? (
+                <Link to="/person-signup/worker">
+                  <button type="button" className="btn btn-primary mr-2">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Worker</div>
+                  </button>
+                </Link>
+                ) : (
+                  <div />
+                )}
+                <Link to="/person-signup/client">
+                  <button type="button" style={{ marginLeft: 'auto' }} className="btn btn-primary mr-4">
+                    <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
+                  </button>
+                </Link>
               </div>
               <div className="collapse" id="advancedSearch">
                 <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
