@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
@@ -8,13 +7,11 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
-import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import MenuDots from '../../static/images/menu-dots.png';
-import SearchSVG from '../../static/images/search.svg';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
@@ -353,7 +350,11 @@ class WorkerLanding extends Component<Props, State> {
                     }
                 >
                   <div style={{ fontWeight: 'bold' }}>
-                    <img src={UploadIcon} style={{ height: 14 }} />
+                    <img
+                      src={UploadIcon}
+                      style={{ height: 14 }}
+                      alt="upload icon"
+                    />
                     {' Upload'}
                   </div>
                 </button>
@@ -596,7 +597,7 @@ class WorkerLanding extends Component<Props, State> {
               </div>
             </div>
           <div className="container">
-            {(searchName.length != 0 || showClients) ? (
+            {(searchName.length !== 0 || showClients) ? (
                 <div className="container px-0">
                   <Row xs={1} md={3}>
                     {this.state.clientCards}
@@ -618,30 +619,30 @@ class WorkerLanding extends Component<Props, State> {
           </div>
           <div className="container">
             <div className="flex row justify-content-left align-items-center mt-2">
-              {(searchName.length != 0 || showClients) ? (
+              {(searchName.length !== 0 || showClients) ? (
                   <div className="text-muted align-items-center mr-4">
                     {this.state.clients.length} Results
                   </div>
               ) : (null)
               }
-              {(searchName.length != 0 || showClients) ? (
-                pageNumbers.map((pageNum, index) => (
-                      <span
-                        key={index}
-                        className={
-                            pageNum === this.state.currentPage ?
-                              (pageNum === 1 ? 'active-pagination-link-1' :
-                                (pageNum === lastPage ?
-                                  'active-pagination-link-end' : 'active-pagination-link')) :
-                              (pageNum === 1 ? 'pagination-link-1' :
-                                (pageNum === lastPage ?
-                                  'pagination-link-end' : 'pagination-link'))}
-                        onClick={() => { setPage(pageNum); }}
-                      >
-                  {pageNum}
-                      </span>
-                ))) : (null)
-              }
+              {/* {(searchName.length !== 0 || showClients) ? ( */}
+              {/*  pageNumbers.map((pageNum, index) => ( */}
+              {/*        <span */}
+              {/*          key={index} */}
+              {/*          className={ */}
+              {/*              pageNum === this.state.currentPage ? */}
+              {/*                (pageNum === 1 ? 'active-pagination-link-1' : */}
+              {/*                  (pageNum === lastPage ? */}
+              {/*                    'active-pagination-link-end' : 'active-pagination-link')) : */}
+              {/*                (pageNum === 1 ? 'pagination-link-1' : */}
+              {/*                  (pageNum === lastPage ? */}
+              {/*                    'pagination-link-end' : 'pagination-link'))} */}
+              {/*          onClick={() => { setPage(pageNum); }} */}
+              {/*        > */}
+              {/*    {pageNum} */}
+              {/*        </span> */}
+              {/*  ))) : (null) */}
+              {/* } */}
             </div>
           </div>
           </div>

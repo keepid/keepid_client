@@ -4,7 +4,7 @@ import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
 
 import getServerURL from '../../serverOverride';
-import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
+import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 
 interface Props {
   username: any;
@@ -553,7 +553,7 @@ class ClientProfilePage extends Component<Props, State> {
               <div className="container pt-4">
                 {photoAvailable === false ? (
                   <Image
-                    src={DefaultProfilePhoto}
+                    src={GenericProfilePicture}
                     className="w-50 mx-auto d-flex"
                     alt="profile photo"
                     roundedCircle
