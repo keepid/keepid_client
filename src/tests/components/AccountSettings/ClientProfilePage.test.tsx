@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 
 import {
   fireEvent, render, waitFor,
 } from '@testing-library/react';
 import fetchMock from 'jest-fetch-mock';
+import React from 'react';
 import { Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 
-import { ClientProfilePage } from '../../../components/AccountSettings/ClientProfilePage';
+import ClientProfilePage from '../../../components/AccountSettings/ClientProfilePage';
 
 fetchMock.enableMocks();
 
