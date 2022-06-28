@@ -8,12 +8,12 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import MenuDots from '../../static/images/menu-dots.png';
-// import TrashCan from '../../static/images/trash-can.png'
 import SearchSVG from '../../static/images/search.svg';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
@@ -214,7 +214,7 @@ class WorkerLanding extends Component<Props, State> {
 
     const pageNumbers : number[] = [];
 
-    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i += 1) {
       pageNumbers.push(i);
     }
 
@@ -226,24 +226,29 @@ class WorkerLanding extends Component<Props, State> {
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
           <div className="dropdown lock-top-right">
-            <a href="#" id="imageDropdown" data-toggle="dropdown" style={{ zIndex: 99 }}>
-              <img alt="menu" src={MenuDots} style={{ height: 24 }} />
+            <a href="#" id="imageDropdown" data-toggle="dropdown">
+              <img alt="menu" src={MenuDots} className="menu-height" />
             </a>
             <div className="dropdown-menu">
               <button
+                type="button"
                 className="dropdown-item"
                 onClick={(event) =>
                   this.handleClickSendApplication(event, client)
                 }
               >
-                <div style={{ color: '#445feb', fontWeight: 'bold' }}>
-                  <img src={DocIcon} style={{ height: 17 }} />
+                <div className="view-docs-btn-text">
+                  <img alt="doc icon" src={DocIcon} className="icon-height mr-1" />
                   {' Complete Application'}
                 </div>
               </button>
               {/* <div className="dropdown-item">
                 <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
+<<<<<<< HEAD
                   <img src={TrashCan} style={{ height: 17 }}/>
+=======
+                  <img src={TrashCan} className="icon-height"/>
+>>>>>>> 0c16343fdd0a662d4d94e701f7e59bd18f209099
                   {" Delete Client"}
               </div>
               </div> */}
@@ -255,7 +260,7 @@ class WorkerLanding extends Component<Props, State> {
               <img
                 alt="a blank profile"
                 src={GenericProfilePicture}
-                style={{ height: 56, width: 56 }}
+                className="profile-pic-size"
               />
             </div>
             <div className="d-flex flex-row mb-2">
@@ -281,32 +286,34 @@ class WorkerLanding extends Component<Props, State> {
           <div className="row lock-bottom-left">
             <button
               type="button"
-              className="btn btn-primary mr-2 btn-sm"
-              style={{ height: 32 }}
+              className="btn btn-primary mr-2 btn-sm button-height"
               onClick={(event) =>
                 this.handleClickUploadDocuments(event, client)
               }
             >
-              <div style={{ fontWeight: 'bold' }}>
-                <img src={UploadIcon} style={{ height: 14 }} />
+              <div className="upload-text-style">
+                <img alt="upload icon" src={UploadIcon} className="upload-icon-height" />
                 {' Upload'}
               </div>
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm primary-color-border"
-              style={{ height: 32 }}
+              className="btn btn-secondary btn-sm primary-color-border button-height"
               onClick={(event) =>
                 this.handleClickViewDocuments(event, client)
               }
             >
-              <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
+              <div className="view-docs-btn-text">View Documents</div>
             </button>
             {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"
+<<<<<<< HEAD
                 className="btn btn-secondary btn-sm"
                 style={{ height: 32 }}
+=======
+                className="btn btn-secondary btn-sm button-height"
+>>>>>>> 0c16343fdd0a662d4d94e701f7e59bd18f209099
               >
                 View Profile
               </button>
@@ -395,13 +402,30 @@ class WorkerLanding extends Component<Props, State> {
     // Implement page numbers
     const pageNumbers : number[] = [];
 
-    for (let i = 1; i <= lastPage; i++) {
+    for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
     }
 
     // Set current page
     const setPage = (pageNum) => {
       this.setState({ currentPage: pageNum });
+    };
+
+    const paginationClassName = (pageNum) => {
+      if (pageNum === this.state.currentPage) {
+        if (pageNum === 1) {
+          return 'active-pagination-link-1';
+        } if (pageNum === lastPage) {
+          return 'active-pagination-link-end';
+        }
+        return 'active-pagination-link';
+      }
+      if (pageNum === 1) {
+        return 'pagination-link-1';
+      } if (pageNum === lastPage) {
+        return 'pagination-link-end';
+      }
+      return 'pagination-link';
     };
 
     if (clientCredentialsCorrect && redirectLink === '/upload-document') {
@@ -427,12 +451,11 @@ class WorkerLanding extends Component<Props, State> {
             <div className="d-flex flex-row justify-content-between">
               <form className="form-inline mr-3">
                 <input
-                  className="form-control right-angle-right"
-                  style={{ width: 500 }}
+                  className="right-angle-right form-control"
                   type="text"
                   onChange={this.handleChangeSearchName}
                   value={this.state.searchName}
-                  placeholder="Search by name, phone number, email..."
+                  placeholder="Search by name, email..."
                   aria-label="Search"
                   onKeyPress={(event) => {
                     if (event.key === 'Enter') {
@@ -442,7 +465,7 @@ class WorkerLanding extends Component<Props, State> {
                   }}
                 />
                 <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
-                  <div style={{ fontWeight: 'bold' }}>Search</div>
+                  <div>Search</div>
                 </button>
               </form>
               {/* <button
@@ -459,15 +482,15 @@ class WorkerLanding extends Component<Props, State> {
                 {role === Role.Director || role === Role.Admin ? (
                 <Link to="/person-signup/worker">
                   <button type="button" className="btn btn-primary mr-2">
-                    <div style={{ fontWeight: 'bold' }}>Sign Up Worker</div>
+                    <div>Sign Up Worker</div>
                   </button>
                 </Link>
                 ) : (
                   <div />
                 )}
                 <Link to="/person-signup/client">
-                  <button type="button" style={{ marginLeft: 'auto' }} className="btn btn-primary mr-4">
-                    <div style={{ fontWeight: 'bold' }}>Sign Up Client</div>
+                  <button type="button" className="btn btn-primary mr-4">
+                    <div>Sign Up Client</div>
                   </button>
                 </Link>
               </div>
@@ -486,7 +509,7 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          {(searchName.length != 0 || showClients) ? (
+          {(searchName.length !== 0 || showClients) ? (
             <div className="container px-0">
               <Row xs={1} md={3}>
                 {this.renderClients()}
@@ -503,29 +526,20 @@ class WorkerLanding extends Component<Props, State> {
                 alt="Search a client"
               />
             </div>
-
           )}
         </div>
         <div className="container">
           <div className="flex row justify-content-left align-items-center mt-2">
-            {(searchName.length != 0 || showClients) ? (
+            {(searchName.length !== 0 || showClients) ? (
               <div className="text-muted align-items-center mr-4">
                 {this.state.clients.length} Results
               </div>
             ) : (null)
             }
-            {(searchName.length != 0 || showClients) ? (
+            {(searchName.length !== 0 || showClients) ? (
               pageNumbers.map((pageNum, index) => (
                 <span
-                  key={index}
-                  className={
-                    pageNum === this.state.currentPage ?
-                      (pageNum === 1 ? 'active-pagination-link-1' :
-                        (pageNum === lastPage ?
-                          'active-pagination-link-end' : 'active-pagination-link')) :
-                      (pageNum === 1 ? 'pagination-link-1' :
-                        (pageNum === lastPage ?
-                          'pagination-link-end' : 'pagination-link'))}
+                  className={paginationClassName(pageNum)}
                   onClick={() => { setPage(pageNum); }}
                 >
                   {pageNum}
