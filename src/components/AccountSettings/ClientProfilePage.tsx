@@ -39,6 +39,10 @@ interface State {
   color: string;
 }
 
+const maxZoom = 2;
+const zoomIncrement = 0.1;
+const minZoom = 1;
+
 class ClientProfilePage extends Component<Props, State> {
   private hiddenFileInput: React.RefObject<HTMLInputElement>;
 
@@ -237,16 +241,18 @@ class ClientProfilePage extends Component<Props, State> {
   };
 
   zoomIn = () => {
-    if (this.state.zoom < 2) {
-      this.setState({ zoom: this.state.zoom + 0.1 });
+    if (this.state.zoom < maxZoom) {
+      // eslint-disable-next-line react/no-access-state-in-setstate
+      this.setState({ zoom: this.state.zoom + zoomIncrement });
     }
-  }
+  };
 
   zoomOut = () => {
-    if (this.state.zoom > 1) {
-      this.setState({ zoom: this.state.zoom - 0.1 });
+    if (this.state.zoom > minZoom) {
+      // eslint-disable-next-line react/no-access-state-in-setstate
+      this.setState({ zoom: this.state.zoom - zoomIncrement });
     }
-  }
+  };
 
   onCropChange = (crop: any): void => {
     this.setState({ crop });
