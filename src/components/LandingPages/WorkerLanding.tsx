@@ -625,24 +625,24 @@ class WorkerLanding extends Component<Props, State> {
                   </div>
               ) : (null)
               }
-              {/* {(searchName.length !== 0 || showClients) ? ( */}
-              {/*  pageNumbers.map((pageNum, index) => ( */}
-              {/*        <span */}
-              {/*          key={index} */}
-              {/*          className={ */}
-              {/*              pageNum === this.state.currentPage ? */}
-              {/*                (pageNum === 1 ? 'active-pagination-link-1' : */}
-              {/*                  (pageNum === lastPage ? */}
-              {/*                    'active-pagination-link-end' : 'active-pagination-link')) : */}
-              {/*                (pageNum === 1 ? 'pagination-link-1' : */}
-              {/*                  (pageNum === lastPage ? */}
-              {/*                    'pagination-link-end' : 'pagination-link'))} */}
-              {/*          onClick={() => { setPage(pageNum); }} */}
-              {/*        > */}
-              {/*    {pageNum} */}
-              {/*        </span> */}
-              {/*  ))) : (null) */}
-              {/* } */}
+              {(searchName.length !== 0 || showClients) ? (
+                pageNumbers.map((pageNum, index) => (
+                      <span
+                        key={index}
+                        className={
+                            pageNum === this.state.currentPage ?
+                              (pageNum === 1 ? 'active-pagination-link-1' :
+                                (pageNum === lastPage ?
+                                  'active-pagination-link-end' : 'active-pagination-link')) :
+                              (pageNum === 1 ? 'pagination-link-1' :
+                                (pageNum === lastPage ?
+                                  'pagination-link-end' : 'pagination-link'))}
+                        onClick={() => { setPage(pageNum); }}
+                      >
+                  {pageNum}
+                      </span>
+                ))) : (null)
+               }
             </div>
           </div>
           </div>
