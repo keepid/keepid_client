@@ -241,17 +241,13 @@ class ClientProfilePage extends Component<Props, State> {
   };
 
   zoomIn = () => {
-    if (this.state.zoom < maxZoom) {
-      // eslint-disable-next-line react/no-access-state-in-setstate
-      this.setState({ zoom: this.state.zoom + zoomIncrement });
-    }
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.min(maxZoom, this.state.zoom + zoomIncrement) });
   };
 
   zoomOut = () => {
-    if (this.state.zoom > minZoom) {
-      // eslint-disable-next-line react/no-access-state-in-setstate
-      this.setState({ zoom: this.state.zoom - zoomIncrement });
-    }
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.max(minZoom, this.state.zoom - zoomIncrement) });
   };
 
   onCropChange = (crop: any): void => {
@@ -532,18 +528,18 @@ class ClientProfilePage extends Component<Props, State> {
                         <button
                           className="btn w-25 btn-outline-primary"
                           type="button"
-                          onClick={this.zoomIn}
-                          disabled={this.state.zoom >= 2}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="btn w-25 btn-outline-primary"
-                          type="button"
                           onClick={this.zoomOut}
                           disabled={this.state.zoom <= 1}
                         >
                           -
+                        </button>
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomIn}
+                          disabled={this.state.zoom >= 2}
+                        >
+                          +
                         </button>
                       </div>
                       <button
