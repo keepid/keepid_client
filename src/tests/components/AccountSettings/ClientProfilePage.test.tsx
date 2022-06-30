@@ -26,9 +26,9 @@ describe('ClientProfilePage', () => {
       const alertShowFn = jest.fn();
       const file = new File(['profile photo'], 'photo.png', { type: 'image/png' });
       const { getByTestId } = render(
-          <Provider template={AlertTemplate} className="alert-provider-custom">
-            <ClientProfilePage alert={{ show: alertShowFn }} username="test" />
-          </Provider>,
+                <Provider template={AlertTemplate} className="alert-provider-custom">
+                    <ClientProfilePage alert={{ show: alertShowFn }} username="test" />
+                </Provider>,
       );
 
       // Act
