@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
@@ -16,7 +17,6 @@ import SearchSVG from '../../static/images/search.svg';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { NONAME } from 'dns';
 
 interface Props {
   username: string;
@@ -70,14 +70,14 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickUploadDocuments =
       this.handleClickUploadDocuments.bind(this);
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    //this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
       this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient =
-      this.handleClickAuthenticateClient.bind(this);
-    this.handleClickClose = this.handleClickClose.bind(this);
+    // this.handleClickAuthenticateClient =
+    // this.handleClickAuthenticateClient.bind(this);
+    // this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
-    this.modalRender = this.modalRender.bind(this);
+    // this.modalRender = this.modalRender.bind(this);
   }
 
   componentDidMount() {
@@ -104,12 +104,12 @@ class WorkerLanding extends Component<Props, State> {
     );
   }
 
-  handleClickClose(event: any) {
+  /* handleClickClose(event: any) {
     this.setState({
       clientPassword: '',
       showClientAuthModal: false,
     });
-  }
+  } */
 
   handleClickAuthenticateClient(event: any) {
     event.preventDefault();
@@ -146,7 +146,7 @@ class WorkerLanding extends Component<Props, State> {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/upload-document',
-      showClientAuthModal: true,
+      clientCredentialsCorrect: true,
     });
   }
 
@@ -154,23 +154,23 @@ class WorkerLanding extends Component<Props, State> {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/my-documents',
-      showClientAuthModal: true,
+      clientCredentialsCorrect: true,
     });
   }
 
-  /*handleClickSendEmail(event: any, client: any) {
+  /* handleClickSendEmail(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/email',
       showClientAuthModal: true,
     });
-  }*/
+  } */
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/applications',
-      showClientAuthModal: true,
+      clientCredentialsCorrect: true,
     });
   }
 
@@ -218,8 +218,8 @@ class WorkerLanding extends Component<Props, State> {
     }
 
     const setPage = (pageNum) => {
-      this.setState({currentPage: pageNum})
-    }
+      this.setState({ currentPage: pageNum });
+    };
 
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
@@ -309,7 +309,7 @@ class WorkerLanding extends Component<Props, State> {
               </button>
             </Link> */}
           </div>
-          {showClientAuthModal ? this.modalRender() : null}
+          {/* showClientAuthModal ? this.modalRender() : null */}
         </div>
       ),
     );
@@ -317,7 +317,7 @@ class WorkerLanding extends Component<Props, State> {
     return clientCards;
   }
 
-  modalRender() {
+  /* modalRender() {
     const { showClientAuthModal } = this.state;
     return (
       <Modal key="authenticateAction" show={showClientAuthModal}>
@@ -372,7 +372,7 @@ class WorkerLanding extends Component<Props, State> {
         </Modal.Footer>
       </Modal>
     );
-  }
+  } */
 
   render() {
     const { role } = this.props;
@@ -467,7 +467,7 @@ class WorkerLanding extends Component<Props, State> {
                 aria-controls="collapseExample"
               >
                 Advanced Search
-                </button>*/}
+                </button> */}
               <div>
                 {role === Role.Director || role === Role.Admin ? (
                 <Link to="/person-signup/worker">
@@ -499,7 +499,7 @@ class WorkerLanding extends Component<Props, State> {
           </div>
         </div>
         <div className="container">
-          {(searchName.length !== 0 || showClients) ? (
+          {(this.state.clients.length !== 0) ? (
             <div className="container px-0">
               <Row xs={1} md={3}>
                 {this.renderClients()}
@@ -508,7 +508,7 @@ class WorkerLanding extends Component<Props, State> {
           ) : (
             <div>
               <h3 className="pt-4">
-                Search a client&apos;s name to get started
+                No Clients! Add a client with &apos;Sign up Client&apos;
               </h3>
               <img
                 className="pt-4 visualization-svg"
@@ -526,7 +526,7 @@ class WorkerLanding extends Component<Props, State> {
               </div>
             ) : (null)
             }
-            {(searchName.length !== 0 || showClients) ? (
+            {(this.state.clients.length !== 0) ? (
               pageNumbers.map((pageNum, index) => (
                 <span
                   className={paginationClassName(pageNum)}
