@@ -45,7 +45,7 @@ describe('DateInput', () => {
     expect(args[0].getDate()).toEqual(10);
 
     rerender(<DateInput label={label} name={name} onChange={onChange} value={args[0]} />);
-    const month = new Date().getUTCMonth() + 1;
+    const month = new Date().getUTCMonth();
 
     await waitFor(() => {
       expect(getByLabelText(label).getAttribute('value')).toEqual(
