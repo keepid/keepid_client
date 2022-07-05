@@ -293,7 +293,11 @@ class WorkerLanding extends Component<Props, State> {
               </button>
               {/* <div className="dropdown-item">
                 <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
+<<<<<<< HEAD
+                  <img src={TrashCan} style={{ height: 17 }}/>
+=======
                   <img src={TrashCan} className="icon-height"/>
+>>>>>>> 0c16343fdd0a662d4d94e701f7e59bd18f209099
                   {" Delete Client"}
               </div>
               </div> */}
@@ -371,7 +375,12 @@ class WorkerLanding extends Component<Props, State> {
                 {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"
+<<<<<<< HEAD
+                className="btn btn-secondary btn-sm"
+                style={{ height: 32 }}
+=======
                 className="btn btn-secondary btn-sm button-height"
+>>>>>>> 0c16343fdd0a662d4d94e701f7e59bd18f209099
               >
                 View Profile
               </button>

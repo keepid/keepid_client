@@ -39,6 +39,10 @@ interface State {
   color: string;
 }
 
+const maxZoom = 2;
+const zoomIncrement = 0.1;
+const minZoom = 1;
+
 class ClientProfilePage extends Component<Props, State> {
   private hiddenFileInput: React.RefObject<HTMLInputElement>;
 
@@ -234,6 +238,16 @@ class ClientProfilePage extends Component<Props, State> {
 
   onZoomChange = (zoom: number): void => {
     this.setState({ zoom });
+  };
+
+  zoomIn = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.min(maxZoom, this.state.zoom + zoomIncrement) });
+  };
+
+  zoomOut = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.max(minZoom, this.state.zoom - zoomIncrement) });
   };
 
   onCropChange = (crop: any): void => {
@@ -512,6 +526,24 @@ class ClientProfilePage extends Component<Props, State> {
                   </div>
                   <div>
                     <div className="text-center mx-4">
+                      <div className="btn-group mt-2">
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomOut}
+                          disabled={this.state.zoom <= 1}
+                        >
+                          -
+                        </button>
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomIn}
+                          disabled={this.state.zoom >= 2}
+                        >
+                          +
+                        </button>
+                      </div>
                       <button
                         className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                         type="submit"
