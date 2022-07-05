@@ -4,7 +4,7 @@ import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
 
 import getServerURL from '../../serverOverride';
-import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
+import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 
 interface Props {
   username: any;
@@ -478,6 +478,7 @@ class ClientProfilePage extends Component<Props, State> {
               <button
                 type="button"
                 className="btn mb-3 mx-4 font-weight-bold btn-primary"
+                data-testid="select-photo"
                 onClick={() => this.hiddenFileInput.current!.click()}
               >
                 Select Photo
@@ -487,6 +488,7 @@ class ClientProfilePage extends Component<Props, State> {
                 type="file"
                 key={inputKey}
                 ref={this.hiddenFileInput}
+                data-testid="photo-input"
                 onChange={(e) => this.fileSelectedHandler(e)}
                 accept=".jpg,.jpeg,.png"
               />
@@ -513,6 +515,7 @@ class ClientProfilePage extends Component<Props, State> {
                       <button
                         className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                         type="submit"
+                        data-testid="set-profile-photo"
                         onClick={() => {
                           this.setState({ loading: true }, () => {
                             this.cropAndSave();
@@ -550,7 +553,7 @@ class ClientProfilePage extends Component<Props, State> {
               <div className="container pt-4">
                 {photoAvailable === false ? (
                   <Image
-                    src={DefaultProfilePhoto}
+                    src={GenericProfilePicture}
                     className="w-50 mx-auto d-flex"
                     alt="profile photo"
                     roundedCircle
@@ -630,6 +633,7 @@ class ClientProfilePage extends Component<Props, State> {
                   onBlur={() => undefined}
                   data-toggle="modal"
                   data-target="#exampleModal"
+                  data-testid="edit-info"
                   onClick={() =>
                     this.setState({ showCropper: false, inputKey: Date.now() })
                   }
