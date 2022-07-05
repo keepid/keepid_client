@@ -129,7 +129,7 @@ class WorkerLanding extends Component<Props, State> {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
+        // console.log(responseJSON);
         const { status } = responseJSON;
         if (status === 'AUTH_SUCCESS') {
           // Allow worker privileges
@@ -245,7 +245,7 @@ class WorkerLanding extends Component<Props, State> {
       .then((res) => res.json())
       .then((responseJSON) => {
         const { people, status } = responseJSON;
-        console.log(responseJSON);
+        // console.log(responseJSON);
         if (status !== 'USER_NOT_FOUND') {
           return people;
         }
