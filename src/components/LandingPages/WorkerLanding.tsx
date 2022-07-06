@@ -35,7 +35,7 @@ interface State {
   showClients: boolean;
   currentPage: number;
   postsPerPage: number;
-  clientCards: any;
+  // clientCards: any;
 }
 
 const options = [
@@ -63,7 +63,7 @@ class WorkerLanding extends Component<Props, State> {
       showClients: false,
       currentPage: 1,
       postsPerPage: 6,
-      clientCards: [],
+      // clientCards: [],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -382,7 +382,7 @@ class WorkerLanding extends Component<Props, State> {
       ),
     );
 
-    this.setState({ clientCards });
+    return (clientCards);
   }
 
   modalRender() {
@@ -597,16 +597,16 @@ class WorkerLanding extends Component<Props, State> {
               </div>
             </div>
           <div className="container">
-            {(searchName.length !== 0 || showClients) ? (
+            {(this.state.clients.length !== 0) ? (
                 <div className="container px-0">
                   <Row xs={1} md={3}>
-                    {this.state.clientCards}
+                    {this.renderClients()}
                   </Row>
                 </div>
             ) : (
                 <div>
                   <h3 className="pt-4">
-                    Search a client&apos;s name to get started
+                    No Clients! Click &apos;Sign up Client&apos; to get started!
                   </h3>
                   <img
                     className="pt-4 visualization-svg"
@@ -619,13 +619,13 @@ class WorkerLanding extends Component<Props, State> {
           </div>
           <div className="container">
             <div className="flex row justify-content-left align-items-center mt-2">
-              {(searchName.length !== 0 || showClients) ? (
+              {(this.state.clients.length !== 0) ? (
                   <div className="text-muted align-items-center mr-4">
                     {this.state.clients.length} Results
                   </div>
               ) : (null)
               }
-              {(searchName.length !== 0 || showClients) ? (
+              {(this.state.clients.length !== 0) ? (
                 pageNumbers.map((pageNum, index) => (
                     <span
                       className={paginationClassName(pageNum)}
