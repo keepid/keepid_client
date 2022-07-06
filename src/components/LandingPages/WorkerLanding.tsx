@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
@@ -118,7 +117,7 @@ class WorkerLanding extends Component<Props, State> {
     });
   } */
 
-  handleClickAuthenticateClient(event: any) {
+  /* handleClickAuthenticateClient(event: any) {
     event.preventDefault();
     const { clientUsername, clientPassword } = this.state;
 
@@ -147,7 +146,7 @@ class WorkerLanding extends Component<Props, State> {
           this.props.alert.show('Server Failure: Please Try Again');
         }
       });
-  }
+  }*/
 
   handleClickUploadDocuments(event: any, client: any) {
     this.setState({
@@ -636,7 +635,6 @@ class WorkerLanding extends Component<Props, State> {
                 ))) : (null)
                }
             </div>
-          </div>
           </div>
         </div>
     );
