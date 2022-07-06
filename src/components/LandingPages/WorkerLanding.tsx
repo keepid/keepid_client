@@ -35,7 +35,7 @@ interface State {
   showClients: boolean;
   currentPage: number;
   postsPerPage: number;
-  //clientCards: any;
+  // clientCards: any;
 }
 
 const options = [
@@ -63,7 +63,7 @@ class WorkerLanding extends Component<Props, State> {
       showClients: false,
       currentPage: 1,
       postsPerPage: 6,
-      //clientCards: [],
+      // clientCards: [],
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
