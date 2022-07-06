@@ -4,7 +4,7 @@ import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
 
 import getServerURL from '../../serverOverride';
-import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
+import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 
 interface Props {
   username: any;
@@ -38,6 +38,10 @@ interface State {
   backgroundColor: string;
   color: string;
 }
+
+const maxZoom = 2;
+const zoomIncrement = 0.1;
+const minZoom = 1;
 
 class ClientProfilePage extends Component<Props, State> {
   private hiddenFileInput: React.RefObject<HTMLInputElement>;
@@ -234,6 +238,16 @@ class ClientProfilePage extends Component<Props, State> {
 
   onZoomChange = (zoom: number): void => {
     this.setState({ zoom });
+  };
+
+  zoomIn = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.min(maxZoom, this.state.zoom + zoomIncrement) });
+  };
+
+  zoomOut = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.max(minZoom, this.state.zoom - zoomIncrement) });
   };
 
   onCropChange = (crop: any): void => {
@@ -478,6 +492,7 @@ class ClientProfilePage extends Component<Props, State> {
               <button
                 type="button"
                 className="btn mb-3 mx-4 font-weight-bold btn-primary"
+                data-testid="select-photo"
                 onClick={() => this.hiddenFileInput.current!.click()}
               >
                 Select Photo
@@ -487,6 +502,7 @@ class ClientProfilePage extends Component<Props, State> {
                 type="file"
                 key={inputKey}
                 ref={this.hiddenFileInput}
+                data-testid="photo-input"
                 onChange={(e) => this.fileSelectedHandler(e)}
                 accept=".jpg,.jpeg,.png"
               />
@@ -510,9 +526,28 @@ class ClientProfilePage extends Component<Props, State> {
                   </div>
                   <div>
                     <div className="text-center mx-4">
+                      <div className="btn-group mt-2">
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomOut}
+                          disabled={this.state.zoom <= 1}
+                        >
+                          -
+                        </button>
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomIn}
+                          disabled={this.state.zoom >= 2}
+                        >
+                          +
+                        </button>
+                      </div>
                       <button
                         className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                         type="submit"
+                        data-testid="set-profile-photo"
                         onClick={() => {
                           this.setState({ loading: true }, () => {
                             this.cropAndSave();
@@ -550,7 +585,7 @@ class ClientProfilePage extends Component<Props, State> {
               <div className="container pt-4">
                 {photoAvailable === false ? (
                   <Image
-                    src={DefaultProfilePhoto}
+                    src={GenericProfilePicture}
                     className="w-50 mx-auto d-flex"
                     alt="profile photo"
                     roundedCircle
@@ -630,6 +665,7 @@ class ClientProfilePage extends Component<Props, State> {
                   onBlur={() => undefined}
                   data-toggle="modal"
                   data-target="#exampleModal"
+                  data-testid="edit-info"
                   onClick={() =>
                     this.setState({ showCropper: false, inputKey: Date.now() })
                   }
