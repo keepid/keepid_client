@@ -146,7 +146,7 @@ class WorkerLanding extends Component<Props, State> {
           this.props.alert.show('Server Failure: Please Try Again');
         }
       });
-  }*/
+  } */
 
   handleClickUploadDocuments(event: any, client: any) {
     this.setState({
@@ -545,33 +545,33 @@ class WorkerLanding extends Component<Props, State> {
               >
                 Advanced Search
                 </button> */}
-              <div>
-                {role === Role.Director || role === Role.Admin ? (
-                <Link to="/person-signup/worker">
-                  <button type="button" className="btn btn-primary mr-2">
-                    <div>Sign Up Worker</div>
-                  </button>
-                </Link>
-                ) : (
-                  <div />
-                )}
-                <Link to="/person-signup/client">
-                  <button type="button" className="btn btn-primary mr-4">
-                    <div>Sign Up Client</div>
-                  </button>
-                </Link>
-              </div>
-              <div className="collapse" id="advancedSearch">
-                <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
-                  <h5 className="card-title">Search on multiple fields</h5>
-                  <Select
-                    options={options}
-                    closeMenuOnSelect={false}
-                    components={animatedComponents}
-                    isMulti
-                  />
+                <div>
+                  {role === Role.Director || role === Role.Admin ? (
+                  <Link to="/person-signup/worker">
+                    <button type="button" className="btn btn-primary mr-2">
+                      <div>Sign Up Worker</div>
+                    </button>
+                  </Link>
+                  ) : (
+                    <div />
+                  )}
+                  <Link to="/person-signup/client">
+                    <button type="button" className="btn btn-primary mr-4">
+                      <div>Sign Up Client</div>
+                    </button>
+                  </Link>
                 </div>
-              </div>
+                <div className="collapse" id="advancedSearch">
+                  <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
+                    <h5 className="card-title">Search on multiple fields</h5>
+                    <Select
+                      options={options}
+                      closeMenuOnSelect={false}
+                      components={animatedComponents}
+                      isMulti
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           <div className="container">
@@ -595,7 +595,7 @@ class WorkerLanding extends Component<Props, State> {
 
             )}
           </div>
-        </div>
+          </div>
         <div className="container">
           {(this.state.clients.length !== 0) ? (
             <div className="container px-0">
