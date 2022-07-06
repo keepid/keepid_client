@@ -7,11 +7,13 @@ import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
+import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import MenuDots from '../../static/images/menu-dots.png';
+import SearchSVG from '../../static/images/search.svg';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
@@ -75,12 +77,12 @@ class WorkerLanding extends Component<Props, State> {
     this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
     // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
-        this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient =
-        this.handleClickAuthenticateClient.bind(this);
-    this.handleClickClose = this.handleClickClose.bind(this);
+      this.handleClickSendApplication.bind(this);
+    // this.handleClickAuthenticateClient =
+    // this.handleClickAuthenticateClient.bind(this);
+    // this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
-    this.modalRender = this.modalRender.bind(this);
+    // this.modalRender = this.modalRender.bind(this);
   }
 
   componentDidMount() {
@@ -108,14 +110,14 @@ class WorkerLanding extends Component<Props, State> {
     );
   }
 
-  handleClickClose(event: any) {
+  /* handleClickClose(event: any) {
     this.setState({
       clientPassword: '',
       showClientAuthModal: false,
     });
-  }
+  } */
 
-  handleClickAuthenticateClient(event: any) {
+  /* handleClickAuthenticateClient(event: any) {
     event.preventDefault();
     const { clientUsername, clientPassword } = this.state;
 
@@ -144,7 +146,7 @@ class WorkerLanding extends Component<Props, State> {
           this.props.alert.show('Server Failure: Please Try Again');
         }
       });
-  }
+  } */
 
   handleClickUploadDocuments(event: any, client: any) {
     this.setState({
@@ -299,76 +301,58 @@ class WorkerLanding extends Component<Props, State> {
               </div> */}
             </div>
           </div>
-              <Link to={`/profile/${client.username}`}>
-                <div className="card-body px-0 py-0 card-body-positioning">
-                  <div className="d-flex flex-row mb-3">
-                    {client.photo === null ? (
-                        <Image
-                          alt="a blank profile"
-                          src={GenericProfilePicture}
-                          style={{ height: 56, width: 56 }}
-                          roundedCircle
-                        />
-                    ) : (
-                        <div id="profilePhoto">
-                          <Image
-                            alt="a blank profile"
-                            src={client.photo}
-                            style={{ height: 56, width: 56 }}
-                            roundedCircle
-                          />
-                        </div>
-                    )}
-                  </div>
-                  <div className="d-flex flex-row mb-2">
-                    <h5 className="card-title h4">
-                      {client.firstName}
-                      {' '}
-                      {client.lastName}
-                    </h5>
-                  </div>
-                  <div className="d-flex flex-row mb-2">
-                    <h6 className="card-subtitle text-muted">
-                      {client.phone}
-                    </h6>
-                  </div>
-                  <div className="d-flex flex-row mb-3">
-                    <h6 className="card-subtitle text-muted">
-                      {'Birth Date: '}
-                      {client.birthDate}
-                    </h6>
-                  </div>
-                </div>
-              </Link>
-              <div className="row lock-bottom-left">
-                <button
-                  type="button"
-                  className="btn btn-primary mr-2 btn-sm"
-                  style={{ height: 32 }}
-                  onClick={(event) =>
-                    this.handleClickUploadDocuments(event, client)
-                    }
-                >
-                  <div style={{ fontWeight: 'bold' }}>
-                    <img
-                      src={UploadIcon}
-                      style={{ height: 14 }}
-                      alt="upload icon"
-                    />
-                    {' Upload'}
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm primary-color-border"
-                  style={{ height: 32 }}
-                  onClick={(event) =>
-                    this.handleClickViewDocuments(event, client)
-                    }
-                >
-                  <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
-                </button>
-                {/* <Link to={`/profile/${client.username}`}>
+          <Link to={`/profile/${client.username}`}>
+          <div className="card-body px-0 py-0 card-body-positioning">
+            <div className="d-flex flex-row mb-3">
+              <img
+                alt="a blank profile"
+                src={GenericProfilePicture}
+                className="profile-pic-size"
+              />
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h5 className="card-title h4">
+                {client.firstName}
+                {' '}
+                {client.lastName}
+              </h5>
+            </div>
+            <div className="d-flex flex-row mb-2">
+              <h6 className="card-subtitle text-muted">
+                {client.phone}
+              </h6>
+            </div>
+            <div className="d-flex flex-row mb-3">
+              <h6 className="card-subtitle text-muted">
+                {'Birth Date: '}
+                {client.birthDate}
+              </h6>
+            </div>
+          </div>
+          </Link>
+          <div className="row lock-bottom-left">
+            <button
+              type="button"
+              className="btn btn-primary mr-2 btn-sm button-height"
+              onClick={(event) =>
+                this.handleClickUploadDocuments(event, client)
+              }
+            >
+              <div className="upload-text-style">
+                <img alt="upload icon" src={UploadIcon} className="upload-icon-height" />
+                {' Upload'}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm primary-color-border button-height"
+              onClick={(event) =>
+                this.handleClickViewDocuments(event, client)
+              }
+            >
+              <div className="view-docs-btn-text">View Documents</div>
+            </button>
+            {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm button-height"
@@ -385,7 +369,7 @@ class WorkerLanding extends Component<Props, State> {
     this.setState({ clientCards });
   }
 
-  modalRender() {
+  /* modalRender() {
     const { showClientAuthModal } = this.state;
     return (
         <Modal key="authenticateAction" show={showClientAuthModal}>
@@ -440,7 +424,7 @@ class WorkerLanding extends Component<Props, State> {
           </Modal.Footer>
         </Modal>
     );
-  }
+  } */
 
   render() {
     const { role } = this.props;
@@ -567,33 +551,33 @@ class WorkerLanding extends Component<Props, State> {
               >
                 Advanced Search
                 </button> */}
-              <div>
-                {role === Role.Director || role === Role.Admin ? (
-                <Link to="/person-signup/worker">
-                  <button type="button" className="btn btn-primary mr-2">
-                    <div>Sign Up Worker</div>
-                  </button>
-                </Link>
-                ) : (
-                  <div />
-                )}
-                <Link to="/person-signup/client">
-                  <button type="button" className="btn btn-primary mr-4">
-                    <div>Sign Up Client</div>
-                  </button>
-                </Link>
-              </div>
-              <div className="collapse" id="advancedSearch">
-                <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
-                  <h5 className="card-title">Search on multiple fields</h5>
-                  <Select
-                    options={options}
-                    closeMenuOnSelect={false}
-                    components={animatedComponents}
-                    isMulti
-                  />
+                <div>
+                  {role === Role.Director || role === Role.Admin ? (
+                  <Link to="/person-signup/worker">
+                    <button type="button" className="btn btn-primary mr-2">
+                      <div>Sign Up Worker</div>
+                    </button>
+                  </Link>
+                  ) : (
+                    <div />
+                  )}
+                  <Link to="/person-signup/client">
+                    <button type="button" className="btn btn-primary mr-4">
+                      <div>Sign Up Client</div>
+                    </button>
+                  </Link>
                 </div>
-              </div>
+                <div className="collapse" id="advancedSearch">
+                  <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
+                    <h5 className="card-title">Search on multiple fields</h5>
+                    <Select
+                      options={options}
+                      closeMenuOnSelect={false}
+                      components={animatedComponents}
+                      isMulti
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           <div className="container">
@@ -617,26 +601,46 @@ class WorkerLanding extends Component<Props, State> {
 
             )}
           </div>
-          <div className="container">
-            <div className="flex row justify-content-left align-items-center mt-2">
-              {(searchName.length !== 0 || showClients) ? (
-                  <div className="text-muted align-items-center mr-4">
-                    {this.state.clients.length} Results
-                  </div>
-              ) : (null)
-              }
-              {(searchName.length !== 0 || showClients) ? (
-                pageNumbers.map((pageNum, index) => (
-                    <span
-                      className={paginationClassName(pageNum)}
-                      onClick={() => { setPage(pageNum); }}
-                    >
+          </div>
+        <div className="container">
+          {(this.state.clients.length !== 0) ? (
+            <div className="container px-0">
+              <Row xs={1} md={3}>
+                {this.renderClients()}
+              </Row>
+            </div>
+          ) : (
+            <div>
+              <h3 className="pt-4">
+                No Clients! Add a client with &apos;Sign up Client&apos;
+              </h3>
+              <img
+                className="pt-4 visualization-svg"
+                src={VisualizationSVG}
+                alt="Search a client"
+              />
+            </div>
+          )}
+        </div>
+        <div className="container">
+          <div className="flex row justify-content-left align-items-center mt-2">
+            {(searchName.length !== 0 || showClients) ? (
+              <div className="text-muted align-items-center mr-4">
+                {this.state.clients.length} Results
+              </div>
+            ) : (null)
+            }
+            {(this.state.clients.length !== 0) ? (
+              pageNumbers.map((pageNum, index) => (
+                <span
+                  className={paginationClassName(pageNum)}
+                  onClick={() => { setPage(pageNum); }}
+                >
                   {pageNum}
                     </span>
                 ))) : (null)
                }
             </div>
-          </div>
           </div>
         </div>
     );
