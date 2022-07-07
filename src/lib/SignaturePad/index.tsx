@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import Bezier from './bezier';
 import Point from './point';
 
-interface ISignaturePadProps extends React.Props<any> {
+interface ISignaturePadProps {
     velocityFilterWeight?: any;
     minWidth?: number;
     maxWidth?: number;
