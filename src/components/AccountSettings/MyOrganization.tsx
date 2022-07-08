@@ -393,12 +393,12 @@ class MyOrganization extends Component<Props, State> {
                 type="submit"
                 onClick={(e) => this.addMember(e)}
               >
-                Add Member
+                Add Member to Queue
               </button>
             </div>
           </div>
         </form>
-        <p className="font-weight-bold text-dark mb-2 h3">Recently Invited</p>
+        <p className="font-weight-bold text-dark mb-2 h3">Invite Queue</p>
         <div
           className="scrollbar"
           style={{

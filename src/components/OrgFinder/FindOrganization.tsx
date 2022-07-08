@@ -217,6 +217,9 @@ class FindOrganization extends Component<Props, State> {
       searchLoading,
     } = this.state;
 
+    // @ts-ignore
+    // @ts-ignore
+    // @ts-ignore
     return (
       <div className="container">
         <div className="jumbotron-fluid mt-3">

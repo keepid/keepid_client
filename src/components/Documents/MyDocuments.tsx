@@ -122,9 +122,9 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.APPLICATION;
+      pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }
@@ -177,9 +177,9 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.APPLICATION;
+      pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }
@@ -226,9 +226,9 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.APPLICATION;
+      pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }
@@ -255,9 +255,9 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.APPLICATION;
+      pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }

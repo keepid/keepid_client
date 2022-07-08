@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
@@ -11,16 +11,7 @@ interface Props {
   alert: any;
 }
 
-interface State {
-  title: string;
-  description: string;
-  email: string;
-  buttonState: string;
-  titleValidator: string;
-  emailValidator: string;
-  descriptionValidator: string;
-  recaptchaPayload: string;
-}
+interface State {}
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
@@ -65,13 +56,14 @@ class IssueReport extends Component<Props, State, {}> {
   };
 
   validateEmail = async (): Promise<void> => {
+    let voidType: () => void;
     const { email } = this.state;
     if (isValidEmail(email)) {
       await new Promise((resolve) =>
-        this.setState({ emailValidator: 'true' }, resolve));
+        this.setState({ emailValidator: 'true' }, resolve as typeof voidType));
     } else {
       await new Promise((resolve) =>
-        this.setState({ emailValidator: 'false' }, resolve));
+        this.setState({ emailValidator: 'false' }, resolve as typeof voidType));
     }
   };
 
@@ -91,13 +83,14 @@ class IssueReport extends Component<Props, State, {}> {
   };
 
   validateTitle = async (): Promise<void> => {
+    let voidType: () => void;
     const { title } = this.state;
     if (title !== '') {
       await new Promise((resolve) =>
-        this.setState({ titleValidator: 'true' }, resolve));
+        this.setState({ titleValidator: 'true' }, resolve as typeof voidType));
     } else {
       await new Promise((resolve) =>
-        this.setState({ titleValidator: 'false' }, resolve));
+        this.setState({ titleValidator: 'false' }, resolve as typeof voidType));
     }
   };
 
@@ -117,13 +110,14 @@ class IssueReport extends Component<Props, State, {}> {
   };
 
   validateDescription = async (): Promise<void> => {
+    let voidType: () => void;
     const { description } = this.state;
     if (description !== '') {
       await new Promise((resolve) =>
-        this.setState({ descriptionValidator: 'true' }, resolve));
+        this.setState({ descriptionValidator: 'true' }, resolve as typeof voidType));
     } else {
       await new Promise((resolve) =>
-        this.setState({ descriptionValidator: 'false' }, resolve));
+        this.setState({ descriptionValidator: 'false' }, resolve as typeof voidType));
     }
   };
 
@@ -212,7 +206,7 @@ class IssueReport extends Component<Props, State, {}> {
           this.resetRecaptcha();
         }
       })
-      .catch((error) => {
+      .catch(() => {
         alert.show('Failed to submit. Please try again.');
         this.setState({ buttonState: '' });
         this.resetRecaptcha();
