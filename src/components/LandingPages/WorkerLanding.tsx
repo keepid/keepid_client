@@ -357,7 +357,7 @@ class WorkerLanding extends Component<Props, State> {
                 </Link>
                 <Link
                   to="/my-documents"
-                  className="btn btn-secondary btn-sm primary-color-border"
+                  className="btn link-secondary btn-sm primary-color-border"
                   style={{ height: 32 }}
                 >
                   <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>

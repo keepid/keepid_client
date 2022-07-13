@@ -312,7 +312,7 @@ class App extends React.Component<{}, State, {}> {
               />
               )}
               <Route
-                path="/my-documents/:clientUsername"
+                path="/my-documents"
                 render={() => {
                   if (
                     role === Role.Client ||
