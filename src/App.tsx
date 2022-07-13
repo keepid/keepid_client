@@ -308,11 +308,11 @@ class App extends React.Component<{}, State, {}> {
               ) : (
               <Route
                 path="/upload-document"
-                render={() => <UploadDocs userRole={Role.Client} />}
+                render={() => <UploadDocs userRole={role} />}
               />
               )}
               <Route
-                path="/my-documents"
+                path="/my-documents/:clientUsername"
                 render={() => {
                   if (
                     role === Role.Client ||
