@@ -292,11 +292,11 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              {(role !== Role.Client) ? (
               <Route
-                path="/upload-document"
+                path="/upload-document/:clientUsername"
                 render={() => {
                   if (
-                    role === Role.Client ||
                     role === Role.Admin ||
                     role === Role.Director
                   ) {
@@ -305,6 +305,12 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              ) : (
+              <Route
+                path="/upload-document"
+                render={() => <UploadDocs userRole={Role.Client} />}
+              />
+              )}
               <Route
                 path="/my-documents"
                 render={() => {

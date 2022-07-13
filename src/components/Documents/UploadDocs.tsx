@@ -5,7 +5,7 @@ import React, { useCallback, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Card, Col, Container, Dropdown, DropdownButton, Row, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
@@ -17,6 +17,7 @@ import DocumentViewer from './DocumentViewer';
 interface Props {
   alert: any,
   userRole: Role,
+  match: any,
 }
 
 interface State {
@@ -90,12 +91,14 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         const documentType = this.state.documentTypeList[i];
         const prevStep = this.state.currentStep;
+        const clientUsername = this.props.match.params;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('documentType', documentType);
         if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
         if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin) {
+          formData.append('targetUser', clientUsername);
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
         fetch(`${getServerURL()}/upload`, {
@@ -308,4 +311,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withAlert()(UploadDocs);
+export default withRouter(withAlert()(UploadDocs));
