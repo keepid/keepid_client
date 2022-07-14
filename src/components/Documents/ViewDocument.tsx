@@ -75,6 +75,13 @@ class ViewDocument extends Component<Props, State> {
     }
     return (
             <div className="container">
+                <div className="mt-5 ml-3">
+                    <Link to="/my-documents">
+                        <button type="button" className="btn btn-outline-success">
+                            Back
+                        </button>
+                    </Link>
+                </div>
                 {pdfFile ?
                   (
                         <div className="jumbotron-fluid">
