@@ -68,6 +68,11 @@ function Footer() {
               <span className="footer-link pb-1">Report an Issue</span>
             </Link>
           </ul>
+          <ul className="list-unstyled list-inline list-social">
+            <Link to="/feedback-report" className="text-decoration-none">
+              <span className="footer-link pb-1">Leave a Feedback</span>
+            </Link>
+          </ul>
           <span className="text-muted pb-2">&copy; 2021 Keep.id</span>
         </div>
         <div className="p-2 bd-highlight col-12 col-md-4 col-lg-3 mb-4">

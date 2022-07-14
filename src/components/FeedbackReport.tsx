@@ -15,7 +15,7 @@ interface State {}
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
-class IssueReport extends Component<Props, State, {}> {
+class FeedbackReport extends Component<Props, State, {}> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -102,7 +102,7 @@ class IssueReport extends Component<Props, State, {}> {
     if (emailValidator === 'false') {
       return (
         <div className="invalid-feedback">
-          Please give a brief description of the issue.
+          Please give a brief description of the feedback.
         </div>
       );
     }
@@ -129,7 +129,7 @@ class IssueReport extends Component<Props, State, {}> {
     if (descriptionValidator === 'false') {
       return (
         <div className="invalid-feedback">
-          Please provide additional details of the issue.
+          Please provide additional details of the feedback.
         </div>
       );
     }
@@ -197,7 +197,7 @@ class IssueReport extends Component<Props, State, {}> {
 
         if (status === 'SUCCESS') {
           alert.show(
-            'Thank you for bringing the issue to our attention. We will be working to address the problem.',
+            'Thank you for leaving your feedback. We will be reviewing it and get back to you.',
           );
           this.clearInput();
         } else {
@@ -238,7 +238,7 @@ class IssueReport extends Component<Props, State, {}> {
     return (
       <div className="container">
         <Helmet>
-          <title>Report an Issue</title>
+          <title>Leave a Feedback</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
@@ -247,10 +247,10 @@ class IssueReport extends Component<Props, State, {}> {
               <div className="container">
                 <h1 className="display-5 text-left font-weight-bold mb-1">
                   {' '}
-                  Report an Issue
+                  Leave a Feedback
                 </h1>
                 <p className="lead text-left font-weight-bolder py-3">
-                  Thank you for helping us identify issues with our platform.
+                  Thank you for helping us improve our platform.
                 </p>
               </div>
             </div>
@@ -288,7 +288,7 @@ class IssueReport extends Component<Props, State, {}> {
                     htmlFor="title"
                     className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
                   >
-                    Issue Title
+                    Feedback Title
                   </label>
                   <div className="col-md-6">
                     <input
@@ -297,7 +297,7 @@ class IssueReport extends Component<Props, State, {}> {
                         titleValidator,
                       )}`}
                       id="title"
-                      placeholder="What went wrong?"
+                      placeholder="What can be improved?"
                       value={title}
                       onChange={this.handleChangeTitle}
                       onBlur={this.validateTitle}
@@ -313,7 +313,7 @@ class IssueReport extends Component<Props, State, {}> {
                     htmlFor="description"
                     className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
                   >
-                    Issue Description
+                    Feedback Description
                   </label>
                   <div className="col-md-6">
                     <textarea
@@ -321,7 +321,7 @@ class IssueReport extends Component<Props, State, {}> {
                         descriptionValidator,
                       )}`}
                       id="description"
-                      placeholder="Please tell us more about the issue"
+                      placeholder="Please tell us more about the feedback"
                       value={description}
                       onChange={this.handleChangeDescription}
                       onBlur={this.validateDescription}
@@ -378,4 +378,4 @@ class IssueReport extends Component<Props, State, {}> {
   }
 }
 
-export default withAlert()(IssueReport);
+export default withAlert()(FeedbackReport);

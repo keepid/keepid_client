@@ -26,6 +26,7 @@ import Applications from './components/Applications/Applications';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
+import FeedbackReport from './components/FeedbackReport';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import Home from './components/Home/index';
@@ -198,6 +199,9 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/issue-report">
                 <IssueReport />
+              </Route>
+              <Route path="/feedback-report">
+                <FeedbackReport />
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />
