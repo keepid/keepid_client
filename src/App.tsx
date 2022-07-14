@@ -292,15 +292,33 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
+              {(role !== Role.Client) ? (
               <Route
-                path="/upload-document"
+                path="/upload-document/:clientUsername"
                 render={() => {
                   if (
-                    role === Role.Client ||
                     role === Role.Admin ||
-                    role === Role.Director
+                    role === Role.Director ||
+                    role === Role.Worker
                   ) {
                     return <UploadDocs userRole={role} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              ) : (
+              <Route
+                path="/upload-document"
+                render={() => <UploadDocs userRole={role} />}
+              />
+              )}
+              <Route
+                path="/my-documents/:username"
+                render={(props) => {
+                  const clientName = props.match.params.username.split('+').join(' ');
+                  console.log(clientName);
+                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                    return <MyDocuments userRole={Role.Client} username={clientName} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -308,11 +326,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/my-documents"
                 render={() => {
-                  if (
-                    role === Role.Client ||
-                    role === Role.Admin ||
-                    role === Role.Director
-                  ) {
+                  if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
                     return <MyDocuments userRole={role} username={name} />;
                   }
                   return <Redirect to="/error" />;
