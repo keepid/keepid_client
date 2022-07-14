@@ -56,7 +56,7 @@ export default function SignUserAgreement() {
                             <b>{intl.formatMessage(messages.header)}</b>
                         </h2>
                     </div>
-                    <div className="row justify-content-end">
+                    <div className="row justify-content-center">
                         <button
                           type="button"
                           className="btn btn-outline-primary mt-3 mr-3"
