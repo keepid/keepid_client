@@ -339,8 +339,7 @@ class MyDocuments extends Component<Props, State> {
 
     const { userRole } = this.props;
     const { currentDocumentId, currentDocumentName, documentData } = this.state;
-
-    console.log(this.props);
+    
     return (
       <Switch>
         <Route>
