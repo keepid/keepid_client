@@ -1,8 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
 
 import SignaturePad from '../../../lib/SignaturePad';
+import ArrowDown from '../../../static/images/angle-double-down-solid.svg';
+import UploadIcon from '../../../static/images/upload-icon.png';
 import EULA from '../../AboutUs/EULA';
 import SignUpContext from '../SignUp.context';
 
@@ -25,6 +27,8 @@ const messages = defineMessages({
 
 export default function SignUserAgreement() {
   const intl = useIntl();
+  const endRef = useRef(null);
+
   const {
     signUpStageStateContext: {
       moveToPreviousSignupStage,
@@ -34,6 +38,10 @@ export default function SignUserAgreement() {
 
   const [hasSigned, setHasSigned] = useState(false);
   const [canvasDataUrl, setCanvasDataUrl] = useState('');
+
+  const scrollToBottom = () => {
+        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
         <div>
@@ -48,6 +56,21 @@ export default function SignUserAgreement() {
                             <b>{intl.formatMessage(messages.header)}</b>
                         </h2>
                     </div>
+                    <div className="row justify-content-end">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary mt-3 mr-3"
+                          onClick={scrollToBottom}
+                        >
+                            <img
+                              src={ArrowDown}
+                              style={{ height: 18 }}
+                              alt="arrow down"
+                              className="mr-2"
+                            />
+                            Jump to signature
+                        </button>
+                    </div>
                     <div className="col-md-12">
                         <EULA />
                     </div>
@@ -56,6 +79,7 @@ export default function SignUserAgreement() {
                             <div className="pb-3">
                                 {intl.formatMessage(messages.agreeToTerms)}
                             </div>
+                            <div ref={endRef} />
                             <SignaturePad
                               acceptEULA={hasSigned}
                               handleChangeAcceptEULA={setHasSigned}
