@@ -298,7 +298,8 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (
                     role === Role.Admin ||
-                    role === Role.Director
+                    role === Role.Director ||
+                    role === Role.Worker
                   ) {
                     return <UploadDocs userRole={role} />;
                   }
@@ -312,11 +313,21 @@ class App extends React.Component<{}, State, {}> {
               />
               )}
               <Route
-                path="/my-documents"
+                path="/my-documents/:username"
                 render={(props) => {
-                  if (role === Role.Client || role === Role.Admin || role === Role.Director) {
-                    console.log(props);
-                    return <MyDocuments userRole={role} username={name} {...props} />;
+                  const clientName = props.match.params.username.split('+').join(' ');
+                  console.log(clientName);
+                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                    return <MyDocuments userRole={Role.Client} username={clientName} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/my-documents"
+                render={() => {
+                  if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                    return <MyDocuments userRole={role} username={name} />;
                   }
                   return <Redirect to="/error" />;
                 }}

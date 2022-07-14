@@ -271,6 +271,8 @@ class WorkerLanding extends Component<Props, State> {
       this.setState({ currentPage: pageNum });
     };
 
+    const changeClientName = (clientFirstName, clientLastName) => `${clientFirstName}+${clientLastName}`;
+
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
@@ -356,7 +358,7 @@ class WorkerLanding extends Component<Props, State> {
                   </div>
                 </Link>
                 <Link
-                  to="/my-documents"
+                  to={`/my-documents/${changeClientName(client.firstName, client.lastName)}`}
                   className="btn link-secondary btn-sm primary-color-border"
                   style={{ height: 32 }}
                 >
