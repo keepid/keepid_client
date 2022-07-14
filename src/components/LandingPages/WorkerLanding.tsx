@@ -70,9 +70,9 @@ class WorkerLanding extends Component<Props, State> {
     this.getClients = this.getClients.bind(this);
     this.handleChangeClientPassword =
         this.handleChangeClientPassword.bind(this);
-    this.handleClickUploadDocuments =
-        this.handleClickUploadDocuments.bind(this);
-    this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
+    // this.handleClickUploadDocuments =
+    // this.handleClickUploadDocuments.bind(this);
+    // this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
     // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
     this.handleClickSendApplication =
         this.handleClickSendApplication.bind(this);
@@ -146,21 +146,21 @@ class WorkerLanding extends Component<Props, State> {
       });
   }
 
-  handleClickUploadDocuments(event: any, client: any) {
+  /* handleClickUploadDocuments(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/upload-document',
       clientCredentialsCorrect: true,
     });
-  }
+  } */
 
-  handleClickViewDocuments(event: any, client: any) {
+  /* handleClickViewDocuments(event: any, client: any) {
     this.setState({
       clientUsername: client.username,
       redirectLink: '/my-documents',
       clientCredentialsCorrect: true,
     });
-  }
+  } */
 
   /* handleClickSendEmail(event: any, client: any) {
     this.setState({
@@ -271,6 +271,8 @@ class WorkerLanding extends Component<Props, State> {
       this.setState({ currentPage: pageNum });
     };
 
+    const changeClientName = (clientFirstName, clientLastName) => `${clientFirstName}+${clientLastName}`;
+
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">
@@ -341,13 +343,10 @@ class WorkerLanding extends Component<Props, State> {
                 </div>
               </Link>
               <div className="row lock-bottom-left">
-                <button
-                  type="button"
+                <Link
+                  to={`/upload-document/${client.username}`}
                   className="btn btn-primary mr-2 btn-sm"
                   style={{ height: 32 }}
-                  onClick={(event) =>
-                    this.handleClickUploadDocuments(event, client)
-                    }
                 >
                   <div style={{ fontWeight: 'bold' }}>
                     <img
@@ -357,17 +356,14 @@ class WorkerLanding extends Component<Props, State> {
                     />
                     {' Upload'}
                   </div>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm primary-color-border"
+                </Link>
+                <Link
+                  to={`/my-documents/${changeClientName(client.firstName, client.lastName)}`}
+                  className="btn link-secondary btn-sm primary-color-border"
                   style={{ height: 32 }}
-                  onClick={(event) =>
-                    this.handleClickViewDocuments(event, client)
-                    }
                 >
                   <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
-                </button>
+                </Link>
                 {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"
@@ -485,17 +481,6 @@ class WorkerLanding extends Component<Props, State> {
       }
       return 'pagination-link';
     };
-
-    if (clientCredentialsCorrect && redirectLink === '/upload-document') {
-      return (
-          <Redirect
-            to={{
-              pathname: '/upload-document',
-              state: { clientUsername },
-            }}
-          />
-      );
-    }
 
     return (
         <div>
