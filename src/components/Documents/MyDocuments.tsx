@@ -20,21 +20,23 @@ import ViewDocument from './ViewDocument';
 const { SearchBar } = Search;
 
 interface Props {
-  alert: any;
-  userRole: Role;
-  username: string;
+    alert: any;
+    userRole: Role;
+    username: string;
 }
 
 interface State {
-  pdfFiles: FileList | undefined;
-  buttonState: string;
-  currentDocumentId: string | undefined;
-  currentDocumentName: string | undefined;
-  documentData: any;
+    pdfFiles: FileList | undefined;
+    buttonState: string;
+    currentDocumentId: string | undefined;
+    currentDocumentName: string | undefined;
+    currentUploadDate: string | undefined;
+    currentUploader: string | undefined;
+    documentData: any;
 }
 
 interface PDFProps {
-  pdfFile: File;
+    pdfFile: File;
 }
 
 const MAX_NUM_OF_FILES: number = 5;
@@ -43,25 +45,25 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   const [showResults, setShowResults] = useState(false);
   const { pdfFile } = props;
   return (
-    <li className="mt-3">
-      <div className="row">
-        <button
-          className="btn btn-outline-primary btn-sm mr-3"
-          type="button"
-          onClick={() => setShowResults(!showResults)}
-        >
-          {showResults ? 'Hide' : 'View'}
-        </button>
-        <p>{pdfFile.name}</p>
-      </div>
-      {showResults ? (
-        <div className="row mt-3 w-100">
-          <DocumentViewer pdfFile={pdfFile} />
-        </div>
-      ) : (
-        <div />
-      )}
-    </li>
+        <li className="mt-3">
+            <div className="row">
+                <button
+                  className="btn btn-outline-primary btn-sm mr-3"
+                  type="button"
+                  onClick={() => setShowResults(!showResults)}
+                >
+                    {showResults ? 'Hide' : 'View'}
+                </button>
+                <p>{pdfFile.name}</p>
+            </div>
+            {showResults ? (
+                <div className="row mt-3 w-100">
+                    <DocumentViewer pdfFile={pdfFile} />
+                </div>
+            ) : (
+                <div />
+            )}
+        </li>
   );
 }
 
@@ -77,6 +79,8 @@ class MyDocuments extends Component<Props, State> {
       buttonState: '',
       currentDocumentId: undefined,
       currentDocumentName: undefined,
+      currentUploadDate: undefined,
+      currentUploader: undefined,
       documentData: [],
     };
     this.getDocumentData = this.getDocumentData.bind(this);
@@ -119,8 +123,8 @@ class MyDocuments extends Component<Props, State> {
     let pdfType;
     if (
       userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
+            userRole === Role.Admin ||
+            userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -174,8 +178,8 @@ class MyDocuments extends Component<Props, State> {
     let pdfType;
     if (
       userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
+            userRole === Role.Admin ||
+            userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -208,23 +212,24 @@ class MyDocuments extends Component<Props, State> {
   }
 
   onViewDocument(event: any, row: any) {
-    const { id, filename } = row;
+    const { id, filename, uploadDate, uploader } = row;
     this.setState({
       currentDocumentId: id,
       currentDocumentName: filename,
+      currentUploadDate: uploadDate,
+      currentUploader: uploader,
     });
   }
 
   deleteDocument(event, row) {
     event.preventDefault();
     const documentId = row.id;
-
     const { userRole } = this.props;
     let pdfType;
     if (
       userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
+            userRole === Role.Admin ||
+            userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -252,8 +257,8 @@ class MyDocuments extends Component<Props, State> {
     let pdfType;
     if (
       userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
+            userRole === Role.Admin ||
+            userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -275,135 +280,143 @@ class MyDocuments extends Component<Props, State> {
       });
   }
 
-  ButtonFormatter = (cell: any, row: any, rowIndex) => (
-    // to get the unique id of the document, you need to set a hover state which stores the document id of the row
-    // then in this function you can then get the current hover document id and do an action depending on the document id
-    <ButtonGroup>
-      <Link to="/my-documents/view">
-        <button
-          type="button"
-          onClick={(event) => this.onViewDocument(event, row)}
-          className="btn btn-outline-info btn-sm"
-        >
-          View
-        </button>
-      </Link>
-      <button
-        type="button"
-        onClick={(event) => this.handleChangeFileDownload(event, row)}
-        className="btn btn-outline-success btn-sm ml-2"
-      >
-        Download
-      </button>
-      <button
-        type="button"
-        onClick={(event) => this.deleteDocument(event, row)}
-        className="btn btn-outline-danger btn-sm ml-2"
-      >
-        Delete
-      </button>
-    </ButtonGroup>
-  );
-
-  tableCols = [
-    {
-      dataField: 'filename',
-      text: 'File Name',
-      sort: true,
-    },
-    {
-      dataField: 'uploadDate',
-      text: 'Date Uploaded',
-      sort: true,
-      sortFunc: (a, b, order) => {
-        const dateA = new Date(a);
-        const dateB = new Date(b);
-        // @ts-ignore
-        return order === 'desc' ? dateA - dateB : dateB - dateA;
-      },
-    },
-    {
-      dataField: 'uploader',
-      text: 'Uploader',
-      sort: true,
-    },
-    {
-      dataField: 'actions',
-      text: 'Actions',
-      formatter: this.ButtonFormatter,
-    },
-  ];
-
-  render() {
-    const { pdfFiles, buttonState } = this.state;
-
-    const { userRole } = this.props;
-    const { currentDocumentId, currentDocumentName, documentData } = this.state;
-    return (
-      <Switch>
-        <Route exact path="/my-documents">
-          <div className="container">
-            <Helmet>
-              <title>View Documents</title>
-              <meta name="description" content="Keep.id" />
-            </Helmet>
-            <div className="jumbotron-fluid mt-5">
-              <h1 className="display-4">View and Print Documents</h1>
-              <p className="lead pt-3">
-                You can view, edit, print, and delete your documents you
-                currently have stored on Keep.id.
-              </p>
-              <button
-                type="button"
-                className="btn btn-outline-primary btn-sm mr-3"
-              >
-                <Link className="nav-link" to="/upload-document">
-                  Upload Documents
-                </Link>
-              </button>
-            </div>
-
-            <div className="d-flex flex-row bd-highlight mb-3 pt-5">
-              <div className="w-100 pd-3">
-                <ToolkitProvider
-                  keyField="id"
-                  data={documentData}
-                  columns={this.tableCols}
-                  search
+    ButtonFormatter = (cell: any, row: any, rowIndex) => (
+        // to get the unique id of the document, you need to set a hover state which stores the document id of the row
+        // then in this function you can then get the current hover document id and do an action depending on the document id
+        <ButtonGroup>
+            <Link to="/my-documents/view">
+                <button
+                  type="button"
+                  onClick={(event) => this.onViewDocument(event, row)}
+                  className="btn btn-outline-info btn-sm"
                 >
-                  {(props) => (
-                    <div>
-                      <SearchBar {...props.searchProps} />
-                      <hr />
-                      <Table
-                        data={documentData}
-                        columns={this.tableCols}
-                        emptyInfo={{ description: 'No documents found' }}
-                        defaultSorted={[
-                          { dataField: 'uploadDate', order: 'asc' },
-                        ]}
-                      />
-                    </div>
-                  )}
-                </ToolkitProvider>
-              </div>
-            </div>
-          </div>
-        </Route>
-        <Route path="/my-documents/view">
-          {currentDocumentId && currentDocumentName ? (
-            <ViewDocument
-              userRole={userRole}
-              documentId={currentDocumentId}
-              documentName={currentDocumentName}
-            />
-          ) : (
-            <div />
-          )}
-        </Route>
-      </Switch>
+                    View
+                </button>
+            </Link>
+            <button
+              type="button"
+              onClick={(event) => this.handleChangeFileDownload(event, row)}
+              className="btn btn-outline-success btn-sm ml-2"
+            >
+                Download
+            </button>
+            <button
+              type="button"
+              onClick={(event) => this.deleteDocument(event, row)}
+              className="btn btn-outline-danger btn-sm ml-2"
+            >
+                Delete
+            </button>
+        </ButtonGroup>
     );
-  }
+
+    tableCols = [
+      {
+        dataField: 'filename',
+        text: 'File Name',
+        sort: true,
+      },
+      {
+        dataField: 'uploadDate',
+        text: 'Date Uploaded',
+        sort: true,
+        sortFunc: (a, b, order) => {
+          const dateA = new Date(a);
+          const dateB = new Date(b);
+          // @ts-ignore
+          return order === 'desc' ? dateA - dateB : dateB - dateA;
+        },
+      },
+      {
+        dataField: 'uploader',
+        text: 'Uploader',
+        sort: true,
+      },
+      {
+        dataField: 'actions',
+        text: 'Actions',
+        formatter: this.ButtonFormatter,
+      },
+    ];
+
+    render() {
+      const { pdfFiles, buttonState } = this.state;
+
+      const { userRole } = this.props;
+      const {
+        currentDocumentId,
+        currentDocumentName,
+        documentData,
+        currentUploadDate,
+        currentUploader,
+      } = this.state;
+      return (
+            <Switch>
+                <Route exact path="/my-documents">
+                    <div className="container">
+                        <Helmet>
+                            <title>View Documents</title>
+                            <meta name="description" content="Keep.id" />
+                        </Helmet>
+                        <div className="jumbotron-fluid mt-5">
+                            <h1 className="display-4">View and Print Documents</h1>
+                            <p className="lead pt-3">
+                                You can view, edit, print, and delete your documents you
+                                currently have stored on Keep.id.
+                            </p>
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary btn-sm mr-3"
+                            >
+                                <Link className="nav-link" to="/upload-document">
+                                    Upload Documents
+                                </Link>
+                            </button>
+                        </div>
+
+                        <div className="d-flex flex-row bd-highlight mb-3 pt-5">
+                            <div className="w-100 pd-3">
+                                <ToolkitProvider
+                                  keyField="id"
+                                  data={documentData}
+                                  columns={this.tableCols}
+                                  search
+                                >
+                                    {(props) => (
+                                        <div>
+                                            <SearchBar {...props.searchProps} />
+                                            <hr />
+                                            <Table
+                                              data={documentData}
+                                              columns={this.tableCols}
+                                              emptyInfo={{ description: 'No documents found' }}
+                                              defaultSorted={[
+                                                { dataField: 'uploadDate', order: 'asc' },
+                                              ]}
+                                            />
+                                        </div>
+                                    )}
+                                </ToolkitProvider>
+                            </div>
+                        </div>
+                    </div>
+                </Route>
+                <Route path="/my-documents/view">
+                    {currentDocumentId && currentDocumentName ? (
+                        <ViewDocument
+                          userRole={userRole}
+                          documentId={currentDocumentId}
+                          documentName={currentDocumentName}
+                          documentDate={currentUploadDate}
+                          documentUploader={currentUploader}
+                        />
+                    ) : (
+                        <div />
+                    )}
+                </Route>
+            </Switch>
+      );
+    }
 }
 
 export default withAlert()(MyDocuments);
