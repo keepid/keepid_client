@@ -313,9 +313,9 @@ class App extends React.Component<{}, State, {}> {
               />
               )}
               <Route
-                path="/my-documents/:username"
+                path="/my-documents/:name"
                 render={(props) => {
-                  const clientName = props.match.params.username.split('+').join(' ');
+                  const clientName = props.match.params.name.split('+').join(' ');
                   console.log(clientName);
                   if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
                     return <MyDocuments userRole={Role.Client} username={clientName} />;

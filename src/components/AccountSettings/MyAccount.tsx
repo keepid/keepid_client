@@ -155,7 +155,7 @@ export class MyAccount extends Component<Props, State, {}> {
         const { status } = responseObject;
         if (status === 'SUCCESS') {
           const loginHistory: any[] = [];
-          for (let i = 0; i < responseObject.history.length; i += 1) {
+          for (let i = responseObject.history.length - 1; i >= 0; i -= 1) {
             const row = responseObject.history[i];
             row.id = i;
             loginHistory.push(row);
@@ -555,7 +555,7 @@ export class MyAccount extends Component<Props, State, {}> {
         <div className="card mt-3 mb-3">
           <div className="card-body">
             <div className="mb-3">
-              <h5 className="card-title float-left">Login History</h5>
+              <h5 className="card-title text-center">Login History</h5>
             </div>
             <br />
             <div className="row m-3">
