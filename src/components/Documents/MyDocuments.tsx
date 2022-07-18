@@ -352,7 +352,7 @@ class MyDocuments extends Component<Props, State> {
       } = this.state;
       return (
             <Switch>
-                <Route exact path="/my-documents">
+                <Route>
                     <div className="container">
                         <Helmet>
                             <title>View Documents</title>
