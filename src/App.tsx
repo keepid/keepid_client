@@ -317,6 +317,7 @@ class App extends React.Component<{}, State, {}> {
                 render={(props) => {
                   const clientName = props.match.params.name.split('+').join(' ');
                   console.log(clientName);
+                  console.log(role);
                   if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
                     return <MyDocuments userRole={Role.Client} username={clientName} />;
                   }
