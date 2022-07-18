@@ -176,12 +176,16 @@ class MyDocuments extends Component<Props, State> {
     const documentName = documentData[rowIndex].filename;
 
     let pdfType;
+    let targetUser;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
             userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
+      if (this.props.username !== null) {
+        targetUser = this.props.username;
+      }
     } else if (userRole === Role.Client) {
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
@@ -194,6 +198,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -352,7 +357,7 @@ class MyDocuments extends Component<Props, State> {
       } = this.state;
       return (
             <Switch>
-                <Route exact path="/my-documents">
+                <Route>
                     <div className="container">
                         <Helmet>
                             <title>View Documents</title>

@@ -17,7 +17,7 @@ import DocumentViewer from './DocumentViewer';
 interface Props {
   alert: any,
   userRole: Role,
-  match: any,
+  username: any,
 }
 
 interface State {
@@ -26,6 +26,7 @@ interface State {
   currentStep: number,
   userRole: Role | undefined
   loading: boolean
+  clientUsername: string
 }
 
 interface PDFProps {
@@ -63,6 +64,7 @@ class UploadDocs extends React.Component<Props, State> {
       currentStep: 0,
       userRole: this.props.userRole,
       loading: false,
+      clientUsername: this.props.username,
     };
     this.handleOnClick = this.handleOnClick.bind(this);
     this.handleOnClickCard = this.handleOnClickCard.bind(this);
@@ -91,13 +93,13 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         const documentType = this.state.documentTypeList[i];
         const prevStep = this.state.currentStep;
-        const clientUsername = this.props.match.params;
+        const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('documentType', documentType);
         if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
-        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin) {
+        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('targetUser', clientUsername);
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
@@ -189,6 +191,8 @@ class UploadDocs extends React.Component<Props, State> {
       documentTypeList,
       currentStep,
     } = this.state;
+
+    console.log(this.props);
 
     return (
       <div className="container">
@@ -311,4 +315,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(withAlert()(UploadDocs));
+export default withAlert()(UploadDocs);
