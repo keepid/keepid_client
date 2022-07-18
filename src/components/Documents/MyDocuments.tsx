@@ -176,16 +176,12 @@ class MyDocuments extends Component<Props, State> {
     const documentName = documentData[rowIndex].filename;
 
     let pdfType;
-    let targetUser;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
             userRole === Role.Director
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
-      if (this.props.username !== null) {
-        targetUser = this.props.username;
-      }
     } else if (userRole === Role.Client) {
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
@@ -198,7 +194,6 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
-        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -260,6 +255,7 @@ class MyDocuments extends Component<Props, State> {
   getDocumentData() {
     const { userRole } = this.props;
     let pdfType;
+    let targetUser;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -267,6 +263,9 @@ class MyDocuments extends Component<Props, State> {
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
+      if (this.props.username !== null) {
+        targetUser = this.props.username;
+      }
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
@@ -276,6 +275,7 @@ class MyDocuments extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.json())
