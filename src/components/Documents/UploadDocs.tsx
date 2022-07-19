@@ -106,7 +106,9 @@ class UploadDocs extends React.Component<Props, State> {
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
-          body: formData,
+          body: JSON.stringify({
+            formData,
+          }),
         }).then((response) => response.json())
           .then((responseJSON) => {
             const {
