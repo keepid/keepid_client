@@ -5,6 +5,7 @@ import React, { useCallback, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Card, Col, Container, Dropdown, DropdownButton, Row, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
+import { createFormattedDateTimePartsComponent } from 'react-intl/src/components/createFormattedComponent';
 import { Link, withRouter } from 'react-router-dom';
 import uuid from 'react-uuid';
 
@@ -93,7 +94,7 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         const documentType = this.state.documentTypeList[i];
         const prevStep = this.state.currentStep;
-        const targetUser = this.state.clientUsername;
+        const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('documentType', documentType);
         if (this.state.userRole === Role.Client) {
@@ -102,17 +103,12 @@ class UploadDocs extends React.Component<Props, State> {
         if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
-        const data = {};
-        formData.forEach((value, key) => {
-          data[key] = value;
-        });
+        const targetUser = JSON.stringify({ clientUsername });
+        formData.append('targetUser', targetUser);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
-          body: JSON.stringify({
-            data,
-            targetUser,
-          }),
+          body: formData,
         }).then((response) => response.json())
           .then((responseJSON) => {
             const {
