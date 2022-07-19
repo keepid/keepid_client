@@ -177,6 +177,14 @@ class UploadDocs extends React.Component<Props, State> {
     return 'Category';
   }
 
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
+      return '/my-documents/';
+    }
+
+    return `/my-documents/${this.props.username}`;
+  }
+
   render() {
     const {
       alert,
@@ -298,7 +306,7 @@ class UploadDocs extends React.Component<Props, State> {
               </p>
               <div className="row pt-4">
                 <div className="col pl2 pt-3">
-                <Link className="nav-link" to={`/my-documents/${username}`}>
+                <Link className="nav-link" to={this.setLink()}>
                   <button type="button" className="float-right btn btn-outline-primary btn-sm mr-3">
                     Return to Documents
                   </button>
