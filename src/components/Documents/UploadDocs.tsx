@@ -93,21 +93,25 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         const documentType = this.state.documentTypeList[i];
         const prevStep = this.state.currentStep;
-        const { clientUsername } = this.state;
+        const targetUser = this.state.clientUsername;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('documentType', documentType);
         if (this.state.userRole === Role.Client) {
-          formData.append('targetUser', clientUsername);
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
         if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
+        const data = {};
+        formData.forEach((value, key) => {
+          data[key] = value;
+        });
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
           body: JSON.stringify({
-            formData,
+            data,
+            targetUser,
           }),
         }).then((response) => response.json())
           .then((responseJSON) => {
