@@ -14,6 +14,7 @@ interface Props {
     documentName: string,
     documentDate: string,
     documentUploader: string,
+    targetUser: string,
 }
 
 interface State {
@@ -36,6 +37,7 @@ class ViewDocument extends Component<Props, State> {
       alert,
     } = this.props;
     let pdfType;
+    const { targetUser } = this.props;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -49,6 +51,7 @@ class ViewDocument extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     }).then((response) => response.blob())
       .then((response) => {

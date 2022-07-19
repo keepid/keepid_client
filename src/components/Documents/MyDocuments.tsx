@@ -121,6 +121,7 @@ class MyDocuments extends Component<Props, State> {
     const documentName = row.filename;
 
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -139,6 +140,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -176,6 +178,7 @@ class MyDocuments extends Component<Props, State> {
     const documentName = documentData[rowIndex].filename;
 
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -194,6 +197,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -226,6 +230,7 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const { userRole } = this.props;
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -244,6 +249,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.json())
@@ -347,7 +353,7 @@ class MyDocuments extends Component<Props, State> {
     render() {
       const { pdfFiles, buttonState } = this.state;
 
-      const { userRole } = this.props;
+      const { userRole, username } = this.props;
       const {
         currentDocumentId,
         currentDocumentName,
@@ -414,6 +420,7 @@ class MyDocuments extends Component<Props, State> {
                           documentName={currentDocumentName}
                           documentDate={currentUploadDate}
                           documentUploader={currentUploader}
+                          targetUser={username}
                         />
                     ) : (
                         <div />
