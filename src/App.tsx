@@ -296,7 +296,6 @@ class App extends React.Component<{}, State, {}> {
                 path="/upload-document/:clientUsername"
                 render={(props) => {
                   const { clientUsername } = props.match.params;
-                  console.log(clientUsername);
                   if (
                     role === Role.Admin ||
                     role === Role.Director ||
@@ -320,8 +319,6 @@ class App extends React.Component<{}, State, {}> {
                 path="/my-documents/:username"
                 render={(props) => {
                   const clientName = props.match.params.username;
-                  console.log(clientName);
-                  console.log(role);
                   if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
                     return <MyDocuments userRole={Role.Client} username={clientName} />;
                   }
@@ -331,7 +328,12 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/my-documents"
                 render={() => {
-                  if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                  if (
+                    role === Role.Client ||
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
                     return <MyDocuments userRole={role} username={username} />;
                   }
                   return <Redirect to="/error" />;

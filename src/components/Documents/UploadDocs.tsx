@@ -181,7 +181,6 @@ class UploadDocs extends React.Component<Props, State> {
     if (this.props.userRole !== Role.Client) {
       return '/my-documents/';
     }
-
     return `/my-documents/${this.props.username}`;
   }
 
