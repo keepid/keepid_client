@@ -302,7 +302,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Director ||
                     role === Role.Worker
                   ) {
-                    return <UploadDocs userRole={role} username={clientUsername} />;
+                    return <UploadDocs userRole={Role.Client} username={clientUsername} />;
                   }
                   return <Redirect to="/error" />;
                 }}
