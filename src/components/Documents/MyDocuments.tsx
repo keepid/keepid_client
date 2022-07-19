@@ -263,7 +263,7 @@ class MyDocuments extends Component<Props, State> {
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      if (this.props.username !== null) {
+      if (this.props.username !== '') {
         targetUser = this.props.username;
       }
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
