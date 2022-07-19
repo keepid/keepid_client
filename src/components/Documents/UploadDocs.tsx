@@ -187,6 +187,10 @@ class UploadDocs extends React.Component<Props, State> {
     } = this.props;
 
     const {
+      username,
+    } = this.props;
+
+    const {
       pdfFiles,
       documentTypeList,
       currentStep,
@@ -294,7 +298,7 @@ class UploadDocs extends React.Component<Props, State> {
               </p>
               <div className="row pt-4">
                 <div className="col pl2 pt-3">
-                <Link className="nav-link" to="/my-documents">
+                <Link className="nav-link" to={`/my-documents/${username}`}>
                   <button type="button" className="float-right btn btn-outline-primary btn-sm mr-3">
                     Return to Documents
                   </button>
