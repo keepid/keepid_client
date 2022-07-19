@@ -311,7 +311,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/upload-document"
                 render={() => {
                   if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
-                    return <UploadDocs userRole={role} />;
+                    return <UploadDocs userRole={role} username={username} />;
                   }
                   return <Redirect to="/error" />;
                 }}
