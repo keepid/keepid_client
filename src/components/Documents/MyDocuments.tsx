@@ -350,6 +350,13 @@ class MyDocuments extends Component<Props, State> {
       },
     ];
 
+    setLink() {
+      if (this.props.userRole !== Role.Client) {
+        return '/upload-document/';
+      }
+      return `/upload-document/${this.props.username}`;
+    }
+
     render() {
       const { pdfFiles, buttonState } = this.state;
 
@@ -361,8 +368,6 @@ class MyDocuments extends Component<Props, State> {
         currentUploadDate,
         currentUploader,
       } = this.state;
-      console.log(currentDocumentId);
-      console.log(currentDocumentName);
       return (
             <Switch>
                 <Route>
@@ -381,7 +386,7 @@ class MyDocuments extends Component<Props, State> {
                               type="button"
                               className="btn btn-outline-primary btn-sm mr-3"
                             >
-                                <Link className="nav-link" to="/upload-document">
+                                <Link className="nav-link" to={this.setLink()}>
                                     Upload Documents
                                 </Link>
                             </button>
