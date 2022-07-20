@@ -670,7 +670,7 @@ class ClientProfilePage extends Component<Props, State> {
                     this.setState({ showCropper: false, inputKey: Date.now() })
                   }
                 >
-                  Edit Your Information
+                  Update Your Profile Picture
                 </button>
               </div>
             </div>
