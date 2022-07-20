@@ -361,6 +361,8 @@ class MyDocuments extends Component<Props, State> {
         currentUploadDate,
         currentUploader,
       } = this.state;
+      console.log(currentDocumentId);
+      console.log(currentDocumentName);
       return (
             <Switch>
                 <Route>

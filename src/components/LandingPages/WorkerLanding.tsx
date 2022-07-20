@@ -12,6 +12,7 @@ import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import MenuDots from '../../static/images/menu-dots.png';
+import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
@@ -281,7 +282,30 @@ class WorkerLanding extends Component<Props, State> {
               <img alt="menu" src={MenuDots} className="menu-height" />
             </a>
             <div className="dropdown-menu">
-              <button
+              <Link
+                to={`/upload-document/${client.username}`}
+                className="dropdown-item"
+                style={{ color: '#445feb' }}
+              >
+                <div style={{ fontWeight: 'bold' }}>
+                  <img
+                    src={UploadIconBlue}
+                    style={{ height: 24 }}
+                    alt="upload icon"
+                  />
+                  {' Upload'}
+                </div>
+              </Link>
+              <Link
+                to={`/my-documents/${client.username}`}
+                className="dropdown-item"
+              >
+                <div style={{ color: '#445feb', fontWeight: 'bold' }}>
+                  <img alt="doc icon" src={DocIcon} className="icon-height mx-1" />
+                  View Documents
+                </div>
+              </Link>
+              {/* <button
                 type="button"
                 className="dropdown-item"
                 onClick={(event) =>
@@ -292,7 +316,7 @@ class WorkerLanding extends Component<Props, State> {
                   <img alt="doc icon" src={DocIcon} className="icon-height mr-1" />
                   {' Complete Application'}
                 </div>
-              </button>
+              </button> */}
               {/* <div className="dropdown-item">
                 <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
                   <img src={TrashCan} className="icon-height"/>
