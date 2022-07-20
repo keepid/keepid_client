@@ -284,8 +284,7 @@ class WorkerLanding extends Component<Props, State> {
             <div className="dropdown-menu">
               <Link
                 to={`/upload-document/${client.username}`}
-                className="dropdown-item"
-                style={{ color: '#445feb' }}
+                className="dropdown-item primary-color"
               >
                 <div style={{ fontWeight: 'bold' }}>
                   <img
@@ -300,7 +299,7 @@ class WorkerLanding extends Component<Props, State> {
                 to={`/my-documents/${client.username}`}
                 className="dropdown-item"
               >
-                <div style={{ color: '#445feb', fontWeight: 'bold' }}>
+                <div className="view-docs-btn-text">
                   <img alt="doc icon" src={DocIcon} className="icon-height mx-1" />
                   View Documents
                 </div>
