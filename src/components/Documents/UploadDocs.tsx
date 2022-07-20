@@ -1,12 +1,11 @@
 import 'react-dropzone-uploader/dist/styles.css';
 import '../../static/styles/UploadDocs.scss';
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Card, Col, Container, Dropdown, DropdownButton, Row, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import { createFormattedDateTimePartsComponent } from 'react-intl/src/components/createFormattedComponent';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
@@ -103,8 +102,7 @@ class UploadDocs extends React.Component<Props, State> {
         if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
-        const targetUser = JSON.stringify({ clientUsername });
-        formData.append('targetUser', targetUser);
+        formData.append('targetUser', clientUsername);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
