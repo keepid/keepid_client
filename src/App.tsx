@@ -320,7 +320,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/my-documents/:username"
                 render={(props) => {
                   const clientName = props.match.params.username;
-                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer || role === Role.Client) {
                     return <MyDocuments userRole={Role.Client} username={clientName} />;
                   }
                   return <Redirect to="/error" />;
