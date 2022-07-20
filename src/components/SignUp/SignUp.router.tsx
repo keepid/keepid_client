@@ -48,7 +48,7 @@ export function useSignupStageContext(): SignupStageContextInterface {
     },
 
     moveToSignupStage(stage: SignupStage) {
-      if (stage) {
+      if (stage + 1) {
         setCurrentSignupStage(stage);
       }
     },

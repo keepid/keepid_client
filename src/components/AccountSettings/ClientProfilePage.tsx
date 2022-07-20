@@ -569,7 +569,7 @@ class ClientProfilePage extends Component<Props, State> {
           </div>
         </div>
         <h1 className="m-3 font-weight-bold">
-          {username}
+          {firstName}{' '}{lastName}
           &apos;s Profile
         </h1>
         <div className="row">
@@ -604,7 +604,7 @@ class ClientProfilePage extends Component<Props, State> {
               <div>
                 <h3 className="font-weight-bold mt-3 text-center">
                   {firstName}
-
+                  {' '}
                   {lastName}
                 </h3>
                 <div className="row pb-2">
@@ -670,7 +670,7 @@ class ClientProfilePage extends Component<Props, State> {
                     this.setState({ showCropper: false, inputKey: Date.now() })
                   }
                 >
-                  Edit Your Information
+                  Update Your Profile Picture
                 </button>
               </div>
             </div>

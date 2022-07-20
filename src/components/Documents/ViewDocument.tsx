@@ -14,6 +14,7 @@ interface Props {
     documentName: string,
     documentDate: string,
     documentUploader: string,
+    targetUser: string,
 }
 
 interface State {
@@ -36,6 +37,7 @@ class ViewDocument extends Component<Props, State> {
       alert,
     } = this.props;
     let pdfType;
+    const { targetUser } = this.props;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
@@ -49,6 +51,7 @@ class ViewDocument extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     }).then((response) => response.blob())
       .then((response) => {
@@ -57,6 +60,13 @@ class ViewDocument extends Component<Props, State> {
       }).catch((_error) => {
         alert.show('Error Fetching File');
       });
+  }
+
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
+      return '/my-documents/';
+    }
+    return `/my-documents/${this.props.targetUser}`;
   }
 
   render() {
@@ -107,7 +117,7 @@ class ViewDocument extends Component<Props, State> {
                   ) : <div />}
                 {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
                 <div className="mt-5 ml-3">
-                    <Link to="/my-documents">
+                    <Link to={this.setLink()}>
                         <button type="button" className="btn btn-outline-success">
                             Back
                         </button>

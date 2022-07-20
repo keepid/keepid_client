@@ -121,6 +121,7 @@ class MyDocuments extends Component<Props, State> {
     const documentName = row.filename;
 
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -139,6 +140,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -176,6 +178,7 @@ class MyDocuments extends Component<Props, State> {
     const documentName = documentData[rowIndex].filename;
 
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -194,6 +197,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.blob())
@@ -226,6 +230,7 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const { userRole } = this.props;
     let pdfType;
+    const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -244,6 +249,7 @@ class MyDocuments extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.json())
@@ -255,6 +261,7 @@ class MyDocuments extends Component<Props, State> {
   getDocumentData() {
     const { userRole } = this.props;
     let pdfType;
+    let targetUser;
     if (
       userRole === Role.Worker ||
             userRole === Role.Admin ||
@@ -262,6 +269,9 @@ class MyDocuments extends Component<Props, State> {
     ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
+      if (this.props.username !== '') {
+        targetUser = this.props.username;
+      }
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
@@ -271,6 +281,7 @@ class MyDocuments extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         pdfType,
+        targetUser,
       }),
     })
       .then((response) => response.json())
@@ -284,7 +295,7 @@ class MyDocuments extends Component<Props, State> {
         // to get the unique id of the document, you need to set a hover state which stores the document id of the row
         // then in this function you can then get the current hover document id and do an action depending on the document id
         <ButtonGroup>
-            <Link to="/my-documents/view">
+            {/* <Link to="/my-documents/view">
                 <button
                   type="button"
                   onClick={(event) => this.onViewDocument(event, row)}
@@ -292,11 +303,11 @@ class MyDocuments extends Component<Props, State> {
                 >
                     View
                 </button>
-            </Link>
+            </Link> */}
             <button
               type="button"
               onClick={(event) => this.handleChangeFileDownload(event, row)}
-              className="btn btn-outline-success btn-sm ml-2"
+              className="btn btn-outline-success btn-sm"
             >
                 Download
             </button>
@@ -339,10 +350,17 @@ class MyDocuments extends Component<Props, State> {
       },
     ];
 
+    setLink() {
+      if (this.props.userRole !== Role.Client) {
+        return '/upload-document/';
+      }
+      return `/upload-document/${this.props.username}`;
+    }
+
     render() {
       const { pdfFiles, buttonState } = this.state;
 
-      const { userRole } = this.props;
+      const { userRole, username } = this.props;
       const {
         currentDocumentId,
         currentDocumentName,
@@ -352,23 +370,23 @@ class MyDocuments extends Component<Props, State> {
       } = this.state;
       return (
             <Switch>
-                <Route exact path="/my-documents">
+                <Route>
                     <div className="container">
                         <Helmet>
-                            <title>View Documents</title>
+                            <title>My Documents</title>
                             <meta name="description" content="Keep.id" />
                         </Helmet>
                         <div className="jumbotron-fluid mt-5">
-                            <h1 className="display-4">View and Print Documents</h1>
+                            <h1 className="display-4">My Documents</h1>
                             <p className="lead pt-3">
-                                You can view, edit, print, and delete your documents you
+                                You can edit, download, and delete your documents you
                                 currently have stored on Keep.id.
                             </p>
                             <button
                               type="button"
                               className="btn btn-outline-primary btn-sm mr-3"
                             >
-                                <Link className="nav-link" to="/upload-document">
+                                <Link className="nav-link" to={this.setLink()}>
                                     Upload Documents
                                 </Link>
                             </button>
@@ -409,6 +427,7 @@ class MyDocuments extends Component<Props, State> {
                           documentName={currentDocumentName}
                           documentDate={currentUploadDate}
                           documentUploader={currentUploader}
+                          targetUser={username}
                         />
                     ) : (
                         <div />

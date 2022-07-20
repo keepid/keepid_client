@@ -50,7 +50,7 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
   return (
     <div>
       <Helmet>
-        <title>Sign Up- Organization Info</title>
+        <title>Sign Up- Review and Submit</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
       <form>

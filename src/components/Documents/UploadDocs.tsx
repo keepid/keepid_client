@@ -1,11 +1,11 @@
 import 'react-dropzone-uploader/dist/styles.css';
 import '../../static/styles/UploadDocs.scss';
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Card, Col, Container, Dropdown, DropdownButton, Row, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
@@ -17,7 +17,7 @@ import DocumentViewer from './DocumentViewer';
 interface Props {
   alert: any,
   userRole: Role,
-  match: any,
+  username: any,
 }
 
 interface State {
@@ -26,6 +26,7 @@ interface State {
   currentStep: number,
   userRole: Role | undefined
   loading: boolean
+  clientUsername: string
 }
 
 interface PDFProps {
@@ -63,6 +64,7 @@ class UploadDocs extends React.Component<Props, State> {
       currentStep: 0,
       userRole: this.props.userRole,
       loading: false,
+      clientUsername: this.props.username,
     };
     this.handleOnClick = this.handleOnClick.bind(this);
     this.handleOnClickCard = this.handleOnClickCard.bind(this);
@@ -91,16 +93,16 @@ class UploadDocs extends React.Component<Props, State> {
         const formData = new FormData();
         const documentType = this.state.documentTypeList[i];
         const prevStep = this.state.currentStep;
-        const clientUsername = this.props.match.params;
+        const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
-        formData.append('documentType', documentType);
+        // formData.append('documentType', documentType);
         if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
-        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin) {
-          formData.append('targetUser', clientUsername);
+        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
+        formData.append('targetUser', clientUsername);
         fetch(`${getServerURL()}/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -175,6 +177,13 @@ class UploadDocs extends React.Component<Props, State> {
     return 'Category';
   }
 
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
+      return '/my-documents/';
+    }
+    return `/my-documents/${this.props.username}`;
+  }
+
   render() {
     const {
       alert,
@@ -185,10 +194,16 @@ class UploadDocs extends React.Component<Props, State> {
     } = this.props;
 
     const {
+      username,
+    } = this.props;
+
+    const {
       pdfFiles,
       documentTypeList,
       currentStep,
     } = this.state;
+
+    console.log(this.props);
 
     return (
       <div className="container">
@@ -290,7 +305,7 @@ class UploadDocs extends React.Component<Props, State> {
               </p>
               <div className="row pt-4">
                 <div className="col pl2 pt-3">
-                <Link className="nav-link" to="/my-documents">
+                <Link className="nav-link" to={this.setLink()}>
                   <button type="button" className="float-right btn btn-outline-primary btn-sm mr-3">
                     Return to Documents
                   </button>
@@ -311,4 +326,4 @@ class UploadDocs extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(withAlert()(UploadDocs));
+export default withAlert()(UploadDocs);

@@ -292,32 +292,35 @@ class App extends React.Component<{}, State, {}> {
                   return <Redirect to="/error" />;
                 }}
               />
-              {(role !== Role.Client) ? (
               <Route
                 path="/upload-document/:clientUsername"
-                render={() => {
+                render={(props) => {
+                  const { clientUsername } = props.match.params;
                   if (
                     role === Role.Admin ||
                     role === Role.Director ||
-                    role === Role.Worker
+                    role === Role.Worker ||
+                    role === Role.Client
                   ) {
-                    return <UploadDocs userRole={role} />;
+                    return <UploadDocs userRole={Role.Client} username={clientUsername} />;
                   }
                   return <Redirect to="/error" />;
                 }}
               />
-              ) : (
               <Route
                 path="/upload-document"
-                render={() => <UploadDocs userRole={role} />}
+                render={() => {
+                  if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                    return <UploadDocs userRole={role} username={username} />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
               />
-              )}
               <Route
                 path="/my-documents/:username"
                 render={(props) => {
-                  const clientName = props.match.params.username.split('+').join(' ');
-                  console.log(clientName);
-                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer) {
+                  const clientName = props.match.params.username;
+                  if (role === Role.Admin || role === Role.Worker || role === Role.Developer || role === Role.Client) {
                     return <MyDocuments userRole={Role.Client} username={clientName} />;
                   }
                   return <Redirect to="/error" />;
@@ -326,8 +329,13 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/my-documents"
                 render={() => {
-                  if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
-                    return <MyDocuments userRole={role} username={name} />;
+                  if (
+                    role === Role.Client ||
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
+                    return <MyDocuments userRole={role} username={username} />;
                   }
                   return <Redirect to="/error" />;
                 }}
