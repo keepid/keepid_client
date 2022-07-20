@@ -48,7 +48,6 @@ export function useSignupStageContext(): SignupStageContextInterface {
     },
 
     moveToSignupStage(stage: SignupStage) {
-      console.log(stage);
       if (stage + 1) {
         setCurrentSignupStage(stage);
       }
