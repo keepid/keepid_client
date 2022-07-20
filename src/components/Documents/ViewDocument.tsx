@@ -62,6 +62,13 @@ class ViewDocument extends Component<Props, State> {
       });
   }
 
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
+      return '/my-documents/';
+    }
+    return `/my-documents/${this.props.targetUser}`;
+  }
+
   render() {
     const {
       pdfFile,
@@ -110,7 +117,7 @@ class ViewDocument extends Component<Props, State> {
                   ) : <div />}
                 {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
                 <div className="mt-5 ml-3">
-                    <Link to="/my-documents">
+                    <Link to={this.setLink()}>
                         <button type="button" className="btn btn-outline-success">
                             Back
                         </button>

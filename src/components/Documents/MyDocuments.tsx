@@ -295,7 +295,7 @@ class MyDocuments extends Component<Props, State> {
         // to get the unique id of the document, you need to set a hover state which stores the document id of the row
         // then in this function you can then get the current hover document id and do an action depending on the document id
         <ButtonGroup>
-            <Link to="/my-documents/view">
+            {/* <Link to="/my-documents/view">
                 <button
                   type="button"
                   onClick={(event) => this.onViewDocument(event, row)}
@@ -303,11 +303,11 @@ class MyDocuments extends Component<Props, State> {
                 >
                     View
                 </button>
-            </Link>
+            </Link> */}
             <button
               type="button"
               onClick={(event) => this.handleChangeFileDownload(event, row)}
-              className="btn btn-outline-success btn-sm ml-2"
+              className="btn btn-outline-success btn-sm"
             >
                 Download
             </button>
@@ -373,13 +373,13 @@ class MyDocuments extends Component<Props, State> {
                 <Route>
                     <div className="container">
                         <Helmet>
-                            <title>View Documents</title>
+                            <title>My Documents</title>
                             <meta name="description" content="Keep.id" />
                         </Helmet>
                         <div className="jumbotron-fluid mt-5">
-                            <h1 className="display-4">View and Print Documents</h1>
+                            <h1 className="display-4">My Documents</h1>
                             <p className="lead pt-3">
-                                You can view, edit, print, and delete your documents you
+                                You can edit, download, and delete your documents you
                                 currently have stored on Keep.id.
                             </p>
                             <button
