@@ -37,7 +37,6 @@ import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import SignUpRouter from './components/SignUp/SignUp.router';
 import AutoLogout from './components/UserAuthentication/AutoLogout';
-import autoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
