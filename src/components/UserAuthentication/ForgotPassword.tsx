@@ -59,7 +59,7 @@ class ForgotPassword extends Component<Props, State> {
           } else if (status === 'USER_NOT_FOUND') {
             this.props.alert.show('Incorrect Username');
             this.setState({ buttonState: '' });
-          } else if (status == 'NOT_VALID_EMAIL') {
+          } else if (status === 'NOT_VALID_EMAIL') {
             this.props.alert.show(
               'There is no valid email address associated with this username. '
               + 'Please contact your nonprofit to get your password recovery code.',
