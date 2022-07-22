@@ -1,29 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 interface Props {
   timeOut: number,
-  handleLogout: () => void,
+  handleAutoLogout: () => void,
 }
 
-function DeviceSleepDetect(props: Props): React.ReactElement {
-  const { timeOut, handleLogout } = props;
-  const [previousTime, setPreviousTime] = useState(0);
-  let currentTime;
-  // const [currentTime, setCurrentTime] = useState(0);
-
-  useEffect(() => {
-    setInterval(() => {
-      currentTime = (new Date()).getTime();
-      setPreviousTime(currentTime);
-    }, 3000);
-  }, []);
-  console.log(previousTime, currentTime);
-  if (currentTime - previousTime > timeOut) {
-    console.log('wake from sleep', previousTime, currentTime);
-    // window.alert();
-  }
+function DeviceSleepDetect(props: Props) {
+  const { timeOut, handleAutoLogout } = props;
+  let previousTime = (new Date()).getTime();
+  setInterval(() => {
+    const currentTime = (new Date()).getTime();
+    if (currentTime - previousTime > timeOut) {
+      handleAutoLogout();
+    }
+    previousTime = currentTime;
+  }, 5000);
   return (
-    <h1>The component has been rendered for {previousTime} seconds</h1>
+    null
   );
 }
 
