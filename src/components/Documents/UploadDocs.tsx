@@ -306,7 +306,7 @@ function UploadDocs(props) {
             </div>
             <button
               type="button"
-              className="mr-auto btn btn-outline-primary"
+              className="mr-auto btn btn-outline-primary mt-5"
               onClick={history.goBack}
             >
                 Previous
