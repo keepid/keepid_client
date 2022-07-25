@@ -14,21 +14,6 @@ import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
 
-interface Props {
-    alert: any,
-    userRole: Role,
-    username: any,
-}
-
-interface State {
-    pdfFiles: File[] | undefined,
-    documentTypeList: string[]
-    currentStep: number,
-    userRole: Role | undefined
-    loading: boolean
-    clientUsername: string
-}
-
 interface PDFProps {
     pdfFile: File
 }
@@ -36,7 +21,7 @@ interface PDFProps {
 const MAX_NUM_OF_FILES: number = 5;
 const MAX_NUM_STEPS = 2;
 
-function RenderPDF(props: PDFProps): React.ReactElement {
+function RenderPDF(props) {
   const [showResults, setShowResults] = useState(false);
   const { pdfFile } = props;
   return (
@@ -55,13 +40,13 @@ function RenderPDF(props: PDFProps): React.ReactElement {
   );
 }
 
-function UploadDocs(props) {
+function UploadDocs(props: any) {
   const [pdfFiles, setPdfFiles] = useState(undefined);
   const [documentTypeList, setDocumentTypeList] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [userRole, setUserRole] = useState(props.userRole);
+  const [userRole] = useState(props.userRole);
   const [loading, setLoading] = useState(false);
-  const [clientUsername, setClientUsername] = useState(props.username);
+  const [clientUsername] = useState(props.username);
 
   const updateFileList = (pdfFiles) => {
     setDocumentTypeList(pdfFiles);
@@ -77,7 +62,6 @@ function UploadDocs(props) {
       for (let i = 0; i < pdfFiles.length; i += 1) {
         const pdfFile = pdfFiles[i];
         const formData = new FormData();
-        const documentType = documentTypeList[i];
         const prevStep = currentStep;
         formData.append('file', pdfFile, pdfFile.name);
         // formData.append('documentType', documentType);
@@ -164,8 +148,6 @@ function UploadDocs(props) {
   };
 
   const history = useHistory();
-
-  console.log(props);
 
   return (
         <div className="container">
