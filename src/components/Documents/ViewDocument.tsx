@@ -62,6 +62,7 @@ class ViewDocument extends Component<Props, State> {
       });
   }
 
+  //need to change returned url when view docs is working to ie '/my-documents/username/Firstname+LastName'
   setLink() {
     if (this.props.userRole !== Role.Client) {
       return '/my-documents/';
