@@ -871,3 +871,9 @@ div.scrollbar {
 .primary-color {
 	color: $primary-theme;
 }
+
+.link-primary {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}

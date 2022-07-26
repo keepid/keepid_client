@@ -83,6 +83,9 @@ class ViewDocument extends Component<Props, State> {
       // eslint-disable-next-line prefer-destructuring
       fileName = splitName[0];
     }
+
+    console.log(this.props);
+
     return (
             <div className="container">
                 <div className="mt-5 ml-3">

@@ -49,23 +49,39 @@ window.onload = () => {
 };
 
 interface State {
-  role: Role;
-  username: string;
-  name: string;
-  organization: string;
-  autoLogout: boolean;
+    role: Role;
+    username: string;
+    name: string;
+    organization: string;
+    autoLogout: boolean;
 }
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
-    this.state = {
-      role: Role.LoggedOut,
-      username: '',
-      name: '',
-      organization: '',
-      autoLogout: false,
-    };
+
+    // set the original state based on session storage
+    const jsonData = sessionStorage.getItem('mySessionStorageData');
+    const jsonLogout = sessionStorage.getItem('autoLogout');
+    if (jsonData && jsonLogout) {
+      const data = JSON.parse(jsonData);
+      const logout = JSON.parse(jsonLogout);
+      this.state = {
+        role: data.role,
+        username: data.username,
+        name: data.name,
+        organization: data.organization,
+        autoLogout: logout,
+      };
+    } else {
+      this.state = {
+        role: Role.LoggedOut,
+        username: '',
+        name: '',
+        organization: '',
+        autoLogout: false,
+      };
+    }
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
     this.setAutoLogout = this.setAutoLogout.bind(this);
@@ -77,6 +93,8 @@ class App extends React.Component<{}, State, {}> {
     this.setState({
       autoLogout: logout,
     });
+    const obj = { autoLogout: this.state.autoLogout };
+    sessionStorage.setItem('autoLogout', JSON.stringify(obj));
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -86,6 +104,8 @@ class App extends React.Component<{}, State, {}> {
       name,
       organization,
     });
+    const obj = { role, username, name, organization };
+    sessionStorage.setItem('mySessionStorageData', JSON.stringify(obj));
   }
 
   logOut() {
@@ -100,6 +120,7 @@ class App extends React.Component<{}, State, {}> {
       method: 'GET',
       credentials: 'include',
     });
+    sessionStorage.clear();
   }
 
   componentDidMount() {
@@ -134,12 +155,17 @@ class App extends React.Component<{}, State, {}> {
                 return Role.LoggedOut;
             }
           };
-          this.logIn(
-            role(),
-            username,
-            organization,
-            `${firstName} ${lastName}`,
-          ); // Change
+          // if the session storage does not match the authenitcation, logout
+          const jsonData = sessionStorage.getItem('mySessionStorageData');
+          if (jsonData) {
+            const data = JSON.parse(jsonData);
+            if (!(role() === data.role && username === data.username && organization === data.organization)
+                            && data.name === `${firstName} ${lastName}`) {
+              this.logOut();
+            }
+          } else {
+            this.logOut();
+          }
         }
       })
       .catch((e) => {
@@ -150,115 +176,115 @@ class App extends React.Component<{}, State, {}> {
   render() {
     const { role, username, name, organization, autoLogout } = this.state;
     return (
-      <Router>
-        <div className="App">
-          <div className="app">
-            <Helmet>
-              <title>Keep.id</title>
-              <meta
-                name="description"
-                content="Securely Combating Homelessness"
-              />
-            </Helmet>
-            <Header
-              isLoggedIn={role !== Role.LoggedOut}
-              logIn={this.logIn}
-              logOut={this.logOut}
-              role={role}
-            />
-            {role !== Role.LoggedOut ? (
-              <AutoLogout
-                logOut={this.logOut}
-                setAutoLogout={this.setAutoLogout}
-              />
-            ) : null}
+            <Router>
+                <div className="App">
+                    <div className="app">
+                        <Helmet>
+                            <title>Keep.id</title>
+                            <meta
+                              name="description"
+                              content="Securely Combating Homelessness"
+                            />
+                        </Helmet>
+                        <Header
+                          isLoggedIn={role !== Role.LoggedOut}
+                          logIn={this.logIn}
+                          logOut={this.logOut}
+                          role={role}
+                        />
+                        {role !== Role.LoggedOut ? (
+                            <AutoLogout
+                              logOut={this.logOut}
+                              setAutoLogout={this.setAutoLogout}
+                            />
+                        ) : null}
 
-            <Switch>
-              <Route exact path="/" render={() => <Redirect to="/home" />} />
-              <Route path="/our-team">
-                <OurTeam />
-              </Route>
-              <Route path="/our-partners">
-                <OurPartners />
-              </Route>
-              <Route path="/our-mission">
-                <OurMission />
-              </Route>
-              <Route path="/privacy-policy">
-                <PrivacyPolicy />
-              </Route>
-              <Route path="/eula">
-                <EULA />
-              </Route>
-              <Route path="/dashboard-test">
-                <AdminDashboard />
-              </Route>
-              <Route path="/careers">
-                <Careers />
-              </Route>
-              <Route path="/issue-report">
-                <IssueReport />
-              </Route>
-              <Route path="/forgot-password">
-                <ForgotPassword />
-              </Route>
-              <Route path="/reset-password/:jwt">
-                <ResetPassword />
-              </Route>
-              <Route
-                path="/home"
-                render={() => {
-                  if (
-                    role === Role.Director ||
-                    role === Role.Admin ||
-                    role === Role.Worker
-                  ) {
-                    return (
-                      <WorkerLanding
-                        name={name}
-                        organization={organization}
-                        username={username}
-                        role={role}
-                      />
-                    );
-                  }
-                  if (role === Role.Client) {
-                    return <ClientLanding name={name} username={username} />;
-                  }
-                  if (role === Role.Developer) {
-                    return (
-                      <DevPanel
-                        name={name}
-                        organization={organization}
-                        username={username}
-                        role={role}
-                      />
-                    );
-                  }
-                  return <Home />;
-                }}
-              />
-              <Route
-                path="/find-organizations"
-                render={() => <FindOrganization />}
-              />
-              <Route
-                path="/login"
-                render={() =>
-                  role !== Role.LoggedOut ? (
-                    <Redirect to="/home" />
-                  ) : (
-                    <LoginPage
-                      isLoggedIn={role !== Role.LoggedOut}
-                      logIn={this.logIn}
-                      logOut={this.logOut}
-                      role={role}
-                      autoLogout={autoLogout}
-                      setAutoLogout={this.setAutoLogout}
-                    />
-                  )
-                }
-              />
+                        <Switch>
+                            <Route exact path="/" render={() => <Redirect to="/home" />} />
+                            <Route path="/our-team">
+                                <OurTeam />
+                            </Route>
+                            <Route path="/our-partners">
+                                <OurPartners />
+                            </Route>
+                            <Route path="/our-mission">
+                                <OurMission />
+                            </Route>
+                            <Route path="/privacy-policy">
+                                <PrivacyPolicy />
+                            </Route>
+                            <Route path="/eula">
+                                <EULA />
+                            </Route>
+                            <Route path="/dashboard-test">
+                                <AdminDashboard />
+                            </Route>
+                            <Route path="/careers">
+                                <Careers />
+                            </Route>
+                            <Route path="/issue-report">
+                                <IssueReport />
+                            </Route>
+                            <Route path="/forgot-password">
+                                <ForgotPassword />
+                            </Route>
+                            <Route path="/reset-password/:jwt">
+                                <ResetPassword />
+                            </Route>
+                            <Route
+                              path="/home"
+                              render={() => {
+                                if (
+                                  role === Role.Director ||
+                                        role === Role.Admin ||
+                                        role === Role.Worker
+                                ) {
+                                  return (
+                                            <WorkerLanding
+                                              name={name}
+                                              organization={organization}
+                                              username={username}
+                                              role={role}
+                                            />
+                                  );
+                                }
+                                if (role === Role.Client) {
+                                  return <ClientLanding name={name} username={username} />;
+                                }
+                                if (role === Role.Developer) {
+                                  return (
+                                            <DevPanel
+                                              name={name}
+                                              organization={organization}
+                                              username={username}
+                                              role={role}
+                                            />
+                                  );
+                                }
+                                return <Home />;
+                              }}
+                            />
+                            <Route
+                              path="/find-organizations"
+                              render={() => <FindOrganization />}
+                            />
+                            <Route
+                              path="/login"
+                              render={() =>
+                                role !== Role.LoggedOut ? (
+                                        <Redirect to="/home" />
+                                ) : (
+                                        <LoginPage
+                                          isLoggedIn={role !== Role.LoggedOut}
+                                          logIn={this.logIn}
+                                          logOut={this.logOut}
+                                          role={role}
+                                          autoLogout={autoLogout}
+                                          setAutoLogout={this.setAutoLogout}
+                                        />
+                                )
+                                }
+                            />
 
               <Route
                 path="/admin-panel"
@@ -392,11 +418,11 @@ class App extends React.Component<{}, State, {}> {
               <Route>
                 <Redirect to="/error" />
               </Route>
-            </Switch>
-          </div>
+                        </Switch>
+                    </div>
           <Footer />
-        </div>
-      </Router>
+                </div>
+            </Router>
     );
   }
 }

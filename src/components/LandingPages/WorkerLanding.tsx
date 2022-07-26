@@ -368,7 +368,7 @@ class WorkerLanding extends Component<Props, State> {
               <div className="row lock-bottom-left">
                 <Link
                   to={`/upload-document/${client.username}`}
-                  className="btn btn-primary mr-2 btn-sm"
+                  className="btn link-primary mr-2 btn-sm"
                   style={{ height: 32 }}
                 >
                   <div style={{ fontWeight: 'bold' }}>

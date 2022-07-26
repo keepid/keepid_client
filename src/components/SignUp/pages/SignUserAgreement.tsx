@@ -1,9 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
 
 import SignaturePad from '../../../lib/SignaturePad';
-import EULA from '../../../static/EULA.pdf';
+import ArrowDown from '../../../static/images/angle-double-down-solid.svg';
+import UploadIcon from '../../../static/images/upload-icon.png';
+import EULA from '../../AboutUs/EULA';
 import SignUpContext from '../SignUp.context';
 
 const messages = defineMessages({
@@ -25,6 +27,8 @@ const messages = defineMessages({
 
 export default function SignUserAgreement() {
   const intl = useIntl();
+  const endRef = useRef(null);
+
   const {
     signUpStageStateContext: {
       moveToPreviousSignupStage,
@@ -35,58 +39,74 @@ export default function SignUserAgreement() {
   const [hasSigned, setHasSigned] = useState(false);
   const [canvasDataUrl, setCanvasDataUrl] = useState('');
 
+  const scrollToBottom = () => {
+        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div>
-      <Helmet>
-        <title>{intl.formatMessage(messages.title)}</title>
-        <meta name="description" content="Keep.id" />
-      </Helmet>
-      <div className="d-flex justify-content-center pt-5">
-        <div className="col-md-12">
-          <div className="text-center pb-4 mb-2">
-            <h2>
-              <b>{intl.formatMessage(messages.header)}</b>
-            </h2>
-          </div>
-          <div className="embed-responsive embed-responsive-16by9">
-            <iframe
-              className="embed-responsive-item"
-              src={EULA}
-              title="EULA Agreement"
-            />
-          </div>
-          <div className="d-flex justify-content-center pt-5">
-            <div className="col-md-8">
-              <div className="pb-3">
-                {intl.formatMessage(messages.agreeToTerms)}
-              </div>
-              <SignaturePad
-                acceptEULA={hasSigned}
-                handleChangeAcceptEULA={setHasSigned}
-                handleCanvasSign={setCanvasDataUrl}
-                canvasDataUrl={canvasDataUrl}
-              />
+        <div>
+            <Helmet>
+                <title>{intl.formatMessage(messages.title)}</title>
+                <meta name="description" content="Keep.id" />
+            </Helmet>
+            <div className="d-flex justify-content-center pt-5">
+                <div className="col-md-12">
+                    <div className="text-center pb-4">
+                        <h2>
+                            <b>{intl.formatMessage(messages.header)}</b>
+                        </h2>
+                    </div>
+                    <div className="row justify-content-center">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary mt-3 mr-3"
+                          onClick={scrollToBottom}
+                        >
+                            <img
+                              src={ArrowDown}
+                              style={{ height: 18 }}
+                              alt="arrow down"
+                              className="mr-2"
+                            />
+                            Jump to signature
+                        </button>
+                    </div>
+                    <div className="col-md-12">
+                        <EULA />
+                    </div>
+                    <div className="d-flex justify-content-center pt-5">
+                        <div className="col-md-8">
+                            <div className="pb-3">
+                                {intl.formatMessage(messages.agreeToTerms)}
+                            </div>
+                            <div ref={endRef} />
+                            <SignaturePad
+                              acceptEULA={hasSigned}
+                              handleChangeAcceptEULA={setHasSigned}
+                              handleCanvasSign={setCanvasDataUrl}
+                              canvasDataUrl={canvasDataUrl}
+                            />
+                        </div>
+                    </div>
+                    <div className="d-flex">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary mt-5"
+                          onClick={moveToPreviousSignupStage}
+                        >
+                            Previous Step
+                        </button>
+                        <button
+                          type="button"
+                          className="ml-auto btn btn-primary mt-5"
+                          onClick={moveToNextSignupStage}
+                          disabled={!hasSigned}
+                        >
+                            Continue
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div className="d-flex">
-            <button
-              type="button"
-              className="btn btn-outline-primary mt-5"
-              onClick={moveToPreviousSignupStage}
-            >
-              Previous Step
-            </button>
-            <button
-              type="button"
-              className="ml-auto btn btn-primary mt-5"
-              onClick={moveToNextSignupStage}
-              disabled={!hasSigned}
-            >
-              Continue
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
   );
 }

@@ -295,15 +295,15 @@ class MyDocuments extends Component<Props, State> {
         // to get the unique id of the document, you need to set a hover state which stores the document id of the row
         // then in this function you can then get the current hover document id and do an action depending on the document id
         <ButtonGroup>
-            {/* <Link to="/my-documents/view">
+            <Link to="/my-documents/view">
                 <button
                   type="button"
                   onClick={(event) => this.onViewDocument(event, row)}
-                  className="btn btn-outline-info btn-sm"
+                  className="btn btn-outline-info btn-sm mr-2"
                 >
                     View
                 </button>
-            </Link> */}
+            </Link>
             <button
               type="button"
               onClick={(event) => this.handleChangeFileDownload(event, row)}
@@ -420,7 +420,7 @@ class MyDocuments extends Component<Props, State> {
                     </div>
                 </Route>
                 <Route path="/my-documents/view">
-                    {currentDocumentId && currentDocumentName ? (
+                    currentDocumentId && currentDocumentName ? (
                         <ViewDocument
                           userRole={userRole}
                           documentId={currentDocumentId}
@@ -431,7 +431,7 @@ class MyDocuments extends Component<Props, State> {
                         />
                     ) : (
                         <div />
-                    )}
+                    )
                 </Route>
             </Switch>
       );
