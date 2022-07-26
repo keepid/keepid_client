@@ -343,11 +343,12 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
-                path="/my-documents/:username"
+                path="/my-documents/:username/:name"
                 render={(props) => {
-                  const clientName = props.match.params.username;
+                  const clientUsername = props.match.params.username;
+                  const clientName = props.match.params.name.split('+').join(' ');
                   if (role === Role.Admin || role === Role.Worker || role === Role.Developer || role === Role.Client) {
-                    return <MyDocuments userRole={Role.Client} username={clientName} />;
+                    return <MyDocuments userRole={Role.Client} username={clientUsername} name={clientName} />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -361,7 +362,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
-                    return <MyDocuments userRole={role} username={username} />;
+                    return <MyDocuments userRole={role} username={username} name={name} />;
                   }
                   return <Redirect to="/error" />;
                 }}

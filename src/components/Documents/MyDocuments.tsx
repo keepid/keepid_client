@@ -23,6 +23,7 @@ interface Props {
     alert: any;
     userRole: Role;
     username: string;
+    name: string;
 }
 
 interface State {
@@ -360,7 +361,7 @@ class MyDocuments extends Component<Props, State> {
     render() {
       const { pdfFiles, buttonState } = this.state;
 
-      const { userRole, username } = this.props;
+      const { userRole, username, name } = this.props;
       const {
         currentDocumentId,
         currentDocumentName,
@@ -377,7 +378,7 @@ class MyDocuments extends Component<Props, State> {
                             <meta name="description" content="Keep.id" />
                         </Helmet>
                         <div className="jumbotron-fluid mt-5">
-                            <h1 className="display-4">My Documents</h1>
+                            <h1 className="display-4">{name}&apos;s Documents</h1>
                             <p className="lead pt-3">
                                 You can edit, download, and delete your documents you
                                 currently have stored on Keep.id.
@@ -420,7 +421,7 @@ class MyDocuments extends Component<Props, State> {
                     </div>
                 </Route>
                 <Route path="/my-documents/view">
-                    currentDocumentId && currentDocumentName ? (
+                    {currentDocumentId && currentDocumentName ? (
                         <ViewDocument
                           userRole={userRole}
                           documentId={currentDocumentId}
@@ -431,7 +432,7 @@ class MyDocuments extends Component<Props, State> {
                         />
                     ) : (
                         <div />
-                    )
+                    )}
                 </Route>
             </Switch>
       );
