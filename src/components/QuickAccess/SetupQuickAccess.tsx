@@ -5,10 +5,7 @@ import { useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
 import Table from '../BaseComponents/Table';
-import {
-  fetchDocuments,
-  setQuickAccessDocumentForCategory,
-} from './QuickAccess.api';
+import { fetchDocuments, setQuickAccessDocumentForCategory } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
 import SuccessfullySetDocumentModal from './SuccessfullySetDocumentModal';
@@ -57,6 +54,7 @@ export default function SetupQuickAccess({ category }: Props) {
       docToUse as QuickAccessFile,
     )
       .then(() => {
+        console.log('Successfully set new document as quick access');
         setSuccess(true);
       })
       .catch((e) => {
@@ -99,10 +97,12 @@ export default function SetupQuickAccess({ category }: Props) {
               data={documents}
               canSelect="single"
               onSelect={(rowIds) => {
+                console.log('Documents is', documents, 'with type', typeof (documents));
+                console.log('Length of rowIds is ', rowIds.length);
+                console.log('rowIds is', rowIds);
                 if (rowIds.length === 1) {
-                  const doc = documents.find(
-                    (d) => d.filename + d.uploadDate === rowIds[0],
-                  );
+                  const doc = documents.find((d) => d.id === rowIds[0]);
+                  console.log('The doc that was found is ', doc);
                   setDocToUse(doc);
                 }
               }}

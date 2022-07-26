@@ -31,7 +31,7 @@ export default defineMessages({
   },
   'quick-access.setup.description': {
     id: 'quick-access.setup.description',
-    defaultMessage: 'Choose up to 2 documents to set as default IDs to quickly access your {categoryTitle}',
+    defaultMessage: 'Choose 1 document to set as the default ID to quickly access your {categoryTitle}',
   },
   'quick-access.success-modal.title': {
     id: 'quick-access.success-modal.title',

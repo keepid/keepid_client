@@ -11,8 +11,8 @@ export default function QuickAccessRouter() {
         path="/quick-access/:category"
         exact
         render={(props) => {
-          console.log('\n\nasdfasdf', '\n\n');
           const { category } = props.match.params;
+          console.log(`Category of quick-access is ${category}`);
           return <QuickAccessView category={category} />;
         }}
       />
@@ -20,8 +20,8 @@ export default function QuickAccessRouter() {
         path="/quick-access/:category/setup"
         exact
         render={(props) => {
-          console.log('\n\nasdfasdf2', '\n\n');
           const { category } = props.match.params;
+          console.log(`Category of quick-access setup is ${category}`);
           return <SetupQuickAccess category={category} />;
         }}
       />

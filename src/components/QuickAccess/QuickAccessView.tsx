@@ -9,7 +9,7 @@ import getServerURL from '../../serverOverride';
 import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSetImage.svg';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
-import { getConfiguredDocumentForCategory } from './QuickAccess.api';
+import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
 
@@ -22,27 +22,65 @@ export default function QuickAccessView({ category }: Props) {
   const alert = useAlert();
 
   const [loading, setLoading] = useState(true);
-  const [
-    configuredDocument,
-    setConfiguredDocument,
-  ] = useState<QuickAccessFile | null>(null);
+  const [configuredDocument, setConfiguredDocument] = useState<QuickAccessFile | null>(null);
+
+  //   useEffect(() => {
+  //     getConfiguredDocumentForCategory(category)
+  //       .then((doc) => setConfiguredDocument(doc))
+  //       .catch((e) => {
+  //         console.error('The error is', e);
+  //         alert.show('Failed to fetch configured document.');
+  //       })
+  //       .then(() => {
+  //         // TODO - remove this; it's just for testing
+  //         setConfiguredDocument({
+  //           filename: 'birth-certificate-template.pdf',
+  //           uploadDate: 'Sun Dec 12 23:03:07 CST 2021',
+  //           uploader: 'Wormtongue',
+  //           id: '61b6d40261a7002839a6cd40',
+  //         });
+  //         setLoading(false);
+  //       });
+  //   }, [category]);
 
   useEffect(() => {
-    getConfiguredDocumentForCategory(category)
-      .then((doc) => setConfiguredDocument(doc))
-      .catch((e) => {
-        console.error(e);
-        alert.show('Failed to fetch configured document.');
-      })
-      .then(() => {
-        // TODO - remove this; it's just for testing
-        setConfiguredDocument({
-          filename: 'birth-certificate-template.pdf',
-          uploadDate: 'Sun Dec 12 23:03:07 CST 2021',
-          uploader: 'Wormtongue',
-          id: '61b6d40261a7002839a6cd40',
-        });
-        setLoading(false);
+    let idToMatch = null;
+
+    fetch(`${getServerURL()}/get-default-id`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        documentType: category,
+      }),
+    })
+      .then((response) => response.json())
+      .then((x) => {
+        console.log('Response from server is ', x, ' for getQuickAccessId of category', category);
+        idToMatch = x.fileId;
+        console.log('The idToMatch is', idToMatch);
+
+        fetchDocuments()
+          .then((documents) => {
+            console.log('fetchDocuments in QuickAccessView returned ', documents);
+            const doc = documents.find((d) => d.id === idToMatch);
+
+            console.log('The document that matches is ', doc);
+
+            if (doc != null) {
+              setConfiguredDocument({
+                filename: doc.filename,
+                uploadDate: doc.uploadDate,
+                uploader: doc.uploader,
+                id: doc.id,
+              });
+            }
+          })
+          .catch((e) => {
+            alert.show('Failed to fetch documents.');
+          })
+          .then(() => {
+            setLoading(false);
+          });
       });
   }, [category]);
 
@@ -78,9 +116,7 @@ export default function QuickAccessView({ category }: Props) {
 type QuickAccessDocumentViewerProps = {
   doc: QuickAccessFile;
 };
-export function QuickAccessDocumentViewer({
-  doc,
-}: QuickAccessDocumentViewerProps) {
+export function QuickAccessDocumentViewer({ doc }: QuickAccessDocumentViewerProps) {
   const [file, setFile] = useState<File>();
 
   useEffect(() => {

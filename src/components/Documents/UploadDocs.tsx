@@ -227,15 +227,15 @@ class UploadDocs extends React.Component<Props, State> {
                       <div className="container mb-3 card-alignment">
                         <Card style={{ width: '48rem' }}>
                           <Row className="row-padding g-4 md-3">
-                              <Col sm={8}>
-                                      <Col sm={10}>
-                                        <Card.Title>{pdfFile.name}</Card.Title>
-                                        <RenderPDF
-                                          key={uuid()}
-                                          pdfFile={pdfFile}
-                                        />
-                                      </Col>
-                              </Col>
+                            <Col sm={8}>
+                                <Col sm={10}>
+                                    <Card.Title>{pdfFile.name}</Card.Title>
+                                    <RenderPDF
+                                      key={uuid()}
+                                      pdfFile={pdfFile}
+                                    />
+                                </Col>
+                            </Col>
                             <Col sm={4}>
                               <DropdownButton
                                 title={this.setTitle(index)}
