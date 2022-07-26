@@ -296,7 +296,7 @@ class MyDocuments extends Component<Props, State> {
         // to get the unique id of the document, you need to set a hover state which stores the document id of the row
         // then in this function you can then get the current hover document id and do an action depending on the document id
         <ButtonGroup>
-            <Link to="/my-documents/view">
+            {/* <Link to="/my-documents/view">
                 <button
                   type="button"
                   onClick={(event) => this.onViewDocument(event, row)}
@@ -304,7 +304,7 @@ class MyDocuments extends Component<Props, State> {
                 >
                     View
                 </button>
-            </Link>
+            </Link> */}
             <button
               type="button"
               onClick={(event) => this.handleChangeFileDownload(event, row)}
@@ -360,8 +360,9 @@ class MyDocuments extends Component<Props, State> {
 
     render() {
       const { pdfFiles, buttonState } = this.state;
-
+      
       const { userRole, username, name } = this.props;
+
       const {
         currentDocumentId,
         currentDocumentName,

@@ -285,7 +285,6 @@ class App extends React.Component<{}, State, {}> {
                                 )
                                 }
                             />
-
               <Route
                 path="/admin-panel"
                 render={() => {

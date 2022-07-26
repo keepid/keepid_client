@@ -274,8 +274,6 @@ class WorkerLanding extends Component<Props, State> {
 
     const clientName = (first, last) => `${first}+${last}`;
 
-    // const changeClientName = (clientFirstName, clientLastName) => `${clientFirstName}+${clientLastName}`;
-
     const clientCards: React.ReactFragment[] = currentPosts.map(
       (client, i) => (
         <div key={client.username} className="card client-card mb-4 mr-4 flex-column">

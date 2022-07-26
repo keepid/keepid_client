@@ -204,6 +204,8 @@ class UploadDocs extends React.Component<Props, State> {
       currentStep,
     } = this.state;
 
+    console.log(this.props);
+
     return (
       <div className="container">
         <Helmet>
