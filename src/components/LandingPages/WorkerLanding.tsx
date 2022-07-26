@@ -285,7 +285,7 @@ class WorkerLanding extends Component<Props, State> {
             </a>
             <div className="dropdown-menu">
               <Link
-                to={`/upload-document/${client.username}`}
+                to={`/upload-document/${client.username}/${clientName(client.firstName, client.lastName)}`}
                 className="dropdown-item primary-color"
               >
                 <div style={{ fontWeight: 'bold' }}>
@@ -369,7 +369,7 @@ class WorkerLanding extends Component<Props, State> {
               </Link>
               <div className="row lock-bottom-left">
                 <Link
-                  to={`/upload-document/${client.username}`}
+                  to={`/upload-document/${client.username}/${clientName(client.firstName, client.lastName)}`}
                   className="btn link-primary mr-2 btn-sm"
                   style={{ height: 32 }}
                 >

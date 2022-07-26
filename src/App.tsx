@@ -319,16 +319,17 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
-                path="/upload-document/:clientUsername"
+                path="/upload-document/:clientUsername/:clientName"
                 render={(props) => {
                   const { clientUsername } = props.match.params;
+                  const { clientName } = props.match.params;
                   if (
                     role === Role.Admin ||
                     role === Role.Director ||
                     role === Role.Worker ||
                     role === Role.Client
                   ) {
-                    return <UploadDocs userRole={Role.Client} username={clientUsername} />;
+                    return <UploadDocs userRole={Role.Client} username={clientUsername} name={clientName} />;
                   }
                   return <Redirect to="/error" />;
                 }}
