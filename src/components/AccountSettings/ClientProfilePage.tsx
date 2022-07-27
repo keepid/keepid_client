@@ -3,6 +3,7 @@ import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
 
+import { calculateAgeFromString } from '../../lib/Calculations/Calculation';
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 
@@ -614,6 +615,10 @@ class ClientProfilePage extends Component<Props, State> {
                 <div className="row pb-2">
                   <div className="col font-weight-bold">Birthdate</div>
                   <div className="col text-right">{birthDate}</div>
+                </div>
+                <div className="row pb-2">
+                  <div className="col font-weight-bold">Age</div>
+                  <div className="col text-right">{calculateAgeFromString(birthDate)}</div>
                 </div>
                 <div className="row pb-2">
                   <div className="col font-weight-bold">Phone No.</div>
