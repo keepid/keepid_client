@@ -9,7 +9,8 @@ let calculateAge = (birthday: Date): number => {
     return age;
 }
 
-let calculateAgeFromString = (birthday: string): number => {
+let calculateAgeFromString = (birthday: string): any => {
+    if (!birthday) return null;
     const today = new Date();
     const dateArr = birthday.split('-');
     const year = parseInt(dateArr[2]);
