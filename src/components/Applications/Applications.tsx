@@ -141,12 +141,13 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
+        console.log(responseJSON);
         const {
           status,
           documents,
         } = responseJSON;
-        const numElements = documents.length;
         if (status === 'SUCCESS') {
+          const numElements = documents.length;
           const newDocuments: DocumentInformation[] = [];
           for (let i = 0; i < numElements; i += 1) {
             const row = documents[i];
