@@ -24,25 +24,6 @@ export default function QuickAccessView({ category }: Props) {
   const [loading, setLoading] = useState(true);
   const [configuredDocument, setConfiguredDocument] = useState<QuickAccessFile | null>(null);
 
-  //   useEffect(() => {
-  //     getConfiguredDocumentForCategory(category)
-  //       .then((doc) => setConfiguredDocument(doc))
-  //       .catch((e) => {
-  //         console.error('The error is', e);
-  //         alert.show('Failed to fetch configured document.');
-  //       })
-  //       .then(() => {
-  //         // TODO - remove this; it's just for testing
-  //         setConfiguredDocument({
-  //           filename: 'birth-certificate-template.pdf',
-  //           uploadDate: 'Sun Dec 12 23:03:07 CST 2021',
-  //           uploader: 'Wormtongue',
-  //           id: '61b6d40261a7002839a6cd40',
-  //         });
-  //         setLoading(false);
-  //       });
-  //   }, [category]);
-
   useEffect(() => {
     let idToMatch = null;
 
