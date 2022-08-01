@@ -445,7 +445,7 @@ class BasicInfo extends Component<Props, State, any> {
                                     {editInfo ? (
                                         <div className="row justify-content-between">
                                             <Select
-                                              placeholder={this.setDropDownStatus(this.state.dischargeTypeTemp)}
+                                              placeholder={this.setDropDown(this.state.dischargeTypeTemp)}
                                               aria-label="discharge type"
                                               options={dischargeOptions}
                                               closeMenuOnSelect
