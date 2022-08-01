@@ -730,7 +730,7 @@ class ClientProfilePage extends Component<Props, State> {
                     to={`/my-information/${username}/${firstName}+${lastName}`}
                     className="link-primary btn my-4 py-3"
                   >
-                    {firstName}&apos;s Information
+                    View Information
                   </Link>
                 </div>
               </div>
