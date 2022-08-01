@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
-import { Link } from 'react-router-dom';
+import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
@@ -474,270 +474,274 @@ class ClientProfilePage extends Component<Props, State> {
     const { username } = this.props;
 
     return (
-      <div className="container">
-        <div
-          className="modal fade"
-          id="exampleModal"
-          role="dialog"
-          aria-labelledby="exampleModalLabel"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <h3
-                className="modal-title text-center mt-3 mb-2"
-                id="ChangeProfilePhoto"
-              >
-                Change Profile Photo
-              </h3>
-              <button
-                type="button"
-                className="btn mb-3 mx-4 font-weight-bold btn-primary"
-                data-testid="select-photo"
-                onClick={() => this.hiddenFileInput.current!.click()}
-              >
-                Select Photo
-              </button>
-              <input
-                style={{ display: 'none' }}
-                type="file"
-                key={inputKey}
-                ref={this.hiddenFileInput}
-                data-testid="photo-input"
-                onChange={(e) => this.fileSelectedHandler(e)}
-                accept=".jpg,.jpeg,.png"
-              />
-
-              {showCropper && (
-                <div>
-                  <div className="position-relative py-5 mx-4">
-                    <div className="crop-container py-5">
-                      <Cropper
-                        image={fileSelected}
-                        crop={crop}
-                        zoom={zoom}
-                        aspect={aspect}
-                        onCropChange={this.onCropChange}
-                        onCropComplete={this.onCropComplete}
-                        onZoomChange={this.onZoomChange}
-                        cropShape="round"
-                        showGrid={false}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-center mx-4">
-                      <div className="btn-group mt-2">
-                        <button
-                          className="btn w-25 btn-outline-primary"
-                          type="button"
-                          onClick={this.zoomOut}
-                          disabled={this.state.zoom <= 1}
-                        >
-                          -
-                        </button>
-                        <button
-                          className="btn w-25 btn-outline-primary"
-                          type="button"
-                          onClick={this.zoomIn}
-                          disabled={this.state.zoom >= 2}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <button
-                        className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
-                        type="submit"
-                        data-testid="set-profile-photo"
-                        onClick={() => {
-                          this.setState({ loading: true }, () => {
-                            this.cropAndSave();
-                          });
-                        }}
-                      >
-                        Set Profile Photo
-                        {loading && (
-                          <div>
-                            <div className="ld ld-ring ld-spin" />
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <h1 className="m-3 font-weight-bold">
-          {firstName}{' '}{lastName}
-          &apos;s Profile
-        </h1>
-        <div className="row mb-4">
-          <div className="col-md-6 col-12 h-75 text-dark">
+      <Switch>
+        <Route>
+          <div className="container">
             <div
-              className="rounded px-5"
-              style={{
-                borderColor: '#7B81FF',
-                borderWidth: 1,
-                borderStyle: 'solid',
-              }}
+              className="modal fade"
+              id="exampleModal"
+              role="dialog"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
             >
-              <div className="container pt-4">
-                {photoAvailable === false ? (
-                  <Image
-                    src={GenericProfilePicture}
-                    className="w-50 mx-auto d-flex"
-                    alt="profile photo"
-                    roundedCircle
+              <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-content">
+                  <h3
+                    className="modal-title text-center mt-3 mb-2"
+                    id="ChangeProfilePhoto"
+                  >
+                    Change Profile Photo
+                  </h3>
+                  <button
+                    type="button"
+                    className="btn mb-3 mx-4 font-weight-bold btn-primary"
+                    data-testid="select-photo"
+                    onClick={() => this.hiddenFileInput.current!.click()}
+                  >
+                    Select Photo
+                  </button>
+                  <input
+                    style={{ display: 'none' }}
+                    type="file"
+                    key={inputKey}
+                    ref={this.hiddenFileInput}
+                    data-testid="photo-input"
+                    onChange={(e) => this.fileSelectedHandler(e)}
+                    accept=".jpg,.jpeg,.png"
                   />
-                ) : (
-                  <div id="profilePhoto">
-                    <Image
-                      src={photo}
-                      className="w-50 mx-auto d-flex"
-                      alt="profile photo"
-                      roundedCircle
-                    />
-                  </div>
-                )}
+
+                  {showCropper && (
+                    <div>
+                      <div className="position-relative py-5 mx-4">
+                        <div className="crop-container py-5">
+                          <Cropper
+                            image={fileSelected}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={aspect}
+                            onCropChange={this.onCropChange}
+                            onCropComplete={this.onCropComplete}
+                            onZoomChange={this.onZoomChange}
+                            cropShape="round"
+                            showGrid={false}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-center mx-4">
+                          <div className="btn-group mt-2">
+                            <button
+                              className="btn w-25 btn-outline-primary"
+                              type="button"
+                              onClick={this.zoomOut}
+                              disabled={this.state.zoom <= 1}
+                            >
+                              -
+                            </button>
+                            <button
+                              className="btn w-25 btn-outline-primary"
+                              type="button"
+                              onClick={this.zoomIn}
+                              disabled={this.state.zoom >= 2}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
+                            type="submit"
+                            data-testid="set-profile-photo"
+                            onClick={() => {
+                              this.setState({ loading: true }, () => {
+                                this.cropAndSave();
+                              });
+                            }}
+                          >
+                            Set Profile Photo
+                            {loading && (
+                              <div>
+                                <div className="ld ld-ring ld-spin" />
+                              </div>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <h3 className="font-weight-bold mt-3 text-center">
-                  {firstName}
-                  {' '}
-                  {lastName}
-                </h3>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Username</div>
-                  <div className="col text-right">{username}</div>
-                </div>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Birthdate</div>
-                  <div className="col text-right">{birthDate}</div>
-                </div>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Phone No.</div>
-                  <div className="col text-right">{phone}</div>
-                </div>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Email</div>
-                  <div className="col text-right">{email}</div>
-                </div>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Address</div>
-                  <div className="col text-right">
-                    {address}
-                    {city}
-,
-{state}
-                    {zipcode}
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col font-weight-bold">Organization</div>
-                  <div className="col text-right">{organization}</div>
-                </div>
-              </div>
-              <div className="text-center">
-                <button
-                  type="button"
-                  className="btn m-5 font-weight-bold"
+            </div>
+            <h1 className="m-3 font-weight-bold">
+              {firstName}{' '}{lastName}
+              &apos;s Profile
+            </h1>
+            <div className="row mb-4">
+              <div className="col-md-6 col-12 h-75 text-dark">
+                <div
+                  className="rounded px-5"
                   style={{
-                    backgroundColor,
-                    color,
                     borderColor: '#7B81FF',
                     borderWidth: 1,
                     borderStyle: 'solid',
                   }}
-                  onMouseOver={() =>
-                    this.setState({
-                      backgroundColor: '#FFFFFF',
-                      color: '#7B81FF',
-                    })
-                  }
-                  onFocus={() => undefined}
-                  onMouseOut={() =>
-                    this.setState({
-                      backgroundColor: '#7B81FF',
-                      color: '#FFFFFF',
-                    })
-                  }
-                  onBlur={() => undefined}
-                  data-toggle="modal"
-                  data-target="#exampleModal"
-                  data-testid="edit-info"
-                  onClick={() =>
-                    this.setState({ showCropper: false, inputKey: Date.now() })
-                  }
                 >
-                  Update Your Profile Picture
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-6 col-12 h-75 mt-2 mt-md-0">
-            <div
-              className="rounded-top"
-              style={{
-                borderColor: '#7B81FF',
-                borderWidth: 1,
-                borderStyle: 'solid',
-              }}
-            >
-              <h3 className="font-weight-bold mt-3 text-center text-dark">
-                Recent Activity
-              </h3>
-            </div>
-            <div
-              className="rounded-bottom border-top-0 text-center container"
-              style={{
-                borderColor: '#7B81FF',
-                borderWidth: 1,
-                borderStyle: 'solid',
-                borderTop: 0,
-                maxHeight: '33rem',
-                overflow: 'scroll',
-              }}
-            >
-              {activitiesArr === null ? (
-                <div className="row w-125 p-2 text-dark"> Loading ... </div>
-              ) : (
-                this.renderActivities(activitiesArr)
-              )}
-            </div>
-          </div>
-        </div>
-        <div style={{ padding: 15 }}>
-          <div
-            className="rounded px-5"
-            style={{
-              borderColor: '#7B81FF',
-              borderWidth: 1,
-              borderStyle: 'solid',
-            }}
-          >
-            <div className="row py-4 justify-content-between">
-              <div className="column" style={{ maxWidth: 650 }}>
-                <h3>{firstName}&apos;s Information</h3>
-                <div className="upload-text-style large-text">
-                  Complete and manage your personal information, including extended account information,
-                  veteran and family information, and demographic information. Make sure to fill out all
-                  sections so your applications can be completed as quickly as possible.
+                  <div className="container pt-4">
+                    {photoAvailable === false ? (
+                      <Image
+                        src={GenericProfilePicture}
+                        className="w-50 mx-auto d-flex"
+                        alt="profile photo"
+                        roundedCircle
+                      />
+                    ) : (
+                      <div id="profilePhoto">
+                        <Image
+                          src={photo}
+                          className="w-50 mx-auto d-flex"
+                          alt="profile photo"
+                          roundedCircle
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-weight-bold mt-3 text-center">
+                      {firstName}
+                      {' '}
+                      {lastName}
+                    </h3>
+                    <div className="row pb-2">
+                      <div className="col font-weight-bold">Username</div>
+                      <div className="col text-right">{username}</div>
+                    </div>
+                    <div className="row pb-2">
+                      <div className="col font-weight-bold">Birthdate</div>
+                      <div className="col text-right">{birthDate}</div>
+                    </div>
+                    <div className="row pb-2">
+                      <div className="col font-weight-bold">Phone No.</div>
+                      <div className="col text-right">{phone}</div>
+                    </div>
+                    <div className="row pb-2">
+                      <div className="col font-weight-bold">Email</div>
+                      <div className="col text-right">{email}</div>
+                    </div>
+                    <div className="row pb-2">
+                      <div className="col font-weight-bold">Address</div>
+                      <div className="col text-right">
+                        {address}
+                        {city}
+    ,
+    {state}
+                        {zipcode}
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col font-weight-bold">Organization</div>
+                      <div className="col text-right">{organization}</div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="btn m-5 font-weight-bold"
+                      style={{
+                        backgroundColor,
+                        color,
+                        borderColor: '#7B81FF',
+                        borderWidth: 1,
+                        borderStyle: 'solid',
+                      }}
+                      onMouseOver={() =>
+                        this.setState({
+                          backgroundColor: '#FFFFFF',
+                          color: '#7B81FF',
+                        })
+                      }
+                      onFocus={() => undefined}
+                      onMouseOut={() =>
+                        this.setState({
+                          backgroundColor: '#7B81FF',
+                          color: '#FFFFFF',
+                        })
+                      }
+                      onBlur={() => undefined}
+                      data-toggle="modal"
+                      data-target="#exampleModal"
+                      data-testid="edit-info"
+                      onClick={() =>
+                        this.setState({ showCropper: false, inputKey: Date.now() })
+                      }
+                    >
+                      Update Your Profile Picture
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="column">
-                <Link
-                  to={`/my-information/${username}/${firstName}+${lastName}`}
-                  className="link-primary btn-sm btn my-4 py-3"
+              <div className="col-md-6 col-12 h-75 mt-2 mt-md-0">
+                <div
+                  className="rounded-top"
+                  style={{
+                    borderColor: '#7B81FF',
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                  }}
                 >
-                  {firstName}&apos;s Information
-                </Link>
+                  <h3 className="font-weight-bold mt-3 text-center text-dark">
+                    Recent Activity
+                  </h3>
+                </div>
+                <div
+                  className="rounded-bottom border-top-0 text-center container"
+                  style={{
+                    borderColor: '#7B81FF',
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                    borderTop: 0,
+                    maxHeight: '33rem',
+                    overflow: 'scroll',
+                  }}
+                >
+                  {activitiesArr === null ? (
+                    <div className="row w-125 p-2 text-dark"> Loading ... </div>
+                  ) : (
+                    this.renderActivities(activitiesArr)
+                  )}
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: 15 }}>
+              <div
+                className="rounded px-5"
+                style={{
+                  borderColor: '#7B81FF',
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                }}
+              >
+                <div className="row py-4 justify-content-between">
+                  <div className="column" style={{ maxWidth: 650 }}>
+                    <h3>{firstName}&apos;s Information</h3>
+                    <div className="upload-text-style large-text">
+                      Complete and manage your personal information, including extended account information,
+                      veteran and family information, and demographic information. Make sure to fill out all
+                      sections so your applications can be completed as quickly as possible.
+                    </div>
+                  </div>
+                  <div className="column">
+                    <Link
+                      to={`/my-information/${username}/${firstName}+${lastName}`}
+                      className="link-primary btn my-4 py-3"
+                    >
+                      {firstName}&apos;s Information
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </Route>
+      </Switch>
     );
   }
 }
