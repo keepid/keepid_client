@@ -26,7 +26,7 @@ class MyInfoDashboard extends Component<Props, State, {}> {
   }
 
   render() {
-    const { name, history } = this.props;
+    const { name, username, history } = this.props;
     const { isLoading } = this.state;
     return (
             <div id="Buttons" className="container pt-5">
@@ -52,7 +52,7 @@ class MyInfoDashboard extends Component<Props, State, {}> {
                           imageSize="50%"
                           imageLoc={CardImageLoc.TOP}
                           imageObjectFit="contain"
-                          buttonOnClick={() => history.push('/basic-info')}
+                          buttonOnClick={() => history.push(`/basic-info/${username}/${name.split(' ').join('+')}`)}
                         />
                         <BaseCard
                           cardTitle="Family"
@@ -63,7 +63,7 @@ class MyInfoDashboard extends Component<Props, State, {}> {
                           imageSize="50%"
                           imageLoc={CardImageLoc.TOP}
                           imageObjectFit="contain"
-                          buttonOnClick={() => history.push('/family-info')}
+                          buttonOnClick={() => history.push(`/family-info/${username}/${name.split(' ').join('+')}`)}
                         />
                         <BaseCard
                           cardTitle="Demographics"
@@ -74,7 +74,7 @@ class MyInfoDashboard extends Component<Props, State, {}> {
                           imageSize="50%"
                           imageLoc={CardImageLoc.TOP}
                           imageObjectFit="contain"
-                          buttonOnClick={() => history.push('/demographics')}
+                          buttonOnClick={() => history.push(`/demographics/${username}/${name.split(' ').join('+')}`)}
                         />
                         <BaseCard
                           cardTitle="Veteran Status"
@@ -85,7 +85,7 @@ class MyInfoDashboard extends Component<Props, State, {}> {
                           imageSize="50%"
                           imageLoc={CardImageLoc.TOP}
                           imageObjectFit="contain"
-                          buttonOnClick={() => history.push('/veteran-status')}
+                          buttonOnClick={() => history.push(`/veteran-status/${username}/${name.split(' ').join('+')}`)}
                         />
                     </div>
                 </div>

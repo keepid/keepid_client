@@ -18,6 +18,7 @@ interface Props {
   alert: any,
   userRole: Role,
   username: any,
+  name: any,
 }
 
 interface State {
@@ -181,7 +182,7 @@ class UploadDocs extends React.Component<Props, State> {
     if (this.props.userRole !== Role.Client) {
       return '/my-documents/';
     }
-    return `/my-documents/${this.props.username}`;
+    return `/my-documents/${this.props.username}/${this.props.name.split(' ').join('+')}`;
   }
 
   render() {

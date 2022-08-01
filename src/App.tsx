@@ -324,16 +324,17 @@ class App extends React.Component<{}, State, {}> {
                               }}
                             />
                             <Route
-                              path="/upload-document/:clientUsername"
+                              path="/upload-document/:clientUsername/:name"
                               render={(props) => {
                                 const { clientUsername } = props.match.params;
+                                const clientName = props.match.params.name.split('+').join(' ');
                                 if (
                                   role === Role.Admin ||
                                     role === Role.Director ||
                                     role === Role.Worker ||
                                     role === Role.Client
                                 ) {
-                                  return <UploadDocs userRole={Role.Client} username={clientUsername} />;
+                                  return <UploadDocs userRole={Role.Client} username={clientUsername} name={clientName} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
@@ -342,17 +343,18 @@ class App extends React.Component<{}, State, {}> {
                               path="/upload-document"
                               render={() => {
                                 if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
-                                  return <UploadDocs userRole={role} username={username} />;
+                                  return <UploadDocs userRole={role} username={username} name={name} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
                             />
                             <Route
-                              path="/my-documents/:username"
+                              path="/my-documents/:username/:name"
                               render={(props) => {
-                                const clientName = props.match.params.username;
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name.split('+').join(' ');
                                 if (role === Role.Admin || role === Role.Worker || role === Role.Developer || role === Role.Client) {
-                                  return <MyDocuments userRole={Role.Client} username={clientName} />;
+                                  return <MyDocuments userRole={Role.Client} username={clientUsername} name={clientName} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
@@ -366,7 +368,7 @@ class App extends React.Component<{}, State, {}> {
                                     role === Role.Worker ||
                                     role === Role.Developer
                                 ) {
-                                  return <MyDocuments userRole={role} username={username} />;
+                                  return <MyDocuments userRole={role} username={username} name={name} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
@@ -387,6 +389,22 @@ class App extends React.Component<{}, State, {}> {
                               }}
                             />
                             <Route
+                              path="/my-information/:username/:name"
+                              render={(props) => {
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name.split('+').join(' ');
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <MyInfoDashboard name={clientName} username={clientUsername} />;
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
                               path="/my-information"
                               render={() => {
                                 if (
@@ -401,57 +419,65 @@ class App extends React.Component<{}, State, {}> {
                               }}
                             />
                             <Route
-                              path="/basic-info"
-                              render={() => {
+                              path="/basic-info/:username/:name"
+                              render={(props) => {
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name;
                                 if (
                                   role === Role.Client ||
                                     role === Role.Admin ||
                                     role === Role.Worker ||
                                     role === Role.Developer
                                 ) {
-                                  return <BasicInfo name={name} username={username} />;
+                                  return <BasicInfo name={clientName} username={clientUsername} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
                             />
                             <Route
-                              path="/family-info"
-                              render={() => {
+                              path="/family-info/:username/:name"
+                              render={(props) => {
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name;
                                 if (
                                   role === Role.Client ||
                                     role === Role.Admin ||
                                     role === Role.Worker ||
                                     role === Role.Developer
                                 ) {
-                                  return <FamilyInfo name={name} username={username} />;
+                                  return <FamilyInfo name={clientName} username={clientUsername} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
                             />
                             <Route
-                              path="/demographics"
-                              render={() => {
+                              path="/demographics/:username/:name"
+                              render={(props) => {
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name;
                                 if (
                                   role === Role.Client ||
                                     role === Role.Admin ||
                                     role === Role.Worker ||
                                     role === Role.Developer
                                 ) {
-                                  return <Demographics name={name} username={username} />;
+                                  return <Demographics name={clientName} username={clientUsername} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
                             />
                             <Route
-                              path="/veteran-status"
-                              render={() => {
+                              path="/veteran-status/:username/:name"
+                              render={(props) => {
+                                const clientUsername = props.match.params.username;
+                                const clientName = props.match.params.name;
                                 if (
                                   role === Role.Client ||
                                     role === Role.Admin ||
                                     role === Role.Worker ||
                                     role === Role.Developer
                                 ) {
-                                  return <VeteranStatus name={name} username={username} />;
+                                  return <VeteranStatus name={clientName} username={clientUsername} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}

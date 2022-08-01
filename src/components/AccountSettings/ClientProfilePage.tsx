@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
+import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
@@ -572,7 +573,7 @@ class ClientProfilePage extends Component<Props, State> {
           {firstName}{' '}{lastName}
           &apos;s Profile
         </h1>
-        <div className="row">
+        <div className="row mb-4">
           <div className="col-md-6 col-12 h-75 text-dark">
             <div
               className="rounded px-5"
@@ -704,6 +705,35 @@ class ClientProfilePage extends Component<Props, State> {
               ) : (
                 this.renderActivities(activitiesArr)
               )}
+            </div>
+          </div>
+        </div>
+        <div style={{ padding: 15 }}>
+          <div
+            className="rounded px-5"
+            style={{
+              borderColor: '#7B81FF',
+              borderWidth: 1,
+              borderStyle: 'solid',
+            }}
+          >
+            <div className="row py-4 justify-content-between">
+              <div className="column" style={{ maxWidth: 650 }}>
+                <h3>{firstName}&apos;s Information</h3>
+                <div className="upload-text-style large-text">
+                  Complete and manage your personal information, including extended account information,
+                  veteran and family information, and demographic information. Make sure to fill out all
+                  sections so your applications can be completed as quickly as possible.
+                </div>
+              </div>
+              <div className="column">
+                <Link
+                  to={`/my-information/${username}/${firstName}+${lastName}`}
+                  className="link-primary btn-sm btn my-4 py-3"
+                >
+                  {firstName}&apos;s Information
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -283,7 +283,7 @@ class WorkerLanding extends Component<Props, State> {
             </a>
             <div className="dropdown-menu">
               <Link
-                to={`/upload-document/${client.username}`}
+                to={`/upload-document/${client.username}/${client.firstName}+${client.lastName}`}
                 className="dropdown-item primary-color"
               >
                 <div style={{ fontWeight: 'bold' }}>
@@ -296,7 +296,7 @@ class WorkerLanding extends Component<Props, State> {
                 </div>
               </Link>
               <Link
-                to={`/my-documents/${client.username}`}
+                to={`/my-documents/${client.username}/${client.firstName}+${client.lastName}`}
                 className="dropdown-item"
               >
                 <div className="view-docs-btn-text">
@@ -367,8 +367,8 @@ class WorkerLanding extends Component<Props, State> {
               </Link>
               <div className="row lock-bottom-left">
                 <Link
-                  to={`/upload-document/${client.username}`}
-                  className="btn btn-primary mr-2 btn-sm"
+                  to={`/upload-document/${client.username}/${client.firstName}+${client.lastName}`}
+                  className="link-primary btn mr-2 btn-sm"
                   style={{ height: 32 }}
                 >
                   <div style={{ fontWeight: 'bold' }}>
@@ -381,8 +381,8 @@ class WorkerLanding extends Component<Props, State> {
                   </div>
                 </Link>
                 <Link
-                  to={`/my-documents/${client.username}`}
-                  className="btn link-secondary btn-sm primary-color-border"
+                  to={`/my-documents/${client.username}/${client.firstName}+${client.lastName}`}
+                  className="link-secondary btn-sm btn primary-color-border"
                   style={{ height: 32 }}
                 >
                   <div style={{ color: '#445feb', fontWeight: 'bold' }}>View Documents</div>
@@ -535,46 +535,6 @@ class WorkerLanding extends Component<Props, State> {
                     <div style={{ fontWeight: 'bold' }}>Search</div>
                   </button>
                 </form>
-                {/* <button
-=======
-      <div>
-        <Helmet>
-          <title>Home</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container mb-4">
-            <h1 className="display-5 pb-0">My Clients</h1>
-            <div className="d-flex flex-row justify-content-between">
-              <form className="form-inline mr-3">
-                <input
-                  className="right-angle-right form-control"
-                  type="text"
-                  onChange={this.handleChangeSearchName}
-                  value={this.state.searchName}
-                  placeholder="Search by name, email..."
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.showClientList();
-                      event.preventDefault();
-                    }
-                  }}
-                />
-                <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
-                  <div>Search</div>
-                </button>
-              </form>
-              {/* <button
-                className="btn btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#advancedSearch"
-                aria-expanded="false"
-                aria-controls="collapseExample"
-              >
-                Advanced Search
-                </button> */}
               <div>
                 {role === Role.Director || role === Role.Admin ? (
                 <Link to="/person-signup/worker">

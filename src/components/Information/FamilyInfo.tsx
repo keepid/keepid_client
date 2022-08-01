@@ -183,7 +183,7 @@ class FamilyInfo extends Component<Props, State, any> {
     }
 
     render() {
-      const { name, history } = this.props;
+      const { name, username, history } = this.props;
       const {
         editInfo,
       } = this.state;
@@ -198,23 +198,23 @@ class FamilyInfo extends Component<Props, State, any> {
                     <h1 id="welcome-title">Family Information</h1>
                 </div>
                 <div className="row justify-content-between mb-2">
-                    <Link to="/my-information">
+                    <Link to={`/my-information/${username}/${name}`}>
                         <button type="button" className="btn btn-sm btn-secondary mr-2">
                             Return to My Information
                         </button>
                     </Link>
                     <div className="row">
-                        <Link to="/basic-info">
+                        <Link to={`/basic-info/${username}/${name}`}>
                             <button type="button" className="btn btn-sm btn-secondary mx-2">
                                 Basic Information
                             </button>
                         </Link>
-                        <Link to="/demographics">
+                        <Link to={`/demographics/${username}/${name}`}>
                             <button type="button" className="btn btn-sm btn-secondary mr-2">
                                 Demographics
                             </button>
                         </Link>
-                        <Link to="/veteran-status">
+                        <Link to={`/veteran-status/${username}/${name}`}>
                             <button type="button" className="btn btn-sm btn-secondary">
                                 Veteran Status Information
                             </button>

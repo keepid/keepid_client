@@ -941,3 +941,9 @@ div.scrollbar {
 	height: 2.375rem;
 	width: 2.75rem;
 }
+
+.link-primary {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}
