@@ -8,6 +8,7 @@ import fetchMock from 'jest-fetch-mock';
 import React from 'react';
 import { Provider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import { MemoryRouter } from 'react-router-dom';
 
 import ClientProfilePage from '../../../components/AccountSettings/ClientProfilePage';
 
@@ -26,9 +27,11 @@ describe('ClientProfilePage', () => {
       const alertShowFn = jest.fn();
       const file = new File(['profile photo'], 'photo.png', { type: 'image/png' });
       const { getByTestId } = render(
+              <MemoryRouter>
                 <Provider template={AlertTemplate} className="alert-provider-custom">
                     <ClientProfilePage alert={{ show: alertShowFn }} username="test" />
                 </Provider>,
+              </MemoryRouter>,
       );
 
       // Act
