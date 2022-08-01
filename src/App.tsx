@@ -29,6 +29,11 @@ import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import Home from './components/Home/index';
+import BasicInfo from './components/Information/BasicInfo';
+import Demographics from './components/Information/Demographics';
+import FamilyInfo from './components/Information/FamilyInfo';
+import MyInfoDashboard from './components/Information/MyInfoDashboard';
+import VeteranStatus from './components/Information/VeteranStatus';
 import IssueReport from './components/IssueReport';
 import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -324,9 +329,9 @@ class App extends React.Component<{}, State, {}> {
                                 const { clientUsername } = props.match.params;
                                 if (
                                   role === Role.Admin ||
-                                        role === Role.Director ||
-                                        role === Role.Worker ||
-                                        role === Role.Client
+                                    role === Role.Director ||
+                                    role === Role.Worker ||
+                                    role === Role.Client
                                 ) {
                                   return <UploadDocs userRole={Role.Client} username={clientUsername} />;
                                 }
@@ -357,9 +362,9 @@ class App extends React.Component<{}, State, {}> {
                               render={() => {
                                 if (
                                   role === Role.Client ||
-                                        role === Role.Admin ||
-                                        role === Role.Worker ||
-                                        role === Role.Developer
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
                                 ) {
                                   return <MyDocuments userRole={role} username={username} />;
                                 }
@@ -377,6 +382,76 @@ class App extends React.Component<{}, State, {}> {
                                               username={username}
                                             />
                                   );
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
+                              path="/my-information"
+                              render={() => {
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <MyInfoDashboard name={name} username={username} />;
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
+                              path="/basic-info"
+                              render={() => {
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <BasicInfo name={name} username={username} />;
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
+                              path="/family-info"
+                              render={() => {
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <FamilyInfo name={name} username={username} />;
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
+                              path="/demographics"
+                              render={() => {
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <Demographics name={name} username={username} />;
+                                }
+                                return <Redirect to="/error" />;
+                              }}
+                            />
+                            <Route
+                              path="/veteran-status"
+                              render={() => {
+                                if (
+                                  role === Role.Client ||
+                                    role === Role.Admin ||
+                                    role === Role.Worker ||
+                                    role === Role.Developer
+                                ) {
+                                  return <VeteranStatus name={name} username={username} />;
                                 }
                                 return <Redirect to="/error" />;
                               }}

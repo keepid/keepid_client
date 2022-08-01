@@ -16,7 +16,9 @@ export enum CardSize {
   SMALL_VERTICAL = 'small-vertical',
   SMALL_HORIZONTAL = 'small-horizontal',
   MEDIUM_VERTICAL = 'medium-vertical',
-  MEDIUM_HORIZONTAL = 'medium-horizontal'
+  MEDIUM_HORIZONTAL = 'medium-horizontal',
+  XSMALL_VERTICAL = 'xsmall-vertical',
+  XSMALL_HORIZONTAL = 'xsmall-horizontal',
 }
 
 interface Props {
@@ -115,7 +117,7 @@ function BaseCard(props: Props): React.ReactElement {
               />
               <div className={`p-4 d-flex flex-column ${(imageLoc === CardImageLoc.LEFT) ? 'order-2' : 'order-1'}`}>
                 <div style={{ height: '100%' }}>
-                  <Card.Title><h3>{cardTitle}</h3></Card.Title>
+                  <Card.Title><h4>{cardTitle}</h4></Card.Title>
                   <Card.Text>{cardText}</Card.Text>
                   {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
                 </div>
@@ -139,7 +141,7 @@ function BaseCard(props: Props): React.ReactElement {
           : null }
         { imageLoc === CardImageLoc.TOP || typeof imageLoc === 'undefined'
           ? (
-            <Card.Body className="p-0 d-flex flex-column align-items-start" style={{ height: '100%' }}>
+            <Card.Body className="p-4 d-flex flex-column align-items-start" style={{ height: '100%' }}>
               {typeof imageLoc !== 'undefined'
                 ? (
                   <Image
@@ -156,15 +158,15 @@ function BaseCard(props: Props): React.ReactElement {
                   />
                 )
                 : null}
-              <div className="p-4">
-                <Card.Title><h3>{cardTitle}</h3></Card.Title>
+              <div className="py-4">
+                <Card.Title><h4>{cardTitle}</h4></Card.Title>
                 <Card.Text>{cardText}</Card.Text>
                 {typeof renderAdditionalContent === 'function' ? renderAdditionalContent() : null}
               </div>
               {buttonText
                 ? (
                   <Button
-                    className="btn btn-card mt-auto mb-4 ml-4"
+                    className="btn btn-card mt-auto w-100"
                     onClick={buttonOnClick}
                     style={{
                       borderRadius: buttonBorderRadius,
@@ -217,12 +219,18 @@ function BaseCard(props: Props): React.ReactElement {
   } else if (cardSize === CardSize.MEDIUM_HORIZONTAL) {
     cardHeight = '315px';
     cardWidth = '500px';
+  } else if (cardSize === CardSize.XSMALL_HORIZONTAL) {
+    cardHeight = '250px';
+    cardWidth = '335px';
+  } else if (cardSize === CardSize.XSMALL_VERTICAL) {
+    cardHeight = '320px';
+    cardWidth = '240px';
   } else {
     cardHeight = props.cardHeight;
     cardWidth = props.cardWidth;
   }
   return (
-    <div className="ml-1 mr-1 mt-2 mb-2" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <div className="ml-2 mr-2 mt-2 mb-2" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {cardLink !== undefined
         ? (
           <Link to={cardLink} className="no-link-style">

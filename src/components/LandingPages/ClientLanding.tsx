@@ -7,6 +7,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import AtWorkPic from '../../static/images/atwork-rafiki.png';
 import DocumentsPic from '../../static/images/documents-rafiki.png';
+import InfoPic from '../../static/images/info-rafiki.png';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
 interface Props extends RouteComponentProps {
@@ -121,8 +122,8 @@ class ClientLanding extends Component<Props, State, {}> {
               cardTitle="Documents"
               cardText="Upload, view, and download your documents"
               buttonText="My Documents"
-              cardSize={CardSize.SMALL_HORIZONTAL}
-              imageSrc={DocumentsPic}
+              cardSize={CardSize.XSMALL_HORIZONTAL}
+              imageSrc={AtWorkPic}
               imageSize="50%"
               imageLoc={CardImageLoc.RIGHT}
               imageObjectFit="contain"
@@ -134,12 +135,25 @@ class ClientLanding extends Component<Props, State, {}> {
               cardTitle="Application"
               cardText="Upload, complete, and manage your applications"
               buttonText="My Applications"
-              cardSize={CardSize.SMALL_HORIZONTAL}
-              imageSrc={AtWorkPic}
+              cardSize={CardSize.XSMALL_HORIZONTAL}
+              imageSrc={DocumentsPic}
               imageSize="50%"
               imageLoc={CardImageLoc.RIGHT}
               imageObjectFit="contain"
               buttonOnClick={() => history.push('/applications')}
+            />
+          </div>
+          <div className="d-flex p-2" id="Information container">
+            <BaseCard
+              cardTitle="Information"
+              cardText="Complete and manage your personal information"
+              buttonText="My Information"
+              cardSize={CardSize.XSMALL_HORIZONTAL}
+              imageSrc={InfoPic}
+              imageSize="50%"
+              imageLoc={CardImageLoc.RIGHT}
+              imageObjectFit="contain"
+              buttonOnClick={() => history.push('/my-information')}
             />
           </div>
         </div>

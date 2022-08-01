@@ -871,3 +871,73 @@ div.scrollbar {
 .primary-color {
 	color: $primary-theme;
 }
+
+.primary-border {
+	border-color: $primary-theme;
+}
+
+.large-bold-text {
+	font-weight: 1000;
+	font-size: 1rem;
+	line-height: 1.125rem;
+}
+
+.dropdown-size {
+	height: 2.375rem;
+	width: 10rem;
+}
+
+.large-dropdown-size {
+	height: 2.375rem;
+	width: 14rem;
+}
+
+.larger-dropdown-size {
+	height: 2.375rem;
+	width: 18rem;
+}
+
+.small-dropdown-size {
+	height: 2.375rem;
+	width: 5.8125rem;
+}
+
+.medium-dropdown-size {
+	height: 2.375rem;
+	width: 6.9375rem;
+}
+
+.smaller-input {
+	font-size: 0.825rem;
+}
+
+.lock-bottom-right {
+	position: absolute;
+	bottom: 1.5rem;
+	right: 1.5rem;
+}
+
+.large-text {
+	font-size: 1rem;
+	line-height: 1.125rem;
+}
+
+.larger-text {
+	font-size: 1.125rem;
+	font-weight: 1000;
+}
+
+.title-text-size{
+	font-size: 1.75rem;
+	font-weight: 1000;
+}
+
+.name-dropdown {
+	height: 2.375rem;
+	width: 12.5rem;
+}
+
+.child-field {
+	height: 2.375rem;
+	width: 2.75rem;
+}
