@@ -44,7 +44,7 @@ class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Apply Now</b></button>
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleApply}> <b>Apply Now</b></button>
       </Link>
     </div>
   )
@@ -52,10 +52,10 @@ class Applications extends Component<Props, State, {}> {
   DoubleButtonFormatter = (cell, row) => (
     <div className="side-by-side-buttons">
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Download</b></button>
+        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDownload()}> <b>Download</b></button>
       </Link>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.placeholderFunc}> <b>Delete File</b></button>
+        <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDelete()}> <b>Delete File</b></button>
       </Link>
     </div>
   )
@@ -173,6 +173,75 @@ class Applications extends Component<Props, State, {}> {
         openModal: true,
       },
     );
+  }
+
+  handleApply= (event: any, row: any) => {
+    const {
+      id,
+      filename,
+    } = row;
+    this.setState(
+      {
+        currentApplicationId: id,
+        currentApplicationFilename: filename,
+      },
+    );
+  }
+
+  handleDelete= (event: any, row: any) => {
+    const {
+      id,
+    } = row;
+    fetch(`${getServerURL()}/delete-document/`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+        fileId: id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        const {
+          status,
+        } = responseJSON;
+        if (status === 'SUCCESS') {
+          // TODO:show alert
+          // alert.show('Successfully Deleted PDF Application');
+        } else if (status === 'USER_NOT_FOUND') {
+          // show alert
+        } else if (status === 'CROSS_ORG_ACTION_DENIED') {
+          // show alert
+        }
+      });
+  }
+
+  handleDownload= (event: any, row: any) => {
+    const {
+      id,
+    } = row;
+    fetch(`${getServerURL()}/download`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+      body: JSON.stringify({
+        pdfType: PDFType.FORM,
+        fileId: id,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        // create blob link to download
+        const downloadURL = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        const link = document.createElement('a');
+        link.href = downloadURL;
+        link.download = 'CompletedApplication.pdf';
+        document.body.append(link);
+        link.click(); // start download
+        // link.parentNode.removeChild(link); //clean up and remove link
+      });
   }
 
   placeholderFunc = () => { };
