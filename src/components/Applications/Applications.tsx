@@ -36,13 +36,14 @@ interface State {
   documents: DocumentInformation[],
   applications: DocumentInformation[],
   openModal: Boolean | false,
+  currentFileUrl: string,
 }
 
 class Applications extends Component<Props, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleApply}> <b>Apply Now</b></button>
+        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleApply(event, row)}> <b>Apply Now</b></button>
       </Link>
     </div>
   )
@@ -60,13 +61,13 @@ class Applications extends Component<Props, State, {}> {
 
   PreviewFormatter = (cell, row) => (
     <div>
-      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.FORM)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
     </div>
   )
 
   ViewFormatter = (cell, row) => (
     <div>
-      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.APPLICATION)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
     </div>
   )
 
@@ -127,6 +128,7 @@ class Applications extends Component<Props, State, {}> {
         documents: [],
         applications: [],
         openModal: false,
+        currentFileUrl: '',
       };
     }
 
@@ -179,16 +181,34 @@ class Applications extends Component<Props, State, {}> {
     });
   }
 
-  handleViewDocument = (event: any, row: any) => {
+  handleViewDocument = (event: any, row: any, docType: PDFType) => {
     const {
       id,
       filename,
     } = row;
+    let url;
+    fetch(`${getServerURL()}/download`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/pdf',
+      },
+      body: JSON.stringify({
+        pdfType: docType,
+        fileId: id,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        // create blob link
+        url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      });
     this.setState(
       {
         currentApplicationId: id,
         currentApplicationFilename: filename,
         openModal: true,
+        currentFileUrl: url,
       },
     );
   }
@@ -239,7 +259,7 @@ class Applications extends Component<Props, State, {}> {
       id,
     } = row;
     fetch(`${getServerURL()}/download`, {
-      method: 'GET',
+      method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/pdf',
@@ -272,20 +292,22 @@ class Applications extends Component<Props, State, {}> {
       currentApplicationId,
       documents,
       applications,
+      openModal,
+      currentFileUrl,
     } = this.state;
 
     return (
       <Switch>
         <Route exact path="/applications">
           <div className="modal custom">
-          <Modal show={this.state.openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
+          <Modal show={openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
             <Modal.Header>
               <Button className="transparent-button" variant="secondary" onClick={this.closeModal}>
               <img src={Close} alt="description of image" />
               </Button>
             </Modal.Header>
             <Modal.Body>
-              <iframe src="https://thebasketballplaybook.com/wp-content/uploads/2017/11/Brad-Stevens-Boston-Celtics-Playbook.pdf" title="temp pdf" width="100%" height="600" frameBorder="none" />
+               <iframe src={currentFileUrl} title="temp pdf" width="100%" height="600" frameBorder="none" />
             </Modal.Body>
           </Modal>
           </div>
