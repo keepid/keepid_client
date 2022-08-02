@@ -88,36 +88,46 @@ class ApplicationForm extends Component<Props, State> {
     const {
       formAnswers,
     } = this.state;
-    const JSONresponse = require('./application_birth.json');
-    const newExample = require('./drivers_license.json');
-    const { status } = JSONresponse;
+
+    // const JSONresponse = require('./application_birth.json');
+    // const newExample = require('./drivers_license.json');
+    // const { status } = JSONresponse;
+
     //make API call here to get application questions. newExample currently hardcoded 
     //but is in the correct json format
-      if (status === 'SUCCESS') {
-        // const {
-        //   fields,
-        //   title,
-        //   description,
-        // } = JSONresponse;
-        //const {fields} = JSONresponse;
+
+    fetch(`${getServerURL()}/get-application-questions`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        applicationId: applicationId,
+      }),
+    })
+        .then((response) => response.json())
+        .then((responseJSON) => {
+          const {
+            response,
+              information,
+          } = responseJSON;
 
 
-        //SUBSECTIONS
+      if (response === 'SUCCESS') {
 
-        if (newExample.body['subsections'] != null){
+        //SUBSECTIONS TODO: backend doesn't have subsections so far, might change
+        if ('body' in information && information.body['subsections'] != null){
           var currFields : Field[] = [];
           var currTitles : string[] = [];
           var currDescriptions : string[] = [];
           var currentNumQOnPage : number[] = [];
-          const {description,title} = newExample.metadata;
-          for (var i = 0; i < newExample.body['subsections'].length; i++){
-            currentNumQOnPage.push(newExample.body['subsections'][i]['questions'].length);
-            currTitles.push(newExample.body['subsections'][i]['title'])
-            currDescriptions.push(newExample.body['subsections'][i]['description'])
+          const {description,title} = information.metadata;
+          for (var i = 0; i < information.body['subsections'].length; i++){
+            currentNumQOnPage.push(information.body['subsections'][i]['questions'].length);
+            currTitles.push(information.body['subsections'][i]['title'])
+            currDescriptions.push(information.body['subsections'][i]['description'])
             console.log("LENGTH");
-            console.log(newExample.body['subsections'][i]['questions'].length);
-            for (var j = 0; j < newExample.body['subsections'][i]['questions'].length; j++){
-              currFields.push(newExample.body['subsections'][i]['questions'][j])
+            console.log(information.body['subsections'][i]['questions'].length);
+            for (var j = 0; j < information.body['subsections'][i]['questions'].length; j++){
+              currFields.push(information.body['subsections'][i]['questions'][j])
 
               /* 
 
@@ -147,19 +157,20 @@ class ApplicationForm extends Component<Props, State> {
             description,
             formAnswers,
             numPages:
-              newExample.body['subsections'].length,
+            information.body['subsections'].length,
             isSubsection: true,
             numQOnPage : currentNumQOnPage,
             titleArray : currTitles,
             descriptionArray : currDescriptions
           });
 
-          
+
         } 
         else{
-          const {questions} = newExample.body;
+          const {questions} = information.fields;
           const fields = questions;
-          const {description,title} = newExample.metadata;
+          const {title} = information.title;
+          const {description} = information.description;
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
@@ -197,7 +208,7 @@ class ApplicationForm extends Component<Props, State> {
         });
       }
 
-
+        });
   }
 
   handleContinue = (e: any): void => {
