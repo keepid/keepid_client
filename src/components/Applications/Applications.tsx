@@ -7,12 +7,9 @@ import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Close from '../../static/images/closebutton.png';
-import SearchSVG from '../../static/images/search.svg';
 import View from '../../static/images/view-icon.png';
 import PDFType from '../../static/PDFType';
-import SearchBar from '../BaseComponents/SearchBar';
 import Table from '../BaseComponents/Table';
-import Logo from '../static/images/logo.svg';
 import ApplicationForm from './ApplicationForm';
 
 interface DocumentInformation {
@@ -37,6 +34,7 @@ interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   documents: DocumentInformation[],
+  applications: DocumentInformation[],
   openModal: Boolean | false,
 }
 
@@ -52,10 +50,10 @@ class Applications extends Component<Props, State, {}> {
   DoubleButtonFormatter = (cell, row) => (
     <div className="side-by-side-buttons">
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDownload()}> <b>Download</b></button>
+        <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDownload(event, row)}> <b>Download</b></button>
       </Link>
       <Link to="/applications/send">
-        <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDelete()}> <b>Delete File</b></button>
+        <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDelete(event, row)}> <b>Delete File</b></button>
       </Link>
     </div>
   )
@@ -127,16 +125,22 @@ class Applications extends Component<Props, State, {}> {
         currentApplicationId: undefined,
         currentApplicationFilename: undefined,
         documents: [],
+        applications: [],
         openModal: false,
       };
     }
 
   componentDidMount = () => {
+    this.getDocument(PDFType.FORM);
+    this.getDocument(PDFType.APPLICATION);
+  }
+
+  getDocument = (docType: PDFType) => {
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: docType,
         annotated: true,
       }),
     }).then((response) => response.json())
@@ -154,11 +158,25 @@ class Applications extends Component<Props, State, {}> {
             row.index = i;
             newDocuments.push(row);
           }
-          this.setState({
-            documents: newDocuments,
-          });
+          if (docType === PDFType.APPLICATION) {
+            this.setApplications(newDocuments);
+          } else if (docType === PDFType.FORM) {
+            this.setDocuments(newDocuments);
+          }
         }
       });
+  }
+
+  setDocuments = (newDocuments: DocumentInformation[]) => {
+    this.setState({
+      documents: newDocuments,
+    });
+  }
+
+  setApplications = (newDocuments: DocumentInformation[]) => {
+    this.setState({
+      applications: newDocuments,
+    });
   }
 
   handleViewDocument = (event: any, row: any) => {
@@ -244,8 +262,6 @@ class Applications extends Component<Props, State, {}> {
       });
   }
 
-  placeholderFunc = () => { };
-
   openModalFunc = () => this.setState({ openModal: true });
 
   closeModal = () => this.setState({ openModal: false });
@@ -255,6 +271,7 @@ class Applications extends Component<Props, State, {}> {
       currentApplicationFilename,
       currentApplicationId,
       documents,
+      applications,
     } = this.state;
 
     return (
@@ -305,7 +322,7 @@ class Applications extends Component<Props, State, {}> {
                 <div className="w-100 pd-3">
                   <Table
                     columns={this.completedTableCols}
-                    data={documents}
+                    data={applications}
                     emptyInfo={{ description: 'No Applications Present' }}
                   />
                 </div>
