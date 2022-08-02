@@ -61,13 +61,13 @@ class Applications extends Component<Props, State, {}> {
 
   PreviewFormatter = (cell, row) => (
     <div>
-      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.FORM)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.BLANK_FORM)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
     </div>
   )
 
   ViewFormatter = (cell, row) => (
     <div>
-      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.APPLICATION)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
+      <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.COMPLETED_APPLICATION)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
     </div>
   )
 
@@ -133,8 +133,8 @@ class Applications extends Component<Props, State, {}> {
     }
 
   componentDidMount = () => {
-    this.getDocument(PDFType.FORM);
-    this.getDocument(PDFType.APPLICATION);
+    this.getDocument(PDFType.BLANK_FORM);
+    this.getDocument(PDFType.COMPLETED_APPLICATION);
   }
 
   getDocument = (docType: PDFType) => {
@@ -160,9 +160,9 @@ class Applications extends Component<Props, State, {}> {
             row.index = i;
             newDocuments.push(row);
           }
-          if (docType === PDFType.APPLICATION) {
+          if (docType === PDFType.COMPLETED_APPLICATION) {
             this.setApplications(newDocuments);
-          } else if (docType === PDFType.FORM) {
+          } else if (docType === PDFType.BLANK_FORM) {
             this.setDocuments(newDocuments);
           }
         }
@@ -234,7 +234,7 @@ class Applications extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: PDFType.COMPLETED_APPLICATION,
         fileId: id,
       }),
     })
@@ -265,7 +265,7 @@ class Applications extends Component<Props, State, {}> {
         'Content-Type': 'application/pdf',
       },
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: PDFType.COMPLETED_APPLICATION,
         fileId: id,
       }),
     })
@@ -353,7 +353,9 @@ class Applications extends Component<Props, State, {}> {
           </div>
         </Route>
         <Route path="/applications/send">
-          <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+          {currentApplicationId && currentApplicationFilename
+            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+            : <div />}
         </Route>
       </Switch>
     );

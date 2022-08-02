@@ -137,7 +137,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: PDFType.BLANK_FORM,
         annotated: false,
       }),
     })
@@ -223,9 +223,9 @@ class DeveloperLanding extends Component<Props, State, {}> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.FORM;
+      pdfType = PDFType.BLANK_FORM;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }

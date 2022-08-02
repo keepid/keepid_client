@@ -105,78 +105,69 @@ class ApplicationForm extends Component<Props, State> {
     })
         .then((response) => response.json())
         .then((responseJSON) => {
-          const {
-            response,
-              information,
-          } = responseJSON;
+          const {status} = responseJSON;
 
+      if (status === 'SUCCESS') {
+        const { fields, title, description } = responseJSON;
 
-      if (response === 'SUCCESS') {
-
-        //SUBSECTIONS TODO: backend doesn't have subsections so far, might change
-        if ('body' in information && information.body['subsections'] != null){
-          var currFields : Field[] = [];
-          var currTitles : string[] = [];
-          var currDescriptions : string[] = [];
-          var currentNumQOnPage : number[] = [];
-          const {description,title} = information.metadata;
-          for (var i = 0; i < information.body['subsections'].length; i++){
-            currentNumQOnPage.push(information.body['subsections'][i]['questions'].length);
-            currTitles.push(information.body['subsections'][i]['title'])
-            currDescriptions.push(information.body['subsections'][i]['description'])
-            console.log("LENGTH");
-            console.log(information.body['subsections'][i]['questions'].length);
-            for (var j = 0; j < information.body['subsections'][i]['questions'].length; j++){
-              currFields.push(information.body['subsections'][i]['questions'][j])
-
-              /* 
-
-              trying to fix the form answers being undefined issue 
-
-              */ 
-              const entry = currFields[currFields.length - 1];
-              if (entry.fieldType === 'DateField') {
-                // Need to update default date value with the local date on the current computer
-                formAnswers[entry.fieldName] = new Date();
-              } else {
-                formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-              }
-            }
-          }
-
-          const fields = currFields;
+        //SUBSECTIONS backend doesn't have subsections so far, might change
+        // if ('body' in information && information.body['subsections'] != null){
+        //   var currFields : Field[] = [];
+        //   var currTitles : string[] = [];
+        //   var currDescriptions : string[] = [];
+        //   var currentNumQOnPage : number[] = [];
+        //   const {description,title} = information.metadata;
+        //   for (var i = 0; i < information.body['subsections'].length; i++){
+        //     currentNumQOnPage.push(information.body['subsections'][i]['questions'].length);
+        //     currTitles.push(information.body['subsections'][i]['title'])
+        //     currDescriptions.push(information.body['subsections'][i]['description'])
+        //     console.log("LENGTH");
+        //     console.log(information.body['subsections'][i]['questions'].length);
+        //     for (var j = 0; j < information.body['subsections'][i]['questions'].length; j++){
+        //       currFields.push(information.body['subsections'][i]['questions'][j])
+        //
+        //       /*
+        //
+        //       trying to fix the form answers being undefined issue
+        //
+        //       */
+        //       const entry = currFields[currFields.length - 1];
+        //       if (entry.fieldType === 'DateField') {
+        //         // Need to update default date value with the local date on the current computer
+        //         formAnswers[entry.fieldName] = new Date();
+        //       } else {
+        //         formAnswers[entry.fieldName] = entry.fieldDefaultValue;
+        //       }
+        //     }
+        //   }
+        //
+        //   const fields = currFields;
+        //
+        //   // Get every field and give it a unique ID
+        //   for (let i = 0; i < fields.length; i += 1) {
+        //     fields[i].fieldID = uuid();
+        //   }
+        //
+        //   this.setState({
+        //     fields: currFields,
+        //     title,
+        //     description,
+        //     formAnswers,
+        //     numPages:
+        //     information.body['subsections'].length,
+        //     isSubsection: true,
+        //     numQOnPage : currentNumQOnPage,
+        //     titleArray : currTitles,
+        //     descriptionArray : currDescriptions
+        //   });
+        //
+        //
+        // }
+        // else{
 
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
-          }
-
-          this.setState({
-            fields: currFields,
-            title,
-            description,
-            formAnswers,
-            numPages:
-            information.body['subsections'].length,
-            isSubsection: true,
-            numQOnPage : currentNumQOnPage,
-            titleArray : currTitles,
-            descriptionArray : currDescriptions
-          });
-
-
-        } 
-        else{
-          const {questions} = information.fields;
-          const fields = questions;
-          const {title} = information.title;
-          const {description} = information.description;
-          // Get every field and give it a unique ID
-          for (let i = 0; i < fields.length; i += 1) {
-            fields[i].fieldID = uuid();
-            
-            
-            
             const entry = fields[i];
             if (entry.fieldType === 'DateField') {
               // Need to update default date value with the local date on the current computer
@@ -192,8 +183,8 @@ class ApplicationForm extends Component<Props, State> {
             }
             */
           }
-          var curPages = (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE);
-          this.setState({
+        const curPages = (fields.length === 0) ? 1 : Math.ceil(fields.length / MAX_Q_PER_PAGE);
+        this.setState({
             fields,
             title,
             description,
@@ -201,7 +192,7 @@ class ApplicationForm extends Component<Props, State> {
             numPages:
               curPages,
           });
-        }
+        // }
       } else {
         this.setState({
           formError: true,
@@ -664,7 +655,7 @@ class ApplicationForm extends Component<Props, State> {
       const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
-      formData.append('pdfType', PDFType.APPLICATION);
+      formData.append('pdfType', PDFType.COMPLETED_APPLICATION);
       fetch(`${getServerURL()}/upload-signed-pdf`, {
         method: 'POST',
         credentials: 'include',
