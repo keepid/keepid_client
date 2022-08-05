@@ -5,12 +5,7 @@ import './static/styles/BaseCard.scss';
 import React from 'react';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 
 import Careers from './components/AboutUs/Careers';
 import EULA from './components/AboutUs/EULA';
@@ -155,17 +150,20 @@ class App extends React.Component<{}, State, {}> {
                 return Role.LoggedOut;
             }
           };
-          // if the session storage does not match the authenitcation, logout
+          // if the session storage does not match the authentication, logout
           const jsonData = sessionStorage.getItem('mySessionStorageData');
           if (jsonData) {
             const data = JSON.parse(jsonData);
             if (!(role() === data.role && username === data.username && organization === data.organization)
                             && data.name === `${firstName} ${lastName}`) {
+              console.log('logging out');
               this.logOut();
             }
           } else {
             this.logOut();
           }
+        } else {
+          this.logOut();
         }
       })
       .catch((e) => {
@@ -198,7 +196,6 @@ class App extends React.Component<{}, State, {}> {
                               setAutoLogout={this.setAutoLogout}
                             />
                         ) : null}
-
                         <Switch>
                             <Route exact path="/" render={() => <Redirect to="/home" />} />
                             <Route path="/our-team">
@@ -213,12 +210,24 @@ class App extends React.Component<{}, State, {}> {
                             <Route path="/privacy-policy">
                                 <PrivacyPolicy />
                             </Route>
-                            <Route path="/eula">
-                                <EULA />
-                            </Route>
-                            <Route path="/dashboard-test">
-                                <AdminDashboard />
-                            </Route>
+                            <Route
+                              path="/eula"
+                              render={() => {
+                                if (role !== Role.LoggedOut) {
+                                  return <EULA />;
+                                }
+                                return <Home />;
+                              }}
+                            />
+                            <Route
+                              path="/eula"
+                              render={() => {
+                                if (role === Role.Admin || role === Role.Director) {
+                                  return <AdminDashboard />;
+                                }
+                                return <Home />;
+                              }}
+                            />
                             <Route path="/careers">
                                 <Careers />
                             </Route>
@@ -299,6 +308,9 @@ class App extends React.Component<{}, State, {}> {
                                             />
                                   );
                                 }
+                                if (role === Role.LoggedOut) {
+                                  return <Home />;
+                                }
                                 return <Redirect to="/error" />;
                               }}
                             />
@@ -315,6 +327,9 @@ class App extends React.Component<{}, State, {}> {
                                             />
                                   );
                                 }
+                                if (role === Role.LoggedOut) {
+                                  return <Home />;
+                                }
                                 return <Redirect to="/error" />;
                               }}
                             />
@@ -330,6 +345,9 @@ class App extends React.Component<{}, State, {}> {
                                 ) {
                                   return <UploadDocs userRole={Role.Client} username={clientUsername} />;
                                 }
+                                if (role === Role.LoggedOut) {
+                                  return <Home />;
+                                }
                                 return <Redirect to="/error" />;
                               }}
                             />
@@ -339,7 +357,7 @@ class App extends React.Component<{}, State, {}> {
                                 if (role === Role.Client || role === Role.Admin || role === Role.Worker || role === Role.Developer) {
                                   return <UploadDocs userRole={role} username={username} />;
                                 }
-                                return <Redirect to="/error" />;
+                                return <Home />;
                               }}
                             />
                             <Route
@@ -349,7 +367,7 @@ class App extends React.Component<{}, State, {}> {
                                 if (role === Role.Admin || role === Role.Worker || role === Role.Developer || role === Role.Client) {
                                   return <MyDocuments userRole={Role.Client} username={clientName} />;
                                 }
-                                return <Redirect to="/error" />;
+                                return <Home />;
                               }}
                             />
                             <Route
@@ -363,7 +381,7 @@ class App extends React.Component<{}, State, {}> {
                                 ) {
                                   return <MyDocuments userRole={role} username={username} />;
                                 }
-                                return <Redirect to="/error" />;
+                                return <Home />;
                               }}
                             />
                             <Route
@@ -378,6 +396,9 @@ class App extends React.Component<{}, State, {}> {
                                             />
                                   );
                                 }
+                                if (role === Role.LoggedOut) {
+                                  return <Home />;
+                                }
                                 return <Redirect to="/error" />;
                               }}
                             />
@@ -386,6 +407,10 @@ class App extends React.Component<{}, State, {}> {
                               render={() => {
                                 if (role !== Role.LoggedOut) {
                                   return <MyAccount />;
+                                }
+                                if (role === Role.LoggedOut) {
+                                  console.log('logged out');
+                                  return <Home />;
                                 }
                                 return <Redirect to="/error" />;
                               }}
@@ -398,6 +423,9 @@ class App extends React.Component<{}, State, {}> {
                                             <MyOrganization name={name} organization={organization} />
                                   );
                                 }
+                                if (role === Role.LoggedOut) {
+                                  return <Home />;
+                                }
                                 return <Redirect to="/error" />;
                               }}
                             />
@@ -408,7 +436,7 @@ class App extends React.Component<{}, State, {}> {
                                 if (role !== Role.LoggedOut) {
                                   return <ClientProfilePage username={clientUsername} />;
                                 }
-                                return <Redirect to="/error" />;
+                                return <Home />;
                               }}
                             />
                             <SignUpRouter role={role} />
