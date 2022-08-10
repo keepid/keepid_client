@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Card, Col, Container, Dropdown, DropdownButton, Row, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
@@ -14,61 +14,92 @@ import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
 
+interface Props {
+  alert: any,
+  userRole: Role,
+  username: any,
+}
+
+interface State {
+  pdfFiles: File[] | undefined,
+  documentTypeList: string[]
+  currentStep: number,
+  userRole: Role | undefined
+  loading: boolean
+  clientUsername: string
+}
+
 interface PDFProps {
-    pdfFile: File
+  pdfFile: File
 }
 
 const MAX_NUM_OF_FILES: number = 5;
 const MAX_NUM_STEPS = 2;
 
-function RenderPDF(props) {
+function RenderPDF(props: PDFProps): React.ReactElement {
   const [showResults, setShowResults] = useState(false);
   const { pdfFile } = props;
   return (
-        <div>
-            <div className="row">
-                <button
-                  className="btn btn-outline-primary btn-sm mr-3"
-                  type="button"
-                  onClick={() => setShowResults(!showResults)}
-                >
-                    {showResults ? 'Hide' : 'View'}
-                </button>
-            </div>
-            {showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null}
-        </div>
+    <div>
+      <div className="row">
+        <button
+          className="btn btn-outline-primary btn-sm mr-3"
+          type="button"
+          onClick={() => setShowResults(!showResults)}
+        >
+          {showResults ? 'Hide' : 'View'}
+        </button>
+      </div>
+      {showResults ? <div className="row mt-3"><DocumentViewer pdfFile={pdfFile} /></div> : null}
+    </div>
   );
 }
 
-function UploadDocs(props: any) {
-  const [pdfFiles, setPdfFiles] = useState(undefined);
-  const [documentTypeList, setDocumentTypeList] = useState([]);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [userRole] = useState(props.userRole);
-  const [loading, setLoading] = useState(false);
-  const [clientUsername] = useState(props.username);
+class UploadDocs extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      pdfFiles: undefined,
+      documentTypeList: [],
+      currentStep: 0,
+      userRole: this.props.userRole,
+      loading: false,
+      clientUsername: this.props.username,
+    };
+    this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleOnClickCard = this.handleOnClickCard.bind(this);
+    this.setTitle = this.setTitle.bind(this);
+  }
 
-  const updateFileList = (pdfFiles) => {
-    setDocumentTypeList(pdfFiles);
-  };
+  updateFileList = (pdfFiles) => {
+    this.setState({
+      pdfFiles,
+    });
+  }
 
-  const updateStep = (currentStep) => {
-    setCurrentStep(currentStep);
-  };
+  updateStep = (currentStep) => {
+    this.setState({
+      currentStep,
+    });
+  }
 
-  const uploadFiles = () => {
-    setLoading(true);
-    if (pdfFiles) {
-      for (let i = 0; i < pdfFiles.length; i += 1) {
-        const pdfFile = pdfFiles[i];
+  uploadFiles() {
+    this.setState({
+      loading: true,
+    });
+    if (this.state.pdfFiles) {
+      for (let i = 0; i < this.state.pdfFiles.length; i += 1) {
+        const pdfFile = this.state.pdfFiles[i];
         const formData = new FormData();
-        const prevStep = currentStep;
+        const documentType = this.state.documentTypeList[i];
+        const prevStep = this.state.currentStep;
+        const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
         // formData.append('documentType', documentType);
-        if (userRole === Role.Client) {
+        if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
-        if (userRole === Role.Director || userRole === Role.Admin || userRole === Role.Worker) {
+        if (this.state.userRole === Role.Director || this.state.userRole === Role.Admin || this.state.userRole === Role.Worker) {
           formData.append('pdfType', PDFType.BLANK_FORM);
         }
         formData.append('targetUser', clientUsername);
@@ -82,219 +113,217 @@ function UploadDocs(props: any) {
               status,
             } = responseJSON;
             if (status === 'SUCCESS') {
-              props.alert.show(`Successfully uploaded ${pdfFile.name}`);
+              this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
             } else {
               alert(`Failed to upload ${pdfFile.name}`);
             }
           })
           .finally(() => {
-            setLoading(false);
-            setCurrentStep(prevStep + 1);
+            this.setState((prevState) => ({
+              loading: false,
+              currentStep: prevStep + 1,
+            }));
             // allFiles.forEach((f) => f.remove());
           });
       }
     }
-  };
+  }
 
-  const handleOnClick = (newCurrentStep: number) => {
+  handleOnClick(newCurrentStep: number) {
     let error = false;
     if (newCurrentStep === 0) {
-      setCurrentStep(0);
-      setDocumentTypeList([]);
-      setPdfFiles(undefined);
+      this.setState({
+        currentStep: 0,
+        documentTypeList: [],
+        pdfFiles: undefined,
+      });
     } else if (newCurrentStep === 1) {
-      setCurrentStep(newCurrentStep);
+      this.setState({ currentStep: newCurrentStep });
     } else if (newCurrentStep === MAX_NUM_STEPS) {
-      if (!pdfFiles) {
-        props.alert('Please upload documents');
+      if (!this.state.pdfFiles) {
+        this.props.alert('Please upload documents');
         error = true;
-      } else if (documentTypeList && documentTypeList.length < pdfFiles.length) {
-        props.alert.show('Please categorize each document');
+      } else if (this.state.documentTypeList && this.state.documentTypeList.length < this.state.pdfFiles.length) {
+        this.props.alert.show('Please categorize each document');
         error = true;
       } else {
-        for (let i = 0; i < documentTypeList.length; i += 1) {
-          if (documentTypeList[i] === undefined) {
-            props.alert.show('Please categorize each document');
+        for (let i = 0; i < this.state.documentTypeList.length; i += 1) {
+          if (this.state.documentTypeList[i] === undefined) {
+            this.props.alert.show('Please categorize each document');
             error = true;
           }
         }
       }
       if (error === false) {
-        uploadFiles();
+        this.uploadFiles();
       }
     }
-  };
+  }
 
-  const handleOnClickCard = (id: number, category: string) => {
-    const test = documentTypeList;
+  handleOnClickCard(id: number, category: string) {
+    const test = this.state.documentTypeList;
     test[id] = category;
-    setDocumentTypeList(test);
-  };
+    this.setState(() => ({
+      documentTypeList: test,
+    }));
+  }
 
-  const setTitle = (id: number) => {
-    if (documentTypeList && documentTypeList.length > id) {
-      if (documentTypeList[id] !== undefined) {
-        return documentTypeList[id];
+  setTitle(id: number) {
+    if (this.state.documentTypeList && this.state.documentTypeList.length > id) {
+      if (this.state.documentTypeList[id] !== undefined) {
+        return this.state.documentTypeList[id];
       }
     }
     return 'Category';
-  };
+  }
 
-  const setLink = () => {
-    if (props.userRole !== Role.Client) {
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
       return '/my-documents/';
     }
-    return `/my-documents/${props.username}`;
-  };
+    return `/my-documents/${this.props.username}`;
+  }
 
-  const history = useHistory();
+  render() {
+    const {
+      alert,
+    } = this.props;
 
-  return (
-        <div className="container">
-            <Helmet>
-                <title>Upload Documents</title>
-                <meta name="description" content="Keep.id" />
-            </Helmet>
-            <div className="jumbotron-fluid mt-5">
-                <h1 className="display-4">
-                    Upload Documents
-                </h1>
-                <div className="card-alignment mb-3 pt-5">
-                    {currentStep === 0 && (
-                        <div>
-                            <p className="lead pt-3">
-                                Select a PDF file to upload.
-                                The name of the PDF will appear when loaded.
-                                After confirming that you have chosen the correct file, click
-                                the &quot;Submit&quot; button to upload.
-                                Otherwise, choose a different file.
-                            </p>
-                            <DropzoneUploader
-                              pdfFiles={pdfFiles}
-                              maxNumFiles={MAX_NUM_OF_FILES}
-                              currentStep={currentStep}
-                              updateStep={updateStep}
-                              updateFileList={updateFileList}
-                            />
-                        </div>
-                    )}
-                    {currentStep === 1 && (
-                        <div className="container">
-                            <p className="lead pt-3">
-                                Please review the documents below. Click the &quot;Continue&quot; button to submit.
-                            </p>
-                            <Container>
-                                {
-                                    pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) =>
-                                      (
-                                            <div className="container mb-3 card-alignment">
-                                                <Card style={{ width: '48rem' }}>
-                                                    <Row className="row-padding g-4 md-3">
-                                                        <Col sm={8}>
-                                                            <Col sm={10}>
-                                                                <Card.Title>{pdfFile.name}</Card.Title>
-                                                                <RenderPDF
-                                                                  key={uuid()}
-                                                                  pdfFile={pdfFile}
-                                                                />
-                                                            </Col>
-                                                        </Col>
-                                                        <Col sm={4}>
-                                                            <DropdownButton
-                                                              title={setTitle(index)}
-                                                            >
-                                                                <Dropdown.Item
-                                                                  eventKey="License"
-                                                                  onClick={(event) => handleOnClickCard(index, 'Driver License')}
-                                                                >Driver&apos;s
-                                                                    License
-                                                                </Dropdown.Item>
-                                                                <Dropdown.Item
-                                                                  onClick={(event) => handleOnClickCard(index, 'Social Security Card')}
-                                                                >Social
-                                                                    Security Card
-                                                                </Dropdown.Item>
-                                                                <Dropdown.Item
-                                                                  onClick={(event) => handleOnClickCard(index, 'Birth Certificate')}
-                                                                >Birth
-                                                                    Certificate
-                                                                </Dropdown.Item>
-                                                                <Dropdown.Item
-                                                                  onClick={(event) => handleOnClickCard(index, 'Vaccine Card')}
-                                                                >Vaccine
-                                                                    Card
-                                                                </Dropdown.Item>
-                                                            </DropdownButton>
-                                                        </Col>
-                                                    </Row>
-                                                </Card>
-                                            </div>
-                                      )) : null
-                                }
-                            </Container>
-                        </div>
-                    )}
-                </div>
-                {
-                    (currentStep === 1) && (
-                        <div>
-                            <div className="row pt-4">
-                                <div className="col pl2 pt-3">
-                                    <button
-                                      className="float-left btn btn-outline-primary btn-md mr-3"
-                                      type="button"
-                                      onClick={(event) => handleOnClick(currentStep - 1)}
-                                    >
-                                        Previous
-                                    </button>
-                                    <button
-                                      className="float-right btn btn-outline-primary btn-md mr-3"
-                                      type="button"
-                                      onClick={(event) => handleOnClick(currentStep + 1)}
-                                    >
-                                        Submit
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
-                {
-                    currentStep === 2 && (
-                        <div>
-                            <p className="lead pt-3">
-                                Your documents have been successfully uploaded!
-                            </p>
-                            <div className="row pt-4">
-                                <div className="col pl2 pt-3">
-                                    <Link className="nav-link" to={setLink()}>
-                                        <button
-                                          type="button"
-                                          className="float-right btn btn-outline-primary btn-sm mr-3"
-                                        >
-                                            Return to Documents
-                                        </button>
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
-                {loading && (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" />
-                    </div>
-                )}
+    const {
+      userRole,
+    } = this.props;
+
+    const {
+      username,
+    } = this.props;
+
+    const {
+      pdfFiles,
+      documentTypeList,
+      currentStep,
+    } = this.state;
+
+    console.log(this.props);
+
+    return (
+      <div className="container">
+        <Helmet>
+          <title>Upload Documents</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron-fluid mt-5">
+          <h1 className="display-4">
+            Upload Documents
+          </h1>
+        <div className="card-alignment mb-3 pt-5">
+          {currentStep === 0 && (
+            <div>
+              <p className="lead pt-3">
+                Select a PDF file to upload.
+                The name of the PDF will appear when loaded.
+                After confirming that you have chosen the correct file, click the &quot;Submit&quot; button to upload.
+                Otherwise, choose a different file.
+              </p>
+              <DropzoneUploader
+                pdfFiles={this.state.pdfFiles}
+                maxNumFiles={MAX_NUM_OF_FILES}
+                currentStep={this.state.currentStep}
+                updateStep={this.updateStep}
+                updateFileList={this.updateFileList}
+              />
             </div>
-            <button
-              type="button"
-              className="mr-auto btn btn-outline-primary mt-5"
-              onClick={history.goBack}
-            >
-                Previous
-            </button>
+          )}
+          {currentStep === 1 && (
+            <div className="container">
+              <p className="lead pt-3">
+                Please review the documents below. Click the &quot;Continue&quot; button to submit.
+              </p>
+              <Container>
+                {
+                  pdfFiles && pdfFiles.length > 0 ? Array.from(pdfFiles).map((pdfFile, index) =>
+                    (
+                      <div className="container mb-3 card-alignment">
+                        <Card style={{ width: '48rem' }}>
+                          <Row className="row-padding g-4 md-3">
+                              <Col sm={8}>
+                                      <Col sm={10}>
+                                        <Card.Title>{pdfFile.name}</Card.Title>
+                                        <RenderPDF
+                                          key={uuid()}
+                                          pdfFile={pdfFile}
+                                        />
+                                      </Col>
+                              </Col>
+                            <Col sm={4}>
+                              <DropdownButton
+                                title={this.setTitle(index)}
+                              >
+                                <Dropdown.Item eventKey="License" onClick={(event) => this.handleOnClickCard(index, 'Driver License')}>Driver&apos;s License</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
+                              </DropdownButton>
+                            </Col>
+                          </Row>
+                        </Card>
+                      </div>
+                    )) : null
+                }
+              </Container>
+            </div>
+          )}
         </div>
-  );
+        {
+          (currentStep === 1) && (
+            <div>
+              <div className="row pt-4">
+                <div className="col pl2 pt-3">
+                  <button
+                    className="float-left btn btn-outline-primary btn-md mr-3"
+                    type="button"
+                    onClick={(event) => this.handleOnClick(currentStep - 1)}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="float-right btn btn-outline-primary btn-md mr-3"
+                    type="button"
+                    onClick={(event) => this.handleOnClick(currentStep + 1)}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        }
+        {
+          currentStep === 2 && (
+            <div>
+              <p className="lead pt-3">
+                Your documents have been successfully uploaded!
+              </p>
+              <div className="row pt-4">
+                <div className="col pl2 pt-3">
+                <Link className="nav-link" to={this.setLink()}>
+                  <button type="button" className="float-right btn btn-outline-primary btn-sm mr-3">
+                    Return to Documents
+                  </button>
+                </Link>
+                </div>
+              </div>
+            </div>
+          )
+        }
+        { this.state.loading && (
+          <div className="text-center py-5">
+            <Spinner animation="border" />
+          </div>
+        )}
+        </div>
+      </div>
+    );
+  }
 }
 
 export default withAlert()(UploadDocs);
