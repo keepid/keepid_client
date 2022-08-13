@@ -35,6 +35,7 @@ interface Props {
   alert: any,
   applicationId: string,
   applicationFilename: string,
+  setPdfApplicationFunc: (params: any) => any,
 }
 
 interface State {
@@ -321,7 +322,7 @@ class ApplicationForm extends Component<Props, State> {
   handleChangeFormValueTextField = (event: any) => {
     const { fields, formAnswers } = this.state;
     const { id, value } = event.target;
-    var currCorrect = true;
+    const currCorrect = true;
     formAnswers[id] = value;
     this.setState({ formAnswers });
   };
@@ -862,12 +863,14 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   render() {
-    const { alert } = this.props;
+    const { alert,setPdfApplicationFunc } = this.props;
 
-    const { submitSuccessful, formError } = this.state;
+    const { submitSuccessful, formError, pdfApplication } = this.state;
 
     if (submitSuccessful) {
-      return <Redirect to="/applications" />;
+      // return <Redirect to="/applications" />;
+      this.props.setPdfApplicationFunc(pdfApplication);
+      return <Redirect to="/applications/successful" />;
     }
 
     const bodyElement = this.getApplicationBody();

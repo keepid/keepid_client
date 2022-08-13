@@ -53,6 +53,7 @@
     "react-idle-timer": "^4.2.12",
     "react-intl": "^5.17.1",
     "react-multi-select-component": "^3.0.1",
+    "react-pdfobject": "^1.2.0",
     "react-redirect": "^1.0.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",

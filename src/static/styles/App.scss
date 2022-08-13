@@ -178,7 +178,7 @@ body {
 	color: $primary-theme;
 	background-color: white;
 	border-color: $primary-theme;
-	width: 120px;
+	width: 7.5rem;
 }
 
 .btn-outline-primary-continue:hover,
@@ -189,7 +189,7 @@ body {
 	color: white;
 	background-color: $primary-theme;
 	border-color: $primary-theme;
-	width: 120px;
+	width: 7.5rem;
 }
 
 .btn-secondary {
@@ -802,7 +802,7 @@ input#search:focus {
 }
 
 .unfilled-text {
-	color:$bright-red;
+	color: $bright-red;
 }
 
 .transparent-button {
@@ -823,5 +823,9 @@ input#search-bar-0.form-control {
 
 label.search-label {
 	display: inline-block;
-    margin-bottom: 2rem;
+	margin-bottom: 2rem;
+}
+
+iframe{
+	border: 0;
 }

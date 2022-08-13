@@ -10,6 +10,7 @@ import Close from '../../static/images/closebutton.png';
 import View from '../../static/images/view-icon.png';
 import PDFType from '../../static/PDFType';
 import Table from '../BaseComponents/Table';
+import DocumentViewer from '../Documents/DocumentViewer';
 import ApplicationForm from './ApplicationForm';
 
 interface DocumentInformation {
@@ -37,6 +38,7 @@ interface State {
   applications: DocumentInformation[],
   openModal: Boolean | false,
   currentFileUrl: string,
+  pdfFile: File | undefined,
 }
 
 class Applications extends Component<Props, State, {}> {
@@ -50,24 +52,28 @@ class Applications extends Component<Props, State, {}> {
 
   DoubleButtonFormatter = (cell, row) => (
     <div className="side-by-side-buttons">
-      <Link to="/applications/send">
+      <Link to="/applications/view">
         <button type="button" className="btn btn-primary w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDownload(event, row)}> <b>Download</b></button>
       </Link>
-      <Link to="/applications/send">
+      {/* <Link to="/applications/send"> */}
         <button type="button" className="btn btn-primary-red w-110 btn-sm p-2 m-1" onClick={(event) => this.handleDelete(event, row)}> <b>Delete File</b></button>
-      </Link>
+      {/* </Link> */}
     </div>
   )
 
   PreviewFormatter = (cell, row) => (
     <div>
+      {/* <Link to="/applications/view"> */}
       <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.BLANK_FORM)}><img src={View} alt="description of image" /> <strong>Click to Preview the PDF</strong></button>
+      {/* </Link> */}
     </div>
   )
 
   ViewFormatter = (cell, row) => (
     <div>
+      <Link to="/applications/view">
       <button type="button" className="btn preview-button w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row, PDFType.COMPLETED_APPLICATION)}><img src={View} alt="description of image" /> <strong>Click to View</strong></button>
+      </Link>
     </div>
   )
 
@@ -129,6 +135,7 @@ class Applications extends Component<Props, State, {}> {
         applications: [],
         openModal: false,
         currentFileUrl: '',
+        pdfFile: undefined,
       };
     }
 
@@ -147,7 +154,7 @@ class Applications extends Component<Props, State, {}> {
       }),
     }).then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
+        // console.log(responseJSON);
         const {
           status,
           documents,
@@ -187,6 +194,7 @@ class Applications extends Component<Props, State, {}> {
       filename,
     } = row;
     let url;
+    let file;
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
@@ -200,17 +208,25 @@ class Applications extends Component<Props, State, {}> {
     })
       .then((response) => response.blob())
       .then((blob) => {
-        // create blob link
-        url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        file = new File([blob], filename, { type: 'application/pdf' });
+        url = window.URL.createObjectURL(file);
+        this.setState(
+          {
+            currentApplicationId: id,
+            currentApplicationFilename: filename,
+            currentFileUrl: url,
+            pdfFile: file,
+            openModal: true,
+          },
+        );
       });
-    this.setState(
-      {
-        currentApplicationId: id,
-        currentApplicationFilename: filename,
-        openModal: true,
-        currentFileUrl: url,
-      },
-    );
+
+    // return (
+    //     <object data={url} type="application/pdf">
+    //       <div>No online PDF viewer installed</div>
+    //     </object>
+    // );
+    // return (<iframe src={url} title="temp pdf" width="100%" height="600" />);
   }
 
   handleApply= (event: any, row: any) => {
@@ -251,12 +267,14 @@ class Applications extends Component<Props, State, {}> {
         } else if (status === 'CROSS_ORG_ACTION_DENIED') {
           // show alert
         }
+        this.getDocument(PDFType.COMPLETED_APPLICATION);
       });
   }
 
   handleDownload= (event: any, row: any) => {
     const {
       id,
+      filename,
     } = row;
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
@@ -272,14 +290,60 @@ class Applications extends Component<Props, State, {}> {
       .then((response) => response.blob())
       .then((blob) => {
         // create blob link to download
-        const downloadURL = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        const downloadURL = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = downloadURL;
-        link.download = 'CompletedApplication.pdf';
+        link.download = filename;
         document.body.append(link);
-        link.click(); // start download
-        // link.parentNode.removeChild(link); //clean up and remove link
+        link.click();
+        link.remove();
       });
+  }
+
+  setPdfApplicationFunc= (pdfApplication:File) => {
+    this.setState({ pdfFile: pdfApplication });
+  }
+
+  getSuccessPage= () => {
+    const {
+      currentApplicationFilename,
+      currentApplicationId,
+      pdfFile,
+    } = this.state;
+    return (
+        <div>
+          <div className="col-lg-12 col-md-12 col-sm-12 mx-auto">
+            <div className="container">
+                <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+                <h2>You have successfully applied for {currentApplicationFilename}!</h2>
+                <p>Here is the preview of your file. </p>
+                <p>You can check back on the file in the My Application section. </p>
+                </div>
+            </div>
+          </div>
+          <hr className="mt-5 mb-5" />
+          <div className="container mt-5">
+              <div className="row justify-content-md-start">
+                <div className="col-md-4">
+                    <Link to="/applications">
+                        <button type="button" className="btn btn-primary text-left">
+                            Back to Applications
+                        </button>
+                    </Link>
+                </div>
+              </div>
+              <div className="row justify-content-md-end">
+                  <div className="col-md-4 text-center">
+                    <h4>{currentApplicationFilename}</h4>
+                  </div>
+                  <div className="col-md-4 text-right">
+                    <button type="button" className="btn btn-primary w-110 btn-sm p-2 mb-3" onClick={(event) => this.handleDownload(event, { id: currentApplicationId, filename: currentApplicationFilename })}> <b>Download</b></button>
+                  </div>
+              </div>
+          </div>
+          {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+        </div>
+    );
   }
 
   openModalFunc = () => this.setState({ openModal: true });
@@ -294,23 +358,24 @@ class Applications extends Component<Props, State, {}> {
       applications,
       openModal,
       currentFileUrl,
+      pdfFile,
     } = this.state;
-
+    const successPage = this.getSuccessPage();
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="modal custom">
-          <Modal show={openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
+           <div className="modal custom">
+           <Modal show={openModal} onHide={this.closeModal} data-backdrop="static" size="xl">
             <Modal.Header>
               <Button className="transparent-button" variant="secondary" onClick={this.closeModal}>
               <img src={Close} alt="description of image" />
               </Button>
             </Modal.Header>
             <Modal.Body>
-               <iframe src={currentFileUrl} title="temp pdf" width="100%" height="600" frameBorder="none" />
+                <iframe src={currentFileUrl} title="document" width="100%" height="600" />
             </Modal.Body>
-          </Modal>
-          </div>
+           </Modal>
+           </div>
           <div className="container-fluid">
             <Helmet>
               <title>Applications</title>
@@ -352,9 +417,22 @@ class Applications extends Component<Props, State, {}> {
             </div>
           </div>
         </Route>
+        <Route path="/applications/view">
+          <div>
+            {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+            <Link to="/applications">
+              <button type="button" className="btn btn-outline-success">
+                Back to Applications
+              </button>
+            </Link>
+          </div>
+        </Route>
+        <Route path="/applications/successful">
+          {successPage}
+        </Route>
         <Route path="/applications/send">
           {currentApplicationId && currentApplicationFilename
-            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} setPdfApplicationFunc={this.setPdfApplicationFunc} />
             : <div />}
         </Route>
       </Switch>
