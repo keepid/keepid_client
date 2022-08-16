@@ -96,7 +96,7 @@ class UploadDocs extends React.Component<Props, State> {
         const prevStep = this.state.currentStep;
         const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
-        // formData.append('documentType', documentType);
+        formData.append('idCategory', documentType);
         if (this.state.userRole === Role.Client) {
           formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
         }
@@ -263,6 +263,9 @@ class UploadDocs extends React.Component<Props, State> {
                                 <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Social Security Card')}>Social Security Card</Dropdown.Item>
                                 <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Birth Certificate')}>Birth Certificate</Dropdown.Item>
                                 <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Vaccine Card')}>Vaccine Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Medicaid Card')}>Medicaid Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Veteran ID Card')}>Veteran ID Card</Dropdown.Item>
+                                <Dropdown.Item onClick={(event) => this.handleOnClickCard(index, 'Other')}>Other</Dropdown.Item>
                               </DropdownButton>
                             </Col>
                           </Row>

@@ -18,25 +18,25 @@ import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 
 interface Props {
-  username: string;
-  name: string;
-  organization: string;
-  role: Role;
-  alert: any;
+    username: string;
+    name: string;
+    organization: string;
+    role: Role;
+    alert: any;
 }
 
 interface State {
-  clients: any;
-  searchName: string;
-  redirectLink: string;
-  clientUsername: string;
-  clientPassword: string;
-  clientCredentialsCorrect: boolean;
-  showClientAuthModal: boolean;
-  showClients: boolean;
-  currentPage: number;
-  postsPerPage: number;
-  // clientCards: any;
+    clients: any;
+    searchName: string;
+    redirectLink: string;
+    clientUsername: string;
+    clientPassword: string;
+    clientCredentialsCorrect: boolean;
+    showClientAuthModal: boolean;
+    showClients: boolean;
+    currentPage: number;
+    postsPerPage: number;
+    // clientCards: any;
 }
 
 const options = [
@@ -48,225 +48,225 @@ const options = [
 const animatedComponents = makeAnimated();
 
 class WorkerLanding extends Component<Props, State> {
-  private controllerRef: React.MutableRefObject<AbortController | null>;
+    private controllerRef: React.MutableRefObject<AbortController | null>;
 
-  constructor(props: Props) {
-    super(props);
-    this.controllerRef = React.createRef();
-    this.state = {
-      searchName: '',
-      redirectLink: '',
-      clientUsername: '',
-      clientPassword: '',
-      clients: [],
-      clientCredentialsCorrect: false,
-      showClientAuthModal: false,
-      showClients: false,
-      currentPage: 1,
-      postsPerPage: 6,
-      // clientCards: [],
-      // we should also pass in other state such as the admin information. we could also do a fetch call inside
-    };
-    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.getClients = this.getClients.bind(this);
-    this.handleChangeClientPassword =
-        this.handleChangeClientPassword.bind(this);
-    // this.handleClickUploadDocuments =
-    // this.handleClickUploadDocuments.bind(this);
-    // this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
-    this.handleClickSendApplication =
-        this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient =
-        this.handleClickAuthenticateClient.bind(this);
-    this.handleClickClose = this.handleClickClose.bind(this);
-    this.renderClients = this.renderClients.bind(this);
-    this.modalRender = this.modalRender.bind(this);
-  }
-
-  componentDidMount() {
-    this.getClients();
-  }
-
-  handleChangeSearchName(event: any) {
-    this.setState(
-      {
-        searchName: event.target.value,
-      },
-    );
-    this.getClients()
-      .then(() => this.renderClients());
-  }
-
-  showClientList = () => {
-    const { showClients } = this.state;
-    const { currentPage } = this.state;
-    this.setState(
-      {
-        showClients: true,
+    constructor(props: Props) {
+      super(props);
+      this.controllerRef = React.createRef();
+      this.state = {
+        searchName: '',
+        redirectLink: '',
+        clientUsername: '',
+        clientPassword: '',
+        clients: [],
+        clientCredentialsCorrect: false,
+        showClientAuthModal: false,
+        showClients: false,
         currentPage: 1,
-      },
-    );
-  }
+        postsPerPage: 6,
+        // clientCards: [],
+        // we should also pass in other state such as the admin information. we could also do a fetch call inside
+      };
+      this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
+      this.getClients = this.getClients.bind(this);
+      this.handleChangeClientPassword =
+            this.handleChangeClientPassword.bind(this);
+      // this.handleClickUploadDocuments =
+      // this.handleClickUploadDocuments.bind(this);
+      // this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
+      // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
+      this.handleClickSendApplication =
+            this.handleClickSendApplication.bind(this);
+      this.handleClickAuthenticateClient =
+            this.handleClickAuthenticateClient.bind(this);
+      this.handleClickClose = this.handleClickClose.bind(this);
+      this.renderClients = this.renderClients.bind(this);
+      this.modalRender = this.modalRender.bind(this);
+    }
 
-  handleClickClose(event: any) {
-    this.setState({
-      clientPassword: '',
-      showClientAuthModal: false,
-    });
-  }
+    componentDidMount() {
+      this.getClients();
+    }
 
-  handleClickAuthenticateClient(event: any) {
-    event.preventDefault();
-    const { clientUsername, clientPassword } = this.state;
+    handleChangeSearchName(event: any) {
+      this.setState(
+        {
+          searchName: event.target.value,
+        },
+      );
+      this.getClients()
+        .then(() => this.renderClients());
+    }
 
-    fetch(`${getServerURL()}/login`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        username: clientUsername,
-        password: clientPassword,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        // console.log(responseJSON);
-        const { status } = responseJSON;
-        if (status === 'AUTH_SUCCESS') {
-          // Allow worker privileges
-          this.setState({
-            clientCredentialsCorrect: true,
-          });
-        } else if (status === 'AUTH_FAILURE') {
-          this.props.alert.show('Incorrect Password');
-        } else if (status === 'USER_NOT_FOUND') {
-          this.props.alert.show('Username Does Not Exist');
-        } else {
-          this.props.alert.show('Server Failure: Please Try Again');
-        }
+    showClientList = () => {
+      const { showClients } = this.state;
+      const { currentPage } = this.state;
+      this.setState(
+        {
+          showClients: true,
+          currentPage: 1,
+        },
+      );
+    }
+
+    handleClickClose(event: any) {
+      this.setState({
+        clientPassword: '',
+        showClientAuthModal: false,
       });
-  }
+    }
 
-  /* handleClickUploadDocuments(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/upload-document',
-      clientCredentialsCorrect: true,
-    });
-  } */
+    handleClickAuthenticateClient(event: any) {
+      event.preventDefault();
+      const { clientUsername, clientPassword } = this.state;
 
-  /* handleClickViewDocuments(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/my-documents',
-      clientCredentialsCorrect: true,
-    });
-  } */
-
-  /* handleClickSendEmail(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/email',
-      showClientAuthModal: true,
-    });
-  } */
-
-  handleClickSendApplication(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/applications',
-      clientCredentialsCorrect: true,
-    });
-  }
-
-  handleChangeClientPassword(event: any) {
-    this.setState({
-      clientPassword: event.target.value,
-    });
-  }
-
-  loadProfilePhoto(clientsArray: any) {
-    const signal = this.controllerRef.current?.signal;
-    let url: any;
-    let photos;
-    let clients;
-
-    const promises = clientsArray.map((client) => {
-      const { username } = client;
-      return fetch(`${getServerURL()}/load-pfp`, {
-        signal,
+      fetch(`${getServerURL()}/login`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          username,
+          username: clientUsername,
+          password: clientPassword,
         }),
       })
-        .then((response) => response.blob());
-    });
-
-    return Promise.all(promises).then((results) => {
-      photos = results.map((blob) => {
-        const { size } = blob;
-        if (size > 72) {
-          url = (URL || window.webkitURL).createObjectURL(blob);
-          return url;
-        }
-        return null;
-      });
-    })
-      .catch((error) => {
-        if (error.toString() !== 'AbortError: The user aborted a request.') {
-          const { alert } = this.props;
-          alert.show(
-            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
-          );
-        }
-      })
-      .then(() => {
-        clients = clientsArray.slice();
-        clientsArray.forEach((client, i) => {
-          clients[i].photo = photos[i];
+        .then((response) => response.json())
+        .then((responseJSON) => {
+          // console.log(responseJSON);
+          const { status } = responseJSON;
+          if (status === 'AUTH_SUCCESS') {
+            // Allow worker privileges
+            this.setState({
+              clientCredentialsCorrect: true,
+            });
+          } else if (status === 'AUTH_FAILURE') {
+            this.props.alert.show('Incorrect Password');
+          } else if (status === 'USER_NOT_FOUND') {
+            this.props.alert.show('Username Does Not Exist');
+          } else {
+            this.props.alert.show('Server Failure: Please Try Again');
+          }
         });
-        this.setState({ clients });
-      });
-  }
-
-  getClients() {
-    const { searchName } = this.state;
-    const { role } = this.props;
-    return fetch(`${getServerURL()}/get-organization-members`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        role,
-        listType: 'clients',
-        name: searchName,
-      }),
-    })
-      .then((res) => res.json())
-      .then((responseJSON) => {
-        const { people, status } = responseJSON;
-        // console.log(responseJSON);
-        if (status !== 'USER_NOT_FOUND') {
-          return people;
-        }
-        return [];
-      })
-      .then((result) => this.loadProfilePhoto(result));
-  }
-
-  renderClients() {
-    const { showClientAuthModal } = this.state;
-
-    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-    const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
-
-    const pageNumbers : number[] = [];
-
-    for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i += 1) {
-      pageNumbers.push(i);
     }
+
+    /* handleClickUploadDocuments(event: any, client: any) {
+      this.setState({
+        clientUsername: client.username,
+        redirectLink: '/upload-document',
+        clientCredentialsCorrect: true,
+      });
+    } */
+
+    /* handleClickViewDocuments(event: any, client: any) {
+      this.setState({
+        clientUsername: client.username,
+        redirectLink: '/my-documents',
+        clientCredentialsCorrect: true,
+      });
+    } */
+
+    /* handleClickSendEmail(event: any, client: any) {
+      this.setState({
+        clientUsername: client.username,
+        redirectLink: '/email',
+        showClientAuthModal: true,
+      });
+    } */
+
+    handleClickSendApplication(event: any, client: any) {
+      this.setState({
+        clientUsername: client.username,
+        redirectLink: '/applications',
+        clientCredentialsCorrect: true,
+      });
+    }
+
+    handleChangeClientPassword(event: any) {
+      this.setState({
+        clientPassword: event.target.value,
+      });
+    }
+
+    loadProfilePhoto(clientsArray: any) {
+      const signal = this.controllerRef.current?.signal;
+      let url: any;
+      let photos;
+      let clients;
+
+      const promises = clientsArray.map((client) => {
+        const { username } = client;
+        return fetch(`${getServerURL()}/load-pfp`, {
+          signal,
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({
+            username,
+          }),
+        })
+          .then((response) => response.blob());
+      });
+
+      return Promise.all(promises).then((results) => {
+        photos = results.map((blob) => {
+          const { size } = blob;
+          if (size > 72) {
+            url = (URL || window.webkitURL).createObjectURL(blob);
+            return url;
+          }
+          return null;
+        });
+      })
+        .catch((error) => {
+          if (error.toString() !== 'AbortError: The user aborted a request.') {
+            const { alert } = this.props;
+            alert.show(
+              `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+            );
+          }
+        })
+        .then(() => {
+          clients = clientsArray.slice();
+          clientsArray.forEach((client, i) => {
+            clients[i].photo = photos[i];
+          });
+          this.setState({ clients });
+        });
+    }
+
+    getClients() {
+      const { searchName } = this.state;
+      const { role } = this.props;
+      return fetch(`${getServerURL()}/get-organization-members`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          role,
+          listType: 'clients',
+          name: searchName,
+        }),
+      })
+        .then((res) => res.json())
+        .then((responseJSON) => {
+          const { people, status } = responseJSON;
+          // console.log(responseJSON);
+          if (status !== 'USER_NOT_FOUND') {
+            return people;
+          }
+          return [];
+        })
+        .then((result) => this.loadProfilePhoto(result));
+    }
+
+    renderClients() {
+      const { showClientAuthModal } = this.state;
+
+      const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
+      const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
+      const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
+
+      const pageNumbers: number[] = [];
+
+      for (let i = 1; i <= Math.ceil(this.state.clients.length / this.state.postsPerPage); i += 1) {
+        pageNumbers.push(i);
+      }
 
     const setPage = (pageNum) => {
       this.setState({ currentPage: pageNum });
@@ -316,32 +316,12 @@ class WorkerLanding extends Component<Props, State> {
                   {' Complete Application'}
                 </div>
               </button> */}
-              {/* <div className="dropdown-item">
+                            {/* <div className="dropdown-item">
                 <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
                   <img src={TrashCan} className="icon-height"/>
                   {" Delete Client"}
               </div>
               </div> */}
-            </div>
-          </div>
-              <Link to={`/profile/${client.username}`}>
-                <div className="card-body px-0 py-0 card-body-positioning">
-                  <div className="d-flex flex-row mb-3">
-                    {client.photo === null ? (
-                        <Image
-                          alt="a blank profile"
-                          src={GenericProfilePicture}
-                          style={{ height: 56, width: 56 }}
-                          roundedCircle
-                        />
-                    ) : (
-                        <div id="profilePhoto">
-                          <Image
-                            alt="a blank profile"
-                            src={client.photo}
-                            style={{ height: 56, width: 56 }}
-                            roundedCircle
-                          />
                         </div>
                     )}
                   </div>
@@ -395,105 +375,111 @@ class WorkerLanding extends Component<Props, State> {
                 View Profile
               </button>
             </Link> */}
-              </div>
-          {showClientAuthModal ? this.modalRender() : null }
-        </div>
-      ),
-    );
+                    </div>
+                    {showClientAuthModal ? this.modalRender() : null}
+                </div>
+        ),
+      );
 
-    return (clientCards);
-  }
-
-  modalRender() {
-    const { showClientAuthModal } = this.state;
-    return (
-        <Modal key="authenticateAction" show={showClientAuthModal}>
-          <Modal.Header>
-            <Modal.Title>Authenticate Client Account Action</Modal.Title>
-          </Modal.Header>
-
-          <Modal.Body>
-            <div className="row mb-3 mt-3">
-              <div className="col card-text mt-2">Client Username</div>
-              <div className="col-6 card-text">
-                <input
-                  type="text"
-                  className="form-control form-purple"
-                  id="authenticateForm"
-                  readOnly
-                  placeholder="Enter Username Here"
-                  value={this.state.clientUsername}
-                />
-              </div>
-            </div>
-            <div className="row mb-3 mt-3">
-              <div className="col card-text mt-2">Client Password</div>
-              <div className="col-6 card-text">
-                <input
-                  type="password"
-                  className="form-control form-purple"
-                  id="passwordVerification"
-                  placeholder="Enter Password Here"
-                  onChange={this.handleChangeClientPassword}
-                  value={this.state.clientPassword}
-                />
-              </div>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              data-dismiss="modal"
-              onClick={this.handleClickClose}
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={this.handleClickAuthenticateClient}
-            >
-              Submit
-            </button>
-          </Modal.Footer>
-        </Modal>
-    );
-  }
-
-  render() {
-    const { role } = this.props;
-    const {
-      redirectLink,
-      clientCredentialsCorrect,
-      clientUsername,
-      searchName,
-      showClients,
-    } = this.state;
-
-    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-    const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
-    const lastPage = Math.ceil(this.state.clients.length / this.state.postsPerPage);
-
-    // Implement page numbers
-    const pageNumbers : number[] = [];
-
-    for (let i = 1; i <= lastPage; i += 1) {
-      pageNumbers.push(i);
+      return (clientCards);
     }
 
-    // Set current page
-    const setPage = (pageNum) => {
-      this.setState({ currentPage: pageNum });
-    };
+    modalRender() {
+      const { showClientAuthModal } = this.state;
+      return (
+            <Modal key="authenticateAction" show={showClientAuthModal}>
+                <Modal.Header>
+                    <Modal.Title>Authenticate Client Account Action</Modal.Title>
+                </Modal.Header>
 
-    const paginationClassName = (pageNum) => {
-      if (pageNum === this.state.currentPage) {
+                <Modal.Body>
+                    <div className="row mb-3 mt-3">
+                        <div className="col card-text mt-2">Client Username</div>
+                        <div className="col-6 card-text">
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              id="authenticateForm"
+                              readOnly
+                              placeholder="Enter Username Here"
+                              value={this.state.clientUsername}
+                            />
+                        </div>
+                    </div>
+                    <div className="row mb-3 mt-3">
+                        <div className="col card-text mt-2">Client Password</div>
+                        <div className="col-6 card-text">
+                            <input
+                              type="password"
+                              className="form-control form-purple"
+                              id="passwordVerification"
+                              placeholder="Enter Password Here"
+                              onChange={this.handleChangeClientPassword}
+                              value={this.state.clientPassword}
+                            />
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-dismiss="modal"
+                      onClick={this.handleClickClose}
+                    >
+                        Close
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={this.handleClickAuthenticateClient}
+                    >
+                        Submit
+                    </button>
+                </Modal.Footer>
+            </Modal>
+      );
+    }
+
+    render() {
+      const { role } = this.props;
+      const {
+        redirectLink,
+        clientCredentialsCorrect,
+        clientUsername,
+        searchName,
+        showClients,
+      } = this.state;
+
+      const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
+      const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
+      const currentPosts = this.state.clients.slice(indexOfFirstPost, indexOfLastPost);
+      const lastPage = Math.ceil(this.state.clients.length / this.state.postsPerPage);
+
+      // Implement page numbers
+      const pageNumbers: number[] = [];
+
+      for (let i = 1; i <= lastPage; i += 1) {
+        pageNumbers.push(i);
+      }
+
+      // Set current page
+      const setPage = (pageNum) => {
+        this.setState({ currentPage: pageNum });
+      };
+
+      const paginationClassName = (pageNum) => {
+        if (pageNum === this.state.currentPage) {
+          if (pageNum === 1) {
+            return 'active-pagination-link-1';
+          }
+          if (pageNum === lastPage) {
+            return 'active-pagination-link-end';
+          }
+          return 'active-pagination-link';
+        }
         if (pageNum === 1) {
-          return 'active-pagination-link-1';
-        } if (pageNum === lastPage) {
-          return 'active-pagination-link-end';
+          return 'pagination-link-1';
         }
         return 'active-pagination-link';
       }
@@ -600,15 +586,15 @@ class WorkerLanding extends Component<Props, State> {
                       onClick={() => { setPage(pageNum); }}
                     >
                   {pageNum}
-                    </span>
-                ))) : (null)
-               }
+                                    </span>
+                              ))) : (null)
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          </div>
-        </div>
-    );
-  }
+      );
+    }
 }
 
 export default withAlert()(WorkerLanding);
