@@ -1,35 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@alexgtang 
-keepid
-/
-keepid_client
-Public
-Code
-Issues
-90
-Pull requests
-17
-Actions
-Projects
-4
-Wiki
-Security
-Insights
-keepid_client/src/components/AccountSettings/ClientProfilePage.tsx /
-@alexgtang
-alexgtang changed button wording
-Latest commit d5a2c9c 16 days ago
- History
- 6 contributors
-@ocao29@alexgtang@crchong1@loafyyy@dannymf@lizyn
- 744 lines (703 sloc)  22.6 KB
-
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import Image from 'react-bootstrap/Image';
