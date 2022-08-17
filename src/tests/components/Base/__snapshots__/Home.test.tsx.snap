@@ -318,7 +318,7 @@ exports[`Home page snapshot test 1`] = `
           className="col-md-4"
         >
           <div
-            className="ml-1 mr-1 mt-2 mb-2"
+            className="ml-2 mr-2 mt-2 mb-2"
             onMouseEnter={[Function]}
             onMouseLeave={[Function]}
           >
@@ -334,7 +334,7 @@ exports[`Home page snapshot test 1`] = `
               }
             >
               <div
-                className="p-0 d-flex flex-column align-items-start card-body"
+                className="p-4 d-flex flex-column align-items-start card-body"
                 style={
                   Object {
                     "height": "100%",
@@ -357,14 +357,14 @@ exports[`Home page snapshot test 1`] = `
                   }
                 />
                 <div
-                  className="p-4"
+                  className="py-4"
                 >
                   <div
                     className="card-title h5"
                   >
-                    <h3>
+                    <h4>
                       HIPAA Compliant
-                    </h3>
+                    </h4>
                   </div>
                   <p
                     className="card-text"
@@ -390,7 +390,7 @@ exports[`Home page snapshot test 1`] = `
           className="col-md-4"
         >
           <div
-            className="ml-1 mr-1 mt-2 mb-2"
+            className="ml-2 mr-2 mt-2 mb-2"
             onMouseEnter={[Function]}
             onMouseLeave={[Function]}
           >
@@ -406,7 +406,7 @@ exports[`Home page snapshot test 1`] = `
               }
             >
               <div
-                className="p-0 d-flex flex-column align-items-start card-body"
+                className="p-4 d-flex flex-column align-items-start card-body"
                 style={
                   Object {
                     "height": "100%",
@@ -429,14 +429,14 @@ exports[`Home page snapshot test 1`] = `
                   }
                 />
                 <div
-                  className="p-4"
+                  className="py-4"
                 >
                   <div
                     className="card-title h5"
                   >
-                    <h3>
+                    <h4>
                       Always Encryped
-                    </h3>
+                    </h4>
                   </div>
                   <p
                     className="card-text"
@@ -462,7 +462,7 @@ exports[`Home page snapshot test 1`] = `
           className="col-md-4"
         >
           <div
-            className="ml-1 mr-1 mt-2 mb-2"
+            className="ml-2 mr-2 mt-2 mb-2"
             onMouseEnter={[Function]}
             onMouseLeave={[Function]}
           >
@@ -478,7 +478,7 @@ exports[`Home page snapshot test 1`] = `
               }
             >
               <div
-                className="p-0 d-flex flex-column align-items-start card-body"
+                className="p-4 d-flex flex-column align-items-start card-body"
                 style={
                   Object {
                     "height": "100%",
@@ -501,14 +501,14 @@ exports[`Home page snapshot test 1`] = `
                   }
                 />
                 <div
-                  className="p-4"
+                  className="py-4"
                 >
                   <div
                     className="card-title h5"
                   >
-                    <h3>
+                    <h4>
                       Secure in the Cloud
-                    </h3>
+                    </h4>
                   </div>
                   <p
                     className="card-text"
