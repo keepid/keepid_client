@@ -20,6 +20,42 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
     });
 }
 
+export async function getAllWorkersFromOrganizationToAssign(username: string) {
+  return fetch(`${getServerURL()}/get-all-members-by-role`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({
+      username,
+    }),
+  })
+    .then((response) => response.json())
+    .then((responseJSON) => {
+      const { status } = responseJSON;
+      if (status === 'SUCCESS') {
+        return status['people'];
+      }
+    });
+}
+
+export async function assignWorkerToUser(
+  targetUsername: string,
+  workersToAdd: string[]
+): Promise<boolean> {
+  return fetch(`${getServerURL()}/assign-worker-to-user`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({
+      targetUsername,
+      workersToAdd,
+    }),
+  })
+    .then((response) => response.json())
+    .then((responseJSON) => {
+      const { status } = responseJSON;
+      return status === 'SUCCESS';
+    });
+}
+
 async function _createUser({
   accountInformation,
   recaptchaPayload,
@@ -33,13 +69,8 @@ async function _createUser({
   orgName?: string;
   endpoint: string;
 }) {
-  const {
-    firstname,
-    lastname,
-    birthDate,
-    username,
-    password,
-  } = accountInformation;
+  const { firstname, lastname, birthDate, username, password } =
+    accountInformation;
 
   const birthDateString = birthDateStringConverter(birthDate || new Date());
 
@@ -116,13 +147,8 @@ export async function signupOrganization({
   organizationInformation: OrganizationInformationProperties;
   recaptchaPayload: string;
 }) {
-  const {
-    firstname,
-    lastname,
-    birthDate,
-    username,
-    password,
-  } = accountInformation;
+  const { firstname, lastname, birthDate, username, password } =
+    accountInformation;
   const {
     orgWebsite: organizationWebsite,
     orgName: organizationName,

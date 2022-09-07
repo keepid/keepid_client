@@ -8,20 +8,26 @@ import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 
 import AccountSetup from './pages/AccountSetup';
+import AssignWorker from './pages/AssignWorker';
 import ReviewSubmit from './pages/ReviewSubmit';
 import SignUserAgreement from './pages/SignUserAgreement';
 import { signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
 export default function PersonSignupFlow() {
-  const { signUpStageStateContext, accountInformationContext, personRole } =
-    useContext(SignUpContext);
+  const {
+    signUpStageStateContext,
+    accountInformationContext,
+    assignWorkersContext,
+    personRole,
+  } = useContext(SignUpContext);
   const alert = useAlert();
   const history = useHistory();
 
   const onSubmit = async (recaptchaToken: string): Promise<void> =>
     signupUser({
       accountInformation: accountInformationContext.values,
+      assignWorker: assignWorkersContext.values,
       recaptchaPayload: recaptchaToken,
       personRole: personRole || '',
     })
@@ -29,12 +35,12 @@ export default function PersonSignupFlow() {
         const { status, message } = responseJSON;
         if (status === 'ENROLL_SUCCESS') {
           alert.show(
-            'You successfully signed up to use Keep.id. Please login with your new username and password',
+            'You successfully signed up to use Keep.id. Please login with your new username and password'
           );
           history.push('/login');
         } else if (status === 'INVALID_PARAMETER') {
           alert.error(
-            'No organization found for this link. Try again with different link',
+            'No organization found for this link. Try again with different link'
           );
         } else {
           alert.error(message);
@@ -48,6 +54,7 @@ export default function PersonSignupFlow() {
     if (signUpStageStateContext.stages?.length !== 3) {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
+        SignupStage.ASSIGN_WORKER,
         SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ]);
@@ -73,6 +80,7 @@ export default function PersonSignupFlow() {
           current={currentStageIdx}
         >
           <Steps.Step title="Account Setup" description="" />
+          <Steps.Step title="Assign Worker" description="" />
           <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
@@ -84,11 +92,14 @@ export default function PersonSignupFlow() {
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
           <AccountSetup />
-          ) : null}
+        ) : null}
+        {signUpStageStateContext.currentStage === SignupStage.ASSIGN_WORKER ? (
+          <AssignWorker />
+        ) : null}
         {signUpStageStateContext.currentStage ===
         SignupStage.SIGN_USER_AGREEMENT ? (
           <SignUserAgreement />
-          ) : null}
+        ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />
         ) : null}
