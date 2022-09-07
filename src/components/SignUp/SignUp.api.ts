@@ -32,14 +32,14 @@ export async function getAllWorkersFromOrganizationToAssign(username: string) {
     .then((responseJSON) => {
       const { status } = responseJSON;
       if (status === 'SUCCESS') {
-        return status['people'];
+        return status.people;
       }
     });
 }
 
 export async function assignWorkerToUser(
   targetUsername: string,
-  workersToAdd: string[]
+  workersToAdd: string[],
 ): Promise<boolean> {
   return fetch(`${getServerURL()}/assign-worker-to-user`, {
     method: 'POST',

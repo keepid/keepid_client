@@ -6,8 +6,8 @@ import { InputType } from '../../BaseComponents/Inputs/FieldType';
 import StructuredFormFromFields, {
   FormRowType,
 } from '../../BaseComponents/Inputs/StructuredFormWithRows';
-import SignUpContext from '../SignUp.context';
 import Table from '../../BaseComponents/Table';
+import SignUpContext from '../SignUp.context';
 
 const messages = defineMessages({
   title: {

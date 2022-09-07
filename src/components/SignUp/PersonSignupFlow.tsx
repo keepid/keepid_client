@@ -35,12 +35,12 @@ export default function PersonSignupFlow() {
         const { status, message } = responseJSON;
         if (status === 'ENROLL_SUCCESS') {
           alert.show(
-            'You successfully signed up to use Keep.id. Please login with your new username and password'
+            'You successfully signed up to use Keep.id. Please login with your new username and password',
           );
           history.push('/login');
         } else if (status === 'INVALID_PARAMETER') {
           alert.error(
-            'No organization found for this link. Try again with different link'
+            'No organization found for this link. Try again with different link',
           );
         } else {
           alert.error(message);
@@ -92,14 +92,14 @@ export default function PersonSignupFlow() {
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
           <AccountSetup />
-        ) : null}
+          ) : null}
         {signUpStageStateContext.currentStage === SignupStage.ASSIGN_WORKER ? (
           <AssignWorker />
         ) : null}
         {signUpStageStateContext.currentStage ===
         SignupStage.SIGN_USER_AGREEMENT ? (
           <SignUserAgreement />
-        ) : null}
+          ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />
         ) : null}
