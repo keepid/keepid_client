@@ -97,7 +97,7 @@ class ClientLanding extends Component<Props, State, {}> {
         if (responseJSON.status === 'SUCCESS') {
           this.setState({
             isLoading: false,
-            activities: responseJSON.activities.allActivities,
+            activities: responseJSON.activities,
           });
         }
       });
