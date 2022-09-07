@@ -28,20 +28,18 @@ describe('Client Landing Page Tests', () => {
   describe('Successful Scenarios', () => {
     const successFetchActivities = {
       status: 'SUCCESS',
-      activities: {
-        allActivities: [
-          {
-            type: ['ChangeUserAttributesActivity'],
-            info: [
-              JSON.stringify({
-                _id: { $oid: '604d4e4789690d4671992694' },
-                owner: { username },
-                occuredAt: { $date: +fourDaysAgoDate },
-              }),
-            ],
-          },
-        ],
-      },
+      activities: [
+        {
+          type: ['ChangeUserAttributesActivity'],
+          info: [
+            JSON.stringify({
+              _id: { $oid: '604d4e4789690d4671992694' },
+              owner: { username },
+              occuredAt: { $date: +fourDaysAgoDate },
+            }),
+          ],
+        },
+      ],
     };
     beforeEach(() => {
       server.use(
