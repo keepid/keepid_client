@@ -10,8 +10,10 @@ import { MemoryRouter } from 'react-router-dom';
 import ClientLanding from '../../../components/LandingPages/ClientLanding';
 import getServerURL from '../../../serverOverride';
 
-const fourDaysInMS = 4 * 24 * 60 * 60 * 1000;
-const fourDaysAgoDate = new Date(+new Date() - fourDaysInMS);
+const fourDaysInMS: number = 4 * 24 * 60 * 60 * 1000;
+const fourDaysAgoDate: string = new Date(
+  +new Date() - fourDaysInMS,
+).toISOString();
 
 const server = setupServer();
 describe('Client Landing Page Tests', () => {
@@ -28,20 +30,14 @@ describe('Client Landing Page Tests', () => {
   describe('Successful Scenarios', () => {
     const successFetchActivities = {
       status: 'SUCCESS',
-      activities: {
-        allActivities: [
-          {
-            type: ['ChangeUserAttributesActivity'],
-            info: [
-              JSON.stringify({
-                _id: { $oid: '604d4e4789690d4671992694' },
-                owner: { username },
-                occuredAt: { $date: +fourDaysAgoDate },
-              }),
-            ],
-          },
-        ],
-      },
+      activities: [
+        {
+          type: 'ChangeUserAttributesActivity',
+          _id: '604d4e4789690d4671992694',
+          username,
+          occurredAt: fourDaysAgoDate,
+        },
+      ],
     };
     beforeEach(() => {
       server.use(
@@ -73,8 +69,10 @@ describe('Client Landing Page Tests', () => {
       );
       // Assert
       await waitFor(() => {
-        expect(screen.getByText(/completed by/i)).toHaveTextContent(
-          `Completed by ${username}, ${fourDaysAgoDate.toLocaleDateString()}, 4 days ago`,
+        expect(screen.getByText(/Completed by/)).toHaveTextContent(
+          `Completed by ${username}, ${new Date(
+            Date.parse(fourDaysAgoDate),
+          ).toLocaleDateString()}, 4 days ago`,
         );
       });
     });
