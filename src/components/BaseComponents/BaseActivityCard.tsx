@@ -19,7 +19,7 @@ export default function (props: ActivityProps): React.ReactElement {
     );
     // eslint-disable-next-line no-underscore-dangle
     return (
-      <div className="ml-2 activities-card-container">
+      <div key={activity.id} className="ml-2 activities-card-container">
         <h6 id="activities-card-title">
           {displayType}
           Activity
