@@ -5,6 +5,7 @@ import Cropper from 'react-easy-crop';
 
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
+import ActivityCard from '../BaseComponents/BaseActivityCard';
 
 interface Props {
   username: any;
@@ -88,7 +89,6 @@ class ClientProfilePage extends Component<Props, State> {
     this.getCroppedImg = this.getCroppedImg.bind(this);
     this.dataURItoBlob = this.dataURItoBlob.bind(this);
     this.cropAndSave = this.cropAndSave.bind(this);
-    this.renderActivities = this.renderActivities.bind(this);
   }
 
   componentDidMount() {
@@ -148,8 +148,8 @@ class ClientProfilePage extends Component<Props, State> {
         })
           .then((response) => response.json())
           .then((responseJSON) => {
-            const responseObject = responseJSON;
-            const activitiesArr = responseObject.activities;
+            console.log(responseJSON, 'activities here');
+            const activitiesArr = responseJSON.activities;
             this.setState({
               activitiesArr,
             });
@@ -368,82 +368,94 @@ class ClientProfilePage extends Component<Props, State> {
       });
   };
 
-  renderActivities = (
-    activitiesArr: Array<any>,
-  ): JSX.Element[] | JSX.Element => {
-    if (activitiesArr.length === 0) {
-      return <div className="row w-125 p-2 text-dark">No activities</div>;
+  renderActivitiesCard = (activities) => {
+    if (activities.length > 0) {
+      // eslint-disable-next-line no-underscore-dangle
+      return activities
+        .slice(0, 5) // only get the first number of elements
+        .map((activity) => (
+          <ActivityCard key={activity._id} activity={activity} />
+        ));
     }
-    const row = activitiesArr.map((activity, i) => {
-      const info = JSON.parse(activity.info);
-      const name = `${info.owner.firstName} ${info.owner.lastName}`;
-      const unparsedTime = info.occuredAt.$date;
-      const date = new Date(unparsedTime);
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      const year = date.getFullYear();
-      const month = months[date.getMonth()];
-      const day = date.getDate();
-      const hour = date.getHours();
-      const min = date.getMinutes();
-      const time = `${day} ${month} ${year} ${hour}:${min}`;
-      if (i === activitiesArr.length - 1) {
-        return (
-          <div className="row w-125 p-2 text-dark" key={activity.toString()}>
-            <div className="row">
-              <div className="col text-left ml-3 font-weight-bold">
-                {activity.type}
-              </div>
-              <div className="col text-right mr-3">{name}</div>
-            </div>
-            <div className="row">
-              <div className="col text-left ml-3">{time}</div>
-              <div className="col text-right mr-3" />
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div
-          className="row w-125 p-2 text-dark"
-          key={Math.random()}
-          style={{
-            borderColor: '#7B81FF',
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderTop: 0,
-            borderRight: 0,
-            borderLeft: 0,
-          }}
-        >
-          <div className="row">
-            <div className="col text-left ml-3 font-weight-bold">
-              {activity.type}
-            </div>
-            <div className="col text-right mr-3">{name}</div>
-          </div>
-          <div className="row">
-            <div className="col text-left ml-3">{time}</div>
-            <div className="col text-right mr-3" />
-          </div>
-        </div>
-      );
-    });
-    return row;
+    return <div>No activities found</div>;
   };
+
+  // renderActivities = (
+  //   activitiesArr: Array<any>
+  // ): JSX.Element[] | JSX.Element => {
+  //   if (activitiesArr.length === 0) {
+  //     return <div className="row w-125 p-2 text-dark">No activities</div>;
+  //   }
+  //   const row = activitiesArr.map((activity, i) => {
+  //     console.
+  //     const name = `${activity.firstName} ${activity.lastName}`;
+  //     const unparsedTime = info.occuredAt.$date;
+  //     const date = new Date(unparsedTime);
+  //     const months = [
+  //       'Jan',
+  //       'Feb',
+  //       'Mar',
+  //       'Apr',
+  //       'May',
+  //       'Jun',
+  //       'Jul',
+  //       'Aug',
+  //       'Sep',
+  //       'Oct',
+  //       'Nov',
+  //       'Dec',
+  //     ];
+  //     const year = date.getFullYear();
+  //     const month = months[date.getMonth()];
+  //     const day = date.getDate();
+  //     const hour = date.getHours();
+  //     const min = date.getMinutes();
+  //     const time = `${day} ${month} ${year} ${hour}:${min}`;
+  //     if (i === activitiesArr.length - 1) {
+  //       return (
+  //         <div className="row w-125 p-2 text-dark" key={activity.toString()}>
+  //           <div className="row">
+  //             <div className="col text-left ml-3 font-weight-bold">
+  //               {activity.type}
+  //             </div>
+  //             <div className="col text-right mr-3">{name}</div>
+  //           </div>
+  //           <div className="row">
+  //             <div className="col text-left ml-3">{time}</div>
+  //             <div className="col text-right mr-3" />
+  //           </div>
+  //         </div>
+  //       );
+  //     }
+
+  //     return (
+  //       <div
+  //         className="row w-125 p-2 text-dark"
+  //         key={Math.random()}
+  //         style={{
+  //           borderColor: '#7B81FF',
+  //           borderWidth: 1,
+  //           borderStyle: 'solid',
+  //           borderTop: 0,
+  //           borderRight: 0,
+  //           borderLeft: 0,
+  //         }}
+  //       >
+  //         <div className="row">
+  //           <div className="col text-left ml-3 font-weight-bold">
+  //             {activity.type}
+  //           </div>
+  //           <div className="col text-right mr-3">{name}</div>
+  //         </div>
+  //         <div className="row">
+  //           <div className="col text-left ml-3">{time}</div>
+  //           <div className="col text-right mr-3" />
+  //         </div>
+  //       </div>
+  //     );
+  //   });
+  //   return row;
+  // };
 
   render() {
     const {
@@ -698,7 +710,7 @@ class ClientProfilePage extends Component<Props, State> {
               {activitiesArr === null ? (
                 <div className="row w-125 p-2 text-dark"> Loading ... </div>
               ) : (
-                this.renderActivities(activitiesArr)
+                this.renderActivitiesCard(activitiesArr)
               )}
             </div>
           </div>
