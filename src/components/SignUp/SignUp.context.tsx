@@ -36,10 +36,15 @@ export interface OrganizationInformationProperties {
   orgEmail: string;
 }
 
+export interface AssignWorkerProperties {
+  assignedWorkerUsername: string;
+}
+
 export enum SignupStage {
   ACCOUNT_INFORMATION,
   ORGANIZATION_INFORMATION,
   SIGN_USER_AGREEMENT,
+  ASSIGN_WORKER,
   REVIEW_SUBMIT,
 }
 
@@ -72,6 +77,10 @@ export type SignUpContextType = {
       val: any
     ) => void;
   };
+  assignWorkersContext: {
+    values: AssignWorkerProperties;
+    onPropertyChange: (key: keyof AssignWorkerProperties, val: any) => void;
+  };
   signUpStageStateContext: SignupStageContextInterface;
   authRole: Role;
   personRole?: Role;
@@ -100,6 +109,12 @@ export const defaultSignUpContextValue: SignUpContextType = {
       orgZipcode: '',
       orgPhoneNumber: '',
       orgEmail: '',
+    },
+    onPropertyChange: () => {},
+  },
+  assignWorkersContext: {
+    values: {
+      assignedWorkerUsername: '',
     },
     onPropertyChange: () => {},
   },
