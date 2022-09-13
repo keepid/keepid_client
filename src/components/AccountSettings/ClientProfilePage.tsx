@@ -113,7 +113,6 @@ class ClientProfilePage extends Component<Props, State> {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        console.log(responseJSON);
         const responseObject = responseJSON;
         const {
           firstName,
@@ -153,7 +152,6 @@ class ClientProfilePage extends Component<Props, State> {
         })
           .then((response) => response.json())
           .then((responseJSON) => {
-            console.log(responseJSON, 'activities here');
             const activitiesArr = responseJSON.activities;
             this.setState({
               activitiesArr,

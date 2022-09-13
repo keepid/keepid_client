@@ -33,7 +33,6 @@ export async function getAllWorkersFromOrganizationToAssign(): Promise<any[]> {
     .then((responseJSON) => {
       const { status } = responseJSON;
       if (status === 'SUCCESS') {
-        console.log(responseJSON, 'response');
         return responseJSON.people;
       }
       return [];
