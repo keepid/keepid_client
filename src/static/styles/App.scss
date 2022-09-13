@@ -15,7 +15,7 @@ $text-red: #f24d4d;
 $footer-color: #413f57;
 $footer-text-color: #b7b7c0;
 $footer-text-color-accent: rgb(230, 230, 230);
-$pagination-border: #ECEEEF;
+$pagination-border: #eceeef;
 $theme-colors: (
 'primary-theme': $primary-theme,
 'secondary-theme': $secondary-theme,
@@ -699,7 +699,7 @@ div.scrollbar {
 	outline: none;
 }
 
-.eye-size{
+.eye-size {
 	height: 1.25rem;
 	width: 1.25rem;
 }
@@ -714,7 +714,7 @@ div.scrollbar {
 	width: 21.625rem;
 	height: 16.813rem;
 
-	background: #FFFFFF;
+	background: #ffffff;
 	box-shadow: 0rem 0.25rem 1.25rem rgba(0, 0, 0, 0.1);
 	border-radius: 1.5rem;
 	flex: none;
@@ -723,7 +723,7 @@ div.scrollbar {
 }
 
 .client-card:hover {
-	background: #FFFFFF;
+	background: #ffffff;
 	box-shadow: 0rem 0.25rem 1.25rem rgba(0, 0, 0, 0.4);
 	border-radius: 1.5rem;
 }
@@ -741,9 +741,9 @@ div.scrollbar {
 .pagination-link {
 	color: $primary-theme;
 	float: left;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $pagination-border;
 	border-left: none;
 }
@@ -751,9 +751,9 @@ div.scrollbar {
 .pagination-link-1 {
 	color: $primary-theme;
 	float: left;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $pagination-border;
 	border-top-left-radius: 0.25rem;
 	border-bottom-left-radius: 0.25rem;
@@ -762,9 +762,9 @@ div.scrollbar {
 .pagination-link-end {
 	color: $primary-theme;
 	float: left;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $pagination-border;
 	border-left: none;
 	border-top-right-radius: 0.25rem;
@@ -774,18 +774,18 @@ div.scrollbar {
 .active-pagination-link {
 	background-color: $primary-theme;
 	color: white;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $primary-theme;
 }
 
 .active-pagination-link-1 {
 	background-color: $primary-theme;
 	color: white;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $primary-theme;
 	border-top-left-radius: 0.25rem;
 	border-bottom-left-radius: 0.25rem;
@@ -794,19 +794,25 @@ div.scrollbar {
 .active-pagination-link-end {
 	background-color: $primary-theme;
 	color: white;
-	padding: 0.5rem 1.0rem;
+	padding: 0.5rem 1rem;
 	text-decoration: none;
-	transition: background-color .3s;
+	transition: background-color 0.3s;
 	border: 0.0625rem solid $primary-theme;
 	border-top-right-radius: 0.25rem;
 	border-bottom-right-radius: 0.25rem;
 }
 
-.pagination-link:hover:not(.active) {background-color: #ddd;}
+.pagination-link:hover:not(.active) {
+	background-color: #ddd;
+}
 
-.pagination-link-1:hover:not(.active) {background-color: #ddd;}
+.pagination-link-1:hover:not(.active) {
+	background-color: #ddd;
+}
 
-.pagination-link-end:hover:not(.active) {background-color: #ddd;}
+.pagination-link-end:hover:not(.active) {
+	background-color: #ddd;
+}
 
 .lock-top-right {
 	position: absolute;
@@ -853,8 +859,8 @@ div.scrollbar {
 }
 
 .view-docs-btn-text {
-	color: $primary-theme; 
-	font-weight: bold; 
+	color: $primary-theme;
+	font-weight: bold;
 }
 
 .transparent-button {
@@ -870,4 +876,9 @@ div.scrollbar {
 
 .primary-color {
 	color: $primary-theme;
+}
+
+.search-bar {
+	min-width: 18.75rem;
+	width: 35vw !important;
 }

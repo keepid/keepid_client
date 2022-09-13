@@ -256,9 +256,8 @@ class WorkerLanding extends Component<Props, State> {
         // console.log(responseJSON);
         if (status !== 'USER_NOT_FOUND') {
           if (!this.state.shouldFilterByAllClients) {
-            return people.filter((person: any) => person.assignedWorkerUsernames.includes(
-              this.props.username,
-            ));
+            return people.filter((person: any) =>
+              person.assignedWorkerUsernames.includes(this.props.username));
           }
           return people;
         }
@@ -538,52 +537,35 @@ class WorkerLanding extends Component<Props, State> {
         </Helmet>
         <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
           <div className="container mb-4">
-            <div className="row">
-              <div className="col-md-6">
+            <div className="d-flex">
+              <div className="d-flex flex-column">
                 <h1 className="display-5 pb-0">
                   {this.state.shouldFilterByAllClients
                     ? 'All Clients'
                     : 'My Clients'}
                 </h1>
               </div>
-              <div className="col-sm-3 text-right">
-                <div className="form-group form-check">
-                  <input
-                    checked={!!this.state.shouldFilterByAllClients}
-                    type="radio"
-                    className="form-check-input"
-                    id="showAllClients"
-                    onClick={this.handleToggleFilteredClients}
-                  />
-                  <label className="form-check-label" htmlFor="showAllClients">
-                    Show All Clients
-                  </label>
-                </div>
-              </div>
-              <div className="col-sm-3 text-right">
-                <div className="form-group form-check">
-                  <input
-                    checked={!this.state.shouldFilterByAllClients}
-                    type="radio"
-                    className="form-check-input"
-                    id="showMyAssignedClients"
-                    onClick={this.handleToggleFilteredClients}
-                  />
-                  <label
-                    className="form-check-label"
-                    htmlFor="showMyAssignedClients"
-                  >
-                    Show My Clients
-                  </label>
-                </div>
+              <div className="d-flex flex-row ml-auto">
+                {role === Role.Director || role === Role.Admin ? (
+                  <Link to="/person-signup/worker">
+                    <button type="button" className="btn btn-primary mr-2 mb-2">
+                      <div>Sign Up Worker</div>
+                    </button>
+                  </Link>
+                ) : (
+                  <div />
+                )}
+                <Link to="/person-signup/client">
+                  <button type="button" className="btn btn-primary mb-2">
+                    <div>Sign Up Client</div>
+                  </button>
+                </Link>
               </div>
             </div>
-
-            <div className="d-flex flex-row justify-content-between">
-              <form className="form-inline mr-3">
+            <div className="d-flex">
+              <form className="d-flex form-inline mr-3 justify-content-start flex-row">
                 <input
-                  className="form-control right-angle-right"
-                  style={{ width: 500 }}
+                  className="form-control right-angle-right search-bar"
                   type="text"
                   onChange={this.handleChangeSearchName}
                   value={this.state.searchName}
@@ -604,7 +586,42 @@ class WorkerLanding extends Component<Props, State> {
                   <div style={{ fontWeight: 'bold' }}>Search</div>
                 </button>
               </form>
-              {/* <button
+              <div className="d-flex ml-auto flex-column font-weight-bold">
+                Filters
+              </div>
+              <div className="d-flex ml-3 flex-column">
+                <div className="form-group form-check">
+                  <input
+                    checked={!!this.state.shouldFilterByAllClients}
+                    type="radio"
+                    className="form-check-input"
+                    id="showAllClients"
+                    onClick={this.handleToggleFilteredClients}
+                  />
+                  <label className="form-check-label" htmlFor="showAllClients">
+                    Show All Clients
+                  </label>
+                </div>
+                <div className="form-group form-check">
+                  <input
+                    checked={!this.state.shouldFilterByAllClients}
+                    type="radio"
+                    className="form-check-input"
+                    id="showMyAssignedClients"
+                    onClick={this.handleToggleFilteredClients}
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor="showMyAssignedClients"
+                  >
+                    Show My Clients
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* <button
 =======
       <div>
         <Helmet>
@@ -634,6 +651,7 @@ class WorkerLanding extends Component<Props, State> {
                   <div>Search</div>
                 </button>
               </form>
+
               {/* <button
                 className="btn btn-secondary"
                 type="button"
@@ -644,23 +662,8 @@ class WorkerLanding extends Component<Props, State> {
               >
                 Advanced Search
                 </button> */}
-              <div>
-                {role === Role.Director || role === Role.Admin ? (
-                  <Link to="/person-signup/worker">
-                    <button type="button" className="btn btn-primary mr-2">
-                      <div>Sign Up Worker</div>
-                    </button>
-                  </Link>
-                ) : (
-                  <div />
-                )}
-                <Link to="/person-signup/client">
-                  <button type="button" className="btn btn-primary mr-4">
-                    <div>Sign Up Client</div>
-                  </button>
-                </Link>
-              </div>
-              <div className="collapse" id="advancedSearch">
+
+          {/* <div className="collapse" id="advancedSearch">
                 <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
                   <h5 className="card-title">Search on multiple fields</h5>
                   <Select
@@ -670,9 +673,7 @@ class WorkerLanding extends Component<Props, State> {
                     isMulti
                   />
                 </div>
-              </div>
-            </div>
-          </div>
+              </div> */}
           <div className="container">
             {this.state.clients.length !== 0 ? (
               <div className="container px-0">
