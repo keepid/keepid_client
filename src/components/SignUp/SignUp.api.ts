@@ -1,4 +1,5 @@
 import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
 import {
   AccountInformationProperties,
   OrganizationInformationProperties,
@@ -20,33 +21,35 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
     });
 }
 
-export async function getAllWorkersFromOrganizationToAssign(username: string) {
+export async function getAllWorkersFromOrganizationToAssign(): Promise<any[]> {
   return fetch(`${getServerURL()}/get-all-members-by-role`, {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify({
-      username,
+      role: Role.Worker,
     }),
   })
     .then((response) => response.json())
     .then((responseJSON) => {
       const { status } = responseJSON;
       if (status === 'SUCCESS') {
-        return status.people;
+        console.log(responseJSON, 'response');
+        return responseJSON.people;
       }
+      return [];
     });
 }
 
 export async function assignWorkerToUser(
-  targetUsername: string,
-  workersToAdd: string[],
+  user: string,
+  workerUsernamesToAdd: string[],
 ): Promise<boolean> {
   return fetch(`${getServerURL()}/assign-worker-to-user`, {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify({
-      targetUsername,
-      workersToAdd,
+      user,
+      workerUsernamesToAdd,
     }),
   })
     .then((response) => response.json())

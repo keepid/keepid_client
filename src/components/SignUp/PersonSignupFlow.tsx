@@ -11,7 +11,7 @@ import AccountSetup from './pages/AccountSetup';
 import AssignWorker from './pages/AssignWorker';
 import ReviewSubmit from './pages/ReviewSubmit';
 import SignUserAgreement from './pages/SignUserAgreement';
-import { signupUser } from './SignUp.api';
+import { assignWorkerToUser, signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
 export default function PersonSignupFlow() {
@@ -27,17 +27,28 @@ export default function PersonSignupFlow() {
   const onSubmit = async (recaptchaToken: string): Promise<void> =>
     signupUser({
       accountInformation: accountInformationContext.values,
-      assignWorker: assignWorkersContext.values,
       recaptchaPayload: recaptchaToken,
       personRole: personRole || '',
     })
       .then((responseJSON) => {
         const { status, message } = responseJSON;
         if (status === 'ENROLL_SUCCESS') {
-          alert.show(
-            'You successfully signed up to use Keep.id. Please login with your new username and password',
-          );
-          history.push('/login');
+          if (assignWorkersContext.values.assignedWorkerUsername !== '') {
+            assignWorkerToUser(accountInformationContext.values.username, [
+              assignWorkersContext.values.assignedWorkerUsername,
+            ]).then((isSuccess) => {
+              if (isSuccess) {
+                history.push('/login');
+              } else {
+                alert.error('Failed to assign worker');
+              }
+            });
+          } else {
+            alert.show(
+              'You successfully signed up to use Keep.id. Please login with your new username and password',
+            );
+            history.push('/login');
+          }
         } else if (status === 'INVALID_PARAMETER') {
           alert.error(
             'No organization found for this link. Try again with different link',
@@ -51,7 +62,8 @@ export default function PersonSignupFlow() {
       });
 
   useEffect(() => {
-    if (signUpStageStateContext.stages?.length !== 3) {
+    if (signUpStageStateContext.stages?.length !== 4) {
+      // update this to add mrore stages
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
         SignupStage.ASSIGN_WORKER,
@@ -87,7 +99,7 @@ export default function PersonSignupFlow() {
         <ProgressBar
           className="d-md-none"
           now={currentStageIdx * 33.4}
-          label={`Step ${currentStageIdx + 1} out of 4`}
+          label={`Step ${currentStageIdx + 1} out of 5`}
         />
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (

@@ -9,6 +9,7 @@ import InviteSignupJWT from './InviteSignupJWT';
 import PersonSignupFlow from './PersonSignupFlow';
 import SignUpContext, {
   AccountInformationProperties,
+  AssignWorkerProperties,
   OrganizationInformationProperties,
   SignupStage,
   SignupStageContextInterface,
@@ -57,31 +58,33 @@ export function useSignupStageContext(): SignupStageContextInterface {
 
 function SignUpRouter({ role }: SignUpRouterProps) {
   const alert = useAlert();
-  const [
-    accountInformation,
-    setAccountInformation,
-  ] = useState<AccountInformationProperties>({
-    birthDate: undefined,
-    confirmPassword: '',
-    firstname: '',
-    lastname: '',
-    password: '',
-    username: '',
-  });
-  const [
-    organizationInformation,
-    setOrganizationInformation,
-  ] = useState<OrganizationInformationProperties>({
-    ein: '',
-    orgAddress: '',
-    orgCity: '',
-    orgEmail: '',
-    orgName: '',
-    orgPhoneNumber: '',
-    orgState: '',
-    orgWebsite: '',
-    orgZipcode: '',
-  });
+  const [accountInformation, setAccountInformation] =
+    useState<AccountInformationProperties>({
+      birthDate: undefined,
+      confirmPassword: '',
+      firstname: '',
+      lastname: '',
+      password: '',
+      username: '',
+    });
+  const [organizationInformation, setOrganizationInformation] =
+    useState<OrganizationInformationProperties>({
+      ein: '',
+      orgAddress: '',
+      orgCity: '',
+      orgEmail: '',
+      orgName: '',
+      orgPhoneNumber: '',
+      orgState: '',
+      orgWebsite: '',
+      orgZipcode: '',
+    });
+
+  // set assignWorkersContext to use state
+  const [assignWorkerInformation, setAssignWorkerInformation] =
+    useState<AssignWorkerProperties>({
+      assignedWorkerUsername: '',
+    });
 
   const signUpStageStateContext = useSignupStageContext();
 
@@ -103,6 +106,14 @@ function SignUpRouter({ role }: SignUpRouterProps) {
           onPropertyChange: onPropertyChange(
             organizationInformation,
             setOrganizationInformation,
+          ),
+        },
+
+        assignWorkersContext: {
+          values: assignWorkerInformation,
+          onPropertyChange: onPropertyChange(
+            assignWorkerInformation,
+            setAssignWorkerInformation,
           ),
         },
 

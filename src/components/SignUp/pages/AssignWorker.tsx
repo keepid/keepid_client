@@ -1,12 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
+import { SelectPanel } from 'react-multi-select-component';
 
-import { InputType } from '../../BaseComponents/Inputs/FieldType';
-import StructuredFormFromFields, {
-  FormRowType,
-} from '../../BaseComponents/Inputs/StructuredFormWithRows';
-import Table from '../../BaseComponents/Table';
+import getServerURL from '../../../serverOverride';
+import Role from '../../../static/Role';
+import { getAllWorkersFromOrganizationToAssign } from '../SignUp.api';
 import SignUpContext from '../SignUp.context';
 
 const messages = defineMessages({
@@ -17,37 +16,28 @@ const messages = defineMessages({
 
   subheader: {
     id: 'signup.assign-workers.subheader',
-    defaultMessage:
-      'You have the option of assigning a worker to you. You can skip this step if this does not apply to you.',
+    defaultMessage: 'Assign a worker',
   },
 });
 
-export default function AssignWorker(): JSX.Element {
+export default function AssignWorker() {
   const {
     assignWorkersContext: { values, onPropertyChange },
-    signUpStageStateContext: { moveToNextSignupStage },
+    signUpStageStateContext: {
+      moveToNextSignupStage,
+      moveToPreviousSignupStage,
+    },
     personRole,
   } = useContext(SignUpContext);
-
   const intl = useIntl();
-  const tableCols = [
-    {
-      dataField: 'firstname',
-      text: 'First Name',
-      sort: true,
-    },
-    {
-      dataField: 'lastname',
-      text: 'Last Name',
-      sort: true,
-    },
-    {
-      dataField: 'username',
-      text: 'Worker Username',
-      sort: true,
-    },
-  ];
-
+  const [workersArray, setWorkers] = useState<any[]>([]);
+  useEffect(() => {
+    const getWorkers = async () => {
+      const workers = await getAllWorkersFromOrganizationToAssign();
+      setWorkers(workers);
+    };
+    getWorkers();
+  }, []);
   return (
     <div>
       <Helmet>
@@ -63,41 +53,53 @@ export default function AssignWorker(): JSX.Element {
               </b>
             </h2>
           </div>
-          <StructuredFormFromFields
-            rows={[]}
+          <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (e.currentTarget.checkValidity() && moveToNextSignupStage) {
-                moveToNextSignupStage();
-              }
+              console.log(values.assignedWorkerUsername, 'final selection');
+              moveToNextSignupStage();
             }}
-            // @ts-ignore
-            onPropertyChange={onPropertyChange}
-            values={values || {}}
-            labelClassName="d-none"
           >
-            <div>
-              <select
-                placeholder="Role"
-                id="role"
-                className="form-control form-purple"
-                value={editedPersonRole}
-                onChange={(e) =>
-                  this.setState({ editedPersonRole: e.target.value })
-                }
+            <select
+              placeholder="Select Worker to assign"
+              id="assignedWorker"
+              className="form-control form-purple"
+              value={values?.assignedWorkerUsername || ''}
+              onChange={(e) => {
+                onPropertyChange('assignedWorkerUsername', e.target.value);
+              }}
+            >
+              {workersArray !== undefined ? (
+                workersArray.sort().map((worker: any) => (
+                  <option key={worker.username} value={worker.username}>
+                    {' '}
+                    {worker.firstName} {worker.lastName}{' '}
+                  </option>
+                ))
+              ) : (
+                <div />
+              )}
+              <option key="" value="">
+                No Workers Selected
+              </option>
+            </select>
+            <p className="mr-3 mt-3 mb-3">
+              You can skip this step if you do not want to assign a worker to
+              this user
+            </p>
+            <div className="d-flex">
+              <button
+                type="button"
+                className="btn btn-outline-primary mt-5"
+                onClick={moveToPreviousSignupStage}
               >
-                <option
-                  defaultValue=""
-                  disabled
-                  hidden
-                  aria-labelledby="role"
-                />
-                <option value="Admin">Admin</option>
-                <option value="Worker">Worker</option>
-                <option value="Client">Client</option>
-              </select>
+                Previous Step
+              </button>
+              <button type="submit" className="ml-auto btn btn-primary mt-5">
+                Continue
+              </button>
             </div>
-          </StructuredFormFromFields>
+          </form>
         </div>
       </div>
     </div>

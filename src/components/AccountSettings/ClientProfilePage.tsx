@@ -38,6 +38,7 @@ interface State {
   fileName: string;
   backgroundColor: string;
   color: string;
+  assignedWorkerUsernames: string[];
 }
 
 const maxZoom = 2;
@@ -80,6 +81,7 @@ class ClientProfilePage extends Component<Props, State> {
       fileName: '',
       backgroundColor: '#7B81FF',
       color: '#FFFFFF',
+      assignedWorkerUsernames: [],
     };
 
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
@@ -111,6 +113,7 @@ class ClientProfilePage extends Component<Props, State> {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
+        console.log(responseJSON);
         const responseObject = responseJSON;
         const {
           firstName,
@@ -123,6 +126,7 @@ class ClientProfilePage extends Component<Props, State> {
           email,
           organization,
           phone,
+          assignedWorkerUsernames,
         } = responseObject;
 
         this.setState({
@@ -136,6 +140,7 @@ class ClientProfilePage extends Component<Props, State> {
           email,
           organization,
           phone,
+          assignedWorkerUsernames,
         });
       })
       .then(() => this.loadProfilePhoto())
@@ -481,6 +486,7 @@ class ClientProfilePage extends Component<Props, State> {
       aspect,
       backgroundColor,
       color,
+      assignedWorkerUsernames,
     } = this.state;
     const { username } = this.props;
 
@@ -641,9 +647,15 @@ class ClientProfilePage extends Component<Props, State> {
                     {zipcode}
                   </div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Organization</div>
                   <div className="col text-right">{organization}</div>
+                </div>
+                <div className="row pb-2">
+                  <div className="col font-weight-bold">Assigned Worker(s)</div>
+                  <div className="col text-right">
+                    {assignedWorkerUsernames}
+                  </div>
                 </div>
               </div>
               <div className="text-center">
