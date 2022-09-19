@@ -256,7 +256,6 @@ class UploadDocs extends React.Component<Props, State> {
                               <Col sm={8}>
                                 <Col sm={10}>
                                   <Card.Title>{pdfFile.name}</Card.Title>
-                                  <RenderPDF key={uuid()} pdfFile={pdfFile} />
                                 </Col>
                               </Col>
                               <Col sm={4}>
@@ -270,6 +269,11 @@ class UploadDocs extends React.Component<Props, State> {
                                     </Dropdown.Item>
                                   )}
                                 </DropdownButton>
+                              </Col>
+                            </Row>
+                            <Row className="row-padding g-4 md-3">
+                              <Col sm={12}>
+                                <RenderPDF key={uuid()} pdfFile={pdfFile} />
                               </Col>
                             </Row>
                           </Card>
