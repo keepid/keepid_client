@@ -21,12 +21,14 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
     });
 }
 
-export async function getAllWorkersFromOrganizationToAssign(): Promise<any[]> {
+export async function getAllWorkersFromOrganizationToAssign(
+  role: Role,
+): Promise<any[]> {
   return fetch(`${getServerURL()}/get-all-members-by-role`, {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify({
-      role: Role.Worker,
+      role,
     }),
   })
     .then((response) => response.json())

@@ -253,7 +253,6 @@ class WorkerLanding extends Component<Props, State> {
       .then((res) => res.json())
       .then((responseJSON) => {
         const { people, status } = responseJSON;
-        // console.log(responseJSON);
         if (status !== 'USER_NOT_FOUND') {
           if (!this.state.shouldFilterByAllClients) {
             return people.filter((person: any) =>

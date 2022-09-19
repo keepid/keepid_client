@@ -1,3 +1,4 @@
+import { worker } from 'cluster';
 import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
@@ -33,8 +34,10 @@ export default function AssignWorker() {
   const [workersArray, setWorkers] = useState<any[]>([]);
   useEffect(() => {
     const getWorkers = async () => {
-      const workers = await getAllWorkersFromOrganizationToAssign();
-      setWorkers(workers);
+      const workers = await getAllWorkersFromOrganizationToAssign(Role.Worker);
+      const admins = await getAllWorkersFromOrganizationToAssign(Role.Admin);
+      const workersAndAdmins = workers.concat(admins);
+      setWorkers(workersAndAdmins);
     };
     getWorkers();
   }, []);
