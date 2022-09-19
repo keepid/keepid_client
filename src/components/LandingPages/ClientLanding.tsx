@@ -82,7 +82,7 @@ class ClientLanding extends Component<Props, State, {}> {
         <div className="d-flex p-2">
           <h1 id="welcome-title">{`Welcome, ${name}`}</h1>
         </div>
-        <div className="mb-5">
+        <div className="mb-3">
           <QuickAccessCards />
         </div>
         <div className="row m-auto mt-5">

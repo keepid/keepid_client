@@ -80,15 +80,15 @@ function HowItWorksDetail(props: {
   image: string;
 }) {
   return (
-<div className="row pb-5">
-    <div className="col-md-4 mb-2">
-      <img alt="Hubs" src={props.image} className="home-svgs float-right" />
+    <div className="row pb-5">
+      <div className="col-md-4 mb-2">
+        <img alt="Hubs" src={props.image} className="home-svgs float-right" />
+      </div>
+      <div className="col-md-8 d-flex flex-column home-text">
+        <h3>{props.header}</h3>
+        <span>{props.detail}</span>
+      </div>
     </div>
-    <div className="col-md-8 d-flex flex-column home-text">
-      <h3>{props.header}</h3>
-      <span>{props.detail}</span>
-    </div>
-</div>
   );
 }
 

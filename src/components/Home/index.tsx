@@ -40,8 +40,8 @@ function Home() {
       </Helmet>
       {/* <StatementOfSolidarity /> */}
       <div className="container-fluid my-auto">
-        <div className="row section1 mt-5 justify-content-center">
-          <div className="col-md-5 px-4 custom-vertical-center">
+        <div className="d-flex flex-row section1 mt-5 justify-content-center img-fluid">
+          <div className="flex-col px-4 custom-vertical-center">
             <div className="rounded mb-3 pb-5">
               <div className="page-header">
                 <span className="brand-text" id="brand-header">
@@ -68,7 +68,7 @@ function Home() {
               </a>
             </div>
           </div>
-          <div className="col-md-5 px-5 custom-vertical-center">
+          <div className="flex-col px-5 custom-vertical-center">
             <div className="pb-4 container-home-right">
               <div>
                 <img

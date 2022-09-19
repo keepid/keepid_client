@@ -19,7 +19,8 @@ export default defineMessages({
   },
   'quick-access.no-document-set.description': {
     id: 'quick-access.no-document-set.description',
-    defaultMessage: 'You have not set your Quick Access document for this category yet. Start setting one below!',
+    defaultMessage:
+      'You have not set your Quick Access document for this category yet. Start setting one below!',
   },
   'quick-access.no-document-set.button': {
     id: 'quick-access.no-document-set.button',
@@ -31,11 +32,13 @@ export default defineMessages({
   },
   'quick-access.setup.description': {
     id: 'quick-access.setup.description',
-    defaultMessage: 'Choose 1 document to set as the default ID to quickly access your {categoryTitle}',
+    defaultMessage:
+      'Choose 1 document to set as the default ID to quickly access your {categoryTitle}',
   },
   'quick-access.success-modal.title': {
     id: 'quick-access.success-modal.title',
-    defaultMessage: 'You have successfully set up Quick Access {categoryTitle}for your {categoryTitle}!',
+    defaultMessage:
+      'You have successfully set up Quick Access for your {categoryTitle}!',
   },
   'quick-access.success-modal.button': {
     id: 'quick-access.success-modal.button',

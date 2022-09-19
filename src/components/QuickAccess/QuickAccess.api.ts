@@ -2,7 +2,9 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
 
-export function getConfiguredDocumentForCategory(category: QuickAccessCategory): Promise<QuickAccessFile | null> {
+export function getConfiguredDocumentForCategory(
+  category: QuickAccessCategory,
+): Promise<QuickAccessFile | null> {
   return Promise.resolve(null);
 }
 
@@ -10,7 +12,7 @@ export function fetchDocuments(): Promise<QuickAccessFile[]> {
   return fetch(`${getServerURL()}/get-documents`, {
     method: 'POST',
     credentials: 'include',
-    body: JSON.stringify({ pdfType: PDFType.IDENTIFICATION }),
+    body: JSON.stringify({ pdfType: PDFType.IDENTIFICATION_DOCUMENT }),
   })
     .then((response) => response.json())
     .then((x) => {
@@ -19,7 +21,10 @@ export function fetchDocuments(): Promise<QuickAccessFile[]> {
     });
 }
 
-export function setQuickAccessDocumentForCategory(category: QuickAccessCategory, document: QuickAccessFile): Promise<void> {
+export function setQuickAccessDocumentForCategory(
+  category: QuickAccessCategory,
+  document: QuickAccessFile,
+): Promise<void> {
   fetch(`${getServerURL()}/set-default-id`, {
     method: 'POST',
     credentials: 'include',
@@ -30,7 +35,12 @@ export function setQuickAccessDocumentForCategory(category: QuickAccessCategory,
   })
     .then((response) => response.json())
     .then((x) => {
-      console.log('Response from server is ', x, ' for setQuickAccess', category);
+      console.log(
+        'Response from server is ',
+        x,
+        ' for setQuickAccess',
+        category,
+      );
     });
   return Promise.resolve();
 }

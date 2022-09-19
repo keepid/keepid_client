@@ -1,19 +1,23 @@
 .quick-access-card-container {
 	display: flex;
 	justify-content: space-around;
-	border: .0625rem dashed #7B61FF;
-	padding: .5rem;
 }
 
 .quick-access-card {
 	background: #ffffff;
-	box-shadow: 0rem 0rem 2rem rgba(33, 37, 41, 0.15);
-	border-radius: 10px;
-	//height: 132px;
+	box-shadow: 0rem 0rem 1rem rgba(33, 37, 41, 0.15);
+	border-radius: 0.625rem;
 	min-width: 20%;
-	margin: 1rem;
+	margin-right: 1.75rem;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
 }
 
+.quick-access-card:hover,
+.quick-access-card:focus,
+.quick-access-card:active {
+	box-shadow: 0rem 0rem 2rem rgba(0, 0, 149, 0.35);
+}
 
 .quick-access-card-body {
 	width: 100%;
@@ -38,9 +42,4 @@
 
 .quick-access-card-title {
 	margin: auto;
-}
-
-
-.quick-access-view-body {
-
 }

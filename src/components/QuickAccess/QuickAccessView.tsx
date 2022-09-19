@@ -22,7 +22,8 @@ export default function QuickAccessView({ category }: Props) {
   const alert = useAlert();
 
   const [loading, setLoading] = useState(true);
-  const [configuredDocument, setConfiguredDocument] = useState<QuickAccessFile | null>(null);
+  const [configuredDocument, setConfiguredDocument] =
+    useState<QuickAccessFile | null>(null);
 
   useEffect(() => {
     let idToMatch = null;
@@ -36,13 +37,21 @@ export default function QuickAccessView({ category }: Props) {
     })
       .then((response) => response.json())
       .then((x) => {
-        console.log('Response from server is ', x, ' for getQuickAccessId of category', category);
+        console.log(
+          'Response from server is ',
+          x,
+          ' for getQuickAccessId of category',
+          category,
+        );
         idToMatch = x.fileId;
         console.log('The idToMatch is', idToMatch);
 
         fetchDocuments()
           .then((documents) => {
-            console.log('fetchDocuments in QuickAccessView returned ', documents);
+            console.log(
+              'fetchDocuments in QuickAccessView returned ',
+              documents,
+            );
             const doc = documents.find((d) => d.id === idToMatch);
 
             console.log('The document that matches is ', doc);
@@ -78,9 +87,9 @@ export default function QuickAccessView({ category }: Props) {
   return (
     <Container>
       <Link to="/">
-        <span>
+        <button type="button" className="btn btn-primary my-3 mr-2">
           <i className="fas fa-chevron-left" /> Back
-        </span>
+        </button>
       </Link>
 
       <Row className="justify-content-md-center">
@@ -97,7 +106,9 @@ export default function QuickAccessView({ category }: Props) {
 type QuickAccessDocumentViewerProps = {
   doc: QuickAccessFile;
 };
-export function QuickAccessDocumentViewer({ doc }: QuickAccessDocumentViewerProps) {
+export function QuickAccessDocumentViewer({
+  doc,
+}: QuickAccessDocumentViewerProps) {
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
@@ -106,7 +117,7 @@ export function QuickAccessDocumentViewer({ doc }: QuickAccessDocumentViewerProp
       credentials: 'include',
       body: JSON.stringify({
         fileId: doc.id,
-        pdfType: PDFType.IDENTIFICATION,
+        pdfType: PDFType.IDENTIFICATION_DOCUMENT,
       }),
     })
       .then((response) => response.blob())
@@ -131,9 +142,6 @@ export function NoDocumentSet({ category }: Props) {
         </Col>
       </Row>
       <Row className="justify-content-md-center">
-        <Image src={NoDocumentSetImageSvg} />
-      </Row>
-      <Row className="justify-content-md-center">
         <Link to={`/quick-access/${category}/setup`}>
           <Button>
             {intl.formatMessage(
@@ -141,6 +149,9 @@ export function NoDocumentSet({ category }: Props) {
             )}
           </Button>
         </Link>
+      </Row>
+      <Row className="justify-content-md-center">
+        <Image src={NoDocumentSetImageSvg} />
       </Row>
     </>
   );
