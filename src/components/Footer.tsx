@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import Email from '../static/images/email-2.svg';
-import FacebookLogo from '../static/images/fb-logo.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
 
-const Footer = () => (
-  <footer className="footer custom-footer-color">
+function Footer() {
+  return (
+<footer className="footer custom-footer-color">
     <div className="container">
       <div className="d-flex flex-row bd-highlight py-8 py-md-11 flex-wrap">
         <div className="p-2 bd-highlight col-12 col-md-4 col-lg-4 mb-4">
@@ -62,20 +62,6 @@ const Footer = () => (
                 />
               </a>
             </li>
-            <li className="list-inline-item list-social-item mr-3">
-              <a
-                href="https://www.facebook.com/keepidphilly"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-decoration-none"
-              >
-                <img
-                  alt="Facebook Link"
-                  src={FacebookLogo}
-                  className="list-social-icon"
-                />
-              </a>
-            </li>
           </ul>
           <ul className="list-unstyled list-inline list-social">
             <Link to="/issue-report" className="text-decoration-none">
@@ -125,7 +111,8 @@ const Footer = () => (
         </div>
       </div>
     </div>
-  </footer>
-);
+</footer>
+  );
+}
 
 export default Footer;

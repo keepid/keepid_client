@@ -18,7 +18,7 @@ const messages = defineMessages({
   },
 });
 
-const IntroText = (): JSX.Element => {
+function IntroText(): JSX.Element {
   const intl = useIntl();
 
   return (
@@ -50,6 +50,6 @@ const IntroText = (): JSX.Element => {
       </div>
     </div>
   );
-};
+}
 
 export default IntroText;

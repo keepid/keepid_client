@@ -1,5 +1,3 @@
-import 'jquery-mask-plugin';
-
 import React, { useContext } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';

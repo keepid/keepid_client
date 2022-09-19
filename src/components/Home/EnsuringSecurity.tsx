@@ -50,7 +50,7 @@ const EnsuringSecurityMessages = defineMessages({
   },
 });
 
-const EnsuringSecurity = () => {
+function EnsuringSecurity() {
   const intl = useIntl();
   return (
     <div className="py-5">
@@ -139,6 +139,6 @@ const EnsuringSecurity = () => {
       </div>
     </div>
   );
-};
+}
 
 export default EnsuringSecurity;

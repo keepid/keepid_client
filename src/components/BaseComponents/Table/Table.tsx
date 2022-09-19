@@ -138,18 +138,20 @@ const constructSelectRowConfiguration = (
   },
 });
 
-const createDeleteFormatter = (handleTryDelete) => (cell: any, row: any) => (
-  <Button
-    variant="link"
-    className="delete-text table-button action"
-    onClick={(e) => handleTryDelete(e, row)}
-  >
-    <div className="row align-items-center">
-      {/* <img className="px-1 action-svg" src={DeleteSVG} alt="delete" /> */}
-      <div className="d-none d-sm-block">Delete</div>
-    </div>
-  </Button>
-);
+const createDeleteFormatter = (handleTryDelete) => function (cell: any, row: any) {
+  return (
+<Button
+  variant="link"
+  className="delete-text table-button action"
+  onClick={(e) => handleTryDelete(e, row)}
+>
+      <div className="row align-items-center">
+        {/* <img className="px-1 action-svg" src={DeleteSVG} alt="delete" /> */}
+        <div className="d-none d-sm-block">Delete</div>
+      </div>
+</Button>
+  );
+};
 
 const createCellEditFactory = (cantEditCols: Set<number>) =>
   cellEditFactory({
@@ -215,7 +217,7 @@ export interface TableProps extends NoDataIndicationProps {
 /**
  * Base Table body component, without pagination
  */
-export const Table = ({
+export function Table({
   canModify,
   canSelect,
   onSelect,
@@ -226,7 +228,7 @@ export const Table = ({
   onDelete,
   onEditSave,
   ...rest
-}: TableProps) => {
+}: TableProps) {
   // Boolean indicating whether the `columns`
   const [initialized, setInitialized] = useState(false);
   const [rowsBeingEdited, setRowsBeingEdited] = useState(new Set<number>());
@@ -381,7 +383,7 @@ export const Table = ({
       ) : null}
     </>
   );
-};
+}
 
 Table.defaultProps = defaultProps;
 
@@ -396,25 +398,27 @@ interface NoDataIndicationProps {
 /**
  * Component rendered when no data provided to Table
  */
-const NoDataIndication = ({
+function NoDataIndication({
   emptyInfo,
-}: NoDataIndicationProps): React.ReactElement => (
-  <div className="empty-table d-flex flex-column justify-content-center">
-    <div>
-      <p>{`${emptyInfo.description}`}</p>
-    </div>
-    {emptyInfo.label && emptyInfo.onPress ? (
-      <div className="hi">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={emptyInfo.onPress}
-        >
-          {`${emptyInfo.label}`}
-        </button>
+}: NoDataIndicationProps): React.ReactElement {
+  return (
+    <div className="empty-table d-flex flex-column justify-content-center">
+      <div>
+        <p>{`${emptyInfo.description}`}</p>
       </div>
-    ) : null}
-  </div>
-);
+      {emptyInfo.label && emptyInfo.onPress ? (
+        <div className="hi">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={emptyInfo.onPress}
+          >
+            {`${emptyInfo.label}`}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export default Table;

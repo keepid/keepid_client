@@ -123,7 +123,7 @@ export const validateEIN = (ein: string): string => {
 
 export const validateOrgWebsite = (orgWebsite: string): string => {
   if (!isValidOrgWebsite(orgWebsite)) {
-    return 'Invalid Website';
+    return 'Invalid Website: Must begin with \'http:\' or \'https:\'';
   }
   return '';
 };

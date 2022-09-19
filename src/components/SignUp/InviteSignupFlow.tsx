@@ -20,9 +20,8 @@ interface Props {
 }
 
 export default function InviteSignupFlow({ orgName, personRole }: Props) {
-  const { signUpStageStateContext, accountInformationContext } = useContext(
-    SignUpContext,
-  );
+  const { signUpStageStateContext, accountInformationContext } =
+    useContext(SignUpContext);
   const alert = useAlert();
   const history = useHistory();
 

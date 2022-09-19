@@ -24,7 +24,7 @@ interface Props {
   role: Role;
 }
 
-const HeaderFixture = ({ isLoggedIn, role }: Props) => {
+function HeaderFixture({ isLoggedIn, role }: Props) {
   const alert = useAlert();
   return (
     <Header
@@ -35,9 +35,9 @@ const HeaderFixture = ({ isLoggedIn, role }: Props) => {
       alert={alert}
     />
   );
-};
+}
 
-export default () => {
+export default function () {
   const [isLoggedIn] = useValue<boolean>('isLoggedIn', { defaultValue: false });
   const [role] = useSelect('role', {
     options: Object.values(Role),
@@ -55,4 +55,4 @@ export default () => {
       </Provider>
     </MemoryRouter>
   );
-};
+}

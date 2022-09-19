@@ -5,7 +5,7 @@ import { IntlProvider } from 'react-intl';
 import { QuickAccessCategory } from './QuickAccess.util';
 import QuickAccessView from './QuickAccessView';
 
-const QuickAccessViewFixture = () => {
+function QuickAccessViewFixture() {
   const [category] = useSelect('social-security', {
     options: [
       'social-security',
@@ -19,6 +19,6 @@ const QuickAccessViewFixture = () => {
       <QuickAccessView category={category as QuickAccessCategory} />
     </IntlProvider>
   );
-};
+}
 
 export default QuickAccessViewFixture;

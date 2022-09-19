@@ -19,7 +19,7 @@ interface PaginatedTableProps extends TableProps {}
 /**
  * Wrapper providing pagination to the base Table component
  */
-const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
+function PaginatedTable({ data, ...props }: PaginatedTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   data = data || [];
@@ -60,7 +60,7 @@ const PaginatedTable = ({ data, ...props }: PaginatedTableProps) => {
       )}
     </PaginationProvider>
   );
-};
+}
 
 PaginatedTable.defaultProps = defaultProps;
 

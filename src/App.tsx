@@ -62,13 +62,29 @@ interface State {
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
-    this.state = {
-      role: Role.LoggedOut,
-      username: '',
-      name: '',
-      organization: '',
-      autoLogout: false,
-    };
+
+    // set the original state based on session storage
+    const jsonData = sessionStorage.getItem('mySessionStorageData');
+    const jsonLogout = sessionStorage.getItem('autoLogout');
+    if (jsonData && jsonLogout) {
+      const data = JSON.parse(jsonData);
+      const logout = JSON.parse(jsonLogout);
+      this.state = {
+        role: data.role,
+        username: data.username,
+        name: data.name,
+        organization: data.organization,
+        autoLogout: logout,
+      };
+    } else {
+      this.state = {
+        role: Role.LoggedOut,
+        username: '',
+        name: '',
+        organization: '',
+        autoLogout: false,
+      };
+    }
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
     this.setAutoLogout = this.setAutoLogout.bind(this);
@@ -80,6 +96,8 @@ class App extends React.Component<{}, State, {}> {
     this.setState({
       autoLogout: logout,
     });
+    const obj = { autoLogout: this.state.autoLogout };
+    sessionStorage.setItem('autoLogout', JSON.stringify(obj));
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -89,6 +107,8 @@ class App extends React.Component<{}, State, {}> {
       name,
       organization,
     });
+    const obj = { role, username, name, organization };
+    sessionStorage.setItem('mySessionStorageData', JSON.stringify(obj));
   }
 
   logOut() {
@@ -103,6 +123,7 @@ class App extends React.Component<{}, State, {}> {
       method: 'GET',
       credentials: 'include',
     });
+    sessionStorage.clear();
   }
 
   componentDidMount() {
@@ -137,13 +158,30 @@ class App extends React.Component<{}, State, {}> {
                 return Role.LoggedOut;
             }
           };
-          this.logIn(
-            role(),
-            username,
-            organization,
-            `${firstName} ${lastName}`,
-          ); // Change
+          // if the session storage does not match the authentication, logout
+          const jsonData = sessionStorage.getItem('mySessionStorageData');
+          if (jsonData) {
+            const data = JSON.parse(jsonData);
+            if (
+              !(
+                role() === data.role &&
+                username === data.username &&
+                organization === data.organization
+              ) &&
+              data.name === `${firstName} ${lastName}`
+            ) {
+              console.log('logging out');
+              this.logOut();
+            }
+          } else {
+            this.logOut();
+          }
+        } else {
+          this.logOut();
         }
+      })
+      .catch((e) => {
+        console.log('Server is not running: ', e);
       });
   }
 
@@ -172,9 +210,50 @@ class App extends React.Component<{}, State, {}> {
                 setAutoLogout={this.setAutoLogout}
               />
             ) : null}
-
             <Switch>
               <Route exact path="/" render={() => <Redirect to="/home" />} />
+              <Route path="/our-team">
+                <OurTeam />
+              </Route>
+              <Route path="/our-partners">
+                <OurPartners />
+              </Route>
+              <Route path="/our-mission">
+                <OurMission />
+              </Route>
+              <Route path="/privacy-policy">
+                <PrivacyPolicy />
+              </Route>
+              <Route
+                path="/eula"
+                render={() => {
+                  if (role !== Role.LoggedOut) {
+                    return <EULA />;
+                  }
+                  return <Home />;
+                }}
+              />
+              <Route
+                path="/eula"
+                render={() => {
+                  if (role === Role.Admin || role === Role.Director) {
+                    return <AdminDashboard />;
+                  }
+                  return <Home />;
+                }}
+              />
+              <Route path="/careers">
+                <Careers />
+              </Route>
+              <Route path="/issue-report">
+                <IssueReport />
+              </Route>
+              <Route path="/forgot-password">
+                <ForgotPassword />
+              </Route>
+              <Route path="/reset-password/:jwt">
+                <ResetPassword />
+              </Route>
               <Route
                 path="/home"
                 render={() => {
@@ -229,12 +308,7 @@ class App extends React.Component<{}, State, {}> {
                   )
                 }
               />
-              <Route path="/quick-access">
-                <QuickAccessRouter />
-              </Route>
-              <Route path={SignUpRouterPaths}>
-                <SignUpRouter role={role} />
-              </Route>
+
               <Route
                 path="/admin-panel"
                 render={() => {
@@ -247,6 +321,9 @@ class App extends React.Component<{}, State, {}> {
                         role={role}
                       />
                     );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -264,6 +341,32 @@ class App extends React.Component<{}, State, {}> {
                       />
                     );
                   }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/upload-document/:clientUsername"
+                render={(props) => {
+                  const { clientUsername } = props.match.params;
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker ||
+                    role === Role.Client
+                  ) {
+                    return (
+                      <UploadDocs
+                        userRole={Role.Client}
+                        username={clientUsername}
+                      />
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
                   return <Redirect to="/error" />;
                 }}
               />
@@ -273,11 +376,32 @@ class App extends React.Component<{}, State, {}> {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
-                    role === Role.Director
+                    role === Role.Worker ||
+                    role === Role.Developer
                   ) {
-                    return <UploadDocs userRole={role} />;
+                    return <UploadDocs userRole={role} username={username} />;
                   }
-                  return <Redirect to="/error" />;
+                  return <Home />;
+                }}
+              />
+              <Route
+                path="/my-documents/:username"
+                render={(props) => {
+                  const clientName = props.match.params.username;
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer ||
+                    role === Role.Client
+                  ) {
+                    return (
+                      <MyDocuments
+                        userRole={Role.Client}
+                        username={clientName}
+                      />
+                    );
+                  }
+                  return <Home />;
                 }}
               />
               <Route
@@ -286,11 +410,12 @@ class App extends React.Component<{}, State, {}> {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
-                    role === Role.Director
+                    role === Role.Worker ||
+                    role === Role.Developer
                   ) {
-                    return <MyDocuments userRole={role} username={name} />;
+                    return <MyDocuments userRole={role} username={username} />;
                   }
-                  return <Redirect to="/error" />;
+                  return <Home />;
                 }}
               />
               <Route
@@ -305,44 +430,24 @@ class App extends React.Component<{}, State, {}> {
                       />
                     );
                   }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
                   return <Redirect to="/error" />;
                 }}
               />
-              <Route path="/our-team">
-                <OurTeam />
-              </Route>
-              <Route path="/our-partners">
-                <OurPartners />
-              </Route>
-              <Route path="/our-mission">
-                <OurMission />
-              </Route>
-              <Route path="/privacy-policy">
-                <PrivacyPolicy />
-              </Route>
-              <Route path="/eula">
-                <EULA />
-              </Route>
-              <Route path="/dashboard-test">
-                <AdminDashboard />
-              </Route>
-              <Route path="/careers">
-                <Careers />
-              </Route>
-              <Route path="/issue-report">
-                <IssueReport />
-              </Route>
-              <Route path="/forgot-password">
-                <ForgotPassword />
-              </Route>
-              <Route path="/reset-password/:jwt">
-                <ResetPassword />
+              <Route path="/quick-access">
+                <QuickAccessRouter />
               </Route>
               <Route
                 path="/settings"
                 render={() => {
                   if (role !== Role.LoggedOut) {
                     return <MyAccount />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    console.log('logged out');
+                    return <Home />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -355,6 +460,9 @@ class App extends React.Component<{}, State, {}> {
                       <MyOrganization name={name} organization={organization} />
                     );
                   }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
                   return <Redirect to="/error" />;
                 }}
               />
@@ -365,9 +473,10 @@ class App extends React.Component<{}, State, {}> {
                   if (role !== Role.LoggedOut) {
                     return <ClientProfilePage username={clientUsername} />;
                   }
-                  return <Redirect to="/error" />;
+                  return <Home />;
                 }}
               />
+              <SignUpRouter role={role} />
               <Route path="/error">
                 <Error />
               </Route>

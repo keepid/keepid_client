@@ -4,7 +4,8 @@ import Image from 'react-bootstrap/Image';
 import Cropper from 'react-easy-crop';
 
 import getServerURL from '../../serverOverride';
-import DefaultProfilePhoto from '../../static/images/Solid_grey.svg';
+import GenericProfilePicture from '../../static/images/generalprofilepic.png';
+import ActivityCard from '../BaseComponents/BaseActivityCard';
 
 interface Props {
   username: any;
@@ -37,7 +38,12 @@ interface State {
   fileName: string;
   backgroundColor: string;
   color: string;
+  assignedWorkerUsernames: string[];
 }
+
+const maxZoom = 2;
+const zoomIncrement = 0.1;
+const minZoom = 1;
 
 class ClientProfilePage extends Component<Props, State> {
   private hiddenFileInput: React.RefObject<HTMLInputElement>;
@@ -75,6 +81,7 @@ class ClientProfilePage extends Component<Props, State> {
       fileName: '',
       backgroundColor: '#7B81FF',
       color: '#FFFFFF',
+      assignedWorkerUsernames: [],
     };
 
     this.photoUploadHandler = this.photoUploadHandler.bind(this);
@@ -84,10 +91,9 @@ class ClientProfilePage extends Component<Props, State> {
     this.getCroppedImg = this.getCroppedImg.bind(this);
     this.dataURItoBlob = this.dataURItoBlob.bind(this);
     this.cropAndSave = this.cropAndSave.bind(this);
-    this.renderActivities = this.renderActivities.bind(this);
   }
 
-  componentDidMount = (): void => {
+  componentDidMount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
@@ -119,6 +125,7 @@ class ClientProfilePage extends Component<Props, State> {
           email,
           organization,
           phone,
+          assignedWorkerUsernames,
         } = responseObject;
 
         this.setState({
@@ -132,6 +139,7 @@ class ClientProfilePage extends Component<Props, State> {
           email,
           organization,
           phone,
+          assignedWorkerUsernames,
         });
       })
       .then(() => this.loadProfilePhoto())
@@ -144,8 +152,7 @@ class ClientProfilePage extends Component<Props, State> {
         })
           .then((response) => response.json())
           .then((responseJSON) => {
-            const responseObject = responseJSON;
-            const activitiesArr = responseObject.activities.allActivities;
+            const activitiesArr = responseJSON.activities;
             this.setState({
               activitiesArr,
             });
@@ -161,13 +168,13 @@ class ClientProfilePage extends Component<Props, State> {
             }
           });
       });
-  };
+  }
 
-  componentWillUnmount = (): void => {
+  componentWillUnmount() {
     if (this.controllerRef.current) {
       this.controllerRef.current.abort();
     }
-  };
+  }
 
   loadProfilePhoto = (): void => {
     const { username } = this.props;
@@ -234,6 +241,16 @@ class ClientProfilePage extends Component<Props, State> {
 
   onZoomChange = (zoom: number): void => {
     this.setState({ zoom });
+  };
+
+  zoomIn = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.min(maxZoom, this.state.zoom + zoomIncrement) });
+  };
+
+  zoomOut = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({ zoom: Math.max(minZoom, this.state.zoom - zoomIncrement) });
   };
 
   onCropChange = (crop: any): void => {
@@ -354,82 +371,94 @@ class ClientProfilePage extends Component<Props, State> {
       });
   };
 
-  renderActivities = (
-    activitiesArr: Array<any>,
-  ): JSX.Element[] | JSX.Element => {
-    if (activitiesArr.length === 0) {
-      return <div className="row w-125 p-2 text-dark">No activities</div>;
+  renderActivitiesCard = (activities) => {
+    if (activities.length > 0) {
+      // eslint-disable-next-line no-underscore-dangle
+      return activities
+        .slice(0, 5) // only get the first number of elements
+        .map((activity) => (
+          <ActivityCard key={activity._id} activity={activity} />
+        ));
     }
-    const row = activitiesArr.map((activity, i) => {
-      const info = JSON.parse(activity.info);
-      const name = `${info.owner.firstName} ${info.owner.lastName}`;
-      const unparsedTime = info.occuredAt.$date;
-      const date = new Date(unparsedTime);
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      const year = date.getFullYear();
-      const month = months[date.getMonth()];
-      const day = date.getDate();
-      const hour = date.getHours();
-      const min = date.getMinutes();
-      const time = `${day} ${month} ${year} ${hour}:${min}`;
-      if (i === activitiesArr.length - 1) {
-        return (
-          <div className="row w-125 p-2 text-dark" key={activity.toString()}>
-            <div className="row">
-              <div className="col text-left ml-3 font-weight-bold">
-                {activity.type}
-              </div>
-              <div className="col text-right mr-3">{name}</div>
-            </div>
-            <div className="row">
-              <div className="col text-left ml-3">{time}</div>
-              <div className="col text-right mr-3" />
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div
-          className="row w-125 p-2 text-dark"
-          key={Math.random()}
-          style={{
-            borderColor: '#7B81FF',
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderTop: 0,
-            borderRight: 0,
-            borderLeft: 0,
-          }}
-        >
-          <div className="row">
-            <div className="col text-left ml-3 font-weight-bold">
-              {activity.type}
-            </div>
-            <div className="col text-right mr-3">{name}</div>
-          </div>
-          <div className="row">
-            <div className="col text-left ml-3">{time}</div>
-            <div className="col text-right mr-3" />
-          </div>
-        </div>
-      );
-    });
-    return row;
+    return <div>No activities found</div>;
   };
+
+  // renderActivities = (
+  //   activitiesArr: Array<any>
+  // ): JSX.Element[] | JSX.Element => {
+  //   if (activitiesArr.length === 0) {
+  //     return <div className="row w-125 p-2 text-dark">No activities</div>;
+  //   }
+  //   const row = activitiesArr.map((activity, i) => {
+  //     console.
+  //     const name = `${activity.firstName} ${activity.lastName}`;
+  //     const unparsedTime = info.occuredAt.$date;
+  //     const date = new Date(unparsedTime);
+  //     const months = [
+  //       'Jan',
+  //       'Feb',
+  //       'Mar',
+  //       'Apr',
+  //       'May',
+  //       'Jun',
+  //       'Jul',
+  //       'Aug',
+  //       'Sep',
+  //       'Oct',
+  //       'Nov',
+  //       'Dec',
+  //     ];
+  //     const year = date.getFullYear();
+  //     const month = months[date.getMonth()];
+  //     const day = date.getDate();
+  //     const hour = date.getHours();
+  //     const min = date.getMinutes();
+  //     const time = `${day} ${month} ${year} ${hour}:${min}`;
+  //     if (i === activitiesArr.length - 1) {
+  //       return (
+  //         <div className="row w-125 p-2 text-dark" key={activity.toString()}>
+  //           <div className="row">
+  //             <div className="col text-left ml-3 font-weight-bold">
+  //               {activity.type}
+  //             </div>
+  //             <div className="col text-right mr-3">{name}</div>
+  //           </div>
+  //           <div className="row">
+  //             <div className="col text-left ml-3">{time}</div>
+  //             <div className="col text-right mr-3" />
+  //           </div>
+  //         </div>
+  //       );
+  //     }
+
+  //     return (
+  //       <div
+  //         className="row w-125 p-2 text-dark"
+  //         key={Math.random()}
+  //         style={{
+  //           borderColor: '#7B81FF',
+  //           borderWidth: 1,
+  //           borderStyle: 'solid',
+  //           borderTop: 0,
+  //           borderRight: 0,
+  //           borderLeft: 0,
+  //         }}
+  //       >
+  //         <div className="row">
+  //           <div className="col text-left ml-3 font-weight-bold">
+  //             {activity.type}
+  //           </div>
+  //           <div className="col text-right mr-3">{name}</div>
+  //         </div>
+  //         <div className="row">
+  //           <div className="col text-left ml-3">{time}</div>
+  //           <div className="col text-right mr-3" />
+  //         </div>
+  //       </div>
+  //     );
+  //   });
+  //   return row;
+  // };
 
   render() {
     const {
@@ -455,6 +484,7 @@ class ClientProfilePage extends Component<Props, State> {
       aspect,
       backgroundColor,
       color,
+      assignedWorkerUsernames,
     } = this.state;
     const { username } = this.props;
 
@@ -478,6 +508,7 @@ class ClientProfilePage extends Component<Props, State> {
               <button
                 type="button"
                 className="btn mb-3 mx-4 font-weight-bold btn-primary"
+                data-testid="select-photo"
                 onClick={() => this.hiddenFileInput.current!.click()}
               >
                 Select Photo
@@ -487,6 +518,7 @@ class ClientProfilePage extends Component<Props, State> {
                 type="file"
                 key={inputKey}
                 ref={this.hiddenFileInput}
+                data-testid="photo-input"
                 onChange={(e) => this.fileSelectedHandler(e)}
                 accept=".jpg,.jpeg,.png"
               />
@@ -510,9 +542,28 @@ class ClientProfilePage extends Component<Props, State> {
                   </div>
                   <div>
                     <div className="text-center mx-4">
+                      <div className="btn-group mt-2">
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomOut}
+                          disabled={this.state.zoom <= 1}
+                        >
+                          -
+                        </button>
+                        <button
+                          className="btn w-25 btn-outline-primary"
+                          type="button"
+                          onClick={this.zoomIn}
+                          disabled={this.state.zoom >= 2}
+                        >
+                          +
+                        </button>
+                      </div>
                       <button
                         className="btn mt-3 mb-3 font-weight-bold ld-ext-right w-100 btn-primary"
                         type="submit"
+                        data-testid="set-profile-photo"
                         onClick={() => {
                           this.setState({ loading: true }, () => {
                             this.cropAndSave();
@@ -534,7 +585,7 @@ class ClientProfilePage extends Component<Props, State> {
           </div>
         </div>
         <h1 className="m-3 font-weight-bold">
-          {username}
+          {firstName} {lastName}
           &apos;s Profile
         </h1>
         <div className="row">
@@ -550,7 +601,7 @@ class ClientProfilePage extends Component<Props, State> {
               <div className="container pt-4">
                 {photoAvailable === false ? (
                   <Image
-                    src={DefaultProfilePhoto}
+                    src={GenericProfilePicture}
                     className="w-50 mx-auto d-flex"
                     alt="profile photo"
                     roundedCircle
@@ -568,17 +619,11 @@ class ClientProfilePage extends Component<Props, State> {
               </div>
               <div>
                 <h3 className="font-weight-bold mt-3 text-center">
-                  {firstName}
-
-                  {lastName}
+                  {firstName} {lastName}
                 </h3>
                 <div className="row pb-2">
                   <div className="col font-weight-bold">Username</div>
                   <div className="col text-right">{username}</div>
-                </div>
-                <div className="row pb-2">
-                  <div className="col font-weight-bold">Password</div>
-                  <div className="col text-right">******</div>
                 </div>
                 <div className="row pb-2">
                   <div className="col font-weight-bold">Birthdate</div>
@@ -596,15 +641,19 @@ class ClientProfilePage extends Component<Props, State> {
                   <div className="col font-weight-bold">Address</div>
                   <div className="col text-right">
                     {address}
-                    {city}
-,
-{state}
+                    {city},{state}
                     {zipcode}
                   </div>
                 </div>
-                <div className="row">
+                <div className="row pb-2">
                   <div className="col font-weight-bold">Organization</div>
                   <div className="col text-right">{organization}</div>
+                </div>
+                <div className="row pb-2">
+                  <div className="col font-weight-bold">Assigned Worker(s)</div>
+                  <div className="col text-right">
+                    {assignedWorkerUsernames}
+                  </div>
                 </div>
               </div>
               <div className="text-center">
@@ -634,11 +683,12 @@ class ClientProfilePage extends Component<Props, State> {
                   onBlur={() => undefined}
                   data-toggle="modal"
                   data-target="#exampleModal"
+                  data-testid="edit-info"
                   onClick={() =>
                     this.setState({ showCropper: false, inputKey: Date.now() })
                   }
                 >
-                  Edit Your Information
+                  Update Profile Picture
                 </button>
               </div>
             </div>
@@ -670,7 +720,7 @@ class ClientProfilePage extends Component<Props, State> {
               {activitiesArr === null ? (
                 <div className="row w-125 p-2 text-dark"> Loading ... </div>
               ) : (
-                this.renderActivities(activitiesArr)
+                this.renderActivitiesCard(activitiesArr)
               )}
             </div>
           </div>

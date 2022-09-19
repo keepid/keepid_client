@@ -7,11 +7,10 @@ export default function ReviewSubmitFixture() {
   return (
     <BaseSignupFixture>
       <ReviewSubmit
-        onSubmit={(val) => {
+        onSubmit={(val) =>
           // eslint-disable-next-line no-console
-          console.log(val);
-          return Promise.resolve();
-        }}
+          Promise.resolve()
+        }
       />
     </BaseSignupFixture>
   );

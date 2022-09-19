@@ -5,7 +5,7 @@ import { IntlProvider } from 'react-intl';
 import { QuickAccessCategory } from './QuickAccess.util';
 import SuccessfullySetDocumentModal from './SuccessfullySetDocumentModal';
 
-const SuccessfullySetDocumentModalFixture = () => {
+function SuccessfullySetDocumentModalFixture() {
   const [category] = useSelect('social-security', {
     options: [
       'social-security',
@@ -19,6 +19,6 @@ const SuccessfullySetDocumentModalFixture = () => {
       <SuccessfullySetDocumentModal category={category as QuickAccessCategory} />
     </IntlProvider>
   );
-};
+}
 
 export default SuccessfullySetDocumentModalFixture;

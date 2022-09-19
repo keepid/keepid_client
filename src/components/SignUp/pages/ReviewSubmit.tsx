@@ -2,8 +2,11 @@ import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
+import { isConstructorTypeNode } from 'typescript';
 
 import { reCaptchaKey } from '../../../configVars';
+import EyeIcon from '../../../static/images/eye.svg';
+import SlashEye from '../../../static/images/eye-slash.svg';
 import SignUpContext, { SignupStage } from '../SignUp.context';
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -25,6 +28,8 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const onSubmit = async () => {
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       // @ts-ignore
@@ -38,10 +43,14 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
     }
   };
 
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div>
       <Helmet>
-        <title>Sign Up- Organization Info</title>
+        <title>Sign Up- Review and Submit</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
       <form>
@@ -91,11 +100,20 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
                 </tr>
                 <tr>
                   <th scope="row">Password</th>
-                  <td>
-                    {accountInformation.password &&
-                      '*'.repeat(accountInformation.password.length - 1)}
+                  <td>{(!showPassword) ?
+                    (accountInformation.password &&
+                      '*'.repeat(accountInformation.password.length - 1)) :
+                    accountInformation.password}
                   </td>
-                  <td />
+                  <td>
+                    <button type="button" className="transparent-button" onClick={togglePassword}>
+                      <img
+                        src={showPassword ? SlashEye : EyeIcon}
+                        className="eye-size"
+                        alt={showPassword ? 'Show' : 'Hide'}
+                      />
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>

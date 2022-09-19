@@ -7,6 +7,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import AtWorkPic from '../../static/images/atwork-rafiki.png';
 import DocumentsPic from '../../static/images/documents-rafiki.png';
+import ActivityCard from '../BaseComponents/BaseActivityCard';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 import QuickAccessCards from '../QuickAccess/QuickAccessCards';
 
@@ -18,40 +19,6 @@ interface Props extends RouteComponentProps {
 interface State {
   activities: Array<any>;
   isLoading: Boolean;
-}
-
-interface ActivityProps {
-  activity: any;
-}
-
-function ActivitiesCard(props: ActivityProps) {
-  const { activity } = props;
-  const parsedInfo = JSON.parse(activity.info[0]);
-  const uploaderUsername = parsedInfo.owner.username;
-  const type = activity.type[0];
-  if (type !== 'LoginActivity' && uploaderUsername !== '' && type !== '') {
-    const displayType = type.split('Activity');
-    const newDate = new Date(parsedInfo.occuredAt.$date);
-    // return mm/dd/yyyy version of date
-    const dateString = newDate.toLocaleDateString();
-    // return difference number of days between current date and dateString for activity
-    const daysDifference = Math.round(
-      (new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24),
-    );
-    // eslint-disable-next-line no-underscore-dangle
-    return (
-      <div className="ml-2 activities-card-container">
-        <h6 id="activities-card-title">
-          {displayType}
-          Activity
-        </h6>
-        <p id="activities-card-date">
-          {`Completed by ${uploaderUsername}, ${dateString}, ${daysDifference} days ago`}
-        </p>
-      </div>
-    );
-  }
-  return <div />;
 }
 
 class ClientLanding extends Component<Props, State, {}> {
@@ -67,12 +34,11 @@ class ClientLanding extends Component<Props, State, {}> {
     const { isLoading } = this.state;
     if (activities.length > 0) {
       // eslint-disable-next-line no-underscore-dangle
-      return activities.map((activity) => (
-        <ActivitiesCard
-          key={JSON.parse(activity.info[0])._id.$oid}
-          activity={activity}
-        />
-      ));
+      return activities
+        .slice(0, 5) // only get the first number of elements
+        .map((activity) => (
+          <ActivityCard key={activity._id} activity={activity} />
+        ));
     }
     if (!isLoading) {
       return (
@@ -98,7 +64,7 @@ class ClientLanding extends Component<Props, State, {}> {
         if (responseJSON.status === 'SUCCESS') {
           this.setState({
             isLoading: false,
-            activities: responseJSON.activities.allActivities,
+            activities: responseJSON.activities,
           });
         }
       });

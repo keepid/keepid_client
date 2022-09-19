@@ -55,7 +55,7 @@ const messages = defineMessages({
   },
 });
 
-const HomelessStats = (): JSX.Element => {
+function HomelessStats(): JSX.Element {
   const intl = useIntl();
 
   return (
@@ -98,20 +98,22 @@ const HomelessStats = (): JSX.Element => {
       </div>
     </>
   );
-};
+}
 
-const SubProblemStatistic = (props: {
+function SubProblemStatistic(props: {
   label: string;
   stat: string;
-}): JSX.Element => (
-  <div className="row d-flex align-items-center">
+}): JSX.Element {
+  return (
+<div className="row d-flex align-items-center">
     <div className="col-6 text-center">
       <h1 className="font-weight-bold statistic-text">{props.stat}</h1>
     </div>
     <div className="col-6">
       <span className="statistic-subtext">{props.label}</span>
     </div>
-  </div>
-);
+</div>
+  );
+}
 
 export default HomelessStats;

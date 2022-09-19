@@ -1,4 +1,5 @@
 import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
 import {
   AccountInformationProperties,
   OrganizationInformationProperties,
@@ -11,6 +12,45 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
     credentials: 'include',
     body: JSON.stringify({
       username,
+    }),
+  })
+    .then((response) => response.json())
+    .then((responseJSON) => {
+      const { status } = responseJSON;
+      return status === 'SUCCESS';
+    });
+}
+
+export async function getAllWorkersFromOrganizationToAssign(
+  role: Role,
+): Promise<any[]> {
+  return fetch(`${getServerURL()}/get-all-members-by-role`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({
+      role,
+    }),
+  })
+    .then((response) => response.json())
+    .then((responseJSON) => {
+      const { status } = responseJSON;
+      if (status === 'SUCCESS') {
+        return responseJSON.people;
+      }
+      return [];
+    });
+}
+
+export async function assignWorkerToUser(
+  user: string,
+  workerUsernamesToAdd: string[],
+): Promise<boolean> {
+  return fetch(`${getServerURL()}/assign-worker-to-user`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({
+      user,
+      workerUsernamesToAdd,
     }),
   })
     .then((response) => response.json())
@@ -33,13 +73,8 @@ async function _createUser({
   orgName?: string;
   endpoint: string;
 }) {
-  const {
-    firstname,
-    lastname,
-    birthDate,
-    username,
-    password,
-  } = accountInformation;
+  const { firstname, lastname, birthDate, username, password } =
+    accountInformation;
 
   const birthDateString = birthDateStringConverter(birthDate || new Date());
 
@@ -116,13 +151,8 @@ export async function signupOrganization({
   organizationInformation: OrganizationInformationProperties;
   recaptchaPayload: string;
 }) {
-  const {
-    firstname,
-    lastname,
-    birthDate,
-    username,
-    password,
-  } = accountInformation;
+  const { firstname, lastname, birthDate, username, password } =
+    accountInformation;
   const {
     orgWebsite: organizationWebsite,
     orgName: organizationName,

@@ -12,7 +12,7 @@ const messages = defineMessages({
   },
 });
 
-const WhoWeAreServing = (): JSX.Element => {
+function WhoWeAreServing(): JSX.Element {
   const intl = useIntl();
 
   return (
@@ -53,6 +53,6 @@ const WhoWeAreServing = (): JSX.Element => {
       </div>
     </>
   );
-};
+}
 
 export default WhoWeAreServing;

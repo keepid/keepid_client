@@ -7,8 +7,9 @@ import { MemoryRouter, Route } from 'react-router-dom';
 import QuickAccessRouter from './QuickAccess.router';
 import QuickAccessCards from './QuickAccessCards';
 
-const QuickAccessCardsFixture = () => (
-  <MemoryRouter initialEntries={['/quick-access']}>
+function QuickAccessCardsFixture() {
+  return (
+<MemoryRouter initialEntries={['/quick-access']}>
     <IntlProvider locale="en">
       <Provider template={AlertTemplate} className="alert-provider-custom">
         <Route path="/quick-access" exact>
@@ -19,7 +20,8 @@ const QuickAccessCardsFixture = () => (
         <QuickAccessRouter />
       </Provider>
     </IntlProvider>
-  </MemoryRouter>
-);
+</MemoryRouter>
+  );
+}
 
 export default QuickAccessCardsFixture;

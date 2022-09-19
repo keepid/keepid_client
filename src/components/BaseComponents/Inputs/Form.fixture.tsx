@@ -9,7 +9,7 @@ const options = new Array(20)
   .fill('')
   .map((i, idx) => ({ label: `Option ${idx}`, value: `option-val-${idx}` }));
 
-const FormFixture = () => {
+function FormFixture() {
   const [state, setState] = useState({});
 
   const fields: BaseInputFieldType<any>[] = [
@@ -89,6 +89,6 @@ const FormFixture = () => {
       </Form.Group>
     </Form>
   );
-};
+}
 
 export default FormFixture;

@@ -37,6 +37,7 @@ class OrganizationMarker extends Component<Props, State> {
 
     const { open } = this.state;
 
+    // @ts-ignore
     return (
       <div>
         <Marker position={{ lat, lng }} onClick={this.handleOpenInfoWindow}>

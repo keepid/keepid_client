@@ -8,14 +8,17 @@ import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
 
 interface Props {
-  alert: any,
-  userRole: Role,
-  documentId: string,
-  documentName: string,
+    alert: any,
+    userRole: Role,
+    documentId: string,
+    documentName: string,
+    documentDate: string,
+    documentUploader: string,
+    targetUser: string,
 }
 
 interface State {
-  pdfFile: File | undefined,
+    pdfFile: File | undefined,
 }
 
 class ViewDocument extends Component<Props, State> {
@@ -34,10 +37,11 @@ class ViewDocument extends Component<Props, State> {
       alert,
     } = this.props;
     let pdfType;
+    const { targetUser } = this.props;
     if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
-      pdfType = PDFType.APPLICATION;
+      pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION;
+      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
     } else {
       pdfType = undefined;
     }
@@ -47,6 +51,7 @@ class ViewDocument extends Component<Props, State> {
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
+        targetUser,
       }),
     }).then((response) => response.blob())
       .then((response) => {
@@ -57,19 +62,68 @@ class ViewDocument extends Component<Props, State> {
       });
   }
 
+  setLink() {
+    if (this.props.userRole !== Role.Client) {
+      return '/my-documents/';
+    }
+    return `/my-documents/${this.props.targetUser}`;
+  }
+
   render() {
     const {
       pdfFile,
     } = this.state;
+    const {
+      documentDate,
+      documentUploader,
+    } = this.props;
+    let fileName = '';
+    if (pdfFile) {
+      const splitName = pdfFile.name.split('.');
+      // eslint-disable-next-line prefer-destructuring
+      fileName = splitName[0];
+    }
     return (
-      <div>
-        {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
-        <Link to="/my-documents">
-          <button type="button" className="btn btn-outline-success">
-            Back
-          </button>
-        </Link>
-      </div>
+            <div className="container">
+                <div className="mt-5 ml-3">
+                    <Link to="/my-documents">
+                        <button type="button" className="btn btn-outline-success">
+                            Back
+                        </button>
+                    </Link>
+                </div>
+                {pdfFile ?
+                  (
+                        <div className="jumbotron-fluid">
+                            <div className="row justify-content-center mt-5">
+                                <h1 className="display-3 text-align-center">
+                                    <strong>{fileName}</strong>
+                                </h1>
+                            </div>
+                            <div className="jumbotron-fluid mb-2 ml-5 mr-5">
+                                <div className="row justify-content-between">
+                                    <h3>{pdfFile.name}</h3>
+                                    <div>
+                                        <div className="row justify-content-end">
+                                            <h6>Uploaded on: {documentDate}</h6>
+                                        </div>
+                                        <div className="row justify-content-end">
+                                            <h6>Uploaded by: {documentUploader}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                  ) : <div />}
+                {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+                <div className="mt-5 ml-3">
+                    <Link to={this.setLink()}>
+                        <button type="button" className="btn btn-outline-success">
+                            Back
+                        </button>
+                    </Link>
+                </div>
+            </div>
     );
   }
 }

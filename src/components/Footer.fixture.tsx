@@ -2,6 +2,8 @@ import React from 'react';
 
 import Footer from './Footer';
 
-const FooterFixture = () => <Footer />;
+function FooterFixture() {
+  return <Footer />;
+}
 
 export default FooterFixture;

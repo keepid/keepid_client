@@ -1,11 +1,11 @@
 import React from 'react';
 import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
-import ReactDOM from 'react-dom';
 import { IntlProvider } from 'react-intl';
+import { createRoot } from 'react-dom/client';
 
+import reportWebVitals from './reportWebVitals';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
 
 const options = {
   position: 'bottom left',
@@ -18,17 +18,20 @@ const options = {
   },
 };
 
-const Root = () => (
-  <Provider template={AlertTemplate} {...options} className="alert-provider-custom">
+const root = createRoot(document.getElementById('root'));
+root.render(
+  <Provider
+    template={AlertTemplate}
+    {...options}
+    className="alert-provider-custom"
+  >
     <IntlProvider locale="en" defaultLocale="en">
       <App />
     </IntlProvider>
   </Provider>
 );
 
-ReactDOM.render(<Root />, document.getElementById('root'));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

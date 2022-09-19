@@ -48,7 +48,7 @@ class Applications extends Component<Props, State, {}> {
     dataField: 'filename',
     text: 'Application Name',
     sort: true,
-    formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
+    // formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
   }, {
     dataField: 'organizationName',
     text: 'Organization',
@@ -76,12 +76,12 @@ class Applications extends Component<Props, State, {}> {
     };
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     fetch(`${getServerURL()}/get-documents `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.FORM,
+        pdfType: PDFType.BLANK_FORM,
         annotated: true,
       }),
     }).then((response) => response.json())
