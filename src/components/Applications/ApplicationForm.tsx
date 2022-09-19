@@ -591,9 +591,9 @@ class ApplicationForm extends Component<Props, State> {
                 <div className="col-md-4 text-center my-1">
                   <p>
                     <b>
-                      Page
+                      {'Page '}
                       {currentPage}
-                      of
+                      {' of '}
                       {numPages}
                     </b>
                   </p>

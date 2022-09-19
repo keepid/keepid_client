@@ -183,7 +183,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        const { status } = responseJSON;
+        const { status, message } = responseJSON;
         if (status === 'SUCCESS') {
           alert.show(`Successfully uploaded ${pdfFile.name}`);
           this.setState(
@@ -193,7 +193,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
             () => this.getDocuments(),
           );
         } else {
-          alert.show(`Failure to upload ${pdfFile.name}`);
+          alert.show(`Failure to upload ${pdfFile.name}: ${message}`);
         }
       });
   }
