@@ -115,7 +115,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "cross-env INLINE_RUNTIME_CHUNK=false DISABLE_ESLINT_PLUGIN=true react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test -u",
     "eject": "react-scripts eject",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
     "lint:scss:fix": "stylelint 'src/**/*.scss' --syntax scss --fix",
