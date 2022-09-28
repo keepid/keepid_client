@@ -77,6 +77,7 @@
     "react/no-unused-class-component-methods": 1,
     "react/no-unstable-nested-components": 1,
     "react/jsx-no-bind": 1,
-    "react/default-props-match-prop-types": 1
+    "react/default-props-match-prop-types": 1,
+    "import/prefer-default-export": "off"
   }
 }

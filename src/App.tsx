@@ -246,7 +246,16 @@ class App extends React.Component<{}, State, {}> {
                 <Careers />
               </Route>
               <Route path="/issue-report">
-                <IssueReport />
+                <IssueReport
+                  designatedHeader="Report an Issue"
+                  designatedSubHeader="Thank you for helping us identify issues with our platform."
+                />
+              </Route>
+              <Route path="/leave-feedback">
+                <IssueReport
+                  designatedHeader="Leave Feedback"
+                  designatedSubHeader="Thank you for helping us with your personalized feedback about our platform."
+                />
               </Route>
               <Route path="/forgot-password">
                 <ForgotPassword />

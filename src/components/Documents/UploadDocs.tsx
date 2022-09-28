@@ -21,7 +21,7 @@ import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
-import {IdCategories} from "./IdCategories";
+import { IdCategories } from './IdCategories';
 
 interface Props {
   alert: any;
@@ -248,7 +248,9 @@ class UploadDocs extends React.Component<Props, State> {
                   &quot;Continue&quot; button to submit.
                 </p>
                 <Container>
-                  {this.state.userRole === Role.Client && pdfFiles && pdfFiles.length > 0
+                  {this.state.userRole === Role.Client &&
+                  pdfFiles &&
+                  pdfFiles.length > 0
                     ? Array.from(pdfFiles).map((pdfFile, index) => (
                         <div className="container mb-3 card-alignment">
                           <Card style={{ width: '48rem' }}>
@@ -260,13 +262,20 @@ class UploadDocs extends React.Component<Props, State> {
                               </Col>
                               <Col sm={4}>
                                 <DropdownButton title={this.setTitle(index)}>
-                                  {Object.values(IdCategories).map((IdCategory) =>
-                                    <Dropdown.Item
+                                  {Object.values(IdCategories).map(
+                                    (IdCategory) => (
+                                      <Dropdown.Item
                                         eventKey={IdCategory}
-                                        onClick={(event) => this.handleOnClickCard(index, IdCategory)}
-                                    >
-                                      {IdCategory}
-                                    </Dropdown.Item>
+                                        onClick={(event) =>
+                                          this.handleOnClickCard(
+                                            index,
+                                            IdCategory,
+                                          )
+                                        }
+                                      >
+                                        {IdCategory}
+                                      </Dropdown.Item>
+                                    ),
                                   )}
                                 </DropdownButton>
                               </Col>
