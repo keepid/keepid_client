@@ -2,6 +2,7 @@
 @import './ldbtn.scss';
 @import './loading.scss';
 @import './Inputs';
+@import './QuickAccess';
 
 // COLOR SYTEM
 $primary-theme: #445feb;
@@ -881,4 +882,11 @@ div.scrollbar {
 .search-bar {
 	min-width: 18.75rem;
 	width: 35vw !important;
+}
+
+@media (min-width: 48rem) {
+	.container {
+		width: fit-content !important;
+		max-width: fit-content;
+	}
 }

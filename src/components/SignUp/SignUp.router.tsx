@@ -172,4 +172,11 @@ function SignUpRouter({ role }: SignUpRouterProps) {
   );
 }
 
+export const paths = [
+  '/signup-branch',
+  '/organization-signup',
+  '/person-signup/:roleString',
+  '/create-user/:jwt',
+];
+
 export default SignUpRouter;
