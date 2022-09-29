@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ReactElement } from 'react';
 import { withAlert } from 'react-alert';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
@@ -9,13 +9,24 @@ import getServerURL from '../serverOverride';
 
 interface Props {
   alert: any;
+  designatedHeader: string;
+  designatedSubHeader: string;
 }
 
-interface State {}
+interface State {
+  title: string;
+  email: string;
+  description: string;
+  buttonState: string;
+  titleValidator: string;
+  recaptchaPayload: string;
+  emailValidator: string;
+  descriptionValidator: string;
+}
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
 
-class IssueReport extends Component<Props, State, {}> {
+class IssueReport extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -114,10 +125,16 @@ class IssueReport extends Component<Props, State, {}> {
     const { description } = this.state;
     if (description !== '') {
       await new Promise((resolve) =>
-        this.setState({ descriptionValidator: 'true' }, resolve as typeof voidType));
+        this.setState(
+          { descriptionValidator: 'true' },
+          resolve as typeof voidType,
+        ));
     } else {
       await new Promise((resolve) =>
-        this.setState({ descriptionValidator: 'false' }, resolve as typeof voidType));
+        this.setState(
+          { descriptionValidator: 'false' },
+          resolve as typeof voidType,
+        ));
     }
   };
 
@@ -238,7 +255,7 @@ class IssueReport extends Component<Props, State, {}> {
     return (
       <div className="container">
         <Helmet>
-          <title>Report an Issue</title>
+          <title>{this.props.designatedHeader}</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="row">
@@ -246,18 +263,16 @@ class IssueReport extends Component<Props, State, {}> {
             <div className="jumbotron jumbotron-fluid bg-white pb-2 mb-2">
               <div className="container">
                 <h1 className="display-5 text-left font-weight-bold mb-1">
-                  {' '}
-                  Report an Issue
+                  {this.props.designatedHeader}
                 </h1>
                 <p className="lead text-left font-weight-bolder py-3">
-                  Thank you for helping us identify issues with our platform.
+                  {this.props.designatedSubHeader}
                 </p>
               </div>
             </div>
             <form onSubmit={this.handleSubmitWithRecaptcha}>
               <div className="col-md-12">
                 <div className="form-row form-group d-flex align-content-start pb-3">
-                  <div className="col-md-1" />
                   <label
                     htmlFor="email"
                     className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
@@ -283,12 +298,11 @@ class IssueReport extends Component<Props, State, {}> {
                 </div>
 
                 <div className="form-row form-group d-flex align-content-start pb-3">
-                  <div className="col-md-1" />
                   <label
                     htmlFor="title"
                     className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
                   >
-                    Issue Title
+                    Title
                   </label>
                   <div className="col-md-6">
                     <input
@@ -297,7 +311,7 @@ class IssueReport extends Component<Props, State, {}> {
                         titleValidator,
                       )}`}
                       id="title"
-                      placeholder="What went wrong?"
+                      placeholder="Describe your feedback"
                       value={title}
                       onChange={this.handleChangeTitle}
                       onBlur={this.validateTitle}
@@ -308,12 +322,11 @@ class IssueReport extends Component<Props, State, {}> {
                   <div className="col-md-2" />
                 </div>
                 <div className="form-row form-group d-flex align-content-start pb-3">
-                  <div className="col-md-1" />
                   <label
                     htmlFor="description"
                     className="col-md-3 font-weight-bold text-sm-left text-lg-right pt-2 pr-3"
                   >
-                    Issue Description
+                    Description
                   </label>
                   <div className="col-md-6">
                     <textarea
@@ -321,7 +334,7 @@ class IssueReport extends Component<Props, State, {}> {
                         descriptionValidator,
                       )}`}
                       id="description"
-                      placeholder="Please tell us more about the issue"
+                      placeholder="Please tell us more"
                       value={description}
                       onChange={this.handleChangeDescription}
                       onBlur={this.validateDescription}
@@ -332,13 +345,12 @@ class IssueReport extends Component<Props, State, {}> {
                   <div className="col-md-2" />
                 </div>
                 <div className="form-row mt-2">
-                  <div className="col-md-10 pt-2 pb-2 d-flex justify-content-end">
+                  <div className="col-md-10 pt-2 pb-2 d-flex justify-content-start">
                     <span className="text-muted recaptcha-login-text text-sm-left text-lg-right">
                       This page is protected by reCAPTCHA, and subject to the
                       Google
                       <a href="https://www.google.com/policies/privacy/">
-                        Privacy Policy
-{' '}
+                        Privacy Policy{' '}
                       </a>
                       and
                       <a href="https://www.google.com/policies/terms/">
@@ -347,10 +359,9 @@ class IssueReport extends Component<Props, State, {}> {
                       .
                     </span>
                   </div>
-                  <div className="col-md-2" />
                 </div>
                 <div className="form-row mt-2">
-                  <div className="col-md-8" />
+                  <div className="col-md-7" />
                   <div className="col-md-2 text-right d-flex justify-content-end pt-3">
                     <button
                       type="submit"

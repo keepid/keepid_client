@@ -621,7 +621,6 @@ class WorkerLanding extends Component<Props, State> {
           </div>
 
           {/* <button
-=======
       <div>
         <Helmet>
           <title>Home</title>

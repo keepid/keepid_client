@@ -6,23 +6,12 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory from 'react-bootstrap-table2-editor';
-import paginationFactory, {
-  PaginationProvider,
-} from 'react-bootstrap-table2-paginator';
 
 import ArrowSVG from '../../../static/images/down-arrow.svg';
 import EditFormatter from './EditFormatter';
-import PaginatedTableFooter from './PaginatedTableFooter';
 import TModal from './TModal';
 
-// custom results display for table
-const customTotal = (from, to, size) => (
-  <span className="react-bootstrap-table-pagination-total">
-    {`Showing ${from}-${to} of ${size} Results`}
-  </span>
-);
-
-const defaultProps = {
+export const defaultProps = {
   canModify: false,
   canSelect: false,
   cantEditCols: new Set<number>(),
@@ -91,61 +80,61 @@ const formatColumns = (
 };
 
 const constructSelectRowConfiguration = (
-  canSelect: boolean,
+  canSelect: boolean | 'single' | undefined,
   selectedRows: Set<number>,
   setSelectedRows: (a: Set<number>) => void,
 ) => ({
   hideSelectColumn: !canSelect,
-  mode: 'checkbox',
+  mode: canSelect === 'single' ? 'radio' : 'checkbox',
   clickToSelect: false,
   headerColumnStyle: { width: '2.5rem' },
   // eslint-disable-next-line react/prop-types
-  selectionHeaderRenderer: ({ indeterminate, mode, checked }) => (
-    <div className="custom-control custom-checkbox mr-2">
-      <input
-        type={mode}
-        className="custom-control-input"
-        id="selectAll"
-        ref={(input) => {
-          if (input) input.indeterminate = indeterminate;
-        }}
-        checked={checked}
-        onChange={() => {}}
-      />
-      <label className="custom-control-label" htmlFor="selectAll" />
-    </div>
-  ),
-  selectionRenderer: ({
-    mode,
-    checked,
-    disabled,
-    ...rest
-  }) => (
+  selectionHeaderRenderer: ({ indeterminate, mode, checked }) =>
+    canSelect === true ? (
+      <div className="custom-control custom-checkbox mr-2">
+        <input
+          type={mode}
+          className="custom-control-input"
+          id="selectAll"
+          ref={(input) => {
+            if (input) input.indeterminate = indeterminate;
+          }}
+          checked={checked}
+          onChange={() => {}}
+        />
+        <label className="custom-control-label" htmlFor="selectAll" />
+      </div>
+    ) : null,
+  selectionRenderer: ({ mode, checked, disabled, ...rest }) => (
     <div className="custom-control custom-checkbox mr-2">
       <input
         type={mode}
         className="custom-control-input"
         checked={checked}
         disabled={disabled}
-        // TODO: this should actually do something
-        onChange={() => {}}
+        {...rest}
       />
       <label className="custom-control-label" />
     </div>
   ),
   onSelect: (row, isSelect, rowIndex, e) => {
+    if (canSelect === 'single' && isSelect) {
+      console.log('\n\nasdf2', canSelect, row, isSelect, rowIndex, '\n\n');
+      selectedRows.clear();
+    }
+
     // eslint-disable-next-line no-unused-expressions
     selectedRows.has(row.id)
       ? selectedRows.delete(row.id)
       : selectedRows.add(row.id);
-    setSelectedRows(selectedRows);
+    setSelectedRows(new Set(selectedRows));
   },
   onSelectAll: (isSelect, rows, e) => {
     // eslint-disable-next-line no-unused-expressions
     isSelect
       ? rows.forEach((r) => selectedRows.add(r.id))
       : selectedRows.clear();
-    setSelectedRows(selectedRows);
+    setSelectedRows(new Set(selectedRows));
   },
 });
 
@@ -176,7 +165,7 @@ type Formatter = (
   cell: any,
   row: any,
   rowIndex: number,
-  formatExtraData: any,
+  formatExtraData: any
 ) => JSX.Element | string;
 type Column = {
   // The name of the property on each Row object to be represented by this Column
@@ -200,11 +189,11 @@ type Column = {
     order: 'asc' | 'desc',
     dataField: string,
     rowA: any,
-    rowB: any,
+    rowB: any
   ) => any;
 };
 
-interface TableProps extends NoDataIndicationProps {
+export interface TableProps extends NoDataIndicationProps {
   // An array of data, where each item represents a row in the Table and should contain properties corresponding to the Columns provided
   data: any[];
   // An array of Columns
@@ -212,7 +201,9 @@ interface TableProps extends NoDataIndicationProps {
   // Boolean indicating whether this Table can be modified at all
   canModify?: boolean;
   // Boolean indicating whether rows in this Table can be selected
-  canSelect?: boolean;
+  canSelect?: boolean | 'single';
+  // Method called with the ID(s) of the selected row(s)
+  onSelect?: (rowIds: string | string[]) => void;
   // Set containing the indexes of Columns containing non-editable data
   cantEditCols?: Set<number>;
   // Method called upon row deletion with the row ID
@@ -220,15 +211,16 @@ interface TableProps extends NoDataIndicationProps {
   // Method called upon Row modification save
   onEditSave?: (row: any) => void;
   // Default sort settings
-  defaultSorted?: { dataField: string, order: 'asc' | 'desc' }[]
+  defaultSorted?: { dataField: string; order: 'asc' | 'desc' }[];
 }
 
 /**
  * Base Table body component, without pagination
  */
-function Table({
+export function Table({
   canModify,
   canSelect,
+  onSelect,
   cantEditCols: cantEditColsProp,
   columns,
   data: dataProp,
@@ -240,9 +232,15 @@ function Table({
   // Boolean indicating whether the `columns`
   const [initialized, setInitialized] = useState(false);
   const [rowsBeingEdited, setRowsBeingEdited] = useState(new Set<number>());
-  const [selectedRows, setSelectedRows] = useState(new Set<number>());
+  const [selectedRows, setSelectedRows] = useState(new Set<any>());
   const [rowToDelete, setRowToDelete] = useState<any>(null);
   const [data, setData] = useState<any[]>(dataProp || []);
+
+  useEffect(() => {
+    if (onSelect) {
+      onSelect(Array.from(selectedRows));
+    }
+  }, [selectedRows]);
 
   const cantEditCols =
     cantEditColsProp instanceof Set ? cantEditColsProp : new Set<number>();
@@ -369,7 +367,7 @@ function Table({
         cellEdit={createCellEditFactory(cantEditCols)}
         rowClasses={rowClasses}
         selectRow={constructSelectRowConfiguration(
-          !!canSelect,
+          canSelect,
           selectedRows,
           setSelectedRows,
         )}
@@ -404,73 +402,23 @@ function NoDataIndication({
   emptyInfo,
 }: NoDataIndicationProps): React.ReactElement {
   return (
-<div className="empty-table d-flex flex-column justify-content-center">
-    <div>
-      <p>{`${emptyInfo.description}`}</p>
-    </div>
-    {emptyInfo.label && emptyInfo.onPress ? (
-      <div className="hi">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={emptyInfo.onPress}
-        >
-{`${emptyInfo.label}`}
-        </button>
+    <div className="empty-table d-flex flex-column justify-content-center">
+      <div>
+        <p>{`${emptyInfo.description}`}</p>
       </div>
-    ) : null}
-</div>
-  );
-}
-
-interface PaginatedTableProps extends TableProps {}
-
-/**
- * Wrapper providing pagination to the base Table component
- */
-function PaginatedTable({ data, ...props }: PaginatedTableProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  data = data || [];
-
-  if (itemsPerPage * currentPage >= data.length && currentPage > 0) {
-    setCurrentPage(currentPage - 1);
-    return null;
-  }
-
-  return (
-    <PaginationProvider
-      pagination={paginationFactory({
-        custom: true,
-        totalSize: data.length,
-        paginationTotalRenderer: customTotal,
-        page: currentPage,
-        pageStartIndex: 0,
-        sizePerPage: itemsPerPage,
-      })}
-    >
-      {({ paginationProps, paginationTableProps }) => (
-        <div>
-          <div className="row mx-4 mt-md-4">
-            <Table data={data} {...props} {...paginationTableProps} />
-          </div>
-          <PaginatedTableFooter
-            changeCurrentPage={setCurrentPage}
-            currentPage={currentPage}
-            handleChangeItemsPerPage={(i) => {
-              setItemsPerPage(Number(i.value));
-              setCurrentPage(0);
-            }}
-            itemsPerPage={itemsPerPage}
-            numElements={data.length}
-            paginationProps={paginationProps}
-          />
+      {emptyInfo.label && emptyInfo.onPress ? (
+        <div className="hi">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={emptyInfo.onPress}
+          >
+            {`${emptyInfo.label}`}
+          </button>
         </div>
-      )}
-    </PaginationProvider>
+      ) : null}
+    </div>
   );
 }
 
-PaginatedTable.defaultProps = defaultProps;
-
-export default PaginatedTable;
+export default Table;
