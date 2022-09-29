@@ -21,7 +21,7 @@ import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
-import {IdCategories} from "./IdCategories";
+import { IdCategories } from './IdCategories';
 
 interface Props {
   alert: any;
@@ -260,14 +260,14 @@ class UploadDocs extends React.Component<Props, State> {
                               </Col>
                               <Col sm={4}>
                                 <DropdownButton title={this.setTitle(index)}>
-                                  {Object.values(IdCategories).map((IdCategory) =>
+                                  {Object.values(IdCategories).map((IdCategory) => (
                                     <Dropdown.Item
-                                        eventKey={IdCategory}
-                                        onClick={(event) => this.handleOnClickCard(index, IdCategory)}
+                                      eventKey={IdCategory}
+                                      onClick={(event) => this.handleOnClickCard(index, IdCategory)}
                                     >
                                       {IdCategory}
                                     </Dropdown.Item>
-                                  )}
+                                  ))}
                                 </DropdownButton>
                               </Col>
                             </Row>

@@ -344,6 +344,11 @@ class MyDocuments extends Component<Props, State> {
         sort: true,
       },
       {
+        dataField: 'idCategory',
+        text: 'ID Type',
+        sort: true,
+      },
+      {
         dataField: 'actions',
         text: 'Actions',
         formatter: this.ButtonFormatter,
