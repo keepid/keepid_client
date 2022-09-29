@@ -39,7 +39,7 @@ function DropzoneUploader({ alert, userRole, updateFileList, updateStep, maxNumF
         onSubmit={handleSubmit}
         maxFiles={maxNumFiles}
         inputWithFilesContent={(files) => `${maxNumFiles - files.length} more`}
-        accept=".pdf,image/*"
+        accept="application/pdf, image/*"
         submitButtonContent="Upload"
       />
   );
