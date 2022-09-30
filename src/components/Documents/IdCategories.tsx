@@ -1,5 +1,5 @@
 export enum IdCategories {
-  DriversLicense = 'Driver License',
+  DriversLicense = 'Drivers License',
   BirthCertificate = 'Birth Certificate',
   SocialSecurityCard = 'Social Security Card',
   VaccineCard = 'Vaccine Card',

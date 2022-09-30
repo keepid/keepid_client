@@ -23,6 +23,10 @@ const columns = [
     dataField: 'uploader',
     text: 'Uploader',
   },
+  {
+    dataField: 'idCategory',
+    text: 'ID Category',
+  },
 ];
 
 type Props = {
