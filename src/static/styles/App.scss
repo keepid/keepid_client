@@ -883,10 +883,3 @@ div.scrollbar {
 	min-width: 18.75rem;
 	width: 35vw !important;
 }
-
-@media (min-width: 48rem) {
-	.container {
-		width: fit-content !important;
-		max-width: fit-content;
-	}
-}
