@@ -107,7 +107,7 @@
     "react-hot-loader": "^4.13.0",
     "redirect": "^0.2.0",
     "style-loader": "0.13.1",
-    "stylelint": "^12.0.1",
+    "stylelint": "^14.13.0",
     "ts-jest": "27.1.4",
     "url-loader": "^2.2.0",
     "whatwg-fetch": "2.0.2"
