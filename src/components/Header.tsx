@@ -140,9 +140,9 @@ export class Header extends Component<Props, State, {}> {
                 </Link>
               </li>
               <li className="nav-item my-1 mr-3 ml-2">
-                <Link className="nav-link" to="/our-mission">
+                <a className="nav-link" href="https://team.keep.id">
                   About
-                </Link>
+                </a>
               </li>
             </ul>
             <div className="my-1">

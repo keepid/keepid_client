@@ -88,9 +88,9 @@ function Footer() {
               </Link>
             </li> */}
               <li className="mb-3">
-                <Link to="/our-mission" className="footer-link">
+                <a href="https://team.keep.id" className="footer-link">
                   Our Mission
-                </Link>
+                </a>
               </li>
               <li className="mb-3">
                 <Link to="/careers" className="footer-link">

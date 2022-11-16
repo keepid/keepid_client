@@ -14,7 +14,6 @@ import {
 
 import Careers from './components/AboutUs/Careers';
 import EULA from './components/AboutUs/EULA';
-import OurMission from './components/AboutUs/OurMission';
 import OurPartners from './components/AboutUs/OurPartners';
 import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
@@ -217,9 +216,6 @@ class App extends React.Component<{}, State, {}> {
               </Route>
               <Route path="/our-partners">
                 <OurPartners />
-              </Route>
-              <Route path="/our-mission">
-                <OurMission />
               </Route>
               <Route path="/privacy-policy">
                 <PrivacyPolicy />
