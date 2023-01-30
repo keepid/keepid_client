@@ -44,7 +44,7 @@ interface State {
   formError: boolean;
 }
 
-const MAX_Q_PER_PAGE = 10;
+const MAX_Q_PER_PAGE = 4;
 
 class ApplicationForm extends Component<Props, State> {
   signaturePad: any;
@@ -132,29 +132,10 @@ class ApplicationForm extends Component<Props, State> {
     this.setState({ formAnswers });
   };
 
-  handleChangeFormValueCheckBox = (event: any) => {
-    const { formAnswers } = this.state;
-    const { id } = event.target;
-    const value: boolean = event.target.checked;
-    formAnswers[id] = value;
-    this.setState({ formAnswers });
-  };
-
   handleChangeFormValueRadioButton = (event: any) => {
     const { formAnswers } = this.state;
     const { name, value } = event.target;
     formAnswers[name] = value;
-    this.setState({ formAnswers });
-  };
-
-  handleChangeFormValueListBox = (event: any) => {
-    const { formAnswers } = this.state;
-    const values: string[] = Array.from(
-      event.target.selectedOptions,
-      (option: HTMLOptionElement) => option.value,
-    );
-    const { id } = event.target;
-    formAnswers[id] = values;
     this.setState({ formAnswers });
   };
 
@@ -216,42 +197,6 @@ class ApplicationForm extends Component<Props, State> {
     </div>
   );
 
-  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="mt-2 mb-2">
-      <div className="checkbox-question">
-        <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-          {entry.fieldQuestion}
-          <small className="form-text text-muted mt-1">
-            Please complete this field.
-          </small>
-        </label>
-        <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
-          <div className="custom-control custom-checkbox mx-2">
-            <input
-              type="checkbox"
-              className="custom-control-input mr-2"
-              id={entry.fieldName}
-              onChange={this.handleChangeFormValueCheckBox}
-              checked={formAnswers[entry.fieldName]}
-              required={entry.fieldIsRequired}
-              readOnly={entry.fieldIsMatched}
-            />
-            <label className="custom-control-label" htmlFor={entry.fieldName}>
-              {entry.fieldValueOptions[0]}
-            </label>
-            {entry.fieldIsRequired ? (
-              <small className="form-text text-muted mt-1">
-                Please complete this field.
-              </small>
-            ) : (
-              <div />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   getRadioButton = (
     entry: Field,
     formAnswers: { [fieldName: string]: any },
@@ -287,60 +232,6 @@ class ApplicationForm extends Component<Props, State> {
           </label>
         </div>
       ))}
-    </div>
-  );
-
-  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="dropdown-question">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      </label>
-
-      <select
-        id={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
-        className="custom-select"
-        required={entry.fieldIsRequired}
-      >
-        <option selected disabled value="">
-          Please select your choice ...
-        </option>
-        {entry.fieldValueOptions.map((value) => (
-          <option value={value} key={`${entry.fieldName}_${value}`}>
-            {value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
-  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="multiple-dropdown-question">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      </label>
-      <select
-        id={entry.fieldName}
-        onChange={this.handleChangeFormValueListBox}
-        className="custom-select"
-        multiple
-        required={entry.fieldIsRequired}
-      >
-        <option selected disabled value="">
-          Please select your choice(s) ...
-        </option>
-        {entry.fieldValueOptions.map((value) => (
-          <option value={value} key={`${entry.fieldName}_${value}`}>
-            {value}
-          </option>
-        ))}
-      </select>
     </div>
   );
 
@@ -556,16 +447,16 @@ class ApplicationForm extends Component<Props, State> {
                         return this.getMultilineTextField(entry, formAnswers);
                       }
                       if (entry.fieldType === 'CheckBox') {
-                        return this.getCheckBox(entry, formAnswers);
+                        return this.getRadioButton(entry, formAnswers);
                       }
                       if (entry.fieldType === 'RadioButton') {
                         return this.getRadioButton(entry, formAnswers);
                       }
                       if (entry.fieldType === 'ComboBox') {
-                        return this.getComboBox(entry, formAnswers);
+                        return this.getRadioButton(entry, formAnswers);
                       }
                       if (entry.fieldType === 'ListBox') {
-                        return this.getListBox(entry, formAnswers);
+                        return this.getRadioButton(entry, formAnswers);
                       }
                       if (entry.fieldType === 'DateField') {
                         return this.getDateField(entry, formAnswers);
