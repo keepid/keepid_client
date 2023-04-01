@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
+import Dropzone from 'react-dropzone-uploader';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
 import uuid from 'react-uuid';
@@ -12,6 +13,7 @@ import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
+import DropzoneUploader from '../Documents/DropzoneUploader';
 
 interface Field {
   fieldID: string; // Unique identifier id from frontend
@@ -42,6 +44,7 @@ interface State {
   currentPage: number;
   numPages: number;
   formError: boolean;
+  importApplicationDataFile: File | undefined;
 }
 
 const MAX_Q_PER_PAGE = 10;
@@ -62,6 +65,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 1,
       numPages: 1,
       formError: false,
+      importApplicationDataFile: undefined,
     };
   }
 
@@ -124,6 +128,11 @@ class ApplicationForm extends Component<Props, State> {
       () => window.scrollTo(0, 0),
     );
   };
+
+  handleImportApplicationData = (fileObject) => {
+    this.setState({ importApplicationDataFile: fileObject.file });
+    // Refresh Application Load
+  }
 
   handleChangeFormValueTextField = (event: any) => {
     const { formAnswers } = this.state;
@@ -370,10 +379,10 @@ class ApplicationForm extends Component<Props, State> {
     const mm = date.getMonth() + 1; // getMonth() is zero-based
     const dd = date.getDate();
     const dateString = [
-      date.getFullYear(),
       (mm > 9 ? '' : '0') + mm,
       (dd > 9 ? '' : '0') + dd,
-    ].join('-');
+      date.getFullYear(),
+    ].join('/');
     return dateString;
   };
 
@@ -539,6 +548,15 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+            {currentPage == 1 ? (
+<Dropzone
+  onSubmit={this.handleImportApplicationData}
+  maxFiles={1}
+  accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  inputContent="Import Data for Application"
+  submitButtonContent="Import"
+/>
+            ) : <></>}
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
