@@ -339,11 +339,6 @@ class MyDocuments extends Component<Props, State> {
       },
     },
     {
-      dataField: 'uploader',
-      text: 'Uploader',
-      sort: true,
-    },
-    {
       dataField: 'idCategory',
       text: 'ID Type',
       sort: true,
