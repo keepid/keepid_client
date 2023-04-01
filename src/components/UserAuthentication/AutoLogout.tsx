@@ -5,13 +5,13 @@ import { useHistory } from 'react-router-dom';
 import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 60 * 120; // two hours in milliseconds
-const timeFromWarnToLogout: number = 1000 * 60; // 1 minute in milliseconds
-const timeBeforeConsideredSleep: number = 1000 * 15; // 15 seconds in milliseconds
+const timeUntilWarn: number = 1000 * 60 * 50; // 50 minutes in milliseconds
+const timeFromWarnToLogout: number = 1000 * 60 * 10; // 10 minutes in milliseconds
+const timeBeforeConsideredSleep: number = 1000 * 60 * 60; // one hour in milliseconds
 
 interface Props {
-    logOut: () => void,
-    setAutoLogout: (boolean) => void,
+  logOut: () => void;
+  setAutoLogout: (boolean) => void;
 }
 
 function AutoLogout(props: Props): React.ReactElement {
@@ -53,7 +53,9 @@ function AutoLogout(props: Props): React.ReactElement {
     <div>
       <IdleTimer
         key="idleTimerWarn"
-        ref={(ref) => { setIdleTimerWarn(ref); }}
+        ref={(ref) => {
+          setIdleTimerWarn(ref);
+        }}
         element={document}
         onIdle={warnUserIdle}
         debounce={250}

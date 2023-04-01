@@ -31,7 +31,6 @@ function BaseInputFixture({
   const [value, setValue] = useState<any>(undefined);
   const logAndSetValue = (value) => {
     // eslint-disable-next-line no-console
-    console.log(value);
     setValue(value);
   };
 
