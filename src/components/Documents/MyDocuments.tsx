@@ -32,6 +32,7 @@ interface State {
   currentDocumentName: string | undefined;
   currentUploadDate: string | undefined;
   currentUploader: string | undefined;
+  currentUserRole: Role | undefined;
   documentData: any;
 }
 
@@ -81,6 +82,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentName: undefined,
       currentUploadDate: undefined,
       currentUploader: undefined,
+      currentUserRole: undefined,
       documentData: [],
     };
     this.getDocumentData = this.getDocumentData.bind(this);
@@ -260,6 +262,8 @@ class MyDocuments extends Component<Props, State> {
 
   getDocumentData() {
     const { userRole } = this.props;
+    this.setState({currentUserRole: userRole});
+
     let pdfType;
     let targetUser;
     if (
@@ -358,7 +362,7 @@ class MyDocuments extends Component<Props, State> {
   }
 
   render() {
-    const { pdfFiles, buttonState } = this.state;
+    const { pdfFiles, buttonState, currentUserRole } = this.state;
 
     const { userRole, username } = this.props;
     const {
@@ -368,13 +372,12 @@ class MyDocuments extends Component<Props, State> {
       currentUploadDate,
       currentUploader,
     } = this.state;
-    console.log(currentDocumentId, currentDocumentName, username);
     return (
       <Switch>
         <Route path="/my-documents/view">
           {currentDocumentId && currentDocumentName ? (
             <ViewDocument
-              userRole={userRole}
+              userRole={currentUserRole}
               documentId={currentDocumentId}
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
