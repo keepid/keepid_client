@@ -86,7 +86,6 @@ function AutoLogout(props: Props): React.ReactElement {
       />
       <IdleTimeOutModal showModal={showModal} handleClose={onClose} handleLogout={handleLogout} />
       <DeviceSleepDetect timeOut={timeBeforeConsideredSleep} handleAutoLogout={handleAutoLogout} />
-      <p>Seconds Idle: {secondsIdle}</p>
     </div>
   );
 }
