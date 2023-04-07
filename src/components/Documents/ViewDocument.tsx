@@ -8,17 +8,17 @@ import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
 
 interface Props {
-    alert: any,
-    userRole: Role,
-    documentId: string,
-    documentName: string,
-    documentDate: string,
-    documentUploader: string,
-    targetUser: string,
+  alert: any;
+  userRole: Role;
+  documentId: string;
+  documentName: string;
+  documentDate: string;
+  documentUploader: string;
+  targetUser: string;
 }
 
 interface State {
-    pdfFile: File | undefined,
+  pdfFile: File | undefined;
 }
 
 class ViewDocument extends Component<Props, State> {
@@ -30,15 +30,15 @@ class ViewDocument extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const {
-      userRole,
-      documentId,
-      documentName,
-      alert,
-    } = this.props;
+    const { userRole, documentId, documentName, alert } = this.props;
     let pdfType;
-    const { targetUser } = this.props;
-    if (userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director) {
+    const { targetUser } = this.props.targetUser;
+
+    if (
+      userRole === Role.Worker ||
+      userRole === Role.Admin ||
+      userRole === Role.Director
+    ) {
       pdfType = PDFType.COMPLETED_APPLICATION;
     } else if (userRole === Role.Client) {
       pdfType = PDFType.IDENTIFICATION_DOCUMENT;
@@ -53,30 +53,29 @@ class ViewDocument extends Component<Props, State> {
         pdfType,
         targetUser,
       }),
-    }).then((response) => response.blob())
+    })
+      .then((response) => response.blob())
       .then((response) => {
-        const pdfFile = new File([response], documentName, { type: 'application/pdf' });
+        const pdfFile = new File([response], documentName, {
+          type: 'application/pdf',
+        });
         this.setState({ pdfFile });
-      }).catch((_error) => {
+      })
+      .catch((_error) => {
         alert.show('Error Fetching File');
       });
   }
 
   setLink() {
-    if (this.props.userRole !== Role.Client) {
-      return '/my-documents/';
+    if (this.props.userRole === Role.Client) {
+      return '/my-documents';
     }
     return `/my-documents/${this.props.targetUser}`;
   }
 
   render() {
-    const {
-      pdfFile,
-    } = this.state;
-    const {
-      documentDate,
-      documentUploader,
-    } = this.props;
+    const { pdfFile } = this.state;
+    const { documentDate, documentUploader } = this.props;
     let fileName = '';
     if (pdfFile) {
       const splitName = pdfFile.name.split('.');
@@ -84,46 +83,47 @@ class ViewDocument extends Component<Props, State> {
       fileName = splitName[0];
     }
     return (
-            <div className="container">
-                <div className="mt-5 ml-3">
-                    <Link to="/my-documents">
-                        <button type="button" className="btn btn-outline-success">
-                            Back
-                        </button>
-                    </Link>
-                </div>
-                {pdfFile ?
-                  (
-                        <div className="jumbotron-fluid">
-                            <div className="row justify-content-center mt-5">
-                                <h1 className="display-3 text-align-center">
-                                    <strong>{fileName}</strong>
-                                </h1>
-                            </div>
-                            <div className="jumbotron-fluid mb-2 ml-5 mr-5">
-                                <div className="row justify-content-between">
-                                    <h3>{pdfFile.name}</h3>
-                                    <div>
-                                        <div className="row justify-content-end">
-                                            <h6>Uploaded on: {documentDate}</h6>
-                                        </div>
-                                        <div className="row justify-content-end">
-                                            <h6>Uploaded by: {documentUploader}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                  ) : <div />}
-                {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
-                <div className="mt-5 ml-3">
-                    <Link to={this.setLink()}>
-                        <button type="button" className="btn btn-outline-success">
-                            Back
-                        </button>
-                    </Link>
-                </div>
+      <div className="container">
+        <div className="mt-5 ml-3">
+          <Link to="/my-documents">
+            <button type="button" className="btn btn-outline-success">
+              Back
+            </button>
+          </Link>
+        </div>
+        {pdfFile ? (
+          <div className="jumbotron-fluid">
+            <div className="row justify-content-center mt-5">
+              <h1 className="display-3 text-align-center">
+                <strong>{fileName}</strong>
+              </h1>
             </div>
+            <div className="jumbotron-fluid mb-2 ml-5 mr-5">
+              <div className="row justify-content-between">
+                <h3>{pdfFile.name}</h3>
+                <div>
+                  <div className="row justify-content-end">
+                    <h6>Uploaded on: {documentDate}</h6>
+                  </div>
+                  <div className="row justify-content-end">
+                    <h6>Uploaded by: {documentUploader}</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div />
+        )}
+        {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+        <div className="mt-5 ml-3">
+          <Link to={this.setLink()}>
+            <button type="button" className="btn btn-outline-success">
+              Back
+            </button>
+          </Link>
+        </div>
+      </div>
     );
   }
 }

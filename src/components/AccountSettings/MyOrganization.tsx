@@ -254,9 +254,8 @@ class MyOrganization extends Component<Props, State> {
         onClose={() => this.setState({ showPopUp: false })}
       >
         <p className="mb-0">
-          Congrats! You successfully invited
-          {numInvitesSent}
-          new members to your team! Head to your Admin Panel to see them.
+          Congrats! You successfully invited {numInvitesSent} new members to
+          your team! Head to your Admin Panel to see them.
         </p>
       </Alert>
     </div>
