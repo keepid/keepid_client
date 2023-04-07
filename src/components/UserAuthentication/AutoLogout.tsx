@@ -5,9 +5,9 @@ import { useHistory } from 'react-router-dom';
 import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 10; // 10 minutes
-const timeFromWarnToLogout: number = 1000 * 5; // 5 minutes
-const timeBeforeConsideredSleep: number = 1000 * 60 * 2; // 2 minutes
+const timeUntilWarn: number = 1000 * 60 * 50; // 10 minutes
+const timeFromWarnToLogout: number = 1000 * 60 * 10; // 5 minutes
+const timeBeforeConsideredSleep: number = 1000 * 60 * 5; // 2 minutes
 
 interface Props {
   logOut: () => void;
