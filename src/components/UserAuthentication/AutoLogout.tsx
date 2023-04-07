@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import IdleTimer from 'react-idle-timer';
 import { useHistory } from 'react-router-dom';
 
 import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 60 * 120; // two hours in milliseconds
-const timeFromWarnToLogout: number = 1000 * 60; // 1 minute in milliseconds
-const timeBeforeConsideredSleep: number = 1000 * 15; // 15 seconds in milliseconds
+const timeUntilWarn: number = 1000 * 60 * 50; // 50 minutes
+const timeFromWarnToLogout: number = 1000 * 60 * 10; // 10 minutes
+const timeBeforeConsideredSleep: number = 1000 * 60 * 5; // 5 minutes
 
 interface Props {
-    logOut: () => void,
-    setAutoLogout: (boolean) => void,
+  logOut: () => void;
+  setAutoLogout: (boolean) => void;
 }
 
 function AutoLogout(props: Props): React.ReactElement {
   const [showModal, setShowModal] = useState(false);
+  const [secondsIdle, setSecondsIdle] = useState(0);
   const [idleTimerWarn, setIdleTimerWarn] = useState<any>(undefined);
   const [logoutTimeout, setLogoutTimeout] = useState<any>(undefined);
   const history = useHistory();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleLogout = (): void => {
     // clear the logout timer
@@ -33,42 +35,57 @@ function AutoLogout(props: Props): React.ReactElement {
     props.setAutoLogout(true);
   };
 
-  const warnUserIdle = (): void => {
-    setShowModal(true);
-    // start the logout timer
-    const timeout = setTimeout(handleAutoLogout, timeFromWarnToLogout);
-    setLogoutTimeout(timeout);
+  const resetIdleTimer = (): void => {
+    setSecondsIdle(0);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(handleAutoLogout, timeFromWarnToLogout);
   };
 
-  // closing idle modal warning
-  const handleClose = (): void => {
-    // reset the logout timer
-    clearTimeout(logoutTimeout);
-    setShowModal(false);
-    // reset the warn timer
-    idleTimerWarn.reset();
+  const onIdle = (): void => {
+    setShowModal(true);
+    resetIdleTimer();
   };
+
+  const onClose = (): void => {
+    setShowModal(false);
+    resetIdleTimer();
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resetIdleTimer);
+    window.addEventListener('mousedown', resetIdleTimer);
+    window.addEventListener('keypress', resetIdleTimer);
+
+    return () => {
+      window.removeEventListener('mousemove', resetIdleTimer);
+      window.removeEventListener('mousedown', resetIdleTimer);
+      window.removeEventListener('keypress', resetIdleTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setSecondsIdle((prevSecondsIdle) => prevSecondsIdle + 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div>
       <IdleTimer
         key="idleTimerWarn"
-        ref={(ref) => { setIdleTimerWarn(ref); }}
+        ref={(ref) => {
+          setIdleTimerWarn(ref);
+        }}
         element={document}
-        onIdle={warnUserIdle}
+        onIdle={onIdle}
         debounce={250}
         timeout={timeUntilWarn}
         stopOnIdle
       />
-      <IdleTimeOutModal
-        showModal={showModal}
-        handleClose={handleClose}
-        handleLogout={handleLogout}
-      />
-      <DeviceSleepDetect
-        timeOut={timeBeforeConsideredSleep}
-        handleAutoLogout={handleAutoLogout}
-      />
+      <IdleTimeOutModal showModal={showModal} handleClose={onClose} handleLogout={handleLogout} />
+      <DeviceSleepDetect timeOut={timeBeforeConsideredSleep} handleAutoLogout={handleAutoLogout} />
     </div>
   );
 }
