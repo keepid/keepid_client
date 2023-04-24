@@ -169,7 +169,6 @@ class App extends React.Component<{}, State, {}> {
               ) &&
               data.name === `${firstName} ${lastName}`
             ) {
-              console.log('logging out');
               this.logOut();
             }
           } else {
@@ -451,7 +450,6 @@ class App extends React.Component<{}, State, {}> {
                     return <MyAccount />;
                   }
                   if (role === Role.LoggedOut) {
-                    console.log('logged out');
                     return <Home />;
                   }
                   return <Redirect to="/error" />;
