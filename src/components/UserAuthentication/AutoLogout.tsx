@@ -72,7 +72,7 @@ function AutoLogout(props: Props): React.ReactElement {
   }, []);
 
   return (
-    <div>
+    <div data-testid="auto-logout">
       <IdleTimer
         key="idleTimerWarn"
         ref={(ref) => {

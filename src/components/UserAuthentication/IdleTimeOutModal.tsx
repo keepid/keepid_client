@@ -10,7 +10,7 @@ interface Props {
 function IdleTimeOutModal(props: Props): React.ReactElement {
   const { showModal, handleClose, handleLogout } = props;
   return (
-    <Modal show={showModal}>
+    <Modal show={showModal} data-testid="warn-modal">
       <Modal.Header>
         <Modal.Title>You have been idle for some time...</Modal.Title>
       </Modal.Header>
