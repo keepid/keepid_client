@@ -7,9 +7,9 @@
   },
   "dependencies": {
     "@nivo/bar": "^0.70.1",
-    "@nivo/core": "^0.70.1",
+    "@nivo/core": "^0.81.0",
     "@nivo/line": "^0.70.1",
-    "@nivo/pie": "^0.70.1",
+    "@nivo/pie": "^0.81.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^12.12.42",
     "@types/react": "^18.0.5",
