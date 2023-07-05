@@ -44,7 +44,7 @@ interface State {
   currentPage: number;
   numPages: number;
   formError: boolean;
-  importApplicationDataFile: File | undefined;
+  // importApplicationDataFile: File | undefined;
 }
 
 const MAX_Q_PER_PAGE = 10;
@@ -65,7 +65,7 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 1,
       numPages: 1,
       formError: false,
-      importApplicationDataFile: undefined,
+      // importApplicationDataFile: undefined,
     };
   }
 
@@ -130,7 +130,8 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   handleImportApplicationData = (fileObject) => {
-    this.setState({ importApplicationDataFile: fileObject.file });
+    // this.setState({ importApplicationDataFile: fileObject.file });
+
     // Refresh Application Load
   }
 
@@ -548,7 +549,7 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-            {currentPage == 1 ? (
+            {currentPage === 1 ? (
 <Dropzone
   onSubmit={this.handleImportApplicationData}
   maxFiles={1}
@@ -556,7 +557,7 @@ class ApplicationForm extends Component<Props, State> {
   inputContent="Import Data for Application"
   submitButtonContent="Import"
 />
-            ) : <></>}
+            ) : <div />}
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;

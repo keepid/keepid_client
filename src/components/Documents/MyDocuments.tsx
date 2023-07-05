@@ -262,7 +262,7 @@ class MyDocuments extends Component<Props, State> {
 
   getDocumentData() {
     const { userRole } = this.props;
-    this.setState({currentUserRole: userRole});
+    this.setState({ currentUserRole: userRole });
 
     let pdfType;
     let targetUser;

@@ -327,6 +327,28 @@ class WorkerLanding extends Component<Props, State> {
                 View Documents
               </div>
             </Link>
+
+            <Link
+              to={{
+                pathname: '/applications',
+                // State is stored in location prop
+                state: { clientUsername: client.username },
+              }}
+              className="dropdown-item"
+            >
+              <div className="view-docs-btn-text">
+
+                {/* Consider adding an application icon. */}
+                {/* <img
+                  alt="doc icon"
+                  src={DocIcon}
+                  className="icon-height mx-1"
+                /> */}
+
+                Fill Out Application
+              </div>
+            </Link>
+
             {/* <button
                 type="button"
                 className="dropdown-item"
@@ -404,6 +426,24 @@ class WorkerLanding extends Component<Props, State> {
               View Documents
             </div>
           </Link>
+
+          <Link
+            to={{
+              pathname: '/applications',
+              // State is stored in location prop
+              state: { clientUsername: client.username },
+            }}
+            className="btn btn-primary mr-2 btn-sm"
+            style={{ height: 32 }}
+          >
+
+            <div style={{ fontWeight: 'bold' }}>
+              {/* <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" /> */}
+              Fill Out Application
+            </div>
+
+          </Link>
+
           {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"

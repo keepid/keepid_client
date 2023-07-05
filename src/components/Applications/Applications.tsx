@@ -1,7 +1,9 @@
+/* eslint-disable no-nested-ternary */
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
+import { RouteComponentProps, withRouter } from 'react-router';
 import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
@@ -26,10 +28,15 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
-  documents: DocumentInformation[]
+  documents: DocumentInformation[],
+  clientUsername: string | undefined
 }
 
-class Applications extends Component<Props, State, {}> {
+interface LocationState {
+  clientName: string
+}
+
+class Applications extends Component<Props & RouteComponentProps, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
@@ -67,42 +74,78 @@ class Applications extends Component<Props, State, {}> {
     formatter: this.ButtonFormatter,
   }];
 
-  constructor(props: Props) {
+  constructor(props: Props & RouteComponentProps) {
     super(props);
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
       documents: [],
+      clientUsername: undefined,
     };
   }
 
   componentDidMount() {
-    fetch(`${getServerURL()}/get-documents `, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        pdfType: PDFType.BLANK_FORM,
-        annotated: true,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const {
-          status,
-          documents,
-        } = responseJSON;
-        const numElements = documents.length;
-        if (status === 'SUCCESS') {
-          const newDocuments: DocumentInformation[] = [];
-          for (let i = 0; i < numElements; i += 1) {
-            const row = documents[i];
-            row.index = i;
-            newDocuments.push(row);
+    const { location } = this.props;
+    // Client view, uncertain if location.state is undefined by default
+    if (location.state === undefined) {
+      fetch(`${getServerURL()}/get-documents `, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          pdfType: PDFType.BLANK_FORM,
+          annotated: true,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const {
+            status,
+            documents,
+          } = responseJSON;
+          const numElements = documents.length;
+          if (status === 'SUCCESS') {
+            const newDocuments: DocumentInformation[] = [];
+            for (let i = 0; i < numElements; i += 1) {
+              const row = documents[i];
+              row.index = i;
+              newDocuments.push(row);
+            }
+            this.setState({
+              documents: newDocuments,
+            });
           }
-          this.setState({
-            documents: newDocuments,
-          });
-        }
-      });
+        });
+    } else { // Case worker view
+      // clientName will be passed in via Link state in WorkerLanding page
+      const { clientName } = location.state as LocationState;
+      this.setState({ clientUsername: clientName });
+      fetch(`${getServerURL()}/get-documents `, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          pdfType: PDFType.BLANK_FORM,
+          targetUser: clientName,
+          annotated: true,
+        }),
+      }).then((response) => response.json())
+        .then((responseJSON) => {
+          const {
+            status,
+            documents,
+          } = responseJSON;
+          const numElements = documents.length;
+          if (status === 'SUCCESS') {
+            const newDocuments: DocumentInformation[] = [];
+            for (let i = 0; i < numElements; i += 1) {
+              const row = documents[i];
+              row.index = i;
+              newDocuments.push(row);
+            }
+            this.setState({
+              documents: newDocuments,
+            });
+          }
+        });
+    }
   }
 
   handleViewDocument = (event: any, row: any) => {
@@ -123,6 +166,7 @@ class Applications extends Component<Props, State, {}> {
       currentApplicationFilename,
       currentApplicationId,
       documents,
+      clientUsername,
     } = this.state;
 
     return (
@@ -154,7 +198,11 @@ class Applications extends Component<Props, State, {}> {
         </Route>
         <Route path="/applications/send">
           {currentApplicationId && currentApplicationFilename
-            ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />
+            ? (clientUsername
+              // Case worker view
+              ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} clientUsername={clientUsername} />
+              // Client view
+              : <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />)
             : <div />}
         </Route>
       </Switch>
@@ -162,4 +210,5 @@ class Applications extends Component<Props, State, {}> {
   }
 }
 
-export default Applications;
+// withRouter needed to access location in props
+export default withRouter(Applications);
