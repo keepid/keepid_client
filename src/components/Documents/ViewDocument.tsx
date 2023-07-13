@@ -6,7 +6,6 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
-import MailApplication from './MailApplication';
 
 interface Props {
   alert: any;
@@ -129,16 +128,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
         <button type="button" className="btn btn-outline-success" onClick={onOpenPopup}>
           Mail
         </button>
-      </div>
-      <div>
-        <MailApplication showPopup={showMailForms} onClosePopup={closePopup} />
-      </div>
-      <div className="mt-5 ml-3">
-        <Link to={setLink()}>
-          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
-            Back
-          </button>
-        </Link>
       </div>
     </div>
   );
