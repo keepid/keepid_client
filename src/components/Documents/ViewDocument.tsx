@@ -43,8 +43,7 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
-        // targetUser: targetUser, //should work, doesn’t
-        targetUser: 'STEFFEN-CORNWELL', // doesn’t work, should
+        targetUser,
       }),
     })
       .then((response) => {
@@ -125,9 +124,11 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
       <div className="mt-5 ml-3">
-        <button type="button" className="btn btn-outline-success" onClick={onOpenPopup}>
-          Mail
-        </button>
+        <Link to={setLink()}>
+          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
+            Back
+          </button>
+        </Link>
       </div>
     </div>
   );
