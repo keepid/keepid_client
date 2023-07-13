@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
+import MailApplication from './MailApplication';
 
 interface Props {
   alert: any;
@@ -15,24 +16,15 @@ interface Props {
   documentDate: string;
   documentUploader: string;
   targetUser: string;
+  resetDocumentId: ()=>null;
 }
 
-interface State {
-  pdfFile: File | undefined;
-}
+const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
+  const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
+  const [showMailForms, setShowMailForms] = useState<boolean>(false);
 
-class ViewDocument extends Component<Props, State> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      pdfFile: undefined,
-    };
-  }
-
-  componentDidMount() {
-    const { userRole, documentId, documentName, alert } = this.props;
+  useEffect(() => {
     let pdfType;
-    const { targetUser } = this.props.targetUser;
 
     if (
       userRole === Role.Worker ||
@@ -45,87 +37,111 @@ class ViewDocument extends Component<Props, State> {
     } else {
       pdfType = undefined;
     }
+
     fetch(`${getServerURL()}/download`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
         pdfType,
-        targetUser,
+        // targetUser: targetUser, //should work, doesn’t
+        targetUser: 'STEFFEN-CORNWELL', // doesn’t work, should
       }),
     })
-      .then((response) => response.blob())
+      .then((response) => {
+        console.log(targetUser);
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(text);
+          });
+        }
+        return response.blob();
+      })
       .then((response) => {
         const pdfFile = new File([response], documentName, {
           type: 'application/pdf',
         });
-        this.setState({ pdfFile });
+        setPdfFile(pdfFile);
       })
-      .catch((_error) => {
-        alert.show('Error Fetching File');
+      .catch((error) => {
+        alert.show(`Error Fetching File: ${error.message}`);
       });
-  }
+  }, [alert, documentId, documentName, userRole, targetUser]); // add props.targetUser in the dependencies array too
 
-  setLink() {
-    if (this.props.userRole === Role.Client) {
+  const setLink = () => {
+    if (userRole === Role.Client) {
       return '/my-documents';
     }
-    return `/my-documents/${this.props.targetUser}`;
-  }
+    return `/my-documents/${targetUser}`;
+  };
 
-  render() {
-    const { pdfFile } = this.state;
-    const { documentDate, documentUploader } = this.props;
-    let fileName = '';
-    if (pdfFile) {
-      const splitName = pdfFile.name.split('.');
-      // eslint-disable-next-line prefer-destructuring
-      fileName = splitName[0];
-    }
-    return (
-      <div className="container">
-        <div className="mt-5 ml-3">
-          <Link to="/my-documents">
-            <button type="button" className="btn btn-outline-success">
-              Back
-            </button>
-          </Link>
-        </div>
-        {pdfFile ? (
-          <div className="jumbotron-fluid">
-            <div className="row justify-content-center mt-5">
-              <h1 className="display-3 text-align-center">
-                <strong>{fileName}</strong>
-              </h1>
-            </div>
-            <div className="jumbotron-fluid mb-2 ml-5 mr-5">
-              <div className="row justify-content-between">
-                <h3>{pdfFile.name}</h3>
-                <div>
-                  <div className="row justify-content-end">
-                    <h6>Uploaded on: {documentDate}</h6>
-                  </div>
-                  <div className="row justify-content-end">
-                    <h6>Uploaded by: {documentUploader}</h6>
-                  </div>
+  const closePopup = () => {
+    setShowMailForms(false);
+  };
+
+  const onOpenPopup = () => {
+    setShowMailForms(true);
+  };
+
+  let fileName = '';
+  if (pdfFile) {
+    const splitName = pdfFile.name.split('.');
+    fileName = splitName[0];
+  }
+  console.log('target user: ', targetUser);
+  console.log('document id: ', documentId);
+  return (
+    <div className="container">
+      <div className="mt-5 ml-3">
+        <Link to="/my-documents">
+          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
+            Back
+          </button>
+        </Link>
+      </div>
+      {pdfFile ? (
+        <div className="jumbotron-fluid">
+          <div className="row justify-content-center mt-5">
+            <h1 className="display-3 text-align-center">
+              <strong>{fileName}</strong>
+            </h1>
+          </div>
+          <div className="jumbotron-fluid mb-2 ml-5 mr-5">
+            <div className="row justify-content-between">
+              <h3>{pdfFile.name}</h3>
+              <div>
+                <div className="row justify-content-end">
+                  <h6>Uploaded on: {documentDate}</h6>
+                </div>
+                <div className="row justify-content-end">
+                  <h6>Uploaded by: {documentUploader}</h6>
                 </div>
               </div>
             </div>
           </div>
-        ) : (
-          <div />
-        )}
-        {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
-        <div className="mt-5 ml-3">
-          <Link to={this.setLink()}>
-            <button type="button" className="btn btn-outline-success">
-              Back
-            </button>
-          </Link>
         </div>
+      ) : (
+        <div />
+      )}
+      {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+
+      <div className="mt-5 ml-3">
+        <button type="button" className="btn btn-outline-success" onClick={onOpenPopup}>
+          Mail
+        </button>
       </div>
-    );
-  }
-}
+      <div>
+        <MailApplication showPopup={showMailForms} onClosePopup={closePopup} />
+      </div>
+      <div className="mt-5 ml-3">
+        <Link to={setLink()}>
+          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
+            Back
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 export default withAlert()(ViewDocument);

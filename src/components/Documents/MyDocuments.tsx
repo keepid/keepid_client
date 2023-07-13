@@ -95,6 +95,11 @@ class MyDocuments extends Component<Props, State> {
     return files.length > maxNumFiles;
   }
 
+  resetDocumentId = () => {
+    console.log('reset document id called');
+    this.setState({ currentDocumentId: undefined });
+  }
+
   static fileNamesUnique(files) {
     const fileNames: string[] = [];
     for (let i = 0; i < files.length; i += 1) {
@@ -262,7 +267,7 @@ class MyDocuments extends Component<Props, State> {
 
   getDocumentData() {
     const { userRole } = this.props;
-    this.setState({currentUserRole: userRole});
+    this.setState({ currentUserRole: userRole });
 
     let pdfType;
     let targetUser;
@@ -299,7 +304,7 @@ class MyDocuments extends Component<Props, State> {
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <ButtonGroup>
-      <Link to="/my-documents/view">
+      <Link to="/my-documents">
         <button
           type="button"
           onClick={(event) => this.onViewDocument(event, row)}
@@ -372,9 +377,11 @@ class MyDocuments extends Component<Props, State> {
       currentUploadDate,
       currentUploader,
     } = this.state;
+    console.log(documentData);
+    console.log('my username in My Documents: ', username);
     return (
       <Switch>
-        <Route path="/my-documents/view">
+        <Route path="/my-documents">
           {currentDocumentId && currentDocumentName ? (
             <ViewDocument
               userRole={currentUserRole}
@@ -383,13 +390,10 @@ class MyDocuments extends Component<Props, State> {
               documentDate={currentUploadDate}
               documentUploader={currentUploader}
               targetUser={username}
+              resetDocumentId={this.resetDocumentId}
             />
           ) : (
-            <div />
-          )}
-        </Route>
-        <Route>
-          <div className="container">
+            <div className="container">
             <Helmet>
               <title>My Documents</title>
               <meta name="description" content="Keep.id" />
@@ -435,7 +439,8 @@ class MyDocuments extends Component<Props, State> {
                 </ToolkitProvider>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </Route>
       </Switch>
     );

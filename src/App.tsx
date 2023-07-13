@@ -106,6 +106,7 @@ class App extends React.Component<{}, State, {}> {
       name,
       organization,
     });
+    console.log('my username: ', username, this.state.username);
     const obj = { role, username, name, organization };
     sessionStorage.setItem('mySessionStorageData', JSON.stringify(obj));
   }
