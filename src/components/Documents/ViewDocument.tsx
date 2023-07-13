@@ -47,7 +47,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       }),
     })
       .then((response) => {
-        console.log(targetUser);
         if (!response.ok) {
           return response.text().then((text) => {
             throw new Error(text);
@@ -86,8 +85,7 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
     const splitName = pdfFile.name.split('.');
     fileName = splitName[0];
   }
-  console.log('target user: ', targetUser);
-  console.log('document id: ', documentId);
+
   return (
     <div className="container">
       <div className="mt-5 ml-3">

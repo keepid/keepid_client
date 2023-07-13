@@ -96,7 +96,6 @@ class MyDocuments extends Component<Props, State> {
   }
 
   resetDocumentId = () => {
-    console.log('reset document id called');
     this.setState({ currentDocumentId: undefined });
   }
 
@@ -377,8 +376,7 @@ class MyDocuments extends Component<Props, State> {
       currentUploadDate,
       currentUploader,
     } = this.state;
-    console.log(documentData);
-    console.log('my username in My Documents: ', username);
+
     return (
       <Switch>
         <Route path="/my-documents">

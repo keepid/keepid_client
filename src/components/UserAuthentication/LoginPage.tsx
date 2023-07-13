@@ -206,7 +206,6 @@ class LoginPage extends Component<Props, State> {
                   return Role.LoggedOut;
               }
             };
-            console.log('login page: ', username);
             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
           } else if (status === 'TOKEN_ISSUED') {
             this.setState({
