@@ -409,7 +409,7 @@ class WorkerLanding extends Component<Props, State> {
         <div className="row lock-bottom-left">
           <Link
             to={`/upload-document/${client.username}`}
-            className="btn btn-primary mr-2 btn-sm"
+            className="btn btn-primary mr-2 btn-sm mb-2"
             style={{ height: 32 }}
           >
             <div style={{ fontWeight: 'bold' }}>
@@ -419,7 +419,7 @@ class WorkerLanding extends Component<Props, State> {
           </Link>
           <Link
             to={`/my-documents/${client.username}`}
-            className="btn link-secondary btn-sm primary-color-border"
+            className="btn link-secondary btn-sm primary-color-border mb-2"
             style={{ height: 32 }}
           >
             <div style={{ color: '#445feb', fontWeight: 'bold' }}>
@@ -437,7 +437,7 @@ class WorkerLanding extends Component<Props, State> {
             style={{ height: 32 }}
           >
 
-            <div style={{ fontWeight: 'bold' }}>
+            <div className="font-weight-bold">
               {/* <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" /> */}
               Fill Out Application
             </div>
