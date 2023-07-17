@@ -15,12 +15,11 @@ interface Props {
   documentDate: string;
   documentUploader: string;
   targetUser: string;
-  resetDocumentId: ()=>null;
+  resetDocumentId: ()=> void;
 }
 
 const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
-  const [showMailForms, setShowMailForms] = useState<boolean>(false);
 
   useEffect(() => {
     let pdfType;
@@ -70,14 +69,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       return '/my-documents';
     }
     return `/my-documents/${targetUser}`;
-  };
-
-  const closePopup = () => {
-    setShowMailForms(false);
-  };
-
-  const onOpenPopup = () => {
-    setShowMailForms(true);
   };
 
   let fileName = '';
