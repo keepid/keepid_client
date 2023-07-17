@@ -97,7 +97,7 @@ class MyDocuments extends Component<Props, State> {
 
   resetDocumentId = () => {
     this.setState({ currentDocumentId: undefined });
-    // this.setState({ currentDocumentName: undefined});
+    this.setState({ currentDocumentName: undefined });
   };
 
   static fileNamesUnique(files) {
