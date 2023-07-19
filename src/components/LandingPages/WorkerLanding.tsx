@@ -327,6 +327,28 @@ class WorkerLanding extends Component<Props, State> {
                 View Documents
               </div>
             </Link>
+
+            <Link
+              to={{
+                pathname: '/applications',
+                // State is stored in location prop
+                state: { clientUsername: client.username },
+              }}
+              className="dropdown-item"
+            >
+              <div className="view-docs-btn-text">
+
+                {/* Consider adding an application icon. */}
+                {/* <img
+                  alt="doc icon"
+                  src={DocIcon}
+                  className="icon-height mx-1"
+                /> */}
+
+                Fill Out Application
+              </div>
+            </Link>
+
             {/* <button
                 type="button"
                 className="dropdown-item"
@@ -387,7 +409,7 @@ class WorkerLanding extends Component<Props, State> {
         <div className="row lock-bottom-left">
           <Link
             to={`/upload-document/${client.username}`}
-            className="btn btn-primary mr-2 btn-sm"
+            className="btn btn-primary mr-2 btn-sm mb-2"
             style={{ height: 32 }}
           >
             <div style={{ fontWeight: 'bold' }}>
@@ -397,13 +419,31 @@ class WorkerLanding extends Component<Props, State> {
           </Link>
           <Link
             to={`/my-documents/${client.username}`}
-            className="btn link-secondary btn-sm primary-color-border"
+            className="btn link-secondary btn-sm primary-color-border mb-2"
             style={{ height: 32 }}
           >
             <div style={{ color: '#445feb', fontWeight: 'bold' }}>
               View Documents
             </div>
           </Link>
+
+          <Link
+            to={{
+              pathname: '/applications',
+              // State is stored in location prop
+              state: { clientUsername: client.username },
+            }}
+            className="btn btn-primary mr-2 btn-sm"
+            style={{ height: 32 }}
+          >
+
+            <div className="font-weight-bold">
+              {/* <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" /> */}
+              Fill Out Application
+            </div>
+
+          </Link>
+
           {/* <Link to={`/profile/${client.username}`}>
               <button
                 type="button"
