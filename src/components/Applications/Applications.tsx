@@ -33,7 +33,7 @@ interface State {
 }
 
 interface LocationState {
-  clientName: string
+  clientUsername: string
 }
 
 class Applications extends Component<Props & RouteComponentProps, State, {}> {
@@ -116,14 +116,14 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
         });
     } else { // Case worker view
       // clientName will be passed in via Link state in WorkerLanding page
-      const { clientName } = location.state as LocationState;
-      this.setState({ clientUsername: clientName });
+      const { clientUsername } = location.state as LocationState;
+      this.setState({ clientUsername });
       fetch(`${getServerURL()}/get-documents `, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
           pdfType: PDFType.BLANK_FORM,
-          targetUser: clientName,
+          targetUser: clientUsername,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -179,7 +179,7 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">My Applications</h1>
+                <h1 className="display-4">{clientUsername === '' ? 'My' : `${clientUsername}'s`} Applications</h1>
                 <p className="lead">See all of your applications. Check the status of each of your applications here.</p>
               </div>
             </div>
@@ -201,8 +201,8 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
             ? (clientUsername
               // Case worker view
               ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} clientUsername={clientUsername} />
-              // Client view
-              : <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} />)
+              // Client view, clientUsername will default to empty string which is not a valid username
+              : <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} clientUsername="" />)
             : <div />}
         </Route>
       </Switch>
