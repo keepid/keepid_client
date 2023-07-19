@@ -31,6 +31,7 @@ interface Props {
   alert: any;
   applicationId: string;
   applicationFilename: string;
+  clientUsername: string;
 }
 
 interface State {
@@ -44,7 +45,7 @@ interface State {
   currentPage: number;
   numPages: number;
   formError: boolean;
-  importApplicationDataFile: File | undefined;
+  // importApplicationDataFile: File | undefined;
 }
 
 const MAX_Q_PER_PAGE = 10;
@@ -65,18 +66,19 @@ class ApplicationForm extends Component<Props, State> {
       currentPage: 1,
       numPages: 1,
       formError: false,
-      importApplicationDataFile: undefined,
+      // importApplicationDataFile: undefined,
     };
   }
 
   componentDidMount() {
-    const { applicationId } = this.props;
+    const { applicationId, clientUsername } = this.props;
     const { formAnswers } = this.state;
     fetch(`${getServerURL()}/get-application-questions`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         applicationId,
+        clientUsername,
       }),
     })
       .then((response) => response.json())
@@ -130,7 +132,8 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   handleImportApplicationData = (fileObject) => {
-    this.setState({ importApplicationDataFile: fileObject.file });
+    // this.setState({ importApplicationDataFile: fileObject.file });
+
     // Refresh Application Load
   }
 
@@ -388,7 +391,7 @@ class ApplicationForm extends Component<Props, State> {
 
   onSubmitFormAnswers = (event: any) => {
     event.preventDefault();
-    const { applicationId, applicationFilename } = this.props;
+    const { applicationId, applicationFilename, clientUsername } = this.props;
     const { fields, formAnswers } = this.state;
 
     if (fields) {
@@ -408,6 +411,7 @@ class ApplicationForm extends Component<Props, State> {
       credentials: 'include',
       body: JSON.stringify({
         applicationId,
+        clientUsername,
         formAnswers,
       }),
     })
@@ -441,7 +445,7 @@ class ApplicationForm extends Component<Props, State> {
 
   onSubmitPdfApplication = (event: any) => {
     const { pdfApplication } = this.state;
-    const { alert } = this.props;
+    const { alert, clientUsername } = this.props;
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
@@ -449,6 +453,7 @@ class ApplicationForm extends Component<Props, State> {
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.COMPLETED_APPLICATION);
+      formData.append('clientUsername', clientUsername);
       fetch(`${getServerURL()}/upload-signed-pdf`, {
         method: 'POST',
         credentials: 'include',
@@ -548,7 +553,7 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-            {currentPage == 1 ? (
+            {currentPage === 1 ? (
 <Dropzone
   onSubmit={this.handleImportApplicationData}
   maxFiles={1}
@@ -556,7 +561,7 @@ class ApplicationForm extends Component<Props, State> {
   inputContent="Import Data for Application"
   submitButtonContent="Import"
 />
-            ) : <></>}
+            ) : <div />}
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
@@ -650,7 +655,7 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   render() {
-    const { alert } = this.props;
+    const { alert, clientUsername } = this.props;
 
     const { submitSuccessful, formError } = this.state;
 
@@ -666,6 +671,7 @@ class ApplicationForm extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="ml-5 mt-3">
+          <div className="alert alert-primary">You are currently filling out this application on behalf of {clientUsername}.</div>
           <Link to="/applications">
             <button type="button" className="btn btn-primary">
               Back

@@ -424,8 +424,13 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/applications"
-                render={() => {
-                  if (role === Role.Client) {
+                render={({ location }) => {
+                  if (
+                    role === Role.Client ||
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
                     return (
                       <Applications
                         name={name}
