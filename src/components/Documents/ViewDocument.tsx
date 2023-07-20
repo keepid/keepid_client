@@ -6,6 +6,7 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DocumentViewer from './DocumentViewer';
+import MailModal from './MailModal';
 
 interface Props {
   alert: any;
@@ -20,6 +21,8 @@ interface Props {
 
 const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
+
+  const [mailDialogisOpen, setMailDialogIsOpen] = useState(false);
 
   useEffect(() => {
     let pdfType;
@@ -79,12 +82,13 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
 
   return (
     <div className="container">
-      <div className="mt-5 ml-3">
+      <div className="flex mt-5 ml-3">
         <Link to="/my-documents">
           <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
             Back
           </button>
         </Link>
+        <button className="tw-p-2 tw-m-2 tw-bg-primary" type="button" onClick={() => setMailDialogIsOpen(true)}>Mail</button>
       </div>
       {pdfFile ? (
         <div className="jumbotron-fluid">
@@ -119,6 +123,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
           </button>
         </Link>
       </div>
+
+      <MailModal showMailModal={mailDialogisOpen} setShowMailModal={setMailDialogIsOpen} />
+
     </div>
   );
 };
