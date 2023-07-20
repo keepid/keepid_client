@@ -78,6 +78,8 @@
     "react/no-unstable-nested-components": 1,
     "react/jsx-no-bind": 1,
     "react/default-props-match-prop-types": 1,
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "prefer-destructuring": "off",
+    "react/function-component-definition": "off"
   }
 }

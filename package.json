@@ -6,6 +6,7 @@
     "node": "16.14.2"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.15",
     "@nivo/bar": "^0.70.1",
     "@nivo/core": "^0.70.1",
     "@nivo/line": "^0.70.1",
@@ -47,6 +48,7 @@
     "react-helmet": "^5.2.1",
     "react-idle-timer": "^4.2.12",
     "react-intl": "^5.17.1",
+    "react-modal": "^3.16.1",
     "react-multi-select-component": "^3.0.1",
     "react-redirect": "^1.0.0",
     "react-router": "^5.2.0",
