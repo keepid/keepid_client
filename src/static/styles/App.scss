@@ -4,6 +4,10 @@
 @import './Inputs';
 @import './QuickAccess';
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 // COLOR SYTEM
 $primary-theme: #445feb;
 $primary-theme-light: #e8e9ff;
