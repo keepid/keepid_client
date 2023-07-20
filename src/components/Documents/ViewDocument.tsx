@@ -83,9 +83,12 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   return (
     <div className="container">
       <div className="flex mt-5 ml-3">
-        <Link to="/my-documents">
-          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
-            Back
+        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
+          <button type="button" className="tw-flex tw-align-center tw-justify-center tw-bg-white tw-border tw-border-primary tw-rounded-md tw-p-2 tw-font-semibold tw-text-primary hover:tw-bg-blue-50 hover:tw-no-underline tw-px-3 tw-font-Inter" onClick={resetDocumentId}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline">
+              <path strokeLinecap="sharp" strokeLinejoin="sharp" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Back to My Documents
           </button>
         </Link>
         <button className="tw-p-2 tw-m-2 tw-bg-primary" type="button" onClick={() => setMailDialogIsOpen(true)}>Mail</button>
