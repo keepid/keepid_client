@@ -2,16 +2,23 @@ import { Dialog } from '@headlessui/react';
 import React, { useState } from 'react';
 
 interface Props{
-    showMailModal: boolean;
-    setShowMailModal: (value: boolean) => void;
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
+    mailForm: () => void;
 }
 
-const MailModal: React.FC<Props> = ({ showMailModal, setShowMailModal }) => {
+const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }) => {
   const [mailConfirmationisOpen, setMailConfirmationIsOpen] = useState(false);
+
+  const onSubmit = () => {
+    setIsVisible(false);
+    setMailConfirmationIsOpen(true);
+    mailForm();
+  };
 
   return (
         <div>
-            <Dialog open={showMailModal} onClose={() => setShowMailModal(false)}>
+            <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
 
                 <div className="tw-fixed tw-inset-0 tw-bg-black/30" aria-hidden="true" />
 
@@ -23,27 +30,26 @@ const MailModal: React.FC<Props> = ({ showMailModal, setShowMailModal }) => {
                     Agreeing to this action will send the application to Team Keep to print and directly mail to the corresponding agency. Your status will be notified in your &quot;My Documents&quot; Page.
                 </p>
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                    <button type="button" className="tw-col-start-2 tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-primary tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-shadow-sm hover:tw-bg-blue-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600" onClick={() => { setShowMailModal(false); setMailConfirmationIsOpen(true); }}>Yes, mail</button>
-                    <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setShowMailModal(false)}>Cancel</button>
+                    <button type="button" className="tw-col-start-2 tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-primary tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-shadow-sm hover:tw-bg-blue-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600" onClick={() => { onSubmit(); }}>Yes, mail</button>
+                    <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                 </div>
                 </Dialog.Panel>
                 </div>
             </Dialog>
-            <MailConfirmation showConfirmation={mailConfirmationisOpen} setShowConfirmation={setMailConfirmationIsOpen} />
+            <MailConfirmation isVisible={mailConfirmationisOpen} setIsVisible={setMailConfirmationIsOpen} />
         </div>
   );
 };
 
 interface ConfirmationProps{
-    showConfirmation: boolean;
-    setShowConfirmation: (value: boolean) => void;
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
-const MailConfirmation: React.FC<ConfirmationProps> = ({ showConfirmation, setShowConfirmation }) => (
+const MailConfirmation: React.FC<ConfirmationProps> = ({ isVisible, setIsVisible }) => (
 
     <div>
-
-        <Dialog open={showConfirmation} onClose={() => setShowConfirmation(false)}>
+        <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
         <div className="tw-fixed tw-inset-0 tw-bg-black/30" aria-hidden="true" />
 
             <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-4">
@@ -58,7 +64,7 @@ const MailConfirmation: React.FC<ConfirmationProps> = ({ showConfirmation, setSh
                     Team Keep has recieved your application!
                 </p>
                 <div className="tw-flex tw-flex-row tw-w-full tw-justify-end tw-p-4 tw-pt-6">
-                    <button type="button" className="tw-bg-primary tw-text-white tw-px-3 tw-py-1 tw-rounded-md hover:tw-bg-blue-500" onClick={() => setShowConfirmation(false)}>Done</button>
+                    <button type="button" className="tw-bg-primary tw-text-white tw-px-3 tw-py-1 tw-rounded-md hover:tw-bg-blue-500" onClick={() => setIsVisible(false)}>Done</button>
                 </div>
             </Dialog.Panel>
             </div>
