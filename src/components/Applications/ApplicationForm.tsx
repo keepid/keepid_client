@@ -670,7 +670,7 @@ class ApplicationForm extends Component<Props, State> {
           <meta name="description" content="Keep.id" />
         </Helmet>
         <div className="ml-5 mt-3">
-          <div className="alert alert-primary">You are currently filling out this application on behalf of {clientUsername}.</div>
+          {clientUsername && <div className="alert alert-primary">You are currently filling out this application on behalf of {clientUsername}.</div>}
           <Link to="/applications">
             <button type="button" className="btn btn-primary">
               Back
