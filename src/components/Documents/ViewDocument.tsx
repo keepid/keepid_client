@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
-import { LoadingButton, PrimaryButton } from '../BaseComponents/Button';
+import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
 import { MailConfirmation, MailModal } from './MailModal';
 
@@ -115,25 +115,22 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
 
   return (
     <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
-      <div className="tw-flex tw-mt-5">
+      <div className="tw-flex tw-mt-5 tw-space-x-2 ">
         <Link to="/my-documents" style={{ textDecoration: 'none' }}>
           <PrimaryButton onClick={resetDocumentId}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
               <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-            Back to My Documents
+            <span className="tw-align-middle">Back to My Documents</span>
           </PrimaryButton>
         </Link>
-        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
-          <button type="button" className="tw-flex tw-justify-center tw-bg-white tw-border tw-border-primary tw-rounded-md tw-p-1.5 tw-font-semibold tw-text-primary hover:tw-bg-blue-50 hover:tw-no-underline tw-px-3 tw-font-Inter" onClick={resetDocumentId}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline">
-              <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            Back to My Documents
-          </button>
-        </Link>
 
-        <button className="tw-p-2 tw-m-2 tw-bg-primary" type="button" onClick={() => setMailDialogIsOpen(true)}>Mail</button>
+        <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline tw-align-middle">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+          </svg>
+          <span className="tw-align-middle tw-pt-[1px] tw-pl-1">Mail</span>
+        </PrimaryButtonSolid>
 
       </div>
 

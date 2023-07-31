@@ -17,7 +17,7 @@ export const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }
 
                 <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-4">
 
-                <Dialog.Panel className="tw-m-8 tw-w-[50rem] tw-rounded-md tw-bg-white tw-p-1 tw-shadow-md">
+                <Dialog.Panel className="tw-m-8 tw-w-[50rem] tw-rounded-md tw-bg-white tw-p-1 tw-px-4 tw-shadow-md">
                 <Dialog.Title className="tw-p-4 tw-text-left tw-font-body tw-text-lg">Send application by direct mail?</Dialog.Title>
                 <p className="tw-p-2 tw-text-left tw-font-body tw-text-sm">
                     Agreeing to this action will send the application to Team Keep to print and directly mail to the corresponding agency. Your status will be notified in your &quot;My Documents&quot; Page.
