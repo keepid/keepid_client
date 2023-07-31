@@ -1,22 +1,15 @@
 import { Dialog } from '@headlessui/react';
-import React, { useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
+
+import { LoadingButton } from '../BaseComponents/Button';
 
 interface Props{
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
-    mailForm: () => void;
+    mailForm: () => Promise<void>;
 }
 
-const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }) => {
-  const [mailConfirmationisOpen, setMailConfirmationIsOpen] = useState(false);
-
-  const onSubmit = () => {
-    setIsVisible(false);
-    setMailConfirmationIsOpen(true);
-    mailForm();
-  };
-
-  return (
+export const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }) => (
         <div>
             <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
 
@@ -30,23 +23,21 @@ const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }) => {
                     Agreeing to this action will send the application to Team Keep to print and directly mail to the corresponding agency. Your status will be notified in your &quot;My Documents&quot; Page.
                 </p>
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                    <button type="button" className="tw-col-start-2 tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-primary tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-shadow-sm hover:tw-bg-blue-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600" onClick={() => { onSubmit(); }}>Yes, mail</button>
+                    <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
                     <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                 </div>
                 </Dialog.Panel>
                 </div>
             </Dialog>
-            <MailConfirmation isVisible={mailConfirmationisOpen} setIsVisible={setMailConfirmationIsOpen} />
         </div>
-  );
-};
+);
 
 interface ConfirmationProps{
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
 }
 
-const MailConfirmation: React.FC<ConfirmationProps> = ({ isVisible, setIsVisible }) => (
+export const MailConfirmation: React.FC<ConfirmationProps> = ({ isVisible, setIsVisible }) => (
 
     <div>
         <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
@@ -71,5 +62,3 @@ const MailConfirmation: React.FC<ConfirmationProps> = ({ isVisible, setIsVisible
         </Dialog>
     </div>
 );
-
-export default MailModal;

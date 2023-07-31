@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import { LoadingButton, PrimaryButton } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
-import MailModal from './MailModal';
+import { MailConfirmation, MailModal } from './MailModal';
 
 interface Props {
   alert: any;
@@ -22,6 +23,7 @@ interface Props {
 const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
+  const [showMailSuccess, setShowMailSuccess] = useState(false);
 
   useEffect(() => {
     let pdfType;
@@ -73,35 +75,36 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
     return `/my-documents/${targetUser}`;
   };
 
-  const mailForm = () => {
+  const mailForm = async () => {
     const today = new Date();
-    const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
-    const description = `\nUser Role: ${userRole}\n Target User: ${targetUser}\n Document Name: ${documentName}\n Document ID: ${documentId}\n DocumentDate: ${documentDate}\n Submission Date: ${date}`;
+    const description = `\nUser Role: ${userRole}\n Target User: ${targetUser}\n Document Name: ${documentName}\n Document ID: ${documentId}\n DocumentDate: ${documentDate}\n DocumentUploader: ${documentUploader}\n Submission Date: ${date}`;
 
-    fetch(`${getServerURL()}/submit-issue`, {
-      method: 'POST',
-      body: JSON.stringify({
-        email: 'foo@email.com',
-        title: 'Mail Submission',
-        description,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-
-        if (status === 'SUCCESS') {
-          alert.show(
-            'Successfully sent',
-          );
-        } else {
-          alert.show('Failed to submit. Please try another time.');
-        }
-      })
-      .catch(() => {
-        alert.show('Failed to submit. Please try again.');
+    try {
+      const response = await fetch(`${getServerURL()}/submit-issue`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'foo@email.com',
+          title: 'Mail Submission',
+          description,
+        }),
       });
+
+      const responseJSON = await response.json();
+      const { status } = responseJSON;
+
+      if (status === 'SUCCESS') {
+        setMailDialogIsOpen(false);
+        setShowMailSuccess(true);
+      } else {
+        setMailDialogIsOpen(false);
+        alert.show('Failed to submit. Please try another time.');
+      }
+    } catch (error) {
+      setMailDialogIsOpen(false);
+      alert.show('Failed to submit. Please try again.');
+    }
   };
 
   let fileName = '';
@@ -111,27 +114,35 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   }
 
   return (
-    <div className="container">
-      <div className="tw-flex tw-mt-5 tw-ml-3">
-        <button type="button" className="tw-btn-primary">Hello</button>
+    <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
+      <div className="tw-flex tw-mt-5">
         <Link to="/my-documents" style={{ textDecoration: 'none' }}>
-          <button type="button" className="tw-flex tw-align-center tw-justify-center tw-bg-white tw-border tw-border-primary tw-rounded-md tw-p-2 tw-font-semibold tw-text-primary hover:tw-bg-blue-50 hover:tw-no-underline tw-px-3 tw-font-Inter" onClick={resetDocumentId}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline">
+          <PrimaryButton onClick={resetDocumentId}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline">
+              <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Back to My Documents
+          </PrimaryButton>
+        </Link>
+        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
+          <button type="button" className="tw-flex tw-justify-center tw-bg-white tw-border tw-border-primary tw-rounded-md tw-p-1.5 tw-font-semibold tw-text-primary hover:tw-bg-blue-50 hover:tw-no-underline tw-px-3 tw-font-Inter" onClick={resetDocumentId}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline">
               <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
             Back to My Documents
           </button>
         </Link>
+
         <button className="tw-p-2 tw-m-2 tw-bg-primary" type="button" onClick={() => setMailDialogIsOpen(true)}>Mail</button>
+
       </div>
+
       {pdfFile ? (
-        <div className="jumbotron-fluid">
-          <div className="row justify-content-center mt-5">
-            <h1 className="display-3 text-align-center">
-              <strong>{fileName}</strong>
-            </h1>
+        <div className="">
+          <div className="tw-mt-5">
+            <h1 className="tw-text-6xl tw-text-left"> {fileName} </h1>
           </div>
-          <div className="jumbotron-fluid mb-2 ml-5 mr-5">
+          <div className="">
             <div className="row justify-content-between">
               <h3>{pdfFile.name}</h3>
               <div>
@@ -150,15 +161,8 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
-      <div className="mt-5 ml-3">
-        <Link to={setLink()}>
-          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
-            Back
-          </button>
-        </Link>
-      </div>
-
       <MailModal isVisible={mailDialogIsOpen} setIsVisible={setMailDialogIsOpen} mailForm={mailForm} />
+      <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
 
     </div>
   );
