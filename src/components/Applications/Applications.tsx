@@ -179,7 +179,7 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{clientUsername === '' ? 'My' : `${clientUsername}'s`} Applications</h1>
+                <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientUsername}'s`} Applications</h1>
                 <p className="lead">See all of your applications. Check the status of each of your applications here.</p>
               </div>
             </div>
