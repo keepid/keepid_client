@@ -1,0 +1,12 @@
+
+.card-alignment {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%; // make sure the parent is full screen 
+	height: 100%; // so that the content will center correctly
+}
+
+.row-padding {
+	padding: 1em;
+}

@@ -1,0 +1,13 @@
+.input-label {
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.input-label.required:after {
+	content: ' *';
+	color: red;
+}
+
+.hide-text-input-icon {
+	width: 1.25rem;
+}

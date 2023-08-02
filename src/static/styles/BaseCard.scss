@@ -1,0 +1,20 @@
+@import "App";
+
+.btn-card {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}
+
+.btn-card:hover, .btn-card:focus, .btn-card:active, .btn-card:visited {
+	color: white;
+	background-color: $primary-theme;
+	border-color: $primary-theme;
+}
+
+.btn-card:active {
+	color: black;
+	background-color: white;
+	border-color: white;
+	box-shadow: 0 0 20 lightgrey;
+}

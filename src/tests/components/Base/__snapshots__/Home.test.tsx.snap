@@ -1,0 +1,695 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Home page snapshot test 1`] = `
+<div>
+  <div
+    className="container-fluid my-auto"
+  >
+    <div
+      className="d-flex flex-row section1 mt-5 justify-content-center img-fluid"
+    >
+      <div
+        className="flex-col px-4 custom-vertical-center"
+      >
+        <div
+          className="rounded mb-3 pb-5"
+        >
+          <div
+            className="page-header"
+          >
+            <span
+              className="brand-text"
+              id="brand-header"
+            >
+              An identification platform
+            </span>
+          </div>
+          <p
+            className="pt-2 pb-2 home-subtext"
+          >
+            for those experiencing homelessness
+          </p>
+          <a
+            href="/signup-branch"
+            onClick={[Function]}
+          >
+            <button
+              className="btn btn-secondary btn-lg w-40 mr-2 mb-2"
+              type="button"
+            >
+              Get Started
+            </button>
+          </a>
+          <a
+            className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+            href="https://team.keep.id"
+            type="button"
+          >
+            Donate
+          </a>
+        </div>
+      </div>
+      <div
+        className="flex-col px-5 custom-vertical-center"
+      >
+        <div
+          className="pb-4 container-home-right"
+        >
+          <div>
+            <img
+              alt="Document Platform"
+              className="home-form-svg text-left"
+              src="homepage_graphic.svg"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="container py-5"
+  >
+    <div
+      className="row viewport-height-50"
+    >
+      <div
+        className="col-md-10 custom-vertical-center mx-auto text-center"
+      >
+        <div
+          id="info"
+        >
+          <img
+            alt="rectangle"
+            className="svg-purple mb-5"
+            src="rectangle.svg"
+          />
+          <h3
+            className="hero-subtext text-grey font-weight-light pb-3"
+          >
+            People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.
+          </h3>
+          <h3
+            className="hero-subtext text-black font-weight-medium pb-3"
+          >
+            We provide a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, designed for those with low technological literacy.
+          </h3>
+          <a
+            href="#info"
+            onClick={[Function]}
+          >
+            <button
+              className="btn btn-outline-secondary btn-lg w-40"
+              type="button"
+            >
+              Learn More
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="py-5"
+  >
+    <div
+      className="w-100 partial-background"
+    >
+      <div
+        className="container"
+      >
+        <h1
+          className="text-white pt-4 pb-4"
+        >
+          Focusing on People
+        </h1>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Create an Account
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Individuals experiencing homelessness (we call them clients)
+                create a Keep.id account at participating nonprofits. Nonprofits
+                then help homeless obtain missing identification.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="create_account.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 p-4 d-none d-md-block"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="my_documents.png"
+          />
+        </div>
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Upload Documents
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Government identification, personal information, and prison
+                health records are securely uploaded to our cloud databases.
+                These documents are also cryptographically signed and encrypted.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4 d-md-none"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="my_documents.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Access Documents
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Those experiencing homelessness can access their documents at
+                public or nonprofit computers.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="access_documents.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 p-4 d-none d-md-block"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="streamline_applications.png"
+          />
+        </div>
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Streamline Applications
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Those experiencing homelessness can now use their data to apply
+                for jobs, print their documents, and send autofilled aid
+                applications.
+            </p>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Nonprofits can utilize data to generate reports, create
+                additional touch points for care, and streamline their filing
+                operations.
+            </p>
+            <a
+              href="#info"
+              onClick={[Function]}
+            >
+              <button
+                className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+                type="button"
+              >
+                Learn More
+              </button>
+            </a>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4 d-md-none"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="streamline_applications.png"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="py-5"
+  >
+    <div
+      className="w-100 partial-background"
+    >
+      <div
+        className="container"
+      >
+        <h1
+          className="text-white pt-4 pb-4"
+        >
+          Ensuring Security
+        </h1>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-4"
+        >
+          <div
+            className="ml-1 mr-1 mt-2 mb-2"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+          >
+            <div
+              className="border-0 shadow card"
+              style={
+                Object {
+                  "borderRadius": 20,
+                  "height": "485px",
+                  "maxWidth": "325px",
+                  "width": "auto",
+                }
+              }
+            >
+              <div
+                className="p-0 d-flex flex-column align-items-start card-body"
+                style={
+                  Object {
+                    "height": "100%",
+                  }
+                }
+              >
+                <img
+                  alt="..."
+                  className=""
+                  src="HIPAA_badge.png"
+                  style={
+                    Object {
+                      "borderTopLeftRadius": 20,
+                      "borderTopRightRadius": 20,
+                      "height": "50%",
+                      "maxWidth": "100%",
+                      "objectFit": "cover",
+                      "overflow": "hidden",
+                    }
+                  }
+                />
+                <div
+                  className="p-4"
+                >
+                  <div
+                    className="card-title h5"
+                  >
+                    <h3>
+                      HIPAA Compliant
+                    </h3>
+                  </div>
+                  <p
+                    className="card-text"
+                  >
+                    Team Keep members are certified and follow "national standards for 
+      electronic health care transactions and code sets, 
+      unique health identifiers, and security."
+                  </p>
+                  <div>
+                    <a
+                      className="card-link"
+                      href="https://compliancy-group.com/"
+                    >
+                      Learn More
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="col-md-4"
+        >
+          <div
+            className="ml-1 mr-1 mt-2 mb-2"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+          >
+            <div
+              className="border-0 shadow card"
+              style={
+                Object {
+                  "borderRadius": 20,
+                  "height": "485px",
+                  "maxWidth": "325px",
+                  "width": "auto",
+                }
+              }
+            >
+              <div
+                className="p-0 d-flex flex-column align-items-start card-body"
+                style={
+                  Object {
+                    "height": "100%",
+                  }
+                }
+              >
+                <img
+                  alt="..."
+                  className=""
+                  src="googletink.png"
+                  style={
+                    Object {
+                      "borderTopLeftRadius": 20,
+                      "borderTopRightRadius": 20,
+                      "height": "50%",
+                      "maxWidth": "100%",
+                      "objectFit": "cover",
+                      "overflow": "hidden",
+                    }
+                  }
+                />
+                <div
+                  className="p-4"
+                >
+                  <div
+                    className="card-title h5"
+                  >
+                    <h3>
+                      Always Encryped
+                    </h3>
+                  </div>
+                  <p
+                    className="card-text"
+                  >
+                    We use state-of-the-art security practices and 
+    libraries used by industry leaders, such as Google. 
+    Your documents are cryptographically signed and encrypted to increase client security.
+                  </p>
+                  <div>
+                    <a
+                      className="card-link"
+                      href="https://developers.google.com/tink"
+                    >
+                      Learn More
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="col-md-4"
+        >
+          <div
+            className="ml-1 mr-1 mt-2 mb-2"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+          >
+            <div
+              className="border-0 shadow card"
+              style={
+                Object {
+                  "borderRadius": 20,
+                  "height": "485px",
+                  "maxWidth": "325px",
+                  "width": "auto",
+                }
+              }
+            >
+              <div
+                className="p-0 d-flex flex-column align-items-start card-body"
+                style={
+                  Object {
+                    "height": "100%",
+                  }
+                }
+              >
+                <img
+                  alt="..."
+                  className=""
+                  src="mozilla_observatory.png"
+                  style={
+                    Object {
+                      "borderTopLeftRadius": 20,
+                      "borderTopRightRadius": 20,
+                      "height": "50%",
+                      "maxWidth": "100%",
+                      "objectFit": "cover",
+                      "overflow": "hidden",
+                    }
+                  }
+                />
+                <div
+                  className="p-4"
+                >
+                  <div
+                    className="card-title h5"
+                  >
+                    <h3>
+                      Secure in the Cloud
+                    </h3>
+                  </div>
+                  <p
+                    className="card-text"
+                  >
+                    Our application has been validated against internet vulnerabilities 
+    by Mozilla Observatory. We hold ourselves to the highest web industry standards.
+                  </p>
+                  <div>
+                    <a
+                      className="card-link"
+                      href="https://observatory.mozilla.org/analyze/keep.id"
+                    >
+                      Learn More
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="w-100 partial-background"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="text-white pt-4 pb-4"
+      >
+        A Systemic Cycle
+      </h1>
+    </div>
+  </div>
+  <div
+    className="container mt-4 mb-4 pt-5 pb-5"
+  >
+    <div
+      className="row d-flex align-items-center"
+      id="info"
+    >
+      <div
+        className="col-md-6 "
+      >
+        <h1
+          className="text-center m-3 pb-5"
+        >
+          The lack of 
+          <span
+            className="text-primary-theme font-weight-bold"
+          >
+            identification
+          </span>
+           is a serial struggle for those experiencing homelessness.
+        </h1>
+      </div>
+      <div
+        className="col-md-6"
+      >
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              54%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to shelters or adequate housing services
+            </span>
+          </div>
+        </div>
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              53%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to food stamps
+            </span>
+          </div>
+        </div>
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              45%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to Medicaid or other medical services
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="w-100 partial-background"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="text-white pt-4 pb-4"
+      >
+        Our Partners
+      </h1>
+    </div>
+  </div>
+  <div
+    className="container-fluid mx-0 pt-5 pb-4"
+  >
+    <div
+      className="container section2"
+    >
+      <div
+        className="row text-center"
+      >
+        <div
+          className="col-md-4 p-4"
+        >
+          <img
+            alt="Why Not Prosper"
+            className="home-form-svg text-left p-4"
+            src="whynotprosper.png"
+          />
+        </div>
+        <div
+          className="col-md-4"
+        >
+          <img
+            alt="Roxborough Food Pantry"
+            className="home-form-svg text-left p-5"
+            src="roxborough.png"
+          />
+        </div>
+        <div
+          className="col-md-4"
+        >
+          <img
+            alt="Venturelab"
+            className="home-form-svg text-left"
+            src="venturelab.jpg"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
