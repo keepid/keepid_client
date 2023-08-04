@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
+import { MailConfirmation, MailModal } from './MailModal';
 
 interface Props {
   alert: any;
@@ -20,6 +22,8 @@ interface Props {
 
 const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
+  const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
+  const [showMailSuccess, setShowMailSuccess] = useState(false);
 
   useEffect(() => {
     let pdfType;
@@ -62,13 +66,45 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       .catch((error) => {
         alert.show(`Error Fetching File: ${error.message}`);
       });
-  }, [alert, documentId, documentName, userRole, targetUser]); // add props.targetUser in the dependencies array too
+  }, [alert, documentId, documentName, userRole, targetUser]);
 
   const setLink = () => {
     if (userRole === Role.Client) {
       return '/my-documents';
     }
     return `/my-documents/${targetUser}`;
+  };
+
+  const mailForm = async () => {
+    const today = new Date();
+    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+
+    const description = `\nUser Role: ${userRole}\n Target User: ${targetUser}\n Document Name: ${documentName}\n Document ID: ${documentId}\n DocumentDate: ${documentDate}\n DocumentUploader: ${documentUploader}\n Submission Date: ${date}`;
+
+    try {
+      const response = await fetch(`${getServerURL()}/submit-issue`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'foo@email.com',
+          title: 'Mail Submission',
+          description,
+        }),
+      });
+
+      const responseJSON = await response.json();
+      const { status } = responseJSON;
+
+      if (status === 'SUCCESS') {
+        setMailDialogIsOpen(false);
+        setShowMailSuccess(true);
+      } else {
+        setMailDialogIsOpen(false);
+        alert.show('Failed to submit. Please try another time.');
+      }
+    } catch (error) {
+      setMailDialogIsOpen(false);
+      alert.show('Failed to submit. Please try again.');
+    }
   };
 
   let fileName = '';
@@ -78,22 +114,32 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   }
 
   return (
-    <div className="container">
-      <div className="mt-5 ml-3">
-        <Link to="/my-documents">
-          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
-            Back
-          </button>
+    <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
+      <div className="tw-flex tw-mt-5 tw-space-x-2 ">
+        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
+          <PrimaryButton onClick={resetDocumentId}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
+              <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            <span className="tw-align-middle">Back to My Documents</span>
+          </PrimaryButton>
         </Link>
+
+        <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline tw-align-middle">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+          </svg>
+          <span className="tw-align-middle tw-pt-[1px] tw-pl-1">Mail</span>
+        </PrimaryButtonSolid>
+
       </div>
+
       {pdfFile ? (
-        <div className="jumbotron-fluid">
-          <div className="row justify-content-center mt-5">
-            <h1 className="display-3 text-align-center">
-              <strong>{fileName}</strong>
-            </h1>
+        <div className="">
+          <div className="tw-mt-5">
+            <h1 className="tw-text-6xl tw-text-left"> {fileName} </h1>
           </div>
-          <div className="jumbotron-fluid mb-2 ml-5 mr-5">
+          <div className="">
             <div className="row justify-content-between">
               <h3>{pdfFile.name}</h3>
               <div>
@@ -112,13 +158,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
-      <div className="mt-5 ml-3">
-        <Link to={setLink()}>
-          <button type="button" className="btn btn-outline-success" onClick={resetDocumentId}>
-            Back
-          </button>
-        </Link>
-      </div>
+      <MailModal isVisible={mailDialogIsOpen} setIsVisible={setMailDialogIsOpen} mailForm={mailForm} />
+      <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
+
     </div>
   );
 };
