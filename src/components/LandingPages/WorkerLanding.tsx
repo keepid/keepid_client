@@ -16,6 +16,7 @@ import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 
 interface Props {
   username: string;
@@ -336,7 +337,7 @@ class WorkerLanding extends Component<Props, State> {
               }}
               className="dropdown-item"
             >
-              <div className="view-docs-btn-text">
+              <PrimaryButton onClick={() => {}}>
 
                 {/* Consider adding an application icon. */}
                 {/* <img
@@ -346,7 +347,7 @@ class WorkerLanding extends Component<Props, State> {
                 /> */}
 
                 Fill Out Application
-              </div>
+              </PrimaryButton>
             </Link>
 
             {/* <button
@@ -409,13 +410,21 @@ class WorkerLanding extends Component<Props, State> {
         <div className="row lock-bottom-left">
           <Link
             to={`/upload-document/${client.username}`}
-            className="btn btn-primary mr-2 btn-sm mb-2"
-            style={{ height: 32 }}
+            className="tw-mr-1"
+            // style={{ height: 32 }}
           >
-            <div style={{ fontWeight: 'bold' }}>
+            {/* <div style={{ fontWeight: 'bold' }}>
               <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" />
               {' Upload'}
-            </div>
+            </div> */}
+            <button type="button" className="tw-flex tw-justify-center tw-bg-twprimary tw-rounded-md tw-p-[0.32rem] tw-font-semibold tw-text-white hover:tw-bg-blue-800 hover:tw-no-underline tw-px-3 tw-font-Inter tw-border-0 tw-items-center">
+              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-1" />
+                <div className="tw-font-bold">{' Upload '}</div>
+            </button>
+            {/* <PrimaryButtonSolid onClick={()=>{}}>
+              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className='tw-mr-1'/>
+              <div className="tw-font-bold">{' Upload '}</div>
+            </PrimaryButtonSolid> */}
           </Link>
           <Link
             to={`/my-documents/${client.username}`}
@@ -433,12 +442,11 @@ class WorkerLanding extends Component<Props, State> {
               // State is stored in location prop
               state: { clientUsername: client.username },
             }}
-            className="btn btn-primary mr-2 btn-sm"
+            className="btn link-secondary btn-sm primary-color-border mb-2"
             style={{ height: 32 }}
           >
 
-            <div className="font-weight-bold">
-              {/* <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" /> */}
+            <div style={{ color: '#445feb', fontWeight: 'bold' }}>
               Fill Out Application
             </div>
 

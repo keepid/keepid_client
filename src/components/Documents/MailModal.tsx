@@ -24,7 +24,7 @@ export const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }
                 </p>
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
                     <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
-                    <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
+                    <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                 </div>
                 </Dialog.Panel>
                 </div>
@@ -55,7 +55,7 @@ export const MailConfirmation: React.FC<ConfirmationProps> = ({ isVisible, setIs
                     Team Keep has recieved your application!
                 </p>
                 <div className="tw-flex tw-flex-row tw-w-full tw-justify-end tw-p-4 tw-pt-6">
-                    <button type="button" className="tw-bg-primary tw-text-white tw-px-3 tw-py-1 tw-rounded-md hover:tw-bg-blue-500" onClick={() => setIsVisible(false)}>Done</button>
+                    <button type="button" className="tw-bg-twprimary tw-border-0 tw-text-white tw-px-3 tw-py-1 tw-rounded-md hover:tw-bg-blue-800" onClick={() => setIsVisible(false)}>Done</button>
                 </div>
             </Dialog.Panel>
             </div>

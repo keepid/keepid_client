@@ -4,10 +4,6 @@
 @import './Inputs';
 @import './QuickAccess';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 // COLOR SYTEM
 $primary-theme: #445feb;
 $primary-theme-light: #e8e9ff;
@@ -889,3 +885,7 @@ div.scrollbar {
 	min-width: 18.75rem;
 	width: 35vw !important;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
