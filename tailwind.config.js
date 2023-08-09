@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  corePlugins: {
+    preflight: false,
+  },
   prefix: "tw-",
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
@@ -11,7 +14,7 @@ module.exports = {
         body: ['Inter']
       },
       colors: {
-        primary: '#445FEB',
+        twprimary: '#445FEB',
       },
     },
   },
