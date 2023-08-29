@@ -1,3 +1,350 @@
+// import React, { Component } from 'react';
+// import { withAlert } from 'react-alert';
+// import { Button } from 'react-bootstrap';
+// import ReCAPTCHA from 'react-google-recaptcha';
+// import { Helmet } from 'react-helmet';
+// import { Link } from 'react-router-dom';
+
+// import { reCaptchaKey } from '../../configVars';
+// import getServerURL from '../../serverOverride';
+// import EyeIcon from '../../static/images/eye.svg';
+// import SlashEye from '../../static/images/eye-slash.svg';
+// import LoginSVG from '../../static/images/login-svg.svg';
+// import Role from '../../static/Role';
+
+// interface State {
+//   username: string;
+//   password: string;
+//   buttonState: string;
+//   twoFactorState: string; // either empty or show
+//   verificationCode: string;
+//   userRole: string;
+//   firstName: string;
+//   lastName: string;
+//   organization: string;
+//   recaptchaPayload: string;
+//   showPassword: boolean;
+// }
+
+// const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
+
+// interface Props {
+//   logIn: (
+//     role: Role,
+//     username: string,
+//     organization: string,
+//     name: string
+//   ) => void;
+//   logOut: () => void;
+//   isLoggedIn: boolean;
+//   role: Role;
+//   alert: any;
+//   autoLogout: boolean; // whether or not the user was logged out automatically
+//   setAutoLogout: (boolean) => void; // stop showing the logged out automatically banner once user navigates away from the page
+// }
+
+// class LoginPage extends Component<Props, State> {
+//   static enterKeyPressed(event, funct) {
+//     if (event.key === 'Enter') {
+//       funct();
+//     }
+//   }
+
+//   constructor(props: Props) {
+//     super(props);
+//     this.state = {
+//       username: '',
+//       password: '',
+//       buttonState: '',
+//       twoFactorState: '',
+//       verificationCode: '',
+//       userRole: '',
+//       firstName: '',
+//       lastName: '',
+//       organization: '',
+//       recaptchaPayload: '',
+//       showPassword: false,
+//     };
+//   }
+
+//   componentWillUnmount() {
+//     const { setAutoLogout } = this.props;
+//     setAutoLogout(false);
+//   }
+
+//   // RECAPTCHA CODE
+//   onSubmitWithReCAPTCHA = async (e) => {
+//     e.preventDefault();
+//     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+//       // @ts-ignore
+//       const recaptchaPayload = await recaptchaRef.current.executeAsync();
+//       this.setState({ recaptchaPayload }, this.handleLogin);
+//     }
+//   };
+
+//   resetRecaptcha = () => {
+//     if (recaptchaRef !== null && recaptchaRef.current !== null) {
+//       recaptchaRef.current.reset();
+//     }
+//     this.setState({ recaptchaPayload: '' });
+//   };
+//   // END RECAPTCHA CODE
+
+//   clearInput = async () => {
+//     this.setState({ username: '', password: '' });
+//   };
+
+//   togglePassword = () => {
+//     const { showPassword } = this.state;
+//     this.setState({ showPassword: !showPassword });
+//   };
+
+//   handleChangePassword = (event: any) => {
+//     this.setState({ password: event.target.value });
+//   };
+
+//   handleChangeVerificationCode = (event: any) => {
+//     this.setState({ verificationCode: event.target.value });
+//   };
+
+//   handleChangeUsername = (event: any) => {
+//     this.setState({ username: event.target.value });
+//   };
+
+//   handleSubmitTwoFactorCode = (event: any) => {
+//     event.preventDefault();
+//     const { verificationCode } = this.state;
+//     const token = verificationCode;
+//     const { username } = this.state;
+//     this.setState({ buttonState: 'running' });
+//     const { logIn } = this.props;
+//     fetch(`${getServerURL()}/two-factor`, {
+//       method: 'POST',
+//       credentials: 'include',
+//       body: JSON.stringify({
+//         username,
+//         token,
+//       }),
+//     })
+//       .then((response) => response.json())
+//       .then((responseJSON) => {
+//         const responseObject = responseJSON;
+//         const { status } = responseObject;
+//         const { userRole, organization, firstName, lastName } = this.state;
+//         if (status === 'AUTH_SUCCESS') {
+//           const role = () => {
+//             switch (userRole) {
+//               case 'Director':
+//                 return Role.Director;
+//               case 'Admin':
+//                 return Role.Admin;
+//               case 'Worker':
+//                 return Role.Worker;
+//               case 'Client':
+//                 return Role.Client;
+//               default:
+//                 return Role.LoggedOut;
+//             }
+//           };
+//           logIn(role(), username, organization, firstName.concat(lastName));
+//         } else if (status === 'AUTH_FAILURE') {
+//           const { alert } = this.props;
+//           alert.show('Incorrect 2FA Token: Please Try Again');
+//           this.setState({ buttonState: '' });
+//         }
+//       })
+//       .catch(() => {
+//         const { alert } = this.props;
+//         alert.show('Network Failure: Check Server Connection. ');
+//         this.setState({ buttonState: '' });
+//       });
+//     this.resetRecaptcha();
+//   };
+
+//   handleLogin = (): void => {
+//     this.setState({ buttonState: 'running' });
+//     const { logIn } = this.props;
+//     const { username, password, recaptchaPayload } = this.state;
+//     if (username.trim() === '' || password.trim() === '') {
+//       const { alert } = this.props;
+//       alert.show('Please enter a valid username or password');
+//       this.clearInput();
+//       this.setState({ buttonState: '' });
+//       this.resetRecaptcha();
+//     } else {
+//       fetch(`${getServerURL()}/login`, {
+//         method: 'POST',
+//         credentials: 'include',
+//         body: JSON.stringify({
+//           username,
+//           password,
+//           recaptchaPayload,
+//         }),
+//       })
+//         .then((response) => response.json())
+//         .then((responseJSON) => {
+//           const responseObject = responseJSON;
+//           const { status, userRole, organization, firstName, lastName } =
+//             responseObject;
+
+//           const { alert } = this.props;
+
+//           if (status === 'AUTH_SUCCESS') {
+//             const role = () => {
+//               switch (userRole) {
+//                 case 'Director':
+//                   return Role.Director;
+//                 case 'Admin':
+//                   return Role.Admin;
+//                 case 'Worker':
+//                   return Role.Worker;
+//                 case 'Client':
+//                   return Role.Client;
+//                 case 'Developer':
+//                   return Role.Developer;
+//                 default:
+//                   return Role.LoggedOut;
+//               }
+//             };
+//             logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+//           } else if (status === 'TOKEN_ISSUED') {
+//             this.setState({
+//               buttonState: '',
+//               twoFactorState: 'show',
+//               firstName,
+//               lastName,
+//               organization,
+//               userRole,
+//             });
+//           } else if (status === 'AUTH_FAILURE') {
+//             alert.show('Incorrect Username or Password');
+//             this.clearInput();
+//             this.setState({ buttonState: '' });
+//             this.resetRecaptcha();
+//           } else if (status === 'USER_NOT_FOUND') {
+//             alert.show('Incorrect Username or Password');
+//             this.clearInput();
+//             this.setState({ buttonState: '' });
+//             this.resetRecaptcha();
+//           } else {
+//             alert.show('Server Failure: Please Try Again');
+//             this.setState({ buttonState: '' });
+//             this.resetRecaptcha();
+//           }
+//         })
+//         .catch(() => {
+//           const { alert } = this.props;
+//           alert.show('Network Failure: Check Server Connection.');
+//           this.setState({ buttonState: '' });
+//           this.resetRecaptcha();
+//         });
+//     }
+//   };
+
+//   resubmitVerificationCode(event: any) {
+//     event.preventDefault();
+//     const { username, password } = this.state;
+//     const { alert } = this.props;
+//     alert.show('Another verification code has been sent to your email.');
+//     fetch(`${getServerURL()}/login`, {
+//       method: 'POST',
+//       credentials: 'include',
+//       body: JSON.stringify({
+//         username,
+//         password,
+//       }),
+//     });
+//   }
+
+//   render() {
+//     const {
+//       username,
+//       password,
+//       verificationCode,
+//       twoFactorState,
+//       buttonState,
+//       showPassword,
+//     } = this.state;
+//     const { autoLogout } = this.props;
+//     return (
+//       <div className="tw-flex tw-flex-row tw-flex-wrap">
+//         {/* left side */}
+//         <div className="tw-bg-primaryPurple">
+//           <div className="tw-text-4xl tw-text-white tw-text-center tw-font-black tw-font-Raleway">
+//             Welcome to Keep.id!
+//           </div>
+//           <div className="tw-font-Raleway tw-text-2xl tw-text-bold tw-text-white">
+//             <div>An identification platform</div>
+//             <div>for those experiencing </div>
+//             <div>homelessness</div>
+//           </div>
+//           {/* image */}
+//           <div></div>
+//         </div>
+//         {/* right side */}
+//         <div className="tw-bg-white tw-rounded-l-lg">
+//           {/* inner login screen */}
+//           <div className="tw-text-center">
+//             <div className="tw-text-black">Login to your account</div>
+//             <div className="tw-text-white">Login</div>
+//             <div>
+//               <svg
+//                 width="326"
+//                 height="1"
+//                 viewBox="0 0 326 1"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <line
+//                   x1="1"
+//                   y1="0.5"
+//                   x2="325"
+//                   y2="0.500028"
+//                   stroke="#435673"
+//                   stroke-opacity="0.1"
+//                   stroke-linecap="round"
+//                 />
+//               </svg>
+//             </div>
+//             <div className="tw-flex tw-flex-row">
+//               <div className=" tw-text-blueGray">
+//                 Don't have an account yet?
+//               </div>
+//               <div className="tw-text-black">Sign up</div>
+//             </div>
+//             <div>
+//               <svg
+//                 width="326"
+//                 height="1"
+//                 viewBox="0 0 326 1"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <line
+//                   x1="1"
+//                   y1="0.5"
+//                   x2="325"
+//                   y2="0.500028"
+//                   stroke="#435673"
+//                   stroke-opacity="0.1"
+//                   stroke-linecap="round"
+//                 />
+//               </svg>
+//             </div>
+//             <div className="tw-text-primaryPurple tw-border-2 tw-border-primaryPurple">
+//               Sign up
+//             </div>
+//             <div className="tw-text-black">Looking for an Organization?</div>
+//             <div className="tw-text-primaryPurple">Click Here</div>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+// }
+
+// export default withAlert()(LoginPage);
+
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';

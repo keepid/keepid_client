@@ -1,21 +1,11 @@
 import React, { Component } from 'react';
 import { withAlert } from 'react-alert';
-import Image from 'react-bootstrap/Image';
-import Modal from 'react-bootstrap/Modal';
-import Row from 'react-bootstrap/Row';
-import { Helmet } from 'react-helmet';
-import { Link, Redirect } from 'react-router-dom';
-import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 
 import getServerURL from '../../serverOverride';
-import DocIcon from '../../static/images/doc-icon.png';
-import GenericProfilePicture from '../../static/images/generalprofilepic.png';
-import MenuDots from '../../static/images/menu-dots.png';
-import UploadIconBlue from '../../static/images/upload-blue.png';
-import UploadIcon from '../../static/images/upload-icon.png';
-import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { LoadingButton } from '../BaseComponents/Button';
+import Card from './Card';
 
 interface Props {
   username: string;
@@ -23,6 +13,7 @@ interface Props {
   organization: string;
   role: Role;
   alert: any;
+  // searchFunction: () => Promise<void>;
 }
 
 interface State {
@@ -65,6 +56,7 @@ class WorkerLanding extends Component<Props, State> {
       currentPage: 1,
       postsPerPage: 6,
       shouldFilterByAllClients: true,
+      dropdownVisible: false,
       // we should also pass in other state such as the admin information. we could also do a fetch call inside
     };
     this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
@@ -81,7 +73,7 @@ class WorkerLanding extends Component<Props, State> {
       this.handleClickAuthenticateClient.bind(this);
     this.handleClickClose = this.handleClickClose.bind(this);
     this.renderClients = this.renderClients.bind(this);
-    this.modalRender = this.modalRender.bind(this);
+    // this.modalRender = this.modalRender.bind(this);
   }
 
   componentDidMount() {
@@ -153,30 +145,6 @@ class WorkerLanding extends Component<Props, State> {
         }
       });
   }
-
-  /* handleClickUploadDocuments(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/upload-document',
-        clientCredentialsCorrect: true,
-      });
-    } */
-
-  /* handleClickViewDocuments(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/my-documents',
-        clientCredentialsCorrect: true,
-      });
-    } */
-
-  /* handleClickSendEmail(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/email',
-        showClientAuthModal: true,
-      });
-    } */
 
   handleClickSendApplication(event: any, client: any) {
     this.setState({
@@ -288,471 +256,284 @@ class WorkerLanding extends Component<Props, State> {
     const setPage = (pageNum) => {
       this.setState({ currentPage: pageNum });
     };
-
-    // const changeClientName = (clientFirstName, clientLastName) => `${clientFirstName}+${clientLastName}`;
-
-    const clientCards: React.ReactFragment[] = currentPosts.map((client, i) => (
-      <div
-        key={client.username}
-        className="card client-card mb-4 mr-4 flex-column"
-      >
-        <div className="dropdown lock-top-right">
-          <a href="#" id="imageDropdown" data-toggle="dropdown">
-            <img alt="menu" src={MenuDots} className="menu-height" />
-          </a>
-          <div className="dropdown-menu">
-            <Link
-              to={`/upload-document/${client.username}`}
-              className="dropdown-item primary-color"
-            >
-              <div style={{ fontWeight: 'bold' }}>
-                <img
-                  src={UploadIconBlue}
-                  style={{ height: 24 }}
-                  alt="upload icon"
-                />
-                {' Upload'}
-              </div>
-            </Link>
-            <Link
-              to={`/my-documents/${client.username}`}
-              className="dropdown-item"
-            >
-              <div className="view-docs-btn-text">
-                <img
-                  alt="doc icon"
-                  src={DocIcon}
-                  className="icon-height mx-1"
-                />
-                View Documents
-              </div>
-            </Link>
-
-            <Link
-              to={{
-                pathname: '/applications',
-                // State is stored in location prop
-                state: { clientUsername: client.username },
-              }}
-              className="dropdown-item"
-            >
-              <div className="view-docs-btn-text">
-
-                {/* Consider adding an application icon. */}
-                {/* <img
-                  alt="doc icon"
-                  src={DocIcon}
-                  className="icon-height mx-1"
-                /> */}
-
-                Fill Out Application
-              </div>
-            </Link>
-
-            {/* <button
-                type="button"
-                className="dropdown-item"
-                onClick={(event) =>
-                  this.handleClickSendApplication(event, client)
-                }
-              >
-                <div className="view-docs-btn-text">
-                  <img alt="doc icon" src={DocIcon} className="icon-height mr-1" />
-                  {' Complete Application'}
-                </div>
-              </button> */}
-            {/* <div className="dropdown-item">
-                <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
-                  <img src={TrashCan} className="icon-height"/>
-                  {" Delete Client"}
-              </div>
-              </div> */}
-          </div>
-        </div>
-        <Link to={`/profile/${client.username}`}>
-          <div className="card-body px-0 py-0 card-body-positioning">
-            <div className="d-flex flex-row mb-3">
-              {client.photo === null ? (
-                <Image
-                  alt="a blank profile"
-                  src={GenericProfilePicture}
-                  style={{ height: 56, width: 56 }}
-                  roundedCircle
-                />
-              ) : (
-                <div id="profilePhoto">
-                  <Image
-                    alt="a blank profile"
-                    src={client.photo}
-                    style={{ height: 56, width: 56 }}
-                    roundedCircle
-                  />
-                </div>
-              )}
-            </div>
-            <div className="d-flex flex-row mb-2">
-              <h5 className="card-title h4">
-                {client.firstName} {client.lastName}
-              </h5>
-            </div>
-            <div className="d-flex flex-row mb-2">
-              <h6 className="card-subtitle text-muted">{client.phone}</h6>
-            </div>
-            <div className="d-flex flex-row mb-3">
-              <h6 className="card-subtitle text-muted">
-                {'Birth Date: '}
-                {client.birthDate}
-              </h6>
-            </div>
-          </div>
-        </Link>
-        <div className="row lock-bottom-left">
-          <Link
-            to={`/upload-document/${client.username}`}
-            className="btn btn-primary mr-2 btn-sm mb-2"
-            style={{ height: 32 }}
-          >
-            <div style={{ fontWeight: 'bold' }}>
-              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" />
-              {' Upload'}
-            </div>
-          </Link>
-          <Link
-            to={`/my-documents/${client.username}`}
-            className="btn link-secondary btn-sm primary-color-border mb-2"
-            style={{ height: 32 }}
-          >
-            <div style={{ color: '#445feb', fontWeight: 'bold' }}>
-              View Documents
-            </div>
-          </Link>
-
-          <Link
-            to={{
-              pathname: '/applications',
-              // State is stored in location prop
-              state: { clientUsername: client.username },
-            }}
-            className="btn btn-primary mr-2 btn-sm"
-            style={{ height: 32 }}
-          >
-
-            <div className="font-weight-bold">
-              {/* <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" /> */}
-              Fill Out Application
-            </div>
-
-          </Link>
-
-          {/* <Link to={`/profile/${client.username}`}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm button-height"
-              >
-                View Profile
-              </button>
-            </Link> */}
-        </div>
-        {showClientAuthModal ? this.modalRender() : null}
-      </div>
-    ));
-
-    return clientCards;
   }
 
-  modalRender() {
-    const { showClientAuthModal } = this.state;
-    return (
-      <Modal key="authenticateAction" show={showClientAuthModal}>
-        <Modal.Header>
-          <Modal.Title>Authenticate Client Account Action</Modal.Title>
-        </Modal.Header>
+  // render() {
+  //   const { role } = this.props;
+  //   const {
+  //     redirectLink,
+  //     clientCredentialsCorrect,
+  //     clientUsername,
+  //     searchName,
+  //     showClients,
+  //   } = this.state;
 
-        <Modal.Body>
-          <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">Client Username</div>
-            <div className="col-6 card-text">
-              <input
-                type="text"
-                className="form-control form-purple"
-                id="authenticateForm"
-                readOnly
-                placeholder="Enter Username Here"
-                value={this.state.clientUsername}
-              />
-            </div>
-          </div>
-          <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">Client Password</div>
-            <div className="col-6 card-text">
-              <input
-                type="password"
-                className="form-control form-purple"
-                id="passwordVerification"
-                placeholder="Enter Password Here"
-                onChange={this.handleChangeClientPassword}
-                value={this.state.clientPassword}
-              />
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            data-dismiss="modal"
-            onClick={this.handleClickClose}
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={this.handleClickAuthenticateClient}
-          >
-            Submit
-          </button>
-        </Modal.Footer>
-      </Modal>
-    );
-  }
+  //   const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
+  //   const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
+  //   const currentPosts = this.state.clients.slice(
+  //     indexOfFirstPost,
+  //     indexOfLastPost,
+  //   );
+  //   const lastPage = Math.ceil(
+  //     this.state.clients.length / this.state.postsPerPage,
+  //   );
+
+  //   // Implement page numbers
+  //   const pageNumbers: number[] = [];
+
+  //   for (let i = 1; i <= lastPage; i += 1) {
+  //     pageNumbers.push(i);
+  //   }
+
+  //   // Set current page
+  //   const setPage = (pageNum) => {
+  //     this.setState({ currentPage: pageNum });
+  //   };
+
+  //   const paginationClassName = (pageNum) => {
+  //     if (pageNum === this.state.currentPage) {
+  //       if (pageNum === 1) {
+  //         return 'active-pagination-link-1';
+  //       }
+  //       if (pageNum === lastPage) {
+  //         return 'active-pagination-link-end';
+  //       }
+  //       return 'active-pagination-link';
+  //     }
+  //     if (pageNum === 1) {
+  //       return 'pagination-link-1';
+  //     }
+  //     if (pageNum === lastPage) {
+  //       return 'pagination-link-end';
+  //     }
+  //     return 'pagination-link';
+  //   };
+
+  handleDropdownClick = () => {
+    this.setState((prevState) => ({
+      dropdownVisible: !prevState.dropdownVisible,
+    }));
+  };
 
   render() {
-    const { role } = this.props;
-    const {
-      redirectLink,
-      clientCredentialsCorrect,
-      clientUsername,
-      searchName,
-      showClients,
-    } = this.state;
-
-    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-    const currentPosts = this.state.clients.slice(
-      indexOfFirstPost,
-      indexOfLastPost,
-    );
-    const lastPage = Math.ceil(
-      this.state.clients.length / this.state.postsPerPage,
-    );
-
-    // Implement page numbers
-    const pageNumbers: number[] = [];
-
-    for (let i = 1; i <= lastPage; i += 1) {
-      pageNumbers.push(i);
-    }
-
-    // Set current page
-    const setPage = (pageNum) => {
-      this.setState({ currentPage: pageNum });
-    };
-
-    const paginationClassName = (pageNum) => {
-      if (pageNum === this.state.currentPage) {
-        if (pageNum === 1) {
-          return 'active-pagination-link-1';
-        }
-        if (pageNum === lastPage) {
-          return 'active-pagination-link-end';
-        }
-        return 'active-pagination-link';
-      }
-      if (pageNum === 1) {
-        return 'pagination-link-1';
-      }
-      if (pageNum === lastPage) {
-        return 'pagination-link-end';
-      }
-      return 'pagination-link';
-    };
-
     return (
-      <div>
-        <Helmet>
-          <title>Home</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container mb-4">
-            <div className="d-flex">
-              <div className="d-flex flex-column">
-                <h1 className="display-5 pb-0">
-                  {this.state.shouldFilterByAllClients
-                    ? 'All Clients'
-                    : 'My Clients'}
-                </h1>
-              </div>
-              <div className="d-flex flex-row ml-auto">
-                {role === Role.Director || role === Role.Admin ? (
-                  <Link to="/person-signup/worker">
-                    <button type="button" className="btn btn-primary mr-2 mb-2">
-                      <div>Sign Up Worker</div>
-                    </button>
-                  </Link>
-                ) : (
-                  <div />
-                )}
-                <Link to="/person-signup/client">
-                  <button type="button" className="btn btn-primary mb-2">
-                    <div>Sign Up Client</div>
-                  </button>
-                </Link>
-              </div>
-            </div>
-            <div className="d-flex">
-              <form className="d-flex form-inline mr-3 justify-content-start flex-row">
-                <input
-                  className="form-control right-angle-right search-bar"
-                  type="text"
-                  onChange={this.handleChangeSearchName}
-                  value={this.state.searchName}
-                  placeholder="Search by name, phone number, email..."
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.showClientList();
-                      event.preventDefault();
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary right-angle-left"
-                  onClick={this.showClientList}
-                >
-                  <div style={{ fontWeight: 'bold' }}>Search</div>
-                </button>
-              </form>
-              <div className="d-flex ml-auto flex-column font-weight-bold">
-                Filters
-              </div>
-              <div className="d-flex ml-3 flex-column">
-                <div className="form-group form-check">
-                  <input
-                    checked={!!this.state.shouldFilterByAllClients}
-                    type="radio"
-                    className="form-check-input"
-                    id="showAllClients"
-                    onClick={this.handleToggleFilteredClients}
-                  />
-                  <label className="form-check-label" htmlFor="showAllClients">
-                    Show All Clients
-                  </label>
-                </div>
-                <div className="form-group form-check">
-                  <input
-                    checked={!this.state.shouldFilterByAllClients}
-                    type="radio"
-                    className="form-check-input"
-                    id="showMyAssignedClients"
-                    onClick={this.handleToggleFilteredClients}
-                  />
-                  <label
-                    className="form-check-label"
-                    htmlFor="showMyAssignedClients"
-                  >
-                    Show My Clients
-                  </label>
-                </div>
-              </div>
-            </div>
+      <div className="tw-bg-white">
+        <div className="tw-flex tw-flex-row tw-ml-24 tw-mt-8 tw-text-base">
+          <div className="tw-pr-2.5">Dashboard</div>
+          <div className="tw-flex tw-pr-2.5 tw-items-center tw-justify-center">
+            <svg
+              width="7"
+              height="13"
+              viewBox="0 0 7 13"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0.942943 12.1567L6.59961 6.50007L0.942943 0.843405L-0.000390053 1.78607L4.71428 6.50007L-0.000390053 11.2141L0.942943 12.1567Z"
+                fill="#212529"
+              />
+            </svg>
+          </div>
+          <div className="tw-bg-primaryLavender tw-px-2 tw-rounded-lg">
+            My Clients
+          </div>
+        </div>
+        <div className="tw-mt-10 tw-ml-36 tw-mb-10 tw-text-4xl tw-font-Raleway tw-font-semibold">
+          MyClients
+        </div>
+        <div className="tw-flex tw-flex-wrap tw-flex-row tw-ml-28 tw-mb-10 ">
+          <div className="">
+            <input
+              type="search"
+              placeholder="Search by name, email..."
+              className="tw-px-4 tw-py-2 tw-pr-20 tw-border tw-mr-2 tw-border-primaryPurple tw-rounded-lg"
+              aria-label="Search"
+              aria-describedby="button-search"
+            />
+
+            <button
+              type="button"
+              className="tw-mb-2 tw-mr-32 tw-border tw-border-primaryPurple tw-bg-primary tw-text-white tw-px-4 tw-py-2 tw-rounded-md hover:tw-bg-blue-500"
+              id="button-search"
+            >
+              Search
+            </button>
           </div>
 
-          {/* <button
-      <div>
-        <Helmet>
-          <title>Home</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container mb-4">
-            <h1 className="display-5 pb-0">My Clients</h1>
-            <div className="d-flex flex-row justify-content-between">
-              <form className="form-inline mr-3">
-                <input
-                  className="right-angle-right form-control"
-                  type="text"
-                  onChange={this.handleChangeSearchName}
-                  value={this.state.searchName}
-                  placeholder="Search by name, email..."
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.showClientList();
-                      event.preventDefault();
-                    }
-                  }}
-                />
-                <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
-                  <div>Search</div>
-                </button>
-              </form>
+          <div className="tw-h-10  tw-flex tw-mr-80 tw-flex-row tw-border tw-border-primaryPurple tw-text-primaryPurple tw-rounded-lg tw-py-2 tw-px-3">
+            <button
+              id="filters"
+              type="button"
+              className="tw-mb-2 tw-mr-2 tw-font-bold"
+              aria-haspopup="true"
+              onClick={() => toggleDropdown()}
+            >
+              Filters
+            </button>
+            <div id="filtersMenu" className="tw-hidden">
+              hi
+            </div>
 
-              {/* <button
-                className="btn btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#advancedSearch"
-                aria-expanded="false"
-                aria-controls="collapseExample"
+            <div className="tw-flex tw-justify-center tw-items-center">
+              <svg
+                width="10"
+                height="6"
+                viewBox="0 0 10 6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                Advanced Search
-                </button> */}
-
-          {/* <div className="collapse" id="advancedSearch">
-                <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
-                  <h5 className="card-title">Search on multiple fields</h5>
-                  <Select
-                    options={options}
-                    closeMenuOnSelect={false}
-                    components={animatedComponents}
-                    isMulti
-                  />
-                </div>
-              </div> */}
-          <div className="container">
-            {this.state.clients.length !== 0 ? (
-              <div className="container px-0">
-                <Row xs={1} md={3}>
-                  {this.renderClients()}
-                </Row>
-              </div>
-            ) : (
-              <div>
-                <h3 className="pt-4">
-                  No Clients! Click &apos;Sign up Client&apos; to get started!
-                </h3>
-                <img
-                  className="pt-4 visualization-svg"
-                  src={VisualizationSVG}
-                  alt="Search a client"
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M5 6L10 0H0L5 6Z"
+                  fill="#445FEB"
                 />
-              </div>
-            )}
-          </div>
-          <div className="container">
-            <div className="flex row justify-content-left align-items-center mt-2">
-              {this.state.clients.length !== 0 ? (
-                <div className="text-muted align-items-center mr-4">
-                  {this.state.clients.length} Results
-                </div>
-              ) : null}
-              {this.state.clients.length !== 0
-                ? pageNumbers.map((pageNum, index) => (
-                    <span
-                      className={paginationClassName(pageNum)}
-                      onClick={() => {
-                        setPage(pageNum);
-                      }}
-                    >
-                      {pageNum}
-                    </span>
-                ))
-                : null}
+              </svg>
             </div>
           </div>
+          <div className="tw-mt-2 tw-mb-2 tw-flex tw-flex-col">
+            <button
+              id="dropdown"
+              className="tw-flex tw-semibold tw-flex-row tw-border tw-border-primaryPurple tw-text-primaryPurple tw-rounded-lg tw-py-2 tw-px-3"
+              onClick={this.handleDropdownClick}
+            >
+              <div className="tw-w-36 tw-mr-5 tw-pr-1.5 tw-text-left tw-font-medium">
+                Select an action
+              </div>
+
+              <div className="tw-flex tw-pt-1 tw-justify-center tw-items-center">
+                {/* changes if dropdown clicked */}
+
+                {this.state.dropdownVisible ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 10L8 6L4 10"
+                      stroke="#445FEB"
+                      strokeWidth="1.33333"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 6L8 10L12 6"
+                      stroke="#445FEB"
+                      strokeWidth="1.33333"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
+            </button>
+
+            <div
+              className={
+                this.state.dropdownVisible ? ' ' : ' tw-hidden tw-absolute'
+              }
+            >
+              <div className="tw-mt-2 tw-py-1.5 tw-px-1.5 tw-flex tw-flex-col tw-bg-white tw-rounded-lg tw-border-2 tw-border-slate100">
+                <div className="tw-pl-4 tw-pr-2 tw-py-1.5 tw-flex tw-flex-row hover:tw-bg-primaryLavender hover:tw-rounded-lg ">
+                  <a href="/person-signup/client">
+                    <div className="tw-ml-4 tw-mr-2 tw-flex tw-justify-center tw-items-center">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M10.6668 14V12.6667C10.6668 11.9594 10.3859 11.2811 9.88578 10.781C9.38568 10.281 8.70741 10 8.00016 10H4.00016C3.29292 10 2.61464 10.281 2.11454 10.781C1.61445 11.2811 1.3335 11.9594 1.3335 12.6667V14"
+                          stroke="#212529"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6.00016 7.33333C7.47292 7.33333 8.66683 6.13943 8.66683 4.66667C8.66683 3.19391 7.47292 2 6.00016 2C4.5274 2 3.3335 3.19391 3.3335 4.66667C3.3335 6.13943 4.5274 7.33333 6.00016 7.33333Z"
+                          stroke="#212529"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M12.6665 5.33325V9.33325"
+                          stroke="#212529"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M14.6665 7.33325H10.6665"
+                          stroke="#212529"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div className="tw-font-bold tw-font-sans tw-text-black tw-mr-1">
+                      Sign up
+                    </div>
+                    <div className="tw-text-black">clients</div>
+                  </a>
+                </div>
+                <div className="tw-pl-4 tw-pr-2 tw-py-1.5 tw-flex tw-flex-row hover:tw-bg-primaryLavender hover:tw-rounded-lg">
+                  <div className="tw-ml-4 tw-mr-2 tw-flex tw-justify-center tw-items-center">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.3335 2.66675H2.66683C1.93045 2.66675 1.3335 3.2637 1.3335 4.00008V12.0001C1.3335 12.7365 1.93045 13.3334 2.66683 13.3334H13.3335C14.0699 13.3334 14.6668 12.7365 14.6668 12.0001V4.00008C14.6668 3.2637 14.0699 2.66675 13.3335 2.66675Z"
+                        stroke="#212529"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M14.6668 4.66675L8.68683 8.46675C8.48101 8.5957 8.24304 8.66409 8.00016 8.66409C7.75729 8.66409 7.51932 8.5957 7.3135 8.46675L1.3335 4.66675"
+                        stroke="#212529"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div className="tw-font-sans tw-text-slate700">
+                    Invite clients
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* creating grid of cards */}
+        <div className="tw-ml-20 tw-mr-20 tw-flex tw-flex-wrap tw-grid-cols-3 tw-gap-7">
+          {/* gap 7.5, creating card */}
+
+          {this.state.clients.map((client, index) => (
+            <div key={index}>
+              <Card client={client} />
+            </div>
+          ))}
         </div>
       </div>
     );
