@@ -248,9 +248,7 @@ class UploadDocs extends React.Component<Props, State> {
                   &quot;Continue&quot; button to submit.
                 </p>
                 <Container>
-                  {this.state.userRole === Role.Client &&
-                  pdfFiles &&
-                  pdfFiles.length > 0
+                  {pdfFiles && pdfFiles.length > 0
                     ? Array.from(pdfFiles).map((pdfFile, index) => (
                         <div className="container mb-3 card-alignment">
                           <Card style={{ width: '48rem' }}>
