@@ -7,7 +7,6 @@ import BaseCard, {
   CardSize,
 } from '../../components/BaseComponents/BaseCard';
 import tinkPNG from '../../static/images/homePage/googletink.png';
-import hipaaBadgePNG from '../../static/images/homePage/HIPAA_badge.png';
 import mozillaPNG from '../../static/images/homePage/mozilla_observatory.png';
 
 const EnsuringSecurityMessages = defineMessages({
@@ -17,7 +16,7 @@ const EnsuringSecurityMessages = defineMessages({
   },
   card1Header: {
     id: 'home.security.step-1-header',
-    defaultMessage: 'HIPAA Compliant',
+    defaultMessage: 'Completely Secure',
   },
   card1Detail: {
     id: 'home.security.step-1-detail',
@@ -63,29 +62,7 @@ function EnsuringSecurity() {
       </div>
       <div className="container my-5">
         <div className="row">
-          <div className="col-md-4">
-            <BaseCard
-              cardSize={CardSize.MEDIUM_VERTICAL}
-              cardTitle={intl.formatMessage(
-                EnsuringSecurityMessages.card1Header,
-              )}
-              cardText={intl.formatMessage(
-                EnsuringSecurityMessages.card1Detail,
-              )}
-              imageSrc={hipaaBadgePNG}
-              imageAlt="..."
-              imageLoc={CardImageLoc.TOP}
-              imageSize="50%"
-              renderAdditionalContent={() => (
-                <div>
-                  <a href="https://compliancy-group.com/" className="card-link">
-                    Learn More
-                  </a>
-                </div>
-              )}
-            />
-          </div>
-          <div className="col-md-4">
+          <div className="col-md-6">
             <BaseCard
               cardSize={CardSize.MEDIUM_VERTICAL}
               cardTitle={intl.formatMessage(
@@ -110,7 +87,7 @@ function EnsuringSecurity() {
               )}
             />
           </div>
-          <div className="col-md-4">
+          <div className="col-md-6">
             <BaseCard
               cardSize={CardSize.MEDIUM_VERTICAL}
               cardTitle={intl.formatMessage(

@@ -14,7 +14,7 @@ const messages = defineMessages({
   solutionDescription: {
     id: 'home.hero-solution-description',
     defaultMessage:
-      'We provide a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, designed for those with low technological literacy.',
+      'We provide a guided application process integrated with non-profit networks and secure ID storage, designed for those with low technological literacy.',
   },
 });
 
