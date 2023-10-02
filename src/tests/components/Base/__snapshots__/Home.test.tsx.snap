@@ -91,7 +91,7 @@ exports[`Home page snapshot test 1`] = `
           <h3
             className="hero-subtext text-black font-weight-medium pb-3"
           >
-            We provide a guided application process integrated with non-profit networks and HIPAA-compliant ID storage, designed for those with low technological literacy.
+            We provide a guided application process integrated with non-profit networks and secure ID storage, designed for those with low technological literacy.
           </h3>
           <a
             href="#info"
@@ -363,7 +363,7 @@ exports[`Home page snapshot test 1`] = `
                     className="card-title h5"
                   >
                     <h3>
-                      HIPAA Compliant
+                      Completely Secure
                     </h3>
                   </div>
                   <p
