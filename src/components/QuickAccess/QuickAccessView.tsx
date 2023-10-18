@@ -112,12 +112,12 @@ export function QuickAccessDocumentViewer({
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: doc.id,
-        pdfType: PDFType.IDENTIFICATION_DOCUMENT,
+        pdfType: PDFType.CLIENT_UPLOADED_DOCUMENT,
       }),
     })
       .then((response) => response.blob())

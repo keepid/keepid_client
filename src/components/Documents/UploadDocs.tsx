@@ -27,6 +27,7 @@ interface Props {
   alert: any;
   userRole: Role;
   username: any;
+  admin: any;
 }
 
 interface State {
@@ -75,7 +76,7 @@ class UploadDocs extends React.Component<Props, State> {
       pdfFiles: undefined,
       documentTypeList: [],
       currentStep: 0,
-      userRole: this.props.userRole,
+      // userRole: this.props.userRole,
       loading: false,
       clientUsername: this.props.username,
     };
@@ -109,38 +110,65 @@ class UploadDocs extends React.Component<Props, State> {
         const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('idCategory', documentType);
-        if (this.state.userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
-        }
-        if (
-          this.state.userRole === Role.Director ||
-          this.state.userRole === Role.Admin ||
-          this.state.userRole === Role.Worker
-        ) {
-          formData.append('pdfType', PDFType.BLANK_FORM);
-        }
-        formData.append('targetUser', clientUsername);
-        fetch(`${getServerURL()}/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((responseJSON) => {
-            const { status } = responseJSON;
-            if (status === 'SUCCESS') {
-              this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
-            } else {
-              alert(`Failed to upload ${pdfFile.name}`);
-            }
+        // if (this.state.userRole === Role.Client) {
+        //   formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
+        // }
+        // if (
+        //   this.state.userRole === Role.Director ||
+        //   this.state.userRole === Role.Admin ||
+        //   this.state.userRole === Role.Worker
+        // ) {
+        //   formData.append('pdfType', PDFType.BLANK_FORM);
+        // }
+        if (this.props.admin === 1) {
+          formData.append('pdfType', PDFType.BLANK_APPLICATION);
+          fetch(`${getServerURL()}/upload-annotated-pdf-2`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
           })
-          .finally(() => {
-            this.setState((prevState) => ({
-              loading: false,
-              currentStep: prevStep + 1,
-            }));
+            .then((response) => response.json())
+            .then((responseJSON) => {
+              const { status } = responseJSON;
+              if (status === 'SUCCESS') {
+                this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
+              } else {
+                alert(`Failed to upload ${pdfFile.name}`);
+              }
+            })
+            .finally(() => {
+              this.setState((prevState) => ({
+                loading: false,
+                currentStep: prevStep + 1,
+              }));
             // allFiles.forEach((f) => f.remove());
-          });
+            });
+        } else {
+          formData.append('pdfType', PDFType.CLIENT_UPLOADED_DOCUMENT);
+
+          formData.append('targetUser', clientUsername);
+          fetch(`${getServerURL()}/upload-pdf-2`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((responseJSON) => {
+              const { status } = responseJSON;
+              if (status === 'SUCCESS') {
+                this.props.alert.show(`Successfully uploaded ${pdfFile.name}`);
+              } else {
+                alert(`Failed to upload ${pdfFile.name}`);
+              }
+            })
+            .finally(() => {
+              this.setState((prevState) => ({
+                loading: false,
+                currentStep: prevStep + 1,
+              }));
+            // allFiles.forEach((f) => f.remove());
+            });
+        }
       }
     }
   }
@@ -214,6 +242,7 @@ class UploadDocs extends React.Component<Props, State> {
     const { username } = this.props;
 
     const { pdfFiles, documentTypeList, currentStep } = this.state;
+    console.log(this.state.clientUsername);
 
     return (
       <div className="container">
@@ -226,6 +255,8 @@ class UploadDocs extends React.Component<Props, State> {
           <div className="card-alignment mb-3 pt-5">
             {currentStep === 0 && (
               <div>
+                <div>{this.props.username}</div>
+                <div>{this.props.admin}</div>
                 <p className="lead pt-3">
                   Select a PDF file to upload. The name of the PDF will appear
                   when loaded. After confirming that you have chosen the correct

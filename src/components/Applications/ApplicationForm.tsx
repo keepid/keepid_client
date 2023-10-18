@@ -73,7 +73,7 @@ class ApplicationForm extends Component<Props, State> {
   componentDidMount() {
     const { applicationId, clientUsername } = this.props;
     const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-application-questions`, {
+    fetch(`${getServerURL()}/get-questions-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -405,7 +405,7 @@ class ApplicationForm extends Component<Props, State> {
 
     this.setState({ buttonState: 'running' });
 
-    fetch(`${getServerURL()}/fill-application`, {
+    fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -453,7 +453,7 @@ class ApplicationForm extends Component<Props, State> {
       formData.append('signature', signature);
       formData.append('pdfType', PDFType.COMPLETED_APPLICATION);
       formData.append('clientUsername', clientUsername);
-      fetch(`${getServerURL()}/upload-signed-pdf`, {
+      fetch(`${getServerURL()}/upload-signed-pdf-2`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

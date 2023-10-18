@@ -9,7 +9,7 @@ export function getConfiguredDocumentForCategory(
 }
 
 export function fetchDocuments(): Promise<QuickAccessFile[]> {
-  return fetch(`${getServerURL()}/get-documents`, {
+  return fetch(`${getServerURL()}/filter-pdf-2`, {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify({ pdfType: PDFType.IDENTIFICATION_DOCUMENT }),

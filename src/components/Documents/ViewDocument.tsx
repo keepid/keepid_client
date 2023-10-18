@@ -34,14 +34,14 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      pdfType = PDFType.ANNOTATED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
-
-    fetch(`${getServerURL()}/download`, {
+    console.log(targetUser);
+    fetch(`${getServerURL()}/download-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -149,9 +149,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
                 <div className="row justify-content-end">
                   <h6>Uploaded on: {documentDate}</h6>
                 </div>
-                <div className="row justify-content-end">
+                {/* <div className="row justify-content-end">
                   <h6>Uploaded by: {documentUploader}</h6>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

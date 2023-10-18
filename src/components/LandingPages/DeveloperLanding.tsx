@@ -133,7 +133,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
   getDocuments() {
     const { searchName } = this.state;
-    fetch(`${getServerURL()}/get-documents `, {
+    fetch(`${getServerURL()}/filter-pdf-2 `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -176,7 +176,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     formData.append('file', pdfFile, pdfFile.name);
     formData.append('fileId', this.state.documents[rowIndex].id);
 
-    fetch(`${getServerURL()}/upload-annotated`, {
+    fetch(`${getServerURL()}/upload-annotated-pdf`, {
       method: 'POST',
       credentials: 'include',
       body: formData,
@@ -223,14 +223,14 @@ class DeveloperLanding extends Component<Props, State, {}> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.BLANK_FORM;
+      pdfType = PDFType.BLANK_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
