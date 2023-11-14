@@ -80,14 +80,22 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
     const today = new Date();
     const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
-    const description = `\nUser Role: ${userRole}\n Target User: ${targetUser}\n Document Name: ${documentName}\n Document ID: ${documentId}\n DocumentDate: ${documentDate}\n DocumentUploader: ${documentUploader}\n Submission Date: ${date}`;
+    const description = `
+      User Role: ${userRole}
+      Target User: ${targetUser}
+      Document Name: ${documentName}
+      Document ID: ${documentId}
+      DocumentDate: ${documentDate}
+      DocumentUploader: ${documentUploader}
+      Submission Date: ${date}`;
 
     try {
-      const response = await fetch(`${getServerURL()}/submit-issue`, {
+      const response = await fetch(`${getServerURL()}/mail-file`, {
         method: 'POST',
         body: JSON.stringify({
           email: 'foo@email.com',
           title: 'Mail Submission',
+          fileId: documentId,
           description,
         }),
       });
