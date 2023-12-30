@@ -219,7 +219,6 @@ class App extends React.Component<{}, State, {}> {
                 setAutoLogout={this.setAutoLogout}
               />
             ) : null}
-            <div> HElLLLLOOOO {this.state.username}, from {this.state.organization}</div>
             <Switch>
               <Route exact path="/" render={() => <Redirect to="/home" />} />
               <Route path="/our-team">
