@@ -5,9 +5,9 @@ import { useHistory } from 'react-router-dom';
 import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 60 * 50; // 50 minutes
-const timeFromWarnToLogout: number = 1000 * 60 * 10; // 10 minutes
-const timeBeforeConsideredSleep: number = 1000 * 60 * 5; // 5 minutes
+const timeUntilWarn: number = 1000 * 60 * 0.5; // 50 minutes
+const timeFromWarnToLogout: number = 1000 * 60 * 1; // 10 minutes
+const timeBeforeConsideredSleep: number = 1000 * 60 * 0.1; // 5 minutes
 
 interface Props {
   logOut: () => void;
@@ -52,6 +52,7 @@ function AutoLogout(props: Props): React.ReactElement {
   };
 
   useEffect(() => {
+    console.log('AutoLogout rendered');
     window.addEventListener('mousemove', resetIdleTimer);
     window.addEventListener('mousedown', resetIdleTimer);
     window.addEventListener('keypress', resetIdleTimer);
