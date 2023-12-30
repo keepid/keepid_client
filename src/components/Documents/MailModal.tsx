@@ -1,15 +1,48 @@
 import { Dialog } from '@headlessui/react';
-import React, { MouseEvent, useState } from 'react';
+import React, { useEffect } from 'react';
 
+import getServerURL from '../../serverOverride';
 import { LoadingButton } from '../BaseComponents/Button';
 
 interface Props{
+    alert: any;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
     mailForm: () => Promise<void>;
+    setPrice: (value: string) => void;
+    setAddress: (value: string) => void;
+    setReturnAddress: (value: string) => void;
+    targetUser: string;
+    documentName: string;
 }
 
-export const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }) => (
+export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mailForm, setPrice, setAddress, setReturnAddress, targetUser, documentName }) =>
+//   useEffect(() => {
+//     (async () => {
+//       try {
+//         const response = await fetch(`${getServerURL()}/getPriceAddress`, {
+//           method: 'GET',
+//           body: JSON.stringify({
+//             user: targetUser,
+//             organization: 'foo', // need context elements to find the organization id
+//             applicationType: documentName,
+//           }),
+//         });
+
+//         const { status, price, mailAddress, returnAddress } = await response.json();
+
+//         if (status === 'SUCCESS') {
+//           setPrice(price);
+//           setAddress(mailAddress);
+//           setReturnAddress(returnAddress);
+//         }
+//       } catch (err) {
+//         alert.show('Failed to retrieve Address and Price. Please try again.');
+//       }
+//     });
+//   });
+
+  (
         <div>
             <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
 
@@ -30,8 +63,7 @@ export const MailModal: React.FC<Props> = ({ isVisible, setIsVisible, mailForm }
                 </div>
             </Dialog>
         </div>
-);
-
+  );
 interface ConfirmationProps{
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;

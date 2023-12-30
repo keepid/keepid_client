@@ -1,6 +1,9 @@
+import { privateDecrypt } from 'crypto';
+import { address } from 'faker';
 import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
+import { setConstantValue } from 'typescript';
 
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
@@ -25,6 +28,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
+  const [price, setPrice] = useState('');
+  const [address, setAddress] = useState('');
+  const [returnAddress, setReturnAddress] = useState('');
 
   useEffect(() => {
     let pdfType;
@@ -76,6 +82,10 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
     return `/my-documents/${targetUser}`;
   };
 
+  const inputPriceAddress = async () => {
+    setMailDialogIsOpen(true);
+  };
+
   const mailForm = async () => {
     const today = new Date();
     const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
@@ -96,6 +106,8 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
           email: 'foo@email.com',
           title: 'Mail Submission',
           fileId: documentId,
+          price: { price },
+          address: { address },
           description,
         }),
       });
@@ -169,7 +181,17 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
-      <MailModal isVisible={mailDialogIsOpen} setIsVisible={setMailDialogIsOpen} mailForm={mailForm} />
+      <MailModal
+        alert={alert}
+        isVisible={mailDialogIsOpen}
+        setIsVisible={setMailDialogIsOpen}
+        mailForm={mailForm}
+        setAddress={setAddress}
+        setPrice={setPrice}
+        setReturnAddress={setReturnAddress}
+        targetUser={targetUser}
+        documentName={documentName}
+      />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
 
     </div>

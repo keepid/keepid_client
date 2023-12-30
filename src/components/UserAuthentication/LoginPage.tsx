@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useContext } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';
 import ReCAPTCHA from 'react-google-recaptcha';
