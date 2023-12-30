@@ -2,7 +2,7 @@ import './static/styles/App.scss';
 import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
 
-import React from 'react';
+import React, { createContext } from 'react';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 import {
@@ -44,6 +44,7 @@ import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+// import { Context } from 'vm';
 
 window.onload = () => {
   ReactGA.initialize('G-Q79GHZ23KS');
@@ -57,6 +58,15 @@ interface State {
   organization: string;
   autoLogout: boolean;
 }
+
+interface ContextInterface {
+  username: string;
+  organization: string;
+}
+export const UserContext = React.createContext<ContextInterface>({
+  username: '',
+  organization: '',
+});
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -187,6 +197,7 @@ class App extends React.Component<{}, State, {}> {
     const { role, username, name, organization, autoLogout } = this.state;
     return (
       <Router>
+        <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>
         <div className="App">
           <div className="app">
             <Helmet>
@@ -208,6 +219,7 @@ class App extends React.Component<{}, State, {}> {
                 setAutoLogout={this.setAutoLogout}
               />
             ) : null}
+            <div> HElLLLLOOOO {this.state.username}, from {this.state.organization}</div>
             <Switch>
               <Route exact path="/" render={() => <Redirect to="/home" />} />
               <Route path="/our-team">
@@ -495,6 +507,7 @@ class App extends React.Component<{}, State, {}> {
           </div>
           <Footer />
         </div>
+        </UserContext.Provider>
       </Router>
     );
   }
