@@ -1,8 +1,10 @@
 import { Dialog } from '@headlessui/react';
-import React, { useEffect } from 'react';
+import { stringify } from 'querystring';
+import React, { useEffect, useState } from 'react';
 
 import getServerURL from '../../serverOverride';
 import { LoadingButton } from '../BaseComponents/Button';
+// import {UserContext} from '../../App';
 
 interface Props{
     alert: any;
@@ -12,37 +14,71 @@ interface Props{
     setPrice: (value: string) => void;
     setAddress: (value: string) => void;
     setReturnAddress: (value: string) => void;
-    targetUser: string;
     documentName: string;
+    price: string;
+    address: string;
+    returnAddress: string;
 }
 
-export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mailForm, setPrice, setAddress, setReturnAddress, targetUser, documentName }) =>
-//   useEffect(() => {
-//     (async () => {
-//       try {
-//         const response = await fetch(`${getServerURL()}/getPriceAddress`, {
-//           method: 'GET',
-//           body: JSON.stringify({
-//             user: targetUser,
-//             organization: 'foo', // need context elements to find the organization id
-//             applicationType: documentName,
-//           }),
-//         });
+export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mailForm, setPrice, setAddress, setReturnAddress, documentName, price, address, returnAddress }) => {
+  // const userInformation = useContext(UserContext); Can use this when org-context is pulled.
+  const userInformation = {
+    username: 'foo',
+    organization: 'bar',
+  };
 
-//         const { status, price, mailAddress, returnAddress } = await response.json();
+  const [editableAddress, setEditableAddress] = useState(false);
+  const [editableReturnAddress, setEditableReturnAddress] = useState(false);
+  const [localAddress, setLocalAddress] = useState(address);
+  const [localReturnAddress, setLocalReturnAddress] = useState(returnAddress);
+  const [localPrice, setLocalPrice] = useState(price);
 
-//         if (status === 'SUCCESS') {
-//           setPrice(price);
-//           setAddress(mailAddress);
-//           setReturnAddress(returnAddress);
-//         }
-//       } catch (err) {
-//         alert.show('Failed to retrieve Address and Price. Please try again.');
-//       }
-//     });
-//   });
+  const handleAddressChange = (e) => {
+    setLocalAddress(e.target.value);
+  };
 
-  (
+  const handleReturnAddressChange = (e) => {
+    setLocalReturnAddress(e.target.value);
+  };
+
+  const handleSubmit = async () => {
+    // Update the parent component's state
+    setAddress(localAddress);
+    setReturnAddress(localReturnAddress);
+    setIsVisible(false); // Close the modal after submission (optional)
+    mailForm();
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${getServerURL()}/get-mail-info`, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userInformation.username,
+            organization: userInformation.organization,
+            applicationType: documentName,
+          }),
+        });
+
+        const { status, price, mailAddress, returnAddress } = await response.json();
+
+        if (status === 'SUCCESS') {
+          setPrice(price); // Assuming you handle this price state in a parent component
+          setLocalPrice(price);
+          setLocalAddress(mailAddress); // Set local state
+          setLocalReturnAddress(returnAddress); // Set local state
+        }
+      } catch (err) {
+        console.log(err);
+        alert.show('Failed to retrieve Address and Price. Please try again.');
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
         <div>
             <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
 
@@ -55,15 +91,51 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
                 <p className="tw-p-2 tw-text-left tw-font-body tw-text-sm">
                     Agreeing to this action will send the application to Team Keep to print and directly mail to the corresponding agency. Your status will be notified through email.
                 </p>
+
+                               {/* Price - Not Editable */}
+                               <div className="tw-flex tw-justify-between tw-items-center">
+                    <label>Price</label>
+                    <span>{localPrice}</span>
+                               </div>
+
+                {/* Address - Editable */}
+                <div className="tw-flex tw-justify-between tw-items-center">
+                    <label>Address</label>
+                    {editableAddress ? (
+                        <input type="text" defaultValue={address} onChange={handleAddressChange} />
+                    ) : (
+                        <span>{localAddress}</span>
+                    )}
+                    <button type="button" onClick={() => setEditableAddress(!editableAddress)}>
+                        edit
+                    </button>
+                </div>
+
+                {/* Return Address - Editable */}
+                <div className="tw-flex tw-justify-between tw-items-center">
+                    <label>Return Address</label>
+                    {editableReturnAddress ? (
+                        <input type="text" defaultValue={returnAddress} onChange={handleReturnAddressChange} />
+                    ) : (
+                        <span>{localReturnAddress}</span>
+                    )}
+                    <button type="button" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
+                        edit
+                    </button>
+                </div>
+
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                    <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
+                    <LoadingButton onClick={handleSubmit}>Yes, mail </LoadingButton>
                     <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                 </div>
+                <div />
                 </Dialog.Panel>
                 </div>
             </Dialog>
         </div>
   );
+};
+
 interface ConfirmationProps{
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;

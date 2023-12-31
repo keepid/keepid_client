@@ -1,6 +1,6 @@
 import { privateDecrypt } from 'crypto';
 import { address } from 'faker';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
 import { setConstantValue } from 'typescript';
@@ -97,6 +97,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       Document ID: ${documentId}
       DocumentDate: ${documentDate}
       DocumentUploader: ${documentUploader}
+      price: ${price}
+      mailAddress: ${address}
+      returnAddress: ${returnAddress}
       Submission Date: ${date}`;
 
     try {
@@ -106,8 +109,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
           email: 'foo@email.com',
           title: 'Mail Submission',
           fileId: documentId,
-          price: { price },
-          address: { address },
+          price,
+          mailAddress: address,
+          returnAddress,
           description,
         }),
       });
@@ -189,8 +193,10 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
         setAddress={setAddress}
         setPrice={setPrice}
         setReturnAddress={setReturnAddress}
-        targetUser={targetUser}
         documentName={documentName}
+        price={price}
+        address={address}
+        returnAddress={returnAddress}
       />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
 
