@@ -28,9 +28,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
-  const [price, setPrice] = useState('');
-  const [address, setAddress] = useState('');
-  const [returnAddress, setReturnAddress] = useState('');
 
   useEffect(() => {
     let pdfType;
@@ -80,56 +77,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       return '/my-documents';
     }
     return `/my-documents/${targetUser}`;
-  };
-
-  const inputPriceAddress = async () => {
-    setMailDialogIsOpen(true);
-  };
-
-  const mailForm = async () => {
-    const today = new Date();
-    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
-
-    const description = `
-      User Role: ${userRole}
-      Target User: ${targetUser}
-      Document Name: ${documentName}
-      Document ID: ${documentId}
-      DocumentDate: ${documentDate}
-      DocumentUploader: ${documentUploader}
-      price: ${price}
-      mailAddress: ${address}
-      returnAddress: ${returnAddress}
-      Submission Date: ${date}`;
-
-    try {
-      const response = await fetch(`${getServerURL()}/mail-file`, {
-        method: 'POST',
-        body: JSON.stringify({
-          email: 'foo@email.com',
-          title: 'Mail Submission',
-          fileId: documentId,
-          price,
-          mailAddress: address,
-          returnAddress,
-          description,
-        }),
-      });
-
-      const responseJSON = await response.json();
-      const { status } = responseJSON;
-
-      if (status === 'SUCCESS') {
-        setMailDialogIsOpen(false);
-        setShowMailSuccess(true);
-      } else {
-        setMailDialogIsOpen(false);
-        alert.show('Failed to submit. Please try another time.');
-      }
-    } catch (error) {
-      setMailDialogIsOpen(false);
-      alert.show('Failed to submit. Please try again.');
-    }
   };
 
   let fileName = '';
@@ -189,14 +136,14 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
         alert={alert}
         isVisible={mailDialogIsOpen}
         setIsVisible={setMailDialogIsOpen}
-        mailForm={mailForm}
-        setAddress={setAddress}
-        setPrice={setPrice}
-        setReturnAddress={setReturnAddress}
+        showMailSuccess={showMailSuccess}
+        setShowMailSuccess={setShowMailSuccess}
+        userRole={userRole}
+        targetUser={targetUser}
+        documentId={documentId}
+        documentUploader={documentUploader}
+        documentDate={documentDate}
         documentName={documentName}
-        price={price}
-        address={address}
-        returnAddress={returnAddress}
       />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
 

@@ -10,17 +10,29 @@ interface Props{
     alert: any;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
-    mailForm: () => Promise<void>;
-    setPrice: (value: string) => void;
-    setAddress: (value: string) => void;
-    setReturnAddress: (value: string) => void;
+    showMailSuccess: boolean;
+    setShowMailSuccess: (value: boolean) => void;
+    userRole: string;
+    documentId: string;
+    targetUser: string;
+    documentDate: string;
+    documentUploader: string;
     documentName: string;
-    price: string;
-    address: string;
-    returnAddress: string;
 }
 
-export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mailForm, setPrice, setAddress, setReturnAddress, documentName, price, address, returnAddress }) => {
+export const MailModal: React.FC<Props> = ({
+  alert,
+  isVisible,
+  setIsVisible,
+  showMailSuccess,
+  setShowMailSuccess,
+  userRole,
+  targetUser,
+  documentId,
+  documentDate,
+  documentUploader,
+  documentName,
+}) => {
   // const userInformation = useContext(UserContext); Can use this when org-context is pulled.
   const userInformation = {
     username: 'foo',
@@ -29,25 +41,9 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
 
   const [editableAddress, setEditableAddress] = useState(false);
   const [editableReturnAddress, setEditableReturnAddress] = useState(false);
-  const [localAddress, setLocalAddress] = useState(address);
-  const [localReturnAddress, setLocalReturnAddress] = useState(returnAddress);
-  const [localPrice, setLocalPrice] = useState(price);
-
-  const handleAddressChange = (e) => {
-    setLocalAddress(e.target.value);
-  };
-
-  const handleReturnAddressChange = (e) => {
-    setLocalReturnAddress(e.target.value);
-  };
-
-  const handleSubmit = async () => {
-    // Update the parent component's state
-    setAddress(localAddress);
-    setReturnAddress(localReturnAddress);
-    setIsVisible(false); // Close the modal after submission (optional)
-    mailForm();
-  };
+  const [address, setAddress] = useState('');
+  const [returnAddress, setReturnAddress] = useState('');
+  const [price, setPrice] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,18 +61,76 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
 
         if (status === 'SUCCESS') {
           setPrice(price); // Assuming you handle this price state in a parent component
-          setLocalPrice(price);
-          setLocalAddress(mailAddress); // Set local state
-          setLocalReturnAddress(returnAddress); // Set local state
+          setAddress(mailAddress); // Set local state
+          setReturnAddress(returnAddress); // Set local state
         }
       } catch (err) {
         console.log(err);
         alert.show('Failed to retrieve Address and Price. Please try again.');
       }
     };
-
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Code to run when `address` changes
+    console.log('Address updated:', address);
+
+    // You can also call any function here that needs to run after `address` is updated
+  }, [address]);
+
+  useEffect(() => {
+    // Code to run when `returnAddress` changes
+    console.log('Return Address updated:', returnAddress);
+
+    // Similarly, call any function here that needs to run after `returnAddress` is updated
+  }, [returnAddress]);
+
+  const mailForm = async () => {
+    const today = new Date();
+    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+
+    const description = `
+      User Role: ${userRole}
+      Target User: ${targetUser}
+      Document Name: ${documentName}
+      Document ID: ${documentId}
+      DocumentDate: ${documentDate}
+      DocumentUploader: ${documentUploader}
+      price: ${price}
+      mailAddress: ${address}
+      returnAddress: ${returnAddress}
+      Submission Date: ${date}`;
+
+    try {
+      const response = await fetch(`${getServerURL()}/mail-file`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'foo@email.com',
+          title: 'Mail Submission',
+          fileId: documentId,
+          price,
+          mailAddress: address,
+          returnAddress,
+          description,
+        }),
+      });
+
+      const responseJSON = await response.json();
+      const { status } = responseJSON;
+
+      if (status === 'SUCCESS') {
+        setIsVisible(false);
+        setShowMailSuccess(true);
+      } else {
+        setIsVisible(false);
+        alert.show('Failed to submit. Please try another time.');
+      }
+    } catch (error) {
+      setIsVisible(false);
+      alert.show('Failed to submit. Please try again.');
+    }
+  };
 
   return (
         <div>
@@ -95,16 +149,20 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
                                {/* Price - Not Editable */}
                                <div className="tw-flex tw-justify-between tw-items-center">
                     <label>Price</label>
-                    <span>{localPrice}</span>
+                    <span>{price}</span>
                                </div>
 
                 {/* Address - Editable */}
                 <div className="tw-flex tw-justify-between tw-items-center">
                     <label>Address</label>
                     {editableAddress ? (
-                        <input type="text" defaultValue={address} onChange={handleAddressChange} />
+                        <input
+                          type="text"
+                          value={address}
+                          onChange={(event) => setAddress(event.target.value)}
+                        />
                     ) : (
-                        <span>{localAddress}</span>
+                        <span>{address}</span>
                     )}
                     <button type="button" onClick={() => setEditableAddress(!editableAddress)}>
                         edit
@@ -115,9 +173,13 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
                 <div className="tw-flex tw-justify-between tw-items-center">
                     <label>Return Address</label>
                     {editableReturnAddress ? (
-                        <input type="text" defaultValue={returnAddress} onChange={handleReturnAddressChange} />
+                        <input
+                          type="text"
+                          value={returnAddress}
+                          onChange={(event) => setReturnAddress(event.target.value)}
+                        />
                     ) : (
-                        <span>{localReturnAddress}</span>
+                        <span>{returnAddress}</span>
                     )}
                     <button type="button" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
                         edit
@@ -125,7 +187,7 @@ export const MailModal: React.FC<Props> = ({ alert, isVisible, setIsVisible, mai
                 </div>
 
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                    <LoadingButton onClick={handleSubmit}>Yes, mail </LoadingButton>
+                    <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
                     <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                 </div>
                 <div />
