@@ -1,0 +1,10 @@
+diff a/src/App.tsx b/src/App.tsx	(rejected hunks)
+@@ -5 +5 @@ import './static/styles/BaseCard.scss';
+-import React, {createContext} from 'react';
++import React, { createContext } from 'react';
+@@ -69 +69 @@ export const UserContext = React.createContext<ContextInterface>({
+-})
++});
+@@ -200 +200 @@ class App extends React.Component<{}, State, {}> {
+-        <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization}}>
++        <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>

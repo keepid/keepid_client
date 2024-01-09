@@ -315,79 +315,7 @@ exports[`Home page snapshot test 1`] = `
         className="row"
       >
         <div
-          className="col-md-4"
-        >
-          <div
-            className="ml-1 mr-1 mt-2 mb-2"
-            onMouseEnter={[Function]}
-            onMouseLeave={[Function]}
-          >
-            <div
-              className="border-0 shadow card"
-              style={
-                Object {
-                  "borderRadius": 20,
-                  "height": "485px",
-                  "maxWidth": "325px",
-                  "width": "auto",
-                }
-              }
-            >
-              <div
-                className="p-0 d-flex flex-column align-items-start card-body"
-                style={
-                  Object {
-                    "height": "100%",
-                  }
-                }
-              >
-                <img
-                  alt="..."
-                  className=""
-                  src="HIPAA_badge.png"
-                  style={
-                    Object {
-                      "borderTopLeftRadius": 20,
-                      "borderTopRightRadius": 20,
-                      "height": "50%",
-                      "maxWidth": "100%",
-                      "objectFit": "cover",
-                      "overflow": "hidden",
-                    }
-                  }
-                />
-                <div
-                  className="p-4"
-                >
-                  <div
-                    className="card-title h5"
-                  >
-                    <h3>
-                      Completely Secure
-                    </h3>
-                  </div>
-                  <p
-                    className="card-text"
-                  >
-                    Team Keep members are certified and follow "national standards for 
-      electronic health care transactions and code sets, 
-      unique health identifiers, and security."
-                  </p>
-                  <div>
-                    <a
-                      className="card-link"
-                      href="https://compliancy-group.com/"
-                    >
-                      Learn More
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          className="col-md-4"
+          className="col-md-6"
         >
           <div
             className="ml-1 mr-1 mt-2 mb-2"
@@ -459,7 +387,7 @@ exports[`Home page snapshot test 1`] = `
           </div>
         </div>
         <div
-          className="col-md-4"
+          className="col-md-6"
         >
           <div
             className="ml-1 mr-1 mt-2 mb-2"
