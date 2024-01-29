@@ -86,6 +86,7 @@ class ApplicationForm extends Component<Props, State> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const { fields, title, description } = responseJSON;
+          console.log(responseJSON);
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
@@ -404,7 +405,9 @@ class ApplicationForm extends Component<Props, State> {
     }
 
     this.setState({ buttonState: 'running' });
-
+    console.log(applicationId);
+    console.log(clientUsername);
+    console.log(formAnswers);
     fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
@@ -571,25 +574,25 @@ class ApplicationForm extends Component<Props, State> {
                         // TODO: Make the readOnly fields show and be formatted properly
                         return <div />;
                       }
-                      if (entry.fieldType === 'TextField') {
+                      if (entry.fieldType === 'textField') {
                         return this.getTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'MultilineTextField') {
+                      if (entry.fieldType === 'multilineTextField') {
                         return this.getMultilineTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'CheckBox') {
+                      if (entry.fieldType === 'checkBox') {
                         return this.getCheckBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'RadioButton') {
+                      if (entry.fieldType === 'radioButton') {
                         return this.getRadioButton(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ComboBox') {
+                      if (entry.fieldType === 'comboBox') {
                         return this.getComboBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ListBox') {
+                      if (entry.fieldType === 'listBox') {
                         return this.getListBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'DateField') {
+                      if (entry.fieldType === 'dateField') {
                         return this.getDateField(entry, formAnswers);
                       }
                       return <div />;

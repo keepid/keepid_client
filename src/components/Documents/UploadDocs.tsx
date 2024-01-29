@@ -255,8 +255,6 @@ class UploadDocs extends React.Component<Props, State> {
           <div className="card-alignment mb-3 pt-5">
             {currentStep === 0 && (
               <div>
-                <div>{this.props.username}</div>
-                <div>{this.props.admin}</div>
                 <p className="lead pt-3">
                   Select a PDF file to upload. The name of the PDF will appear
                   when loaded. After confirming that you have chosen the correct

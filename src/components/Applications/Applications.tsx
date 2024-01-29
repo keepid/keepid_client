@@ -92,7 +92,7 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          pdfType: PDFType.BLANK_APPLICATION,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -122,7 +122,7 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          pdfType: PDFType.BLANK_APPLICATION,
           targetUser: clientUsername,
           annotated: true,
         }),
