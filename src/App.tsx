@@ -33,6 +33,7 @@ import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
+import MyInformation from './components/MyInformation/MyInformation';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import SignUpRouter, {
@@ -237,6 +238,9 @@ class App extends React.Component<{}, State, {}> {
                   return <Home />;
                 }}
               />
+              <Route path="/myinformation">
+                <MyInformation />
+              </Route>
               <Route path="/careers">
                 <Careers />
               </Route>

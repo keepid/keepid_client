@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.15",
+    "@heroicons/react": "^2.1.1",
     "@nivo/bar": "^0.70.1",
     "@nivo/core": "^0.70.1",
     "@nivo/line": "^0.70.1",
