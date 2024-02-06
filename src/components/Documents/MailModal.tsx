@@ -1,4 +1,5 @@
 import { Dialog } from '@headlessui/react';
+import { PieCanvas } from '@nivo/pie';
 import { stringify } from 'querystring';
 import React, { useEffect, useState } from 'react';
 
@@ -57,8 +58,13 @@ export const MailModal: React.FC<Props> = ({
           }),
         });
 
-        const { status, price, mailAddress, returnAddress } = await response.json();
+        const responseData = await response.json();
 
+        // Log the entire parsed JSON response
+        console.log(responseData);
+        const { status, price, mailAddress, returnAddress } = responseData;
+
+        console.log('hello');
         if (status === 'SUCCESS') {
           setPrice(price); // Assuming you handle this price state in a parent component
           setAddress(mailAddress); // Set local state
@@ -138,60 +144,75 @@ export const MailModal: React.FC<Props> = ({
 
                 <div className="tw-fixed tw-inset-0 tw-bg-black/30" aria-hidden="true" />
 
-                <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-4">
+                <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center">
 
-                <Dialog.Panel className="tw-m-8 tw-w-[50rem] tw-rounded-md tw-bg-white tw-p-1 tw-px-4 tw-shadow-md">
-                <Dialog.Title className="tw-p-4 tw-text-left tw-font-body tw-text-lg">Send application by direct mail?</Dialog.Title>
-                <p className="tw-p-2 tw-text-left tw-font-body tw-text-sm">
-                    Agreeing to this action will send the application to Team Keep to print and directly mail to the corresponding agency. Your status will be notified through email.
-                </p>
+                  <Dialog.Panel className="tw-h-auto tw-w-[96rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg">
+                    <div className="tw-p-4">
+                      <p className="tw-text-left placeholder:tw-font-body tw-text-2xl">Please Confirm the following Mail Information</p>
+                    </div>
+                    <div className="tw-bg-gray-50 tw-p-4">
+                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Price</p>
+                    </div>
+                    <div className="tw-p-4">
+                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Address</p>
+                    </div>
+                    <div className="tw-bg-gray-50 tw-p-4">
+                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Return Address</p>
+                    </div>
+                    <div className="tw-m-8 tw-sm:tw-mt-6 tw-sm:tw-grid tw-sm:tw-grid-flow-row-dense tw-sm:tw-grid-cols-2 tw-sm:tw-gap-3">
+                      <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
+                      <button type="button" className="tw-mt-3 tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
+                    </div>
+                  </Dialog.Panel>
 
-                               {/* Price - Not Editable */}
-                               <div className="tw-flex tw-justify-between tw-items-center">
-                    <label>Price</label>
-                    <span>{price}</span>
-                               </div>
+                {/* <Dialog.Panel className="tw-w-[50rem] tw-rounded-md tw-bg-white tw-p-1 tw-px-4 tw-shadow-md">
+                <Dialog.Title className="tw-p-4 tw-text-left tw-font-body tw-text-lg">Please Confirm the following Mail Information</Dialog.Title>
 
-                {/* Address - Editable */}
-                <div className="tw-flex tw-justify-between tw-items-center">
-                    <label>Address</label>
-                    {editableAddress ? (
-                        <input
-                          type="text"
-                          value={address}
-                          onChange={(event) => setAddress(event.target.value)}
-                        />
-                    ) : (
-                        <span>{address}</span>
-                    )}
-                    <button type="button" onClick={() => setEditableAddress(!editableAddress)}>
-                        edit
-                    </button>
-                </div>
+                <div className="tw-flex tw-flex-col">
+                    <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md tw-bg-gray-100">
+                      <label>Price</label>
+                      <span>{price}</span>
+                    </div>
 
-                {/* Return Address - Editable */}
-                <div className="tw-flex tw-justify-between tw-items-center">
-                    <label>Return Address</label>
-                    {editableReturnAddress ? (
-                        <input
-                          type="text"
-                          value={returnAddress}
-                          onChange={(event) => setReturnAddress(event.target.value)}
-                        />
-                    ) : (
-                        <span>{returnAddress}</span>
-                    )}
-                    <button type="button" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
-                        edit
-                    </button>
-                </div>
+                  <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md">
+                      <label>Address</label>
+                      {editableAddress ? (
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(event) => setAddress(event.target.value)}
+                          />
+                      ) : (
+                          <span>{address}</span>
+                      )}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg >
+                  </div>
 
-                <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                    <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
-                    <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
-                </div>
-                <div />
-                </Dialog.Panel>
+                  <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md tw-bg-gray-100">
+                      <label>Return Address</label>
+                      {editableReturnAddress ? (
+                          <input
+                            type="text"
+                            value={returnAddress}
+                            onChange={(event) => setReturnAddress(event.target.value)}
+                          />
+                      ) : (
+                          <span>{returnAddress}</span>
+                      )}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg >
+                  </div>
+
+                  <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
+                      <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
+                      <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
+                  </div>
+                  <div />
+                  </div>
+                </Dialog.Panel> */}
                 </div>
             </Dialog>
         </div>
