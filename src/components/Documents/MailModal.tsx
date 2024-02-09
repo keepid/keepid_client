@@ -146,22 +146,52 @@ export const MailModal: React.FC<Props> = ({
 
                 <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center">
 
-                  <Dialog.Panel className="tw-h-auto tw-w-[96rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg">
+                  <Dialog.Panel className="tw-h-auto tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg">
                     <div className="tw-p-4">
-                      <p className="tw-text-left placeholder:tw-font-body tw-text-2xl">Please Confirm the following Mail Information</p>
+                      <p className="tw-text-left placeholder:tw-font-body tw-text-2xl tw-font-semibold tw-pt-2 tw-pl-2">Please Confirm the following Mail Information</p>
                     </div>
-                    <div className="tw-bg-gray-50 tw-p-4">
-                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Price</p>
+                    <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
+                      <label className="tw-pl-2">Address</label>
+                      {editableAddress ? (
+                        <input
+                          type="text"
+                          value={address}
+                          onChange={(event) => setAddress(event.target.value)}
+                        />
+                      ) : (
+                        <span className="tw-font-semibold">{address}</span>
+                      )}
+                      <div className="tw-justify-self-end">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                      </div>
                     </div>
-                    <div className="tw-p-4">
-                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Address</p>
+                    <div className="tw-grid tw-grid-cols-3 tw-p-4">
+                      <label className="tw-pl-2">Return Address</label>
+                      {editableReturnAddress ? (
+                        <input
+                          type="text"
+                          value={returnAddress}
+                          onChange={(event) => setReturnAddress(event.target.value)}
+                        />
+                      ) : (
+                        <span className="tw-font-semibold">{returnAddress}</span>
+                      )}
+                      <div className="tw-justify-self-end">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                      </div>
                     </div>
-                    <div className="tw-bg-gray-50 tw-p-4">
-                      <p className="tw-text-left placeholder:tw-font-body tw-text-xl">Return Address</p>
+                    <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
+                      <label className="tw-pl-2">Total Price</label>
+                      <span className="tw-font-semibold">${price}</span>
                     </div>
-                    <div className="tw-m-8 tw-sm:tw-mt-6 tw-sm:tw-grid tw-sm:tw-grid-flow-row-dense tw-sm:tw-grid-cols-2 tw-sm:tw-gap-3">
+                    <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-3 tw-gap-60 sm:tw-gap-60">
+                      <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
+                      <div />
                       <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
-                      <button type="button" className="tw-mt-3 tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
                     </div>
                   </Dialog.Panel>
 

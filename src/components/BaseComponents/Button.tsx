@@ -17,7 +17,7 @@ export function LoadingButton({ onClick, children }: LoadingButtonProps) {
   const content = loading ? 'Loading...' : children;
 
   return (
-        <button type="button" onClick={handleClick} className="tw-col-start-2 tw-inline-flex tw-w-full tw-justify-center tw-border-0 tw-rounded-md tw-bg-twprimary tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-shadow-sm hover:tw-bg-blue-800 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600">
+        <button type="button" onClick={handleClick} className="tw-inline-flex tw-w-full tw-justify-center tw-border-0 tw-rounded-md tw-bg-twprimary tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-shadow-sm hover:tw-bg-blue-800 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600">
             {content}
         </button>
   );
