@@ -45,6 +45,10 @@ export const MailModal: React.FC<Props> = ({
   const [address, setAddress] = useState('');
   const [returnAddress, setReturnAddress] = useState('');
   const [price, setPrice] = useState('');
+  const [inputtedAddress, setInputtedAddress] = useState(false);
+  const [inputtedReturn, setInputtedReturn] = useState(false);
+  const [showInputError, setShowInputError] = useState(false);
+  // inputted_address = true; // doesn't work because its not a variable but a state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,11 +68,10 @@ export const MailModal: React.FC<Props> = ({
         console.log(responseData);
         const { status, price, mailAddress, returnAddress } = responseData;
 
-        console.log('hello');
         if (status === 'SUCCESS') {
           setPrice(price); // Assuming you handle this price state in a parent component
-          setAddress(mailAddress); // Set local state
-          setReturnAddress(returnAddress); // Set local state
+          // setAddress(mailAddress); // Set local state
+          // setReturnAddress(returnAddress); // Set local state
         }
       } catch (err) {
         console.log(err);
@@ -76,65 +79,68 @@ export const MailModal: React.FC<Props> = ({
       }
     };
     fetchData();
+    setInputtedAddress(false);
+    setInputtedReturn(false);
   }, []);
 
   useEffect(() => {
-    // Code to run when `address` changes
     console.log('Address updated:', address);
-
-    // You can also call any function here that needs to run after `address` is updated
+    setInputtedAddress(false);
   }, [address]);
 
   useEffect(() => {
-    // Code to run when `returnAddress` changes
     console.log('Return Address updated:', returnAddress);
-
-    // Similarly, call any function here that needs to run after `returnAddress` is updated
+    setInputtedReturn(false);
   }, [returnAddress]);
 
   const mailForm = async () => {
-    const today = new Date();
-    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+    if (address === '' || returnAddress === '') {
+      // if either address is not valid, put that logic here
+      setShowInputError(true);
+    } else {
+      const today = new Date();
+      const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
-    const description = `
-      User Role: ${userRole}
-      Target User: ${targetUser}
-      Document Name: ${documentName}
-      Document ID: ${documentId}
-      DocumentDate: ${documentDate}
-      DocumentUploader: ${documentUploader}
-      price: ${price}
-      mailAddress: ${address}
-      returnAddress: ${returnAddress}
-      Submission Date: ${date}`;
+      const description = `
+        User Role: ${userRole}
+        Target User: ${targetUser}
+        Document Name: ${documentName}
+        Document ID: ${documentId}
+        DocumentDate: ${documentDate}
+        DocumentUploader: ${documentUploader}
+        price: ${price}
+        mailAddress: ${address}
+        returnAddress: ${returnAddress}
+        Submission Date: ${date}`;
 
-    try {
-      const response = await fetch(`${getServerURL()}/mail-file`, {
-        method: 'POST',
-        body: JSON.stringify({
-          email: 'foo@email.com',
-          title: 'Mail Submission',
-          fileId: documentId,
-          price,
-          mailAddress: address,
-          returnAddress,
-          description,
-        }),
-      });
+      try {
+        const response = await fetch(`${getServerURL()}/mail-file`, {
+          method: 'POST',
+          body: JSON.stringify({
+            email: 'foo@email.com',
+            title: 'Mail Submission',
+            fileId: documentId,
+            price,
+            mailAddress: address,
+            returnAddress,
+            description,
+          }),
+        });
 
-      const responseJSON = await response.json();
-      const { status } = responseJSON;
+        const responseJSON = await response.json();
+        const { status } = responseJSON;
 
-      if (status === 'SUCCESS') {
+        if (status === 'SUCCESS') {
+          setIsVisible(false);
+          setShowMailSuccess(true);
+        } else {
+          setIsVisible(false);
+          alert.show('Failed to submit. Please try another time.');
+        }
+      } catch (error) {
         setIsVisible(false);
-        setShowMailSuccess(true);
-      } else {
-        setIsVisible(false);
-        alert.show('Failed to submit. Please try another time.');
+        alert.show('Failed to submit. Please try again.');
       }
-    } catch (error) {
-      setIsVisible(false);
-      alert.show('Failed to submit. Please try again.');
     }
   };
 
@@ -149,10 +155,11 @@ export const MailModal: React.FC<Props> = ({
                   <Dialog.Panel className="tw-h-auto tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg">
                     <div className="tw-p-4">
                       <p className="tw-text-left placeholder:tw-font-body tw-text-2xl tw-font-semibold tw-pt-2 tw-pl-2">Please Confirm the following Mail Information</p>
+                      {showInputError && <p className="tw-pl-2 tw-text-red-500 tw-font-body tw-text-sm"> Please enter a mail address and return address </p>}
                     </div>
                     <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
                       <label className="tw-pl-2">Address</label>
-                      {editableAddress ? (
+                      {true ? (
                         <input
                           type="text"
                           value={address}
@@ -161,15 +168,15 @@ export const MailModal: React.FC<Props> = ({
                       ) : (
                         <span className="tw-font-semibold">{address}</span>
                       )}
-                      <div className="tw-justify-self-end">
+                      {/* <div className="tw-justify-self-end">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
-                      </div>
+                      </div> */}
                     </div>
                     <div className="tw-grid tw-grid-cols-3 tw-p-4">
                       <label className="tw-pl-2">Return Address</label>
-                      {editableReturnAddress ? (
+                      {true ? (
                         <input
                           type="text"
                           value={returnAddress}
@@ -178,11 +185,11 @@ export const MailModal: React.FC<Props> = ({
                       ) : (
                         <span className="tw-font-semibold">{returnAddress}</span>
                       )}
-                      <div className="tw-justify-self-end">
+                      {/* <div className="tw-justify-self-end">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
-                      </div>
+                      </div> */}
                     </div>
                     <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
                       <label className="tw-pl-2">Total Price</label>
@@ -194,55 +201,6 @@ export const MailModal: React.FC<Props> = ({
                       <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
                     </div>
                   </Dialog.Panel>
-
-                {/* <Dialog.Panel className="tw-w-[50rem] tw-rounded-md tw-bg-white tw-p-1 tw-px-4 tw-shadow-md">
-                <Dialog.Title className="tw-p-4 tw-text-left tw-font-body tw-text-lg">Please Confirm the following Mail Information</Dialog.Title>
-
-                <div className="tw-flex tw-flex-col">
-                    <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md tw-bg-gray-100">
-                      <label>Price</label>
-                      <span>{price}</span>
-                    </div>
-
-                  <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md">
-                      <label>Address</label>
-                      {editableAddress ? (
-                          <input
-                            type="text"
-                            value={address}
-                            onChange={(event) => setAddress(event.target.value)}
-                          />
-                      ) : (
-                          <span>{address}</span>
-                      )}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
-                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                        </svg >
-                  </div>
-
-                  <div className="tw-flex tw-justify-between tw-items-center tw-font-body tw-text-md tw-bg-gray-100">
-                      <label>Return Address</label>
-                      {editableReturnAddress ? (
-                          <input
-                            type="text"
-                            value={returnAddress}
-                            onChange={(event) => setReturnAddress(event.target.value)}
-                          />
-                      ) : (
-                          <span>{returnAddress}</span>
-                      )}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
-                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                        </svg >
-                  </div>
-
-                  <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-2 tw-gap-20 sm:tw-gap-60">
-                      <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
-                      <button type="button" className="tw-inline-flex tw-items-center tw-border-0 tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 sm:tw-col-start-1 sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
-                  </div>
-                  <div />
-                  </div>
-                </Dialog.Panel> */}
                 </div>
             </Dialog>
         </div>
