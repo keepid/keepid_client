@@ -1,6 +1,10 @@
 import { ChevronLeftIcon } from '@heroicons/react/20/solid';
 import {
-  ChartBarIcon, ClockIcon, HomeIcon, StarIcon, UserIcon,
+  ChartBarIcon,
+  ClockIcon,
+  HomeIcon,
+  StarIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -49,7 +53,7 @@ function NavBar({ setSection }) {
             <a
               href={item.href}
               onClick={() => setSection(item.name)}
-              className="tw-text-white hover:tw-no-underline hover:tw-bg-gray-700 hover:tw-no-underline hover:tw-text-white tw-group tw-flex tw-gap-x-3 tw-rounded-md tw-p-2 tw-text-sm tw-leading-6 tw-font-semibold"
+              className="tw-text-white hover:tw-no-underline hover:tw-bg-gray-700 hover:tw-text-white tw-group tw-flex tw-gap-x-3 tw-rounded-md tw-p-2 tw-text-sm tw-leading-6 tw-font-semibold"
             >
               <item.icon
                 className="tw-h-6 tw-w-6 tw-shrink-0 tw-text-white"
