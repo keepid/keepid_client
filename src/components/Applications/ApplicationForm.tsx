@@ -150,7 +150,9 @@ class ApplicationForm extends Component<Props, State> {
     const { formAnswers } = this.state;
     const { id } = event.target;
     const value: boolean = event.target.checked;
+    console.log(value);
     formAnswers[id] = value;
+    console.log(formAnswers[id]);
     this.setState({ formAnswers });
   };
 
@@ -246,7 +248,7 @@ class ApplicationForm extends Component<Props, State> {
               className="custom-control-input mr-2"
               id={entry.fieldName}
               onChange={this.handleChangeFormValueCheckBox}
-              checked={formAnswers[entry.fieldName] === 'true'}
+              checked={formAnswers[entry.fieldName]}
               required={entry.fieldIsRequired}
               readOnly={entry.fieldIsMatched}
             />
@@ -365,7 +367,9 @@ class ApplicationForm extends Component<Props, State> {
       </label>
       <DatePicker
         id={entry.fieldName}
-        selected={new Date(formAnswers[entry.fieldName])}
+        selected={entry.fieldIsMatched
+          ? new Date()
+          : new Date(formAnswers[entry.fieldName])}
         onChange={(date) =>
           this.handleChangeFormValueDateField(date, entry.fieldName)
         }
@@ -416,7 +420,7 @@ class ApplicationForm extends Component<Props, State> {
     formData.append('signature', signature);
     formData.append('clientUsername', clientUsername);
     formData.append('applicationId', applicationId);
-    formData.append('formAnswers', formAnswers.toString());
+    formData.append('formAnswers', JSON.stringify(formAnswers));
 
     fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
@@ -465,20 +469,23 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   onSubmitPdfApplication = (event: any) => {
-    const { pdfApplication, verificationCheckbox } = this.state;
-    const { alert, clientUsername } = this.props;
+    event.preventDefault();
+    const { pdfApplication, verificationCheckbox, formAnswers } = this.state;
+    const { alert, clientUsername, applicationId } = this.props;
     if (!verificationCheckbox) {
       alert.show('Please verify that all fields in the form are correct and check the checkbox before submitting.');
       return;
     }
     if (pdfApplication) {
       const formData = new FormData();
-      formData.append('file', pdfApplication);
+      // formData.append('file', pdfApplication);
       const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
-      formData.append('pdfType', PDFType.ANNOTATED_APPLICATION);
+      // formData.append('pdfType', PDFType.ANNOTATED_APPLICATION);
       formData.append('clientUsername', clientUsername);
+      formData.append('applicationId', applicationId);
+      formData.append('formAnswers', JSON.stringify(formAnswers));
       fetch(`${getServerURL()}/upload-signed-pdf-2`, {
         method: 'POST',
         credentials: 'include',
