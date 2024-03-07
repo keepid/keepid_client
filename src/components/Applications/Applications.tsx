@@ -88,11 +88,11 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
     const { location } = this.props;
     // Client view, uncertain if location.state is undefined by default
     if (location.state === undefined) {
-      fetch(`${getServerURL()}/get-documents `, {
+      fetch(`${getServerURL()}/filter-pdf-2 `, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          pdfType: PDFType.BLANK_APPLICATION,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -118,11 +118,11 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
       // clientName will be passed in via Link state in WorkerLanding page
       const { clientUsername } = location.state as LocationState;
       this.setState({ clientUsername });
-      fetch(`${getServerURL()}/get-documents `, {
+      fetch(`${getServerURL()}/filter-pdf-2 `, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          pdfType: PDFType.BLANK_APPLICATION,
           targetUser: clientUsername,
           annotated: true,
         }),
