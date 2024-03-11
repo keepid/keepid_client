@@ -14,68 +14,56 @@ function MyInformation() {
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
   const [myInfo, setMyInfo] = useState({
-    id: '',
-    userId: '',
     username: '',
-    person: {
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      birthDate: '',
-      ssn: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    ssn: '',
+    birthDate: '',
+    genderAssignedAtBirth: '',
+    emailAddress: '',
+    phoneNumber: '',
+    mailingAddress: {
+      streetAddress: '',
+      apartmentNumber: '',
+      city: '',
+      state: '',
+      zip: '',
     },
-    basicInfo: {
-      gender: '',
-      email: '',
-      phoneNumber: '',
-      permanentAddress: {
-        streetAddress: '',
-        apartmentNumber: '',
-        city: '',
-        state: '',
-        zip: '',
-      },
-      mailingAddress: {
-        streetAddress: '',
-        apartmentNumber: '',
-        city: '',
-        state: '',
-        zip: '',
-      },
-      isOptedInForCommunication: false,
-      suffix: '',
-      preferredFirstName: '',
-      preferredMiddleName: '',
-      preferredLastName: '',
-      preferredSuffix: '',
-      alternativePhoneNumber: '',
-      isEmergencyContactConsentGiven: false,
+    residentialAddress: {
+      streetAddress: '',
+      apartmentNumber: '',
+      city: '',
+      state: '',
+      zip: '',
     },
-    demographicInfo: {
-      primaryLanguage: '',
-      isInterpreterRequired: false,
-      race: '',
-      birthCity: '',
-      birthState: '',
-      birthCountry: '',
-      citizenship: '',
-    },
-    familyInfo: {
-      spouses: [],
-      children: [],
-      maritalStatus: '',
-      emergencyContact: {},
-      parents: [],
-      siblings: [],
-    },
-    veteranStatus: {
-      isVeteran: false,
-      isDisabledVeteran: false,
-      branch: '',
-      yearsOfService: '',
-      rankAtDischarge: '',
-      dischargeStatus: '',
-    },
+    differentBirthName: false,
+    suffix: '',
+    birthFirstName: '',
+    birthMiddleName: '',
+    birthLastName: '',
+    birthSuffix: '',
+    stateIdNumber: '',
+    haveDisability: false,
+    languagePreference: '',
+    isEthnicityHispanicLatino: false,
+    race: '',
+    cityOfBirth: '',
+    stateOfBirth: '',
+    countryOfBirth: '',
+    citizenship: '',
+    parents: [],
+    legalGuardians: [],
+    maritalStatus: '',
+    spouse: {},
+    children: [],
+    siblings: [],
+    isVeteran: false,
+    isProtectedVeteran: false,
+    branch: '',
+    yearsOfService: '',
+    rank: '',
+    discharge: '',
   });
 
   // TODO
@@ -83,8 +71,8 @@ function MyInformation() {
   const fetchProfilePic = () => {};
 
   const fetchUserProfile = () => {
-    fetch(`${getServerURL()}/get-user-info`, {
-      method: 'POST',
+    fetch(`${getServerURL()}/get-optional-info/`, {
+      method: 'GET',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -94,25 +82,6 @@ function MyInformation() {
       .then((responseJSON) => {
         setMyInfo(responseJSON);
         setPostRequestMade(false);
-        // const date = responseJSON['person']['birthDate'].split('-');
-        // setBasicInfo(() => ({
-        //   username: responseJSON.username,
-        //   firstName: responseJSON['person']['firstName'],
-        //   middleName: responseJSON['person']['middleName'],
-        //   lastName: responseJSON['person']['lastName'],
-        //   suffix: responseJSON.suffix,
-        //   gender: responseJSON['basicInfo']['gender'],
-        //   birthDate: new Date(date[2], date[0] - 1, date[1]),
-        //   ssn: responseJSON['person']['ssn'],
-        //   phone: responseJSON['basicInfo']['phoneNumber'],
-        //   city: responseJSON['mailingAddress']['city'],
-        //   state: responseJSON['mailingAddress']['state'],
-        //   address: responseJSON['mailingAddress']['streetAddress'],
-        //   apartment: responseJSON['mailingAddress']['apartmentNumber'],
-        //   zipcode: responseJSON['mailingAddress']['zip'],
-        //   email: responseJSON['basicInfo']['email'],
-        //   // socialWorker:
-        // }));
       });
   };
 

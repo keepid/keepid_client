@@ -9,8 +9,8 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(`${getServerURL()}/set-user-info`, {
-      method: 'POST',
+    fetch(`${getServerURL()}/change-optional-info/`, {
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -73,14 +73,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="first-name"
                   id="first-name"
                   autoComplete="given-name"
-                  value={data.person.firstName}
+                  value={data.firstName}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      person: {
-                        ...data.person,
-                        firstName: e.target.value,
-                      },
+                      firstName: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -100,11 +97,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="last-name"
                   id="last-name"
                   autoComplete="family-name"
-                  value={data.person.lastName}
+                  value={data.lastName}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      person: { ...data.person, lastName: e.target.value },
+                      lastName: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -124,14 +121,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="suffix"
                   id="suffix"
                   autoComplete="honorific-suffix"
-                  value={data.basicInfo.suffix}
+                  value={data.suffix}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      basicInfo: {
-                        ...data.basicInfo,
-                        suffix: e.target.value,
-                      },
+                      suffix: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -151,14 +145,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="gender"
                   id="gender"
                   autoComplete="sex"
-                  value={data.basicInfo.gender}
+                  value={data.genderAssignedAtBirth}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      basicInfo: {
-                        ...data.basicInfo,
-                        gender: e.target.value,
-                      },
+                      genderAssignedatBirth: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -178,14 +169,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="date-of-birth"
                   id="date-of-birth"
                   autoComplete="bday"
-                  value={data.person.birthDate}
+                  value={data.birthDate}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      person: {
-                        ...data.person,
-                        birthDate: e.target.value,
-                      },
+                      birthDate: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -204,11 +192,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   type="text"
                   name="social-security"
                   id="social-security"
-                  value={data.person.ssn}
+                  value={data.ssn}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      person: { ...data.person, ssn: e.target.value },
+                      ssn: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -228,14 +216,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="phone-number"
                   id="phone-number"
                   autoComplete="tel"
-                  value={data.basicInfo.phoneNumber}
+                  value={data.phoneNumber}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      basicInfo: {
-                        ...data.basicInfo,
-                        phoneNumber: e.target.value,
-                      },
+                      phoneNumber: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -248,23 +233,20 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   htmlFor="address"
                   className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
                 >
-                  Address
+                  Residential Address
                 </label>
                 <input
                   type="text"
                   name="address"
                   id="address"
                   autoComplete="street-address"
-                  value={data.basicInfo.permanentAddress.streetAddress}
+                  value={data.residentialAddress.streetAddress}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      basicInfo: {
-                        ...data.basicInfo,
-                        permanentAddress: {
-                          ...data.basicInfo.permanentAddress,
-                          streetAddress: e.target.value,
-                        },
+                      residentialAddress: {
+                        ...data.residentialAddress,
+                        streetAddress: e.target.value,
                       },
                     })
                   }
@@ -285,14 +267,11 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   name="email"
                   id="email"
                   autoComplete="email"
-                  value={data.basicInfo.email}
+                  value={data.emailAddress}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      basicInfo: {
-                        ...data.basicInfo,
-                        email: e.target.value,
-                      },
+                      emailAddress: e.target.value,
                     })
                   }
                   className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
@@ -367,7 +346,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   First name
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.person.firstName}
+                  {data.firstName}
                 </p>
               </div>
             </li>
@@ -377,7 +356,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Last name
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.person.lastName}
+                  {data.lastName}
                 </p>
               </div>
             </li>
@@ -387,7 +366,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Suffix
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.basicInfo.suffix}
+                  {data.suffix}
                 </p>
               </div>
             </li>
@@ -397,7 +376,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Gender
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.basicInfo.gender}
+                  {data.genderAssignedAtBirth}
                 </p>
               </div>
             </li>
@@ -407,7 +386,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Date of birth
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.person.birthDate}
+                  {data.birthDate}
                 </p>
               </div>
             </li>
@@ -417,7 +396,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Social security number
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.person.ssn}
+                  {data.ssn}
                 </p>
               </div>
             </li>
@@ -427,7 +406,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Phone number
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.basicInfo.phoneNumber}
+                  {data.phoneNumber}
                 </p>
               </div>
             </li>
@@ -437,7 +416,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Address
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.basicInfo.permanentAddress.streetAddress}
+                  {data.residentialAddress.streetAddress}
                 </p>
               </div>
             </li>
@@ -447,7 +426,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   Email address
                 </p>
                 <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.basicInfo.email}
+                  {data.emailAddress}
                 </p>
               </div>
             </li>
