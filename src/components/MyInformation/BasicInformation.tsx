@@ -1,4 +1,8 @@
+import 'react-day-picker/dist/style.css';
+
+import { format } from 'date-fns';
 import React, { useState } from 'react';
+import { DayPicker } from 'react-day-picker';
 
 import getServerURL from '../../serverOverride';
 import Modal from './ProfileModal';
@@ -6,11 +10,12 @@ import Modal from './ProfileModal';
 function BasicInformation({ data, setData, setPostRequestMade }) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isEditing, setEditing] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(`${getServerURL()}/change-optional-info/`, {
-      method: 'PATCH',
+    fetch(`${getServerURL()}/save-optional-info/`, {
+      method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -21,13 +26,13 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status === 'success') {
-          // TODO: how to handle success and error
-          // alert.show('User info updated successfully');
+          console.log("Successfully updated user's basic information");
           setPostRequestMade(true);
         } else {
-          // alert.show('User info update failed');
+          console.error("Could not update user's basic information.");
         }
       });
+    setEditing(false);
   };
 
   return (
@@ -53,7 +58,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
+              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
             >
               Change
             </button>
@@ -61,10 +66,10 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
 
           <ul className="tw-list-none tw-mb-20">
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="first-name"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   First name
                 </label>
@@ -80,15 +85,15 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       firstName: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="last-name"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Last name
                 </label>
@@ -104,15 +109,15 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       lastName: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="suffix"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Suffix
                 </label>
@@ -128,15 +133,15 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       suffix: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="gender"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Gender
                 </label>
@@ -144,23 +149,22 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   type="text"
                   name="gender"
                   id="gender"
-                  autoComplete="sex"
                   value={data.genderAssignedAtBirth}
                   onChange={(e) =>
                     setData({
                       ...data,
-                      genderAssignedatBirth: e.target.value,
+                      genderAssignedAtBirth: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-relative tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="date-of-birth"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Date of birth
                 </label>
@@ -170,21 +174,36 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   id="date-of-birth"
                   autoComplete="bday"
                   value={data.birthDate}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      birthDate: e.target.value,
-                    })
-                  }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  onClick={() => setCalendarVisible(true)}
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
+                {calendarVisible && (
+                  <div className="tw-absolute tw-bg-gray-100 tw-bottom-full tw-left-1/4">
+                    <DayPicker
+                      captionLayout="dropdown"
+                      fromYear={1940}
+                      toYear={2025}
+                      mode="single"
+                      onSelect={(date) => {
+                        if (date) {
+                          const formattedDate = format(date, 'yyyy-MM-dd');
+                          setData({
+                            ...data,
+                            birthDate: formattedDate,
+                          });
+                        }
+                        setCalendarVisible(false);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="social-security"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Social security number
                 </label>
@@ -199,15 +218,15 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       ssn: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="phone-number"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Phone number
                 </label>
@@ -223,22 +242,22 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       phoneNumber: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
-                  htmlFor="address"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  htmlFor="res-street-address"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
-                  Residential Address
+                  Street address
                 </label>
                 <input
                   type="text"
-                  name="address"
-                  id="address"
+                  name="res-street-address"
+                  id="res-street-address"
                   autoComplete="street-address"
                   value={data.residentialAddress.streetAddress}
                   onChange={(e) =>
@@ -250,15 +269,93 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       },
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
+                <label
+                  htmlFor="res-apartment-number"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                >
+                  Apartment number
+                </label>
+                <input
+                  type="text"
+                  name="res-apartment-number"
+                  id="res-apartment-number"
+                  value={data.residentialAddress.apartmentNumber}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      residentialAddress: {
+                        ...data.residentialAddress,
+                        apartmentNumber: e.target.value,
+                      },
+                    })
+                  }
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
+                />
+              </div>
+            </li>
+            <li>
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
+                <label
+                  htmlFor="res-city"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                >
+                  City
+                </label>
+                <input
+                  type="text"
+                  name="res-city"
+                  id="res-city"
+                  value={data.residentialAddress.city}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      residentialAddress: {
+                        ...data.residentialAddress,
+                        city: e.target.value,
+                      },
+                    })
+                  }
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
+                />
+              </div>
+            </li>
+            <li>
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
+                <label
+                  htmlFor="res-state"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                >
+                  State
+                </label>
+                <input
+                  type="text"
+                  name="res-state"
+                  id="res-state"
+                  value={data.residentialAddress.state}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      residentialAddress: {
+                        ...data.residentialAddress,
+                        state: e.target.value,
+                      },
+                    })
+                  }
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
+                />
+              </div>
+            </li>
+            <li>
+              <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="email"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Email address
                 </label>
@@ -274,15 +371,15 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       emailAddress: e.target.value,
                     })
                   }
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="social-worker"
-                  className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
                 >
                   Social worker name
                 </label>
@@ -290,7 +387,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   type="text"
                   name="social-worker"
                   id="social-worker"
-                  className="tw-col-span-3 tw-block tw-w-full tw-rounded-md tw-border-0 tw-py-1.5 tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 placeholder:tw-text-gray-400 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6"
+                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
               </div>
             </li>
@@ -304,9 +401,9 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               Cancel
             </button>
             <button
-              type="button"
+              type="submit"
               onSubmit={handleSaveEdit}
-              className="tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
+              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
             >
               Save
             </button>
@@ -334,109 +431,139 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
+              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
             >
               Change
             </button>
           </div>
           <ul className="tw-list-none tw-mb-20">
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   First name
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.firstName}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Last name
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.lastName}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Suffix
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.suffix}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Gender
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.genderAssignedAtBirth}
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  {data.gender}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Date of birth
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.birthDate}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Social security number
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.ssn}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Phone number
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.phoneNumber}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
-                  Address
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                  Residential street address
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.residentialAddress.streetAddress}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-bg-gray-100 tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                  Apartment number
+                </p>
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  {data.residentialAddress.apartmentNumber}
+                </p>
+              </div>
+            </li>
+            <li>
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                  City
+                </p>
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  {data.residentialAddress.city}
+                </p>
+              </div>
+            </li>
+            <li>
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                  State
+                </p>
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  {data.residentialAddress.state}
+                </p>
+              </div>
+            </li>
+            <li>
+              <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Email address
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
                   {data.emailAddress}
                 </p>
               </div>
             </li>
             <li>
-              <div className="tw-pr-10 sm:tw-grid sm:tw-grid-cols-5 sm:tw-items-start sm:tw-gap-4 sm:tw-py-2">
-                <p className="tw-col-span-2 tw-pl-5 tw-block tw-text-md tw-font-medium tw-leading-6 tw-text-gray-700 sm:tw-pt-1.5">
+              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
                   Social worker name
                 </p>
-                <p className="tw-col-span-3 tw-block tw-w-full tw-py-1.5 tw-text-gray-900 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
-                  {data.username}
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  {data.socialWorkerName}
                 </p>
               </div>
             </li>
@@ -445,7 +572,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
+              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
             >
               Edit
             </button>
