@@ -375,22 +375,6 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                 />
               </div>
             </li>
-            <li>
-              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
-                <label
-                  htmlFor="social-worker"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
-                >
-                  Social worker name
-                </label>
-                <input
-                  type="text"
-                  name="social-worker"
-                  id="social-worker"
-                  className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
-                />
-              </div>
-            </li>
           </ul>
           <div className="tw-pl-10 tw-flex tw-flex-row tw-justify-between">
             <button
@@ -554,16 +538,6 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.emailAddress}
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                  Social worker name
-                </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.socialWorkerName}
                 </p>
               </div>
             </li>
