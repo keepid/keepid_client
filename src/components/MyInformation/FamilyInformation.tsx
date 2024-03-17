@@ -41,9 +41,9 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
                 <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                   <label
                     htmlFor={`parent-name-${id + 1}`}
-                    className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                    className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                   >
-                    Parent {id + 1} Name
+                    Parent {id + 1} Full Name
                   </label>
                   <input
                     type="text"
@@ -70,9 +70,9 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="spouse"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
-                  Spouse
+                  Spouse Full Name
                 </label>
                 <input
                   type="text"
@@ -91,7 +91,7 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
             </li>
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
-                <div className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1">
+                <div className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2">
                   Number of children
                 </div>
                 <div>{data.children.length}</div>
@@ -102,9 +102,9 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
                 <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                   <label
                     htmlFor={`child-name-${id + 1}`}
-                    className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                    className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                   >
-                    Child {id + 1} Name
+                    Child {id + 1} Full Name
                   </label>
                   <input
                     type="text"
@@ -154,10 +154,10 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
             {data.parents.map((parent, id) => (
               <li className="odd:tw-bg-gray-100">
                 <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                  <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
-                    Parent {id + 1} Name
+                  <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
+                    Parent {id + 1} Full Name
                   </p>
-                  <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                     {data.parents[id].name}
                   </p>
                 </div>
@@ -165,10 +165,10 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
             ))}
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
-                  Spouse Name
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
+                  Spouse Full Name
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.spouse.name}
                 </p>
               </div>
@@ -176,10 +176,10 @@ function FamilyInformation({ data, setData, setPostRequestMade }) {
             {data.children.map((child, id) => (
               <li className="odd:tw-bg-gray-100">
                 <div className=" tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                  <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
-                    Child {id + 1} Name
+                  <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
+                    Child {id + 1} Full Name
                   </p>
-                  <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                  <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                     {data.children[id].name}
                   </p>
                 </div>

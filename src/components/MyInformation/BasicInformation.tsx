@@ -69,7 +69,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="first-name"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   First name
                 </label>
@@ -93,7 +93,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="last-name"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Last name
                 </label>
@@ -117,7 +117,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="suffix"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Suffix
                 </label>
@@ -141,7 +141,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="gender"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Gender
                 </label>
@@ -164,7 +164,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-relative tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="date-of-birth"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Date of birth
                 </label>
@@ -203,7 +203,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="social-security"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Social security number
                 </label>
@@ -226,7 +226,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="phone-number"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Phone number
                 </label>
@@ -250,7 +250,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="res-street-address"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Street address
                 </label>
@@ -277,7 +277,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="res-apartment-number"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Apartment number
                 </label>
@@ -303,7 +303,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="res-city"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   City
                 </label>
@@ -329,7 +329,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="res-state"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   State
                 </label>
@@ -355,7 +355,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="email"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Email address
                 </label>
@@ -379,7 +379,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <label
                   htmlFor="social-worker"
-                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-1"
+                  className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
                   Social worker name
                 </label>
@@ -439,130 +439,130 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
           <ul className="tw-list-none tw-mb-20">
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   First name
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.firstName}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Last name
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.lastName}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Suffix
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.suffix}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Gender
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.gender}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Date of birth
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.birthDate}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Social security number
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.ssn}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Phone number
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.phoneNumber}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Residential street address
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.residentialAddress.streetAddress}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Apartment number
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.residentialAddress.apartmentNumber}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   City
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.residentialAddress.city}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   State
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.residentialAddress.state}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Email address
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.emailAddress}
                 </p>
               </div>
             </li>
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
-                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-1">
+                <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
                   Social worker name
                 </p>
-                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-4">
+                <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.socialWorkerName}
                 </p>
               </div>
