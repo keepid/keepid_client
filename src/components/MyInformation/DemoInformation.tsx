@@ -5,6 +5,23 @@ import getServerURL from '../../serverOverride';
 function DemoInformation({ data, setData, setPostRequestMade }) {
   const [isEditing, setEditing] = useState(false);
 
+  const RACE_VALUES = {
+    NATIVE_HAWAIIAN: 'Native Hawaiian',
+    ALASKA_NATIVE: 'Alaska Native',
+    ASIAN: 'Asian',
+    AMERICAN_INDIAN: 'American Indian',
+    BLACK_AFRICAN_AMERICAN: 'Black or African American',
+    OTHER_PACIFIC_ISLANDER: 'Other Pacific Islander',
+    WHITE: 'White',
+  };
+
+  const CITIZENSHIP = {
+    US_CITIZEN: 'U.S. citizen',
+    LEGAL_ALLOWED_WORK: 'Legal (Allowed to work)',
+    LEGAL_NOT_ALLOWED_WORK: 'Legal (Not allowed to work)',
+    OTHER: 'Other',
+  };
+
   const handleSaveEdit = (e) => {
     e.preventDefault();
     fetch(`${getServerURL()}/save-optional-info/`, {
@@ -132,27 +149,9 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                 <div className="tw-col-span-3 tw-w-full tw-py-1.5 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="american-indian"
+                      id="black_african_american"
                       type="radio"
-                      value="American Indian or Alaskan Native"
-                      name="race"
-                      className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
-                      onChange={(e) => {
-                        setData({ ...data, race: e.target.value });
-                      }}
-                    />
-                    <label
-                      htmlFor="american-indian"
-                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
-                    >
-                      American Indian or Alaskan Native
-                    </label>
-                  </div>
-                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
-                    <input
-                      id="asian-pacific"
-                      type="radio"
-                      value="Asian / Pacific Islander"
+                      value="BLACK_AFRICAN_AMERICAN"
                       name="race"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -160,25 +159,7 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="asian-pacific"
-                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
-                    >
-                      Asian / Pacific Islander
-                    </label>
-                  </div>
-                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
-                    <input
-                      id="african-american"
-                      type="radio"
-                      value="Black or African American"
-                      name="race"
-                      className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
-                      onChange={(e) => {
-                        setData({ ...data, race: e.target.value });
-                      }}
-                    />
-                    <label
-                      htmlFor="african-american"
+                      htmlFor="black_african_american"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
                       Black or African American
@@ -186,27 +167,9 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                   </div>
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="hispanic"
-                      type="radio"
-                      value="Hispanic"
-                      name="race"
-                      className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
-                      onChange={(e) => {
-                        setData({ ...data, race: e.target.value });
-                      }}
-                    />
-                    <label
-                      htmlFor="hispanic"
-                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
-                    >
-                      Hispanic
-                    </label>
-                  </div>
-                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
-                    <input
                       id="white"
                       type="radio"
-                      value="White / Caucasian"
+                      value="WHITE"
                       name="race"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -222,9 +185,27 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                   </div>
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="multiple"
+                      id="american-indian"
                       type="radio"
-                      value="Multiple Ethnicity / Other"
+                      value="AMERICAN_INDIAN"
+                      name="race"
+                      className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
+                      onChange={(e) => {
+                        setData({ ...data, race: e.target.value });
+                      }}
+                    />
+                    <label
+                      htmlFor="american-indian"
+                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
+                    >
+                      American Indian
+                    </label>
+                  </div>
+                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
+                    <input
+                      id="asian"
+                      type="radio"
+                      value="ASIAN"
                       name="race"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -232,10 +213,64 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="multiple"
+                      htmlFor="asian"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
-                      Multiple Ethnicity / Other
+                      Asian
+                    </label>
+                  </div>
+                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
+                    <input
+                      id="alaska_native"
+                      type="radio"
+                      value="ALASKA_NATIVE"
+                      name="race"
+                      className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
+                      onChange={(e) => {
+                        setData({ ...data, race: e.target.value });
+                      }}
+                    />
+                    <label
+                      htmlFor="alaska_native"
+                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
+                    >
+                      Alaska Native
+                    </label>
+                  </div>
+                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
+                    <input
+                      id="native_hawaiian"
+                      type="radio"
+                      value="NATIVE_HAWAIIAN"
+                      name="race"
+                      className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
+                      onChange={(e) => {
+                        setData({ ...data, race: e.target.value });
+                      }}
+                    />
+                    <label
+                      htmlFor="native_hawaiian"
+                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
+                    >
+                      Native Hawaiian
+                    </label>
+                  </div>
+                  <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
+                    <input
+                      id="other_pacific_islander"
+                      type="radio"
+                      value="OTHER_PACIFIC_ISLANDER"
+                      name="race"
+                      className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
+                      onChange={(e) => {
+                        setData({ ...data, race: e.target.value });
+                      }}
+                    />
+                    <label
+                      htmlFor="other_pacific_islander"
+                      className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
+                    >
+                      Other Pacific Islander
                     </label>
                   </div>
                 </div>
@@ -249,9 +284,9 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                 <div className="tw-col-span-3 tw-w-full tw-py-1.5 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="citizen"
+                      id="us_citizen"
                       type="radio"
-                      value="U.S. citizen"
+                      value="US_CITIZEN"
                       name="legal-status"
                       className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -259,7 +294,7 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="citizen"
+                      htmlFor="us_citizen"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
                       U.S. citizen
@@ -267,9 +302,9 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                   </div>
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="conditional"
+                      id="legal_allowed_work"
                       type="radio"
-                      value="Conditional"
+                      value="LEGAL_ALLOWED_WORK"
                       name="legal-status"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -277,17 +312,17 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="conditional"
+                      htmlFor="legal_allowed_work"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
-                      Conditional
+                      Legal (Allowed to work)
                     </label>
                   </div>
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="non-immigrant"
+                      id="legal_not_allowed_work"
                       type="radio"
-                      value="Non-immigrant"
+                      value="LEGAL_NOT_ALLOWED_WORK"
                       name="legal-status"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -295,17 +330,17 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="non-immigrant"
+                      htmlFor="legal_not_allowed_work"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
-                      Non-immigrant
+                      Legal (Not allowed to work)
                     </label>
                   </div>
                   <div className="tw-flex tw-mb-2 tw-items-center tw-me-4">
                     <input
-                      id="undocumented"
+                      id="other"
                       type="radio"
-                      value="Undocumented immigrant"
+                      value="OTHER"
                       name="legal-status"
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
@@ -313,10 +348,10 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                       }}
                     />
                     <label
-                      htmlFor="undocumented"
+                      htmlFor="other"
                       className="tw-mb-0 tw-ms-2 tw-text-sm tw-font-medium"
                     >
-                      Undocumented immigrant
+                      Other
                     </label>
                   </div>
                 </div>
@@ -395,7 +430,7 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                   Race
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.race}
+                  {RACE_VALUES[data.race]}
                 </p>
               </div>
             </li>
@@ -405,7 +440,7 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
                   Are you a U.S. citizen?
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.citizenship}
+                  {CITIZENSHIP[data.citizenship]}
                 </p>
               </div>
             </li>
