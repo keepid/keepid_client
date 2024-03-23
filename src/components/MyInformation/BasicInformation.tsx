@@ -186,7 +186,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                       mode="single"
                       onSelect={(date) => {
                         if (date) {
-                          const formattedDate = format(date, 'yyyy-MM-dd');
+                          const formattedDate = format(date, 'yyyy MM dd');
                           setData({
                             ...data,
                             birthDate: formattedDate,
