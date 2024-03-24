@@ -7,21 +7,36 @@ import { DayPicker } from 'react-day-picker';
 import getServerURL from '../../serverOverride';
 import Modal from './ProfileModal';
 
-function BasicInformation({ data, setData, setPostRequestMade }) {
+function BasicInformation({
+  data,
+  setData,
+  setPostRequestMade,
+  hasOptInfo,
+  loadProfilePhoto,
+  photo,
+  photoAvailable,
+  username,
+}) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isEditing, setEditing] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [originalData, setOriginalData] = useState(data); // create copy of original data
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(`${getServerURL()}/save-optional-info/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
+    fetch(
+      hasOptInfo
+        ? `${getServerURL()}/change-optional-info/`
+        : `${getServerURL()}/save-optional-info/`,
+      {
+        method: hasOptInfo ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    })
+    )
       .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
@@ -43,18 +58,21 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
             Basic Information
           </p>
           <div className="tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-            <svg
-              className="tw-h-12 tw-w-12 tw-text-gray-300"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+            {photoAvailable && { photo }}
+            {!photoAvailable && (
+              <svg
+                className="tw-h-12 tw-w-12 tw-text-gray-300"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
             <button
               type="button"
               onClick={() => setModalOpen(true)}
@@ -178,7 +196,7 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
                   className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
                 />
                 {calendarVisible && (
-                  <div className="tw-absolute tw-bg-gray-100 tw-bottom-full tw-left-1/4">
+                  <div className="tw-absolute tw-bg-gray-300 tw-bottom-full tw-left-1/4">
                     <DayPicker
                       captionLayout="dropdown"
                       fromYear={1940}
@@ -379,7 +397,10 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
           <div className="tw-pl-10 tw-flex tw-flex-row tw-justify-between">
             <button
               type="button"
-              onClick={() => setEditing(false)}
+              onClick={() => {
+                setEditing(false);
+                setData(originalData);
+              }}
               className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
             >
               Cancel
@@ -392,7 +413,13 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
               Save
             </button>
           </div>
-          {isModalOpen && <Modal setModalOpen={setModalOpen} />}
+          {isModalOpen && (
+            <Modal
+              setModalOpen={setModalOpen}
+              loadProfilePhoto={loadProfilePhoto}
+              username={username}
+            />
+          )}
         </form>
       ) : (
         <div>
@@ -545,13 +572,22 @@ function BasicInformation({ data, setData, setPostRequestMade }) {
           <div className="tw-pl-10 tw-flex tw-flex-row tw-justify-end">
             <button
               type="button"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setEditing(true);
+                setOriginalData(data);
+              }}
               className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
             >
               Edit
             </button>
           </div>
-          {isModalOpen && <Modal setModalOpen={setModalOpen} />}
+          {isModalOpen && (
+            <Modal
+              setModalOpen={setModalOpen}
+              loadProfilePhoto={loadProfilePhoto}
+              username={username}
+            />
+          )}
         </div>
       )}
     </div>

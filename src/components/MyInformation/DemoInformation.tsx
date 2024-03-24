@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 
 import getServerURL from '../../serverOverride';
 
-function DemoInformation({ data, setData, setPostRequestMade }) {
+function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
   const [isEditing, setEditing] = useState(false);
+  const [originalData, setOriginalData] = useState(data); // create copy of original data
 
   const RACE_VALUES = {
     NATIVE_HAWAIIAN: 'Native Hawaiian',
@@ -24,14 +25,19 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(`${getServerURL()}/save-optional-info/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
+    fetch(
+      hasOptInfo
+        ? `${getServerURL()}/change-optional-info/`
+        : `${getServerURL()}/save-optional-info/`,
+      {
+        method: hasOptInfo ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    })
+    )
       .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
@@ -44,7 +50,6 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
       });
     setEditing(false);
   };
-
   return (
     <div>
       {isEditing ? (
@@ -384,7 +389,10 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
           <div className="tw-pl-10 tw-flex tw-flex-row tw-justify-between">
             <button
               type="button"
-              onClick={() => setEditing(false)}
+              onClick={() => {
+                setEditing(false);
+                setData(originalData);
+              }}
               className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
             >
               Cancel
@@ -458,7 +466,10 @@ function DemoInformation({ data, setData, setPostRequestMade }) {
           <div className="tw-pl-10 tw-flex tw-flex-row tw-justify-end">
             <button
               type="button"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setEditing(true);
+                setOriginalData(data);
+              }}
               className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-indigo-600 tw-px-4 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-white tw-border-none hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
             >
               Edit

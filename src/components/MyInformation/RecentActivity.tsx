@@ -1,6 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-function RecentActivity({ data, setData }) {
+import getServerURL from '../../serverOverride';
+
+function RecentActivity({ data, setData, username }) {
+  const [activities, setActivities] = useState({});
+
+  const fetchRecentActivity = () => {
+    fetch(`${getServerURL()}/get-all-activities`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({ username }),
+    })
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        setActivities(responseJSON.activities);
+      })
+      .catch((error) => {
+        console.log('Could Not Fetch Recent Activity.');
+      });
+  };
+
+  useEffect(() => {
+    fetchRecentActivity();
+  }, []);
+
   return (
     <form action="/handling-form-page" method="post">
       <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">

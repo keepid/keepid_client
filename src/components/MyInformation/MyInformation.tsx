@@ -10,9 +10,12 @@ import NavBar from './NavBar';
 import RecentActivity from './RecentActivity';
 import VeteranInformation from './VeteranInformation';
 
-function MyInformation() {
+function MyInformation({ username }) {
+  const photo = '';
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
+  const [hasOptInfo, setHasOptInfo] = useState(true);
+  const [photoAvailable, setPhotoAvailable] = useState(false);
   const [myInfo, setMyInfo] = useState({
     username: 'JohnDoe',
     firstName: 'John',
@@ -66,9 +69,30 @@ function MyInformation() {
     discharge: '',
   });
 
-  // TODO
-  const fetchRecentActivity = () => {};
-  const fetchProfilePic = () => {};
+  const loadProfilePhoto = (): void => {
+    // const { username } = props.username;
+    // fetch(`${getServerURL()}/load-pfp`, {
+    //   method: 'POST',
+    //   credentials: 'include',
+    //   body: JSON.stringify({
+    //     username,
+    //   }),
+    // })
+    //   .then((response) => response.blob())
+    //   .then((blob) => {
+    //     const { size } = blob;
+    //     if (size > 72) {
+    //       const url = (URL || window.webkitURL).createObjectURL(blob);
+    //       if (url) {
+    //         setPhotoAvailable(true);
+    //         setPhoto(url);
+    //       }
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(`Could Not Load Photo.`);
+    //   });
+  };
 
   const fetchUserProfile = () => {
     fetch(`${getServerURL()}/get-optional-info/`, {
@@ -80,14 +104,18 @@ function MyInformation() {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
-        setMyInfo(responseJSON);
-        setPostRequestMade(false);
+        if (responseJSON.status === 'USER_NOT_FOUND') {
+          setHasOptInfo(false);
+        } else {
+          setMyInfo(responseJSON);
+          setPostRequestMade(false);
+        }
       });
   };
 
   useEffect(() => {
     fetchUserProfile();
-    fetchProfilePic();
+    loadProfilePhoto();
   }, [postRequestMade]);
 
   return (
@@ -102,19 +130,26 @@ function MyInformation() {
             <NavBar setSection={setSection} />
             <div className="tw-container tw-mx-auto">
               <div className="tw-place-items-center tw-flex-row tw-justify-end tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-                <svg
-                  className="tw-h-12 tw-w-12 tw-text-gray-300"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="tw-m-0">John Doe</p>
+                {!photoAvailable && (
+                  <svg
+                    className="tw-h-12 tw-w-12 tw-text-gray-300"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                {photoAvailable && (
+                  <img src={photo} alt="User's profile picture" />
+                )}
+                <p className="tw-m-0">
+                  {`${myInfo.firstName} ${myInfo.lastName}`}
+                </p>
               </div>
               <hr className="tw-ml-10" />
               {section === 'Basic Information' && (
@@ -122,6 +157,11 @@ function MyInformation() {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
+                  hasOptInfo={hasOptInfo}
+                  loadProfilePhoto={loadProfilePhoto}
+                  photo={photo}
+                  photoAvailable={photoAvailable}
+                  username={username}
                 />
               )}
               {section === 'Family Information' && (
@@ -129,6 +169,7 @@ function MyInformation() {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
+                  hasOptInfo={hasOptInfo}
                 />
               )}
               {section === 'Demographic Information' && (
@@ -136,6 +177,7 @@ function MyInformation() {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
+                  hasOptInfo={hasOptInfo}
                 />
               )}
               {section === 'Veteran Status Information' && (
@@ -143,10 +185,15 @@ function MyInformation() {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
+                  hasOptInfo={hasOptInfo}
                 />
               )}
               {section === 'Recent Activity' && (
-                <RecentActivity data={myInfo} setData={setMyInfo} />
+                <RecentActivity
+                  data={myInfo}
+                  setData={setMyInfo}
+                  username={username}
+                />
               )}
             </div>
           </div>
