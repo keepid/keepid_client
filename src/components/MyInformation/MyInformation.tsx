@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
@@ -10,8 +10,10 @@ import NavBar from './NavBar';
 import RecentActivity from './RecentActivity';
 import VeteranInformation from './VeteranInformation';
 
-function MyInformation({ username }) {
+function MyInformation(username) {
   const photo = '';
+  // TO USE WHEN USERCONTEXT IS IMPLEMENTED
+  // const { username, organization } = useContext(UserContext);
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
   const [hasOptInfo, setHasOptInfo] = useState(true);
@@ -95,7 +97,7 @@ function MyInformation({ username }) {
   };
 
   const fetchUserProfile = () => {
-    fetch(`${getServerURL()}/get-optional-info/`, {
+    fetch(`${getServerURL()}/get-optional-info/${username}`, {
       method: 'GET',
       credentials: 'include',
       headers: {

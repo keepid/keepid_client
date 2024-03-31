@@ -5,7 +5,7 @@ const getServerURL = (): string => {
   if (process.env.NODE_ENV === 'staging') {
     return 'https://keepid-server-staging.herokuapp.com/';
   }
-  return 'http://localhost:7000';
+  return 'http://localhost:3000';
 };
 
 export default getServerURL;

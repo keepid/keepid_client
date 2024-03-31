@@ -238,9 +238,23 @@ class App extends React.Component<{}, State, {}> {
                   return <Home />;
                 }}
               />
-              <Route path="/myinformation">
-                <MyInformation />
-              </Route>
+              <Route
+                path="/myinformation"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker ||
+                    role === Role.Client
+                  ) {
+                    return <MyInformation username={username} />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
               <Route path="/careers">
                 <Careers />
               </Route>
