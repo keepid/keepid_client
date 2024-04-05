@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
+import { Document, Page } from 'react-pdf';
 import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
@@ -25,6 +26,16 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
+  const [numPages, setNumPages] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  const goToPrevPage = () => {
+    setPageNumber(pageNumber - 1);
+  };
+
+  const goToNextPage = () => {
+    setPageNumber(pageNumber + 1);
+  };
 
   useEffect(() => {
     let pdfType;
@@ -155,11 +166,24 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
               </div>
             </div>
           </div>
+          <Document file={pdfFile} onLoadSuccess={({ numPages }) => setNumPages(numPages)}>
+            <Page pageNumber={pageNumber} />
+          </Document>
+          <div>
+            <p>
+              Page {pageNumber} of {numPages}
+            </p>
+            <button type="button" onClick={goToPrevPage} disabled={pageNumber === 1}>
+              Prev
+            </button>
+            <button type="button" onClick={goToNextPage} disabled={pageNumber === numPages}>
+              Next
+            </button>
+          </div>
         </div>
       ) : (
         <div />
       )}
-      {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
       <MailModal isVisible={mailDialogIsOpen} setIsVisible={setMailDialogIsOpen} mailForm={mailForm} />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
