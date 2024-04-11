@@ -17,17 +17,6 @@ const messages = defineMessages({
     defaultMessage: 'Welcome',
     description: 'Home welcome message',
   },
-  brandHeader: {
-    id: 'home.brand-header',
-    defaultMessage: 'An identification platform',
-    description: 'The tagline shown on the home page',
-  },
-  subHeader: {
-    id: 'home.sub-header',
-    defaultMessage: 'for those experiencing homelessness',
-  },
-  getStarted: { id: 'home.get-started', defaultMessage: 'Get Started' },
-  learnMore: { id: 'home.learn-more', defaultMessage: 'Donate' },
 });
 
 function Home() {
@@ -66,7 +55,7 @@ function Home() {
             </button>
           </div>
           <div className="tw-text-md tw-text-gray-500 tw-border-t-4 tw-border-b-4 border-gray-400 tw-py-10 tw-text-xl tw-flex tw-items-center tw-justify-center md:tw-text-base">
-            don't have an account yet?
+            dont have an account yet?
             <button type="button" className="tw-font-bold tw-text-black tw-bg-white tw-border-0 tw-items-center">
               Sign Up
             </button>
