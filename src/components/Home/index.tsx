@@ -37,6 +37,7 @@ function Home() {
       <Helmet>
         <title>{intl.formatMessage(messages.title)}</title>
         <meta name="description" content="Keep.id" />
+        <script>{'{"gtag(\'event\', \'conversion\', {\'send_to\': \'AW-391118279/baegCKfsltgDEMf7v7oB\'});"}'}</script>
       </Helmet>
       {/* <StatementOfSolidarity /> */}
       <div className="container-fluid my-auto">
