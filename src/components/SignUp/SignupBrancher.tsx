@@ -5,6 +5,11 @@ import Building from '../../static/images/building.svg';
 import Profile from '../../static/images/profile-pic.svg';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 
+const clickedButton = () => {
+  window.gtag('config', 'AW-391118279');
+  window.gtag('event', 'conversion', { send_to: 'AW-391118279/baegCKfsltgDEMf7v7oB' });
+};
+
 function SignupBrancher() {
   return (
 <div>
@@ -29,6 +34,7 @@ function SignupBrancher() {
               imageLoc={CardImageLoc.TOP}
               imageSize="70%"
               buttonText="Try for Free"
+              buttonOnClick={clickedButton}
             />
           </div>
           <BaseCard
