@@ -1,11 +1,13 @@
 import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react';
+import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
 
-function RecentActivity({ data, setData, username }) {
+function RecentActivity({ username }) {
   const [activities, setActivities] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const alert = useAlert();
 
   const renderActivitiesCard = (activities) => {
     if (activities.length > 0) {
@@ -16,7 +18,7 @@ function RecentActivity({ data, setData, username }) {
           <li className="odd:tw-bg-gray-100">
             <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
               <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                Login Activity
+                {activity.type}
               </p>
               <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                 {format(new Date(activity.occurredAt), 'yyyy-MM-dd hh:mm a')}
@@ -44,12 +46,11 @@ function RecentActivity({ data, setData, username }) {
       .then((response) => response.json())
       .then((responseJSON) => {
         setActivities(responseJSON.activities);
+        console.log(responseJSON.activities);
         setIsLoading(false);
-        console.log(activities);
       })
       .catch((error) => {
-        console.log(error);
-        console.log('Could Not Fetch Recent Activity.');
+        alert.show('Error fetching recent activity');
       });
   };
 

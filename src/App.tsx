@@ -247,7 +247,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Client
                   ) {
-                    return <MyInformation username={username} name={name} />;
+                    return <MyInformation username={username} />;
                   }
                   if (role === Role.LoggedOut) {
                     return <Home />;

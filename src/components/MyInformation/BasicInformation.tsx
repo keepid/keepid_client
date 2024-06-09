@@ -2,6 +2,7 @@ import 'react-day-picker/dist/style.css';
 
 import { format } from 'date-fns';
 import React, { useState } from 'react';
+import { useAlert } from 'react-alert';
 import { DayPicker } from 'react-day-picker';
 
 import getServerURL from '../../serverOverride';
@@ -19,7 +20,8 @@ function BasicInformation({
   const [isModalOpen, setModalOpen] = useState(false);
   const [isEditing, setEditing] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const [originalData, setOriginalData] = useState(data); // create copy of original data
+  const [originalData, setOriginalData] = useState(data);
+  const alert = useAlert();
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
@@ -35,10 +37,10 @@ function BasicInformation({
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
-          console.log("Successfully updated user's basic information");
+          alert.show('Successfully updated basic information');
           setPostRequestMade(true);
         } else {
-          console.error("Could not update user's basic information.");
+          alert.show('Could not update basic information.');
         }
       });
     setEditing(false);
@@ -46,42 +48,43 @@ function BasicInformation({
 
   return (
     <div>
+      <div className="tw-flex tw-flex-col">
+        <div className="tw-pl-10 tw-my-3 tw-flex tw-items-center tw-gap-x-3">
+          {photoAvailable && (
+            <img
+              className="tw-h-14 tw-rounded-full"
+              src={photo}
+              alt="User's profile picture"
+            />
+          )}
+          {!photoAvailable && (
+            <svg
+              className="tw-h-14 tw-w-14 tw-text-gray-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="tw-h-10 tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
+          >
+            Update Profile Picture
+          </button>
+        </div>
+        <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
+          Basic Information
+        </p>
+      </div>
       {isEditing ? (
         <form onSubmit={handleSaveEdit}>
-          <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
-            Basic Information
-          </p>
-          <div className="tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-            {photoAvailable && (
-              <img
-                className="tw-h-14 tw-rounded-full"
-                src={photo}
-                alt="User's profile picture"
-              />
-            )}
-            {!photoAvailable && (
-              <svg
-                className="tw-h-14 tw-w-14 tw-text-gray-300"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
-            >
-              Change
-            </button>
-          </div>
-
           <ul className="tw-list-none tw-mb-20">
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
@@ -413,49 +416,9 @@ function BasicInformation({
               Save
             </button>
           </div>
-          {isModalOpen && (
-            <Modal
-              setModalOpen={setModalOpen}
-              loadProfilePhoto={loadProfilePhoto}
-              username={username}
-            />
-          )}
         </form>
       ) : (
         <div>
-          <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
-            Basic Information
-          </p>
-          <div className="tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-            {photoAvailable && (
-              <img
-                className="tw-h-14 tw-rounded-full"
-                src={photo}
-                alt="User's profile picture"
-              />
-            )}
-            {!photoAvailable && (
-              <svg
-                className="tw-h-14 tw-w-14 tw-text-gray-300"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="tw-w-20 tw-h-10 tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-gray-900 tw-border-2 tw-border-black hover:tw-bg-gray-50"
-            >
-              Change
-            </button>
-          </div>
           <ul className="tw-list-none tw-mb-20">
             <li>
               <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
@@ -590,14 +553,14 @@ function BasicInformation({
               Edit
             </button>
           </div>
-          {isModalOpen && (
-            <Modal
-              setModalOpen={setModalOpen}
-              loadProfilePhoto={loadProfilePhoto}
-              username={username}
-            />
-          )}
         </div>
+      )}
+      {isModalOpen && (
+        <Modal
+          setModalOpen={setModalOpen}
+          loadProfilePhoto={loadProfilePhoto}
+          username={username}
+        />
       )}
     </div>
   );

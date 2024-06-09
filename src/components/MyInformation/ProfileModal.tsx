@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { useAlert } from 'react-alert';
 import Cropper from 'react-easy-crop';
-import { set } from 'react-ga';
 
 import getServerURL from '../../serverOverride';
 
@@ -17,6 +17,8 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(0);
+
+  const alert = useAlert();
 
   const dataURItoBlob = (dataURI: any): Blob => {
     let byteString;
@@ -40,29 +42,24 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
         const ctx = canvas.getContext('2d');
         const maxSize = Math.max(image.width, image.height);
         const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
-
         canvas.id = 'croppedPhoto';
         canvas.width = safeArea;
         canvas.height = safeArea;
-
         if (ctx) {
           ctx.drawImage(
             image,
             safeArea / 2 - image.width * 0.5,
             safeArea / 2 - image.height * 0.5,
           );
-
           const data = ctx.getImageData(0, 0, safeArea, safeArea);
           canvas.width = pixelCrop.width;
           canvas.height = pixelCrop.height;
-
           ctx.putImageData(
             data,
             Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
             Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y),
           );
         }
-
         const dataURL = canvas.toDataURL('image/jpg');
         const file = dataURItoBlob(dataURL);
         resolve(file);
@@ -80,14 +77,12 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
       reader.readAsDataURL(file);
     });
 
-  // handle photo save
   const photoSaveHandler = async () => {
     try {
       const croppedImage = await getCroppedImg(fileSelected, croppedAreaPixels);
       setFile(croppedImage);
       setCropperOpen(false);
       setModalOpen(false);
-      console.log(croppedImage);
 
       if (croppedImage != null) {
         const formData = new FormData();
@@ -105,23 +100,20 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
             const { status } = responseJSON;
             if (status.toString() === 'SUCCESS') {
               loadProfilePhoto();
-              console.log('Successfully changed picture');
+              alert.show('Successfully changed profile photo.');
             }
           })
           .catch((error) => {
-            console.log(error);
-            console.log('Could Not Upload Photo.');
+            alert.show('Error uploading photo.');
           });
       } else {
-        console.log('have no photo');
+        alert.show('Error loading photo.');
       }
     } catch (e) {
-      console.log(e);
-      console.log('Could not crop image');
+      alert.show('Error uploading photo.');
     }
   };
 
-  // handle photo cancel
   const photoCancelHandler = () => {
     setFile(null);
     setFileName('');
@@ -129,22 +121,20 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
     setCropperOpen(false);
   };
 
-  // handle photo upload
   const photoUploadHandler = async (event) => {
     if (event.target.files != null && event.target.files.length > 0) {
       if (!allowedTypes.includes(event.target.files[0].type)) {
-        console.log('Invalid file type');
+        alert.show('Invalid file type. Please upload a PNG or JPG file.');
       } else {
         // read file and save as URL
         const file = event.target.files[0];
         const imageDataUrl = await readFile(file);
-
         setFileName(event.target.files[0].name);
         setFileSelected(imageDataUrl as string);
         setCropperOpen(true);
       }
     } else {
-      console.log('No file selected');
+      alert.show('No file selected.');
     }
   };
 
@@ -177,16 +167,13 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
         className="tw-fixed tw-z-50 tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2"
       >
         <div className="tw-relative tw-p-4 tw-w-full tw-max-h-full">
-          {/* Main content */}
           <div className="tw-relative tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
-            {/* Main header */}
             <p className="tw-font-semibold tw-text-base tw-mb-1">
               Edit Profile Picture
             </p>
             <p className="tw-text-gray-400 tw-text-base tw-mb-0">
               Make changes to your profile here. Click save when you are done.
             </p>
-            {/* Main body */}
             {!cropperOpen && (
               <div className="tw-flex tw-flex-col tw-py-5 tw-items-center tw-justify-center">
                 <div className="tw-flex tw-w-full">
@@ -254,7 +241,6 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
                 </div>
               </div>
             )}
-            {/* Main exit */}
             <div className="tw-flex tw-flex-row tw-justify-between">
               {cropperOpen && (
                 <div>

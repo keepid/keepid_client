@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import React, { useEffect, useRef, useState } from 'react';
+import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
@@ -11,18 +12,11 @@ import NavBar from './NavBar';
 import RecentActivity from './RecentActivity';
 import VeteranInformation from './VeteranInformation';
 
-function MyInformation(username, name) {
+function MyInformation(username) {
   const [photo, setPhoto] = useState('');
   const [photoAvailable, setPhotoAvailable] = useState(false);
-  const hiddenFileInput = useRef();
-  const controllerRef = useRef(new AbortController());
-
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
-  const [hasOptInfo, setHasOptInfo] = useState(true);
-
-  const location = useLocation();
-
   const [myInfo, setMyInfo] = useState({
     username: '',
     firstName: '',
@@ -75,8 +69,10 @@ function MyInformation(username, name) {
     rank: '',
     discharge: '',
   });
-
   const [initialData, setInitialData] = useState(myInfo);
+  const alert = useAlert();
+  const controllerRef = useRef(new AbortController());
+  const location = useLocation();
 
   // if opt info does not exist get default user info
   const createOptInfo = () => {
@@ -122,10 +118,9 @@ function MyInformation(username, name) {
           .then((responseJSON) => {
             const { status } = responseJSON;
             if (status === 'SUCCESS') {
-              console.log('Successfully created optional information');
               setPostRequestMade(true);
             } else {
-              console.error('Could not create new optional information.');
+              alert.show('Could not create optional information.');
             }
           });
       });
@@ -133,7 +128,6 @@ function MyInformation(username, name) {
 
   const loadProfilePhoto = () => {
     const signal = controllerRef.current?.signal;
-
     fetch(`${getServerURL()}/load-pfp`, {
       signal,
       method: 'POST',
@@ -144,26 +138,14 @@ function MyInformation(username, name) {
     })
       .then((response) => response.blob())
       .then((blob) => {
-        const { size } = blob;
-
         const url = (URL || window.webkitURL).createObjectURL(blob);
         if (url) {
-          console.log('URL created.');
           setPhoto(url);
           setPhotoAvailable(true);
         }
-
-        console.log('Profile photo loaded.');
       })
       .catch((error) => {
-        console.log('Could not load profile photo.');
-        console.log(error);
-        // if (error.toString() !== 'AbortError: The user aborted a request.') {
-        //   const { alert } = this.props;
-        //   alert.show(
-        //     `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`
-        //   );
-        // }
+        alert.show("Couldn't load profile photo.");
       });
   };
 
@@ -178,13 +160,9 @@ function MyInformation(username, name) {
       .then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON.status === 'USER_NOT_FOUND') {
-          console.log('User not found');
-          // if user doesnt have opt info, then get default user info
+          // if user doesnt have opt info, then create opt info from user info
           createOptInfo();
         } else {
-          console.log('User found');
-          setHasOptInfo(true);
-          console.log(responseJSON);
           const userDate = responseJSON.optionalUserInformation.birthDate;
           const newDate = format(userDate, 'yyyy MM dd');
           const newMyInfo = {
@@ -245,25 +223,25 @@ function MyInformation(username, name) {
             discharge: responseJSON.veteranStatus.discharge,
           };
           setMyInfo(newMyInfo);
+          // save copy of my info to reset to when user navigates away from page
           setInitialData(newMyInfo);
           setPostRequestMade(false);
         }
       });
   };
 
+  // reset back to initial state when location changes
   useEffect(() => {
-    // Reset the state when the location changes
     setMyInfo(initialData);
   }, [location]);
 
+  // fetch user profile when POST request is made
   useEffect(() => {
-    console.log(myInfo);
     const fetchProfile = async () => {
       fetchUserProfile();
       loadProfilePhoto();
     };
     fetchProfile();
-    console.log(myInfo);
   }, [postRequestMade]);
 
   return (

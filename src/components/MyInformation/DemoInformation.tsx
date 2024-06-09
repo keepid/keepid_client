@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
 
 function DemoInformation({ data, setData, setPostRequestMade, username }) {
   const [isEditing, setEditing] = useState(false);
-  const [originalData, setOriginalData] = useState(data); // create copy of original data
+  const [originalData, setOriginalData] = useState(data);
+  const alert = useAlert();
 
   const RACE_VALUES = {
     NATIVE_HAWAIIAN: 'Native Hawaiian',
@@ -37,21 +39,21 @@ function DemoInformation({ data, setData, setPostRequestMade, username }) {
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
-          console.log("Successfully updated user's demographic information");
+          alert.show('Successfully updated demographic information.');
           setPostRequestMade(true);
         } else {
-          console.error("Could not update user's demographic information.");
+          alert.show('Error updating demographic information.');
         }
       });
     setEditing(false);
   };
   return (
     <div>
+      <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
+        Demographic Information
+      </p>
       {isEditing ? (
         <form onSubmit={handleSaveEdit}>
-          <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
-            Demographic Information
-          </p>
           <ul className="tw-list-none tw-mb-20">
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
@@ -418,9 +420,6 @@ function DemoInformation({ data, setData, setPostRequestMade, username }) {
         </form>
       ) : (
         <div>
-          <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
-            Demographic Information
-          </p>
           <ul className="tw-list-none tw-mb-20">
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
