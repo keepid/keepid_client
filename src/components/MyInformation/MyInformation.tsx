@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import BasicInformation from './BasicInformation';
@@ -19,6 +20,8 @@ function MyInformation(username, name) {
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
   const [hasOptInfo, setHasOptInfo] = useState(true);
+
+  const location = useLocation();
 
   const [myInfo, setMyInfo] = useState({
     username: '',
@@ -72,6 +75,8 @@ function MyInformation(username, name) {
     rank: '',
     discharge: '',
   });
+
+  const [initialData, setInitialData] = useState(myInfo);
 
   // if opt info does not exist get default user info
   const createOptInfo = () => {
@@ -182,7 +187,7 @@ function MyInformation(username, name) {
           console.log(responseJSON);
           const userDate = responseJSON.optionalUserInformation.birthDate;
           const newDate = format(userDate, 'yyyy MM dd');
-          setMyInfo({
+          const newMyInfo = {
             username: responseJSON.username,
             firstName: responseJSON.basicInfo.firstName,
             middleName: responseJSON.basicInfo.middleName,
@@ -238,11 +243,18 @@ function MyInformation(username, name) {
             yearsOfService: responseJSON.veteranStatus.yearsOfService,
             rank: responseJSON.veteranStatus.rank,
             discharge: responseJSON.veteranStatus.discharge,
-          });
+          };
+          setMyInfo(newMyInfo);
+          setInitialData(newMyInfo);
           setPostRequestMade(false);
         }
       });
   };
+
+  useEffect(() => {
+    // Reset the state when the location changes
+    setMyInfo(initialData);
+  }, [location]);
 
   useEffect(() => {
     console.log(myInfo);
