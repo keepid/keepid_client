@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import BasicInformation from './BasicInformation';
@@ -10,21 +10,23 @@ import NavBar from './NavBar';
 import RecentActivity from './RecentActivity';
 import VeteranInformation from './VeteranInformation';
 
-function MyInformation(username) {
-  const photo = '';
-  // TO USE WHEN USERCONTEXT IS IMPLEMENTED
-  // const { username, organization } = useContext(UserContext);
+function MyInformation(username, name) {
+  const [photo, setPhoto] = useState('');
+  const [photoAvailable, setPhotoAvailable] = useState(false);
+  const hiddenFileInput = useRef();
+  const controllerRef = useRef(new AbortController());
+
   const [section, setSection] = useState('Basic Information');
   const [postRequestMade, setPostRequestMade] = useState(false);
   const [hasOptInfo, setHasOptInfo] = useState(true);
-  const [photoAvailable, setPhotoAvailable] = useState(false);
+
   const [myInfo, setMyInfo] = useState({
-    username: 'JohnDoe',
-    firstName: 'John',
+    username: '',
+    firstName: '',
     middleName: '',
-    lastName: 'Doe',
-    ssn: '123456',
-    birthDate: '12 12 1990',
+    lastName: '',
+    ssn: '',
+    birthDate: '1900 12 12',
     genderAssignedAtBirth: '',
     emailAddress: '',
     phoneNumber: '',
@@ -52,16 +54,16 @@ function MyInformation(username) {
     haveDisability: false,
     languagePreference: '',
     isEthnicityHispanicLatino: false,
-    race: '',
+    race: 'UNSELECTED',
     cityOfBirth: '',
     stateOfBirth: '',
     countryOfBirth: '',
-    citizenship: '',
-    parents: [{ firstName: 'Jane' }, { firstName: 'Kevin' }],
+    citizenship: 'UNSELECTED',
+    parents: [{ firstName: '' }, { firstName: '' }],
     legalGuardians: [],
-    maritalStatus: '',
-    spouse: { firstName: 'Hannah' },
-    children: [{ firstName: 'Mary' }, { firstName: 'John' }],
+    maritalStatus: 'UNSELECTED',
+    spouse: { firstName: '' },
+    children: [{ firstName: '' }, { firstName: '' }],
     siblings: [],
     isVeteran: false,
     isProtectedVeteran: false,
@@ -71,33 +73,97 @@ function MyInformation(username) {
     discharge: '',
   });
 
-  const loadProfilePhoto = (): void => {
-    // const { username } = props.username;
-    // fetch(`${getServerURL()}/load-pfp`, {
-    //   method: 'POST',
-    //   credentials: 'include',
-    //   body: JSON.stringify({
-    //     username,
-    //   }),
-    // })
-    //   .then((response) => response.blob())
-    //   .then((blob) => {
-    //     const { size } = blob;
-    //     if (size > 72) {
-    //       const url = (URL || window.webkitURL).createObjectURL(blob);
-    //       if (url) {
-    //         setPhotoAvailable(true);
-    //         setPhoto(url);
-    //       }
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.log(`Could Not Load Photo.`);
-    //   });
+  // if opt info does not exist get default user info
+  const createOptInfo = () => {
+    fetch(`${getServerURL()}/get-user-info`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        const date = responseJSON.birthDate.toString().split('-');
+        const birthday = new Date(date[2], date[0], date[1]);
+        const birthdayString = format(birthday, 'yyyy mm dd');
+        setMyInfo({
+          ...myInfo,
+          username: responseJSON.username,
+          firstName: responseJSON.firstName,
+          lastName: responseJSON.lastName,
+          emailAddress: responseJSON.email,
+          phoneNumber: responseJSON.phone,
+          birthDate: birthdayString,
+          mailingAddress: {
+            ...myInfo.mailingAddress,
+            city: responseJSON.city,
+            state: responseJSON.state,
+            streetAddress: responseJSON.address,
+            zip: responseJSON.zipcode,
+          },
+        });
+      })
+      .then(() => {
+        fetch(`${getServerURL()}/save-optional-info/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(myInfo),
+        })
+          .then((response) => response.json())
+          .then((responseJSON) => {
+            const { status } = responseJSON;
+            if (status === 'SUCCESS') {
+              console.log('Successfully created optional information');
+              setPostRequestMade(true);
+            } else {
+              console.error('Could not create new optional information.');
+            }
+          });
+      });
+  };
+
+  const loadProfilePhoto = () => {
+    const signal = controllerRef.current?.signal;
+
+    fetch(`${getServerURL()}/load-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username: username.username,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        const { size } = blob;
+
+        const url = (URL || window.webkitURL).createObjectURL(blob);
+        if (url) {
+          console.log('URL created.');
+          setPhoto(url);
+          setPhotoAvailable(true);
+        }
+
+        console.log('Profile photo loaded.');
+      })
+      .catch((error) => {
+        console.log('Could not load profile photo.');
+        console.log(error);
+        // if (error.toString() !== 'AbortError: The user aborted a request.') {
+        //   const { alert } = this.props;
+        //   alert.show(
+        //     `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`
+        //   );
+        // }
+      });
   };
 
   const fetchUserProfile = () => {
-    fetch(`${getServerURL()}/get-optional-info/${username}`, {
+    fetch(`${getServerURL()}/get-optional-info/${username.username}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -107,27 +173,95 @@ function MyInformation(username) {
       .then((response) => response.json())
       .then((responseJSON) => {
         if (responseJSON.status === 'USER_NOT_FOUND') {
-          setHasOptInfo(false);
+          console.log('User not found');
+          // if user doesnt have opt info, then get default user info
+          createOptInfo();
         } else {
-          setMyInfo(responseJSON);
+          console.log('User found');
+          setHasOptInfo(true);
+          console.log(responseJSON);
+          const userDate = responseJSON.optionalUserInformation.birthDate;
+          const newDate = format(userDate, 'yyyy MM dd');
+          setMyInfo({
+            username: responseJSON.username,
+            firstName: responseJSON.basicInfo.firstName,
+            middleName: responseJSON.basicInfo.middleName,
+            lastName: responseJSON.basicInfo.lastName,
+            ssn: responseJSON.basicInfo.ssn,
+            birthDate: newDate,
+            genderAssignedAtBirth: responseJSON.basicInfo.genderAssignedAtBirth,
+            emailAddress: responseJSON.basicInfo.emailAddress,
+            phoneNumber: responseJSON.basicInfo.phoneNumber,
+            mailingAddress: {
+              streetAddress:
+                responseJSON.basicInfo.mailingAddress.streetAddress,
+              apartmentNumber:
+                responseJSON.basicInfo.mailingAddress.apartmentNumber,
+              city: responseJSON.basicInfo.mailingAddress.city,
+              state: responseJSON.basicInfo.mailingAddress.state,
+              zip: responseJSON.basicInfo.mailingAddress.zip,
+            },
+            residentialAddress: {
+              streetAddress:
+                responseJSON.basicInfo.residentialAddress.streetAddress,
+              apartmentNumber:
+                responseJSON.basicInfo.residentialAddress.apartmentNumber,
+              city: responseJSON.basicInfo.residentialAddress.city,
+              state: responseJSON.basicInfo.residentialAddress.state,
+              zip: responseJSON.basicInfo.residentialAddress.zip,
+            },
+            differentBirthName: responseJSON.basicInfo.differentBirthName,
+            suffix: responseJSON.basicInfo.suffix,
+            birthFirstName: responseJSON.basicInfo.birthFirstName,
+            birthMiddleName: responseJSON.basicInfo.birthMiddleName,
+            birthLastName: responseJSON.basicInfo.birthLastName,
+            birthSuffix: responseJSON.basicInfo.birthSuffix,
+            stateIdNumber: responseJSON.basicInfo.stateIdNumber,
+            haveDisability: responseJSON.basicInfo.haveDisability,
+            languagePreference: responseJSON.demographicInfo.languagePreference,
+            isEthnicityHispanicLatino:
+              responseJSON.demographicInfo.isEthnicityHispanicLatino,
+            race: responseJSON.demographicInfo.race,
+            cityOfBirth: responseJSON.demographicInfo.cityOfBirth,
+            stateOfBirth: responseJSON.demographicInfo.stateOfBirth,
+            countryOfBirth: responseJSON.demographicInfo.countryOfBirth,
+            citizenship: responseJSON.demographicInfo.citizenship,
+            parents: responseJSON.familyInfo.parents,
+            legalGuardians: responseJSON.familyInfo.legalGuardians,
+            maritalStatus: responseJSON.familyInfo.maritalStatus,
+            spouse: responseJSON.familyInfo.spouse,
+            children: responseJSON.familyInfo.children,
+            siblings: responseJSON.familyInfo.siblings,
+            isVeteran: responseJSON.veteranStatus.veteran,
+            isProtectedVeteran: responseJSON.veteranStatus.protectedVeteran,
+            branch: responseJSON.veteranStatus.branch,
+            yearsOfService: responseJSON.veteranStatus.yearsOfService,
+            rank: responseJSON.veteranStatus.rank,
+            discharge: responseJSON.veteranStatus.discharge,
+          });
           setPostRequestMade(false);
         }
       });
   };
 
   useEffect(() => {
-    fetchUserProfile();
-    loadProfilePhoto();
+    console.log(myInfo);
+    const fetchProfile = async () => {
+      fetchUserProfile();
+      loadProfilePhoto();
+    };
+    fetchProfile();
+    console.log(myInfo);
   }, [postRequestMade]);
 
   return (
-    <div>
+    <div style={{ paddingBottom: '0', marginBottom: '0' }}>
       <Helmet>
         <title>My Information</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="md:container md:mx-auto">
-        <div className="tw-container">
+      <div className="tw-container tw-pb-0">
+        <div className="tw-container tw-mx-auto tw-h-full">
           <div className="tw-flex tw-flex-row">
             <NavBar setSection={setSection} />
             <div className="tw-container tw-mx-auto">
@@ -147,11 +281,13 @@ function MyInformation(username) {
                   </svg>
                 )}
                 {photoAvailable && (
-                  <img src={photo} alt="User's profile picture" />
+                  <img
+                    className="tw-h-12 tw-rounded-full"
+                    src={photo}
+                    alt="User's profile picture"
+                  />
                 )}
-                <p className="tw-m-0">
-                  {`${myInfo.firstName} ${myInfo.lastName}`}
-                </p>
+                <p className="tw-m-0">{username.name}</p>
               </div>
               <hr className="tw-ml-10" />
               {section === 'Basic Information' && (
@@ -159,7 +295,6 @@ function MyInformation(username) {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
-                  hasOptInfo={hasOptInfo}
                   loadProfilePhoto={loadProfilePhoto}
                   photo={photo}
                   photoAvailable={photoAvailable}
@@ -171,7 +306,7 @@ function MyInformation(username) {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
-                  hasOptInfo={hasOptInfo}
+                  username={username}
                 />
               )}
               {section === 'Demographic Information' && (
@@ -179,7 +314,7 @@ function MyInformation(username) {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
-                  hasOptInfo={hasOptInfo}
+                  username={username}
                 />
               )}
               {section === 'Veteran Status Information' && (
@@ -187,7 +322,7 @@ function MyInformation(username) {
                   data={myInfo}
                   setData={setMyInfo}
                   setPostRequestMade={setPostRequestMade}
-                  hasOptInfo={hasOptInfo}
+                  username={username}
                 />
               )}
               {section === 'Recent Activity' && (

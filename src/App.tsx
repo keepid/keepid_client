@@ -239,7 +239,7 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
-                path="/myinformation"
+                path="/my-information"
                 render={() => {
                   if (
                     role === Role.Admin ||
@@ -247,7 +247,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Client
                   ) {
-                    return <MyInformation username={username} />;
+                    return <MyInformation username={username} name={name} />;
                   }
                   if (role === Role.LoggedOut) {
                     return <Home />;

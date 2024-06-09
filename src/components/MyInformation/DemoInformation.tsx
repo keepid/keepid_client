@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import getServerURL from '../../serverOverride';
 
-function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
+function DemoInformation({ data, setData, setPostRequestMade, username }) {
   const [isEditing, setEditing] = useState(false);
   const [originalData, setOriginalData] = useState(data); // create copy of original data
 
@@ -25,23 +25,18 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(
-      hasOptInfo
-        ? `${getServerURL()}/change-optional-info/`
-        : `${getServerURL()}/save-optional-info/`,
-      {
-        method: hasOptInfo ? 'PATCH' : 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+    fetch(`${getServerURL()}/change-optional-info/`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify(data),
+    })
       .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-        if (status === 'success') {
+        if (status === 'SUCCESS') {
           console.log("Successfully updated user's demographic information");
           setPostRequestMade(true);
         } else {
@@ -69,6 +64,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       id="lang-eng"
                       type="radio"
                       name="lang-pref"
+                      checked={data.languagePreference === 'English'}
                       className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, languagePreference: 'English' });
@@ -87,6 +83,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value=""
                       name="lang-pref"
+                      checked={data.languagePreference === 'Spanish'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, languagePreference: 'Spanish' });
@@ -113,6 +110,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       id="hispanic-yes"
                       type="radio"
                       name="hispanic"
+                      checked={data.isEthnicityHispanicLatino}
                       className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, isEthnicityHispanicLatino: true });
@@ -131,6 +129,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value=""
                       name="hispanic"
+                      checked={!data.isEthnicityHispanicLatino}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, isEthnicityHispanicLatino: false });
@@ -158,6 +157,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="BLACK_AFRICAN_AMERICAN"
                       name="race"
+                      checked={data.race === 'BLACK_AFRICAN_AMERICAN'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -176,6 +176,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="WHITE"
                       name="race"
+                      checked={data.race === 'WHITE'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -194,6 +195,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="AMERICAN_INDIAN"
                       name="race"
+                      checked={data.race === 'AMERICAN_INDIAN'}
                       className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -212,6 +214,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="ASIAN"
                       name="race"
+                      checked={data.race === 'ASIAN'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -230,6 +233,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="ALASKA_NATIVE"
                       name="race"
+                      checked={data.race === 'ALASKA_NATIVE'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -248,6 +252,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="NATIVE_HAWAIIAN"
                       name="race"
+                      checked={data.race === 'NATIVE_HAWAIIAN'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -266,6 +271,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="OTHER_PACIFIC_ISLANDER"
                       name="race"
+                      checked={data.race === 'OTHER_PACIFIC_ISLANDER'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, race: e.target.value });
@@ -293,6 +299,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="US_CITIZEN"
                       name="legal-status"
+                      checked={data.citizenship === 'US_CITIZEN'}
                       className="tw-w-4 tw-h-4 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, citizenship: e.target.value });
@@ -311,6 +318,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="LEGAL_ALLOWED_WORK"
                       name="legal-status"
+                      checked={data.citizenship === 'LEGAL_ALLOWED_WORK'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, citizenship: e.target.value });
@@ -329,6 +337,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="LEGAL_NOT_ALLOWED_WORK"
                       name="legal-status"
+                      checked={data.citizenship === 'LEGAL_NOT_ALLOWED_WORK'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, citizenship: e.target.value });
@@ -347,6 +356,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value="OTHER"
                       name="legal-status"
+                      checked={data.citizenship === 'OTHER'}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({ ...data, citizenship: e.target.value });
@@ -428,7 +438,7 @@ function DemoInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                   Are you Hispanic or Latino?
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.isHispanicOrLatino ? 'Yes' : 'No'}
+                  {data.isEthnicityHispanicLatino ? 'Yes' : 'No'}
                 </p>
               </div>
             </li>

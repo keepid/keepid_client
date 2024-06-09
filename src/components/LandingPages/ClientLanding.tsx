@@ -85,7 +85,7 @@ class ClientLanding extends Component<Props, State, {}> {
         <div className="mb-3">
           <QuickAccessCards />
         </div>
-        <div className="row m-auto mt-5">
+        <div className="tw-flex tw-flex-col lg:tw-flex-row m-auto mt-5">
           <div className="d-flex p-2" id="Print container">
             <BaseCard
               cardTitle="Documents"
@@ -112,12 +112,27 @@ class ClientLanding extends Component<Props, State, {}> {
               buttonOnClick={() => history.push('/applications')}
             />
           </div>
+          <div className="d-flex p-2" id="Information container">
+            <BaseCard
+              cardTitle="Information"
+              cardText="Manage your personal information"
+              buttonText="My Information"
+              cardSize={CardSize.SMALL_HORIZONTAL}
+              imageSrc={AtWorkPic}
+              imageSize="50%"
+              imageLoc={CardImageLoc.RIGHT}
+              imageObjectFit="contain"
+              buttonOnClick={() => history.push('/my-information/')}
+            />
+          </div>
         </div>
         <div className="d-flex p-2 mt-5">
           <h3>Recent Activity</h3>
         </div>
         {isLoading ? <div className="ld ld-ring ld-spin ml-2" /> : <div />}
-        <div>{this.renderActivitiesCard(activities)}</div>
+        <ul className="tw-list-none tw-mb-20">
+          {this.renderActivitiesCard(activities)}
+        </ul>
       </div>
     );
   }

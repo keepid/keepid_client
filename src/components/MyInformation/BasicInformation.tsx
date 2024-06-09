@@ -11,7 +11,6 @@ function BasicInformation({
   data,
   setData,
   setPostRequestMade,
-  hasOptInfo,
   loadProfilePhoto,
   photo,
   photoAvailable,
@@ -24,23 +23,18 @@ function BasicInformation({
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(
-      hasOptInfo
-        ? `${getServerURL()}/change-optional-info/`
-        : `${getServerURL()}/save-optional-info/`,
-      {
-        method: hasOptInfo ? 'PATCH' : 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+    fetch(`${getServerURL()}/change-optional-info/`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify(data),
+    })
       .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-        if (status === 'success') {
+        if (status === 'SUCCESS') {
           console.log("Successfully updated user's basic information");
           setPostRequestMade(true);
         } else {
@@ -58,10 +52,16 @@ function BasicInformation({
             Basic Information
           </p>
           <div className="tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-            {photoAvailable && { photo }}
+            {photoAvailable && (
+              <img
+                className="tw-h-14 tw-rounded-full"
+                src={photo}
+                alt="User's profile picture"
+              />
+            )}
             {!photoAvailable && (
               <svg
-                className="tw-h-12 tw-w-12 tw-text-gray-300"
+                className="tw-h-14 tw-w-14 tw-text-gray-300"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -427,18 +427,27 @@ function BasicInformation({
             Basic Information
           </p>
           <div className="tw-pl-10 tw-my-8 tw-flex tw-items-center tw-gap-x-3">
-            <svg
-              className="tw-h-12 tw-w-12 tw-text-gray-300"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                clipRule="evenodd"
+            {photoAvailable && (
+              <img
+                className="tw-h-14 tw-rounded-full"
+                src={photo}
+                alt="User's profile picture"
               />
-            </svg>
+            )}
+            {!photoAvailable && (
+              <svg
+                className="tw-h-14 tw-w-14 tw-text-gray-300"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
             <button
               type="button"
               onClick={() => setModalOpen(true)}
@@ -484,7 +493,7 @@ function BasicInformation({
                   Gender
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.gender}
+                  {data.genderAssignedAtBirth}
                 </p>
               </div>
             </li>

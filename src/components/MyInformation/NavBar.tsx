@@ -64,10 +64,10 @@ function NavBar({ setSection }) {
           </li>
         ))}
       </ul>
-      <Link to="/dashboard">
+      <Link to="/home">
         <button
           type="button"
-          className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-black tw-shadow-sm tw-border-none hover:tw-bg-indigo-300 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
+          className="tw-rounded-md tw-bg-white tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-semibold tw-text-black tw-shadow-sm tw-border-none hover:tw-bg-gray-300 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600"
         >
           <ChevronLeftIcon className="tw-w-5" />
           Back to dashboard

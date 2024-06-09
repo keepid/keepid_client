@@ -2,29 +2,24 @@ import React, { useState } from 'react';
 
 import getServerURL from '../../serverOverride';
 
-function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
+function VeteranInformation({ data, setData, setPostRequestMade, username }) {
   const [isEditing, setEditing] = useState(false);
   const [originalData, setOriginalData] = useState(data); // create copy of original data
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(
-      hasOptInfo
-        ? `${getServerURL()}/change-optional-info/`
-        : `${getServerURL()}/save-optional-info/`,
-      {
-        method: hasOptInfo ? 'PATCH' : 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+    fetch(`${getServerURL()}/change-optional-info/`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify(data),
+    })
       .then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
-        if (status === 'success') {
+        if (status === 'SUCCESS') {
           console.log("Successfully updated user's veteran information");
           setPostRequestMade(true);
         } else {
@@ -53,9 +48,10 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       id="veteran-status-yes"
                       type="radio"
                       name="veteran-status"
+                      checked={data.isVeteran}
                       className="tw-w-4 tw-h-4 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
-                        setData({ ...data, isVeteran: e.target.checked });
+                        setData({ ...data, isVeteran: true });
                       }}
                     />
                     <label
@@ -70,9 +66,10 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       id="veteran-status-no"
                       type="radio"
                       name="veteran-status"
+                      checked={!data.isVeteran}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
-                        setData({ ...data, isVeteran: !e.target.checked });
+                        setData({ ...data, isVeteran: false });
                       }}
                     />
                     <label
@@ -97,6 +94,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value=""
                       name="veteran-protection"
+                      checked={data.isProtectedVeteran}
                       className="tw-w-4 tw-h-4 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({
@@ -118,6 +116,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                       type="radio"
                       value=""
                       name="veteran-protection"
+                      checked={!data.isProtectedVeteran}
                       className="tw-w-4 tw-h-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500 dark:focus:tw-ring-blue-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600"
                       onChange={(e) => {
                         setData({
@@ -261,7 +260,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                   Are you a veteran?
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.veteranStatus ? 'Yes' : 'No'}
+                  {data.isVeteran ? 'Yes' : 'No'}
                 </p>
               </div>
             </li>
@@ -311,7 +310,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, hasOptInfo }) {
                   Rank at discharge
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.discharge}
+                  {data.rank}
                 </p>
               </div>
             </li>
