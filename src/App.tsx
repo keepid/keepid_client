@@ -389,6 +389,17 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                path="/upload-document-admin"
+                render={() => {
+                  if (
+                    role === Role.Admin
+                  ) {
+                    return <UploadDocs userRole={role} username={username} admin={1} />;
+                  }
+                  return <Home />;
+                }}
+              />
+              <Route
                 path="/my-documents/:username"
                 render={(props) => {
                   const clientName = props.match.params.username;
