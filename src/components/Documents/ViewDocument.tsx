@@ -5,6 +5,7 @@ import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
 import { setConstantValue } from 'typescript';
 
+import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
@@ -28,6 +29,7 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
+  const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
     let pdfType;

@@ -2,7 +2,7 @@ import './static/styles/App.scss';
 import './static/styles/Table.scss';
 import './static/styles/BaseCard.scss';
 
-import React from 'react';
+import React, { createContext } from 'react';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 import {
@@ -57,6 +57,15 @@ interface State {
   organization: string;
   autoLogout: boolean;
 }
+
+interface ContextInterface {
+  username: string;
+  organization: string;
+}
+export const UserContext = React.createContext<ContextInterface>({
+  username: '',
+  organization: '',
+});
 
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
@@ -187,6 +196,7 @@ class App extends React.Component<{}, State, {}> {
     const { role, username, name, organization, autoLogout } = this.state;
     return (
       <Router>
+        <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>
         <div className="App">
           <div className="app">
             <Helmet>
@@ -495,6 +505,7 @@ class App extends React.Component<{}, State, {}> {
           </div>
           <Footer />
         </div>
+        </UserContext.Provider>
       </Router>
     );
   }
