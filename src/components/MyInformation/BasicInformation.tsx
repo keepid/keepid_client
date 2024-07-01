@@ -476,7 +476,7 @@ function BasicInformation({
                   Social security number
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                  {data.ssn}
+                  {data.ssn ? '***-**-****' : ''}
                 </p>
               </div>
             </li>
