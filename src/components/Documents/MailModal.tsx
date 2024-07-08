@@ -1,8 +1,9 @@
 import { Dialog } from '@headlessui/react';
 import { PieCanvas } from '@nivo/pie';
 import { stringify } from 'querystring';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
+import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import { LoadingButton } from '../BaseComponents/Button';
 // import {UserContext} from '../../App';
@@ -34,54 +35,99 @@ export const MailModal: React.FC<Props> = ({
   documentUploader,
   documentName,
 }) => {
-  // const userInformation = useContext(UserContext); Can use this when org-context is pulled.
-  const userInformation = {
-    username: 'foo',
-    organization: 'bar',
-  };
-
+  const { username, organization } = useContext(UserContext);
   const [editableAddress, setEditableAddress] = useState(false);
-  const [editableReturnAddress, setEditableReturnAddress] = useState(false);
+  const getInitialReturnAddress = () => {
+    if (organization === 'Team Keep') {
+      return 'Why not Prosper\n1501 Cherry Street\nPhiladelphia, PA 19102';
+    }
+    return '';
+  };
+  const [editableReturnAddress, setEditableReturnAddress] = useState(getInitialReturnAddress);
   const [address, setAddress] = useState('');
-  const [returnAddress, setReturnAddress] = useState('');
+  const [returnAddress, setReturnAddress] = useState(getInitialReturnAddress);
   const [price, setPrice] = useState('');
   const [inputtedAddress, setInputtedAddress] = useState(false);
   const [inputtedReturn, setInputtedReturn] = useState(false);
   const [showInputError, setShowInputError] = useState(false);
   // inputted_address = true; // doesn't work because its not a variable but a state
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${getServerURL()}/get-mail-info`, {
-          method: 'POST',
-          body: JSON.stringify({
-            username: userInformation.username,
-            organization: userInformation.organization,
-            applicationType: documentName,
-          }),
-        });
+  const formatAddress = (address: any): string => {
+    if (!address) return '';
 
-        const responseData = await response.json();
+    const parts = [
+      address.office_name,
+      address.street1,
+      address.street2,
+      `${address.city}, ${address.state} ${address.zipcode}`,
+    ].filter((part) => part && part.trim() !== '');
 
-        // Log the entire parsed JSON response
-        console.log(responseData);
-        const { status, price, mailAddress, returnAddress } = responseData;
+    return parts.join('\n');
+  };
 
-        if (status === 'SUCCESS') {
-          setPrice(price); // Assuming you handle this price state in a parent component
-          // setAddress(mailAddress); // Set local state
-          // setReturnAddress(returnAddress); // Set local state
-        }
-      } catch (err) {
-        console.log(err);
-        alert.show('Failed to retrieve Address and Price. Please try again.');
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`${getServerURL()}/get-form-mail-addresses`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
-    fetchData();
-    setInputtedAddress(false);
-    setInputtedReturn(false);
-  }, []);
+
+      const data = await response.json();
+      console.log('Raw response data:', data);
+
+      // Log the frontend document name
+      console.log('Frontend document name:', documentName);
+
+      // Log all document names from the response
+      console.log('Document names in response:');
+      Object.entries(data).forEach(([key, value]) => {
+        console.log(`${key}: ${(value as any).name}`);
+      });
+
+      // Find the matching address based on the document name
+      const matchingAddress = Object.entries(data).find(([key, value]) =>
+        (value as any).name.toLowerCase().includes(documentName.toLowerCase()));
+
+      if (matchingAddress) {
+        const [addressKey, addressDetails] = matchingAddress;
+        console.log('Matching address found:', addressKey);
+        console.log('Address details:', addressDetails);
+
+        // Log specific details of the address
+        console.log('Office Name:', (addressDetails as any).office_name);
+        console.log('Street:', (addressDetails as any).street1);
+        console.log('City:', (addressDetails as any).city);
+        console.log('State:', (addressDetails as any).state);
+        console.log('Zipcode:', (addressDetails as any).zipcode);
+
+        // Format the address and set it in state
+        const formattedAddress = formatAddress(addressDetails);
+        setAddress(formattedAddress);
+
+        console.log('Formatted address:', formattedAddress);
+      } else {
+        console.warn('No matching address found for document name:', documentName);
+        setAddress('');
+      }
+    } catch (err: any) {
+      console.error('Error fetching address:', (err as Error).message);
+      alert.show('Failed to retrieve address. Please try again.');
+      setAddress('');
+    }
+  };
+
+  useEffect(() => {
+    if (isVisible) {
+      console.log(organization);
+      fetchData();
+      setInputtedAddress(false);
+      setInputtedReturn(false);
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     console.log('Address updated:', address);
@@ -159,15 +205,16 @@ export const MailModal: React.FC<Props> = ({
                     </div>
                     <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
                       <label className="tw-pl-2">Address</label>
-                      {true ? (
-                        <input
-                          type="text"
-                          value={address}
-                          onChange={(event) => setAddress(event.target.value)}
-                        />
-                      ) : (
-                        <span className="tw-font-semibold">{address}</span>
-                      )}
+                        {true ? (
+                          <textarea
+                            value={address}
+                            onChange={(event) => setAddress(event.target.value)}
+                            rows={4}
+                            className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
+                          />
+                        ) : (
+                          <span className="tw-font-semibold tw-whitespace-pre-wrap">{address}</span>
+                        )}
                       {/* <div className="tw-justify-self-end">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -177,10 +224,11 @@ export const MailModal: React.FC<Props> = ({
                     <div className="tw-grid tw-grid-cols-3 tw-p-4">
                       <label className="tw-pl-2">Return Address</label>
                       {true ? (
-                        <input
-                          type="text"
+                        <textarea
                           value={returnAddress}
                           onChange={(event) => setReturnAddress(event.target.value)}
+                          rows={4}
+                          className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
                         />
                       ) : (
                         <span className="tw-font-semibold">{returnAddress}</span>
