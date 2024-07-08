@@ -34,6 +34,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   useEffect(() => {
     let pdfType;
 
+    console.log('documentName:', documentName);
+    console.log('organization:', organization);
+
     if (
       userRole === Role.Worker ||
       userRole === Role.Admin ||
