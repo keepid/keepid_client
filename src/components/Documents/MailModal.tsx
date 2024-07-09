@@ -1,7 +1,7 @@
 import { Dialog } from '@headlessui/react';
 import { PieCanvas } from '@nivo/pie';
 import { stringify } from 'querystring';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
@@ -22,6 +22,18 @@ interface Props{
     documentName: string;
 }
 
+interface AddressData {
+  nameForCheck: string;
+  officeName: string;
+  state: string;
+  street1: string;
+  street2: string;
+  city: string;
+  zipcode: string;
+  description?: string;
+  name?: string;
+}
+
 export const MailModal: React.FC<Props> = ({
   alert,
   isVisible,
@@ -36,34 +48,82 @@ export const MailModal: React.FC<Props> = ({
   documentName,
 }) => {
   const { username, organization } = useContext(UserContext);
-  const [editableAddress, setEditableAddress] = useState(false);
-  const getInitialReturnAddress = () => {
-    if (organization === 'Team Keep') {
-      return 'Why not Prosper\n1501 Cherry Street\nPhiladelphia, PA 19102';
-    }
-    return '';
-  };
-  const [editableReturnAddress, setEditableReturnAddress] = useState(getInitialReturnAddress);
-  const [address, setAddress] = useState('');
-  const [returnAddress, setReturnAddress] = useState(getInitialReturnAddress);
+  const [addressData, setAddressData] = useState<AddressData>({
+    nameForCheck: '',
+    officeName: '',
+    state: '',
+    street1: '',
+    street2: '',
+    city: '',
+    zipcode: '',
+    description: '',
+    name: '',
+  });
+
+  const [returnAddressData, setReturnAddressData] = useState<AddressData>({
+    nameForCheck: '',
+    officeName: '',
+    state: '',
+    street1: '',
+    street2: '',
+    city: '',
+    zipcode: '',
+    description: '',
+    name: '',
+  });
+
   const [price, setPrice] = useState('');
-  const [inputtedAddress, setInputtedAddress] = useState(false);
-  const [inputtedReturn, setInputtedReturn] = useState(false);
   const [showInputError, setShowInputError] = useState(false);
-  // inputted_address = true; // doesn't work because its not a variable but a state
 
-  const formatAddress = (address: any): string => {
-    if (!address) return '';
-
-    const parts = [
-      address.office_name,
-      address.street1,
-      address.street2,
-      `${address.city}, ${address.state} ${address.zipcode}`,
-    ].filter((part) => part && part.trim() !== '');
-
-    return parts.join('\n');
+  const getInitialReturnAddress = (): AddressData => {
+    if (organization === 'Team Keep') {
+      return {
+        nameForCheck: '',
+        officeName: 'Team Keep',
+        street1: '520 Carpenter Ln',
+        street2: 'COMM',
+        city: 'Philadelphia',
+        state: 'PA',
+        zipcode: '19119',
+        description: '',
+        name: '',
+      };
+    } if (organization === 'Why not Prosper') {
+      return {
+        nameForCheck: '',
+        officeName: 'Why Not Prosper',
+        street1: '717 E Chelten Ave',
+        street2: '',
+        city: 'Philadelphia',
+        state: 'PA',
+        zipcode: '19144',
+        description: '',
+        name: '',
+      };
+    }
+    return {
+      nameForCheck: '',
+      officeName: '',
+      street1: '',
+      street2: '',
+      city: '',
+      state: '',
+      zipcode: '',
+      description: '',
+      name: '',
+    };
   };
+
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const handleQuestionMarkHover = () => {
+    setShowTooltip(true);
+  };
+
+  useEffect(() => {
+    setReturnAddressData(getInitialReturnAddress());
+  }, [organization]);
 
   const fetchData = async () => {
     try {
@@ -79,15 +139,6 @@ export const MailModal: React.FC<Props> = ({
       const data = await response.json();
       console.log('Raw response data:', data);
 
-      // Log the frontend document name
-      console.log('Frontend document name:', documentName);
-
-      // Log all document names from the response
-      console.log('Document names in response:');
-      Object.entries(data).forEach(([key, value]) => {
-        console.log(`${key}: ${(value as any).name}`);
-      });
-
       // Find the matching address based on the document name
       const matchingAddress = Object.entries(data).find(([key, value]) =>
         (value as any).name.toLowerCase().includes(documentName.toLowerCase()));
@@ -97,80 +148,106 @@ export const MailModal: React.FC<Props> = ({
         console.log('Matching address found:', addressKey);
         console.log('Address details:', addressDetails);
 
-        // Log specific details of the address
-        console.log('Office Name:', (addressDetails as any).office_name);
-        console.log('Street:', (addressDetails as any).street1);
-        console.log('City:', (addressDetails as any).city);
-        console.log('State:', (addressDetails as any).state);
-        console.log('Zipcode:', (addressDetails as any).zipcode);
-
-        // Format the address and set it in state
-        const formattedAddress = formatAddress(addressDetails);
-        setAddress(formattedAddress);
-
-        console.log('Formatted address:', formattedAddress);
+        // Set the address data
+        setAddressData({
+          nameForCheck: (addressDetails as any).name_for_check || '',
+          officeName: (addressDetails as any).office_name || '',
+          state: (addressDetails as any).state || '',
+          street1: (addressDetails as any).street1 || '',
+          street2: (addressDetails as any).street2 || '',
+          city: (addressDetails as any).city || '', // Include city
+          zipcode: (addressDetails as any).zipcode || '',
+          description: (addressDetails as any).description || '',
+          name: (addressDetails as any).name || '',
+        });
       } else {
         console.warn('No matching address found for document name:', documentName);
-        setAddress('');
+        setAddressData({
+          nameForCheck: '',
+          officeName: '',
+          state: '',
+          street1: '',
+          street2: '',
+          city: '',
+          zipcode: '',
+          description: '',
+          name: '',
+        });
       }
     } catch (err: any) {
       console.error('Error fetching address:', (err as Error).message);
       alert.show('Failed to retrieve address. Please try again.');
-      setAddress('');
+      setAddressData({
+        nameForCheck: '',
+        officeName: '',
+        state: '',
+        street1: '',
+        street2: '',
+        city: '',
+        zipcode: '',
+        description: '',
+        name: '',
+      });
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsVisible(false);
+    setShowInputError(false); // Clear the error message
   };
 
   useEffect(() => {
     if (isVisible) {
       console.log(organization);
       fetchData();
-      setInputtedAddress(false);
-      setInputtedReturn(false);
+      setShowInputError(false); // Clear any previous error messages
     }
   }, [isVisible]);
 
-  useEffect(() => {
-    console.log('Address updated:', address);
-    setInputtedAddress(false);
-  }, [address]);
-
-  useEffect(() => {
-    console.log('Return Address updated:', returnAddress);
-    setInputtedReturn(false);
-  }, [returnAddress]);
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>, isReturnAddress: boolean) => {
+    const { name, value } = e.target;
+    if (isReturnAddress) {
+      setReturnAddressData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setAddressData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
   const mailForm = async () => {
-    if (address === '' || returnAddress === '') {
-      // if either address is not valid, put that logic here
+    const requiredFields = ['officeName', 'street1', 'city', 'state', 'zipcode'];
+    const isAddressValid = requiredFields.every((field) => addressData[field] !== '');
+    const isReturnAddressValid = requiredFields.every((field) => returnAddressData[field] !== '');
+
+    if (!isAddressValid || !isReturnAddressValid) {
       setShowInputError(true);
     } else {
+      setShowInputError(false);
       const today = new Date();
-      const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
-
-      const description = `
-        User Role: ${userRole}
-        Target User: ${targetUser}
-        Document Name: ${documentName}
-        Document ID: ${documentId}
-        DocumentDate: ${documentDate}
-        DocumentUploader: ${documentUploader}
-        price: ${price}
-        mailAddress: ${address}
-        returnAddress: ${returnAddress}
-        Submission Date: ${date}`;
+      const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
       try {
         const response = await fetch(`${getServerURL()}/submit-mail`, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
           body: JSON.stringify({
-            username,
-            email: 'foo@email.com',
-            title: 'Mail Submission',
+            username: targetUser,
             fileId: documentId,
+            mailAddress: {
+              name: addressData.name || '',
+              description: `Document Name: ${documentName}, Document Date: ${documentDate}, Document Uploader: ${documentUploader}, Submission Date: ${date}`,
+              office_name: addressData.officeName,
+              name_for_check: addressData.nameForCheck,
+              street1: addressData.street1,
+              street2: addressData.street2,
+              city: addressData.city,
+              state: addressData.state,
+              zipcode: addressData.zipcode,
+            },
+            returnAddress: returnAddressData,
             price,
-            mailAddress: address,
-            returnAddress,
-            description,
           }),
         });
 
@@ -191,68 +268,144 @@ export const MailModal: React.FC<Props> = ({
     }
   };
 
-  return (
-        <div>
-            <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
+  const renderAddressFields = (data: AddressData, isReturnAddress: boolean) => (
+    <div className="tw-space-y-4 tw-p-4">
+      <div>
+        <label className="tw-block tw-mb-1 tw-font-semibold">Office Name</label>
+        <input
+          type="text"
+          name="officeName"
+          value={data.officeName}
+          onChange={(e) => handleAddressChange(e, isReturnAddress)}
+          className={`tw-w-full tw-p-2 tw-border ${showInputError && data.officeName
+             === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+          placeholder="Enter office name"
+        />
+      </div>
 
-                <div className="tw-fixed tw-inset-0 tw-bg-black/30" aria-hidden="true" />
+      <div>
+        <label className="tw-block tw-mb-1 tw-font-semibold">Address</label>
+        <input
+          type="text"
+          name="street1"
+          value={data.street1}
+          onChange={(e) => handleAddressChange(e, isReturnAddress)}
+          className={`tw-w-full tw-p-2 tw-border ${showInputError && data.street1 === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded tw-mb-2`}
+          placeholder="Street Address or P.O. Box"
+        />
+        <input
+          type="text"
+          name="street2"
+          value={data.street2}
+          onChange={(e) => handleAddressChange(e, isReturnAddress)}
+          className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
+          placeholder="Apt, suite, building, floor, etc. (optional)"
+        />
+      </div>
 
-                <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center">
-
-                  <Dialog.Panel className="tw-h-auto tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg">
-                    <div className="tw-p-4">
-                      <p className="tw-text-left placeholder:tw-font-body tw-text-2xl tw-font-semibold tw-pt-2 tw-pl-2">Please Confirm the following Mail Information</p>
-                      {showInputError && <p className="tw-pl-2 tw-text-red-500 tw-font-body tw-text-sm"> Please enter a mail address and return address </p>}
-                    </div>
-                    <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
-                      <label className="tw-pl-2">Address</label>
-                        {true ? (
-                          <textarea
-                            value={address}
-                            onChange={(event) => setAddress(event.target.value)}
-                            rows={4}
-                            className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
-                          />
-                        ) : (
-                          <span className="tw-font-semibold tw-whitespace-pre-wrap">{address}</span>
-                        )}
-                      {/* <div className="tw-justify-self-end">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableAddress(!editableAddress)}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <div className="tw-grid tw-grid-cols-3 tw-p-4">
-                      <label className="tw-pl-2">Return Address</label>
-                      {true ? (
-                        <textarea
-                          value={returnAddress}
-                          onChange={(event) => setReturnAddress(event.target.value)}
-                          rows={4}
-                          className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
-                        />
-                      ) : (
-                        <span className="tw-font-semibold">{returnAddress}</span>
-                      )}
-                      {/* <div className="tw-justify-self-end">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-cursor-pointer" onClick={() => setEditableReturnAddress(!editableReturnAddress)}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
-                      <label className="tw-pl-2">Total Price</label>
-                      <span className="tw-font-semibold">${price}</span>
-                    </div>
-                    <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-3 tw-gap-60 sm:tw-gap-60">
-                      <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={() => setIsVisible(false)}>Cancel</button>
-                      <div />
-                      <LoadingButton onClick={mailForm}>Yes, mail </LoadingButton>
-                    </div>
-                  </Dialog.Panel>
-                </div>
-            </Dialog>
+      <div className="tw-flex tw-space-x-2">
+        <div className="tw-flex-grow">
+          <label className="tw-block tw-mb-1 tw-font-semibold">City</label>
+          <input
+            type="text"
+            name="city"
+            value={data.city}
+            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            className={`tw-w-full tw-p-2 tw-border ${showInputError && data.city === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+            placeholder="E.g. Philadelphia"
+          />
         </div>
+        <div className="tw-w-20">
+          <label className="tw-block tw-mb-1 tw-font-semibold">State</label>
+          <input
+            type="text"
+            name="state"
+            value={data.state}
+            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            className={`tw-w-full tw-p-2 tw-border ${showInputError && data.state === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+            placeholder="E.g. PA"
+          />
+        </div>
+        <div className="tw-w-32">
+          <label className="tw-block tw-mb-1 tw-font-semibold">ZIP code</label>
+          <input
+            type="text"
+            name="zipcode"
+            value={data.zipcode}
+            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            className={`tw-w-full tw-p-2 tw-border ${showInputError && data.zipcode === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+            placeholder="5 digit ZIP code"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <Dialog open={isVisible} onClose={() => setIsVisible(false)}>
+        <div className="tw-fixed tw-inset-0 tw-bg-black/30" aria-hidden="true" />
+        <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center">
+          <Dialog.Panel className="tw-h-[86vh] tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg tw-relative tw-overflow-hidden">
+            <Dialog.Panel className="tw-h-[86vh] tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg tw-relative tw-overflow-hidden">
+                <div className="tw-overflow-y-auto tw-flex-grow">
+                <div className="tw-p-4">
+                  <p className="tw-text-left placeholder:tw-font-body tw-text-2xl tw-font-semibold tw-pt-2 tw-pl-2">Please Confirm the following Mail Information</p>
+                  {showInputError && <p className="tw-pl-2 tw-text-red-500 tw-font-body tw-text-sm"> Please fill in all address fields </p>}
+                </div>
+                <div className="tw-bg-gray-100">
+                  <h3 className="tw-text-lg tw-font-semibold tw-p-2 tw-flex tw-items-center tw-relative">
+                    Mailing Address
+                    <span
+                      className="tw-ml-2 tw-cursor-help tw-relative"
+                      onMouseEnter={handleQuestionMarkHover}
+                      onMouseLeave={() => setShowTooltip(false)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-5 tw-h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                      </svg>
+                      {showTooltip && (
+                        <div
+                          ref={tooltipRef}
+                          className="tw-absolute tw-bg-black tw-text-white tw-p-2 tw-rounded tw-text-sm tw-z-50 tw-w-64"
+                          style={{ top: 'calc(100% + 10px)', left: 'calc(100% - 20px)', transform: 'translateX(-100%)' }}
+                        >
+                          The addresses has been prepopulated based on the form name and your registered organization
+                        </div>
+                      )}
+                    </span>
+                  </h3>
+                  {renderAddressFields(addressData, false)}
+                </div>
+                <div>
+                  <h3 className="tw-text-lg tw-font-semibold tw-p-2">Return Address</h3>
+                  {renderAddressFields(returnAddressData, true)}
+                </div>
+                <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
+                  <label className="tw-pl-2">Total Price</label>
+                  <span className="tw-font-semibold">${price}</span>
+                </div>
+                <div className="tw-grid tw-grid-cols-3 tw-p-4">
+                  <label className="tw-pl-2">Name for Check</label>
+                  <input
+                    type="text"
+                    name="nameForCheck"
+                    value={addressData.nameForCheck}
+                    onChange={(e) => handleAddressChange(e, false)}
+                    className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
+                  />
+                </div>
+                <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-3 tw-gap-60 sm:tw-gap-60">
+                <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={handleCloseModal}>Cancel</button>
+                  <div />
+                  <LoadingButton onClick={mailForm}>Yes, mail</LoadingButton>
+                </div>
+                </div>
+            </Dialog.Panel>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    </div>
   );
 };
 
