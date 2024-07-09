@@ -160,9 +160,10 @@ export const MailModal: React.FC<Props> = ({
         Submission Date: ${date}`;
 
       try {
-        const response = await fetch(`${getServerURL()}/mail-file`, {
+        const response = await fetch(`${getServerURL()}/submit-mail`, {
           method: 'POST',
           body: JSON.stringify({
+            username,
             email: 'foo@email.com',
             title: 'Mail Submission',
             fileId: documentId,
