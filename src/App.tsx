@@ -47,7 +47,7 @@ import getServerURL from './serverOverride';
 import Role from './static/Role';
 
 window.onload = () => {
-  ReactGA.initialize('G-Q79GHZ23KS');
+  ReactGA.initialize('AW-391118279');
   ReactGA.pageview(window.location.pathname + window.location.search);
 };
 

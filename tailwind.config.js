@@ -15,6 +15,7 @@ module.exports = withMT({
       },
       colors: {
         twprimary: '#445FEB',
+        footerblack: '#1D1D1D',
       },
     },
   },
