@@ -1,17 +1,17 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const withMT = require('@material-tailwind/react/utils/withMT');
+
+module.exports = withMT({
   corePlugins: {
     preflight: false,
   },
-  prefix: "tw-",
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  prefix: 'tw-',
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       // ...
       fontFamily: {
-        body: ['Inter']
+        body: ['Inter'],
       },
       colors: {
         twprimary: '#445FEB',
@@ -20,4 +20,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+});
