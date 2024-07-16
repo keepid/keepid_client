@@ -87,7 +87,7 @@ function MyInformation(username) {
       .then((responseJSON) => {
         const date = responseJSON.birthDate.toString().split('-');
         const birthday = new Date(date[2], date[0], date[1]);
-        const birthdayString = format(birthday, 'yyyy mm dd');
+        const birthdayString = format(birthday, 'yyyy-mm-dd');
         setMyInfo({
           ...myInfo,
           username: responseJSON.username,
@@ -164,7 +164,7 @@ function MyInformation(username) {
           createOptInfo();
         } else {
           const userDate = responseJSON.optionalUserInformation.birthDate;
-          const newDate = format(userDate, 'yyyy MM dd');
+          const newDate = format(userDate, 'yyyy-MM-dd');
           const newMyInfo = {
             username: responseJSON.username,
             firstName: responseJSON.basicInfo.firstName,

@@ -42,6 +42,17 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
     [setData],
   );
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString); // Parse the date string
+    const utcDate = new Date(date.toUTCString()); // Convert to UTC
+
+    const year = utcDate.getUTCFullYear(); // Get the year
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0'); // Get the month and pad with zero if needed
+    const day = String(utcDate.getUTCDate()).padStart(2, '0'); // Get the day and pad with zero if needed
+
+    return `${year}-${month}-${day}`; // Format to yyyy-mm-dd
+  };
+
   const RenderRelationList = ({ relation }) => {
     const name = relation === 'parents' ? 'Parent' : 'Child';
     return (
@@ -98,7 +109,7 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
                     {name} {id + 1} date of birth
                   </p>
                   <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                    {data[relation][id].birthDate}
+                    {formatDate(data[relation][id].birthDate)}
                   </p>
                 </div>
               </li>
@@ -270,7 +281,7 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
                               type="text"
                               name={`${relation}-birthday-${id + 1}`}
                               id={`${relation}-birthday-${id + 1}`}
-                              value={type.birthDate}
+                              value={formatDate(type.birthDate)}
                               onClick={() =>
                                 setActiveCalendar(
                                   `${relation}-birthday-${id + 1}`,
@@ -291,7 +302,7 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
                                     if (date) {
                                       const formattedDate = format(
                                         date,
-                                        'yyyy MM dd',
+                                        'yyyy-MM-dd',
                                       );
                                       handleInputChange(
                                         relation,
