@@ -134,14 +134,14 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      pdfType = PDFType.ANNOTATED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -180,7 +180,7 @@ class MyDocuments extends Component<Props, State> {
   handleFilePrint(rowIndex: number) {
     const { userRole, alert } = this.props;
     const { documentData } = this.state;
-
+    console.log(documentData);
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
@@ -191,14 +191,14 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      pdfType = PDFType.ANNOTATED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -243,14 +243,14 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      pdfType = PDFType.ANNOTATED_APPLICATION;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
 
-    fetch(`${getServerURL()}/delete-document/`, {
+    fetch(`${getServerURL()}/delete-pdf-2/`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -276,16 +276,16 @@ class MyDocuments extends Component<Props, State> {
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      pdfType = PDFType.ANNOTATED_APPLICATION;
     } else if (userRole === Role.Client) {
       if (this.props.username !== '') {
         targetUser = this.props.username;
       }
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      pdfType = PDFType.CLIENT_UPLOADED_DOCUMENT;
     } else {
       pdfType = undefined;
     }
-    fetch(`${getServerURL()}/get-documents `, {
+    fetch(`${getServerURL()}/filter-pdf-2 `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -296,6 +296,7 @@ class MyDocuments extends Component<Props, State> {
       .then((response) => response.json())
       .then((responseJSON) => {
         const { documents } = responseJSON;
+        console.log(documents);
         this.setState({ documentData: documents });
       });
   }
@@ -388,7 +389,7 @@ class MyDocuments extends Component<Props, State> {
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
               documentUploader={currentUploader}
-              targetUser={username}
+              targetUser={currentUploader}
               resetDocumentId={this.resetDocumentId}
             />
           ) : (

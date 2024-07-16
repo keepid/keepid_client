@@ -37,6 +37,7 @@ interface Props {
 interface State {
   fields: Field[] | undefined;
   formAnswers: { [fieldName: string]: any };
+  verificationCheckbox: boolean;
   pdfApplication: File | undefined;
   buttonState: string;
   title: string;
@@ -58,6 +59,7 @@ class ApplicationForm extends Component<Props, State> {
     this.state = {
       fields: undefined,
       formAnswers: {},
+      verificationCheckbox: false,
       pdfApplication: undefined,
       buttonState: '',
       title: '',
@@ -73,7 +75,7 @@ class ApplicationForm extends Component<Props, State> {
   componentDidMount() {
     const { applicationId, clientUsername } = this.props;
     const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-application-questions`, {
+    fetch(`${getServerURL()}/get-questions-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -86,6 +88,7 @@ class ApplicationForm extends Component<Props, State> {
         const { status } = responseJSON;
         if (status === 'SUCCESS') {
           const { fields, title, description } = responseJSON;
+          console.log(responseJSON);
           // Get every field and give it a unique ID
           for (let i = 0; i < fields.length; i += 1) {
             fields[i].fieldID = uuid();
@@ -105,7 +108,7 @@ class ApplicationForm extends Component<Props, State> {
             numPages:
               fields.length === 0
                 ? 1
-                : Math.ceil(fields.length / MAX_Q_PER_PAGE),
+                : Math.ceil(fields.length / MAX_Q_PER_PAGE) + 1,
           });
         } else {
           this.setState({
@@ -243,7 +246,7 @@ class ApplicationForm extends Component<Props, State> {
               className="custom-control-input mr-2"
               id={entry.fieldName}
               onChange={this.handleChangeFormValueCheckBox}
-              checked={formAnswers[entry.fieldName]}
+              checked={formAnswers[entry.fieldName] === 'true'}
               required={entry.fieldIsRequired}
               readOnly={entry.fieldIsMatched}
             />
@@ -404,15 +407,21 @@ class ApplicationForm extends Component<Props, State> {
     }
 
     this.setState({ buttonState: 'running' });
+    console.log(applicationId);
+    console.log(clientUsername);
+    console.log(formAnswers);
 
-    fetch(`${getServerURL()}/fill-application`, {
+    const formData = new FormData();
+    const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
+    formData.append('signature', signature);
+    formData.append('clientUsername', clientUsername);
+    formData.append('applicationId', applicationId);
+    formData.append('formAnswers', formAnswers.toString());
+
+    fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        applicationId,
-        clientUsername,
-        formAnswers,
-      }),
+      body: formData,
     })
       .then((response) => response.blob())
       .then((responseBlob) => {
@@ -429,6 +438,19 @@ class ApplicationForm extends Component<Props, State> {
       });
   };
 
+  handleVerificationCheckbox = (event: any) => {
+    const { verificationCheckbox } = this.state;
+    this.setState({ verificationCheckbox: !verificationCheckbox });
+  }
+
+  // handleChangeFormValueCheckBox = (event: any) => {
+  //   const { formAnswers } = this.state;
+  //   const { id } = event.target;
+  //   const value: boolean = event.target.checked;
+  //   formAnswers[id] = value;
+  //   this.setState({ formAnswers });
+  // };
+
   // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
   dataURLtoBlob = (dataURL: string) => {
     const arr = dataURL.split(',');
@@ -443,17 +465,21 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   onSubmitPdfApplication = (event: any) => {
-    const { pdfApplication } = this.state;
+    const { pdfApplication, verificationCheckbox } = this.state;
     const { alert, clientUsername } = this.props;
+    if (!verificationCheckbox) {
+      alert.show('Please verify that all fields in the form are correct and check the checkbox before submitting.');
+      return;
+    }
     if (pdfApplication) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
       const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
-      formData.append('pdfType', PDFType.COMPLETED_APPLICATION);
+      formData.append('pdfType', PDFType.ANNOTATED_APPLICATION);
       formData.append('clientUsername', clientUsername);
-      fetch(`${getServerURL()}/upload-signed-pdf`, {
+      fetch(`${getServerURL()}/upload-signed-pdf-2`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -484,6 +510,7 @@ class ApplicationForm extends Component<Props, State> {
       pdfApplication,
       fields,
       formAnswers,
+      verificationCheckbox,
       title,
       description,
       currentPage,
@@ -508,14 +535,24 @@ class ApplicationForm extends Component<Props, State> {
           <DocumentViewer pdfFile={pdfApplication} />
           <div className="d-flex justify-content-center pt-5">
             <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-              <div className="pt-5 pb-3">
-                I agree to all terms and conditions in the form document above.
+              <h3 className="pt-5 pb-3 text-center font-bold text-xl">
+                Form Verification
+              </h3>
+              <div className="checkbox-option" key="final-checkbox">
+                <div className="custom-control custom-checkbox mx-2">
+                  <input
+                    type="checkbox"
+                    className="custom-control-input mr-2"
+                    id="final-checkbox"
+                    checked={verificationCheckbox}
+                    onChange={this.handleVerificationCheckbox}
+                    required
+                  />
+                  <label className="custom-control-label" htmlFor="final-checkbox">
+                    I agree to all terms and conditions in the form document above.
+                  </label>
+                </div>
               </div>
-              <SignaturePad
-                ref={(ref) => {
-                  this.signaturePad = ref;
-                }}
-              />
               <div className="d-flex text-center my-5">
                 <Button
                   type="submit"
@@ -528,6 +565,25 @@ class ApplicationForm extends Component<Props, State> {
               </div>
             </div>
           </div>
+          {/* <div className="d-flex justify-content-center pt-5">
+            <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
+              <div className="checkbox-option" key={"final-checkbox-1"}>
+                <div className="custom-control custom-checkbox mx-2">
+                  <input
+                    type="checkbox"
+                    className="custom-control-input mr-2"
+                    id={"final-checkbox-2"}
+                    onChange={this.handleChangeFormValueCheckBox}
+                    checked={false}
+                    required={true}
+                  />
+                  <label className="custom-control-label" htmlFor={"final-checkbox"}>
+                    Label
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div> */}
         </div>
       );
     } else if (fields) {
@@ -552,15 +608,15 @@ class ApplicationForm extends Component<Props, State> {
             </div>
           </div>
           <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
-            {currentPage === 1 ? (
-<Dropzone
-  onSubmit={this.handleImportApplicationData}
-  maxFiles={1}
-  accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  inputContent="Import Data for Application"
-  submitButtonContent="Import"
-/>
-            ) : <div />}
+            {/* {currentPage === 1 ? (
+              <Dropzone
+                onSubmit={this.handleImportApplicationData}
+                maxFiles={1}
+                accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                inputContent="Import Data for Application"
+                submitButtonContent="Import"
+              />
+            ) : <div />} */}
             <form onSubmit={this.onSubmitFormAnswers}>
               {fields.map((entry, index) => {
                 if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
@@ -571,25 +627,25 @@ class ApplicationForm extends Component<Props, State> {
                         // TODO: Make the readOnly fields show and be formatted properly
                         return <div />;
                       }
-                      if (entry.fieldType === 'TextField') {
+                      if (entry.fieldType === 'textField') {
                         return this.getTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'MultilineTextField') {
+                      if (entry.fieldType === 'multilineTextField') {
                         return this.getMultilineTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'CheckBox') {
+                      if (entry.fieldType === 'checkBox') {
                         return this.getCheckBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'RadioButton') {
+                      if (entry.fieldType === 'radioButton') {
                         return this.getRadioButton(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ComboBox') {
+                      if (entry.fieldType === 'comboBox') {
                         return this.getComboBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ListBox') {
+                      if (entry.fieldType === 'listBox') {
                         return this.getListBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'DateField') {
+                      if (entry.fieldType === 'dateField') {
                         return this.getDateField(entry, formAnswers);
                       }
                       return <div />;
@@ -597,7 +653,25 @@ class ApplicationForm extends Component<Props, State> {
                   </div>
                 );
               })}
-
+              {
+                currentPage === numPages && (
+                  <div className="d-flex justify-content-center pt-5">
+                    <div className="container px-5 col-lg-10 col-md-10 col-sm-12">
+                      <label htmlFor="signature" className="w-100 font-weight-bold">
+                        Signature
+                        <small className="form-text text-muted mt-1">
+                          Please complete this field.
+                        </small>
+                      </label>
+                      <SignaturePad
+                        ref={(ref) => {
+                          this.signaturePad = ref;
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              }
               <div className="row justify-content-between text-center my-5">
                 <div className="col-md-2 pl-0">
                   {currentPage === 1 ? null : (
