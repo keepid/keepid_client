@@ -42,7 +42,8 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                 <div className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2">
-                  Are you a veteran?
+                  Are you or your current legal spouse in active service or
+                  honorably discharged from service (veteran)?
                 </div>
                 <div className="tw-flex tw-items-center tw-col-span-3 tw-w-full tw-py-1.5 sm:tw-max-w-xs sm:tw-text-sm sm:tw-leading-6">
                   <div className="tw-flex tw-items-center tw-me-4">
@@ -143,7 +144,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
                   htmlFor="branch"
                   className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
-                  Branch/Service
+                  Branch of service
                 </label>
                 <input
                   type="text"
@@ -166,7 +167,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
                   htmlFor="service-years"
                   className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                 >
-                  Years of service
+                  Service number
                 </label>
                 <input
                   type="text"
@@ -256,7 +257,8 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
                 <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                  Are you a veteran?
+                  Are you or your current legal spouse in active service or
+                  honorably discharged from service (veteran)?
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.isVeteran ? 'Yes' : 'No'}
@@ -276,7 +278,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
                 <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                  Branch/Service
+                  Branch of service
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.branch}
@@ -286,7 +288,7 @@ function VeteranInformation({ data, setData, setPostRequestMade, username }) {
             <li className="odd:tw-bg-gray-100">
               <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
                 <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                  Years of service
+                  Service number
                 </p>
                 <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
                   {data.yearsOfService}

@@ -316,11 +316,7 @@ function MyInformation(username) {
                 />
               )}
               {section === 'Recent Activity' && (
-                <RecentActivity
-                  data={myInfo}
-                  setData={setMyInfo}
-                  username={username}
-                />
+                <RecentActivity username={username} />
               )}
             </div>
           </div>

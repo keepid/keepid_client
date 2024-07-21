@@ -82,13 +82,25 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
                   </p>
                 </div>
               </li>
+              {relation === 'parents' ? (
+                <li className="odd:tw-bg-gray-100">
+                  <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
+                    <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
+                      {name} {id + 1} maiden name
+                    </p>
+                    <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
+                      {data[relation][id].birthLastName}
+                    </p>
+                  </div>
+                </li>
+              ) : null}
               <li className="odd:tw-bg-gray-100">
                 <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
                   <p className="tw-block tw-mb-0 tw-pl-5 tw-font-medium sm:tw-col-span-2">
-                    {name} {id + 1} social security number
+                    {name} {id + 1} suffix
                   </p>
                   <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                    {data[relation][id].ssn}
+                    {data[relation][id].suffix}
                   </p>
                 </div>
               </li>
@@ -233,23 +245,52 @@ function FamilyInformation({ data, setData, setPostRequestMade, username }) {
                             />
                           </div>
                         </li>
+                        {relation === 'parents' ? (
+                          <li className="odd:tw-bg-gray-100">
+                            <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
+                              <label
+                                htmlFor={`${relation}-birth-last-name-${
+                                  id + 1
+                                }`}
+                                className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
+                              >
+                                {name} {id + 1} maiden name
+                              </label>
+                              <input
+                                type="text"
+                                name={`${relation}-birth-last-name-${id + 1}`}
+                                id={`${relation}-birth-last-name-${id + 1}`}
+                                value={type.birthLastName}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    relation,
+                                    'birthLastName',
+                                    id,
+                                    e.target.value,
+                                  )
+                                }
+                                className="tw-col-span-2 tw-block tw-rounded-md tw-border-0 tw-py-1.5 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 focus:tw-ring-2 focus:tw-ring-inset focus:tw-ring-indigo-600"
+                              />
+                            </div>
+                          </li>
+                        ) : null}
                         <li className="odd:tw-bg-gray-100">
                           <div className="tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
                             <label
-                              htmlFor={`${relation}-ssn-${id + 1}`}
+                              htmlFor={`${relation}-suffix-${id + 1}`}
                               className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
                             >
-                              {name} {id + 1} social security number
+                              {name} {id + 1} suffix
                             </label>
                             <input
                               type="text"
-                              name={`${relation}-ssn-${id + 1}`}
-                              id={`${relation}-ssn-${id + 1}`}
-                              value={type.ssn}
+                              name={`${relation}-suffix-${id + 1}`}
+                              id={`${relation}-suffix-${id + 1}`}
+                              value={type.suffix}
                               onChange={(e) =>
                                 handleInputChange(
                                   relation,
-                                  'ssn',
+                                  'suffix',
                                   id,
                                   e.target.value,
                                 )
