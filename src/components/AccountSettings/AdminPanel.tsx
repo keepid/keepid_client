@@ -258,7 +258,7 @@ class AdminPanel extends Component<Props, State> {
                   role="group"
                   aria-label="Button group"
                 >
-                  <Link to="/upload-document">
+                  <Link to="/upload-document-admin">
                     <Button type="button" variant="primary">
                       Upload Form
                     </Button>
