@@ -1,9 +1,9 @@
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
 
-import WhyNotProsperPNG from '../../static/images/homePage/whynotprosper.png';
 import AdreeCollective from '../../static/images/homePage/andreeCollective.png';
 import Face2Face from '../../static/images/homePage/face2face.png';
+import WhyNotProsperPNG from '../../static/images/homePage/whynotprosper.png';
 
 const messages = defineMessages({
   header: {
@@ -27,25 +27,25 @@ function WhoWeAreServing(): JSX.Element {
       <div className="container-fluid mx-0 pt-5 pb-4">
         <div className="container section2">
           <div className="row text-center">
-            <div className="col-md-4 p-4">
+            <div className="col-md-4 mb-4 pb-4">
               <img
                 alt="Why Not Prosper"
                 src={WhyNotProsperPNG}
-                className="home-form-svg text-left p-4"
+                className="home-form-svg text-left"
               />
             </div>
             <div className="col-md-4">
               <img
                 alt="Face to Face"
                 src={Face2Face}
-                className="home-form-svg text-left p-5"
+                className="home-form-svg text-left my-4"
               />
             </div>
             <div className="col-md-4">
               <img
                 alt="Andree Collective"
                 src={AdreeCollective}
-                className="home-form-svg text-left"
+                className="home-form-svg text-left my-4"
               />
             </div>
           </div>
