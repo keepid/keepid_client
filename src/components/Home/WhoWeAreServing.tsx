@@ -1,9 +1,9 @@
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
 
-import RoxboroughPNG from '../../static/images/homePage/roxborough.png';
-import VenturelabJPG from '../../static/images/homePage/venturelab.jpg';
 import WhyNotProsperPNG from '../../static/images/homePage/whynotprosper.png';
+import AdreeCollective from '../../static/images/homePage/andreeCollective.png';
+import Face2Face from '../../static/images/homePage/face2face.png';
 
 const messages = defineMessages({
   header: {
@@ -36,15 +36,15 @@ function WhoWeAreServing(): JSX.Element {
             </div>
             <div className="col-md-4">
               <img
-                alt="Roxborough Food Pantry"
-                src={RoxboroughPNG}
+                alt="Face to Face"
+                src={Face2Face}
                 className="home-form-svg text-left p-5"
               />
             </div>
             <div className="col-md-4">
               <img
-                alt="Venturelab"
-                src={VenturelabJPG}
+                alt="Andree Collective"
+                src={AdreeCollective}
                 className="home-form-svg text-left"
               />
             </div>
