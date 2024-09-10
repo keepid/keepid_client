@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
@@ -31,6 +31,28 @@ const messages = defineMessages({
 
 function Home() {
   const intl = useIntl();
+
+  useEffect(() => {
+    // Dynamically load the GTM script
+    const script = document.createElement('script');
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-391118279';
+    script.async = true;
+    document.head.appendChild(script);
+
+    script.onload = () => {
+      // Initialize gtag only after the script has loaded
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', 'AW-391118279');
+
+      // Now it's safe to call your conversion event
+      gtag('event', 'conversion', { send_to: 'AW-391118279/baegCKfsltgDEMf7v7oB' });
+    };
+  }, []);
 
   return (
     <div>

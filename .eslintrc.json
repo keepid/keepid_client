@@ -83,5 +83,7 @@
     "react/function-component-definition": "off",
     "no-console": "off",
     "jsx-a11y/no-noninteractive-element-interactions": "off"
+    "no-undef": 1,
+    "prefer-rest-params": 1
   }
 }
