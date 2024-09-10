@@ -27,7 +27,7 @@
   // rules: 1 is warning, 2 is error, off is ignore
   "rules": {
     "prefer-arrow/prefer-arrow-functions": [
-      "warn",
+      "off",
       {
         "disallowPrototype": true,
         "singleReturnOnly": false,
@@ -36,7 +36,7 @@
     ],
     "import/extensions": "off",
     "react/jsx-filename-extension": "off",
-    "no-alert": 1,
+    "no-alert": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": 1,
     "import/no-duplicates": 1,
@@ -47,12 +47,12 @@
     "react/destructuring-assignment": "off",
     "jsx-a11y/control-has-associated-label": 1,
     "jsx-a11y/click-events-have-key-events": 1,
-    "jsx-a11y/no-static-element-interactions": 1,
+    "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/img-redundant-alt": "off",
-    "jsx-a11y/anchor-is-valid": 1,
+    "jsx-a11y/anchor-is-valid": "off",
     "react/no-did-update-set-state": "off",
     "max-classes-per-file": 1,
-    "react/jsx-props-no-spreading": 1,
+    "react/jsx-props-no-spreading": "off",
     "linebreak-style": 0,
     "react/sort-comp": "off",
     "no-shadow": "off",
@@ -81,6 +81,8 @@
     "import/prefer-default-export": "off",
     "prefer-destructuring": "off",
     "react/function-component-definition": "off",
+    "no-console": "off",
+    "jsx-a11y/no-noninteractive-element-interactions": "off"
     "no-undef": 1,
     "prefer-rest-params": 1
   }

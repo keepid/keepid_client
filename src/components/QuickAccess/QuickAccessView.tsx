@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 // @ts-ignore
 import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSetImage.svg';
 import PDFType from '../../static/PDFType';
@@ -112,12 +113,12 @@ export function QuickAccessDocumentViewer({
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: doc.id,
-        pdfType: PDFType.IDENTIFICATION_DOCUMENT,
+        fileType: FileType.IDENTIFICATION_PDF,
       }),
     })
       .then((response) => response.blob())

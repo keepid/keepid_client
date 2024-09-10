@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
@@ -109,18 +110,9 @@ class UploadDocs extends React.Component<Props, State> {
         const { clientUsername } = this.state;
         formData.append('file', pdfFile, pdfFile.name);
         formData.append('idCategory', documentType);
-        if (this.state.userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
-        }
-        if (
-          this.state.userRole === Role.Director ||
-          this.state.userRole === Role.Admin ||
-          this.state.userRole === Role.Worker
-        ) {
-          formData.append('pdfType', PDFType.BLANK_FORM);
-        }
+        formData.append('fileType', FileType.IDENTIFICATION_PDF);
         formData.append('targetUser', clientUsername);
-        fetch(`${getServerURL()}/upload`, {
+        fetch(`${getServerURL()}/upload-file`, {
           method: 'POST',
           credentials: 'include',
           body: formData,
@@ -207,13 +199,7 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   render() {
-    const { alert } = this.props;
-
-    const { userRole } = this.props;
-
-    const { username } = this.props;
-
-    const { pdfFiles, documentTypeList, currentStep } = this.state;
+    const { pdfFiles, currentStep } = this.state;
 
     return (
       <div className="container">

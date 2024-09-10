@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { privateDecrypt } from 'crypto';
+import { address } from 'faker';
+import React, { useContext, useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
+import { setConstantValue } from 'typescript';
 
+import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
@@ -25,28 +30,21 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
+  const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-    let pdfType;
+    const fileType = FileType.IDENTIFICATION_PDF;
 
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
+    console.log('documentName:', documentName);
+    console.log('organization:', organization);
+    console.log('TARGET USER', targetUser);
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -76,38 +74,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
     return `/my-documents/${targetUser}`;
   };
 
-  const mailForm = async () => {
-    const today = new Date();
-    const date = `${`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`}' '${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
-
-    const description = `\nUser Role: ${userRole}\n Target User: ${targetUser}\n Document Name: ${documentName}\n Document ID: ${documentId}\n DocumentDate: ${documentDate}\n DocumentUploader: ${documentUploader}\n Submission Date: ${date}`;
-
-    try {
-      const response = await fetch(`${getServerURL()}/submit-issue`, {
-        method: 'POST',
-        body: JSON.stringify({
-          email: 'foo@email.com',
-          title: 'Mail Submission',
-          description,
-        }),
-      });
-
-      const responseJSON = await response.json();
-      const { status } = responseJSON;
-
-      if (status === 'SUCCESS') {
-        setMailDialogIsOpen(false);
-        setShowMailSuccess(true);
-      } else {
-        setMailDialogIsOpen(false);
-        alert.show('Failed to submit. Please try another time.');
-      }
-    } catch (error) {
-      setMailDialogIsOpen(false);
-      alert.show('Failed to submit. Please try again.');
-    }
-  };
-
   let fileName = '';
   if (pdfFile) {
     const splitName = pdfFile.name.split('.');
@@ -117,23 +83,19 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   return (
     <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
       <div className="tw-flex tw-mt-5 tw-space-x-2 ">
-        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
-          <PrimaryButton onClick={resetDocumentId}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
-              <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            <span className="tw-align-middle">Back to My Documents</span>
-          </PrimaryButton>
-        </Link>
+        <PrimaryButton onClick={resetDocumentId}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
+            <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          <span className="tw-align-middle">Back to My Documents</span>
+        </PrimaryButton>
 
-        {userRole !== Role.Client && (
-<PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
+        <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline tw-align-middle">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
           </svg>
           <span className="tw-align-middle tw-pt-[1px] tw-pl-1">Mail</span>
-</PrimaryButtonSolid>
-        )}
+        </PrimaryButtonSolid>
 
       </div>
 
@@ -161,7 +123,19 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
 
-      <MailModal isVisible={mailDialogIsOpen} setIsVisible={setMailDialogIsOpen} mailForm={mailForm} />
+      <MailModal
+        alert={alert}
+        isVisible={mailDialogIsOpen}
+        setIsVisible={setMailDialogIsOpen}
+        showMailSuccess={showMailSuccess}
+        setShowMailSuccess={setShowMailSuccess}
+        userRole={userRole}
+        targetUser={targetUser}
+        documentId={documentId}
+        documentUploader={documentUploader}
+        documentDate={documentDate}
+        documentName={documentName}
+      />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
 
     </div>

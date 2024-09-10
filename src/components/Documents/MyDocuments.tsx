@@ -11,6 +11,7 @@ import { Link, Route, Switch } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
@@ -127,26 +128,15 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const documentName = row.filename;
 
-    let pdfType;
+    const fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -184,26 +174,15 @@ class MyDocuments extends Component<Props, State> {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
-    let pdfType;
+    const fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -269,27 +248,17 @@ class MyDocuments extends Component<Props, State> {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
 
-    let pdfType;
+    const fileType = FileType.IDENTIFICATION_PDF;
     let targetUser;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      if (this.props.username !== '') {
-        targetUser = this.props.username;
-      }
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
+    if (this.props.username !== '') {
+      targetUser = this.props.username;
     }
-    fetch(`${getServerURL()}/get-documents `, {
+
+    fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -304,15 +273,13 @@ class MyDocuments extends Component<Props, State> {
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
     <ButtonGroup>
-      <Link to="/my-documents">
-        <button
-          type="button"
-          onClick={(event) => this.onViewDocument(event, row)}
-          className="btn btn-outline-info btn-sm"
-        >
-          View
-        </button>
-      </Link>
+      <button
+        type="button"
+        onClick={(event) => this.onViewDocument(event, row)}
+        className="btn btn-outline-info btn-sm"
+      >
+        View
+      </button>
       <button
         type="button"
         onClick={(event) => this.handleChangeFileDownload(event, row)}
