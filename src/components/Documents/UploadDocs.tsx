@@ -17,12 +17,12 @@ import { Link } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
 import { IdCategories } from './IdCategories';
-import FileType from '../../static/FileType';
 
 interface Props {
   alert: any;
@@ -199,13 +199,7 @@ class UploadDocs extends React.Component<Props, State> {
   }
 
   render() {
-    const { alert } = this.props;
-
-    const { userRole } = this.props;
-
-    const { username } = this.props;
-
-    const { pdfFiles, documentTypeList, currentStep } = this.state;
+    const { pdfFiles, currentStep } = this.state;
 
     return (
       <div className="container">

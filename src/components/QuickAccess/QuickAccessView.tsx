@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 // @ts-ignore
 import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSetImage.svg';
 import PDFType from '../../static/PDFType';
@@ -12,7 +13,6 @@ import DocumentViewer from '../Documents/DocumentViewer';
 import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
-import FileType from '../../static/FileType';
 
 type Props = {
   category: QuickAccessCategory;

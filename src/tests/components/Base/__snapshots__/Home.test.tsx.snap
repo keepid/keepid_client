@@ -590,11 +590,11 @@ exports[`Home page snapshot test 1`] = `
         className="row text-center"
       >
         <div
-          className="col-md-4 mb-4 pb-4"
+          className="col-md-4 p-4"
         >
           <img
             alt="Why Not Prosper"
-            className="home-form-svg text-left"
+            className="home-form-svg text-left p-4"
             src="whynotprosper.png"
           />
         </div>
@@ -602,18 +602,18 @@ exports[`Home page snapshot test 1`] = `
           className="col-md-4"
         >
           <img
-            alt="Face to Face"
-            className="home-form-svg text-left my-4"
-            src="face2face.png"
+            alt="Roxborough Food Pantry"
+            className="home-form-svg text-left p-5"
+            src="roxborough.png"
           />
         </div>
         <div
           className="col-md-4"
         >
           <img
-            alt="Andree Collective"
-            className="home-form-svg text-left my-4"
-            src="andreeCollective.png"
+            alt="Venturelab"
+            className="home-form-svg text-left"
+            src="venturelab.jpg"
           />
         </div>
       </div>

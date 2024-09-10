@@ -11,12 +11,12 @@ import { Link, Route, Switch } from 'react-router-dom';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
-import FileType from '../../static/FileType';
 
 const { SearchBar } = Search;
 
@@ -128,8 +128,9 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const documentName = row.filename;
 
-    let fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
+    console.log("TARGET USER", targetUser)
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
@@ -174,9 +175,9 @@ class MyDocuments extends Component<Props, State> {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
-    let fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
-
+    console.log("TARGET USER", targetUser)
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
@@ -249,9 +250,12 @@ class MyDocuments extends Component<Props, State> {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
 
-    let fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.IDENTIFICATION_PDF;
     let targetUser;
-    
+    if (this.props.username !== '') {
+      targetUser = this.props.username;
+    }
+
     fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
       credentials: 'include',

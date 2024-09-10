@@ -5,10 +5,10 @@ import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
-import FileType from '../../static/FileType';
 
 interface Props {
   alert: any;
@@ -218,7 +218,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     const documentId = this.state.documents[rowIndex].id;
     const documentName = this.state.documents[rowIndex].filename;
 
-    let fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.IDENTIFICATION_PDF;
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',

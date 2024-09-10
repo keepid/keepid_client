@@ -7,12 +7,12 @@ import { setConstantValue } from 'typescript';
 
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
 import { MailConfirmation, MailModal } from './MailModal';
-import FileType from '../../static/FileType';
 
 interface Props {
   alert: any;
@@ -33,10 +33,11 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-    let fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.IDENTIFICATION_PDF;
 
     console.log('documentName:', documentName);
     console.log('organization:', organization);
+    console.log("TARGET USER", targetUser)
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',

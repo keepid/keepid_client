@@ -62,7 +62,7 @@ export const MailModal: React.FC<Props> = ({
     zipcode: '',
     description: '',
     name: '',
-    checkAmount: ''
+    checkAmount: '',
   });
   const [allAddressData, setAllAddressData] = useState<AddressData[]>([]);
 
@@ -77,7 +77,7 @@ export const MailModal: React.FC<Props> = ({
     zipcode: '',
     description: '',
     name: '',
-    checkAmount: ''
+    checkAmount: '',
   });
 
   const [price, setPrice] = useState('');
@@ -96,7 +96,7 @@ export const MailModal: React.FC<Props> = ({
         zipcode: '19119',
         description: '',
         name: '',
-        checkAmount: ''
+        checkAmount: '',
       };
     } if (organization === 'Why not Prosper') {
       return {
@@ -110,7 +110,7 @@ export const MailModal: React.FC<Props> = ({
         zipcode: '19144',
         description: '',
         name: '',
-        checkAmount: ''
+        checkAmount: '',
       };
     }
     return {
@@ -124,7 +124,7 @@ export const MailModal: React.FC<Props> = ({
       zipcode: '',
       description: '',
       name: '',
-      checkAmount: ''
+      checkAmount: '',
     };
   };
 
@@ -152,7 +152,7 @@ export const MailModal: React.FC<Props> = ({
 
       const data = await response.json();
       console.log('Raw response data:', data);
-      
+
       const transformedData = Object.keys(data).map((key) => ({
         index: key,
         nameForCheck: data[key].name_for_check,
@@ -218,7 +218,7 @@ export const MailModal: React.FC<Props> = ({
       const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
       try {
-        console.log("TRYING MAIL SUBMISSION with: ", documentId)
+        console.log('TRYING MAIL SUBMISSION with: ', documentId);
         const response = await fetch(`${getServerURL()}/submit-mail`, {
           method: 'POST',
           headers: {
@@ -345,7 +345,7 @@ export const MailModal: React.FC<Props> = ({
                 <div className="tw-overflow-y-auto tw-flex-grow">
                 <div className="tw-p-4">
                   <p className="tw-text-left tw-text-2xl tw-font-semibold">Please Select your target Mail Address</p>
-                  
+
                   <div className="tw-relative tw-w-full">
                     <div
                       className={`tw-relative tw-w-full tw-border tw-rounded-md tw-bg-gray-100 tw-p-3 tw-cursor-pointer tw-flex tw-items-center tw-justify-between hover:tw-bg-gray-200 ${
@@ -371,7 +371,7 @@ export const MailModal: React.FC<Props> = ({
                       <ul className="tw-absolute tw-left-0 tw-w-full tw-border tw-bg-white tw-z-10 tw-mt-1 tw-rounded-md tw-shadow-lg">
                         {allAddressData.map((item, index) => (
                           <li
-                            key={index}
+                            key={item.index}
                             className="tw-flex tw-justify-between tw-px-4 tw-py-2 tw-hover:bg-gray-100 tw-cursor-pointer"
                             onClick={() => handleOptionSelect(item)} // Store the full address object
                           >
