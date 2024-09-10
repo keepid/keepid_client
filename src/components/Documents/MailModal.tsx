@@ -23,6 +23,7 @@ interface Props{
 }
 
 interface AddressData {
+  index: string;
   nameForCheck: string;
   officeName: string;
   state: string;
@@ -32,6 +33,7 @@ interface AddressData {
   zipcode: string;
   description?: string;
   name?: string;
+  checkAmount: string;
 }
 
 export const MailModal: React.FC<Props> = ({
@@ -48,7 +50,9 @@ export const MailModal: React.FC<Props> = ({
   documentName,
 }) => {
   const { username, organization } = useContext(UserContext);
-  const [addressData, setAddressData] = useState<AddressData>({
+  const [isAddressSelectorOpen, setAddressSelectorOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<AddressData>({
+    index: '',
     nameForCheck: '',
     officeName: '',
     state: '',
@@ -58,9 +62,12 @@ export const MailModal: React.FC<Props> = ({
     zipcode: '',
     description: '',
     name: '',
+    checkAmount: ''
   });
+  const [allAddressData, setAllAddressData] = useState<AddressData[]>([]);
 
   const [returnAddressData, setReturnAddressData] = useState<AddressData>({
+    index: '',
     nameForCheck: '',
     officeName: '',
     state: '',
@@ -70,6 +77,7 @@ export const MailModal: React.FC<Props> = ({
     zipcode: '',
     description: '',
     name: '',
+    checkAmount: ''
   });
 
   const [price, setPrice] = useState('');
@@ -78,6 +86,7 @@ export const MailModal: React.FC<Props> = ({
   const getInitialReturnAddress = (): AddressData => {
     if (organization === 'Team Keep') {
       return {
+        index: 'TEAM_KEEP',
         nameForCheck: '',
         officeName: 'Team Keep',
         street1: '520 Carpenter Ln',
@@ -87,9 +96,11 @@ export const MailModal: React.FC<Props> = ({
         zipcode: '19119',
         description: '',
         name: '',
+        checkAmount: ''
       };
     } if (organization === 'Why not Prosper') {
       return {
+        index: 'WHY_NOT_PROSPER',
         nameForCheck: '',
         officeName: 'Why Not Prosper',
         street1: '717 E Chelten Ave',
@@ -99,9 +110,11 @@ export const MailModal: React.FC<Props> = ({
         zipcode: '19144',
         description: '',
         name: '',
+        checkAmount: ''
       };
     }
     return {
+      index: '',
       nameForCheck: '',
       officeName: '',
       street1: '',
@@ -111,6 +124,7 @@ export const MailModal: React.FC<Props> = ({
       zipcode: '',
       description: '',
       name: '',
+      checkAmount: ''
     };
   };
 
@@ -138,56 +152,25 @@ export const MailModal: React.FC<Props> = ({
 
       const data = await response.json();
       console.log('Raw response data:', data);
+      
+      const transformedData = Object.keys(data).map((key) => ({
+        index: key,
+        nameForCheck: data[key].name_for_check,
+        officeName: data[key].office_name,
+        state: data[key].state,
+        street1: data[key].street1,
+        street2: data[key].street2,
+        city: data[key].city,
+        zipcode: data[key].zipcode,
+        description: data[key].description,
+        name: data[key].name,
+        checkAmount: data[key].check_amount,
+      }));
 
-      // Find the matching address based on the document name
-      const matchingAddress = Object.entries(data).find(([key, value]) =>
-        (value as any).name.toLowerCase().includes(documentName.toLowerCase()));
-
-      if (matchingAddress) {
-        const [addressKey, addressDetails] = matchingAddress;
-        console.log('Matching address found:', addressKey);
-        console.log('Address details:', addressDetails);
-
-        // Set the address data
-        setAddressData({
-          nameForCheck: (addressDetails as any).name_for_check || '',
-          officeName: (addressDetails as any).office_name || '',
-          state: (addressDetails as any).state || '',
-          street1: (addressDetails as any).street1 || '',
-          street2: (addressDetails as any).street2 || '',
-          city: (addressDetails as any).city || '', // Include city
-          zipcode: (addressDetails as any).zipcode || '',
-          description: (addressDetails as any).description || '',
-          name: (addressDetails as any).name || '',
-        });
-      } else {
-        console.warn('No matching address found for document name:', documentName);
-        setAddressData({
-          nameForCheck: '',
-          officeName: '',
-          state: '',
-          street1: '',
-          street2: '',
-          city: '',
-          zipcode: '',
-          description: '',
-          name: '',
-        });
-      }
+      setAllAddressData(transformedData);
     } catch (err: any) {
       console.error('Error fetching address:', (err as Error).message);
       alert.show('Failed to retrieve address. Please try again.');
-      setAddressData({
-        nameForCheck: '',
-        officeName: '',
-        state: '',
-        street1: '',
-        street2: '',
-        city: '',
-        zipcode: '',
-        description: '',
-        name: '',
-      });
     }
   };
 
@@ -209,13 +192,22 @@ export const MailModal: React.FC<Props> = ({
     if (isReturnAddress) {
       setReturnAddressData((prev) => ({ ...prev, [name]: value }));
     } else {
-      setAddressData((prev) => ({ ...prev, [name]: value }));
+      setSelectedAddress((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleDropdownToggle = () => {
+    setAddressSelectorOpen(!isAddressSelectorOpen);
+  };
+
+  const handleOptionSelect = (option) => {
+    setSelectedAddress(option);
+    setAddressSelectorOpen(false);
   };
 
   const mailForm = async () => {
     const requiredFields = ['officeName', 'street1', 'city', 'state', 'zipcode'];
-    const isAddressValid = requiredFields.every((field) => addressData[field] !== '');
+    const isAddressValid = requiredFields.every((field) => selectedAddress[field] !== '');
     const isReturnAddressValid = requiredFields.every((field) => returnAddressData[field] !== '');
 
     if (!isAddressValid || !isReturnAddressValid) {
@@ -226,6 +218,7 @@ export const MailModal: React.FC<Props> = ({
       const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
       try {
+        console.log("TRYING MAIL SUBMISSION with: ", documentId)
         const response = await fetch(`${getServerURL()}/submit-mail`, {
           method: 'POST',
           headers: {
@@ -235,16 +228,17 @@ export const MailModal: React.FC<Props> = ({
           body: JSON.stringify({
             username: targetUser,
             fileId: documentId,
+            mailKey: selectedAddress.index,
             mailAddress: {
-              name: addressData.name || '',
+              name: selectedAddress.name || '',
               description: `Document Name: ${documentName}, Document Date: ${documentDate}, Document Uploader: ${documentUploader}, Submission Date: ${date}`,
-              office_name: addressData.officeName,
-              name_for_check: addressData.nameForCheck,
-              street1: addressData.street1,
-              street2: addressData.street2,
-              city: addressData.city,
-              state: addressData.state,
-              zipcode: addressData.zipcode,
+              office_name: selectedAddress.officeName,
+              name_for_check: selectedAddress.nameForCheck,
+              street1: selectedAddress.street1,
+              street2: selectedAddress.street2,
+              city: selectedAddress.city,
+              state: selectedAddress.state,
+              zipcode: selectedAddress.zipcode,
             },
             returnAddress: returnAddressData,
             price,
@@ -254,7 +248,7 @@ export const MailModal: React.FC<Props> = ({
         const responseJSON = await response.json();
         const { status } = responseJSON;
 
-        if (status === 'SUCCESS') {
+        if (status === 'MAIL_SUCCESS') {
           setIsVisible(false);
           setShowMailSuccess(true);
         } else {
@@ -350,55 +344,120 @@ export const MailModal: React.FC<Props> = ({
             <Dialog.Panel className="tw-h-[86vh] tw-w-[50rem] tw-flex tw-flex-col tw-bg-white tw-rounded-md tw-shadow-lg tw-relative tw-overflow-hidden">
                 <div className="tw-overflow-y-auto tw-flex-grow">
                 <div className="tw-p-4">
-                  <p className="tw-text-left placeholder:tw-font-body tw-text-2xl tw-font-semibold tw-pt-2 tw-pl-2">Please Confirm the following Mail Information</p>
-                  {showInputError && <p className="tw-pl-2 tw-text-red-500 tw-font-body tw-text-sm"> Please fill in all address fields </p>}
-                </div>
-                <div className="tw-bg-gray-100">
-                  <h3 className="tw-text-lg tw-font-semibold tw-p-2 tw-flex tw-items-center tw-relative">
-                    Mailing Address
-                    <span
-                      className="tw-ml-2 tw-cursor-help tw-relative"
-                      onMouseEnter={handleQuestionMarkHover}
-                      onMouseLeave={() => setShowTooltip(false)}
+                  <p className="tw-text-left tw-text-2xl tw-font-semibold">Please Select your target Mail Address</p>
+                  
+                  <div className="tw-relative tw-w-full">
+                    <div
+                      className={`tw-relative tw-w-full tw-border tw-rounded-md tw-bg-gray-100 tw-p-3 tw-cursor-pointer tw-flex tw-items-center tw-justify-between hover:tw-bg-gray-200 ${
+                        isAddressSelectorOpen ? 'tw-ring-2 tw-ring-indigo-500' : ''
+                      }`}
+                      onClick={handleDropdownToggle}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-5 tw-h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                      <span className={selectedAddress ? 'tw-text-gray-900' : 'tw-text-gray-500'}>
+                        {selectedAddress ? `${selectedAddress.name} - $${selectedAddress.checkAmount}` : 'Select an option'}
+                      </span>
+                      <svg
+                        className={`tw-w-5 tw-h-5 tw-transform ${isAddressSelectorOpen ? 'tw-rotate-180' : 'tw-rotate-0'} tw-transition-transform`}
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                       </svg>
-                      {showTooltip && (
-                        <div
-                          ref={tooltipRef}
-                          className="tw-absolute tw-bg-black tw-text-white tw-p-2 tw-rounded tw-text-sm tw-z-50 tw-w-64"
-                          style={{ top: 'calc(100% + 10px)', left: 'calc(100% - 20px)', transform: 'translateX(-100%)' }}
-                        >
-                          The addresses has been prepopulated based on the form name and your registered organization
+                    </div>
+
+                    {isAddressSelectorOpen && (
+                      <ul className="tw-absolute tw-left-0 tw-w-full tw-border tw-bg-white tw-z-10 tw-mt-1 tw-rounded-md tw-shadow-lg">
+                        {allAddressData.map((item, index) => (
+                          <li
+                            key={index}
+                            className="tw-flex tw-justify-between tw-px-4 tw-py-2 tw-hover:bg-gray-100 tw-cursor-pointer"
+                            onClick={() => handleOptionSelect(item)} // Store the full address object
+                          >
+                            <span className="tw-text-left">{item.name}</span>
+                            <span className="tw-text-right">${item.checkAmount}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {/* Display selected address details if an address is selected */}
+                  {selectedAddress && (
+                    <div className="tw-bg-gray-100 tw-mt-4 tw-p-4 tw-rounded-md tw-border">
+                      <h3 className="tw-text-lg tw-font-semibold tw-mb-2">Selected Address Details</h3>
+                      <div className="tw-grid tw-gap-4">
+                        <div>
+                          <label className="tw-block tw-font-semibold">Selected Mail Description</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.description}
+                            readOnly
+                          />
                         </div>
-                      )}
-                    </span>
-                  </h3>
-                  {renderAddressFields(addressData, false)}
+                        <div>
+                          <label className="tw-block tw-font-semibold">Street 1</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.street1}
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <label className="tw-block tw-font-semibold">Street 2</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.street2}
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <label className="tw-block tw-font-semibold">City</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.city}
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <label className="tw-block tw-font-semibold">State</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.state}
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <label className="tw-block tw-font-semibold">Zipcode</label>
+                          <input
+                            type="text"
+                            className="tw-p-2 tw-border tw-rounded tw-w-full"
+                            value={selectedAddress.zipcode}
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h3 className="tw-text-lg tw-font-semibold tw-p-2">Return Address</h3>
                   {renderAddressFields(returnAddressData, true)}
                 </div>
-                <div className="tw-grid tw-grid-cols-3 tw-bg-gray-100 tw-p-4">
-                  <label className="tw-pl-2">Total Price</label>
-                  <span className="tw-font-semibold">${price}</span>
-                </div>
-                <div className="tw-grid tw-grid-cols-3 tw-p-4">
-                  <label className="tw-pl-2">Name for Check</label>
-                  <input
-                    type="text"
-                    name="nameForCheck"
-                    value={addressData.nameForCheck}
-                    onChange={(e) => handleAddressChange(e, false)}
-                    className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
-                  />
-                </div>
                 <div className="tw-m-8 tw-mt-10 tw-grid tw-grid-flow-row-dense tw-grid-cols-3 tw-gap-60 sm:tw-gap-60">
-                <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={handleCloseModal}>Cancel</button>
-                  <div />
-                  <LoadingButton onClick={mailForm}>Yes, mail</LoadingButton>
+                  <button type="button" className="tw-inline-flex tw-w-full tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50 tw-sm:tw-col-start-1 tw-sm:tw-mt-0" onClick={handleCloseModal}>Cancel</button>
+                <div />
+                <LoadingButton onClick={mailForm}>Yes, mail</LoadingButton>
                 </div>
                 </div>
             </Dialog.Panel>

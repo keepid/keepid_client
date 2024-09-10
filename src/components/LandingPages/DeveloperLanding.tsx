@@ -8,6 +8,7 @@ import getServerURL from '../../serverOverride';
 import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
+import FileType from '../../static/FileType';
 
 interface Props {
   alert: any;
@@ -217,25 +218,14 @@ class DeveloperLanding extends Component<Props, State, {}> {
     const documentId = this.state.documents[rowIndex].id;
     const documentName = this.state.documents[rowIndex].filename;
 
-    let pdfType;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.BLANK_FORM;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
+    let fileType = FileType.IDENTIFICATION_PDF;
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
       }),
     })
       .then((response) => response.blob())

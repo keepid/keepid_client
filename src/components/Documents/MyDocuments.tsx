@@ -16,6 +16,7 @@ import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
+import FileType from '../../static/FileType';
 
 const { SearchBar } = Search;
 
@@ -127,26 +128,15 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const documentName = row.filename;
 
-    let pdfType;
+    let fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
 
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -184,26 +174,16 @@ class MyDocuments extends Component<Props, State> {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
-    let pdfType;
+    let fileType = FileType.IDENTIFICATION_PDF;
     const targetUser = this.props.username;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
 
-    fetch(`${getServerURL()}/download`, {
+
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -269,27 +249,14 @@ class MyDocuments extends Component<Props, State> {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
 
-    let pdfType;
+    let fileType = FileType.IDENTIFICATION_PDF;
     let targetUser;
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      if (this.props.username !== '') {
-        targetUser = this.props.username;
-      }
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
-    fetch(`${getServerURL()}/get-documents `, {
+    
+    fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType,
+        fileType,
         targetUser,
       }),
     })

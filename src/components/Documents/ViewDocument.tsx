@@ -12,6 +12,7 @@ import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
 import { MailConfirmation, MailModal } from './MailModal';
+import FileType from '../../static/FileType';
 
 interface Props {
   alert: any;
@@ -32,29 +33,17 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-    let pdfType;
+    let fileType = FileType.IDENTIFICATION_PDF;
 
     console.log('documentName:', documentName);
     console.log('organization:', organization);
 
-    if (
-      userRole === Role.Worker ||
-      userRole === Role.Admin ||
-      userRole === Role.Director
-    ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
-    } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
-    } else {
-      pdfType = undefined;
-    }
-
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })

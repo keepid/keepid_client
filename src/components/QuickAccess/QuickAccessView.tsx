@@ -12,6 +12,7 @@ import DocumentViewer from '../Documents/DocumentViewer';
 import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
+import FileType from '../../static/FileType';
 
 type Props = {
   category: QuickAccessCategory;
@@ -112,12 +113,12 @@ export function QuickAccessDocumentViewer({
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
-    fetch(`${getServerURL()}/download`, {
+    fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: doc.id,
-        pdfType: PDFType.IDENTIFICATION_DOCUMENT,
+        fileType: FileType.IDENTIFICATION_PDF,
       }),
     })
       .then((response) => response.blob())
