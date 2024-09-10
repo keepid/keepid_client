@@ -399,9 +399,9 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
-                path="/my-documents/:username"
+                path="/my-documents/:clientUsername"
                 render={(props) => {
-                  const clientName = props.match.params.username;
+                  const { clientUsername } = props.match.params;
                   if (
                     role === Role.Admin ||
                     role === Role.Worker ||
@@ -411,7 +411,7 @@ class App extends React.Component<{}, State, {}> {
                     return (
                       <MyDocuments
                         userRole={Role.Client}
-                        username={clientName}
+                        username={clientUsername}
                       />
                     );
                   }

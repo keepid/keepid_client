@@ -37,7 +37,7 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
 
     console.log('documentName:', documentName);
     console.log('organization:', organization);
-    console.log("TARGET USER", targetUser)
+    console.log('TARGET USER', targetUser);
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
@@ -83,14 +83,12 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   return (
     <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
       <div className="tw-flex tw-mt-5 tw-space-x-2 ">
-        <Link to="/my-documents" style={{ textDecoration: 'none' }}>
-          <PrimaryButton onClick={resetDocumentId}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
-              <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            <span className="tw-align-middle">Back to My Documents</span>
-          </PrimaryButton>
-        </Link>
+        <PrimaryButton onClick={resetDocumentId}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
+            <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          <span className="tw-align-middle">Back to My Documents</span>
+        </PrimaryButton>
 
         <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline tw-align-middle">
