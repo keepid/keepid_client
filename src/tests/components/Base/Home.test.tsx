@@ -16,7 +16,7 @@ test('Home page loads', () => {
       </IntlProvider>
     </MemoryRouter>,
   );
-  getByText('An identification platform');
+  getByText('An Identification Platform');
 });
 
 test('Home page buttons work', () => {

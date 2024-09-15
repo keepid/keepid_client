@@ -3,65 +3,67 @@
 exports[`Home page snapshot test 1`] = `
 <div>
   <div
-    className="container-fluid my-auto"
+    className="tw-container-fluid tw-my-auto"
   >
     <div
-      className="d-flex flex-row section1 mt-5 justify-content-center img-fluid"
+      className="tw-flex tw-flex-col md:tw-flex-row mt-5 tw-justify-center tw-img-fluid"
     >
       <div
-        className="flex-col px-4 custom-vertical-center"
+        className="tw-flex tw-flex-col tw-px-4 tw-items-center tw-justify-center"
       >
         <div
-          className="rounded mb-3 pb-5"
+          className="tw-rounded tw-mb-3 tw-pb-5"
         >
           <div
-            className="page-header"
+            className="tw-text-center"
           >
             <span
               className="brand-text"
               id="brand-header"
             >
-              An identification platform
+              An Identification Platform
             </span>
           </div>
           <p
-            className="pt-2 pb-2 home-subtext"
+            className="tw-pt-2 tw-pb-2 tw-text-center md:tw-text-left home-subtext"
           >
             for those experiencing homelessness
           </p>
-          <a
-            href="/signup-branch"
-            onClick={[Function]}
+          <div
+            className="tw-text-center md:tw-text-left"
           >
-            <button
-              className="btn btn-secondary btn-lg w-40 mr-2 mb-2"
+            <a
+              href="/signup-branch"
+              onClick={[Function]}
+            >
+              <button
+                className="btn btn-secondary btn-lg w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4 tw-rounded-lg"
+                type="button"
+              >
+                Get Started
+              </button>
+            </a>
+            <a
+              className="btn tw-outline btn-outline-secondary btn-lg tw-w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4"
+              href="https://team.keep.id"
               type="button"
             >
-              Get Started
-            </button>
-          </a>
-          <a
-            className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
-            href="https://team.keep.id"
-            type="button"
-          >
-            Donate
-          </a>
+              Donate
+            </a>
+          </div>
         </div>
       </div>
       <div
-        className="flex-col px-5 custom-vertical-center"
+        className="tw-flex tw-flex-col tw-items-center tw-px-5 tw-py-4 md:tw-py-0"
       >
         <div
-          className="pb-4 container-home-right"
+          className="tw-text-center tw-w-full"
         >
-          <div>
-            <img
-              alt="Document Platform"
-              className="home-form-svg text-left"
-              src="homepage_graphic.svg"
-            />
-          </div>
+          <img
+            alt="Document Platform"
+            className="tw-w-full tw-overflow-hidden tw-min-w-[18.75rem] tw-max-w-[48.75rem] tw-ml-0 tw-pl-0 "
+            src="homepage_graphic.svg"
+          />
         </div>
       </div>
     </div>
@@ -581,38 +583,38 @@ exports[`Home page snapshot test 1`] = `
     </div>
   </div>
   <div
-    className="container-fluid mx-0 pt-5 pb-4"
+    className="tw-w-full tw-pt-5 tw-pb-4 tw-overflow-hidden"
   >
     <div
-      className="container section2"
+      className="tw-container tw-mx-auto"
     >
       <div
-        className="row text-center"
+        className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-text-center"
       >
         <div
-          className="col-md-4 mb-4 pb-4"
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
         >
           <img
             alt="Why Not Prosper"
-            className="home-form-svg text-left"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
             src="whynotprosper.png"
           />
         </div>
         <div
-          className="col-md-4"
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
         >
           <img
             alt="Face to Face"
-            className="home-form-svg text-left my-4"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
             src="face2face.png"
           />
         </div>
         <div
-          className="col-md-4"
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
         >
           <img
             alt="Andree Collective"
-            className="home-form-svg text-left my-4"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
             src="andreeCollective.png"
           />
         </div>
