@@ -24,28 +24,28 @@ function WhoWeAreServing(): JSX.Element {
           </h1>
         </div>
       </div>
-      <div className="container-fluid mx-0 pt-5 pb-4">
-        <div className="container section2">
-          <div className="row text-center">
-            <div className="col-md-4 mb-4 pb-4">
+      <div className="tw-w-full tw-pt-5 tw-pb-4 tw-overflow-hidden">
+        <div className="tw-container tw-mx-auto">
+          <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-text-center">
+            <div className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4">
               <img
                 alt="Why Not Prosper"
                 src={WhyNotProsperPNG}
-                className="home-form-svg text-left"
+                className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
               />
             </div>
-            <div className="col-md-4">
+            <div className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4">
               <img
                 alt="Face to Face"
                 src={Face2Face}
-                className="home-form-svg text-left my-4"
+                className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
               />
             </div>
-            <div className="col-md-4">
+            <div className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4">
               <img
                 alt="Andree Collective"
                 src={AdreeCollective}
-                className="home-form-svg text-left my-4"
+                className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
               />
             </div>
           </div>

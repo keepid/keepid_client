@@ -138,7 +138,7 @@ class ResetPassword extends Component<Props, State> {
         </Helmet>
         <div className="container">
           <div className="row mt-5">
-            <div className="col-4 mobile-hide">
+            <div className="col-4 tw-hidden md:tw-block">
               <div className="float-right w-100">
                 <img
                   alt="Password Recovery"

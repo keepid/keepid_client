@@ -278,12 +278,12 @@ class LoginPage extends Component<Props, State> {
           </div>
         ) : null}
         <div className="container">
-          <div className="row mt-4">
-            <div className="col mobile-hide">
+          <div className="row tw-p-4 lg:tw-p-15">
+            <div className="col tw-hidden md:tw-block">
               <div className="float-right w-100">
                 <img
                   alt="Login graphic"
-                  className="w-75 pt-5 mt-5 mr-3 float-right "
+                  className="w-75 mt-2 mr-3 float-right "
                   src={LoginSVG}
                 />
               </div>
@@ -303,7 +303,7 @@ class LoginPage extends Component<Props, State> {
             </div>
 
             <div className="col">
-              <form className="form-signin pt-5">
+              <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username

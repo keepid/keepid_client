@@ -4,7 +4,7 @@
     <script
       src="https://kit.fontawesome.com/ba7e2f13b3.js"
       crossorigin="anonymous"
-    />
+    ></script>
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png" />
@@ -59,7 +59,7 @@
       property="og:image"
       content="https://keep.id/fb-sharing-logo-landscape.png"
     />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Twitter Link Sharing -->
     <meta name="twitter:title" content="Keep.Id" />
     <meta
@@ -87,11 +87,6 @@
     /> -->
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico/v2" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -107,18 +102,6 @@
       gtag('js', new Date());
 
       gtag('config', 'AW-391118279');
-      document.addEventListener(
-        'load',
-        function () {
-          var scale = 1 / (window.devicePixelRatio || 1);
-          var content = 'width=device-width, initial-scale=' + scale;
-
-          document
-            .querySelector('meta[name="viewport"]')
-            .setAttribute('content', content);
-        },
-        false
-      );
     </script>
     <script type="text/javascript">
       !(function (e, t, n) {

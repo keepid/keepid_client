@@ -17,7 +17,6 @@ const options = {
     zIndex: 99999,
   },
 };
-
 const root = createRoot(document.getElementById('root'));
 root.render(
   <Provider

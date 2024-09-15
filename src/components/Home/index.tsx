@@ -18,7 +18,7 @@ const messages = defineMessages({
   },
   brandHeader: {
     id: 'home.brand-header',
-    defaultMessage: 'An identification platform',
+    defaultMessage: 'An Identification Platform',
     description: 'The tagline shown on the home page',
   },
   subHeader: {
@@ -61,44 +61,47 @@ function Home() {
         <meta name="description" content="Keep.id" />
       </Helmet>
       {/* <StatementOfSolidarity /> */}
-      <div className="container-fluid my-auto">
-        <div className="d-flex flex-row section1 mt-5 justify-content-center img-fluid">
-          <div className="flex-col px-4 custom-vertical-center">
-            <div className="rounded mb-3 pb-5">
-              <div className="page-header">
+      <div className="tw-container-fluid tw-my-auto">
+        <div className="tw-flex tw-flex-col md:tw-flex-row mt-5 tw-justify-center tw-img-fluid">
+          {/* Left Column */}
+          <div className="tw-flex tw-flex-col tw-px-4 tw-items-center tw-justify-center">
+            <div className="tw-rounded tw-mb-3 tw-pb-5">
+              <div className="tw-text-center">
                 <span className="brand-text" id="brand-header">
                   {intl.formatMessage(messages.brandHeader)}
                 </span>
               </div>
-              <p className="pt-2 pb-2 home-subtext">
+              <p className="tw-pt-2 tw-pb-2 tw-text-center md:tw-text-left home-subtext">
                 {intl.formatMessage(messages.subHeader)}
               </p>
-              <Link to="/signup-branch">
-                <button
+              <div className="tw-text-center md:tw-text-left">
+                <Link to="/signup-branch">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-lg w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4 tw-rounded-lg"
+                  >
+                    {intl.formatMessage(messages.getStarted)}
+                  </button>
+                </Link>
+                <a
+                  href="https://team.keep.id"
                   type="button"
-                  className="btn btn-secondary btn-lg w-40 mr-2 mb-2"
+                  className="btn tw-outline btn-outline-secondary btn-lg tw-w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4"
                 >
-                  {intl.formatMessage(messages.getStarted)}
-                </button>
-              </Link>
-              <a
-                href="https://team.keep.id"
-                type="button"
-                className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
-              >
-                {intl.formatMessage(messages.learnMore)}
-              </a>
+                  {intl.formatMessage(messages.learnMore)}
+                </a>
+              </div>
             </div>
           </div>
-          <div className="flex-col px-5 custom-vertical-center">
-            <div className="pb-4 container-home-right">
-              <div>
-                <img
-                  alt="Document Platform"
-                  src={HomepageGraphic}
-                  className="home-form-svg text-left"
-                />
-              </div>
+
+          {/* Right Column */}
+          <div className="tw-flex tw-flex-col tw-items-center tw-px-5 tw-py-4 md:tw-py-0">
+            <div className="tw-text-center tw-w-full">
+              <img
+                alt="Document Platform"
+                src={HomepageGraphic}
+                className="tw-w-full tw-overflow-hidden tw-min-w-[18.75rem] tw-max-w-[48.75rem] tw-ml-0 tw-pl-0 "
+              />
             </div>
           </div>
         </div>
