@@ -38,15 +38,15 @@
     "react/jsx-filename-extension": "off",
     "no-alert": "off",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": 1,
+    "@typescript-eslint/no-unused-vars": "off",
     "import/no-duplicates": 1,
     "import/no-unresolved": "off",
     "max-len": "off",
     "react/prefer-stateless-function": 1,
-    "jsx-a11y/label-has-associated-control": 1,
+    "jsx-a11y/label-has-associated-control": "off",
     "react/destructuring-assignment": "off",
-    "jsx-a11y/control-has-associated-label": 1,
-    "jsx-a11y/click-events-have-key-events": 1,
+    "jsx-a11y/control-has-associated-label": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/img-redundant-alt": "off",
     "jsx-a11y/anchor-is-valid": "off",
@@ -71,7 +71,7 @@
     "react/prop-types": "off",
     "function-paren-newline": 1,
     "react/jsx-one-expression-per-line": "off",
-    "react/no-unused-prop-types": 1,
+    "react/no-unused-prop-types": "off",
     "react/jsx-no-constructed-context-values": "off",
     "no-promise-executor-return": "off",
     "react/no-unused-class-component-methods": 1,
@@ -82,8 +82,9 @@
     "prefer-destructuring": "off",
     "react/function-component-definition": "off",
     "no-console": "off",
-    "jsx-a11y/no-noninteractive-element-interactions": "off"
+    "jsx-a11y/no-noninteractive-element-interactions": "off",
     "no-undef": 1,
-    "prefer-rest-params": 1
+    "prefer-rest-params": 1,
+    "react/no-unused-state": "off"
   }
 }

@@ -3,7 +3,6 @@ export enum QuickAccessCategory {
   DriversLicense = 'drivers-license',
   BirthCertificate = 'birth-certificate',
   VaccineCard = 'vaccine-card'
-
 }
 export type QuickAccessFile = {
   filename: string;

@@ -1,4 +1,5 @@
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import PDFType from '../../static/PDFType';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
 
@@ -9,10 +10,10 @@ export function getConfiguredDocumentForCategory(
 }
 
 export function fetchDocuments(): Promise<QuickAccessFile[]> {
-  return fetch(`${getServerURL()}/get-documents`, {
+  return fetch(`${getServerURL()}/get-files`, {
     method: 'POST',
     credentials: 'include',
-    body: JSON.stringify({ pdfType: PDFType.IDENTIFICATION_DOCUMENT }),
+    body: JSON.stringify({ fileType: FileType.IDENTIFICATION_PDF }),
   })
     .then((response) => response.json())
     .then((x) => {
