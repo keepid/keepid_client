@@ -6,12 +6,12 @@ jobs:
   test:
     executor:
       name: node/default
-      tag: '13.14'
+      tag: '16.14'
     steps:
       - checkout
       - node/install-packages
       - run:
-          command: npm run test
+          command: npm run test -- --verbose
       - slack/notify:
           event: fail
           template: basic_fail_1
