@@ -8,7 +8,6 @@ import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 
 import AccountSetup from './pages/AccountSetup';
-import AssignWorker from './pages/AssignWorker';
 import OrganizationInformation from './pages/OrganizationInformation';
 import ReviewSubmit from './pages/ReviewSubmit';
 import SignUserAgreement from './pages/SignUserAgreement';
@@ -50,7 +49,6 @@ export default function CompleteSignupFlow() {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
         SignupStage.ORGANIZATION_INFORMATION,
-        SignupStage.ASSIGN_WORKER,
         SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ]);
@@ -77,7 +75,6 @@ export default function CompleteSignupFlow() {
         >
           <Steps.Step title="Account Setup" description="" />
           <Steps.Step title="Organization Information" description="" />
-          <Steps.Step title="Assign Worker" description="" />
           <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
@@ -94,9 +91,6 @@ export default function CompleteSignupFlow() {
         SignupStage.ORGANIZATION_INFORMATION ? (
           <OrganizationInformation />
           ) : null}
-        {signUpStageStateContext.currentStage === SignupStage.ASSIGN_WORKER ? (
-          <AssignWorker />
-        ) : null}
         {signUpStageStateContext.currentStage ===
         SignupStage.SIGN_USER_AGREEMENT ? (
           <SignUserAgreement />

@@ -33,7 +33,9 @@ export function useSignupStageContext(): SignupStageContextInterface {
     currentStage: currentSignupStage,
     stages: signupStages,
     setSignupStages(stages: SignupStage[]): void {
-      setSignupStages(stages);
+      if (JSON.stringify(signupStages) !== JSON.stringify(stages)) {
+        setSignupStages(stages);
+      }
     },
 
     moveToNextSignupStage() {
