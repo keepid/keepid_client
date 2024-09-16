@@ -59,7 +59,7 @@ export default function AssignWorker() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              console.log(values.assignedWorkerUsername, 'final selection');
+              // console.log(values.assignedWorkerUsername, 'final selection');
               moveToNextSignupStage();
             }}
           >

@@ -272,25 +272,25 @@ class MyDocuments extends Component<Props, State> {
   ButtonFormatter = (cell: any, row: any, rowIndex) => (
     // to get the unique id of the document, you need to set a hover state which stores the document id of the row
     // then in this function you can then get the current hover document id and do an action depending on the document id
-    <ButtonGroup>
+    <ButtonGroup className="tw-flex tw-flex-col lg:tw-flex-row tw-space-y-2 lg:tw-space-y-0 lg:tw-space-x-2">
       <button
         type="button"
         onClick={(event) => this.onViewDocument(event, row)}
-        className="btn btn-outline-info btn-sm"
+        className="btn btn-outline-info btn-sm tw-w-full lg:tw-w-auto"
       >
         View
       </button>
       <button
         type="button"
         onClick={(event) => this.handleChangeFileDownload(event, row)}
-        className="btn btn-outline-success btn-sm"
+        className="btn btn-outline-success btn-sm tw-w-full lg:tw-w-auto"
       >
         Download
       </button>
       <button
         type="button"
         onClick={(event) => this.deleteDocument(event, row)}
-        className="btn btn-outline-danger btn-sm ml-2"
+        className="btn btn-outline-danger btn-sm tw-w-full lg:tw-w-auto"
       >
         Delete
       </button>

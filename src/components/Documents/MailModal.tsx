@@ -151,7 +151,7 @@ export const MailModal: React.FC<Props> = ({
       }
 
       const data = await response.json();
-      console.log('Raw response data:', data);
+      // console.log('Raw response data:', data);
 
       const transformedData = Object.keys(data).map((key) => ({
         index: key,
@@ -181,7 +181,7 @@ export const MailModal: React.FC<Props> = ({
 
   useEffect(() => {
     if (isVisible) {
-      console.log(organization);
+      // console.log(organization);
       fetchData();
       setShowInputError(false); // Clear any previous error messages
     }
@@ -218,7 +218,6 @@ export const MailModal: React.FC<Props> = ({
       const date = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
       try {
-        console.log('TRYING MAIL SUBMISSION with: ', documentId);
         const response = await fetch(`${getServerURL()}/submit-mail`, {
           method: 'POST',
           headers: {

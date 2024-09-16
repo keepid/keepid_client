@@ -42,7 +42,7 @@ function PaginatedTable({ data, ...props }: PaginatedTableProps) {
     >
       {({ paginationProps, paginationTableProps }) => (
         <div>
-          <div className="row mx-4 mt-md-4">
+          <div className="row mt-md-4">
             <Table data={data} {...props} {...paginationTableProps} />
           </div>
           <PaginatedTableFooter

@@ -29,25 +29,25 @@ const quickAccessCards = [
 function QuickAccessCards(): React.ReactElement {
   const intl = useIntl();
   return (
-    <Container>
-      <h3>Quick Access</h3>
-      <Row className="quick-access-card-container" md={{ cols: 21 }}>
+    <div className="tw-mx-auto tw-py-4">
+      <h3 className="tw-text-center lg:tw-text-left">Quick Access</h3>
+      <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4">
         {quickAccessCards.map((c) => (
-          <Col key={`quick-access-${c.id}`} className="quick-access-card">
+          <div key={`quick-access-${c.id}`} className="tw-p-4 tw-border tw-rounded-lg quick-access-card">
             <Link to={`/quick-access/${c.id}`}>
-              <div className="quick-access-card-body">
-                <div className="quick-access-card-icon-container">
-                  <Image className="quick-access-card-icon" src={c.svg} />
+              <div className="tw-flex tw-flex-col tw-items-center">
+                <div className="tw-mb-4">
+                  <img className="tw-h-16 tw-w-16" src={c.svg} alt={c.title} />
                 </div>
-                <h6 className="quick-access-card-title">
+                <h6 className="tw-text-center">
                   {intl.formatMessage(Messages[`quick-access.${c.id}.title`])}
                 </h6>
               </div>
             </Link>
-          </Col>
+          </div>
         ))}
-      </Row>
-    </Container>
+      </div>
+    </div>
   );
 }
 

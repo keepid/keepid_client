@@ -325,70 +325,204 @@ class MyOrganization extends Component<Props, State> {
       buttonLoadingState,
     } = this.state;
     return (
-      <div className="container">
+      // <div className="container">
+      //   {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
+      //   <p className="font-weight-bold text-dark my-3 h3">
+      //     Invite New Team Members
+      //   </p>
+      //   <form>
+      //     <div className="form-row">
+      //       <div className="form-group required col-xs">
+      //         <label htmlFor="exampleName">
+      //           Name
+      //           <input
+      //             placeholder="Full Name Here"
+      //             type="name"
+      //             className="form-control form-purple"
+      //             id="exampleName"
+      //             value={personName}
+      //             onChange={(e) =>
+      //               this.setState({ personName: e.target.value })
+      //             }
+      //           />
+      //         </label>
+      //       </div>
+      //       <div className="form-group required col-xs">
+      //         <label htmlFor="exampleEmail">
+      //           Email address
+      //           <input
+      //             placeholder="Enter Valid Email"
+      //             type="email"
+      //             id="exampleEmail"
+      //             className="form-control form-purple"
+      //             value={personEmail}
+      //             onChange={(e) =>
+      //               this.setState({ personEmail: e.target.value })
+      //             }
+      //           />
+      //         </label>
+      //       </div>
+      //       <div className="form-group required col-xs-4">
+      //         <label htmlFor="exampleRole">
+      //           Role
+      //           <select
+      //             placeholder="Role"
+      //             id="exampleRole"
+      //             className="form-control form-purple"
+      //             value={personRole}
+      //             onChange={(e) =>
+      //               this.setState({ personRole: e.target.value })
+      //             }
+      //           >
+      //             <option
+      //               defaultValue=""
+      //               disabled
+      //               hidden
+      //               aria-labelledby="exampleRole"
+      //             />
+      //             <option>Admin</option>
+      //             <option>Worker</option>
+      //             <option>Client</option>
+      //           </select>
+      //         </label>
+      //       </div>
+      //       <div className="col-xs mt-3">
+      //         <button
+      //           className="btn btn-primary mt-1"
+      //           type="submit"
+      //           onClick={(e) => this.addMember(e)}
+      //         >
+      //           Add Member to Queue
+      //         </button>
+      //       </div>
+      //     </div>
+      //   </form>
+      //   <p className="font-weight-bold text-dark mb-2 h3">Invite Queue</p>
+      //   <div
+      //     className="scrollbar"
+      //     style={{
+      //       maxHeight: '15.625rem',
+      //       overflow: 'scroll',
+      //       scrollbarColor: '#7B81FF',
+      //     }}
+      //   >
+      //     <table className="table table-striped table-bordered">
+      //       <thead className="position-sticky border" style={{ top: '0' }}>
+      //         <tr>
+      //           <th
+      //             aria-label="Name Column"
+      //             scope="col"
+      //             style={{ top: '0' }}
+      //             className="position-sticky bg-white border shadow-sm"
+      //           >
+      //             Name
+      //           </th>
+      //           <th
+      //             aria-label="Email Column"
+      //             scope="col"
+      //             style={{ top: '0' }}
+      //             className="position-sticky bg-white border shadow-sm"
+      //           >
+      //             Email
+      //           </th>
+      //           <th
+      //             aria-label="Edit Button Column"
+      //             scope="col"
+      //             style={{ top: '0' }}
+      //             className="position-sticky bg-white border shadow-sm"
+      //           >
+      //             Edit
+      //           </th>
+      //           <th
+      //             aria-label="Role Column"
+      //             scope="col"
+      //             style={{ top: '0' }}
+      //             className="position-sticky bg-white border shadow-sm"
+      //           >
+      //             Role
+      //           </th>
+      //           <th
+      //             aria-label="Delete Button Column"
+      //             scope="col"
+      //             style={{ top: '0', zIndex: 999 }}
+      //             className="position-sticky bg-white border shadow-sm"
+      //           />
+      //         </tr>
+      //       </thead>
+      //       <tbody className="table-striped">
+      //         {this.renderTableContents()}
+      //       </tbody>
+      //     </table>
+      //   </div>
+      //   <button
+      //     type="button"
+      //     className="btn btn-primary mt-1 float-right"
+      //     onClick={(e) => this.saveMembersBackend(e)}
+      //   >
+      //     {buttonLoadingState ? (
+      //       <div className="ld ld-ring ld-spin" />
+      //     ) : (
+      //       <div>Send Invites</div>
+      //     )}
+      //   </button>
+      // </div>
+      <div className="tw-container tw-mx-auto tw-p-6">
         {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
-        <p className="font-weight-bold text-dark my-3 h3">
+
+        <p className="tw-font-bold tw-text-gray-800 tw-my-6 tw-text-3xl">
           Invite New Team Members
         </p>
+
         <form>
-          <div className="form-row">
-            <div className="form-group required col-xs">
-              <label htmlFor="exampleName">
+          <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-4 tw-gap-6">
+            <div className="tw-form-group lg:tw-col-span-1">
+              <label htmlFor="exampleName" className="tw-font-semibold">
                 Name
                 <input
                   placeholder="Full Name Here"
-                  type="name"
-                  className="form-control form-purple"
+                  type="text"
+                  className="tw-form-input tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
                   id="exampleName"
                   value={personName}
-                  onChange={(e) =>
-                    this.setState({ personName: e.target.value })
-                  }
+                  onChange={(e) => this.setState({ personName: e.target.value })}
                 />
               </label>
             </div>
-            <div className="form-group required col-xs">
-              <label htmlFor="exampleEmail">
-                Email address
+
+            <div className="tw-form-group lg:tw-col-span-1">
+              <label htmlFor="exampleEmail" className="tw-font-semibold">
+                Email Address
                 <input
                   placeholder="Enter Valid Email"
                   type="email"
                   id="exampleEmail"
-                  className="form-control form-purple"
+                  className="tw-form-input tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
                   value={personEmail}
-                  onChange={(e) =>
-                    this.setState({ personEmail: e.target.value })
-                  }
+                  onChange={(e) => this.setState({ personEmail: e.target.value })}
                 />
               </label>
             </div>
-            <div className="form-group required col-xs-4">
-              <label htmlFor="exampleRole">
+
+            <div className="tw-form-group lg:tw-col-span-1">
+              <label htmlFor="exampleRole" className="tw-font-semibold">
                 Role
                 <select
-                  placeholder="Role"
                   id="exampleRole"
-                  className="form-control form-purple"
+                  className="tw-form-select tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
                   value={personRole}
-                  onChange={(e) =>
-                    this.setState({ personRole: e.target.value })
-                  }
+                  onChange={(e) => this.setState({ personRole: e.target.value })}
                 >
-                  <option
-                    defaultValue=""
-                    disabled
-                    hidden
-                    aria-labelledby="exampleRole"
-                  />
+                  <option disabled hidden />
                   <option>Admin</option>
                   <option>Worker</option>
                   <option>Client</option>
                 </select>
               </label>
             </div>
-            <div className="col-xs mt-3">
+
+            <div className="tw-flex tw-items-start lg:tw-col-span-1">
               <button
-                className="btn btn-primary mt-1"
+                className="btn btn-primary tw-px-6 tw-py-2 tw-rounded-lg hover:tw-bg-blue-600 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
                 type="submit"
                 onClick={(e) => this.addMember(e)}
               >
@@ -397,74 +531,41 @@ class MyOrganization extends Component<Props, State> {
             </div>
           </div>
         </form>
-        <p className="font-weight-bold text-dark mb-2 h3">Invite Queue</p>
-        <div
-          className="scrollbar"
-          style={{
-            maxHeight: '15.625rem',
-            overflow: 'scroll',
-            scrollbarColor: '#7B81FF',
-          }}
-        >
-          <table className="table table-striped table-bordered">
-            <thead className="position-sticky border" style={{ top: '0' }}>
+
+        <p className="tw-font-bold tw-text-gray-800 tw-mt-8 tw-mb-4 tw-text-2xl">
+          Invite Queue
+        </p>
+
+        <div className="tw-mt-6">
+          <table className="tw-min-w-full tw-table-auto tw-border tw-border-gray-300">
+            <thead className="tw-bg-gray-50 tw-sticky tw-top-0">
               <tr>
-                <th
-                  aria-label="Name Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Name
-                </th>
-                <th
-                  aria-label="Email Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Email
-                </th>
-                <th
-                  aria-label="Edit Button Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Edit
-                </th>
-                <th
-                  aria-label="Role Column"
-                  scope="col"
-                  style={{ top: '0' }}
-                  className="position-sticky bg-white border shadow-sm"
-                >
-                  Role
-                </th>
-                <th
-                  aria-label="Delete Button Column"
-                  scope="col"
-                  style={{ top: '0', zIndex: 999 }}
-                  className="position-sticky bg-white border shadow-sm"
-                />
+                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Name</th>
+                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Email</th>
+                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Edit</th>
+                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Role</th>
+                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300" />
               </tr>
             </thead>
-            <tbody className="table-striped">
+            <tbody className="tw-divide-y tw-divide-gray-200">
               {this.renderTableContents()}
             </tbody>
           </table>
+
+          <div className="tw-mt-6 tw-text-right">
+            <button
+              type="button"
+              className="btn btn-primary tw-px-6 tw-py-2 tw-rounded-lg hover:tw-bg-blue-600 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
+              onClick={(e) => this.saveMembersBackend(e)}
+            >
+              {buttonLoadingState ? (
+                <div className="ld ld-ring ld-spin" />
+              ) : (
+                <div>Send Invites</div>
+              )}
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary mt-1 float-right"
-          onClick={(e) => this.saveMembersBackend(e)}
-        >
-          {buttonLoadingState ? (
-            <div className="ld ld-ring ld-spin" />
-          ) : (
-            <div>Send Invites</div>
-          )}
-        </button>
       </div>
     );
   }

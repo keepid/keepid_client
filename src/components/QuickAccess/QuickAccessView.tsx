@@ -38,24 +38,24 @@ export default function QuickAccessView({ category }: Props) {
     })
       .then((response) => response.json())
       .then((x) => {
-        console.log(
-          'Response from server is ',
-          x,
-          ' for getQuickAccessId of category',
-          category,
-        );
+        // console.log(
+        //   'Response from server is ',
+        //   x,
+        //   ' for getQuickAccessId of category',
+        //   category,
+        // );
         idToMatch = x.fileId;
-        console.log('The idToMatch is', idToMatch);
+        // console.log('The idToMatch is', idToMatch);
 
         fetchDocuments()
           .then((documents) => {
-            console.log(
-              'fetchDocuments in QuickAccessView returned ',
-              documents,
-            );
+            // console.log(
+            //   'fetchDocuments in QuickAccessView returned ',
+            //   documents,
+            // );
             const doc = documents.find((d) => d.id === idToMatch);
 
-            console.log('The document that matches is ', doc);
+            // console.log('The document that matches is ', doc);
 
             if (doc != null) {
               setConfiguredDocument({

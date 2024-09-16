@@ -79,51 +79,55 @@ class ClientLanding extends Component<Props, State, {}> {
           <title>Home</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="d-flex p-2">
+        <div className="d-flex py-2">
           <h1 id="welcome-title">{`Welcome, ${name}`}</h1>
         </div>
         <div className="mb-3">
           <QuickAccessCards />
         </div>
-        <div className="tw-flex tw-flex-col lg:tw-flex-row m-auto mt-5">
-          <div className="d-flex p-2" id="Print container">
-            <BaseCard
-              cardTitle="Documents"
-              cardText="Upload, view, and download your documents"
-              buttonText="My Documents"
-              cardSize={CardSize.SMALL_HORIZONTAL}
-              imageSrc={DocumentsPic}
-              imageSize="50%"
-              imageLoc={CardImageLoc.RIGHT}
-              imageObjectFit="contain"
-              buttonOnClick={() => history.push('/my-documents')}
-            />
-          </div>
-          <div className="d-flex p-2" id="Applications container">
-            <BaseCard
-              cardTitle="Application"
-              cardText="Upload, complete, and manage your applications"
-              buttonText="My Applications"
-              cardSize={CardSize.SMALL_HORIZONTAL}
-              imageSrc={AtWorkPic}
-              imageSize="50%"
-              imageLoc={CardImageLoc.RIGHT}
-              imageObjectFit="contain"
-              buttonOnClick={() => history.push('/applications')}
-            />
-          </div>
-          <div className="d-flex p-2" id="Information container">
-            <BaseCard
-              cardTitle="Information"
-              cardText="Manage your personal information"
-              buttonText="My Information"
-              cardSize={CardSize.SMALL_HORIZONTAL}
-              imageSrc={AtWorkPic}
-              imageSize="50%"
-              imageLoc={CardImageLoc.RIGHT}
-              imageObjectFit="contain"
-              buttonOnClick={() => history.push('/my-information/')}
-            />
+        <div className="tw-container tw-mx-auto tw-mt-5">
+          <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-5">
+            <div id="Print container">
+              <BaseCard
+                cardTitle="Documents"
+                cardText="Upload, view, and download your documents"
+                buttonText="My Documents"
+                cardSize={CardSize.SMALL_HORIZONTAL}
+                imageSrc={DocumentsPic}
+                imageSize="50%"
+                imageLoc={CardImageLoc.RIGHT}
+                imageObjectFit="contain"
+                buttonOnClick={() => history.push('/my-documents')}
+              />
+            </div>
+
+            <div id="Applications container">
+              <BaseCard
+                cardTitle="Application"
+                cardText="Upload, complete, and manage your applications"
+                buttonText="My Applications"
+                cardSize={CardSize.SMALL_HORIZONTAL}
+                imageSrc={AtWorkPic}
+                imageSize="50%"
+                imageLoc={CardImageLoc.RIGHT}
+                imageObjectFit="contain"
+                buttonOnClick={() => history.push('/applications')}
+              />
+            </div>
+
+            <div id="Information container">
+              <BaseCard
+                cardTitle="Information"
+                cardText="Manage your personal information"
+                buttonText="My Information"
+                cardSize={CardSize.SMALL_HORIZONTAL}
+                imageSrc={AtWorkPic}
+                imageSize="50%"
+                imageLoc={CardImageLoc.RIGHT}
+                imageObjectFit="contain"
+                buttonOnClick={() => history.push('/my-information/')}
+              />
+            </div>
           </div>
         </div>
         <div className="d-flex p-2 mt-5">

@@ -12,7 +12,7 @@ export default function QuickAccessRouter() {
         exact
         render={(props) => {
           const { category } = props.match.params;
-          console.log(`Category of quick-access is ${category}`);
+          // console.log(`Category of quick-access is ${category}`);
           return <QuickAccessView category={category} />;
         }}
       />
@@ -21,7 +21,7 @@ export default function QuickAccessRouter() {
         exact
         render={(props) => {
           const { category } = props.match.params;
-          console.log(`Category of quick-access setup is ${category}`);
+          // console.log(`Category of quick-access setup is ${category}`);
           return <SetupQuickAccess category={category} />;
         }}
       />

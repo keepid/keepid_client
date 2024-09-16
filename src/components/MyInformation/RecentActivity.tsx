@@ -46,7 +46,7 @@ function RecentActivity({ username }) {
       .then((response) => response.json())
       .then((responseJSON) => {
         setActivities(responseJSON.activities);
-        console.log(responseJSON.activities);
+        // console.log(responseJSON.activities);
         setIsLoading(false);
       })
       .catch((error) => {

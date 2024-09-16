@@ -16,10 +16,9 @@ export function fetchDocuments(): Promise<QuickAccessFile[]> {
     body: JSON.stringify({ fileType: FileType.IDENTIFICATION_PDF }),
   })
     .then((response) => response.json())
-    .then((x) => {
-      console.log('\n\nInside fetchDocuments, the response is', x, '\n\n');
-      return x.documents;
-    });
+    .then((x) =>
+      // console.log('\n\nInside fetchDocuments, the response is', x, '\n\n');
+      x.documents);
 }
 
 export function setQuickAccessDocumentForCategory(
@@ -36,12 +35,12 @@ export function setQuickAccessDocumentForCategory(
   })
     .then((response) => response.json())
     .then((x) => {
-      console.log(
-        'Response from server is ',
-        x,
-        ' for setQuickAccess',
-        category,
-      );
+      // console.log(
+      //   'Response from server is ',
+      //   x,
+      //   ' for setQuickAccess',
+      //   category,
+      // );
     });
   return Promise.resolve();
 }

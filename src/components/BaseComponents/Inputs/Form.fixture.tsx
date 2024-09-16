@@ -64,13 +64,13 @@ function FormFixture() {
       name="TextInput-test-form"
       onSubmit={(e) => {
         // eslint-disable-next-line no-console
-        console.log(`Is valid: ${e.currentTarget.checkValidity()}`);
+        // console.log(`Is valid: ${e.currentTarget.checkValidity()}`);
 
         e.preventDefault();
         e.stopPropagation();
 
         // eslint-disable-next-line no-console
-        console.log(state);
+        // console.log(state);
       }}
     >
         {fields.map((f) => (

@@ -119,7 +119,7 @@ const constructSelectRowConfiguration = (
   ),
   onSelect: (row, isSelect, rowIndex, e) => {
     if (canSelect === 'single' && isSelect) {
-      console.log('\n\nasdf2', canSelect, row, isSelect, rowIndex, '\n\n');
+      // console.log('\n\nasdf2', canSelect, row, isSelect, rowIndex, '\n\n');
       selectedRows.clear();
     }
 

@@ -391,15 +391,15 @@ class WorkerLanding extends Component<Props, State> {
                 </div>
               )}
             </div>
-            <div className="d-flex flex-row mb-2">
+            <div className="d-flex flex-row mb-1">
               <h5 className="card-title h4">
                 {client.firstName} {client.lastName}
               </h5>
             </div>
-            <div className="d-flex flex-row mb-2">
+            <div className="d-flex flex-row mb-1">
               <h6 className="card-subtitle text-muted">{client.phone}</h6>
             </div>
-            <div className="d-flex flex-row mb-3">
+            <div className="d-flex flex-row mb-1">
               <h6 className="card-subtitle text-muted">
                 {'Birth Date: '}
                 {client.birthDate}
@@ -410,7 +410,7 @@ class WorkerLanding extends Component<Props, State> {
         <div className="row lock-bottom-left">
           <Link
             to={`/upload-document/${client.username}`}
-            className="tw-mr-1"
+            className="tw-mr-1 tw-mb-2"
             // style={{ height: 32 }}
           >
             {/* <div style={{ fontWeight: 'bold' }}>

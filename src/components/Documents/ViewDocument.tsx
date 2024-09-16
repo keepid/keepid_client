@@ -34,10 +34,9 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
 
   useEffect(() => {
     const fileType = FileType.IDENTIFICATION_PDF;
-
-    console.log('documentName:', documentName);
-    console.log('organization:', organization);
-    console.log('TARGET USER', targetUser);
+    // console.log('documentName:', documentName);
+    // console.log('organization:', organization);
+    // console.log('TARGET USER', targetUser);
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
