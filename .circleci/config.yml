@@ -13,9 +13,8 @@ jobs:
       - run:
           command: |
             printf "Starting tests\n"
-            npm run test -- --watchAll=false --verbose
+            CI=true npm run test -- --watchAll=false --runInBand --coverage=false --verbose --logHeapUsage
             printf "Tests completed\n"
-          no_output_timeout: 30m  # Set the timeout to 30 minutes (adjust as needed)
       - slack/notify:
           event: fail
           template: basic_fail_1
