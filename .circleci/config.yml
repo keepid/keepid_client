@@ -12,6 +12,7 @@ jobs:
       - node/install-packages
       - run:
           command: npm run test -- --verbose
+          no_output_timeout: 30m  # Set the timeout to 30 minutes (adjust as needed)
       - slack/notify:
           event: fail
           template: basic_fail_1
