@@ -1,5 +1,5 @@
 const getServerURL = (): string => {
-  if (process.env.KEEPID_BUILD_ENV === 'staging') {
+  if (process.env.REACT_APP_KEEPID_BUILD_ENV === 'staging') {
     return 'https://staged.keep.id';
   }
   if (process.env.NODE_ENV === 'production') {
