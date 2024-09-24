@@ -11,9 +11,9 @@ import uuid from 'react-uuid';
 
 import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
-import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
 import DropzoneUploader from '../Documents/DropzoneUploader';
+import FileType from "../../static/FileType";
 
 interface Field {
   fieldID: string; // Unique identifier id from frontend
@@ -73,7 +73,7 @@ class ApplicationForm extends Component<Props, State> {
   componentDidMount() {
     const { applicationId, clientUsername } = this.props;
     const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-application-questions`, {
+    fetch(`${getServerURL()}/get-questions-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -405,7 +405,7 @@ class ApplicationForm extends Component<Props, State> {
 
     this.setState({ buttonState: 'running' });
 
-    fetch(`${getServerURL()}/fill-application`, {
+    fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -443,17 +443,20 @@ class ApplicationForm extends Component<Props, State> {
   };
 
   onSubmitPdfApplication = (event: any) => {
-    const { pdfApplication } = this.state;
-    const { alert, clientUsername } = this.props;
-    if (pdfApplication) {
+    const { pdfApplication, formAnswers } = this.state;
+    const { alert, clientUsername, applicationId } = this.props;
+    if (pdfApplication && formAnswers) {
       const formData = new FormData();
       formData.append('file', pdfApplication);
       const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
       // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
       formData.append('signature', signature);
-      formData.append('pdfType', PDFType.COMPLETED_APPLICATION);
+      formData.append('fileType', FileType.APPLICATION_PDF);
       formData.append('clientUsername', clientUsername);
-      fetch(`${getServerURL()}/upload-signed-pdf`, {
+      formData.append('applicationId', applicationId);
+      formData.append('formAnswers', JSON.stringify(formAnswers));
+
+      fetch(`${getServerURL()}/upload-signed-pdf-2`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

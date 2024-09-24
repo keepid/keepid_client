@@ -7,9 +7,9 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
-import PDFType from '../../static/PDFType';
 import Table from '../BaseComponents/Table';
 import ApplicationForm from './ApplicationForm';
+import FileType from "../../static/FileType";
 
 interface DocumentInformation {
   uploader: string,
@@ -88,11 +88,11 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
     const { location } = this.props;
     // Client view, uncertain if location.state is undefined by default
     if (location.state === undefined) {
-      fetch(`${getServerURL()}/get-documents `, {
+      fetch(`${getServerURL()}/get-files`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          fileType: FileType.FORM,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -118,11 +118,11 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
       // clientName will be passed in via Link state in WorkerLanding page
       const { clientUsername } = location.state as LocationState;
       this.setState({ clientUsername });
-      fetch(`${getServerURL()}/get-documents `, {
+      fetch(`${getServerURL()}/get-files`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          pdfType: PDFType.BLANK_FORM,
+          fileType: FileType.FORM,
           targetUser: clientUsername,
           annotated: true,
         }),

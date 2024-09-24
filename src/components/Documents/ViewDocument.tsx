@@ -8,7 +8,6 @@ import { setConstantValue } from 'typescript';
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
@@ -33,7 +32,7 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-    const fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.APPLICATION_PDF;
     // console.log('documentName:', documentName);
     // console.log('organization:', organization);
     // console.log('TARGET USER', targetUser);

@@ -12,7 +12,6 @@ import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 import DocumentViewer from './DocumentViewer';
@@ -127,8 +126,7 @@ class MyDocuments extends Component<Props, State> {
     const { userRole, alert } = this.props;
     const documentId = row.id;
     const documentName = row.filename;
-
-    const fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.APPLICATION_PDF;
     const targetUser = this.props.username;
 
     fetch(`${getServerURL()}/download-file`, {
@@ -174,7 +172,7 @@ class MyDocuments extends Component<Props, State> {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
-    const fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.APPLICATION_PDF;
     const targetUser = this.props.username;
 
     fetch(`${getServerURL()}/download-file`, {
@@ -215,26 +213,26 @@ class MyDocuments extends Component<Props, State> {
     event.preventDefault();
     const documentId = row.id;
     const { userRole } = this.props;
-    let pdfType;
+    let fileType;
     const targetUser = this.props.username;
     if (
       userRole === Role.Worker ||
       userRole === Role.Admin ||
       userRole === Role.Director
     ) {
-      pdfType = PDFType.COMPLETED_APPLICATION;
+      fileType = FileType.APPLICATION_PDF;
     } else if (userRole === Role.Client) {
-      pdfType = PDFType.IDENTIFICATION_DOCUMENT;
+      fileType = FileType.IDENTIFICATION_PDF;
     } else {
-      pdfType = undefined;
+      fileType = undefined;
     }
 
-    fetch(`${getServerURL()}/delete-document/`, {
+    fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
-        pdfType,
+        fileType,
         targetUser,
       }),
     })
@@ -248,7 +246,7 @@ class MyDocuments extends Component<Props, State> {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
 
-    const fileType = FileType.IDENTIFICATION_PDF;
+    const fileType = FileType.APPLICATION_PDF;
     let targetUser;
     if (this.props.username !== '') {
       targetUser = this.props.username;
@@ -265,6 +263,7 @@ class MyDocuments extends Component<Props, State> {
       .then((response) => response.json())
       .then((responseJSON) => {
         const { documents } = responseJSON;
+        console.log(responseJSON);
         this.setState({ documentData: documents });
       });
   }

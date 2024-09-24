@@ -5,8 +5,8 @@ import React, { useCallback, useState } from 'react';
 import { withAlert } from 'react-alert';
 import Dropzone from 'react-dropzone-uploader';
 
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
+import FileType from "../../static/FileType";
 
 function DropzoneUploader({ alert, userRole, updateFileList, updateStep, maxNumFiles, currentStep }) {
   const list: File[] = [];
@@ -19,10 +19,10 @@ function DropzoneUploader({ alert, userRole, updateFileList, updateStep, maxNumF
         const formData = new FormData();
         formData.append('file', pdfFile.file, pdfFile.name);
         if (userRole === Role.Client) {
-          formData.append('pdfType', PDFType.IDENTIFICATION_DOCUMENT);
+          formData.append('fileType', FileType.IDENTIFICATION_PDF);
         }
         if (userRole === Role.Director || userRole === Role.Admin) {
-          formData.append('pdfType', PDFType.BLANK_FORM);
+          formData.append('fileType', FileType.IDENTIFICATION_PDF);
         }
         list.push(pdfFile.file);
       }
