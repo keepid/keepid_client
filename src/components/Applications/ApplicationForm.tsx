@@ -570,29 +570,29 @@ class ApplicationForm extends Component<Props, State> {
                 return (
                   <div className="my-5" key={entry.fieldID}>
                     {(() => {
-                      if (entry.fieldType === 'ReadOnlyField') {
+                      if (entry.fieldType === 'readOnlyField') {
                         // TODO: Make the readOnly fields show and be formatted properly
                         return <div />;
                       }
-                      if (entry.fieldType === 'TextField') {
+                      if (entry.fieldType === 'textField') {
                         return this.getTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'MultilineTextField') {
+                      if (entry.fieldType === 'multilineTextField') {
                         return this.getMultilineTextField(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'CheckBox') {
+                      if (entry.fieldType === 'checkBox') {
                         return this.getCheckBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'RadioButton') {
+                      if (entry.fieldType === 'radioButton') {
                         return this.getRadioButton(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ComboBox') {
+                      if (entry.fieldType === 'comboBox') {
                         return this.getComboBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'ListBox') {
+                      if (entry.fieldType === 'listBox') {
                         return this.getListBox(entry, formAnswers);
                       }
-                      if (entry.fieldType === 'DateField') {
+                      if (entry.fieldType === 'dateField') {
                         return this.getDateField(entry, formAnswers);
                       }
                       return <div />;
