@@ -18,7 +18,6 @@ import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import DropzoneUploader from '../Documents/DropzoneUploader';
 import DocumentViewer from './DocumentViewer';
@@ -155,15 +154,15 @@ class UploadDocs extends React.Component<Props, State> {
         this.state.documentTypeList &&
         this.state.documentTypeList.length < this.state.pdfFiles.length
       ) {
-        this.props.alert.show('Please categorize each document');
+        this.props.alert.show('Please categorize the uploaded document');
         error = true;
       } else {
         for (let i = 0; i < this.state.documentTypeList.length; i += 1) {
-          if (this.state.documentTypeList[i] === undefined) {
-            this.props.alert.show('Please categorize each document');
-            error = true;
-          }
-        }
+           if (this.state.documentTypeList[i] === undefined) {
+             this.props.alert.show('Please categorize each document');
+             error = true;
+           }
+         }
       }
       if (error === false) {
         this.uploadFiles();

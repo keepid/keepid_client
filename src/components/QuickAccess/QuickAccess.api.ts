@@ -1,6 +1,5 @@
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
 
 export function getConfiguredDocumentForCategory(
