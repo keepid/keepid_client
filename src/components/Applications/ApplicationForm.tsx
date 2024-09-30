@@ -497,12 +497,10 @@ class ApplicationForm extends Component<Props, State> {
     if (pdfApplication) {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
-        <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
-          <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-            <div className="container">
-              <h2>Review and sign to complete your form</h2>
-              <p>Finally, sign the document and click submit when complete.</p>
-            </div>
+        <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
+          <div className="container">
+            <h2>Review and sign to complete your form</h2>
+            <p>Finally, sign the document and click submit when complete.</p>
           </div>
 
           <DocumentViewer pdfFile={pdfApplication} />
@@ -533,7 +531,7 @@ class ApplicationForm extends Component<Props, State> {
     } else if (fields) {
       // If the user has not yet answered the questions, display the fields
       bodyElement = (
-        <div className="col-lg-10 col-md-12 col-sm-12 mx-auto">
+        <div className="">
           <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
             <div className="progress mb-4">
               <div
@@ -551,7 +549,7 @@ class ApplicationForm extends Component<Props, State> {
               <p>{description}</p>
             </div>
           </div>
-          <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+          <div className="container border px-5">
             {currentPage === 1 ? (
 <Dropzone
   onSubmit={this.handleImportApplicationData}

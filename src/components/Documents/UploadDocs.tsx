@@ -228,7 +228,7 @@ class UploadDocs extends React.Component<Props, State> {
               </div>
             )}
             {currentStep === 1 && (
-              <div className="container">
+              <div>
                 <p className="lead pt-3">
                   Please review the documents below. Click the
                   &quot;Continue&quot; button to submit.
@@ -236,8 +236,8 @@ class UploadDocs extends React.Component<Props, State> {
                 <Container>
                   {pdfFiles && pdfFiles.length > 0
                     ? Array.from(pdfFiles).map((pdfFile, index) => (
-                        <div className="container mb-3 card-alignment">
-                          <Card style={{ width: '48rem' }}>
+                        <div className="mb-3 card-alignment w-100">
+                          <Card>
                             <Row className="row-padding g-4 md-3">
                               <Col sm={8}>
                                 <Col sm={10}>
