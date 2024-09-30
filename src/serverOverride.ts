@@ -3,11 +3,9 @@ const getServerURL = (): string => {
     return 'https://staged.keep.id';
   }
   if (process.env.NODE_ENV === 'production') {
-    console.log('https://server.keep.id');
     return 'https://server.keep.id';
   }
   if (process.env.NODE_ENV === 'staging') {
-    console.log('https://staged.keep.id');
     return 'https://staged.keep.id';
   }
   return 'http://localhost:7001';
