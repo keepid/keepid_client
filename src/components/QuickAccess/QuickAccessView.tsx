@@ -8,7 +8,6 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 // @ts-ignore
 import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSetImage.svg';
-import PDFType from '../../static/PDFType';
 import DocumentViewer from '../Documents/DocumentViewer';
 import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';

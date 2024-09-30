@@ -8,7 +8,6 @@ import { setConstantValue } from 'typescript';
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
@@ -23,20 +22,17 @@ interface Props {
   documentDate: string;
   documentUploader: string;
   targetUser: string;
+  fileType: FileType;
   resetDocumentId: ()=> void;
 }
 
-const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, resetDocumentId }) => {
+const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, fileType, resetDocumentId }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
   const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-    const fileType = FileType.IDENTIFICATION_PDF;
-    // console.log('documentName:', documentName);
-    // console.log('organization:', organization);
-    // console.log('TARGET USER', targetUser);
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',

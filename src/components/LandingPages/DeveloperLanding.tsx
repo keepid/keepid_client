@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import PDFType from '../../static/PDFType';
 import Role from '../../static/Role';
 import Table from '../BaseComponents/Table';
 
@@ -134,11 +133,11 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
   getDocuments() {
     const { searchName } = this.state;
-    fetch(`${getServerURL()}/get-documents `, {
+    fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        pdfType: PDFType.BLANK_FORM,
+        fileType: FileType.FORM,
         annotated: false,
       }),
     })
@@ -177,7 +176,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     formData.append('file', pdfFile, pdfFile.name);
     formData.append('fileId', this.state.documents[rowIndex].id);
 
-    fetch(`${getServerURL()}/upload-annotated`, {
+    fetch(`${getServerURL()}/upload-form`, {
       method: 'POST',
       credentials: 'include',
       body: formData,
