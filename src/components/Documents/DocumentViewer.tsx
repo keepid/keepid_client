@@ -8,7 +8,7 @@ interface Props {
 export default function DocumentViewer(props: Props): React.ReactElement {
   const { pdfFile } = props;
   return (
-        <div className="container">
+        <div className="">
             <Helmet>
                 <title>
                     Document:

@@ -11,9 +11,9 @@ import uuid from 'react-uuid';
 
 import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import DocumentViewer from '../Documents/DocumentViewer';
 import DropzoneUploader from '../Documents/DropzoneUploader';
-import FileType from "../../static/FileType";
 
 interface Field {
   fieldID: string; // Unique identifier id from frontend
@@ -413,7 +413,7 @@ class ApplicationForm extends Component<Props, State> {
     fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
-      body: formData
+      body: formData,
     })
       .then((response) => response.blob())
       .then((responseBlob) => {
@@ -502,14 +502,14 @@ class ApplicationForm extends Component<Props, State> {
       // If the user has submitted their answers display the finished PDF application
       bodyElement = (
         <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-          <div className="container">
+          <div>
             <h2>Review and sign to complete your form</h2>
             <p>Finally, sign the document and click submit when complete.</p>
           </div>
 
           <DocumentViewer pdfFile={pdfApplication} />
           <div className="d-flex justify-content-center pt-5">
-            <div className="container border px-5 col-lg-10 col-md-10 col-sm-12">
+            <div className="border px-5 col-lg-10 col-md-10 col-sm-12">
               <div className="pt-5 pb-3">
                 I agree to all terms and conditions in the form document above.
               </div>
@@ -548,12 +548,12 @@ class ApplicationForm extends Component<Props, State> {
                 style={{ width: `${fillAmt}%` }}
               />
             </div>
-            <div className="container col-lg-10 col-md-10 col-sm-12">
+            <div className="col-lg-10 col-md-10 col-sm-12">
               <h2>{title}</h2>
               <p>{description}</p>
             </div>
           </div>
-          <div className="container border px-5">
+          <div className="border px-5">
             {currentPage === 1 ? (
 <Dropzone
   onSubmit={this.handleImportApplicationData}
@@ -671,7 +671,7 @@ class ApplicationForm extends Component<Props, State> {
           <title>Fill Application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="ml-5 mt-3">
+        <div className="mt-3">
           {clientUsername && <div className="alert alert-primary">You are currently filling out this application on behalf of {clientUsername}.</div>}
           <Link to="/applications">
             <button type="button" className="btn btn-primary">
