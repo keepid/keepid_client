@@ -362,7 +362,7 @@ class ApplicationForm extends Component<Props, State> {
       </label>
       <DatePicker
         id={entry.fieldName}
-        selected={new Date(formAnswers[entry.fieldName])}
+        selected={formAnswers[entry.fieldName] ? new Date(formAnswers[entry.fieldName]) : new Date()}
         onChange={(date) =>
           this.handleChangeFormValueDateField(date, entry.fieldName)
         }
@@ -405,14 +405,15 @@ class ApplicationForm extends Component<Props, State> {
 
     this.setState({ buttonState: 'running' });
 
+    const formData = new FormData();
+    formData.append('clientUsername', clientUsername);
+    formData.append('applicationId', applicationId);
+    formData.append('formAnswers', JSON.stringify(formAnswers));
+
     fetch(`${getServerURL()}/fill-pdf-2`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        applicationId,
-        clientUsername,
-        formAnswers,
-      }),
+      body: formData
     })
       .then((response) => response.blob())
       .then((responseBlob) => {

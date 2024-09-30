@@ -33,6 +33,8 @@ interface State {
   currentUploadDate: string | undefined;
   currentUploader: string | undefined;
   currentUserRole: Role | undefined;
+  currentDocumentFileType: FileType | undefined;
+  currentDocumentTargetUser: string | undefined;
   documentData: any;
 }
 
@@ -83,6 +85,8 @@ class MyDocuments extends Component<Props, State> {
       currentUploadDate: undefined,
       currentUploader: undefined,
       currentUserRole: undefined,
+      currentDocumentFileType: undefined,
+      currentDocumentTargetUser: undefined,
       documentData: [],
     };
     this.getDocumentData = this.getDocumentData.bind(this);
@@ -126,8 +130,21 @@ class MyDocuments extends Component<Props, State> {
     const { userRole, alert } = this.props;
     const documentId = row.id;
     const documentName = row.filename;
-    const fileType = FileType.APPLICATION_PDF;
-    const targetUser = this.props.username;
+
+    let fileType, targetUser;
+    if (
+        userRole === Role.Worker ||
+        userRole === Role.Admin ||
+        userRole === Role.Director
+    ) {
+      fileType = FileType.APPLICATION_PDF;
+      targetUser = row.uploader;
+    } else if (userRole === Role.Client) {
+      fileType = FileType.IDENTIFICATION_PDF;
+      targetUser = this.props.username;
+    } else {
+      fileType = undefined;
+    }
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
@@ -172,8 +189,20 @@ class MyDocuments extends Component<Props, State> {
     const documentId = documentData[rowIndex].id;
     const documentName = documentData[rowIndex].filename;
 
-    const fileType = FileType.APPLICATION_PDF;
     const targetUser = this.props.username;
+
+    let fileType;
+    if (
+        userRole === Role.Worker ||
+        userRole === Role.Admin ||
+        userRole === Role.Director
+    ) {
+      fileType = FileType.APPLICATION_PDF;
+    } else if (userRole === Role.Client) {
+      fileType = FileType.IDENTIFICATION_PDF;
+    } else {
+      fileType = undefined;
+    }
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
@@ -201,11 +230,30 @@ class MyDocuments extends Component<Props, State> {
 
   onViewDocument(event: any, row: any) {
     const { id, filename, uploadDate, uploader } = row;
+    const { userRole } = this.props;
+
+    let fileType, targetUser;
+    if (
+        userRole === Role.Worker ||
+        userRole === Role.Admin ||
+        userRole === Role.Director
+    ) {
+      fileType = FileType.APPLICATION_PDF;
+      targetUser = row.uploader;
+    } else if (userRole === Role.Client) {
+      fileType = FileType.IDENTIFICATION_PDF;
+      targetUser = this.props.username;
+    } else {
+      fileType = undefined;
+    }
+
     this.setState({
       currentDocumentId: id,
       currentDocumentName: filename,
       currentUploadDate: uploadDate,
       currentUploader: uploader,
+      currentDocumentFileType: fileType,
+      currentDocumentTargetUser: targetUser,
     });
   }
 
@@ -213,8 +261,9 @@ class MyDocuments extends Component<Props, State> {
     event.preventDefault();
     const documentId = row.id;
     const { userRole } = this.props;
-    let fileType;
     const targetUser = this.props.username;
+
+    let fileType;
     if (
       userRole === Role.Worker ||
       userRole === Role.Admin ||
@@ -246,10 +295,22 @@ class MyDocuments extends Component<Props, State> {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
 
-    const fileType = FileType.APPLICATION_PDF;
     let targetUser;
     if (this.props.username !== '') {
       targetUser = this.props.username;
+    }
+
+    let fileType;
+    if (
+        userRole === Role.Worker ||
+        userRole === Role.Admin ||
+        userRole === Role.Director
+    ) {
+      fileType = FileType.APPLICATION_PDF;
+    } else if (userRole === Role.Client) {
+      fileType = FileType.IDENTIFICATION_PDF;
+    } else {
+      fileType = undefined;
     }
 
     fetch(`${getServerURL()}/get-files `, {
@@ -342,6 +403,8 @@ class MyDocuments extends Component<Props, State> {
       documentData,
       currentUploadDate,
       currentUploader,
+      currentDocumentTargetUser,
+      currentDocumentFileType
     } = this.state;
 
     return (
@@ -354,7 +417,8 @@ class MyDocuments extends Component<Props, State> {
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
               documentUploader={currentUploader}
-              targetUser={username}
+              targetUser={currentDocumentTargetUser}
+              fileType={currentDocumentFileType}
               resetDocumentId={this.resetDocumentId}
             />
           ) : (
