@@ -33,7 +33,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
   const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
-
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
       credentials: 'include',

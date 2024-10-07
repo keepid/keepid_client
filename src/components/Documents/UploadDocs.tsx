@@ -158,11 +158,11 @@ class UploadDocs extends React.Component<Props, State> {
         error = true;
       } else {
         for (let i = 0; i < this.state.documentTypeList.length; i += 1) {
-           if (this.state.documentTypeList[i] === undefined) {
-             this.props.alert.show('Please categorize each document');
-             error = true;
-           }
-         }
+          if (this.state.documentTypeList[i] === undefined) {
+            this.props.alert.show('Please categorize each document');
+            error = true;
+          }
+        }
       }
       if (error === false) {
         this.uploadFiles();

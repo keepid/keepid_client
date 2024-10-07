@@ -131,9 +131,10 @@ class MyDocuments extends Component<Props, State> {
     const documentId = row.id;
     const documentName = row.filename;
 
-    let fileType, targetUser;
+    let fileType; let
+      targetUser;
     if (
-        userRole === Role.Worker ||
+      userRole === Role.Worker ||
         userRole === Role.Admin ||
         userRole === Role.Director
     ) {
@@ -193,7 +194,7 @@ class MyDocuments extends Component<Props, State> {
 
     let fileType;
     if (
-        userRole === Role.Worker ||
+      userRole === Role.Worker ||
         userRole === Role.Admin ||
         userRole === Role.Director
     ) {
@@ -232,9 +233,10 @@ class MyDocuments extends Component<Props, State> {
     const { id, filename, uploadDate, uploader } = row;
     const { userRole } = this.props;
 
-    let fileType, targetUser;
+    let fileType; let
+      targetUser;
     if (
-        userRole === Role.Worker ||
+      userRole === Role.Worker ||
         userRole === Role.Admin ||
         userRole === Role.Director
     ) {
@@ -302,7 +304,7 @@ class MyDocuments extends Component<Props, State> {
 
     let fileType;
     if (
-        userRole === Role.Worker ||
+      userRole === Role.Worker ||
         userRole === Role.Admin ||
         userRole === Role.Director
     ) {
@@ -404,7 +406,7 @@ class MyDocuments extends Component<Props, State> {
       currentUploadDate,
       currentUploader,
       currentDocumentTargetUser,
-      currentDocumentFileType
+      currentDocumentFileType,
     } = this.state;
 
     return (

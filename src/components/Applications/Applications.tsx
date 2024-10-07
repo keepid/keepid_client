@@ -7,9 +7,9 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import FileType from '../../static/FileType';
 import Table from '../BaseComponents/Table';
 import ApplicationForm from './ApplicationForm';
-import FileType from "../../static/FileType";
 
 interface DocumentInformation {
   uploader: string,

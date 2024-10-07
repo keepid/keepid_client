@@ -5,8 +5,8 @@ import React, { useCallback, useState } from 'react';
 import { withAlert } from 'react-alert';
 import Dropzone from 'react-dropzone-uploader';
 
+import FileType from '../../static/FileType';
 import Role from '../../static/Role';
-import FileType from "../../static/FileType";
 
 function DropzoneUploader({ alert, userRole, updateFileList, updateStep, maxNumFiles, currentStep }) {
   const list: File[] = [];
