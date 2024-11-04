@@ -548,7 +548,7 @@ class ApplicationForm extends Component<Props, State> {
                 style={{ width: `${fillAmt}%` }}
               />
             </div>
-            <div className="col-lg-10 col-md-10 col-sm-12">
+            <div className="col-lg-12 col-md-12 col-sm-12">
               <h2>{title}</h2>
               <p>{description}</p>
             </div>
