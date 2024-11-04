@@ -22,6 +22,7 @@ import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import Applications from './components/Applications/Applications';
+import SelectApplication from './components/Applications/SelectApplication';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -448,6 +449,25 @@ class App extends React.Component<{}, State, {}> {
                     return <MyDocuments userRole={role} username={username} />;
                   }
                   return <Home />;
+                }}
+              />
+              <Route
+                path="/applications/createnew"
+                render={() => {
+                  if (
+                    role === Role.Client ||
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
+                    return (
+                      <SelectApplication />
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
                 }}
               />
               <Route
