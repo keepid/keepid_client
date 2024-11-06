@@ -49,7 +49,7 @@ describe('AutoLogout', () => {
     render(<AutoLogout logOut={jest.fn()} setAutoLogout={jest.fn()} />);
 
     act(() => {
-      jest.advanceTimersByTime(1000 * 60 * 50); // 50 minutes
+      jest.advanceTimersByTime(1000 * 60 * 70); // 70 minutes
     });
 
     expect(screen.queryByTestId('warn-modal')).not.toBeNull();
