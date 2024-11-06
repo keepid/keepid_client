@@ -6,7 +6,7 @@ import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
 const timeUntilWarn: number = 1000 * 60 * 60; // 1 hour
-const timeFromWarnToLogout: number = 1000 * 60 * 60; // 1 hour
+const timeFromWarnToLogout: number = 1000 * 60 * 15; // 15 minutes
 const timeout: number = timeUntilWarn + timeFromWarnToLogout;
 const timeBeforeConsideredSleep: number = 1000 * 60 * 60 * 24 * 30; // 1 month
 
