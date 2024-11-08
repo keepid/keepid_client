@@ -5,14 +5,17 @@ import { useHistory } from 'react-router-dom';
 import DeviceSleepDetect from './DeviceSleepDetect';
 import IdleTimeOutModal from './IdleTimeOutModal';
 
-const timeUntilWarn: number = 1000 * 60 * 60; // 1 hour
-const timeFromWarnToLogout: number = 1000 * 60 * 15; // 15 minutes
-const timeout: number = timeUntilWarn + timeFromWarnToLogout;
-const timeBeforeConsideredSleep: number = 1000 * 60 * 60 * 24 * 30; // 1 month
+// const timeUntilWarn: number = 1000 * 60 * 60; // 1 hour
+// const timeFromWarnToLogout: number = 1000 * 60 * 15; // 15 minutes
+// const timeout: number = timeUntilWarn + timeFromWarnToLogout;
+// const timeBeforeConsideredSleep: number = 1000 * 60 * 60 * 24 * 30; // 1 month
 
 interface Props {
   logOut: () => void;
   setAutoLogout: (logout: boolean) => void;
+  timeUntilWarn: number;
+  timeFromWarnToLogout: number;
+  timeBeforeConsideredSleep: number;
 }
 
 function AutoLogout(props: Props): React.ReactElement {
@@ -47,8 +50,8 @@ function AutoLogout(props: Props): React.ReactElement {
     onIdle: handleLogout, // will be called when the complete timeout expires
     onActive, // will be called when the idlestate switches to active
     onPrompt, // will be called when the timeUntilWarn time expires
-    timeout,
-    promptBeforeIdle: timeFromWarnToLogout,
+    timeout: props.timeUntilWarn + props.timeFromWarnToLogout,
+    promptBeforeIdle: props.timeFromWarnToLogout,
     stopOnIdle: true,
   });
 
@@ -60,7 +63,7 @@ function AutoLogout(props: Props): React.ReactElement {
   return (
     <div data-testid="auto-logout">
       <IdleTimeOutModal showModal={showModal} handleClose={onStillHere} handleLogout={handleLogout} />
-      <DeviceSleepDetect timeOut={timeBeforeConsideredSleep} handleAutoLogout={handleAutoLogout} />
+      <DeviceSleepDetect timeOut={props.timeBeforeConsideredSleep} handleAutoLogout={handleAutoLogout} />
     </div>
   );
 }
