@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import IdleTimer from 'react-idle-timer';
+// import IdleTimer from 'react-idle-timer';
 import { useHistory } from 'react-router-dom';
 
 import DeviceSleepDetect from './DeviceSleepDetect';
@@ -73,7 +73,7 @@ function AutoLogout(props: Props): React.ReactElement {
 
   return (
     <div data-testid="auto-logout">
-      <IdleTimer
+      {/* <IdleTimer
         key="idleTimerWarn"
         ref={(ref) => {
           setIdleTimerWarn(ref);
@@ -83,7 +83,7 @@ function AutoLogout(props: Props): React.ReactElement {
         debounce={250}
         timeout={timeUntilWarn}
         stopOnIdle
-      />
+      /> */}
       <IdleTimeOutModal showModal={showModal} handleClose={onClose} handleLogout={handleLogout} />
       <DeviceSleepDetect timeOut={timeBeforeConsideredSleep} handleAutoLogout={handleAutoLogout} />
     </div>
