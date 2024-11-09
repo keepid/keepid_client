@@ -33,7 +33,7 @@ export default function SelectApplicationCard({
       id={`${name}-${value}`}
       value={value}
       onChange={clickHandler}
-      className="tw-border-2 tw-border-gray-500 tw-h-52 tw-w-56 tw-flex tw-flex-col tw-items-center
+      className="toggle-button tw-border-2 tw-border-gray-500 tw-h-52 tw-w-56 tw-flex tw-flex-col tw-items-center
         tw-bg-transparent tw-text-black tw-rounded-lg"
     >
       <img alt={iconAlt} src={iconSrc} className="tw-mb-4 tw-mt-8 tw-h-16 tw-w-auto tw-aspect-auto" />
