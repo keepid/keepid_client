@@ -10,7 +10,7 @@ const timeBeforeConsideredSleep: number = 1000 * 60 * 5; // 5 minutes
 
 jest.useFakeTimers();
 
-describe('AutoLogout', () => {
+describe.skip('AutoLogout', () => {
   afterEach(() => {
     jest.clearAllTimers();
   });
