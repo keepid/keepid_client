@@ -3,87 +3,8 @@ import { Button, Form } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 
 import useNewApplicationFormContext from './NewApplicationFormHook';
+import { ApplicationType } from './NewApplicationFormProvider';
 import SelectApplicationCard from './SelectApplicationCard';
-
-interface CardInfo {
-  iconSrc: string,
-  iconAlt: string,
-  dataAttr: string,
-  value: string,
-  titleText: string,
-  subtitleText: string | null,
-}
-
-const cards: Record<number, CardInfo[]> = {
-  0: [
-    {
-      iconSrc: '/apple-icon-180x180.png',
-      iconAlt: 'Social Security Card',
-      dataAttr: 'applicationType',
-      value: 'ssc',
-      titleText: 'Social Security Card',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/apple-icon-180x180.png',
-      iconAlt: 'Social Security Card',
-      dataAttr: 'applicationType',
-      value: 'ssc2',
-      titleText: 'Social Security Card',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/apple-icon-180x180.png',
-      iconAlt: 'Social Security Card',
-      dataAttr: 'applicationType',
-      value: 'ssc3',
-      titleText: 'Social Security Card',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/apple-icon-180x180.png',
-      iconAlt: 'Social Security Card',
-      dataAttr: 'applicationType',
-      value: 'ssc4',
-      titleText: 'Social Security Card',
-      subtitleText: null,
-    },
-  ],
-  1: [
-    {
-      iconSrc: '/link-logo.png',
-      iconAlt: 'Pennsylvania',
-      dataAttr: 'state',
-      value: 'PA',
-      titleText: 'Pennsylvania',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/link-logo.png',
-      iconAlt: 'Pennsylvania',
-      dataAttr: 'state',
-      value: 'PA1',
-      titleText: 'Pennsylvania',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/link-logo.png',
-      iconAlt: 'Pennsylvania',
-      dataAttr: 'state',
-      value: 'PA2',
-      titleText: 'Pennsylvania',
-      subtitleText: null,
-    },
-    {
-      iconSrc: '/link-logo.png',
-      iconAlt: 'Pennsylvania',
-      dataAttr: 'state',
-      value: 'PA3',
-      titleText: 'Pennsylvania',
-      subtitleText: null,
-    },
-  ],
-};
 
 export default function SelectApplicationForm() {
   const {
@@ -92,6 +13,7 @@ export default function SelectApplicationForm() {
     data,
     setData,
     titles,
+    cards,
   } = useNewApplicationFormContext();
 
   const handleSubmit = (e: FormEvent) => {
@@ -118,20 +40,22 @@ export default function SelectApplicationForm() {
           <h1>{titles[page]}</h1>
           <Form className="form tw-flex tw-flex-wrap tw-gap-8 tw-justify-center" onSubmit={handleSubmit}>
 
-            {cards[page].map((card) => (
-              <SelectApplicationCard
-                key={card.value}
-                iconSrc={card.iconSrc}
-                iconAlt={card.iconAlt}
-                titleText={card.titleText}
-                subtitleText={card.subtitleText}
-                clickHandler={() => setData((prev) => ({ ...prev, [card.dataAttr]: card.value }))}
-                checked={data[card.dataAttr] === card.value}
-                name={card.dataAttr}
-                value={card.value}
-                disabled={false}
-              />
-            ))}
+            {cards[page]
+              .filter((card) => card.for === null || card.for.has(data.applicationType as ApplicationType))
+              .map((card) => (
+                <SelectApplicationCard
+                  key={card.value}
+                  iconSrc={card.iconSrc}
+                  iconAlt={card.iconAlt}
+                  titleText={card.titleText}
+                  subtitleText={card.subtitleText}
+                  clickHandler={() => setData((prev) => ({ ...prev, [card.dataAttr]: card.value }))}
+                  checked={data[card.dataAttr] === card.value}
+                  name={card.dataAttr}
+                  value={card.value}
+                  disabled={false}
+                />
+              ))}
 
           </Form>
           <div className="tw-flex tw-justify-between">
