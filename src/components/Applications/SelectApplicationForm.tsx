@@ -12,8 +12,7 @@ export default function SelectApplicationForm() {
     setPage,
     data,
     setData,
-    titles,
-    cards,
+    formContent,
   } = useNewApplicationFormContext();
 
   const handleSubmit = (e: FormEvent) => {
@@ -25,9 +24,11 @@ export default function SelectApplicationForm() {
 
   const handleNext = () => setPage((prev) => prev + 1);
 
+  const questionPageCount = Object.keys(formContent).length;
+
   const disablePrev = page === 0;
 
-  const disableNext = page === Object.keys(titles).length - 1;
+  const disableNext = page === questionPageCount - 1;
 
   return (
     <div className="container-fluid">
@@ -37,30 +38,36 @@ export default function SelectApplicationForm() {
       </Helmet>
       <div className="jumbotron jumbotron-fluid bg-white pb-0">
         <div className="container tw-flex tw-flex-col tw-gap-4">
-          <h1>{titles[page]}</h1>
+          <div className="tw-flex tw-justify-between tw-items-end">
+            <h1>{formContent[page].title}</h1>
+            <p>Step {page + 1} of {questionPageCount}</p>
+          </div>
+
+          {page === 3 && <h3>I am filling out this application on behalf of...</h3>}
+
           <Form className="form tw-flex tw-flex-wrap tw-gap-8 tw-justify-center" onSubmit={handleSubmit}>
 
-            {cards[page]
-              .filter((card) => card.for === null || card.for.has(data.applicationType as ApplicationType))
-              .map((card) => (
+            {formContent[page].options
+              .filter((option) => option.for === null || option.for.has(data.type as ApplicationType))
+              .map((option) => (
                 <SelectApplicationCard
-                  key={card.value}
-                  iconSrc={card.iconSrc}
-                  iconAlt={card.iconAlt}
-                  titleText={card.titleText}
-                  subtitleText={card.subtitleText}
-                  clickHandler={() => setData((prev) => ({ ...prev, [card.dataAttr]: card.value }))}
-                  checked={data[card.dataAttr] === card.value}
-                  name={card.dataAttr}
-                  value={card.value}
+                  key={option.value}
+                  iconSrc={option.iconSrc}
+                  iconAlt={option.iconAlt}
+                  titleText={option.titleText}
+                  subtitleText={option.subtitleText}
+                  clickHandler={() => setData((prev) => ({ ...prev, [option.dataAttr]: option.value }))}
+                  checked={data[option.dataAttr] === option.value}
+                  name={option.dataAttr}
+                  value={option.value}
                   disabled={false}
                 />
               ))}
 
           </Form>
           <div className="tw-flex tw-justify-between">
-            <Button disabled={disablePrev} onClick={handlePrev}>Back</Button>
-            <Button disabled={disableNext} onClick={handleNext}>Next</Button>
+            <Button onClick={handlePrev} className={`${disablePrev ? 'tw-invisible ' : ' '}`}>Back</Button>
+            <Button onClick={handleNext} className={`${disableNext ? 'tw-invisible ' : ' '}`}>Next</Button>
           </div>
         </div>
       </div>
