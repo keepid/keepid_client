@@ -33,12 +33,14 @@ export default function SelectApplicationCard({
       id={`${name}-${value}`}
       value={value}
       onChange={clickHandler}
-      className="toggle-button tw-border-2 tw-border-gray-500 tw-h-52 tw-w-56 tw-flex tw-flex-col tw-items-center
-        tw-bg-transparent tw-text-black tw-rounded-lg"
+      className={`toggle-button tw-border-2 tw-border-gray-300 tw-h-52 tw-w-56 tw-flex tw-flex-col tw-items-center
+        tw-bg-transparent tw-text-black tw-rounded-lg tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.15)]
+        hover:tw-bg-gray-100
+        ${checked ? '!tw-bg-transparent !tw-border-gray-500 !tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.4)]' : ''}`}
     >
-      <img alt={iconAlt} src={iconSrc} className="tw-mb-4 tw-mt-8 tw-h-16 tw-w-auto tw-aspect-auto" />
-      <p className="tw-text-base tw-font-bold">{titleText}</p>
-      {subtitleText && <p className="tw-text-md">{subtitleText}</p>}
+      <img alt={iconAlt} src={iconSrc} className="tw-mb-4 tw-mt-4 tw-h-16 tw-w-auto tw-aspect-auto" />
+      <p className={`tw-text-base tw-font-bold tw-mb-2 ${checked ? 'tw-text-black' : ''}`}>{titleText}</p>
+      {subtitleText && <p className="tw-text-xs tw-text-gray-700">{subtitleText}</p>}
     </ToggleButton>
   );
 }
