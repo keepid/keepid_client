@@ -7,11 +7,11 @@ const titles = {
 };
 
 export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
+export type DataAttribute = 'type' | 'state' | 'situation' | 'person'
 
 interface ApplicationOption {
   iconSrc: string,
   iconAlt: string,
-  dataAttr: string,
   value: string,
   titleText: string,
   subtitleText: string | null,
@@ -20,17 +20,19 @@ interface ApplicationOption {
 
 interface SelectApplicationFormPage {
   title: string;
-  options: ApplicationOption[]
+  subtitle?: string;
+  dataAttr?: DataAttribute;
+  options: ApplicationOption[];
 }
 
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
     title: 'Start an Application',
+    dataAttr: 'type',
     options: [
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Social Security Card',
-        dataAttr: 'type',
         value: 'ss_card',
         titleText: 'Social Security Card',
         subtitleText: null,
@@ -39,7 +41,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Driver\'s License',
-        dataAttr: 'type',
         value: 'drivers_license',
         titleText: 'Driver\'s License',
         subtitleText: null,
@@ -48,7 +49,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Birth Certificate',
-        dataAttr: 'type',
         value: 'birth_cert',
         titleText: 'Birth Certificate',
         subtitleText: null,
@@ -57,7 +57,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Voter\'s Registration',
-        dataAttr: 'type',
         value: 'voter_reg',
         titleText: 'Voter\'s Registration',
         subtitleText: null,
@@ -67,11 +66,11 @@ const formContent: Record<number, SelectApplicationFormPage> = {
   },
   1: {
     title: 'Select your State',
+    dataAttr: 'state',
     options: [
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Pennsylvania',
-        dataAttr: 'state',
         value: 'PA',
         titleText: 'Pennsylvania',
         subtitleText: null,
@@ -80,7 +79,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'New Jersey',
-        dataAttr: 'state',
         value: 'NJ',
         titleText: 'New Jersey',
         subtitleText: null,
@@ -89,7 +87,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'New York / NYC',
-        dataAttr: 'state',
         value: 'NY',
         titleText: 'New York / NYC',
         subtitleText: null,
@@ -98,7 +95,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Federal',
-        dataAttr: 'state',
         value: 'FED',
         titleText: 'Federal',
         subtitleText: null,
@@ -108,11 +104,11 @@ const formContent: Record<number, SelectApplicationFormPage> = {
   },
   2: {
     title: 'Select your Situation',
+    dataAttr: 'situation',
     options: [
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Initial Application',
-        dataAttr: 'situation',
         value: 'initial',
         titleText: 'Initial Application',
         subtitleText: 'You have never applied or received an ID before',
@@ -121,7 +117,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Duplicate Application',
-        dataAttr: 'situation',
         value: 'duplicate',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it',
@@ -130,7 +125,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Duplicate Application',
-        dataAttr: 'situation',
         value: 'duplicate',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it, and the ID has not expired',
@@ -139,7 +133,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Renewal Application',
-        dataAttr: 'situation',
         value: 'renewal',
         titleText: 'Renewal Application',
         subtitleText: 'You have previously gotten this ID before, but it has now expired',
@@ -148,7 +141,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Change of Address',
-        dataAttr: 'situation',
         value: 'change_address',
         titleText: 'Change of Address',
         subtitleText: 'You just need to change the address on your ID',
@@ -157,7 +149,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Standard Application',
-        dataAttr: 'situation',
         value: 'birth_cert_standard',
         titleText: 'Standard Application',
         subtitleText: 'You are applying through the standard process and are not homeless, juvenile, or a substance abuser',
@@ -166,7 +157,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Homeless Application',
-        dataAttr: 'situation',
         value: 'birth_cert_homeless',
         titleText: 'Homeless Application',
         subtitleText: 'You are homeless so the application fee is waived',
@@ -175,7 +165,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Juvenile Application',
-        dataAttr: 'situation',
         value: 'birth_cert_juvenile',
         titleText: 'Juvenile Application',
         subtitleText: 'You are under 18 so the application fee is waived',
@@ -184,7 +173,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Substance Abuse Application',
-        dataAttr: 'situation',
         value: 'birth_cert_substance',
         titleText: 'Substance Abuse Application',
         subtitleText: 'You are actively substance abusing so the application fee is waived',
@@ -194,11 +182,12 @@ const formContent: Record<number, SelectApplicationFormPage> = {
   },
   3: {
     title: 'Select the target person',
+    dataAttr: 'person',
+    subtitle: 'I am filling out this application on behalf of...',
     options: [
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'Myself',
-        dataAttr: 'person',
         value: 'myself',
         titleText: 'Myself',
         subtitleText: 'I am filling this application out for myself',
@@ -207,7 +196,6 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/apple-icon-180x180.png',
         iconAlt: 'My Child',
-        dataAttr: 'person',
         value: 'mychild',
         titleText: 'My Child',
         subtitleText: 'I am filling this application out for my child or dependent',
@@ -215,13 +203,22 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       },
     ],
   },
+  4: {
+    title: 'Preview the Form',
+    options: [],
+  },
+  5: {
+    title: 'Last steps...',
+    subtitle: 'Do you want to send the application with direct mail?',
+    options: [],
+  },
 };
 
 interface NewApplicationFormContextProps {
   formContent: Record<number, SelectApplicationFormPage>;
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
-  data: Record<string, string>;
+  data: Record<DataAttribute, string>;
   setData: Dispatch<SetStateAction<Record<string, string>>>;
   canSubmit: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
