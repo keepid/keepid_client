@@ -1,13 +1,16 @@
 import React, { createContext, Dispatch, SetStateAction, useState } from 'react';
 
-const titles = {
-  0: 'Page 1',
-  1: 'Page 2',
-  2: 'Page 3',
+export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
+
+const initialData = {
+  type: '',
+  state: '',
+  situation: '',
+  person: '',
 };
 
-export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
-export type DataAttribute = 'type' | 'state' | 'situation' | 'person'
+type DataAttribute = keyof typeof initialData;
+type FormData = typeof initialData;
 
 interface ApplicationOption {
   iconSrc: string,
@@ -31,7 +34,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     dataAttr: 'type',
     options: [
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/social-sec-card.svg',
         iconAlt: 'Social Security Card',
         value: 'ss_card',
         titleText: 'Social Security Card',
@@ -39,7 +42,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/drivers-license.svg',
         iconAlt: 'Driver\'s License',
         value: 'drivers_license',
         titleText: 'Driver\'s License',
@@ -47,7 +50,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/birth-cert.svg',
         iconAlt: 'Birth Certificate',
         value: 'birth_cert',
         titleText: 'Birth Certificate',
@@ -55,7 +58,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/voter-reg.svg',
         iconAlt: 'Voter\'s Registration',
         value: 'voter_reg',
         titleText: 'Voter\'s Registration',
@@ -69,7 +72,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     dataAttr: 'state',
     options: [
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/pennsylvania.svg',
         iconAlt: 'Pennsylvania',
         value: 'PA',
         titleText: 'Pennsylvania',
@@ -77,7 +80,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/new-jersey.svg',
         iconAlt: 'New Jersey',
         value: 'NJ',
         titleText: 'New Jersey',
@@ -85,7 +88,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/new-york-state.svg',
         iconAlt: 'New York / NYC',
         value: 'NY',
         titleText: 'New York / NYC',
@@ -93,7 +96,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/usa.svg',
         iconAlt: 'Federal',
         value: 'FED',
         titleText: 'Federal',
@@ -107,7 +110,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     dataAttr: 'situation',
     options: [
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/initial-application.svg',
         iconAlt: 'Initial Application',
         value: 'initial',
         titleText: 'Initial Application',
@@ -115,7 +118,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['ss_card', 'drivers_license']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
         value: 'duplicate',
         titleText: 'Duplicate Application',
@@ -123,7 +126,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['ss_card']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
         value: 'duplicate',
         titleText: 'Duplicate Application',
@@ -131,7 +134,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['drivers_license']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/renewal-application.svg',
         iconAlt: 'Renewal Application',
         value: 'renewal',
         titleText: 'Renewal Application',
@@ -139,7 +142,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['drivers_license']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/change-of-address.svg',
         iconAlt: 'Change of Address',
         value: 'change_address',
         titleText: 'Change of Address',
@@ -147,7 +150,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['drivers_license']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/standard-application.svg',
         iconAlt: 'Standard Application',
         value: 'birth_cert_standard',
         titleText: 'Standard Application',
@@ -155,7 +158,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['birth_cert']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/homeless-application.svg',
         iconAlt: 'Homeless Application',
         value: 'birth_cert_homeless',
         titleText: 'Homeless Application',
@@ -163,7 +166,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['birth_cert']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/juvenile-application.svg',
         iconAlt: 'Juvenile Application',
         value: 'birth_cert_juvenile',
         titleText: 'Juvenile Application',
@@ -171,7 +174,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: new Set(['birth_cert']),
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/substance-abuse-application.svg',
         iconAlt: 'Substance Abuse Application',
         value: 'birth_cert_substance',
         titleText: 'Substance Abuse Application',
@@ -186,7 +189,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     subtitle: 'I am filling out this application on behalf of...',
     options: [
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/myself.svg',
         iconAlt: 'Myself',
         value: 'myself',
         titleText: 'Myself',
@@ -194,7 +197,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         for: null,
       },
       {
-        iconSrc: '/apple-icon-180x180.png',
+        iconSrc: '/SelectApplicationForm/my-child.svg',
         iconAlt: 'My Child',
         value: 'mychild',
         titleText: 'My Child',
@@ -218,8 +221,8 @@ interface NewApplicationFormContextProps {
   formContent: Record<number, SelectApplicationFormPage>;
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
-  data: Record<DataAttribute, string>;
-  setData: Dispatch<SetStateAction<Record<string, string>>>;
+  data: FormData;
+  setData: Dispatch<SetStateAction<FormData>>;
   canSubmit: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -230,15 +233,9 @@ export const NewApplicationFormContext =
 export default function NewApplicationFormProvider({ children }) {
   const [page, setPage] = useState<number>(0);
 
-  const [data, setData] = useState<Record<string, string>>({
-    applicationType: '',
-    state: '',
-    situation: '',
-    targetPerson: '',
-  });
+  const [data, setData] = useState<FormData>(initialData);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const type = e.target.type;
     const name = e.target.name;
     const value = e.target.value;
 
@@ -248,8 +245,7 @@ export default function NewApplicationFormProvider({ children }) {
     }));
   };
 
-  const canSubmit = [...Object.values(data)].every(Boolean) &&
-    page === Object.keys(titles).length - 1;
+  const canSubmit = [...Object.values(data)].every(Boolean);
 
   return (
     <NewApplicationFormContext.Provider
