@@ -16,6 +16,9 @@ export default function SelectApplicationForm() {
     data,
     setData,
     formContent,
+    handleChange,
+    handleNext,
+    handlePrev,
   } = useNewApplicationFormContext();
 
   const handleSubmit = () => {
@@ -28,10 +31,6 @@ export default function SelectApplicationForm() {
 
   const [previewPdf, setPreviewPdf] = useState<File | null>(null);
 
-  const handlePrev = () => setPage((prev) => prev - 1);
-
-  const handleNext = () => setPage((prev) => prev + 1);
-
   const pageCount = Object.keys(formContent).length;
 
   const hidePrev = page === 0;
@@ -39,7 +38,7 @@ export default function SelectApplicationForm() {
   const isPreviewPage = page === pageCount - 2;
   const isFinalPage = page === pageCount - 1;
 
-  const canGoToNext = formContent[page].dataAttr ? Boolean(data[formContent[page].dataAttr]) : true;
+  // const canGoToNext = formContent[page].dataAttr ? Boolean(data[formContent[page].dataAttr]) : true;
 
   return (
     <div className="container-fluid">
@@ -56,7 +55,7 @@ export default function SelectApplicationForm() {
 
           {formContent[page].subtitle && <h3>{formContent[page].subtitle}</h3>}
 
-          <Form className="form tw-flex tw-flex-wrap tw-gap-8 tw-justify-center">
+          <Form className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2">
 
             {formContent[page].dataAttr &&
             formContent[page].options
@@ -68,7 +67,7 @@ export default function SelectApplicationForm() {
                   iconAlt={option.iconAlt}
                   titleText={option.titleText}
                   subtitleText={option.subtitleText}
-                  clickHandler={() => setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))}
+                  clickHandler={handleChange}
                   checked={data[formContent[page].dataAttr!] === option.value}
                   name={formContent[page].dataAttr!}
                   value={option.value}
@@ -101,8 +100,7 @@ export default function SelectApplicationForm() {
             </Button>
             <Button
               onClick={handleNext}
-              disabled={!canGoToNext}
-              className={`${isFinalPage ? 'tw-hidden ' : ' '}`}
+              className={`${isPreviewPage ? ' ' : 'tw-hidden '}`}
             >
               Next
             </Button>
