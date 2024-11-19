@@ -1,5 +1,7 @@
 import React, { createContext, Dispatch, SetStateAction, useState } from 'react';
 
+import SelectApplicationFormFinalPage from './SelectApplicationFormFinalPage';
+
 export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
 
 const initialData = {
@@ -204,6 +206,14 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         subtitleText: 'I am filling this application out for my child or dependent',
         for: null,
       },
+      {
+        iconSrc: '/SelectApplicationForm/my-child.svg',
+        iconAlt: 'Myself and my child/children',
+        value: 'myself_and_mychild',
+        titleText: 'Myself and my child(ren)',
+        subtitleText: 'I am filling this application out for myself and one or more of my children',
+        for: null,
+      },
     ],
   },
   4: {
@@ -225,6 +235,8 @@ interface NewApplicationFormContextProps {
   setData: Dispatch<SetStateAction<FormData>>;
   canSubmit: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handlePrev: () => void;
+  handleNext: () => void;
 }
 
 export const NewApplicationFormContext =
@@ -235,6 +247,10 @@ export default function NewApplicationFormProvider({ children }) {
 
   const [data, setData] = useState<FormData>(initialData);
 
+  const handlePrev = () => setPage((prev) => prev - 1);
+
+  const handleNext = () => setPage((prev) => prev + 1);
+  // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name;
     const value = e.target.value;
@@ -243,13 +259,15 @@ export default function NewApplicationFormProvider({ children }) {
       ...prevData,
       [name]: value,
     }));
+
+    handleNext();
   };
 
   const canSubmit = [...Object.values(data)].every(Boolean);
 
   return (
     <NewApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, canSubmit, handleChange }}
+      value={{ formContent, page, setPage, data, setData, canSubmit, handleChange, handlePrev, handleNext }}
     >
       {children}
     </NewApplicationFormContext.Provider>
