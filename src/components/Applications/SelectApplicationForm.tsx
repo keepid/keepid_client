@@ -49,7 +49,7 @@ export default function SelectApplicationForm() {
       <div className="jumbotron jumbotron-fluid bg-white pb-0">
         <div className="container tw-flex tw-flex-col tw-gap-4">
           <div className="tw-flex tw-justify-between tw-items-end">
-            <h1>{formContent[page].title}</h1>
+            <h1>{formContent[page].title(data.type)}</h1>
             <p>Step {page + 1} of {pageCount}</p>
           </div>
 
