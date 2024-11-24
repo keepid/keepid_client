@@ -13,6 +13,7 @@ const initialData = {
 
 type DataAttribute = keyof typeof initialData;
 type FormData = typeof initialData;
+type title = (appType : string) => string;
 
 interface ApplicationOption {
   iconSrc: string,
@@ -24,7 +25,7 @@ interface ApplicationOption {
 }
 
 interface SelectApplicationFormPage {
-  title: string;
+  title: title;
   subtitle?: string;
   dataAttr?: DataAttribute;
   options: ApplicationOption[];
@@ -32,7 +33,7 @@ interface SelectApplicationFormPage {
 
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
-    title: 'Start an Application',
+    title: (_) => 'Start an Application',
     dataAttr: 'type',
     options: [
       {
@@ -70,7 +71,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     ],
   },
   1: {
-    title: 'Select your State',
+    title: (_) => 'Select your State',
     dataAttr: 'state',
     options: [
       {
@@ -108,7 +109,15 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     ],
   },
   2: {
-    title: 'Select your Situation',
+    title: (appType) => {
+      switch (appType) {
+        case 'ss_card': return 'Select your Social Security Card Situation';
+        case 'drivers_license': return 'Select your Photo ID/Driver\'s License Situation';
+        case 'birth_cert': return 'Select your Birth Certificate Situation';
+        case 'voter_reg': return 'Select your Voter Registration Situation';
+        default: return 'Select your Situation';
+      }
+    },
     dataAttr: 'situation',
     options: [
       {
@@ -186,7 +195,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     ],
   },
   3: {
-    title: 'Select the target person',
+    title: (_) => 'Select the Target Person',
     dataAttr: 'person',
     subtitle: 'I am filling out this application on behalf of...',
     options: [
@@ -217,11 +226,11 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     ],
   },
   4: {
-    title: 'Preview the Form',
+    title: (_) => 'Preview the Form',
     options: [],
   },
   5: {
-    title: 'Last steps...',
+    title: (_) => 'Last steps...',
     subtitle: 'Do you want to send the application with direct mail?',
     options: [],
   },
