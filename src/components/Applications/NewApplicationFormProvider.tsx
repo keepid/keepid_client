@@ -31,6 +31,8 @@ interface SelectApplicationFormPage {
   options: ApplicationOption[];
 }
 
+const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
+
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
     title: (_) => 'Start an Application',
@@ -242,6 +244,8 @@ interface NewApplicationFormContextProps {
   setPage: Dispatch<SetStateAction<number>>;
   data: FormData;
   setData: Dispatch<SetStateAction<FormData>>;
+  pages,
+  setPages,
   canSubmit: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handlePrev: () => void;
@@ -256,9 +260,19 @@ export default function NewApplicationFormProvider({ children }) {
 
   const [data, setData] = useState<FormData>(initialData);
 
+  const [pages, setPages] = useState([{ name: 'Application Type', handle: (e) => { setPage(0); } }]);
+
   const handlePrev = () => setPage((prev) => prev - 1);
 
-  const handleNext = () => setPage((prev) => prev + 1);
+  const handleNext = () => {
+    console.log(pages.length);
+    console.log(page);
+    if (pages.length === page + 1) {
+      setPages([...pages, { name: pageToBreadCrumbTitle[page + 1], handle: (e) => { setPage(page + 1); } }]);
+      console.log(pages);
+    }
+    setPage((prev) => prev + 1);
+  };
   // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name;
@@ -276,7 +290,7 @@ export default function NewApplicationFormProvider({ children }) {
 
   return (
     <NewApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, canSubmit, handleChange, handlePrev, handleNext }}
+      value={{ formContent, page, setPage, data, setData, pages, setPages, canSubmit, handleChange, handlePrev, handleNext }}
     >
       {children}
     </NewApplicationFormContext.Provider>
