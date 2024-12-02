@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import DocumentViewer from '../Documents/DocumentViewer';
+import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
 import useNewApplicationFormContext from './NewApplicationFormHook';
 import { ApplicationType } from './NewApplicationFormProvider';
 import SelectApplicationCard from './SelectApplicationCard';
@@ -15,6 +16,8 @@ export default function SelectApplicationForm() {
     setPage,
     data,
     setData,
+    pages,
+    setPages,
     formContent,
     handleChange,
     handleNext,
@@ -46,8 +49,9 @@ export default function SelectApplicationForm() {
         <title>Create new application</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="jumbotron jumbotron-fluid bg-white pb-0">
+      <div className="jumbotron jumbotron-fluid bg-white pb-0 tw-mt-0 tw-pt-6">
         <div className="container tw-flex tw-flex-col tw-gap-4">
+          <ApplicationBreadCrumbs pages={pages} />
           <div className="tw-flex tw-justify-between tw-items-end">
             <h1>{formContent[page].title(data.type)}</h1>
             <p>Step {page + 1} of {pageCount}</p>
