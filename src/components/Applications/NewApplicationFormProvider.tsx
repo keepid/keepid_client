@@ -1,7 +1,5 @@
 import React, { createContext, Dispatch, SetStateAction, useState } from 'react';
 
-import SelectApplicationFormFinalPage from './SelectApplicationFormFinalPage';
-
 export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
 
 const initialData = {
@@ -12,8 +10,7 @@ const initialData = {
 };
 
 type DataAttribute = keyof typeof initialData;
-type FormData = typeof initialData;
-type title = (appType : string) => string;
+export type ApplicationFormData = typeof initialData;
 
 interface ApplicationOption {
   iconSrc: string,
@@ -25,13 +22,13 @@ interface ApplicationOption {
 }
 
 interface SelectApplicationFormPage {
-  title: title;
+  title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
   options: ApplicationOption[];
 }
 
-const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
+const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Review Selections', 'Preview Form', 'Send Application'];
 
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
@@ -111,6 +108,37 @@ const formContent: Record<number, SelectApplicationFormPage> = {
     ],
   },
   2: {
+    title: (_) => 'Select the Target Person',
+    dataAttr: 'person',
+    subtitle: 'I am filling out this application on behalf of...',
+    options: [
+      {
+        iconSrc: '/SelectApplicationForm/myself.svg',
+        iconAlt: 'Myself',
+        value: 'myself',
+        titleText: 'Myself',
+        subtitleText: 'I am filling this application out for myself',
+        for: null,
+      },
+      {
+        iconSrc: '/SelectApplicationForm/my-child.svg',
+        iconAlt: 'My Child',
+        value: 'mychild',
+        titleText: 'My Child',
+        subtitleText: 'I am filling this application out for my child or dependent',
+        for: null,
+      },
+      {
+        iconSrc: '/SelectApplicationForm/my-child.svg',
+        iconAlt: 'Myself and my child/children',
+        value: 'myself_and_mychild',
+        titleText: 'Myself and my child(ren)',
+        subtitleText: 'I am filling this application out for myself and one or more of my children',
+        for: null,
+      },
+    ],
+  },
+  3: {
     title: (appType) => {
       switch (appType) {
         case 'ss_card': return 'Select your Social Security Card Situation';
@@ -196,44 +224,16 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       },
     ],
   },
-  3: {
-    title: (_) => 'Select the Target Person',
-    dataAttr: 'person',
-    subtitle: 'I am filling out this application on behalf of...',
-    options: [
-      {
-        iconSrc: '/SelectApplicationForm/myself.svg',
-        iconAlt: 'Myself',
-        value: 'myself',
-        titleText: 'Myself',
-        subtitleText: 'I am filling this application out for myself',
-        for: null,
-      },
-      {
-        iconSrc: '/SelectApplicationForm/my-child.svg',
-        iconAlt: 'My Child',
-        value: 'mychild',
-        titleText: 'My Child',
-        subtitleText: 'I am filling this application out for my child or dependent',
-        for: null,
-      },
-      {
-        iconSrc: '/SelectApplicationForm/my-child.svg',
-        iconAlt: 'Myself and my child/children',
-        value: 'myself_and_mychild',
-        titleText: 'Myself and my child(ren)',
-        subtitleText: 'I am filling this application out for myself and one or more of my children',
-        for: null,
-      },
-    ],
-  },
   4: {
-    title: (_) => 'Preview the Form',
+    title: (_) => 'Review your selections',
     options: [],
   },
   5: {
+    title: (_) => 'Review your application',
+    options: [],
+  },
+  6: {
     title: (_) => 'Last steps...',
-    subtitle: 'Do you want to send the application with direct mail?',
     options: [],
   },
 };
@@ -242,12 +242,12 @@ interface NewApplicationFormContextProps {
   formContent: Record<number, SelectApplicationFormPage>;
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
-  data: FormData;
-  setData: Dispatch<SetStateAction<FormData>>;
+  data: ApplicationFormData;
+  setData: Dispatch<SetStateAction<ApplicationFormData>>;
   pages,
   setPages,
   canSubmit: boolean;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
 }
@@ -258,7 +258,7 @@ export const NewApplicationFormContext =
 export default function NewApplicationFormProvider({ children }) {
   const [page, setPage] = useState<number>(0);
 
-  const [data, setData] = useState<FormData>(initialData);
+  const [data, setData] = useState<ApplicationFormData>(initialData);
 
   const [pages, setPages] = useState([{ name: 'Application Type', handle: (e) => { setPage(0); } }]);
 
@@ -273,11 +273,8 @@ export default function NewApplicationFormProvider({ children }) {
     }
     setPage((prev) => prev + 1);
   };
-  // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    const value = e.target.value;
 
+  const handleChange = (name: string, value: string) => {
     setData((prevData) => ({
       ...prevData,
       [name]: value,
