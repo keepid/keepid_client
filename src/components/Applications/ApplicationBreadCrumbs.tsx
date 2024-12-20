@@ -19,7 +19,7 @@ function toDescription(stepIdx, dataAttr) {
     case 'ss_card':
       return 'Social Security Card';
     case 'drivers_license':
-      return "Driver's License";
+      return "Driver's License / State ID";
     case 'birth_cert':
       return 'Birth Certificate';
     case 'voter_reg':

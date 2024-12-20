@@ -50,7 +50,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         iconSrc: '/SelectApplicationForm/drivers-license.svg',
         iconAlt: 'Driver\'s License',
         value: 'drivers_license',
-        titleText: 'Driver\'s License',
+        titleText: 'Driver\'s License/State ID',
         subtitleText: null,
         for: null,
       },
