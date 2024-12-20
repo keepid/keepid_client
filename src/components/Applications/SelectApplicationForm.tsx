@@ -14,12 +14,11 @@ import SelectApplicationFormFinalPage from './SelectApplicationFormFinalPage';
 
 export default function SelectApplicationForm() {
   const {
+    formContent,
     page,
+    setPage,
     data,
     setData,
-    pages,
-    setPages,
-    formContent,
     handleChange,
     handleNext,
     handlePrev,
@@ -77,9 +76,9 @@ export default function SelectApplicationForm() {
           <title>Create new application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+        <ApplicationBreadCrumbs page={page} setPage={setPage} data={data} />
         <div className="jumbotron jumbotron-fluid bg-white pb-0 tw-mt-0 tw-pt-6">
           <div className="container tw-flex tw-flex-col tw-gap-4">
-            <ApplicationBreadCrumbs pages={pages} />
             <div className="tw-flex tw-justify-between tw-items-end">
               <h1>{formContent[page].title(data.type)}</h1>
               <p>Step {page + 1} of {pageCount}</p>

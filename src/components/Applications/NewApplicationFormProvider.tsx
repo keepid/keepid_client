@@ -28,8 +28,6 @@ interface SelectApplicationFormPage {
   options: ApplicationOption[];
 }
 
-const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Review Selections', 'Preview Form', 'Send Application'];
-
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
     title: (_) => 'Start an Application',
@@ -244,9 +242,6 @@ interface NewApplicationFormContextProps {
   setPage: Dispatch<SetStateAction<number>>;
   data: ApplicationFormData;
   setData: Dispatch<SetStateAction<ApplicationFormData>>;
-  pages,
-  setPages,
-  canSubmit: boolean;
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
@@ -260,17 +255,9 @@ export default function NewApplicationFormProvider({ children }) {
 
   const [data, setData] = useState<ApplicationFormData>(initialData);
 
-  const [pages, setPages] = useState([{ name: 'Application Type', handle: (e) => { setPage(0); } }]);
-
   const handlePrev = () => setPage((prev) => prev - 1);
 
   const handleNext = () => {
-    console.log(pages.length);
-    console.log(page);
-    if (pages.length === page + 1) {
-      setPages([...pages, { name: pageToBreadCrumbTitle[page + 1], handle: (e) => { setPage(page + 1); } }]);
-      console.log(pages);
-    }
     setPage((prev) => prev + 1);
   };
 
@@ -283,11 +270,9 @@ export default function NewApplicationFormProvider({ children }) {
     handleNext();
   };
 
-  const canSubmit = [...Object.values(data)].every(Boolean);
-
   return (
     <NewApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, pages, setPages, canSubmit, handleChange, handlePrev, handleNext }}
+      value={{ formContent, page, setPage, data, setData, handleChange, handleNext, handlePrev }}
     >
       {children}
     </NewApplicationFormContext.Provider>
