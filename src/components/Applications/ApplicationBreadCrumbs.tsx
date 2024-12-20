@@ -42,6 +42,18 @@ function toDescription(stepIdx, dataAttr) {
       return 'Initial';
     case 'duplicate':
       return 'Duplicate';
+    case 'birth_cert_standard':
+      return 'Standard';
+    case 'birth_cert_homeless':
+      return 'Homeless';
+    case 'birth_cert_juvenile':
+      return 'Juvenile';
+    case 'birth_cert_substance':
+      return 'Substance Abuse';
+    case 'renewal':
+      return 'Renewal';
+    case 'change_address':
+      return 'Change of Address';
     default:
       return 'None';
   }
@@ -52,10 +64,6 @@ function classNames(...classes) {
 }
 
 export default function ApplicationBreadCrumbs({ page, setPage, data }) {
-  const [furthestPage, setFurthestPage] = useState(0);
-  if (page > furthestPage) {
-    setFurthestPage(page);
-  }
   return (
     <div className="lg:tw-border-b lg:tw-border-t lg:tw-border-gray-200 tw-px-0">
       <nav aria-label="Progress" className="tw-mx-auto tw-max-w-7xl tw-px-0">
@@ -71,7 +79,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }) {
                   'tw-overflow-hidden tw-border tw-border-gray-200 lg:tw-border-0',
                 )}
               >
-                {stepIdx <= furthestPage && stepIdx !== page && (
+                {stepIdx < page && (
                   <a className="tw-group" onClick={(_) => { setPage(stepIdx); }}>
                     <span
                       aria-hidden="true"
@@ -114,7 +122,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }) {
                     </span>
                   </a>
                 )}
-                {stepIdx > furthestPage && stepIdx !== page && (
+                {stepIdx > page && (
                   <a className="tw-group">
                     <span
                       aria-hidden="true"
