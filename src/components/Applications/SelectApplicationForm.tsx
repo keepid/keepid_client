@@ -17,15 +17,20 @@ import SelectApplicationFormFinalPage from './SelectApplicationFormFinalPage';
 
 export default function SelectApplicationForm() {
   const {
+    formContent,
     page,
+    setPage,
     data,
 <<<<<<< HEAD
     setData,
+<<<<<<< HEAD
     pages,
     setPages,
 =======
 >>>>>>> 6e719945 (onChange changed to onClick, added warnings before navigating away)
     formContent,
+=======
+>>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
     handleChange,
     handleNext,
     handlePrev,
@@ -97,7 +102,12 @@ export default function SelectApplicationForm() {
           <title>Create new application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
+<<<<<<< HEAD
         <div className="jumbotron jumbotron-fluid bg-white pb-0">
+=======
+        <ApplicationBreadCrumbs page={page} setPage={setPage} data={data} />
+        <div className="jumbotron jumbotron-fluid bg-white pb-0 tw-mt-0 tw-pt-6">
+>>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
           <div className="container tw-flex tw-flex-col tw-gap-4">
             <div className="tw-flex tw-justify-between tw-items-end">
               <h1>{formContent[page].title(data.type)}</h1>

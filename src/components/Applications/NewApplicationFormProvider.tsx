@@ -28,8 +28,11 @@ interface SelectApplicationFormPage {
   options: ApplicationOption[];
 }
 
+<<<<<<< HEAD
 const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
 
+=======
+>>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
 const formContent: Record<number, SelectApplicationFormPage> = {
   0: {
     title: (_) => 'Start an Application',
@@ -243,6 +246,7 @@ interface NewApplicationFormContextProps {
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
 <<<<<<< HEAD
+<<<<<<< HEAD
   data: FormData;
   setData: Dispatch<SetStateAction<FormData>>;
   pages,
@@ -252,6 +256,10 @@ interface NewApplicationFormContextProps {
   setData: Dispatch<SetStateAction<ApplicationFormData>>;
 >>>>>>> 6e719945 (onChange changed to onClick, added warnings before navigating away)
   canSubmit: boolean;
+=======
+  data: ApplicationFormData;
+  setData: Dispatch<SetStateAction<ApplicationFormData>>;
+>>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
@@ -265,18 +273,10 @@ export default function NewApplicationFormProvider({ children }) {
 
   const [data, setData] = useState<ApplicationFormData>(initialData);
 
-  const [pages, setPages] = useState([{ name: 'Application Type', handle: (e) => { setPage(0); } }]);
-
   const handlePrev = () => setPage((prev) => prev - 1);
 
 <<<<<<< HEAD
   const handleNext = () => {
-    console.log(pages.length);
-    console.log(page);
-    if (pages.length === page + 1) {
-      setPages([...pages, { name: pageToBreadCrumbTitle[page + 1], handle: (e) => { setPage(page + 1); } }]);
-      console.log(pages);
-    }
     setPage((prev) => prev + 1);
   };
   // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
@@ -296,11 +296,9 @@ export default function NewApplicationFormProvider({ children }) {
     handleNext();
   };
 
-  const canSubmit = [...Object.values(data)].every(Boolean);
-
   return (
     <NewApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, pages, setPages, canSubmit, handleChange, handlePrev, handleNext }}
+      value={{ formContent, page, setPage, data, setData, handleChange, handleNext, handlePrev }}
     >
       {children}
     </NewApplicationFormContext.Provider>
