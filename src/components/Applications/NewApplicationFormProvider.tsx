@@ -41,7 +41,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/social-sec-card.svg',
         iconAlt: 'Social Security Card',
-        value: 'ss_card',
+        value: 'SS',
         titleText: 'Social Security Card',
         subtitleText: null,
         for: null,
@@ -49,7 +49,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/drivers-license.svg',
         iconAlt: 'Driver\'s License',
-        value: 'drivers_license',
+        value: 'PIDL',
         titleText: 'Driver\'s License/State ID',
         subtitleText: null,
         for: null,
@@ -57,7 +57,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/birth-cert.svg',
         iconAlt: 'Birth Certificate',
-        value: 'birth_cert',
+        value: 'BC',
         titleText: 'Birth Certificate',
         subtitleText: null,
         for: null,
@@ -65,7 +65,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/voter-reg.svg',
         iconAlt: 'Voter\'s Registration',
-        value: 'voter_reg',
+        value: 'VR',
         titleText: 'Voter\'s Registration',
         subtitleText: null,
         for: null,
@@ -118,7 +118,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/myself.svg',
         iconAlt: 'Myself',
-        value: 'myself',
+        value: 'MYSELF',
         titleText: 'Myself',
         subtitleText: 'I am filling this application out for myself',
         for: null,
@@ -126,7 +126,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/my-child.svg',
         iconAlt: 'My Child',
-        value: 'mychild',
+        value: 'MYCHILD',
         titleText: 'My Child',
         subtitleText: 'I am filling this application out for my child or dependent',
         for: null,
@@ -134,7 +134,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/my-child.svg',
         iconAlt: 'Myself and my child/children',
-        value: 'myself_and_mychild',
+        value: 'MYSELF_AND_MYCHILD',
         titleText: 'Myself and my child(ren)',
         subtitleText: 'I am filling this application out for myself and one or more of my children',
         for: null,
@@ -156,7 +156,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/initial-application.svg',
         iconAlt: 'Initial Application',
-        value: 'initial',
+        value: 'INITIAL',
         titleText: 'Initial Application',
         subtitleText: 'You have never applied or received an ID before',
         for: new Set(['ss_card', 'drivers_license']),
@@ -164,7 +164,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
-        value: 'duplicate',
+        value: 'DUPLICATE',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it',
         for: new Set(['ss_card']),
@@ -172,7 +172,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
-        value: 'duplicate',
+        value: 'DUPLICATE',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it, and the ID has not expired',
         for: new Set(['drivers_license']),
@@ -180,7 +180,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/renewal-application.svg',
         iconAlt: 'Renewal Application',
-        value: 'renewal',
+        value: 'RENEWAL',
         titleText: 'Renewal Application',
         subtitleText: 'You have previously gotten this ID before, but it has now expired',
         for: new Set(['drivers_license']),
@@ -188,7 +188,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/change-of-address.svg',
         iconAlt: 'Change of Address',
-        value: 'change_address',
+        value: 'CHANGE_OF_ADDRESS',
         titleText: 'Change of Address',
         subtitleText: 'You just need to change the address on your ID',
         for: new Set(['drivers_license']),
@@ -196,7 +196,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/standard-application.svg',
         iconAlt: 'Standard Application',
-        value: 'birth_cert_standard',
+        value: 'STANDARD',
         titleText: 'Standard Application',
         subtitleText: 'You are applying through the standard process and are not homeless, juvenile, or a substance abuser',
         for: new Set(['birth_cert']),
@@ -204,7 +204,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/homeless-application.svg',
         iconAlt: 'Homeless Application',
-        value: 'birth_cert_homeless',
+        value: 'HOMELESS',
         titleText: 'Homeless Application',
         subtitleText: 'You are homeless so the application fee is waived',
         for: new Set(['birth_cert']),
@@ -212,7 +212,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/juvenile-application.svg',
         iconAlt: 'Juvenile Application',
-        value: 'birth_cert_juvenile',
+        value: 'JUVENILE_JUSTICE_INVOLVED',
         titleText: 'Juvenile Application',
         subtitleText: 'You are under 18 so the application fee is waived',
         for: new Set(['birth_cert']),
@@ -220,7 +220,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
       {
         iconSrc: '/SelectApplicationForm/substance-abuse-application.svg',
         iconAlt: 'Substance Abuse Application',
-        value: 'birth_cert_substance',
+        value: 'SUBSTANCE_ABUSE',
         titleText: 'Substance Abuse Application',
         subtitleText: 'You are actively substance abusing so the application fee is waived',
         for: new Set(['birth_cert']),
