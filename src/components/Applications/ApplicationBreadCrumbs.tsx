@@ -16,13 +16,13 @@ function toDescription(stepIdx, dataAttr) {
     return '';
   }
   switch (dataAttr) {
-    case 'ss_card':
+    case 'SS':
       return 'Social Security Card';
-    case 'drivers_license':
+    case 'PIDL':
       return "Driver's License / State ID";
-    case 'birth_cert':
+    case 'BC':
       return 'Birth Certificate';
-    case 'voter_reg':
+    case 'VR':
       return 'Voter Registration';
     case 'NJ':
       return 'New Jersey';
@@ -32,27 +32,27 @@ function toDescription(stepIdx, dataAttr) {
       return 'Pennsylvania';
     case 'FED':
       return 'Federal';
-    case 'myself':
+    case 'MYSELF':
       return 'Myself';
-    case 'mychild':
+    case 'MYCHILD':
       return 'My Child';
-    case 'myself_and_mychild':
+    case 'MYSELF_AND_MYCHILD':
       return 'Myself and my child(ren)';
-    case 'initial':
+    case 'INITIAL':
       return 'Initial';
-    case 'duplicate':
+    case 'DUPLICATE':
       return 'Duplicate';
-    case 'birth_cert_standard':
+    case 'STANDARD':
       return 'Standard';
-    case 'birth_cert_homeless':
+    case 'HOMELESS':
       return 'Homeless';
-    case 'birth_cert_juvenile':
+    case 'JUVENILE_JUSTICE_INVOLVED':
       return 'Juvenile';
-    case 'birth_cert_substance':
+    case 'SUBSTANCE_ABUSE':
       return 'Substance Abuse';
-    case 'renewal':
+    case 'RENEWAL':
       return 'Renewal';
-    case 'change_address':
+    case 'CHANGE_OF_ADDRESS':
       return 'Change of Address';
     default:
       return 'None';
