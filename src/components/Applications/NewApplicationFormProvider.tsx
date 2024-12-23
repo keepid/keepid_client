@@ -1,6 +1,8 @@
 import React, { createContext, Dispatch, SetStateAction, useState } from 'react';
 
-export type ApplicationType = 'ss_card' | 'drivers_license' | 'birth_cert' | 'voter_reg'
+import getServerURL from '../../serverOverride';
+
+export type ApplicationType = 'SS' | 'PIDL' | 'BC' | 'VR'
 
 const initialData = {
   type: '',
@@ -159,7 +161,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'INITIAL',
         titleText: 'Initial Application',
         subtitleText: 'You have never applied or received an ID before',
-        for: new Set(['ss_card', 'drivers_license']),
+        for: new Set(['SS', 'PIDL']),
       },
       {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
@@ -167,7 +169,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'DUPLICATE',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it',
-        for: new Set(['ss_card']),
+        for: new Set(['SS']),
       },
       {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
@@ -175,7 +177,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'DUPLICATE',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it, and the ID has not expired',
-        for: new Set(['drivers_license']),
+        for: new Set(['PIDL']),
       },
       {
         iconSrc: '/SelectApplicationForm/renewal-application.svg',
@@ -183,7 +185,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'RENEWAL',
         titleText: 'Renewal Application',
         subtitleText: 'You have previously gotten this ID before, but it has now expired',
-        for: new Set(['drivers_license']),
+        for: new Set(['PIDL']),
       },
       {
         iconSrc: '/SelectApplicationForm/change-of-address.svg',
@@ -191,7 +193,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'CHANGE_OF_ADDRESS',
         titleText: 'Change of Address',
         subtitleText: 'You just need to change the address on your ID',
-        for: new Set(['drivers_license']),
+        for: new Set(['PIDL']),
       },
       {
         iconSrc: '/SelectApplicationForm/standard-application.svg',
@@ -199,7 +201,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'STANDARD',
         titleText: 'Standard Application',
         subtitleText: 'You are applying through the standard process and are not homeless, juvenile, or a substance abuser',
-        for: new Set(['birth_cert']),
+        for: new Set(['BC']),
       },
       {
         iconSrc: '/SelectApplicationForm/homeless-application.svg',
@@ -207,7 +209,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'HOMELESS',
         titleText: 'Homeless Application',
         subtitleText: 'You are homeless so the application fee is waived',
-        for: new Set(['birth_cert']),
+        for: new Set(['BC']),
       },
       {
         iconSrc: '/SelectApplicationForm/juvenile-application.svg',
@@ -215,7 +217,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'JUVENILE_JUSTICE_INVOLVED',
         titleText: 'Juvenile Application',
         subtitleText: 'You are under 18 so the application fee is waived',
-        for: new Set(['birth_cert']),
+        for: new Set(['BC']),
       },
       {
         iconSrc: '/SelectApplicationForm/substance-abuse-application.svg',
@@ -223,7 +225,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
         value: 'SUBSTANCE_ABUSE',
         titleText: 'Substance Abuse Application',
         subtitleText: 'You are actively substance abusing so the application fee is waived',
-        for: new Set(['birth_cert']),
+        for: new Set(['BC']),
       },
     ],
   },
@@ -277,6 +279,16 @@ export default function NewApplicationFormProvider({ children }) {
 
 <<<<<<< HEAD
   const handleNext = () => {
+    if (page === 4) {
+      console.log('Fetching pdf application registry');
+      fetch(`${getServerURL()}/get-application-registry`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+        .then((res) => res.json())
+        .then((resData) => console.log(resData))
+        .catch((e) => console.log(e));
+    }
     setPage((prev) => prev + 1);
   };
   // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
@@ -292,7 +304,6 @@ export default function NewApplicationFormProvider({ children }) {
       ...prevData,
       [name]: value,
     }));
-
     handleNext();
   };
 
