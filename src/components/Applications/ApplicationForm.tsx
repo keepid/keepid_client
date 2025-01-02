@@ -8,8 +8,9 @@ import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import DocumentViewer from '../Documents/DocumentViewer';
 import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
 import ApplicationCard from './ApplicationCard';
-import ApplicationFormFinalPage from './ApplicationFormFinalPage';
+import ApplicationSendPage from './ApplicationSendPage';
 import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
 export default function ApplicationForm() {
   const {
@@ -17,20 +18,38 @@ export default function ApplicationForm() {
     page,
     setPage,
     data,
-    setData,
+    isDirty,
+    setIsDirty,
     handleChange,
     handleNext,
     handlePrev,
   } = useApplicationFormContext();
 
-  // useEffect(() => {
-  //   if (page === 5) {
-
-  //   }
-  // }, []);
-
   const [shouldPrompt, setShouldPrompt] = useState(true);
+  const [previewPdf, setPreviewPdf] = useState<File | null>(null);
+  const { response: registryResponse, postData: postRegistryData } = useGetApplicationRegistry();
   const history = useHistory();
+
+  const pageCount = formContent.length;
+  const hidePrev = page === 0;
+  const isReviewPage = formContent[page].pageName === 'review';
+  const isPreviewPage = formContent[page].pageName === 'preview';
+  const isSendPage = formContent[page].pageName === 'send';
+
+  useEffect(() => {
+    if (isPreviewPage) {
+      postRegistryData(
+        data,
+        isDirty,
+        setIsDirty,
+      );
+    }
+  }, [isPreviewPage]);
+
+  // TODO: do something with the response, or remove this
+  useEffect(() => {
+    console.log(registryResponse);
+  }, [registryResponse]);
 
   const disablePrompt = () => {
     flushSync(() => {
@@ -60,18 +79,6 @@ export default function ApplicationForm() {
       handleChange(e.target.name, e.target.value);
     }
   };
-
-  const [previewPdf, setPreviewPdf] = useState<File | null>(null);
-
-  const pageCount = Object.keys(formContent).length;
-
-  const hidePrev = page === 0;
-
-  const isPreviewPage = page === pageCount - 3;
-  const isPDFPage = page === pageCount - 2;
-  const isFinalPage = page === pageCount - 1;
-
-  // const canGoToNext = formContent[page].dataAttr ? Boolean(data[formContent[page].dataAttr]) : true;
 
   return (
     <>
@@ -115,7 +122,7 @@ export default function ApplicationForm() {
 
             </Form>
 
-            {isPreviewPage && (
+            {isReviewPage && (
               <ul className="tw-text-lg">
                 <li>This is a {data.type} application.</li>
                 <li>This application is for {data.person}</li>
@@ -124,14 +131,14 @@ export default function ApplicationForm() {
               </ul>
             )}
 
-            {isPDFPage && (
+            {isPreviewPage && (
               previewPdf
                 ? <DocumentViewer pdfFile={previewPdf} />
                 : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">PDF goes here...</div>
             )}
 
-            {isFinalPage && (
-              <ApplicationFormFinalPage
+            {isSendPage && (
+              <ApplicationSendPage
                 data={data}
                 handleCancel={handleCancel}
                 handlePrev={handlePrev}
@@ -143,13 +150,13 @@ export default function ApplicationForm() {
             <div className="tw-flex tw-justify-between">
               <Button
                 onClick={handlePrev}
-                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isFinalPage ? 'tw-hidden ' : ' '}`}
+                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage ? 'tw-hidden ' : ' '}`}
               >
                 Back
               </Button>
               <Button
                 onClick={handleNext}
-                className={`${isPreviewPage || isPDFPage ? ' ' : 'tw-hidden '}`}
+                className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
               >
                 Next
               </Button>

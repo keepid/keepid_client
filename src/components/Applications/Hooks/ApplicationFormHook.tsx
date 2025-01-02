@@ -3,11 +3,14 @@ import React, { createContext, Dispatch, SetStateAction, useContext, useState } 
 import getServerURL from '../../../serverOverride';
 
 interface ApplicationFormContextProps {
-  formContent: Record<number, ApplicationFormPage>;
+  formContent: ApplicationFormPage[];
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
   data: ApplicationFormData;
   setData: Dispatch<SetStateAction<ApplicationFormData>>;
+  dataIsComplete: boolean;
+  isDirty: boolean;
+  setIsDirty: Dispatch<SetStateAction<boolean>>;
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
@@ -29,6 +32,8 @@ const initialData = {
   person: '',
 };
 
+const DATA_FIELD_COUNT = Object.keys(initialData).length;
+
 type DataAttribute = keyof typeof initialData;
 export type ApplicationFormData = typeof initialData;
 
@@ -38,16 +43,27 @@ interface ApplicationOption {
   value: string,
   titleText: string,
   subtitleText: string | null,
-  for: Set<ApplicationType> | null, // null indicates that this card is for ALL application types
+  for: Set<ApplicationType> | null, // null indicates that this option is for ALL application types
 }
 
-interface ApplicationFormPage {
+type ApplicationPageName = 'type'
+  | 'state'
+  | 'person'
+  | 'person'
+  | 'situation'
+  | 'review'
+  | 'preview'
+  | 'send'
+
+export interface ApplicationFormPage {
+  pageName: ApplicationPageName;
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
   options: ApplicationOption[];
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
 <<<<<<< HEAD
 const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
@@ -59,6 +75,11 @@ const formContent: Record<number, SelectApplicationFormPage> = {
 const formContent: Record<number, ApplicationFormPage> = {
 >>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
   0: {
+=======
+export const formContent: ApplicationFormPage[] = [
+  {
+    pageName: 'type',
+>>>>>>> 3e68c17e (added useGetApplicationRegistry hook; integrated ApplicationBreadCrumbs into application form types)
     title: (_) => 'Start an Application',
     dataAttr: 'type',
     options: [
@@ -96,7 +117,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  1: {
+  {
+    pageName: 'state',
     title: (_) => 'Select your State',
     dataAttr: 'state',
     options: [
@@ -134,7 +156,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  2: {
+  {
+    pageName: 'person',
     title: (_) => 'Select the Target Person',
     dataAttr: 'person',
     subtitle: 'I am filling out this application on behalf of...',
@@ -165,7 +188,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  3: {
+  {
+    pageName: 'situation',
     title: (appType) => {
       switch (appType) {
         case 'ss_card': return 'Select your Social Security Card Situation';
@@ -251,19 +275,22 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  4: {
+  {
+    pageName: 'review',
     title: (_) => 'Review your selections',
     options: [],
   },
-  5: {
+  {
+    pageName: 'preview',
     title: (_) => 'Review your application',
     options: [],
   },
-  6: {
+  {
+    pageName: 'send',
     title: (_) => 'Last steps...',
     options: [],
   },
-};
+];
 
 <<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
 interface NewApplicationFormContextProps {
@@ -298,23 +325,13 @@ export default function NewApplicationFormProvider({ children }) {
 export function ApplicationFormProvider({ children }) {
 >>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
   const [page, setPage] = useState<number>(0);
-
   const [data, setData] = useState<ApplicationFormData>(initialData);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const handlePrev = () => setPage((prev) => prev - 1);
 
 <<<<<<< HEAD
   const handleNext = () => {
-    if (page === 4) {
-      console.log('Fetching pdf application registry');
-      fetch(`${getServerURL()}/get-application-registry`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-        .then((res) => res.json())
-        .then((resData) => console.log(resData))
-        .catch((e) => console.log(e));
-    }
     setPage((prev) => prev + 1);
   };
   // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
@@ -326,16 +343,35 @@ export function ApplicationFormProvider({ children }) {
 >>>>>>> 6e719945 (onChange changed to onClick, added warnings before navigating away)
 
   const handleChange = (name: string, value: string) => {
+    if (data[name] !== value) {
+      setIsDirty(true);
+    }
+
     setData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+
     handleNext();
   };
 
+  const dataIsComplete = Object.keys(data).length === DATA_FIELD_COUNT;
+
   return (
     <ApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, handleChange, handleNext, handlePrev }}
+      value={{
+        formContent,
+        page,
+        setPage,
+        data,
+        setData,
+        dataIsComplete,
+        isDirty,
+        setIsDirty,
+        handleChange,
+        handleNext,
+        handlePrev,
+      }}
     >
       {children}
     </ApplicationFormContext.Provider>
