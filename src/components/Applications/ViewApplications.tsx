@@ -10,7 +10,7 @@ import { Link, Route, Switch } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Table from '../BaseComponents/Table';
-import ApplicationForm from './ApplicationForm';
+import ApplicationForm from './OldApplication/ApplicationForm';
 
 interface DocumentInformation {
   uploader: string,
@@ -37,7 +37,7 @@ interface LocationState {
   clientUsername: string
 }
 
-class Applications extends Component<Props & RouteComponentProps, State, {}> {
+class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
@@ -223,4 +223,4 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
 }
 
 // withRouter needed to access location in props
-export default withRouter(Applications);
+export default withRouter(ViewApplications);

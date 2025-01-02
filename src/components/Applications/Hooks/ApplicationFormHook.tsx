@@ -1,6 +1,24 @@
-import React, { createContext, Dispatch, SetStateAction, useState } from 'react';
+import React, { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
-import getServerURL from '../../serverOverride';
+import getServerURL from '../../../serverOverride';
+
+interface ApplicationFormContextProps {
+  formContent: Record<number, ApplicationFormPage>;
+  page: number;
+  setPage: Dispatch<SetStateAction<number>>;
+  data: ApplicationFormData;
+  setData: Dispatch<SetStateAction<ApplicationFormData>>;
+  handleChange: (name: string, value: string) => void;
+  handlePrev: () => void;
+  handleNext: () => void;
+}
+
+export const ApplicationFormContext =
+  createContext<ApplicationFormContextProps>({} as ApplicationFormContextProps);
+
+export function useApplicationFormContext() {
+  return useContext(ApplicationFormContext);
+}
 
 export type ApplicationType = 'SS' | 'PIDL' | 'BC' | 'VR'
 
@@ -23,19 +41,23 @@ interface ApplicationOption {
   for: Set<ApplicationType> | null, // null indicates that this card is for ALL application types
 }
 
-interface SelectApplicationFormPage {
+interface ApplicationFormPage {
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
   options: ApplicationOption[];
 }
 
+<<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
 <<<<<<< HEAD
 const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
 
 =======
 >>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
 const formContent: Record<number, SelectApplicationFormPage> = {
+=======
+const formContent: Record<number, ApplicationFormPage> = {
+>>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
   0: {
     title: (_) => 'Start an Application',
     dataAttr: 'type',
@@ -243,6 +265,7 @@ const formContent: Record<number, SelectApplicationFormPage> = {
   },
 };
 
+<<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
 interface NewApplicationFormContextProps {
   formContent: Record<number, SelectApplicationFormPage>;
   page: number;
@@ -271,6 +294,9 @@ export const NewApplicationFormContext =
   createContext<NewApplicationFormContextProps>({} as NewApplicationFormContextProps);
 
 export default function NewApplicationFormProvider({ children }) {
+=======
+export function ApplicationFormProvider({ children }) {
+>>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
   const [page, setPage] = useState<number>(0);
 
   const [data, setData] = useState<ApplicationFormData>(initialData);
@@ -308,10 +334,10 @@ export default function NewApplicationFormProvider({ children }) {
   };
 
   return (
-    <NewApplicationFormContext.Provider
+    <ApplicationFormContext.Provider
       value={{ formContent, page, setPage, data, setData, handleChange, handleNext, handlePrev }}
     >
       {children}
-    </NewApplicationFormContext.Provider>
+    </ApplicationFormContext.Provider>
   );
 }
