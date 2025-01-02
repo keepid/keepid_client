@@ -21,8 +21,8 @@ import AdminPanel from './components/AccountSettings/AdminPanel';
 import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
-import Applications from './components/Applications/Applications';
-import SelectApplication from './components/Applications/SelectApplication';
+import CreateApplication from './components/Applications/CreateApplication';
+import ViewApplications from './components/Applications/ViewApplications';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -461,7 +461,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Developer
                   ) {
                     return (
-                      <SelectApplication />
+                      <CreateApplication />
                     );
                   }
                   if (role === Role.LoggedOut) {
@@ -480,7 +480,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Developer
                   ) {
                     return (
-                      <Applications
+                      <ViewApplications
                         name={name}
                         organization={organization}
                         username={username}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { ApplicationFormData } from './NewApplicationFormProvider';
+import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
 interface FinalPageProps {
   data: ApplicationFormData;
@@ -12,7 +12,7 @@ interface FinalPageProps {
   handleSubmit: () => void;
 }
 
-export default function SelectApplicationFormFinalPage(props: FinalPageProps) {
+export default function ApplicationFormFinalPage(props: FinalPageProps) {
   const data = props.data;
   return (
     <>
