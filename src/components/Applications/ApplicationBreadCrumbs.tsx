@@ -1,21 +1,11 @@
 import { CheckIcon } from '@heroicons/react/24/solid';
-import React, { useState } from 'react';
+import React from 'react';
 
-const steps = [
-  { id: 'type', name: 'Type' },
-  { id: 'state', name: 'State' },
-  { id: 'person', name: 'Person' },
-  { id: 'situation', name: 'Situation' },
-  { id: 'review', name: 'Review' },
-  { id: 'preview', name: 'Preview' },
-  { id: 'send', name: 'Submit' },
-];
+import { capitalizeFirst } from '../Utils/StringUtils';
+import { ApplicationFormData, formContent } from './Hooks/ApplicationFormHook';
 
-function toDescription(stepIdx, dataAttr) {
-  if (stepIdx > 3) {
-    return '';
-  }
-  switch (dataAttr) {
+function toDescription(selection: string) {
+  switch (selection) {
     case 'SS':
       return 'Social Security Card';
     case 'PIDL':
@@ -59,23 +49,32 @@ function toDescription(stepIdx, dataAttr) {
   }
 }
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function ApplicationBreadCrumbs({ page, setPage, data }) {
+interface ApplicationBreadCrumbsProps {
+  page: number;
+  setPage: (e: number) => void;
+  data: ApplicationFormData;
+}
+
+export default function ApplicationBreadCrumbs({ page, setPage, data }: ApplicationBreadCrumbsProps) {
+  const pageContent = formContent[page];
+  const lastStepIdx = formContent.length - 1;
+
   return (
     <div className="lg:tw-border-b lg:tw-border-t lg:tw-border-gray-200 tw-px-0">
       <nav aria-label="Progress" className="tw-mx-auto tw-max-w-7xl tw-px-0">
         <ol
           className="tw-overflow-hidden tw-rounded-md lg:tw-flex lg:tw-rounded-none lg:tw-border-l lg:tw-border-r lg:tw-border-gray-200 tw-px-0"
         >
-          {steps.map((step, stepIdx) => (
-            <li key={step.id} className="tw-relative tw-overflow-hidden lg:tw-flex-1">
+          {formContent.map((step, stepIdx) => (
+            <li key={step.pageName} className="tw-relative tw-overflow-hidden lg:tw-flex-1">
               <div
                 className={classNames(
                   stepIdx === 0 ? 'tw-rounded-t-md tw-border-b-0' : '',
-                  stepIdx === steps.length - 1 ? 'tw-rounded-b-md tw-border-t-0' : '',
+                  stepIdx === lastStepIdx ? 'tw-rounded-b-md tw-border-t-0' : '',
                   'tw-overflow-hidden tw-border tw-border-gray-200 lg:tw-border-0',
                 )}
               >
@@ -97,8 +96,10 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }) {
                         </span>
                       </span>
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium">{step.name}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">{toDescription(stepIdx, data[step.id])}</span>
+                        <span className="tw-text-lg tw-font-medium">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
+                          { step.dataAttr ? toDescription(data[step.dataAttr]) : 'Complete' }
+                        </span>
                       </span>
                     </span>
                   </a>
@@ -116,8 +117,10 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }) {
                       )}
                     >
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{step.name}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">{toDescription(stepIdx, data[step.id])}</span>
+                        <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
+                          { step.dataAttr ? toDescription(data[step.dataAttr]) : '' }
+                        </span>
                       </span>
                     </span>
                   </a>
@@ -135,8 +138,10 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }) {
                       )}
                     >
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-gray-500">{step.name}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">{toDescription(stepIdx, data[step.id])}</span>
+                        <span className="tw-text-lg tw-font-medium tw-text-gray-500">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
+                          { step.dataAttr ? toDescription(data[step.dataAttr]) : '' }
+                        </span>
                       </span>
                     </span>
                   </a>

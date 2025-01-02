@@ -3,11 +3,14 @@ import React, { createContext, Dispatch, SetStateAction, useContext, useState } 
 import getServerURL from '../../../serverOverride';
 
 interface ApplicationFormContextProps {
-  formContent: Record<number, ApplicationFormPage>;
+  formContent: ApplicationFormPage[];
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
   data: ApplicationFormData;
   setData: Dispatch<SetStateAction<ApplicationFormData>>;
+  dataIsComplete: boolean;
+  isDirty: boolean;
+  setIsDirty: Dispatch<SetStateAction<boolean>>;
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
@@ -29,6 +32,8 @@ const initialData = {
   person: '',
 };
 
+const DATA_FIELD_COUNT = Object.keys(initialData).length;
+
 type DataAttribute = keyof typeof initialData;
 export type ApplicationFormData = typeof initialData;
 
@@ -38,18 +43,29 @@ interface ApplicationOption {
   value: string,
   titleText: string,
   subtitleText: string | null,
-  for: Set<ApplicationType> | null, // null indicates that this card is for ALL application types
+  for: Set<ApplicationType> | null, // null indicates that this option is for ALL application types
 }
 
-interface ApplicationFormPage {
+type ApplicationPageName = 'type'
+  | 'state'
+  | 'person'
+  | 'person'
+  | 'situation'
+  | 'review'
+  | 'preview'
+  | 'send'
+
+export interface ApplicationFormPage {
+  pageName: ApplicationPageName;
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
   options: ApplicationOption[];
 }
 
-const formContent: Record<number, ApplicationFormPage> = {
-  0: {
+export const formContent: ApplicationFormPage[] = [
+  {
+    pageName: 'type',
     title: (_) => 'Start an Application',
     dataAttr: 'type',
     options: [
@@ -87,7 +103,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  1: {
+  {
+    pageName: 'state',
     title: (_) => 'Select your State',
     dataAttr: 'state',
     options: [
@@ -125,7 +142,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  2: {
+  {
+    pageName: 'person',
     title: (_) => 'Select the Target Person',
     dataAttr: 'person',
     subtitle: 'I am filling out this application on behalf of...',
@@ -156,7 +174,8 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  3: {
+  {
+    pageName: 'situation',
     title: (appType) => {
       switch (appType) {
         case 'ss_card': return 'Select your Social Security Card Situation';
@@ -242,52 +261,64 @@ const formContent: Record<number, ApplicationFormPage> = {
       },
     ],
   },
-  4: {
+  {
+    pageName: 'review',
     title: (_) => 'Review your selections',
     options: [],
   },
-  5: {
+  {
+    pageName: 'preview',
     title: (_) => 'Review your application',
     options: [],
   },
-  6: {
+  {
+    pageName: 'send',
     title: (_) => 'Last steps...',
     options: [],
   },
-};
+];
 
 export function ApplicationFormProvider({ children }) {
   const [page, setPage] = useState<number>(0);
-
   const [data, setData] = useState<ApplicationFormData>(initialData);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const handlePrev = () => setPage((prev) => prev - 1);
 
   const handleNext = () => {
-    if (page === 4) {
-      console.log('Fetching pdf application registry');
-      fetch(`${getServerURL()}/get-application-registry`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-        .then((res) => res.json())
-        .then((resData) => console.log(resData))
-        .catch((e) => console.log(e));
-    }
     setPage((prev) => prev + 1);
   };
 
   const handleChange = (name: string, value: string) => {
+    if (data[name] !== value) {
+      setIsDirty(true);
+    }
+
     setData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+
     handleNext();
   };
 
+  const dataIsComplete = Object.keys(data).length === DATA_FIELD_COUNT;
+
   return (
     <ApplicationFormContext.Provider
-      value={{ formContent, page, setPage, data, setData, handleChange, handleNext, handlePrev }}
+      value={{
+        formContent,
+        page,
+        setPage,
+        data,
+        setData,
+        dataIsComplete,
+        isDirty,
+        setIsDirty,
+        handleChange,
+        handleNext,
+        handlePrev,
+      }}
     >
       {children}
     </ApplicationFormContext.Provider>

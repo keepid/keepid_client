@@ -1,10 +1,9 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 
 import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
-interface FinalPageProps {
+interface ApplicationSendPageProps {
   data: ApplicationFormData;
   handleCancel: () => void;
   handlePrev: () => void;
@@ -12,7 +11,7 @@ interface FinalPageProps {
   handleSubmit: () => void;
 }
 
-export default function ApplicationFormFinalPage(props: FinalPageProps) {
+export default function ApplicationSendPage(props: ApplicationSendPageProps) {
   const data = props.data;
   return (
     <>
