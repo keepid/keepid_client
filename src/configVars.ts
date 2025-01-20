@@ -1,2 +1,2 @@
-export const reCaptchaKey = '6LcyNwEVAAAAAFHDMaPUQgXpP2ESr_bReEmWTjbH';
+export const reCaptchaKey = '6LcE5bwqAAAAAMbe47TBGQTfdkVmZU2SxeM2QkC-';
 export default reCaptchaKey;
