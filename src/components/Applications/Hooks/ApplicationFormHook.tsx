@@ -1,7 +1,5 @@
 import React, { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
-import getServerURL from '../../../serverOverride';
-
 interface ApplicationFormContextProps {
   formContent: ApplicationFormPage[];
   page: number;
@@ -63,23 +61,9 @@ export interface ApplicationFormPage {
   options: ApplicationOption[];
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
-<<<<<<< HEAD
-const pageToBreadCrumbTitle = ['Application Type', 'State', 'Situation', 'Target Person', 'Preview Form', 'Send Application'];
-
-=======
->>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
-const formContent: Record<number, SelectApplicationFormPage> = {
-=======
-const formContent: Record<number, ApplicationFormPage> = {
->>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
-  0: {
-=======
 export const formContent: ApplicationFormPage[] = [
   {
     pageName: 'type',
->>>>>>> 3e68c17e (added useGetApplicationRegistry hook; integrated ApplicationBreadCrumbs into application form types)
     title: (_) => 'Start an Application',
     dataAttr: 'type',
     options: [
@@ -292,55 +276,16 @@ export const formContent: ApplicationFormPage[] = [
   },
 ];
 
-<<<<<<< HEAD:src/components/Applications/NewApplicationFormProvider.tsx
-interface NewApplicationFormContextProps {
-  formContent: Record<number, SelectApplicationFormPage>;
-  page: number;
-  setPage: Dispatch<SetStateAction<number>>;
-<<<<<<< HEAD
-<<<<<<< HEAD
-  data: FormData;
-  setData: Dispatch<SetStateAction<FormData>>;
-  pages,
-  setPages,
-=======
-  data: ApplicationFormData;
-  setData: Dispatch<SetStateAction<ApplicationFormData>>;
->>>>>>> 6e719945 (onChange changed to onClick, added warnings before navigating away)
-  canSubmit: boolean;
-=======
-  data: ApplicationFormData;
-  setData: Dispatch<SetStateAction<ApplicationFormData>>;
->>>>>>> 65562e29 (Update breadcrumbs to progress bar; enlarge text; add selection descriptors)
-  handleChange: (name: string, value: string) => void;
-  handlePrev: () => void;
-  handleNext: () => void;
-}
-
-export const NewApplicationFormContext =
-  createContext<NewApplicationFormContextProps>({} as NewApplicationFormContextProps);
-
-export default function NewApplicationFormProvider({ children }) {
-=======
 export function ApplicationFormProvider({ children }) {
->>>>>>> 9c99d039 (renamed Application files and folders for clarity):src/components/Applications/Hooks/ApplicationFormHook.tsx
   const [page, setPage] = useState<number>(0);
   const [data, setData] = useState<ApplicationFormData>(initialData);
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const handlePrev = () => setPage((prev) => prev - 1);
 
-<<<<<<< HEAD
   const handleNext = () => {
     setPage((prev) => prev + 1);
   };
-  // setData((prev) => ({ ...prev, [formContent[page].dataAttr!]: option.value }))
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    const value = e.target.value;
-=======
-  const handleNext = () => setPage((prev) => prev + 1);
->>>>>>> 6e719945 (onChange changed to onClick, added warnings before navigating away)
 
   const handleChange = (name: string, value: string) => {
     if (data[name] !== value) {
