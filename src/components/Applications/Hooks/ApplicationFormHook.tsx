@@ -28,6 +28,7 @@ const initialData = {
   state: '',
   situation: '',
   person: '',
+  org: 'Face to Face',
 };
 
 const DATA_FIELD_COUNT = Object.keys(initialData).length;
@@ -196,7 +197,7 @@ export const formContent: ApplicationFormPage[] = [
       {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
-        value: 'DUPLICATE',
+        value: 'REPLACEMENT',
         titleText: 'Duplicate Application',
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it',
         for: new Set(['SS']),
