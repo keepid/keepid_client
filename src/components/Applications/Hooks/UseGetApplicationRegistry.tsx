@@ -27,10 +27,10 @@ export default function useGetApplicationRegistry() {
 
   useEffect(() => {
     if (data) {
-      fetchPDF('download-file', {
+      fetchPDF('get-form', {
         method: 'POST',
         credentials: 'include',
-        body: JSON.stringify({ fileType: 'FORM', fileId: data.blankFormId }),
+        body: JSON.stringify({ fileType: 'FORM', fileId: data.blankFormId, isTemplate: 'true' }),
       });
     }
   }, [data, callFetch]);
