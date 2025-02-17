@@ -1,46 +1,43 @@
 import { useEffect, useState } from 'react';
 
+import getServerURL from '../../../serverOverride';
 import useFetch from '../../Api/UseFetch';
 import { ApplicationFormData } from './ApplicationFormHook';
 
 export default function useGetApplicationRegistry() {
-  const { data, callFetch } = useFetch<{ blankFormId: string }>();
-  const { data: pdfData, callFetch: fetchPDF } = useFetch();
-  // const { pdf, setPDF } = useState();
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  // const { data, callFetch } = useFetch<{ blankFormId: string }>();
+  // const { data: pdfData, callFetch: fetchPDF } = useFetch<{ fileId: string }>();
 
-  const postData = (
+  const postData = async (
     formData: ApplicationFormData,
     isDirty: boolean,
     setIsDirty: (e: boolean) => void,
   ) => {
     if (isDirty) {
-      console.log('Fetching pdf application registry');
-      console.log(formData);
-      callFetch('get-application-registry', {
+      const registryInfo = await fetch(`${getServerURL()}/get-application-registry`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify(formData),
+      }).then((res) => res.json());
+
+      const pdfData = await fetch(`${getServerURL()}/download-file`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({ fileType: 'FORM', fileId: registryInfo.blankFormId, targetUser: 'FACE-TO-FACE-ADMIN' }),
+      }).then((res) => res.blob());
+
+      const pdfFile = new File([pdfData], 'MyAwesomePDF', {
+        type: 'application/pdf',
       });
+
+      setPdfFile(pdfFile);
       setIsDirty(false);
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      fetchPDF('get-form', {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({ fileType: 'FORM', fileId: data.blankFormId, isTemplate: 'true' }),
-      });
-    }
-  }, [data, callFetch]);
-
-  useEffect(() => {
-    if (pdfData) console.log(pdfData);
-  }, [pdfData]);
-
   return {
-    response: data,
+    pdfFile,
     postData,
   };
 }

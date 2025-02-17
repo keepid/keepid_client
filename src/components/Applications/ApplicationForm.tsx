@@ -26,8 +26,8 @@ export default function ApplicationForm() {
   } = useApplicationFormContext();
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
-  const [previewPdf, setPreviewPdf] = useState<File | null>(null);
-  const { response: registryResponse, postData: postRegistryData } = useGetApplicationRegistry();
+  // const [previewPdf, setPreviewPdf] = useState<File | null>(null);
+  const { pdfFile, postData: postRegistryData } = useGetApplicationRegistry();
   const history = useHistory();
 
   const pageCount = formContent.length;
@@ -47,9 +47,9 @@ export default function ApplicationForm() {
   }, [isPreviewPage]);
 
   // TODO: do something with the response, or remove this
-  useEffect(() => {
-    console.log(registryResponse);
-  }, [registryResponse]);
+  // useEffect(() => {
+  //   console.log(registryResponse);
+  // }, [registryResponse]);
 
   const disablePrompt = () => {
     flushSync(() => {
@@ -132,8 +132,8 @@ export default function ApplicationForm() {
             )}
 
             {isPreviewPage && (
-              previewPdf
-                ? <DocumentViewer pdfFile={previewPdf} />
+              pdfFile
+                ? <DocumentViewer pdfFile={pdfFile} />
                 : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">PDF goes here...</div>
             )}
 
