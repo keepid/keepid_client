@@ -18,6 +18,7 @@ export default function useGetApplicationRegistry() {
       console.log(formData);
       callFetch('get-application-registry', {
         method: 'POST',
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
       setIsDirty(false);
@@ -28,6 +29,7 @@ export default function useGetApplicationRegistry() {
     if (data) {
       fetchPDF('download-file', {
         method: 'POST',
+        credentials: 'include',
         body: JSON.stringify({ fileType: 'FORM', fileId: data.blankFormId }),
       });
     }
