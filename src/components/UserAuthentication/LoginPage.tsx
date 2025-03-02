@@ -11,6 +11,7 @@ import EyeIcon from '../../static/images/eye.svg';
 import SlashEye from '../../static/images/eye-slash.svg';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
+import GoogleLoginButton from './GoogleLoginButton';
 
 interface State {
   username: string;
@@ -305,6 +306,7 @@ class LoginPage extends Component<Props, State> {
             <div className="col">
               <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
+                <GoogleLoginButton />
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
                   <input
