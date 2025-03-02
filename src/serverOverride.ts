@@ -8,7 +8,7 @@ const getServerURL = (): string => {
   if (process.env.NODE_ENV === 'staging') {
     return 'https://staged.keep.id';
   }
-  return 'http://localhost:7001';
+  return 'http://localhost:7000';
 };
 
 export default getServerURL;
