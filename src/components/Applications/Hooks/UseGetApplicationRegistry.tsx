@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import getServerURL from '../../../serverOverride';
-import useFetch from '../../Api/UseFetch';
 import { ApplicationFormData } from './ApplicationFormHook';
 
 export default function useGetApplicationRegistry() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  // const { data, callFetch } = useFetch<{ blankFormId: string }>();
-  // const { data: pdfData, callFetch: fetchPDF } = useFetch<{ fileId: string }>();
 
   const postData = async (
     formData: ApplicationFormData,
@@ -19,15 +16,27 @@ export default function useGetApplicationRegistry() {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify(formData),
-      }).then((res) => res.json());
+      })
+        .then((res) => res.json())
+        .catch((error) => {
+          console.error(error);
+        });
+
+      if (!registryInfo) return;
 
       const pdfData = await fetch(`${getServerURL()}/download-file`, {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({ fileType: 'FORM', fileId: registryInfo.blankFormId, targetUser: 'FACE-TO-FACE-ADMIN' }),
-      }).then((res) => res.blob());
+      })
+        .then((res) => res.blob())
+        .catch((error) => {
+          console.error(error);
+        });
 
-      const pdfFile = new File([pdfData], 'MyAwesomePDF', {
+      if (!pdfData) return;
+
+      const pdfFile = new File([pdfData], 'FormPDF', {
         type: 'application/pdf',
       });
 
