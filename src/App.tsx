@@ -217,6 +217,9 @@ class App extends React.Component<{}, State, {}> {
               <AutoLogout
                 logOut={this.logOut}
                 setAutoLogout={this.setAutoLogout}
+                timeUntilWarn={1000 * 60 * 60}
+                timeFromWarnToLogout={1000 * 60 * 15}
+                timeBeforeConsideredSleep={1000 * 60 * 60 * 24 * 30}
               />
             ) : null}
             <Switch>
