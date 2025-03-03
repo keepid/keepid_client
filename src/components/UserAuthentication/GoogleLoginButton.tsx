@@ -1,16 +1,18 @@
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { CredentialResponse, GoogleLogin, GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import React from 'react';
 
 import { generateCodeChallenge, generateCodeVerifier, generateState } from '../../pkceUtils';
 
-export const CLIENT_ID = '';
+export const CLIENT_ID: string = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 export const REDIRECT_URI = 'http://localhost:3000/callback';
 
 export default function GoogleLoginButton() {
-  const handleLoginSuccess = async () => {
+  const handleLoginSuccess = async (res: CredentialResponse) => {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const state = generateState();
+
+    console.log(res);
 
     // Store code verifier and state in sessionStorage
     sessionStorage.setItem('code_verifier', codeVerifier);
@@ -27,7 +29,7 @@ export default function GoogleLoginButton() {
       prompt: 'login', // Force re-authentication
     });
 
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    // window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
   return (
@@ -36,7 +38,7 @@ export default function GoogleLoginButton() {
         onError={() => console.error('Login Failed')}
         text="signin_with"
         theme="outline"
-        prompt="login"
+        // prompt="login"
       />
   );
 }

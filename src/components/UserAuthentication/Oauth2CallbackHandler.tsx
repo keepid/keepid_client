@@ -39,7 +39,7 @@ export default function CallbackHandler() {
       }
     };
 
-    exchangeCodeForToken();
+    // exchangeCodeForToken();
   }, []);
 
   return (

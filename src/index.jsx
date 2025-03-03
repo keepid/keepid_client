@@ -20,7 +20,7 @@ const options = {
 };
 const root = createRoot(document.getElementById('root'));
 root.render(
-  <GoogleOAuthProvider clientId={CLIENT_ID}>
+  <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
     <Provider
       template={AlertTemplate}
       {...options}
