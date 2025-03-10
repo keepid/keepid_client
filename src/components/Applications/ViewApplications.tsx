@@ -2,6 +2,7 @@
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 import React, { Component } from 'react';
+import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Link, Route, Switch } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { Link, Route, Switch } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Table from '../BaseComponents/Table';
-import ApplicationForm from './ApplicationForm';
+import ApplicationForm from './OldApplication/ApplicationForm';
 
 interface DocumentInformation {
   uploader: string,
@@ -36,7 +37,7 @@ interface LocationState {
   clientUsername: string
 }
 
-class Applications extends Component<Props & RouteComponentProps, State, {}> {
+class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
   ButtonFormatter = (cell, row) => (
     <div>
       <Link to="/applications/send">
@@ -180,6 +181,17 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
                 <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientUsername}'s`} Applications</h1>
+                <Link to="/applications/createnew">
+                  <Button
+                    className="btn btn-card mt-3 tw-mb-6"
+                    style={{
+                      borderRadius: 10,
+                    }}
+                    type="button"
+                  >
+                    Start a new application
+                  </Button>
+                </Link>
                 <p className="lead">See all of your applications. Check the status of each of your applications here.</p>
               </div>
             </div>
@@ -211,4 +223,4 @@ class Applications extends Component<Props & RouteComponentProps, State, {}> {
 }
 
 // withRouter needed to access location in props
-export default withRouter(Applications);
+export default withRouter(ViewApplications);
