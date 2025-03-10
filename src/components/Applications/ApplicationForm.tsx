@@ -38,6 +38,7 @@ export default function ApplicationForm() {
 
   useEffect(() => {
     if (isPreviewPage) {
+      console.log(data);
       postRegistryData(
         data,
         isDirty,
