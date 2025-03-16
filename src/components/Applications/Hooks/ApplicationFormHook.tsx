@@ -28,7 +28,7 @@ const initialData = {
   state: '',
   situation: '',
   person: '',
-  org: 'Face to Face',
+  org: 'TSA C.A.T.S Program', // 'Face to Face',
 };
 
 const DATA_FIELD_COUNT = Object.keys(initialData).length;
@@ -59,6 +59,8 @@ export interface ApplicationFormPage {
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
+  rows?: number;
+  cols?: number;
   options: ApplicationOption[];
 }
 
@@ -185,7 +187,9 @@ export const formContent: ApplicationFormPage[] = [
       }
     },
     dataAttr: 'situation',
+    cols: 4,
     options: [
+      /* Social Security card options */
       {
         iconSrc: '/SelectApplicationForm/initial-application.svg',
         iconAlt: 'Initial Application',
@@ -195,22 +199,6 @@ export const formContent: ApplicationFormPage[] = [
         for: new Set(['SS']),
       },
       {
-        iconSrc: '/SelectApplicationForm/initial-application.svg',
-        iconAlt: 'Initial Application (Driver\'s License)',
-        value: 'DL$INITIAL',
-        titleText: 'Initial Application (Driver\'s License)',
-        subtitleText: 'You have never applied or received an Driver\'s License before',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/initial-application.svg',
-        iconAlt: 'Initial Application (Photo ID)',
-        value: 'PI$INITIAL',
-        titleText: 'Initial Application (Photo ID)',
-        subtitleText: 'You have never applied or received a Photo ID before',
-        for: new Set(['PIDL']),
-      },
-      {
         iconSrc: '/SelectApplicationForm/duplicate-application.svg',
         iconAlt: 'Duplicate Application',
         value: 'REPLACEMENT',
@@ -218,54 +206,7 @@ export const formContent: ApplicationFormPage[] = [
         subtitleText: 'You have previously gotten this ID before but have lost or misplaced it',
         for: new Set(['SS']),
       },
-      {
-        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
-        iconAlt: 'Duplicate Application (Driver\'s License)',
-        value: 'DL$DUPLICATE',
-        titleText: 'Duplicate Application (Driver\'s License)',
-        subtitleText: 'You have previously gotten a Driver\'s License before but have lost or misplaced it, and it has not expired',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
-        iconAlt: 'Duplicate Application (Photo ID)',
-        value: 'PI$DUPLICATE',
-        titleText: 'Duplicate Application (Photo ID)',
-        subtitleText: 'You have previously gotten Photo ID before but have lost or misplaced it, and it has not expired',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/renewal-application.svg',
-        iconAlt: 'Renewal Application (Driver\'s License)',
-        value: 'DL$RENEWAL',
-        titleText: 'Renewal Application (Driver\'s License)',
-        subtitleText: 'You have previously gotten a Driver\'s License before, but it has now expired',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/renewal-application.svg',
-        iconAlt: 'Renewal Application (Photo ID)',
-        value: 'PI$RENEWAL',
-        titleText: 'Renewal Application (Photo ID)',
-        subtitleText: 'You have previously gotten a Photo ID before, but it has now expired',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/change-of-address.svg',
-        iconAlt: 'Change of Address (Driver\'s License)',
-        value: 'DL$CHANGE_OF_ADDRESS',
-        titleText: 'Change of Address (Driver\'s License)',
-        subtitleText: 'You just need to change the address on your Driver\'s License',
-        for: new Set(['PIDL']),
-      },
-      {
-        iconSrc: '/SelectApplicationForm/change-of-address.svg',
-        iconAlt: 'Change of Address (Photo ID)',
-        value: 'PI$CHANGE_OF_ADDRESS',
-        titleText: 'Change of Address (Photo ID)',
-        subtitleText: 'You just need to change the address on your Photo ID',
-        for: new Set(['PIDL']),
-      },
+      /* Birth certificate options */
       {
         iconSrc: '/SelectApplicationForm/standard-application.svg',
         iconAlt: 'Standard Application',
@@ -297,6 +238,71 @@ export const formContent: ApplicationFormPage[] = [
         titleText: 'Substance Abuse Application',
         subtitleText: 'You are actively substance abusing so the application fee is waived',
         for: new Set(['BC']),
+      },
+      /* PIDL options */
+      {
+        iconSrc: '/SelectApplicationForm/initial-application.svg',
+        iconAlt: 'Initial Application (Driver\'s License)',
+        value: 'DL$INITIAL',
+        titleText: 'Initial Application (Driver\'s License)',
+        subtitleText: 'You have never applied or received an Driver\'s License before',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
+        iconAlt: 'Duplicate Application (Driver\'s License)',
+        value: 'DL$DUPLICATE',
+        titleText: 'Duplicate Application (Driver\'s License)',
+        subtitleText: 'You have previously gotten a Driver\'s License before but have lost or misplaced it, and it has not expired',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/renewal-application.svg',
+        iconAlt: 'Renewal Application (Driver\'s License)',
+        value: 'DL$RENEWAL',
+        titleText: 'Renewal Application (Driver\'s License)',
+        subtitleText: 'You have previously gotten a Driver\'s License before, but it has now expired',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/change-of-address.svg',
+        iconAlt: 'Change of Address (Driver\'s License)',
+        value: 'DL$CHANGE_OF_ADDRESS',
+        titleText: 'Change of Address (Driver\'s License)',
+        subtitleText: 'You just need to change the address on your Driver\'s License',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/initial-application.svg',
+        iconAlt: 'Initial Application (Photo ID)',
+        value: 'PI$INITIAL',
+        titleText: 'Initial Application (Photo ID)',
+        subtitleText: 'You have never applied or received a Photo ID before',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/duplicate-application.svg',
+        iconAlt: 'Duplicate Application (Photo ID)',
+        value: 'PI$DUPLICATE',
+        titleText: 'Duplicate Application (Photo ID)',
+        subtitleText: 'You have previously gotten Photo ID before but have lost or misplaced it, and it has not expired',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/renewal-application.svg',
+        iconAlt: 'Renewal Application (Photo ID)',
+        value: 'PI$RENEWAL',
+        titleText: 'Renewal Application (Photo ID)',
+        subtitleText: 'You have previously gotten a Photo ID before, but it has now expired',
+        for: new Set(['PIDL']),
+      },
+      {
+        iconSrc: '/SelectApplicationForm/change-of-address.svg',
+        iconAlt: 'Change of Address (Photo ID)',
+        value: 'PI$CHANGE_OF_ADDRESS',
+        titleText: 'Change of Address (Photo ID)',
+        subtitleText: 'You just need to change the address on your Photo ID',
+        for: new Set(['PIDL']),
       },
     ],
   },

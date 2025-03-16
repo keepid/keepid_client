@@ -8,6 +8,7 @@ import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import DocumentViewer from '../Documents/DocumentViewer';
 import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
 import ApplicationCard from './ApplicationCard';
+import ApplicationReviewPage from './ApplicationReviewPage';
 import ApplicationSendPage from './ApplicationSendPage';
 import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
@@ -101,6 +102,10 @@ export default function ApplicationForm() {
 
             <Form
               className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2"
+              style={{
+                gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
+                gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
+              }}
               onClick={clickHandler}
             >
 
@@ -123,14 +128,7 @@ export default function ApplicationForm() {
 
             </Form>
 
-            {isReviewPage && (
-              <ul className="tw-text-lg">
-                <li>This is a {data.type} application.</li>
-                <li>This application is for {data.person}</li>
-                <li>The applicant is applying in {data.state}</li>
-                <li>The applicant&apos;s situation is {data.situation}</li>
-              </ul>
-            )}
+            {isReviewPage && <ApplicationReviewPage data={data} />}
 
             {isPreviewPage && (
               pdfFile
