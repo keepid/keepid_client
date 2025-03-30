@@ -32,6 +32,8 @@ function toDescription(selection: string) {
       return 'Initial';
     case 'DUPLICATE':
       return 'Duplicate';
+    case 'REPLACEMENT':
+      return 'Replacement';
     case 'STANDARD':
       return 'Standard';
     case 'HOMELESS':
