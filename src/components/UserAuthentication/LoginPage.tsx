@@ -1,3 +1,4 @@
+import { CredentialResponse } from '@react-oauth/google';
 import React, { Component, useContext } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';
@@ -242,6 +243,65 @@ class LoginPage extends Component<Props, State> {
     }
   };
 
+  handleGoogleLoginSuccess = async (res : CredentialResponse) => {
+    console.log(res);
+    this.setState({ buttonState: 'running' });
+    const { logIn } = this.props;
+    const token = res.credential;
+    try {
+      // Handle successful login on the backend
+      const response = await fetch(`${getServerURL()}/login-google`, {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      })
+        .then((response) => response.json())
+        .then((responseJSON) => {
+          const responseObject = responseJSON;
+          const { status, userRole, organization, username, firstName, lastName } =
+          responseObject;
+
+          const { alert } = this.props;
+
+          if (status === 'AUTH_SUCCESS') {
+            const role = () => {
+              switch (userRole) {
+                case 'Director':
+                  return Role.Director;
+                case 'Admin':
+                  return Role.Admin;
+                case 'Worker':
+                  return Role.Worker;
+                case 'Client':
+                  return Role.Client;
+                case 'Developer':
+                  return Role.Developer;
+                default:
+                  return Role.LoggedOut;
+              }
+            };
+            logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+          } else if (status === 'AUTH_FAILURE') {
+            alert.show('Google Authentication Error. Please Try Again');
+            this.clearInput();
+            this.setState({ buttonState: '' });
+            this.resetRecaptcha();
+          } else if (status === 'USER_NOT_FOUND') {
+            alert.show('No user exists with the email you logged in with');
+            this.clearInput();
+            this.setState({ buttonState: '' });
+            this.resetRecaptcha();
+          } else {
+            alert.show('Server Failure: Please Try Again');
+            this.setState({ buttonState: '' });
+            this.resetRecaptcha();
+          }
+        });
+    } catch (error) {
+      // Handle error
+      console.error(error);
+    }
+  }
+
   resubmitVerificationCode(event: any) {
     event.preventDefault();
     const { username, password } = this.state;
@@ -306,7 +366,7 @@ class LoginPage extends Component<Props, State> {
             <div className="col">
               <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
-                <GoogleLoginButton />
+                <GoogleLoginButton handleGoogleLoginSuccess={this.handleGoogleLoginSuccess} />
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
                   <input
