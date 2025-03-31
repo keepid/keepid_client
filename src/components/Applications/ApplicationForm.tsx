@@ -133,7 +133,7 @@ export default function ApplicationForm() {
             {isPreviewPage && (
               pdfFile
                 ? <DocumentViewer pdfFile={pdfFile} />
-                : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">PDF goes here...</div>
+                : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">Sorry, the PDF is not available for the application you selected.</div>
             )}
 
             {isSendPage && (
