@@ -22,7 +22,10 @@ export default function useGetApplicationRegistry() {
           console.error(error);
         });
 
-      if (!registryInfo) return;
+      if (!registryInfo) {
+        // to ensure the previous PDF is not rendered
+        setPdfFile(null);
+      }
 
       const pdfData = await fetch(`${getServerURL()}/download-file`, {
         method: 'POST',
