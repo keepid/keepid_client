@@ -1,6 +1,8 @@
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './static/styles/App.scss';
-import './static/styles/Table.scss';
-import './static/styles/BaseCard.scss';
+// import './static/styles/Table.scss';
+// import './static/styles/BaseCard.scss';
 
 import React, { createContext } from 'react';
 import ReactGA from 'react-ga';

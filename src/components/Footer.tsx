@@ -6,7 +6,7 @@ import Email from '../static/images/email-2.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
-
+const currentMode = import.meta.env.MODE;
 const Footer = () => {
   const mailchimpUrl =
     'https://keep.us7.list-manage.com/subscribe/post?u=9896e51b9ee0605d5e6745f82&amp;id=f16b440eb5';
@@ -172,8 +172,8 @@ const Footer = () => {
             </a>
           </div>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">Keep.id is proud to be a 501(c)(3) tax-exempt non-profit organization.</p>
-          <p className="tw-text-xs tw-text-white tw-text-center my-1">Illustrations by Storyset. Environment: {process.env.REACT_APP_KEEPID_BUILD_ENV}</p>
-          <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; 2024 Keep.id</p>
+          <p className="tw-text-xs tw-text-white tw-text-center my-1">Illustrations by Storyset. Environment: {currentMode}</p>
+          <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; 2025 Keep.id</p>
         </div>
       </div>
     </footer>

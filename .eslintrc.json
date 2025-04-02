@@ -26,6 +26,11 @@
   ],
   // rules: 1 is warning, 2 is error, off is ignore
   "rules": {
+    "at-rule-no-unknown": [true, {
+      "ignoreAtRules": [
+        "tailwind"
+      ]
+    }],
     "prefer-arrow/prefer-arrow-functions": [
       "off",
       {

@@ -25,7 +25,7 @@
     "src/components/*",
     "src/static/*",
     "src/App.tsx",
-    "src/index.jsx",
+    "src/main.jsx",
     ".d.ts", "src/components/OrgFinder/OrganizationMarker.tsx", "src/components/OrgFinder/MapComponent.tsx", "src/components/OrgFinder/FindOrganization.tsx", "src/components/SignUp/OrganizationSignup.tsx", "src/components/SignUp/Signup.tsx", "src/components/SignUp/PersonSignup.tsx", "src/components/AboutUs/OurPartners.tsx", "src/components/AboutUs/OurTeam.tsx", "src/components/AboutUs/OurMission.tsx", "src/components/LandingPages/WorkerLanding.tsx", "src/components/LandingPages/ClientLanding.tsx", "src/components/AccountSecurity/AdminPanel.tsx", "src/components/AccountSecurity/MyAccount.tsx", "src/components/AccountSecurity/IdleTimeOutModal.tsx", "src/components/AccountSecurity/ResetPassword.tsx", "src/components/AccountSecurity/ForgotPassword.tsx", "src/components/AccountSecurity/IssueReport.tsx"
   ]
 }

@@ -1,8 +1,8 @@
-@import '../../../node_modules/bootstrap/scss/bootstrap';
-@import './ldbtn.scss';
-@import './loading.scss';
-@import './Inputs';
-@import './QuickAccess';
+@use 'ldbtn.scss';
+@use 'loading.scss';
+@use 'Inputs';
+@use 'QuickAccess';
+@use 'bootstrap/scss/bootstrap';
 
 // COLOR SYTEM
 $primary-theme: #445feb;

@@ -17,7 +17,7 @@ import SignUpContext, {
 import { onPropertyChange } from './SignUp.util';
 import SignupBrancher from './SignupBrancher';
 
-const jwtDecode = require('jwt-decode');
+import jwtDecode from 'jwt-decode';
 
 export type SignUpRouterProps = {
   role: Role;

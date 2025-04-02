@@ -6,10 +6,13 @@ module.exports = withMT({
     preflight: false,
   },
   prefix: 'tw-',
-  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  // 1) Add './index.html' and `.{scss}` if you use classes in .scss
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx,scss}',
+  ],
   theme: {
     extend: {
-      // ...
       fontFamily: {
         body: ['Inter'],
       },
