@@ -3,7 +3,8 @@ import React, { createContext, Dispatch, SetStateAction, useContext, useState } 
 interface ApplicationFormContextProps {
   formContent: ApplicationFormPage[];
   page: number;
-  setPage: Dispatch<SetStateAction<number>>;
+  // setPage: Dispatch<SetStateAction<number>>;
+  setPage: (p: number) => void;
   data: ApplicationFormData;
   setData: Dispatch<SetStateAction<ApplicationFormData>>;
   dataIsComplete: boolean;
@@ -47,7 +48,6 @@ interface ApplicationOption {
 
 type ApplicationPageName = 'type'
   | 'state'
-  | 'person'
   | 'person'
   | 'situation'
   | 'review'
@@ -220,7 +220,7 @@ export const formContent: ApplicationFormPage[] = [
         iconAlt: 'Homeless Application',
         value: 'HOMELESS',
         titleText: 'Homeless Application',
-        subtitleText: 'You are homeless so the application fee is waived',
+        subtitleText: 'You are homeless. The application fee is waived',
         for: new Set(['BC']),
       },
       {
@@ -228,7 +228,7 @@ export const formContent: ApplicationFormPage[] = [
         iconAlt: 'Juvenile Application',
         value: 'JUVENILE_JUSTICE_INVOLVED',
         titleText: 'Juvenile Application',
-        subtitleText: 'You are under 18 so the application fee is waived',
+        subtitleText: 'You are between 16 and 24 and are involved in the foster system or juvenile justice system. The application fee is waived',
         for: new Set(['BC']),
       },
       {
@@ -236,7 +236,7 @@ export const formContent: ApplicationFormPage[] = [
         iconAlt: 'Substance Abuse Application',
         value: 'SUBSTANCE_ABUSE',
         titleText: 'Substance Abuse Application',
-        subtitleText: 'You are actively substance abusing so the application fee is waived',
+        subtitleText: 'You are actively substance abusing. The application fee is waived',
         for: new Set(['BC']),
       },
       /* PIDL options */
@@ -323,15 +323,29 @@ export const formContent: ApplicationFormPage[] = [
   },
 ];
 
+const dataAttrWithIndexes = formContent
+  .map((p, i) => ({ attr: p.dataAttr, pageNum: i }))
+  .filter((d) => d.attr != null) as { attr: string, pageNum: number}[];
+
 export function ApplicationFormProvider({ children }) {
-  const [page, setPage] = useState<number>(0);
+  const [page, setPageRaw] = useState<number>(0);
   const [data, setData] = useState<ApplicationFormData>(initialData);
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
-  const handlePrev = () => setPage((prev) => prev - 1);
+  const setPage = (p: number) => {
+    // erase the data from later pages
+    dataAttrWithIndexes.forEach((d) => {
+      if (d.pageNum >= p) data[d.attr] = '';
+    });
+    setPageRaw(p);
+  };
+
+  const handlePrev = () => {
+    setPage(page - 1);
+  };
 
   const handleNext = () => {
-    setPage((prev) => prev + 1);
+    setPage(page + 1);
   };
 
   const handleChange = (name: string, value: string) => {

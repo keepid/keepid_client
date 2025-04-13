@@ -8,6 +8,7 @@ import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import DocumentViewer from '../Documents/DocumentViewer';
 import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
 import ApplicationCard from './ApplicationCard';
+import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
 import ApplicationSendPage from './ApplicationSendPage';
 import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
@@ -82,6 +83,11 @@ export default function ApplicationForm() {
     }
   };
 
+  const availableApplications = filterAvailableApplications(data);
+  console.log(availableApplications);
+
+  const dataAttr = formContent[page].dataAttr;
+
   return (
     <>
       <PromptOnLeave shouldPrompt={shouldPrompt} />
@@ -109,7 +115,7 @@ export default function ApplicationForm() {
               onClick={clickHandler}
             >
 
-              {formContent[page].dataAttr &&
+              {dataAttr &&
                 formContent[page].options
                   .filter((option) => option.for === null || option.for.has(data.type as ApplicationType))
                   .map((option) => (
@@ -119,10 +125,10 @@ export default function ApplicationForm() {
                       iconAlt={option.iconAlt}
                       titleText={option.titleText}
                       subtitleText={option.subtitleText}
-                      checked={data[formContent[page].dataAttr!] === option.value}
-                      name={formContent[page].dataAttr!}
+                      checked={data[dataAttr] === option.value}
+                      name={dataAttr}
                       value={option.value}
-                      disabled={false}
+                      disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
                     />
                   ))}
 
