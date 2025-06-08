@@ -50,18 +50,21 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
           <Link to="/home" className="tw-pr-3">
             <img src={Logo} alt="Logo" width={logoSize} height={logoSize} />
           </Link>
-          <Link to="/home" className="tw-text-white 
+          <Link
+            to="/home"
+            className="tw-text-white
           hover:tw-text-white
         visited:tw-text-white
         focus:tw-text-white
         active:tw-text-white
-          tw-font-bold 
-          tw-text-4xl 
+          tw-font-bold
+          tw-text-4xl
           tw-mt-0
-          tw-mb-0 
-          tw-pt-0 
-          tw-pb-0 
-          tw-font-raleway">
+          tw-mb-0
+          tw-pt-0
+          tw-pb-0
+          tw-font-raleway"
+          >
             Keep.id
           </Link>
         </div>
@@ -145,17 +148,18 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               </Link>
               <Link to="/signup-branch">
                 <button className="
-                  tw-border 
-                  tw-border-secondary-theme 
-                  tw-text-secondary-theme 
-                  tw-no-underline 
-                  hover:tw-bg-secondary-theme 
-                  hover:tw-text-white 
-                  hover:tw-no-underline 
-                  tw-py-2 
-                  tw-px-4 
-                  tw-rounded 
-                  tw-mr-2">
+                  tw-border
+                  tw-border-secondary-theme
+                  tw-text-secondary-theme
+                  tw-no-underline
+                  hover:tw-bg-secondary-theme
+                  hover:tw-text-white
+                  hover:tw-no-underline
+                  tw-py-2
+                  tw-px-4
+                  tw-rounded
+                  tw-mr-2"
+                >
                   Sign Up
                 </button>
               </Link>
@@ -223,17 +227,18 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               <li className="tw-px-4 tw-py-2">
                 <Link to="/signup-branch">
                   <button className="
-                    tw-border 
-                    tw-border-secondary-theme 
+                    tw-border
+                    tw-border-secondary-theme
                     tw-text-secondary-theme
-                    tw-no-underline 
-                    hover:tw-bg-secondary-theme 
-                    hover:tw-text-white 
+                    tw-no-underline
+                    hover:tw-bg-secondary-theme
+                    hover:tw-text-white
                     hover:tw-no-underline
-                    tw-w-full 
-                    tw-py-2 
-                    tw-rounded 
-                    tw-mr-2">
+                    tw-w-full
+                    tw-py-2
+                    tw-rounded
+                    tw-mr-2"
+                  >
                     Sign Up
                   </button>
                 </Link>

@@ -1,3 +1,4 @@
+import jwtDecode from 'jwt-decode';
 import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Redirect, Route } from 'react-router-dom';
@@ -16,8 +17,6 @@ import SignUpContext, {
 } from './SignUp.context';
 import { onPropertyChange } from './SignUp.util';
 import SignupBrancher from './SignupBrancher';
-
-import jwtDecode from 'jwt-decode';
 
 export type SignUpRouterProps = {
   role: Role;

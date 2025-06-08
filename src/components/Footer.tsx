@@ -6,6 +6,7 @@ import Email from '../static/images/email-2.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
+
 const currentMode = import.meta.env.MODE;
 const Footer = () => {
   const mailchimpUrl =

@@ -1,6 +1,6 @@
 // vite.config.js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   server: {
@@ -10,5 +10,10 @@ export default defineConfig({
   // Add any extra config if needed (aliases, environment vars, etc.)
   optimizeDeps: {
     exclude: ['bootstrap'],
-  }
-})
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/tests/setup.ts',
+  },
+});
