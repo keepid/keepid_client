@@ -7,6 +7,14 @@ import './static/styles/main.scss'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+
+import process from 'process';
+window.process = process;
+
+console.log(Buffer.from('hello').toString('base64')); // should log: aGVsbG8=
+
 const options = {
   position: 'bottom left',
   timeout: 5000,
