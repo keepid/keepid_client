@@ -3,7 +3,8 @@ import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import { IntlProvider } from 'react-intl';
 import { createRoot } from 'react-dom/client';
-
+import './static/styles/main.scss'
+import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 
 const options = {

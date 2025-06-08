@@ -15,9 +15,13 @@ module.exports = withMT({
     extend: {
       fontFamily: {
         body: ['Inter'],
+        raleway: ['Raleway', 'sans-serif'],
       },
       colors: {
         twprimary: '#445FEB',
+        'primary-theme': '#445feb',
+        'secondary-text-color': '#b7b7c0',
+        'secondary-theme': '#413f57',
         footerblack: '#1D1D1D',
       },
     },

@@ -8,4 +8,7 @@ export default defineConfig({
   },
   plugins: [react()],
   // Add any extra config if needed (aliases, environment vars, etc.)
+  optimizeDeps: {
+    exclude: ['bootstrap'],
+  }
 })
