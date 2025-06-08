@@ -13,7 +13,7 @@ jobs:
       - run:
           command: |
             printf "Starting tests\n"
-            CI=true npm run test -- --watchAll=false --runInBand --coverage=false --verbose --logHeapUsage
+            CI=true npm run test -- --coverage=false --verbose --logHeapUsage
             printf "Tests completed\n"
       - slack/notify:
           event: fail
