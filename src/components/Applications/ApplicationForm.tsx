@@ -134,7 +134,7 @@ class ApplicationForm extends Component<Props, State> {
   handleImportApplicationData = (fileObject) => {
     // this.setState({ importApplicationDataFile: fileObject.file });
     // Refresh Application Load
-  }
+  };
 
   handleChangeFormValueTextField = (event: any) => {
     const { formAnswers } = this.state;

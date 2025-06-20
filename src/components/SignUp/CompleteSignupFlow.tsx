@@ -58,7 +58,7 @@ export default function CompleteSignupFlow() {
   // @ts-ignore
   const currentStageIdx =
     signUpStageStateContext.stages?.indexOf(
-      signUpStageStateContext.currentStage
+      signUpStageStateContext.currentStage,
     ) || 0;
 
   return (

@@ -40,7 +40,7 @@ export default function SignUserAgreement() {
   const [canvasDataUrl, setCanvasDataUrl] = useState('');
 
   const scrollToBottom = () => {
-        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (

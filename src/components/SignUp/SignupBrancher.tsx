@@ -23,7 +23,7 @@ function SignupBrancher() {
           <h1 className="font-weight-bold">Which option best describes you?</h1>
         </div>
         <div className="d-flex justify-content-center">
-          <div className="mr-5">
+            <div className="mx-5">
             <BaseCard
               cardSize={CardSize.LARGE_VERTICAL}
               cardLink="/organization-signup"
@@ -36,7 +36,7 @@ function SignupBrancher() {
               buttonText="Try for Free"
               buttonOnClick={clickedButton}
             />
-          </div>
+            </div>
           <BaseCard
             cardSize={CardSize.LARGE_VERTICAL}
             cardLink="/find-organizations"
