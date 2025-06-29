@@ -3,7 +3,6 @@ import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import { IntlProvider } from 'react-intl';
 import { createRoot } from 'react-dom/client';
-
 import reportWebVitals from './reportWebVitals';
 import App from './App';
 

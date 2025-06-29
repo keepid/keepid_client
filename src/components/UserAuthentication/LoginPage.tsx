@@ -11,6 +11,7 @@ import EyeIcon from '../../static/images/eye.svg';
 import SlashEye from '../../static/images/eye-slash.svg';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
+import GoogleLoginButton from './GoogleLoginButton';
 
 interface State {
   username: string;
@@ -241,6 +242,49 @@ class LoginPage extends Component<Props, State> {
     }
   };
 
+  handleGoogleLoginSuccess = () => {
+    fetch(`${getServerURL()}/get-session-user`, { method: 'GET', credentials: 'include' })
+      .then((response) => response.json())
+      .then((responseObj) => {
+        const { username, userRole, organization, fullName } = responseObj;
+        if (!username || !userRole || !organization || !fullName) {
+          this.handleGoogleLoginError('Google Login Failed: Authentication Failure.');
+          return;
+        }
+        const { logIn } = this.props;
+        const role = () => {
+          switch (userRole) {
+            case 'Director':
+              return Role.Director;
+            case 'Admin':
+              return Role.Admin;
+            case 'Worker':
+              return Role.Worker;
+            case 'Client':
+              return Role.Client;
+            case 'Developer':
+              return Role.Developer;
+            default:
+              return Role.LoggedOut;
+          }
+        };
+        logIn(role(), username, organization, fullName);
+      })
+      .catch((_) => {
+        const { alert } = this.props;
+        alert.show('Network Error: Please Try Again.');
+        this.setState({ buttonState: '' });
+        this.resetRecaptcha();
+      });
+  }
+
+  handleGoogleLoginError = async (msg) => {
+    const { alert } = this.props;
+    alert.show(msg);
+    this.setState({ buttonState: '' });
+    this.resetRecaptcha();
+  }
+
   resubmitVerificationCode(event: any) {
     event.preventDefault();
     const { username, password } = this.state;
@@ -305,6 +349,10 @@ class LoginPage extends Component<Props, State> {
             <div className="col">
               <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
+                <GoogleLoginButton
+                  handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
+                  handleGoogleLoginError={this.handleGoogleLoginError}
+                />
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
                   <input
