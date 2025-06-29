@@ -1,4 +1,3 @@
-import { CredentialResponse } from '@react-oauth/google';
 import React, { Component, useContext } from 'react';
 import { withAlert } from 'react-alert';
 import { Button } from 'react-bootstrap';
@@ -243,63 +242,47 @@ class LoginPage extends Component<Props, State> {
     }
   };
 
-  handleGoogleLoginSuccess = async (res : CredentialResponse) => {
-    console.log(res);
-    this.setState({ buttonState: 'running' });
-    const { logIn } = this.props;
-    const token = res.credential;
-    try {
-      // Handle successful login on the backend
-      const response = await fetch(`${getServerURL()}/login-google`, {
-        method: 'POST',
-        body: JSON.stringify({ token }),
-      })
-        .then((response) => response.json())
-        .then((responseJSON) => {
-          const responseObject = responseJSON;
-          const { status, userRole, organization, username, firstName, lastName } =
-          responseObject;
-
-          const { alert } = this.props;
-
-          if (status === 'AUTH_SUCCESS') {
-            const role = () => {
-              switch (userRole) {
-                case 'Director':
-                  return Role.Director;
-                case 'Admin':
-                  return Role.Admin;
-                case 'Worker':
-                  return Role.Worker;
-                case 'Client':
-                  return Role.Client;
-                case 'Developer':
-                  return Role.Developer;
-                default:
-                  return Role.LoggedOut;
-              }
-            };
-            logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
-          } else if (status === 'AUTH_FAILURE') {
-            alert.show('Google Authentication Error. Please Try Again');
-            this.clearInput();
-            this.setState({ buttonState: '' });
-            this.resetRecaptcha();
-          } else if (status === 'USER_NOT_FOUND') {
-            alert.show('No user exists with the email you logged in with');
-            this.clearInput();
-            this.setState({ buttonState: '' });
-            this.resetRecaptcha();
-          } else {
-            alert.show('Server Failure: Please Try Again');
-            this.setState({ buttonState: '' });
-            this.resetRecaptcha();
+  handleGoogleLoginSuccess = () => {
+    fetch(`${getServerURL()}/get-session-user`, { method: 'GET', credentials: 'include' })
+      .then((response) => response.json())
+      .then((responseObj) => {
+        const { username, userRole, organization, fullName } = responseObj;
+        if (!username || !userRole || !organization || !fullName) {
+          this.handleGoogleLoginError('Google Login Failed: Authentication Failure.');
+          return;
+        }
+        const { logIn } = this.props;
+        const role = () => {
+          switch (userRole) {
+            case 'Director':
+              return Role.Director;
+            case 'Admin':
+              return Role.Admin;
+            case 'Worker':
+              return Role.Worker;
+            case 'Client':
+              return Role.Client;
+            case 'Developer':
+              return Role.Developer;
+            default:
+              return Role.LoggedOut;
           }
-        });
-    } catch (error) {
-      // Handle error
-      console.error(error);
-    }
+        };
+        logIn(role(), username, organization, fullName);
+      })
+      .catch((_) => {
+        const { alert } = this.props;
+        alert.show('Network Error: Please Try Again.');
+        this.setState({ buttonState: '' });
+        this.resetRecaptcha();
+      });
+  }
+
+  handleGoogleLoginError = async (msg) => {
+    const { alert } = this.props;
+    alert.show(msg);
+    this.setState({ buttonState: '' });
+    this.resetRecaptcha();
   }
 
   resubmitVerificationCode(event: any) {
@@ -366,7 +349,10 @@ class LoginPage extends Component<Props, State> {
             <div className="col">
               <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
-                <GoogleLoginButton handleGoogleLoginSuccess={this.handleGoogleLoginSuccess} />
+                <GoogleLoginButton
+                  handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
+                  handleGoogleLoginError={this.handleGoogleLoginError}
+                />
                 <label htmlFor="username" className="w-100 font-weight-bold">
                   Username
                   <input
