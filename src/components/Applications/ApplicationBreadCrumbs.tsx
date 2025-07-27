@@ -3,53 +3,7 @@ import React from 'react';
 
 import { capitalizeFirst } from '../Utils/StringUtils';
 import { ApplicationFormData, formContent } from './Hooks/ApplicationFormHook';
-
-function toDescription(selection: string) {
-  switch (selection) {
-    case 'SS':
-      return 'Social Security Card';
-    case 'PIDL':
-      return "Driver's License / State ID";
-    case 'BC':
-      return 'Birth Certificate';
-    case 'VR':
-      return 'Voter Registration';
-    case 'NJ':
-      return 'New Jersey';
-    case 'NY':
-      return 'New York';
-    case 'PA':
-      return 'Pennsylvania';
-    case 'FED':
-      return 'Federal';
-    case 'MYSELF':
-      return 'Myself';
-    case 'MYCHILD':
-      return 'My Child';
-    case 'MYSELF_AND_MYCHILD':
-      return 'Myself and my child(ren)';
-    case 'INITIAL':
-      return 'Initial';
-    case 'DUPLICATE':
-      return 'Duplicate';
-    case 'REPLACEMENT':
-      return 'Replacement';
-    case 'STANDARD':
-      return 'Standard';
-    case 'HOMELESS':
-      return 'Homeless';
-    case 'JUVENILE_JUSTICE_INVOLVED':
-      return 'Juvenile';
-    case 'SUBSTANCE_ABUSE':
-      return 'Substance Abuse';
-    case 'RENEWAL':
-      return 'Renewal';
-    case 'CHANGE_OF_ADDRESS':
-      return 'Change of Address';
-    default:
-      return 'None';
-  }
-}
+import { getDisplayName } from './Utils/DisplayNameMappingUtil';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -62,7 +16,6 @@ interface ApplicationBreadCrumbsProps {
 }
 
 export default function ApplicationBreadCrumbs({ page, setPage, data }: ApplicationBreadCrumbsProps) {
-  const pageContent = formContent[page];
   const lastStepIdx = formContent.length - 1;
 
   return (
@@ -100,7 +53,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
                         <span className="tw-text-lg tw-font-medium">{capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? toDescription(data[step.dataAttr]) : 'Complete' }
+                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : 'Complete' }
                         </span>
                       </span>
                     </span>
@@ -121,7 +74,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
                         <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? toDescription(data[step.dataAttr]) : '' }
+                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
                         </span>
                       </span>
                     </span>
@@ -142,7 +95,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
                         <span className="tw-text-lg tw-font-medium tw-text-gray-500">{capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? toDescription(data[step.dataAttr]) : '' }
+                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
                         </span>
                       </span>
                     </span>

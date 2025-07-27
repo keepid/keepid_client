@@ -40,7 +40,6 @@ export default function ApplicationForm() {
 
   useEffect(() => {
     if (isPreviewPage) {
-      console.log(data);
       postRegistryData(
         data,
         isDirty,
@@ -84,7 +83,6 @@ export default function ApplicationForm() {
   };
 
   const availableApplications = filterAvailableApplications(data);
-  console.log(availableApplications);
 
   const dataAttr = formContent[page].dataAttr;
 
