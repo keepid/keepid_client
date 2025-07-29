@@ -10,6 +10,7 @@ import DocumentsPic from '../../static/images/documents-rafiki.png';
 import ActivityCard from '../BaseComponents/BaseActivityCard';
 import BaseCard, { CardImageLoc, CardSize } from '../BaseComponents/BaseCard';
 import QuickAccessCards from '../QuickAccess/QuickAccessCards';
+import QuickStartCard from '../QuickAccess/QuickStartCard';
 
 interface Props extends RouteComponentProps {
   name: String;
@@ -82,6 +83,7 @@ class ClientLanding extends Component<Props, State, {}> {
         <div className="d-flex py-2">
           <h1 id="welcome-title">{`Welcome, ${name}`}</h1>
         </div>
+        <QuickStartCard />
         <div className="mb-3">
           <QuickAccessCards />
         </div>
