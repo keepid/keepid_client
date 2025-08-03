@@ -140,7 +140,7 @@
     "start": "vite",
     "build": "vite build",
     "test": "vitest -u",
-    "preview": "vite preview",
+    "preview": "vite preview --port 8080",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
     "lint:scss:fix": "stylelint 'src/**/*.scss' --syntax scss --fix",
     "lint:ts": "eslint . --ext .ts,.tsx",
