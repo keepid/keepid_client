@@ -1,691 +1,173 @@
-import 'react-datepicker/dist/react-datepicker.css';
-
-import React, { Component } from 'react';
-import { withAlert } from 'react-alert';
-import { Button } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import Dropzone from 'react-dropzone-uploader';
+import React, { useEffect, useState } from 'react';
+import { Button, Form } from 'react-bootstrap';
+import { flushSync } from 'react-dom';
 import { Helmet } from 'react-helmet';
-import { Link, Redirect } from 'react-router-dom';
-import uuid from 'react-uuid';
+import { useHistory } from 'react-router-dom';
 
-import SignaturePad from '../../lib/SignaturePad';
-import getServerURL from '../../serverOverride';
-import FileType from '../../static/FileType';
+import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import DocumentViewer from '../Documents/DocumentViewer';
-import DropzoneUploader from '../Documents/DropzoneUploader';
+import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
+import ApplicationCard from './ApplicationCard';
+import { filterAvailableApplications } from './ApplicationOptionsFilter';
+import ApplicationReviewPage from './ApplicationReviewPage';
+import ApplicationSendPage from './ApplicationSendPage';
+import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
-interface Field {
-  fieldID: string; // Unique identifier id from frontend
-  fieldName: string; // Unique identifier name from backend
-  fieldType: string;
-  fieldValueOptions: string[];
-  fieldDefaultValue: any;
-  fieldIsRequired: boolean;
-  fieldNumLines: number;
-  fieldIsMatched: boolean;
-  fieldQuestion: string;
-}
+export default function ApplicationForm() {
+  const {
+    formContent,
+    page,
+    setPage,
+    data,
+    isDirty,
+    setIsDirty,
+    handleChange,
+    handleNext,
+    handlePrev,
+  } = useApplicationFormContext();
 
-interface Props {
-  alert: any;
-  applicationId: string;
-  applicationFilename: string;
-  clientUsername: string;
-}
+  const [shouldPrompt, setShouldPrompt] = useState(true);
+  // const [previewPdf, setPreviewPdf] = useState<File | null>(null);
+  const { pdfFile, postData: postRegistryData } = useGetApplicationRegistry();
+  const history = useHistory();
 
-interface State {
-  fields: Field[] | undefined;
-  formAnswers: { [fieldName: string]: any };
-  pdfApplication: File | undefined;
-  buttonState: string;
-  title: string;
-  description: string;
-  submitSuccessful: boolean;
-  currentPage: number;
-  numPages: number;
-  formError: boolean;
-  // importApplicationDataFile: File | undefined;
-}
+  const pageCount = formContent.length;
+  const hidePrev = page === 0;
+  const isReviewPage = formContent[page].pageName === 'review';
+  const isPreviewPage = formContent[page].pageName === 'preview';
+  const isSendPage = formContent[page].pageName === 'send';
+  const MAX_Q_PER_PAGE = 10;
 
-const MAX_Q_PER_PAGE = 10;
-
-class ApplicationForm extends Component<Props, State> {
-  signaturePad: any;
-
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      fields: undefined,
-      formAnswers: {},
-      pdfApplication: undefined,
-      buttonState: '',
-      title: '',
-      description: '',
-      submitSuccessful: false,
-      currentPage: 1,
-      numPages: 1,
-      formError: false,
-      // importApplicationDataFile: undefined,
-    };
-  }
-
-  componentDidMount() {
-    const { applicationId, clientUsername } = this.props;
-    const { formAnswers } = this.state;
-    fetch(`${getServerURL()}/get-questions-2`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        applicationId,
-        clientUsername,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        if (status === 'SUCCESS') {
-          const { fields, title, description } = responseJSON;
-          // Get every field and give it a unique ID
-          for (let i = 0; i < fields.length; i += 1) {
-            fields[i].fieldID = uuid();
-            const entry = fields[i];
-            if (entry.fieldType === 'DateField') {
-              // Need to update default date value with the local date on the current computer
-              formAnswers[entry.fieldName] = new Date();
-            } else {
-              formAnswers[entry.fieldName] = entry.fieldDefaultValue;
-            }
-          }
-          this.setState({
-            fields,
-            title,
-            description,
-            formAnswers,
-            numPages:
-              fields.length === 0
-                ? 1
-                : Math.ceil(fields.length / MAX_Q_PER_PAGE),
-          });
-        } else {
-          this.setState({
-            formError: true,
-          });
-        }
-      });
-  }
-
-  handleContinue = (e: any): void => {
-    e.preventDefault();
-    this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage + 1 }),
-      () => window.scrollTo(0, 0),
-    );
-  };
-
-  handlePrevious = (e: any): void => {
-    e.preventDefault();
-    this.setState(
-      (prevState) => ({ currentPage: prevState.currentPage - 1 }),
-      () => window.scrollTo(0, 0),
-    );
-  };
-
-  handleImportApplicationData = (fileObject) => {
-    // this.setState({ importApplicationDataFile: fileObject.file });
-    // Refresh Application Load
-  };
-
-  handleChangeFormValueTextField = (event: any) => {
-    const { formAnswers } = this.state;
-    const { id, value } = event.target;
-    formAnswers[id] = value;
-    this.setState({ formAnswers });
-  };
-
-  handleChangeFormValueCheckBox = (event: any) => {
-    const { formAnswers } = this.state;
-    const { id } = event.target;
-    const value: boolean = event.target.checked;
-    formAnswers[id] = value;
-    this.setState({ formAnswers });
-  };
-
-  handleChangeFormValueRadioButton = (event: any) => {
-    const { formAnswers } = this.state;
-    const { name, value } = event.target;
-    formAnswers[name] = value;
-    this.setState({ formAnswers });
-  };
-
-  handleChangeFormValueListBox = (event: any) => {
-    const { formAnswers } = this.state;
-    const values: string[] = Array.from(
-      event.target.selectedOptions,
-      (option: HTMLOptionElement) => option.value,
-    );
-    const { id } = event.target;
-    formAnswers[id] = values;
-    this.setState({ formAnswers });
-  };
-
-  handleChangeFormValueDateField = (date: any, id: string) => {
-    const { formAnswers } = this.state;
-    formAnswers[id] = date;
-    this.setState({ formAnswers });
-  };
-
-  getTextField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="mt-2 mb-2">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-      </label>
-      <input
-        type="text"
-        className="form-control form-purple mt-1"
-        id={entry.fieldName}
-        placeholder={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
-        value={formAnswers[entry.fieldName]}
-        required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
-      />
-      {entry.fieldIsRequired ? (
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      ) : (
-        <div />
-      )}
-    </div>
-  );
-
-  getMultilineTextField = (
-    entry: Field,
-    formAnswers: { [fieldName: string]: any },
-  ) => (
-    <div className="mt-2 mb-2">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-      </label>
-      <textarea
-        className="form-control form-purple mt-1"
-        id={entry.fieldName}
-        placeholder={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
-        value={formAnswers[entry.fieldName]}
-        required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
-      />
-      {entry.fieldIsRequired ? (
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      ) : (
-        <div />
-      )}
-    </div>
-  );
-
-  getCheckBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="mt-2 mb-2">
-      <div className="checkbox-question">
-        <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-          {entry.fieldQuestion}
-          <small className="form-text text-muted mt-1">
-            Please complete this field.
-          </small>
-        </label>
-        <div className="checkbox-option" key={entry.fieldValueOptions[0]}>
-          <div className="custom-control custom-checkbox mx-2">
-            <input
-              type="checkbox"
-              className="custom-control-input mr-2"
-              id={entry.fieldName}
-              onChange={this.handleChangeFormValueCheckBox}
-              checked={formAnswers[entry.fieldName]}
-              required={entry.fieldIsRequired}
-              readOnly={entry.fieldIsMatched}
-            />
-            <label className="custom-control-label" htmlFor={entry.fieldName}>
-              {entry.fieldValueOptions[0]}
-            </label>
-            {entry.fieldIsRequired ? (
-              <small className="form-text text-muted mt-1">
-                Please complete this field.
-              </small>
-            ) : (
-              <div />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  getRadioButton = (
-    entry: Field,
-    formAnswers: { [fieldName: string]: any },
-  ) => (
-    <div className="mt-2 mb-2">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      </label>
-      {entry.fieldValueOptions.map((value) => (
-        <div
-          className="custom-control custom-radio"
-          key={`${entry.fieldName}_${value}`}
-        >
-          <input
-            type="radio"
-            className="custom-control-input"
-            id={`${entry.fieldName}_${value}`}
-            name={entry.fieldName}
-            checked={formAnswers[entry.fieldName] === value}
-            value={value}
-            onChange={this.handleChangeFormValueRadioButton}
-            required={entry.fieldIsRequired}
-            readOnly={entry.fieldIsMatched}
-          />
-          <label
-            className="custom-control-label"
-            htmlFor={`${entry.fieldName}_${value}`}
-          >
-            {value}
-          </label>
-        </div>
-      ))}
-    </div>
-  );
-
-  getComboBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="dropdown-question">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      </label>
-
-      <select
-        id={entry.fieldName}
-        onChange={this.handleChangeFormValueTextField}
-        className="custom-select"
-        required={entry.fieldIsRequired}
-      >
-        <option selected disabled value="">
-          Please select your choice ...
-        </option>
-        {entry.fieldValueOptions.map((value) => (
-          <option value={value} key={`${entry.fieldName}_${value}`}>
-            {value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
-  getListBox = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="multiple-dropdown-question">
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
-        {entry.fieldQuestion}
-        <small className="form-text text-muted mt-1">
-          Please complete this field.
-        </small>
-      </label>
-      <select
-        id={entry.fieldName}
-        onChange={this.handleChangeFormValueListBox}
-        className="custom-select"
-        multiple
-        required={entry.fieldIsRequired}
-      >
-        <option selected disabled value="">
-          Please select your choice(s) ...
-        </option>
-        {entry.fieldValueOptions.map((value) => (
-          <option value={value} key={`${entry.fieldName}_${value}`}>
-            {value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
-  getDateField = (entry: Field, formAnswers: { [fieldName: string]: any }) => (
-    <div className="date-question">
-      <label htmlFor="date" className="w-100 font-weight-bold">
-        Date
-      </label>
-      <DatePicker
-        id={entry.fieldName}
-        selected={formAnswers[entry.fieldName] ? new Date(formAnswers[entry.fieldName]) : new Date()}
-        onChange={(date) =>
-          this.handleChangeFormValueDateField(date, entry.fieldName)
-        }
-        className="form-control form-purple mt-1"
-        required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
-      />
-      <small className="form-text text-muted mt-1">
-        Please complete this field.
-      </small>
-    </div>
-  );
-
-  toDateString = (date: Date) => {
-    // Source: https://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
-    const mm = date.getMonth() + 1; // getMonth() is zero-based
-    const dd = date.getDate();
-    const dateString = [
-      (mm > 9 ? '' : '0') + mm,
-      (dd > 9 ? '' : '0') + dd,
-      date.getFullYear(),
-    ].join('/');
-    return dateString;
-  };
-
-  onSubmitFormAnswers = (event: any) => {
-    event.preventDefault();
-    const { applicationId, applicationFilename, clientUsername } = this.props;
-    const { fields, formAnswers } = this.state;
-
-    if (fields) {
-      for (let i = 0; i < fields.length; i += 1) {
-        const entry = fields[i];
-        if (entry.fieldType === 'DateField') {
-          const date = formAnswers[entry.fieldName];
-          formAnswers[entry.fieldName] = this.toDateString(date);
-        }
-      }
+  useEffect(() => {
+    if (isPreviewPage) {
+      postRegistryData(
+        data,
+        isDirty,
+        setIsDirty,
+      );
     }
+  }, [isPreviewPage]);
 
-    this.setState({ buttonState: 'running' });
+  // TODO: do something with the response, or remove this
+  // useEffect(() => {
+  //   console.log(registryResponse);
+  // }, [registryResponse]);
 
-    const formData = new FormData();
-    formData.append('clientUsername', clientUsername);
-    formData.append('applicationId', applicationId);
-    formData.append('formAnswers', JSON.stringify(formAnswers));
-
-    fetch(`${getServerURL()}/fill-pdf-2`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    })
-      .then((response) => response.blob())
-      .then((responseBlob) => {
-        const pdfFile = new File([responseBlob], applicationFilename, {
-          type: 'application/pdf',
-        });
-        this.setState(
-          {
-            pdfApplication: pdfFile,
-            buttonState: '',
-          },
-          () => window.scrollTo(0, 0),
-        );
-      });
-  };
-
-  // Source: https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-  dataURLtoBlob = (dataURL: string) => {
-    const arr = dataURL.split(',');
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n >= 0) {
-      n -= 1;
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: 'image/png' });
-  };
-
-  onSubmitPdfApplication = (event: any) => {
-    const { pdfApplication, formAnswers } = this.state;
-    const { alert, clientUsername, applicationId } = this.props;
-    if (pdfApplication && formAnswers) {
-      const formData = new FormData();
-      formData.append('file', pdfApplication);
-      const signature = this.dataURLtoBlob(this.signaturePad.toDataURL());
-      // const signatureFile = new File(this.signaturePad.toDataURL(), "signature", { type: "image/png" });
-      formData.append('signature', signature);
-      formData.append('fileType', FileType.APPLICATION_PDF);
-      formData.append('clientUsername', clientUsername);
-      formData.append('applicationId', applicationId);
-      formData.append('formAnswers', JSON.stringify(formAnswers));
-
-      fetch(`${getServerURL()}/upload-signed-pdf-2`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((responseJSON) => {
-          this.setState({ submitSuccessful: true });
-          alert.show('Successfully Completed PDF Application');
-        });
-    }
-  };
-
-  progressBarFill = (): number => {
-    const { fields, formAnswers } = this.state;
-    const total = fields ? fields.length : 0;
-    let answered = 0;
-    Object.keys(formAnswers).forEach((questionId) => {
-      const ans = formAnswers[questionId];
-      if (ans && ans !== 'Off' && ans !== 'false') {
-        answered += 1;
-      }
+  const disablePrompt = () => {
+    flushSync(() => {
+      setShouldPrompt(false);
     });
-    return total === 0 ? 100 : Math.round((answered / total) * 100);
   };
 
-  getApplicationBody = () => {
-    const {
-      pdfApplication,
-      fields,
-      formAnswers,
-      title,
-      description,
-      currentPage,
-      buttonState,
-      numPages,
-    } = this.state;
-    let bodyElement;
-    const fillAmt = (currentPage / numPages) * 100;
-    // const fillAmt = this.progressBarFill();
-    const qStartNum = (currentPage - 1) * MAX_Q_PER_PAGE;
-    if (pdfApplication) {
-      // If the user has submitted their answers display the finished PDF application
-      bodyElement = (
-        <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-          <div>
-            <h2>Review and sign to complete your form</h2>
-            <p>Finally, sign the document and click submit when complete.</p>
-          </div>
-
-          <DocumentViewer pdfFile={pdfApplication} />
-          <div className="d-flex justify-content-center pt-5">
-            <div className="border px-5 col-lg-10 col-md-10 col-sm-12">
-              <div className="pt-5 pb-3">
-                I agree to all terms and conditions in the form document above.
-              </div>
-              <SignaturePad
-                ref={(ref) => {
-                  this.signaturePad = ref;
-                }}
-              />
-              <div className="d-flex text-center my-5">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="ml-auto"
-                  onClick={this.onSubmitPdfApplication}
-                >
-                  Submit PDF
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (fields) {
-      // If the user has not yet answered the questions, display the fields
-      bodyElement = (
-        <div className="">
-          <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-            <div className="progress mb-4">
-              <div
-                className="progress-bar"
-                role="progressbar"
-                aria-valuenow={fillAmt}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${fillAmt}%`}
-                style={{ width: `${fillAmt}%` }}
-              />
-            </div>
-            <div className="col-lg-12 col-md-12 col-sm-12">
-              <h2>{title}</h2>
-              <p>{description}</p>
-            </div>
-          </div>
-          <div className="border px-5">
-            {currentPage === 1 ? (
-<Dropzone
-  onSubmit={this.handleImportApplicationData}
-  maxFiles={1}
-  accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  inputContent="Import Data for Application"
-  submitButtonContent="Import"
-/>
-            ) : <div />}
-            <form onSubmit={this.onSubmitFormAnswers}>
-              {fields.map((entry, index) => {
-                if (index < qStartNum || index >= qStartNum + MAX_Q_PER_PAGE) return null;
-                return (
-                  <div className="my-5" key={entry.fieldID}>
-                    {(() => {
-                      if (entry.fieldType === 'readOnlyField') {
-                        // TODO: Make the readOnly fields show and be formatted properly
-                        return <div />;
-                      }
-                      if (entry.fieldType === 'textField') {
-                        return this.getTextField(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'multilineTextField') {
-                        return this.getMultilineTextField(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'checkBox') {
-                        return this.getCheckBox(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'radioButton') {
-                        return this.getRadioButton(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'comboBox') {
-                        return this.getComboBox(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'listBox') {
-                        return this.getListBox(entry, formAnswers);
-                      }
-                      if (entry.fieldType === 'dateField') {
-                        return this.getDateField(entry, formAnswers);
-                      }
-                      return <div />;
-                    })()}
-                  </div>
-                );
-              })}
-
-              <div className="row justify-content-between text-center my-5">
-                <div className="col-md-2 pl-0">
-                  {currentPage === 1 ? null : (
-                    <button
-                      type="button"
-                      className="mr-auto btn btn-outline-primary"
-                      onClick={this.handlePrevious}
-                    >
-                      Previous
-                    </button>
-                  )}
-                </div>
-                <div className="col-md-4 text-center my-1">
-                  <p>
-                    <b>
-                      {'Page '}
-                      {currentPage}
-                      {' of '}
-                      {numPages}
-                    </b>
-                  </p>
-                </div>
-                <div className="col-md-2 mr-xs-3 mr-sm-0">
-                  {currentPage !== numPages ? (
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      onClick={this.handleContinue}
-                    >
-                      Continue
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      className={`ld-ext-right ${buttonState}`}
-                      onClick={this.onSubmitFormAnswers}
-                    >
-                      Submit
-                      <div className="ld ld-ring ld-spin" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
-    } else {
-      // If the questions are still loading
-      bodyElement = <div />;
-    }
-    return bodyElement;
+  const handleSubmit = () => {
+    disablePrompt();
+    console.log('submit', JSON.stringify(data));
   };
 
-  render() {
-    const { alert, clientUsername } = this.props;
+  const handleSaveOnly = () => {
+    disablePrompt();
+    console.log('save only', JSON.stringify(data));
+  };
 
-    const { submitSuccessful, formError } = this.state;
-
-    if (submitSuccessful) {
-      return <Redirect to="/applications" />;
+  const handleCancel = () => {
+    if (window.confirm('Do you really want to cancel this application?')) {
+      disablePrompt();
+      history.push('/applications');
     }
+  };
 
-    const bodyElement = this.getApplicationBody();
-    return (
-      <div className="container">
+  const clickHandler = (e: React.MouseEvent) => {
+    if (e.target instanceof HTMLInputElement) {
+      handleChange(e.target.name, e.target.value);
+    }
+  };
+
+  const availableApplications = filterAvailableApplications(data);
+
+  const dataAttr = formContent[page].dataAttr;
+
+  return (
+    <>
+      <PromptOnLeave shouldPrompt={shouldPrompt} />
+      <div className="container-fluid">
         <Helmet>
-          <title>Fill Application</title>
+          <title>Create new application</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        <div className="mt-3">
-          {clientUsername && <div className="alert alert-primary">You are currently filling out this application on behalf of {clientUsername}.</div>}
-          <Link to="/applications">
-            <button type="button" className="btn btn-primary">
-              Back
-            </button>
-          </Link>
-        </div>
-        {bodyElement}
-        {formError ? (
-          <div className="p-5">There was an error loading this form.</div>
-        ) : null}
-      </div>
-    );
-  }
-}
+        <ApplicationBreadCrumbs page={page} setPage={setPage} data={data} />
+        <div className="jumbotron jumbotron-fluid bg-white pb-0 tw-mt-0 tw-pt-6">
+          <div className="container tw-flex tw-flex-col tw-gap-4">
+            <div className="tw-flex tw-justify-between tw-items-end">
+              <h1>{formContent[page].title(data.type)}</h1>
+              <p>Step {page + 1} of {pageCount}</p>
+            </div>
 
-export default withAlert()(ApplicationForm);
+            {formContent[page].subtitle && <h3>{formContent[page].subtitle}</h3>}
+
+            <Form
+              className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2"
+              style={{
+                gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
+                gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
+              }}
+              onClick={clickHandler}
+            >
+
+              {dataAttr &&
+                formContent[page].options
+                  .filter((option) => option.for === null || option.for.has(data.type as ApplicationType))
+                  .map((option) => (
+                    <ApplicationCard
+                      key={option.value}
+                      iconSrc={option.iconSrc}
+                      iconAlt={option.iconAlt}
+                      titleText={option.titleText}
+                      subtitleText={option.subtitleText}
+                      checked={data[dataAttr] === option.value}
+                      name={dataAttr}
+                      value={option.value}
+                      disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
+                    />
+                  ))}
+
+            </Form>
+
+            {isReviewPage && <ApplicationReviewPage data={data} />}
+
+            {isPreviewPage && (
+              pdfFile
+                ? <DocumentViewer pdfFile={pdfFile} />
+                : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">Sorry, the PDF is not available for the application you selected.</div>
+            )}
+
+            {isSendPage && (
+              <ApplicationSendPage
+                data={data}
+                handleCancel={handleCancel}
+                handlePrev={handlePrev}
+                handleSaveOnly={handleSaveOnly}
+                handleSubmit={handleSubmit}
+              />
+            )}
+
+            <div className="tw-flex tw-justify-between">
+              <Button
+                onClick={handlePrev}
+                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage ? 'tw-hidden ' : ' '}`}
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleNext}
+                className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

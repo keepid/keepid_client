@@ -146,7 +146,8 @@
     "lint:ts": "eslint . --ext .ts,.tsx",
     "lint:ts:fix": "npm run lint:ts -- --fix",
     "cosmos": "FAST_REFRESH=false cosmos",
-    "cosmos:export": "cosmos-export"
+    "cosmos:export": "cosmos-export",
+    "heroku-postbuild": "npm install && npm run build"
   },
   "jest": {
     "collectCoverageFrom": [

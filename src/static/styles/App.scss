@@ -863,6 +863,14 @@ div.scrollbar {
 	width: 35vw !important;
 }
 
+// These stylings are necessary due to a bug in react-bootstrap's
+// ToggleButton element, which renders the underlying radio button.
+.toggle-button > input[type='radio'] {
+	height: 0;
+	width: 0;
+	visibility: hidden;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

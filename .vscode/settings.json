@@ -1,4 +1,15 @@
 {
+<<<<<<< HEAD
   "css.validate": false,
   "scss.validate": false
+=======
+  "files.exclude": {
+    "**/.git": false,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  }
+>>>>>>> master
 }

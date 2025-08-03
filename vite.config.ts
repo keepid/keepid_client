@@ -14,6 +14,7 @@ export default defineConfig({
     rollupOptions: {
       plugins: [rollupNodePolyFill()], // ✅ Add this to support Buffer in production
     },
+    outDir: 'dist',
   },
   // Add any extra config if needed (aliases, environment vars, etc.)
   optimizeDeps: {
