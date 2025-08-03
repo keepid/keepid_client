@@ -37,6 +37,7 @@ export default function ApplicationForm() {
   const isReviewPage = formContent[page].pageName === 'review';
   const isPreviewPage = formContent[page].pageName === 'preview';
   const isSendPage = formContent[page].pageName === 'send';
+  const MAX_Q_PER_PAGE = 10;
 
   useEffect(() => {
     if (isPreviewPage) {

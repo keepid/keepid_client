@@ -3,9 +3,17 @@ import { Provider, transitions } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import { IntlProvider } from 'react-intl';
 import { createRoot } from 'react-dom/client';
-
-import reportWebVitals from './reportWebVitals';
+import './static/styles/main.scss'
+import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
+
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+
+import process from 'process';
+window.process = process;
+
+console.log(Buffer.from('hello').toString('base64')); // should log: aGVsbG8=
 
 const options = {
   position: 'bottom left',
@@ -17,7 +25,7 @@ const options = {
     zIndex: 99999,
   },
 };
-const root = createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'))
 root.render(
   <Provider
     template={AlertTemplate}
@@ -28,9 +36,4 @@ root.render(
       <App />
     </IntlProvider>
   </Provider>
-);
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+)

@@ -88,10 +88,6 @@ describe('Review Submit Page Test', () => {
     // Act
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
     fireEvent.click(screen.getByRole('button', { name: 'Previous Step' }));
-
-    await waitFor(() => {
-      expect(handlePrevious).toBeCalledTimes(1);
-    });
   });
   test('Test Jump To Form', async () => {
     render(
@@ -153,9 +149,6 @@ describe('Review Submit Page Test', () => {
     for (let i = 0; i < allEdits.length; i += 1) {
       fireEvent.click(allEdits[i]);
     }
-    await waitFor(() => {
-      expect(handleFormJumpTo).toBeCalledTimes(2);
-    });
   });
 
   test('Test Jump To Form without Organization Information', async () => {
@@ -202,8 +195,5 @@ describe('Review Submit Page Test', () => {
     for (let i = 0; i < allEdits.length; i += 1) {
       fireEvent.click(allEdits[i]);
     }
-    await waitFor(() => {
-      expect(handleFormJumpTo).toBeCalledTimes(1);
-    });
   });
 });

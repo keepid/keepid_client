@@ -14,7 +14,22 @@ function Logout(props: Props): React.ReactElement {
   };
 
   return (
-    <button type="button" onClick={handleLogout} className="btn btn-primary btn-dark-custom">Log Out</button>
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="tw-border
+                    tw-border-secondary-theme
+                    tw-text-secondary-theme
+                    tw-no-underline
+                    hover:tw-bg-secondary-theme
+                    hover:tw-text-white
+                    hover:tw-no-underline
+                    tw-w-full
+                    tw-py-2
+                    tw-rounded
+                    tw-mr-2"
+    >Log Out
+    </button>
   );
 }
 

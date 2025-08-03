@@ -180,7 +180,7 @@ function BaseCard(props: Props): React.ReactElement {
             </div>
             {buttonText ? (
               <Button
-                className="btn btn-card mt-auto mb-4 ml-4"
+                className="btn btn-card mt-auto mb-4 mx-4"
                 onClick={buttonOnClick}
                 style={{
                   borderRadius: buttonBorderRadius,

@@ -44,13 +44,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}>View Application</button>
       </Link>
     </div>
-  )
+  );
 
   OverflowFormatter = (cell) => (
     <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
       <small>{ cell }</small>
     </div>
-  )
+  );
 
   tableCols = [{
     dataField: 'filename',
@@ -160,7 +160,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         currentApplicationFilename: filename,
       },
     );
-  }
+  };
 
   render() {
     const {

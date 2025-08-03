@@ -137,7 +137,7 @@ export default function AccountSetup(): JSX.Element {
             values={values || {}}
             labelClassName="d-none"
           >
-            <div className="d-flex">
+            <div className="d-flex justify-content-end">
               <button type="submit" className="ml-auto btn btn-primary mt-5">
                 Continue
               </button>
