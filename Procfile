@@ -1,1 +1,1 @@
-web: envsubst '$PORT' < config/nginx.conf | nginx -g 'daemon off;' -c /dev/stdin
+web: envsubst '$PORT' < config/nginx.conf > config/nginx.processed.conf && nginx -g 'daemon off;' -c /app/config/nginx.processed.conf
