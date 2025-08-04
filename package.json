@@ -141,7 +141,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "serve": "serve -s dist -l $PORT",
+    "serve": "serve -s dist --listen $PORT",
     "test": "vitest -u",
     "preview": "vite preview --port 8080",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
