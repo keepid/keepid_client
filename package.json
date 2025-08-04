@@ -150,7 +150,7 @@
     "lint:ts:fix": "npm run lint:ts -- --fix",
     "cosmos": "FAST_REFRESH=false cosmos",
     "cosmos:export": "cosmos-export",
-    "heroku-postbuild": "npm install && npm run build && npm run serve"
+    "heroku-postbuild": "npm install && npm run build"
   },
   "jest": {
     "collectCoverageFrom": [
