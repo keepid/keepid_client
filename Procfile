@@ -1,1 +1,1 @@
-web: npm run build && serve -s dist --listen $PORT
+web: serve -s dist --listen $PORT
