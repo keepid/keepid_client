@@ -69,6 +69,7 @@
     "react-uuid": "^1.0.2",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "sass-embedded": "^1.89.2",
+    "serve": "^14.2.4",
     "typescript": "^4.6.3",
     "valid-url": "^1.0.9",
     "vite": "^6.2.3",
@@ -140,6 +141,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "serve": "serve -s dist -l $PORT",
     "test": "vitest -u",
     "preview": "vite preview --port 8080",
     "lint:scss": "stylelint 'src/**/*.scss' --syntax scss",
@@ -148,7 +150,7 @@
     "lint:ts:fix": "npm run lint:ts -- --fix",
     "cosmos": "FAST_REFRESH=false cosmos",
     "cosmos:export": "cosmos-export",
-    "heroku-postbuild": "npm install && npm run build"
+    "heroku-postbuild": "npm install && npm run build && npm run serve"
   },
   "jest": {
     "collectCoverageFrom": [
