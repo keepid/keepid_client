@@ -1,1 +1,1 @@
-web: bin/start-nginx
+web: envsubst '$PORT' < config/nginx.conf | nginx -g 'daemon off;' -c /dev/stdin
