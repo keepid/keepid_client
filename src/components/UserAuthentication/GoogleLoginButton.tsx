@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import getServerURL from '../../serverOverride';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const currentMode = import.meta.env.MODE;
 
 export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoogleLoginError }) {
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
       credentials: 'include',
       body: JSON.stringify({
         redirectUri: `${getServerURL()}/googleLoginResponse`,
-        originUri: process.env.NODE_ENV === 'production' ?
+        originUri: currentMode === 'production' ?
           'https://keep.id' : 'http://localhost:3000',
       }),
     })
