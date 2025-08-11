@@ -276,14 +276,14 @@ class LoginPage extends Component<Props, State> {
         this.setState({ buttonState: '' });
         this.resetRecaptcha();
       });
-  }
+  };
 
   handleGoogleLoginError = async (msg) => {
     const { alert } = this.props;
     alert.show(msg);
     this.setState({ buttonState: '' });
     this.resetRecaptcha();
-  }
+  };
 
   resubmitVerificationCode(event: any) {
     event.preventDefault();
@@ -333,11 +333,11 @@ class LoginPage extends Component<Props, State> {
               </div>
               <div className="row pl-3 pb-3">
                 <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
-                  This page is protected by reCAPTCHA, and subject to the Google
+                  This page is protected by reCAPTCHA, and subject to the Google{' '}
                   <a href="https://www.google.com/policies/privacy/">
                     Privacy Policy{' '}
                   </a>
-                  and
+                  and{' '}
                   <a href="https://www.google.com/policies/terms/">
                     Terms of service
                   </a>
@@ -436,7 +436,7 @@ class LoginPage extends Component<Props, State> {
                             )
                           }
                           onClick={this.handleSubmitTwoFactorCode}
-                          className={`mt-2 w-100 ld-ext-right ${buttonState}`}
+                          className={`mt-2 ld-ext-right ${buttonState}`}
                         >
                           Sign In
                           <div className="ld ld-ring ld-spin" />
@@ -460,7 +460,7 @@ class LoginPage extends Component<Props, State> {
                         }
                         onClick={this.onSubmitWithReCAPTCHA}
                         variant="primary"
-                        className={`px-5 w-100 ld-ext-right ${buttonState}`}
+                        className={`px-5 ld-ext-right ${buttonState}`}
                       >
                         Sign In
                         <div className="ld ld-ring ld-spin" />

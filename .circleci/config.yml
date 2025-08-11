@@ -6,14 +6,14 @@ jobs:
   test:
     executor:
       name: node/default
-      tag: '16.14'
+      tag: '20.10'
     steps:
       - checkout
       - node/install-packages
       - run:
           command: |
             printf "Starting tests\n"
-            CI=true npm run test -- --watchAll=false --runInBand --coverage=false --verbose --logHeapUsage
+            CI=true npm run test
             printf "Tests completed\n"
       - slack/notify:
           event: fail

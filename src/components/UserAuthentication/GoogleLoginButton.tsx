@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 
 import getServerURL from '../../serverOverride';
 
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoogleLoginError }) {
   useEffect(() => {
     const redirecting = sessionStorage.getItem('redirecting');
@@ -27,7 +29,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           const codeChallenge = data.codeChallenge;
           const state = data.state;
           const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' +
-          `client_id=${process.env.REACT_APP_GOOGLE_CLIENT_ID}` +
+          `client_id=${clientId}` +
           '&response_type=code' +
           '&scope=openid%20email%20profile' +
           `&redirect_uri=${getServerURL()}/googleLoginResponse` +

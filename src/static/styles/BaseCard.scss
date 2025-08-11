@@ -1,15 +1,15 @@
-@import "App";
+@use "App";
 
 .btn-card {
 	color: white;
-	background-color: $primary-theme;
-	border-color: $primary-theme;
+	background-color: App.$primary-theme;
+	border-color: App.$primary-theme;
 }
 
 .btn-card:hover, .btn-card:focus, .btn-card:active, .btn-card:visited {
 	color: white;
-	background-color: $primary-theme;
-	border-color: $primary-theme;
+	background-color: App.$primary-theme;
+	border-color: App.$primary-theme;
 }
 
 .btn-card:active {

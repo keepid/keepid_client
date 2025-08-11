@@ -1,7 +1,8 @@
-@import "App";
+@use "sass:color";
+@use "App";
 // class for rows being edited
 .table-edit-row {
-	background-color: $primary-theme-light;
+	background-color: App.$primary-theme-light;
 	font-family: 'Inter', sans-serif;
 	font-weight: 400;
 }
@@ -25,7 +26,7 @@
 
 .table-zebra:hover,
 .table-row:hover {
-	background: $primary-theme-light !important;
+	background: App.$primary-theme-light !important;
 }
 
 .table-row td {
@@ -41,7 +42,7 @@
 }
 
 .select-row {
-	background: $primary-theme-light !important;
+	background: App.$primary-theme-light !important;
 }
 
 .editor-input {
@@ -49,7 +50,7 @@
 	font-size: 0.9rem;
 	text-align: left;
 	font-weight: 400 !important;
-	color: $secondary-dark-theme !important;
+	color: App.$secondary-dark-theme !important;
 	background-color: white !important;
 	margin: auto;
 }
@@ -62,7 +63,7 @@
 }
 
 .edit-text {
-	@include table-mod-text($primary-theme);
+	@include table-mod-text(App.$primary-theme);
 }
 
 .save-text {
@@ -70,25 +71,25 @@
 }
 
 .delete-text {
-	@include table-mod-text($text-red);
+	@include table-mod-text(App.$text-red);
 }
 
 .edit-text:hover,
 .edit-text:focus {
 	text-decoration: none;
-	color: darken($primary-theme, 40%);
+	color: color.adjust(App.$primary-theme, $lightness: -40%);
 }
 
 .save-text:hover,
 .save-text:focus {
 	text-decoration: none;
-	color: darken(#009000, 10%);
+	color: color.adjust(#009000, $lightness: -10%);
 }
 
 .delete-text:hover,
 .delete-text:focus {
 	text-decoration: none;
-	color: darken($text-red, 30%);
+	color: color.adjust(App.$text-red, $lightness: -30%);
 }
 
 .page-item {
@@ -102,18 +103,18 @@
 .pagination > li > span,
 .pagination > .disabled > span {
 	background-color: white;
-	color: $primary-theme !important;
+	color: App.$primary-theme !important;
 	align-self: auto;
 }
 
 .pagination > li > span:hover {
-	background-color: $primary-theme-light;
-	color: $primary-theme;
+	background-color: App.$primary-theme-light;
+	color: App.$primary-theme;
 }
 
 .pagination > .active > span {
-	border: 0.0625rem solid $primary-theme !important;
-	background: $primary-theme !important;
+	border: 0.0625rem solid App.$primary-theme !important;
+	background: App.$primary-theme !important;
 	color: white !important;
 }
 
