@@ -13,7 +13,7 @@ window.Buffer = Buffer;
 import process from 'process';
 window.process = process;
 
-console.log(Buffer.from('hello').toString('base64')); // should log: aGVsbG8=
+// console.log(Buffer.from('hello').toString('base64')); // should log: aGVsbG8=
 
 const options = {
   position: 'bottom left',
