@@ -51,7 +51,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
   return (
     <div
       onClick={handleClick}
-      className="btn form-purple mb-3 w-100 position-relative d-flex align-items-center
+      className="btn btn-outline-secondary mb-3 w-100 position-relative d-flex align-items-center
           justify-content-between"
     >
       <img
