@@ -1,6 +1,5 @@
-import { CheckCircleIcon, InformationCircleIcon, PlayIcon } from '@heroicons/react/20/solid';
+import { CheckCircleIcon } from '@heroicons/react/20/solid';
 import React, { useEffect, useState } from 'react';
-import { set } from 'react-ga';
 
 import getServerURL from '../../serverOverride';
 
@@ -126,14 +125,13 @@ const QuickStartCard = () => {
         <button
           type="button"
           onClick={handleMinimize}
-          className="tw-flex tw-items-center tw-justify-between tw-w-full tw-text-left hover:tw-bg-blue-100 tw-p-2 tw-rounded tw-transition-colors tw-duration-200"
+          className="tw-flex tw-items-center tw-justify-between tw-w-full tw-text-left hover:tw-bg-blue-100 tw-p-2 tw-rounded tw-transition-colors tw-duration-200 tw-bg-transparent"
           aria-label="Expand quick start guide"
         >
           <div className="tw-flex tw-items-center tw-space-x-2">
-            <CheckCircleIcon className="tw-w-4 tw-h-4 tw-text-blue-400" />
-            <span className="tw-text-sm tw-font-medium tw-text-blue-800">Quick Start Guide</span>
+            <span className="tw-text-base tw-font-medium tw-text-black-800">Quick Start Guide</span>
           </div>
-          <svg className="tw-w-4 tw-h-4 tw-text-blue-400 tw-transition-transform tw-duration-200" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="tw-w-4 tw-h-4 tw-text-black-400 tw-transition-transform tw-duration-200" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414L10 14.414l-4.707-4.707a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>
@@ -156,27 +154,24 @@ const QuickStartCard = () => {
     return (
       <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100">
         <div className="tw-flex">
-          <div className="tw-shrink-0">
-            <PlayIcon aria-hidden="true" className="tw-size-5 tw-text-blue-400" />
-          </div>
           <div className="tw-ml-3 tw-flex-1">
             <div className="tw-flex tw-items-start tw-justify-between tw-mb-2">
-              <h3 className="tw-text-sm tw-font-medium tw-text-blue-800">
+              <h3 className="tw-text-md tw-font-medium tw-text-black-800 tw-my-auto">
                 Quick Start Guide
               </h3>
               <button
                 type="button"
                 onClick={handleMinimize}
-                className="tw-flex tw-items-center tw-space-x-1 tw-text-blue-400 hover:tw-text-blue-600 tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-duration-200 tw-text-xs"
+                className="tw-flex tw-items-center tw-space-x-1 tw-text-black-400 hover:tw-bg-blue-100 tw-bg-transparent tw-px-3 tw-py-1 tw-rounded tw-transition-colors tw-duration-200 tw-text-base"
                 aria-label="Minimize quick start guide"
               >
                 <span>Minimize</span>
-                <svg className="tw-w-3 tw-h-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="tw-w-4 tw-h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                 </svg>
               </button>
             </div>
-            <p className="tw-text-sm tw-text-blue-700 tw-mb-4">
+            <p className="tw-text-base tw-text-black-700 tw-mb-4">
               Select your situation to get a personalized checklist.
             </p>
             <div>
@@ -188,13 +183,13 @@ const QuickStartCard = () => {
                         type="radio"
                         name="situation"
                         value={option.id}
-                        className="tw-mt-0.5 tw-h-4 tw-w-4 tw-text-blue-600 tw-border-blue-300 focus:tw-ring-blue-500"
+                        className="tw-mt-0.5 tw-h-4 tw-w-4 tw-text-black-600 tw-border-blue-300 focus:tw-ring-blue-500"
                       />
                       <div className="tw-ml-3">
-                        <div className="tw-text-sm tw-font-medium tw-text-blue-800">
+                        <div className="tw-text-base tw-font-medium tw-text-black-800">
                           {option.label}
                         </div>
-                        <div className="tw-text-xs tw-text-blue-600">
+                        <div className="tw-text-sm tw-text-black-600">
                           {option.description}
                         </div>
                       </div>
@@ -206,7 +201,7 @@ const QuickStartCard = () => {
                 type="button"
                 onClick={handleSituationSubmit}
                 disabled={!userSituation}
-                className="tw-inline-flex tw-items-center tw-px-3 tw-py-1.5 tw-text-xs tw-font-medium tw-text-white tw-bg-blue-600 tw-border tw-border-transparent tw-rounded-md hover:tw-bg-blue-700 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-offset-2 focus:tw-ring-blue-500 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-duration-200"
+                className="tw-inline-flex tw-items-center tw-px-3 tw-py-1 tw-text-base tw-font-medium tw-text-black tw-bg-white tw-border tw-border-black tw-rounded-md hover:tw-bg-[#4b4f9a] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-offset-2 focus:tw-ring-blue-500 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-duration-200 hover:tw-text-white"
               >
                 Create My Checklist
               </button>
@@ -223,26 +218,23 @@ const QuickStartCard = () => {
   return (
       <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100">
         <div className="tw-flex">
-          <div className="tw-shrink-0">
-            <CheckCircleIcon aria-hidden="true" className="tw-size-5 tw-text-blue-400" />
-          </div>
           <div className="tw-ml-3 tw-flex-1">
             <div className="tw-flex tw-items-start tw-justify-between tw-mb-3">
-              <h3 className="tw-text-sm tw-font-medium tw-text-blue-800">
+              <h3 className="tw-text-md tw-font-medium tw-text-black-800 tw-my-auto">
                 Quick Start Checklist
               </h3>
               <div className="tw-flex tw-items-center tw-space-x-2">
-                <span className="tw-text-sm tw-text-blue-600 tw-font-medium">
+                <span className="tw-text-base tw-text-black-600 tw-font-medium tw-mr-2">
                   {completedCount}/{totalCount} completed ({progressPercentage}%)
                 </span>
                 <button
                   type="button"
                   onClick={handleMinimize}
-                  className="tw-flex tw-items-center tw-space-x-1 tw-text-blue-400 hover:tw-text-blue-600 tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-duration-200 tw-text-xs"
+                  className="tw-flex tw-items-center tw-space-x-1 tw-text-black-400 hover:tw-bg-blue-100 tw-bg-transparent tw-px-3 tw-py-1 tw-rounded tw-transition-colors tw-duration-200 tw-text-base"
                   aria-label="Minimize quick start guide"
                 >
                   <span>Minimize</span>
-                  <svg className="tw-w-3 tw-h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="tw-w-4 tw-h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -260,10 +252,10 @@ const QuickStartCard = () => {
             </div>
 
             {/* Checklist items */}
-            <ul className="tw-space-y-3">
+            <ul className="tw-space-y-3 tw-list-none pl-0">
               {checklistData.map((item) => (
                 <li key={item.id} className="tw-transition-all tw-duration-200">
-                  <div className="tw-flex tw-items-start tw-justify-between">
+                  <div className="tw-flex tw-items-center tw-justify-between">
                     <div className="tw-flex tw-items-center tw-flex-1">
                       <div className="tw-flex-shrink-0 tw-mr-3">
                         <div className={`tw-w-4 tw-h-4 tw-rounded tw-border-2 tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-200 ${
@@ -279,10 +271,10 @@ const QuickStartCard = () => {
                           )}
                         </div>
                       </div>
-                      <span className={`tw-text-sm tw-transition-all tw-duration-200 tw-flex-1 ${
+                      <span className={`tw-text-base tw-transition-all tw-duration-200 tw-flex-1 ${
                         item.complete
-                          ? 'tw-text-blue-600 tw-line-through'
-                          : 'tw-text-blue-700'
+                          ? 'tw-text-black-600 tw-line-through'
+                          : 'tw-text-black-700'
                       }`}
                       >
                         {item.title}
@@ -291,9 +283,10 @@ const QuickStartCard = () => {
                     {item.link && item.linkText && (
                       <a
                         href={item.link}
-                        className="tw-ml-3 tw-flex-shrink-0 tw-text-xs tw-font-medium tw-text-blue-600 hover:tw-text-blue-800 tw-bg-blue-100 hover:tw-bg-blue-200 tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-duration-200"
+                        className="tw-ml-3 tw-flex-shrink-0 tw-text-sm tw-text-black tw-bg-white tw-border-black hover:tw-bg-[#4b4f9a] tw-px-3 tw-py-2 tw-rounded tw-transition-colors tw-duration-200 tw-shadow-sm hover:tw-shadow-md tw-cursor-pointer hover:tw-text-white"
+                        title="Click to complete this task"
                       >
-                        {item.linkText}
+                        Access {item.linkText} →
                       </a>
                     )}
                   </div>
@@ -303,7 +296,7 @@ const QuickStartCard = () => {
 
             {progressPercentage === 100 && (
               <div className="tw-mt-4 tw-p-3 tw-bg-green-100 tw-border tw-border-green-200 tw-rounded-md tw-transition-all tw-duration-300 tw-ease-in-out">
-                <p className="tw-text-sm tw-text-green-700 tw-font-medium">
+                <p className="tw-text-base tw-text-green-700 tw-font-medium">
                   🎉 Congratulations! You have completed all quick start tasks.
                 </p>
               </div>
