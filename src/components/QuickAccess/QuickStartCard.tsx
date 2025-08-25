@@ -37,8 +37,6 @@ const QuickStartCard = () => {
       }
 
       const data = await response.json();
-      // DEBUG
-      console.log(data);
 
       setMinimized(data.minimized);
       setUserSituation(data.situation || UserSituation.None);
@@ -63,7 +61,7 @@ const QuickStartCard = () => {
     if (!radioVal) return;
 
     try {
-      const response = await fetch(`${getServerURL()}/onboarding-status`, {
+      const response = await fetch(`${getServerURL()}/onboarding-checklist`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -92,7 +90,7 @@ const QuickStartCard = () => {
       const newMinimized = !minimized;
       setMinimized(newMinimized);
 
-      const response = await fetch(`${getServerURL()}/onboarding-status`, {
+      const response = await fetch(`${getServerURL()}/onboarding-checklist`, {
         method: 'POST',
         credentials: 'include',
         headers: {
