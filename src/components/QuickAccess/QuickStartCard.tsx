@@ -210,26 +210,7 @@ const QuickStartCard = () => {
                     </p>
 </ToggleButton>
                   );
-                },
-                  // <div key={option.id} className="tw-relative">
-                  //   <label className="tw-flex tw-items-start tw-cursor-pointer tw-p-3 tw-rounded-md tw-border tw-border-blue-200 hover:tw-bg-blue-100 tw-transition-colors tw-duration-200">
-                  //     <input
-                  //       type="radio"
-                  //       name="situation"
-                  //       value={option.id}
-                  //       className="tw-mt-0.5 tw-h-4 tw-w-4 tw-text-black-600 tw-border-blue-300 focus:tw-ring-blue-500"
-                  //     />
-                  //     <div className="tw-ml-3">
-                  //       <div className="tw-text-base tw-font-medium tw-text-black-800">
-                  //         {option.label}
-                  //       </div>
-                  //       <div className="tw-text-sm tw-text-black-600">
-                  //         {option.description}
-                  //       </div>
-                  //     </div>
-                  //   </label>
-                  // </div>
-                )}
+                })}
               </div>
               <button
                 type="button"
