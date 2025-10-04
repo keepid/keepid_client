@@ -1,7 +1,9 @@
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './static/styles/App.scss';
-import './static/styles/Table.scss';
-import './static/styles/BaseCard.scss';
 
+// import './static/styles/Table.scss';
+// import './static/styles/BaseCard.scss';
 import React, { createContext } from 'react';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
@@ -21,7 +23,8 @@ import AdminPanel from './components/AccountSettings/AdminPanel';
 import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
-import Applications from './components/Applications/Applications';
+import CreateApplication from './components/Applications/CreateApplication';
+import ViewApplications from './components/Applications/ViewApplications';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocs from './components/Documents/UploadDocs';
 import Error from './components/Error';
@@ -454,6 +457,25 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                path="/applications/createnew"
+                render={() => {
+                  if (
+                    role === Role.Client ||
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
+                    return (
+                      <CreateApplication />
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
                 path="/applications"
                 render={({ location }) => {
                   if (
@@ -463,7 +485,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Developer
                   ) {
                     return (
-                      <Applications
+                      <ViewApplications
                         name={name}
                         organization={organization}
                         username={username}

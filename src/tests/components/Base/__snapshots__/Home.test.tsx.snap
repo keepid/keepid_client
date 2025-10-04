@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Home page snapshot test 1`] = `
 <div>
@@ -62,7 +62,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Document Platform"
             className="tw-w-full tw-overflow-hidden tw-min-w-[18.75rem] tw-max-w-[48.75rem] tw-ml-0 tw-pl-0 "
-            src="homepage_graphic.svg"
+            src="/src/static/images/homepage_graphic.svg"
           />
         </div>
       </div>
@@ -83,7 +83,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="rectangle"
             className="svg-purple mb-5"
-            src="rectangle.svg"
+            src="data:image/svg+xml,%3csvg%20width='70'%20height='10'%20viewBox='0%200%2070%2010'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3crect%20width='70'%20height='10'%20fill='black'/%3e%3c/svg%3e"
           />
           <h3
             className="hero-subtext text-grey font-weight-light pb-3"
@@ -154,7 +154,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="create_account.png"
+            src="/src/static/images/homePage/create_account.png"
           />
         </div>
       </div>
@@ -171,7 +171,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="my_documents.png"
+            src="/src/static/images/homePage/my_documents.png"
           />
         </div>
         <div
@@ -196,7 +196,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="my_documents.png"
+            src="/src/static/images/homePage/my_documents.png"
           />
         </div>
       </div>
@@ -228,7 +228,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="access_documents.png"
+            src="/src/static/images/homePage/access_documents.png"
           />
         </div>
       </div>
@@ -245,7 +245,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="streamline_applications.png"
+            src="/src/static/images/homePage/streamline_applications.png"
           />
         </div>
         <div
@@ -288,7 +288,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Create an account image"
             className="home-form-svg text-left"
-            src="streamline_applications.png"
+            src="/src/static/images/homePage/streamline_applications.png"
           />
         </div>
       </div>
@@ -327,7 +327,7 @@ exports[`Home page snapshot test 1`] = `
             <div
               className="border-0 shadow card"
               style={
-                Object {
+                {
                   "borderRadius": 20,
                   "height": "485px",
                   "maxWidth": "325px",
@@ -338,7 +338,7 @@ exports[`Home page snapshot test 1`] = `
               <div
                 className="p-0 d-flex flex-column align-items-start card-body"
                 style={
-                  Object {
+                  {
                     "height": "100%",
                   }
                 }
@@ -346,9 +346,9 @@ exports[`Home page snapshot test 1`] = `
                 <img
                   alt="..."
                   className=""
-                  src="googletink.png"
+                  src="/src/static/images/homePage/googletink.png"
                   style={
-                    Object {
+                    {
                       "borderTopLeftRadius": 20,
                       "borderTopRightRadius": 20,
                       "height": "50%",
@@ -399,7 +399,7 @@ exports[`Home page snapshot test 1`] = `
             <div
               className="border-0 shadow card"
               style={
-                Object {
+                {
                   "borderRadius": 20,
                   "height": "485px",
                   "maxWidth": "325px",
@@ -410,7 +410,7 @@ exports[`Home page snapshot test 1`] = `
               <div
                 className="p-0 d-flex flex-column align-items-start card-body"
                 style={
-                  Object {
+                  {
                     "height": "100%",
                   }
                 }
@@ -418,9 +418,9 @@ exports[`Home page snapshot test 1`] = `
                 <img
                   alt="..."
                   className=""
-                  src="mozilla_observatory.png"
+                  src="/src/static/images/homePage/mozilla_observatory.png"
                   style={
-                    Object {
+                    {
                       "borderTopLeftRadius": 20,
                       "borderTopRightRadius": 20,
                       "height": "50%",
@@ -597,7 +597,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Why Not Prosper"
             className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
-            src="whynotprosper.png"
+            src="/src/static/images/homePage/whynotprosper.png"
           />
         </div>
         <div
@@ -606,7 +606,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Face to Face"
             className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
-            src="face2face.png"
+            src="/src/static/images/homePage/face2face.png"
           />
         </div>
         <div
@@ -615,7 +615,7 @@ exports[`Home page snapshot test 1`] = `
           <img
             alt="Andree Collective"
             className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
-            src="andreeCollective.png"
+            src="/src/static/images/homePage/andreeCollective.png"
           />
         </div>
       </div>

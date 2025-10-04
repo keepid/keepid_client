@@ -1,9 +1,10 @@
 {
-    "root": "build/",
+    "root": "dist/",
     "routes": {
       "/**": "index.html"
     },
     "https_only": true,
+    "clean_urls": true,
     "headers": {
         "/**": {
             "Content-Security-Policy": "frame-ancestors 'self'",
