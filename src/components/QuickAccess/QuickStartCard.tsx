@@ -187,7 +187,7 @@ const QuickStartCard = () => {
               Select your situation to get a personalized checklist.
             </p>
             <div>
-              <div className="tw-space-y-3 tw-mb-4">
+              <div className="tw-flex tw-flex-row tw-gap-3 tw-mb-4">
                 {situationOptions.map((option) => {
                   const checked = option.id === checkedSituation;
                   return (
@@ -199,7 +199,7 @@ const QuickStartCard = () => {
   id={option.id}
   name="situation"
   onChange={(e) => { setCheckedSituation(e.target.value as UserSituation); }}
-  className={`toggle-button tw-border-2 tw-min-h-[260px] tw-min-w-56 tw-flex tw-flex-col tw-place-content-center tw-rounded-lg tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.15)] 
+  className={`toggle-button tw-border-2 tw-min-h-[260px] tw-flex-1 tw-flex tw-flex-col tw-place-content-center tw-rounded-lg tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.15)] 
                       ${checked ? '!tw-bg-indigo-100 !tw-border-gray-500 !tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.4)]' : ''}`}
 >
                     <img alt={option.iconAlt} src={option.iconSrc} className="tw-my-4 tw-h-24 tw-w-auto tw-aspect-auto tw-pointer-events-none" />
