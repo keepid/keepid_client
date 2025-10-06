@@ -20,6 +20,7 @@ interface ChecklistTask {
 }
 
 const QuickStartCard = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [minimized, setMinimized] = useState<boolean>(false);
   const [userSituation, setUserSituation] = useState<UserSituation>(UserSituation.None);
   const [checklistData, setChecklistData] = useState<ChecklistTask[]>([]);
@@ -27,6 +28,7 @@ const QuickStartCard = () => {
 
   const fetchQuickStartChecklist = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(`${getServerURL()}/onboarding-checklist`, {
         method: 'GET',
         credentials: 'include',
@@ -36,11 +38,13 @@ const QuickStartCard = () => {
       });
 
       if (!response.ok) {
+        setIsLoading(false);
         throw new Error(`Failed to fetch status: ${response.status}`);
       }
 
       const data = await response.json();
 
+      setIsLoading(false);
       setMinimized(data.minimized);
       setUserSituation(data.situation || UserSituation.None);
       setChecklistData(data.tasks || []);
@@ -129,9 +133,10 @@ const QuickStartCard = () => {
     }
   };
 
+  if (isLoading) return null;
   if (minimized) {
     return (
-      <div className="tw-rounded-md tw-bg-blue-50 tw-p-3 tw-transition-all tw-duration-300 tw-ease-in-out">
+      <div className="tw-rounded-md tw-bg-blue-50 tw-p-3 tw-transition-all tw-duration-300 tw-ease-in-out" style={{ boxShadow: '0rem 0rem 1rem rgba(33, 37, 41, 0.15)', animation: 'fadeIn 0.3s ease-in forwards' }}>
         <button
           type="button"
           onClick={handleMinimize}
@@ -164,7 +169,7 @@ const QuickStartCard = () => {
     ];
 
     return (
-      <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100">
+      <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100" style={{ boxShadow: '0rem 0rem 1rem rgba(33, 37, 41, 0.15)', animation: 'fadeIn 0.3s ease-in forwards' }}>
         <div className="tw-flex">
           <div className="tw-ml-3 tw-flex-1">
             <div className="tw-flex tw-items-start tw-justify-between tw-mb-2">
@@ -231,7 +236,7 @@ const QuickStartCard = () => {
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-      <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100">
+      <div className="tw-rounded-md tw-bg-blue-50 tw-p-4 tw-transition-all tw-duration-300 tw-ease-in-out tw-transform tw-scale-100 tw-opacity-100" style={{ boxShadow: '0rem 0rem 1rem rgba(33, 37, 41, 0.15)', animation: 'fadeIn 0.3s ease-in forwards' }}>
         <div className="tw-flex">
           <div className="tw-ml-3 tw-flex-1">
             <div className="tw-flex tw-items-start tw-justify-between tw-mb-3">
