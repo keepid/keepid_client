@@ -20,7 +20,6 @@ interface ChecklistTask {
 }
 
 const QuickStartCard = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [minimized, setMinimized] = useState<boolean>(false);
   const [userSituation, setUserSituation] = useState<UserSituation>(UserSituation.None);
   const [checklistData, setChecklistData] = useState<ChecklistTask[]>([]);
@@ -28,7 +27,6 @@ const QuickStartCard = () => {
 
   const fetchQuickStartChecklist = async () => {
     try {
-      setIsLoading(true);
       const response = await fetch(`${getServerURL()}/onboarding-checklist`, {
         method: 'GET',
         credentials: 'include',
@@ -38,13 +36,11 @@ const QuickStartCard = () => {
       });
 
       if (!response.ok) {
-        setIsLoading(false);
         throw new Error(`Failed to fetch status: ${response.status}`);
       }
 
       const data = await response.json();
 
-      setIsLoading(false);
       setMinimized(data.minimized);
       setUserSituation(data.situation || UserSituation.None);
       setChecklistData(data.tasks || []);
@@ -133,7 +129,6 @@ const QuickStartCard = () => {
     }
   };
 
-  if (isLoading) return null;
   if (minimized) {
     return (
       <div className="tw-rounded-md tw-bg-blue-50 tw-p-3 tw-transition-all tw-duration-300 tw-ease-in-out" style={{ boxShadow: '0rem 0rem 1rem rgba(33, 37, 41, 0.15)', animation: 'fadeIn 0.3s ease-in forwards' }}>
