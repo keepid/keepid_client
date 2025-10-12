@@ -6,7 +6,8 @@ interface ActivityProps {
 
 export default function (props: ActivityProps): React.ReactElement {
   const { activity } = props;
-  const uploaderUsername = activity.username;
+  const uploaderUsername = activity.invokerUsername;
+  const objectName = activity.objectName;
   const { type } = activity;
   if (uploaderUsername !== '' && type !== '') {
     const displayType = type.split('Activity');
@@ -23,6 +24,9 @@ export default function (props: ActivityProps): React.ReactElement {
         <h6 id="activities-card-title">
           {displayType}
           Activity
+        </h6>
+        <h6 id="activities-card-objectName">
+          {objectName}
         </h6>
         <p id="activities-card-date">
           {`Completed by ${uploaderUsername}, ${dateString}, ${daysDifference} days ago`}

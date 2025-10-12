@@ -7,6 +7,9 @@ const getServerURL = () => {
   if (currentMode === 'production') {
     return 'https://server.keep.id';
   }
+  if (process.env.NODE_ENV === 'staging') {
+    return 'https://staged.keep.id';
+  }
   return 'http://localhost:7001';
 };
 
