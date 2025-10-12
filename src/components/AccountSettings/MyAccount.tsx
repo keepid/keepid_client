@@ -240,7 +240,7 @@ export class MyAccount extends Component<Props, State, {}> {
         if (status === 'AUTH_SUCCESS') {
           this.handleCancelPassword();
           alert.show('Successfully updated password');
-        } else if (status === 'PASSWORD_UNCHANGED') {
+        } else if (status == 'PASSWORD_UNCHANGED') {
           this.setState({
             passwordError: PasswordError.NewPasswordSameAsOld,
           });
