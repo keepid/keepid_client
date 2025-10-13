@@ -3,7 +3,9 @@ import ToggleButton from 'react-bootstrap/ToggleButton';
 
 import getServerURL from '../../serverOverride';
 import ApplyIDIcon from '../../static/images/QuickAccess/ApplyID.svg';
+import ApplyIdIconChecked from '../../static/images/QuickAccess/ApplyID-checked.svg';
 import UploadIDIcon from '../../static/images/QuickAccess/UploadID.svg';
+import UploadIdIconChecked from '../../static/images/QuickAccess/UploadID-checked.svg';
 
 enum UserSituation {
   None = 'none',
@@ -54,6 +56,7 @@ const QuickStartCard = () => {
   };
 
   useEffect(() => {
+    console.log(ApplyIDIcon);
     fetchQuickStartChecklist();
   }, []);
 
@@ -153,12 +156,14 @@ const QuickStartCard = () => {
         id: UserSituation.ApplyID,
         label: 'I want to apply for an ID',
         iconAlt: `${UserSituation.ApplyID}-icon`,
+        iconCheckedSrc: ApplyIdIconChecked,
         iconSrc: ApplyIDIcon,
       },
       {
         id: UserSituation.UploadID,
         label: 'I have an ID to upload',
         iconAlt: `${UserSituation.UploadID}-icon`,
+        iconCheckedSrc: UploadIdIconChecked,
         iconSrc: UploadIDIcon,
       },
     ];
@@ -202,10 +207,10 @@ const QuickStartCard = () => {
   className={`toggle-button tw-border-2 tw-min-h-[260px] tw-flex-1 tw-flex tw-flex-col tw-place-content-center tw-rounded-lg tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.15)] 
                       ${checked ? '!tw-bg-indigo-100 !tw-border-gray-500 !tw-shadow-[0px_0px_8px_4px_rgba(0,0,0,0.4)]' : ''}`}
 >
-                    <img alt={option.iconAlt} src={option.iconSrc} className="tw-my-4 tw-h-24 tw-w-auto tw-aspect-auto tw-pointer-events-none" />
+                    <img alt={option.iconAlt} src={`${checked ? option.iconCheckedSrc : option.iconSrc}`} className="tw-my-4 tw-h-24 tw-w-auto tw-aspect-auto tw-pointer-events-none" />
                     <p className={
-                      `tw-text-lg tw-font-bold tw-mb-2 !active:tw-text-black tw-pointer-events-none tw-text-black
-                      ${checked ? '' : ''}`}
+                      `tw-text-lg tw-font-bold tw-mb-2 tw-pointer-events-none
+                      ${checked ? 'tw-text-black' : 'tw-text-white'}`}
                     >{option.label}
                     </p>
 </ToggleButton>
