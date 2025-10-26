@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
-import Select from 'react-select';
-import makeAnimated from 'react-select/animated';
+import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
@@ -13,7 +12,6 @@ import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 
 interface Props {
   username: string;
@@ -23,7 +21,7 @@ interface Props {
   alert: any;
 }
 
-interface Client {
+interface TargetClient {
   username: string;
   firstName: string;
   lastName: string;
@@ -33,17 +31,10 @@ interface Client {
   assignedWorkerUsernames: string[];
 }
 
-const options = [
-  { value: 'name', label: 'Name' },
-  { value: 'ssn', label: 'Social Security Number' },
-  { value: 'phoneNumber', label: 'Phone Number' },
-];
-
-const animatedComponents = makeAnimated();
 const POSTS_PER_PAGE = 6;
 
 const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, alert }) => {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
   // --- UPDATED: State for submitted search ---
   const [submittedSearchName, setSubmittedSearchName] = useState('');
@@ -56,9 +47,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [shouldFilterByAllClients, setShouldFilterByAllClients] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadProfilePhoto = useCallback(async (clientsArray: Client[], signal: AbortSignal) => {
+  const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
     let photos: (string | null)[];
-    let clientsWithPhotos: Client[];
+    let clientsWithPhotos: TargetClient[];
 
     const promises = clientsArray.map((client) => fetch(`${getServerURL()}/load-pfp`, {
       signal,
@@ -92,8 +83,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     }
   }, [alert]);
 
-  // --- Effects ---
-
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
@@ -110,7 +99,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
           body: JSON.stringify({
             role,
             listType: 'clients',
-            // --- UPDATED: Use the submittedSearchName for the API call ---
             name: submittedSearchName,
           }),
         });
@@ -118,11 +106,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         const responseJSON = await res.json();
         const { people, status } = responseJSON;
 
-        let filteredPeople: Client[] = [];
+        let filteredPeople: TargetClient[] = [];
         if (status !== 'USER_NOT_FOUND' && people) {
           filteredPeople = shouldFilterByAllClients
             ? people
-            : people.filter((person: Client) =>
+            : people.filter((person: TargetClient) =>
               person.assignedWorkerUsernames.includes(username));
         }
 
@@ -132,7 +120,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
           setClients([]);
         }
       } catch (error: any) {
-        // --- UPDATED: Correct error check ---
         if (error.name !== 'AbortError') {
           alert.show(`Failed to fetch clients: ${error.message}`);
         }
@@ -145,14 +132,10 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
     fetchClients();
 
-    // Cleanup function
     return () => {
       controller.abort();
     };
-    // --- UPDATED: Dependency array now uses submittedSearchName ---
   }, [submittedSearchName, role, shouldFilterByAllClients, username, loadProfilePhoto, alert]);
-
-  // --- Event Handlers ---
 
   const handleClickClose = () => {
     setClientPassword('');
@@ -161,7 +144,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
   const handleToggleFilteredClients = () => {
     setShouldFilterByAllClients((prev) => !prev);
-    // No longer need to reset page here, useEffect does it
   };
 
   const handleClickAuthenticateClient = (event: React.MouseEvent) => {
@@ -196,12 +178,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // The useEffect automatically re-fetches when searchName changes.
-    // We just need to trigger the change, which the input's onChange already does.
-    // If the user presses Enter without changing text, we can manually trigger.
-    // But the original component didn't seem to need this, it just set state.
-    // We'll leave this as-is, as the button press doesn't need to do anything
-    // extra since the `searchName` state is already up-to-date.
+    setSubmittedSearchName(searchName);
   };
 
   const currentPosts = useMemo(() => {
@@ -219,7 +196,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
     const paginationClassName = (pageNum: number): string => {
       const baseClasses = 'tw-px-3 tw-py-1 tw-border tw-border-gray-300 tw-cursor-pointer';
-      const activeClasses = 'tw-bg-blue-600 tw-text-white tw-border-blue-600';
+      const activeClasses = 'tw-bg-twprimary tw-text-white tw-border-blue-600';
       const inactiveClasses = 'tw-bg-white hover:tw-bg-gray-100';
 
       let classes = `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
@@ -243,7 +220,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
             <h3 className="tw-text-xl tw-font-semibold tw-text-gray-800">Authenticate Client Account Action</h3>
           </div>
 
-          {/* Modal Body */}
           <div className="tw-py-4">
             <div className="tw-mb-4">
               <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client Username</label>
@@ -268,7 +244,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
             </div>
           </div>
 
-          {/* Modal Footer */}
           <div className="tw-flex tw-justify-end tw-space-x-3 tw-border-t tw-pt-4">
             <button
               type="button"
@@ -290,11 +265,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     );
   };
 
-  // --- Main Render ---
-
-  /**
-   * Redirect logic (retained from class component)
-   */
   if (clientCredentialsCorrect && redirectLink) {
     return (
       <Redirect
@@ -314,7 +284,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       </Helmet>
       <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
         <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
-          {/* ... (header and search form remains the same) ... */}
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
             <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
               {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
@@ -386,19 +355,17 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         </div>
 
         <div className="tw-container tw-mx-auto tw-px-4">
-          {/* --- UPDATED: Conditional Loading Render --- */}
           {isLoading ? (
             <div className="tw-text-center tw-py-12">
-              <h3 className="tw-text-xl tw-text-gray-700">Loading Clients...</h3>
-              {/* You could add a spinner component here */}
+              <h3 className="tw-text-xl tw-text-gray-700">Loading Clients</h3>
+              <PulseLoader color="#616161" size={6} />
             </div>
           ) : (
             <div>
               {clients.length > 0 ? (
                 <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
-                  {/* Client Card Rendering */}
                   {currentPosts.map((client) => (
-                    <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative tw-border tw-border-black">
+                    <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
                       <div className="tw-absolute tw-top-3 tw-right-3">
                         <details className="tw-relative">
                           <summary className="tw-list-none tw-cursor-pointer">
@@ -435,7 +402,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                         </details>
                       </div>
 
-                      {/* Client Info */}
                       <Link to={`/profile/${client.username}`} className="tw-flex-grow">
                         <div className="tw-flex tw-items-center tw-mb-3">
                           {client.photo ? (
@@ -459,7 +425,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                         </div>
                       </Link>
 
-                      {/* Action Buttons at the bottom */}
                       <div className="tw-flex tw-items-center tw-mt-4">
                           <Link to={`/upload-document/${client.username}`} className="tw-mr-2">
                               <button type="button" className="tw-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-0">
@@ -494,10 +459,8 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
           )}
         </div>
 
-        {/* Pagination Controls */}
         <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
           <div className="tw-flex tw-items-center">
-            {/* --- UPDATED: Hide pagination while loading --- */}
             {!isLoading && clients.length > 0 && (
               <>
                 <div className="tw-text-gray-600 tw-mr-4">
@@ -523,7 +486,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         </div>
       </div>
 
-      {/* {modalRender()} */} {/* Only one modal instance is needed */}
     </div>
   );
 };
