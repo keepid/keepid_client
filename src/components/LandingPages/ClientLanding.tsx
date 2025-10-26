@@ -130,11 +130,11 @@ class ClientLanding extends Component<Props, State, {}> {
             </div>
           </div>
         </div>
-        <div className="d-flex p-2 mt-5">
-          <h3>Recent Activity</h3>
+        <div className="tw-mx-auto tw-py-4 tw-mt-5">
+          <h3 className="tw-text-center lg:tw-text-left">Recent Activity</h3>
         </div>
-        {isLoading ? <div className="ld ld-ring ld-spin ml-2" /> : <div />}
-        <ul className="tw-list-none tw-mb-20">
+        {isLoading ? <div className="ld ld-ring ld-spin ml-0" /> : <div />}
+        <ul className="tw-list-none tw-mb-20 tw-pl-0 tw-ml-0">
           {this.renderActivitiesCard(activities)}
         </ul>
       </div>

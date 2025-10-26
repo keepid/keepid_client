@@ -20,22 +20,22 @@ export default function ActivityCard({ activity }: ActivityProps): React.ReactEl
     return (
       <div
         key={activity.id}
-        className="activities-card-container flex flex-row justify-between items-center bg-gray-50 rounded-md p-3"
-        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }} // forces flex row
+        className="activities-card-container flex flex-row justify-between items-center bg-gray-50 rounded-md"
+        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '12px 8px' }} // forces flex row
       >
         {/* Column 1: Activity type */}
-        <div style={{ flex: '1', textAlign: 'left' }}>
-          <h6 className="text-gray-600 font-semibold">{displayType}Activity</h6>
+        <div style={{ flex: '1', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+          <h6 className="text-gray-600 font-semibold m-0">{displayType}Activity</h6>
         </div>
 
         {/* Column 2: Object name */}
-        <div style={{ flex: '2', textAlign: 'center' }}>
-          <h6 className="text-gray-800 truncate">{objectName}</h6>
+        <div style={{ flex: '2', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <h6 className="text-gray-800 truncate m-0">{objectName}</h6>
         </div>
 
         {/* Column 3: Metadata */}
-        <div style={{ flex: '2', textAlign: 'right' }}>
-          <p className="text-gray-500 text-sm">
+        <div style={{ flex: '2', textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <p className="text-gray-500 text-sm m-0">
             Completed by {uploaderUsername}, {dateString}, {daysDifference} days ago
           </p>
         </div>
