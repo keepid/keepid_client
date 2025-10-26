@@ -1,0 +1,854 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Home page snapshot test 1`] = `
+<div>
+  <div
+    className="tw-container-fluid tw-my-auto"
+  >
+    <div
+      className="tw-flex tw-flex-col md:tw-flex-row mt-5 tw-justify-center tw-img-fluid"
+    >
+      <div
+        className="tw-flex tw-flex-col tw-px-4 tw-items-center tw-justify-center"
+      >
+        <div
+          className="tw-rounded tw-mb-3 tw-pb-5"
+        >
+          <div
+            className="tw-text-center"
+          >
+            <span
+              className="brand-text"
+              id="brand-header"
+            >
+              An Identification Platform
+            </span>
+          </div>
+          <p
+            className="tw-pt-2 tw-pb-2 tw-text-center md:tw-text-left home-subtext"
+          >
+            for those experiencing homelessness
+          </p>
+          <div
+            className="tw-text-center md:tw-text-left"
+          >
+            <a
+              href="/signup-branch"
+              onClick={[Function]}
+            >
+              <button
+                className="btn btn-secondary btn-lg w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4 tw-rounded-lg"
+                type="button"
+              >
+                Get Started
+              </button>
+            </a>
+            <a
+              className="btn tw-outline btn-outline-secondary btn-lg tw-w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4"
+              href="https://team.keep.id"
+              type="button"
+            >
+              Donate
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        className="tw-flex tw-flex-col tw-items-center tw-px-5 tw-py-4 md:tw-py-0"
+      >
+        <div
+          className="tw-text-center tw-w-full"
+        >
+          <img
+            alt="Document Platform"
+            className="tw-w-full tw-overflow-hidden tw-min-w-[18.75rem] tw-max-w-[48.75rem] tw-ml-0 tw-pl-0 "
+            src="/src/static/images/homepage_graphic.svg"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="container py-5"
+  >
+    <div
+      className="row viewport-height-50"
+    >
+      <div
+        className="col-md-10 custom-vertical-center mx-auto text-center"
+      >
+        <div
+          id="info"
+        >
+          <img
+            alt="rectangle"
+            className="svg-purple mb-5"
+            src="data:image/svg+xml,%3csvg%20width='70'%20height='10'%20viewBox='0%200%2070%2010'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3crect%20width='70'%20height='10'%20fill='black'/%3e%3c/svg%3e"
+          />
+          <h3
+            className="hero-subtext text-grey font-weight-light pb-3"
+          >
+            People experiencing homelessness need a platform to assist in applying for, securely storing, and utilizing ID to access services.
+          </h3>
+          <h3
+            className="hero-subtext text-black font-weight-medium pb-3"
+          >
+            We provide a guided application process integrated with non-profit networks and secure ID storage, designed for those with low technological literacy.
+          </h3>
+          <a
+            href="#info"
+            onClick={[Function]}
+          >
+            <button
+              className="btn btn-outline-secondary btn-lg w-40"
+              type="button"
+            >
+              Learn More
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="py-5"
+  >
+    <div
+      className="w-100 partial-background"
+    >
+      <div
+        className="container"
+      >
+        <h1
+          className="text-white pt-4 pb-4"
+        >
+          Focusing on People
+        </h1>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Create an Account
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Individuals experiencing homelessness (we call them clients)
+                create a Keep.id account at participating nonprofits. Nonprofits
+                then help homeless obtain missing identification.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/create_account.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 p-4 d-none d-md-block"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/my_documents.png"
+          />
+        </div>
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Upload Documents
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Government identification, personal information, and prison
+                health records are securely uploaded to our cloud databases.
+                These documents are also cryptographically signed and encrypted.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4 d-md-none"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/my_documents.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Access Documents
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Those experiencing homelessness can access their documents at
+                public or nonprofit computers.
+            </p>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/access_documents.png"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      className="container my-5"
+    >
+      <div
+        className="row"
+      >
+        <div
+          className="col-md-6 p-4 d-none d-md-block"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/streamline_applications.png"
+          />
+        </div>
+        <div
+          className="col-md-6 custom-vertical-center px-4"
+        >
+          <div>
+            <h3>
+              Streamline Applications
+            </h3>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Those experiencing homelessness can now use their data to apply
+                for jobs, print their documents, and send autofilled aid
+                applications.
+            </p>
+            <p
+              className="pt-2 pb-2 home-paragraph-text"
+            >
+              Nonprofits can utilize data to generate reports, create
+                additional touch points for care, and streamline their filing
+                operations.
+            </p>
+            <a
+              href="#info"
+              onClick={[Function]}
+            >
+              <button
+                className="btn btn-outline-secondary btn-lg w-40 mr-2 mb-2"
+                type="button"
+              >
+                Learn More
+              </button>
+            </a>
+          </div>
+        </div>
+        <div
+          className="col-md-6 p-4 d-md-none"
+        >
+          <img
+            alt="Create an account image"
+            className="home-form-svg text-left"
+            src="/src/static/images/homePage/streamline_applications.png"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    
+        /* Styles for the navigation dots */
+        .slick-dots li button:before {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* FIX: This makes the arrows visible against a light background */
+        // .slick-prev:before,
+        // .slick-next:before {
+        //   color: black !important;
+        // }
+      
+  </style>
+  <div
+    className="py-5"
+  >
+    <div
+      className="w-100 partial-background"
+    >
+      <div
+        className="container"
+      >
+        <h1
+          className="pt-4 pb-4 tw-text-white"
+        >
+          Testimonials
+        </h1>
+      </div>
+    </div>
+    <div
+      className="tw-w-full tw-flex tw-items-center tw-h-[60vh] md:tw-h-[50vh]"
+    >
+      <div
+        className="tw-w-full tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8"
+      >
+        <div
+          className="slick-slider slick-initialized"
+          dir="ltr"
+        >
+          <button
+            className="slick-arrow slick-prev"
+            data-role="none"
+            onClick={[Function]}
+            style={
+              {
+                "display": "block",
+              }
+            }
+            type="button"
+          >
+             
+            Previous
+          </button>
+          <div
+            className="slick-list"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            onMouseDown={[Function]}
+            onMouseLeave={null}
+            onMouseMove={null}
+            onMouseUp={[Function]}
+            onTouchCancel={null}
+            onTouchEnd={[Function]}
+            onTouchMove={null}
+            onTouchStart={[Function]}
+            style={{}}
+          >
+            <div
+              className="slick-track"
+              onMouseEnter={[Function]}
+              onMouseLeave={[Function]}
+              onMouseOver={[Function]}
+              style={
+                {
+                  "WebkitTransform": "translate3d(0px, 0px, 0px)",
+                  "WebkitTransition": "",
+                  "msTransform": "translateX(0px)",
+                  "opacity": 1,
+                  "transform": "translate3d(0px, 0px, 0px)",
+                  "transition": "",
+                }
+              }
+            >
+              <div
+                aria-hidden={true}
+                className="slick-slide slick-cloned"
+                data-index={-1}
+                onClick={[Function]}
+                style={
+                  {
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, Nobel laureate
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden={false}
+                className="slick-slide slick-active slick-current"
+                data-index={0}
+                onClick={[Function]}
+                style={
+                  {
+                    "outline": "none",
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco labor"
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, CEO of Apple
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden={true}
+                className="slick-slide"
+                data-index={1}
+                onClick={[Function]}
+                style={
+                  {
+                    "outline": "none",
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco labor"
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, Astronaut
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden={true}
+                className="slick-slide"
+                data-index={2}
+                onClick={[Function]}
+                style={
+                  {
+                    "outline": "none",
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim"
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, USA Olympian
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden={true}
+                className="slick-slide"
+                data-index={3}
+                onClick={[Function]}
+                style={
+                  {
+                    "outline": "none",
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, Nobel laureate
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden={true}
+                className="slick-slide slick-cloned"
+                data-index={4}
+                onClick={[Function]}
+                style={
+                  {
+                    "width": 0,
+                  }
+                }
+                tabIndex="-1"
+              >
+                <div>
+                  <div
+                    className="px-2 tw-h-72 sm:tw-h-48 tw-text-center tw-text-black"
+                    style={
+                      {
+                        "display": "inline-block",
+                        "width": "100%",
+                      }
+                    }
+                    tabIndex={-1}
+                  >
+                    <blockquote
+                      className="tw-mx-auto"
+                    >
+                      <p
+                        className="tw-mb-4 tw-text-2xl"
+                      >
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco labor"
+                      </p>
+                      <footer
+                        className="tw-text-xl tw-text-gray-500"
+                      >
+                        Daniel Joo, CEO of Apple
+                      </footer>
+                    </blockquote>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            className="slick-arrow slick-next"
+            data-role="none"
+            onClick={[Function]}
+            style={
+              {
+                "display": "block",
+              }
+            }
+            type="button"
+          >
+             
+            Next
+          </button>
+          <ul
+            className="slick-dots"
+            onMouseEnter={null}
+            onMouseLeave={null}
+            onMouseOver={null}
+            style={
+              {
+                "display": "block",
+              }
+            }
+          >
+            <li
+              className="slick-active"
+            >
+              <button
+                onClick={[Function]}
+              >
+                1
+              </button>
+            </li>
+            <li
+              className=""
+            >
+              <button
+                onClick={[Function]}
+              >
+                2
+              </button>
+            </li>
+            <li
+              className=""
+            >
+              <button
+                onClick={[Function]}
+              >
+                3
+              </button>
+            </li>
+            <li
+              className=""
+            >
+              <button
+                onClick={[Function]}
+              >
+                4
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="w-100 partial-background"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="text-white pt-4 pb-4"
+      >
+        A Systemic Cycle
+      </h1>
+    </div>
+  </div>
+  <div
+    className="container mt-4 mb-4 pt-5 pb-5"
+  >
+    <div
+      className="row d-flex align-items-center"
+      id="info"
+    >
+      <div
+        className="col-md-6 "
+      >
+        <h1
+          className="text-center m-3 pb-5"
+        >
+          The lack of 
+          <span
+            className="text-primary-theme font-weight-bold"
+          >
+            identification
+          </span>
+           is a serial struggle for those experiencing homelessness.
+        </h1>
+      </div>
+      <div
+        className="col-md-6"
+      >
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              54%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to shelters or adequate housing services
+            </span>
+          </div>
+        </div>
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              53%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to food stamps
+            </span>
+          </div>
+        </div>
+        <div
+          className="row d-flex align-items-center"
+        >
+          <div
+            className="col-6 text-center"
+          >
+            <h1
+              className="font-weight-bold statistic-text"
+            >
+              45%
+            </h1>
+          </div>
+          <div
+            className="col-6"
+          >
+            <span
+              className="statistic-subtext"
+            >
+              Denied access to Medicaid or other medical services
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="w-100 partial-background"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="text-white pt-4 pb-4"
+      >
+        Our Partners
+      </h1>
+    </div>
+  </div>
+  <div
+    className="tw-w-full tw-pt-5 tw-pb-4 tw-overflow-hidden"
+  >
+    <div
+      className="tw-container tw-mx-auto"
+    >
+      <div
+        className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-text-center"
+      >
+        <div
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
+        >
+          <img
+            alt="Why Not Prosper"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
+            src="/src/static/images/homePage/whynotprosper.png"
+          />
+        </div>
+        <div
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
+        >
+          <img
+            alt="Face to Face"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
+            src="/src/static/images/homePage/face2face.png"
+          />
+        </div>
+        <div
+          className="tw-flex tw-items-center tw-justify-center tw-mb-4 tw-pb-4"
+        >
+          <img
+            alt="Andree Collective"
+            className="tw-max-h-full tw-max-w-xs tw-object-contain tw-mx-auto tw-my-4"
+            src="/src/static/images/homePage/andreeCollective.png"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
