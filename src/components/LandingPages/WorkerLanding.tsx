@@ -1,12 +1,8 @@
-import React, { Component } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
-import Image from 'react-bootstrap/Image';
-import Modal from 'react-bootstrap/Modal';
-import Row from 'react-bootstrap/Row';
 import { Helmet } from 'react-helmet';
 import { Link, Redirect } from 'react-router-dom';
-import Select from 'react-select';
-import makeAnimated from 'react-select/animated';
+import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
 import DocIcon from '../../static/images/doc-icon.png';
@@ -16,7 +12,6 @@ import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
-import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 
 interface Props {
   username: string;
@@ -26,108 +21,133 @@ interface Props {
   alert: any;
 }
 
-interface State {
-  clients: any;
-  searchName: string;
-  redirectLink: string;
-  clientUsername: string;
-  clientPassword: string;
-  clientCredentialsCorrect: boolean;
-  showClientAuthModal: boolean;
-  showClients: boolean;
-  currentPage: number;
-  postsPerPage: number;
-  shouldFilterByAllClients: boolean;
+interface TargetClient {
+  username: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  birthDate: string;
+  photo: string | null;
+  assignedWorkerUsernames: string[];
 }
 
-const options = [
-  { value: 'name', label: 'Name' },
-  { value: 'ssn', label: 'Social Security Number' },
-  { value: 'phoneNumber', label: 'Phone Number' },
-];
+const POSTS_PER_PAGE = 6;
 
-const animatedComponents = makeAnimated();
+const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, alert }) => {
+  const [clients, setClients] = useState<TargetClient[]>([]);
+  const [searchName, setSearchName] = useState('');
+  // --- UPDATED: State for submitted search ---
+  const [submittedSearchName, setSubmittedSearchName] = useState('');
+  const [redirectLink, setRedirectLink] = useState('');
+  const [clientUsername, setClientUsername] = useState('');
+  const [clientPassword, setClientPassword] = useState('');
+  const [clientCredentialsCorrect, setClientCredentialsCorrect] = useState(false);
+  const [showClientAuthModal, setShowClientAuthModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [shouldFilterByAllClients, setShouldFilterByAllClients] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-class WorkerLanding extends Component<Props, State> {
-  private controllerRef: React.MutableRefObject<AbortController | null>;
+  const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
+    let photos: (string | null)[];
+    let clientsWithPhotos: TargetClient[];
 
-  constructor(props: Props) {
-    super(props);
-    this.controllerRef = React.createRef();
-    this.state = {
-      searchName: '',
-      redirectLink: '',
-      clientUsername: '',
-      clientPassword: '',
-      clients: [],
-      clientCredentialsCorrect: false,
-      showClientAuthModal: false,
-      showClients: false,
-      currentPage: 1,
-      postsPerPage: 6,
-      shouldFilterByAllClients: true,
-      // we should also pass in other state such as the admin information. we could also do a fetch call inside
+    const promises = clientsArray.map((client) => fetch(`${getServerURL()}/load-pfp`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        username: client.username,
+      }),
+    }).then((response) => response.blob()));
+
+    try {
+      const results = await Promise.all(promises);
+      photos = results.map((blob) => {
+        if (blob.size > 72) {
+          return (URL || window.webkitURL).createObjectURL(blob);
+        }
+        return null;
+      });
+
+      clientsWithPhotos = clientsArray.slice();
+      clientsArray.forEach((client, i) => {
+        clientsWithPhotos[i].photo = photos[i];
+      });
+      setClients(clientsWithPhotos);
+    } catch (error: any) {
+      if (error.toString() !== 'AbortError: The user aborted a request.') {
+        alert.show(
+          `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+        );
+      }
+    }
+  }, [alert]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchClients = async () => {
+      setIsLoading(true);
+      setCurrentPage(1);
+
+      try {
+        const res = await fetch(`${getServerURL()}/get-organization-members`, {
+          signal,
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({
+            role,
+            listType: 'clients',
+            name: submittedSearchName,
+          }),
+        });
+
+        const responseJSON = await res.json();
+        const { people, status } = responseJSON;
+
+        let filteredPeople: TargetClient[] = [];
+        if (status !== 'USER_NOT_FOUND' && people) {
+          filteredPeople = shouldFilterByAllClients
+            ? people
+            : people.filter((person: TargetClient) =>
+              person.assignedWorkerUsernames.includes(username));
+        }
+
+        if (filteredPeople.length > 0) {
+          await loadProfilePhoto(filteredPeople, signal);
+        } else {
+          setClients([]);
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          alert.show(`Failed to fetch clients: ${error.message}`);
+        }
+      } finally {
+        if (!signal.aborted) {
+          setIsLoading(false);
+        }
+      }
     };
-    this.handleChangeSearchName = this.handleChangeSearchName.bind(this);
-    this.getClients = this.getClients.bind(this);
-    this.handleChangeClientPassword =
-      this.handleChangeClientPassword.bind(this);
-    // this.handleClickUploadDocuments =
-    // this.handleClickUploadDocuments.bind(this);
-    // this.handleClickViewDocuments = this.handleClickViewDocuments.bind(this);
-    // this.handleClickSendEmail = this.handleClickSendEmail.bind(this);
-    this.handleClickSendApplication =
-      this.handleClickSendApplication.bind(this);
-    this.handleClickAuthenticateClient =
-      this.handleClickAuthenticateClient.bind(this);
-    this.handleClickClose = this.handleClickClose.bind(this);
-    this.renderClients = this.renderClients.bind(this);
-    this.modalRender = this.modalRender.bind(this);
-  }
 
-  componentDidMount() {
-    this.getClients();
-  }
+    fetchClients();
 
-  handleChangeSearchName(event: any) {
-    this.setState({
-      searchName: event.target.value,
-    });
-    this.getClients().then(() => this.renderClients());
-  }
+    return () => {
+      controller.abort();
+    };
+  }, [submittedSearchName, role, shouldFilterByAllClients, username, loadProfilePhoto, alert]);
 
-  showClientList = () => {
-    const { showClients } = this.state;
-    const { currentPage } = this.state;
-    this.setState({
-      showClients: true,
-      currentPage: 1,
-    });
+  const handleClickClose = () => {
+    setClientPassword('');
+    setShowClientAuthModal(false);
   };
 
-  handleClickClose(event: any) {
-    this.setState({
-      clientPassword: '',
-      showClientAuthModal: false,
-    });
-  }
-
-  handleToggleFilteredClients = () => {
-    const { shouldFilterByAllClients } = this.state;
-    this.setState(
-      {
-        shouldFilterByAllClients: !shouldFilterByAllClients,
-      },
-      () => {
-        // re-render the client cards
-        this.getClients();
-      },
-    );
+  const handleToggleFilteredClients = () => {
+    setShouldFilterByAllClients((prev) => !prev);
   };
 
-  handleClickAuthenticateClient(event: any) {
+  const handleClickAuthenticateClient = (event: React.MouseEvent) => {
     event.preventDefault();
-    const { clientUsername, clientPassword } = this.state;
 
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
@@ -141,630 +161,333 @@ class WorkerLanding extends Component<Props, State> {
       .then((responseJSON) => {
         const { status } = responseJSON;
         if (status === 'AUTH_SUCCESS') {
-          // Allow worker privileges
-          this.setState({
-            clientCredentialsCorrect: true,
-          });
+          setClientCredentialsCorrect(true);
         } else if (status === 'AUTH_FAILURE') {
-          this.props.alert.show('Incorrect Password');
+          alert.show('Incorrect Password');
         } else if (status === 'USER_NOT_FOUND') {
-          this.props.alert.show('Username Does Not Exist');
+          alert.show('Username Does Not Exist');
         } else {
-          this.props.alert.show('Server Failure: Please Try Again');
+          alert.show('Server Failure: Please Try Again');
         }
       });
-  }
+  };
 
-  /* handleClickUploadDocuments(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/upload-document',
-        clientCredentialsCorrect: true,
-      });
-    } */
+  const handleChangeClientPassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setClientPassword(event.target.value);
+  };
 
-  /* handleClickViewDocuments(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/my-documents',
-        clientCredentialsCorrect: true,
-      });
-    } */
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setSubmittedSearchName(searchName);
+  };
 
-  /* handleClickSendEmail(event: any, client: any) {
-      this.setState({
-        clientUsername: client.username,
-        redirectLink: '/email',
-        showClientAuthModal: true,
-      });
-    } */
+  const currentPosts = useMemo(() => {
+    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+    const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
+    return clients.slice(indexOfFirstPost, indexOfLastPost);
+  }, [clients, currentPage]);
 
-  handleClickSendApplication(event: any, client: any) {
-    this.setState({
-      clientUsername: client.username,
-      redirectLink: '/applications',
-      clientCredentialsCorrect: true,
-    });
-  }
-
-  handleChangeClientPassword(event: any) {
-    this.setState({
-      clientPassword: event.target.value,
-    });
-  }
-
-  loadProfilePhoto(clientsArray: any) {
-    const signal = this.controllerRef.current?.signal;
-    let url: any;
-    let photos;
-    let clients;
-
-    const promises = clientsArray.map((client) => {
-      const { username } = client;
-      return fetch(`${getServerURL()}/load-pfp`, {
-        signal,
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({
-          username,
-        }),
-      }).then((response) => response.blob());
-    });
-
-    return Promise.all(promises)
-      .then((results) => {
-        photos = results.map((blob) => {
-          const { size } = blob;
-          if (size > 72) {
-            url = (URL || window.webkitURL).createObjectURL(blob);
-            return url;
-          }
-          return null;
-        });
-      })
-      .catch((error) => {
-        if (error.toString() !== 'AbortError: The user aborted a request.') {
-          const { alert } = this.props;
-          alert.show(
-            `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
-          );
-        }
-      })
-      .then(() => {
-        clients = clientsArray.slice();
-        clientsArray.forEach((client, i) => {
-          clients[i].photo = photos[i];
-        });
-        this.setState({ clients });
-      });
-  }
-
-  getClients() {
-    const { searchName } = this.state;
-    const { role } = this.props;
-    return fetch(`${getServerURL()}/get-organization-members`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        role,
-        listType: 'clients',
-        name: searchName,
-      }),
-    })
-      .then((res) => res.json())
-      .then((responseJSON) => {
-        const { people, status } = responseJSON;
-        if (status !== 'USER_NOT_FOUND') {
-          if (!this.state.shouldFilterByAllClients) {
-            return people.filter((person: any) =>
-              person.assignedWorkerUsernames.includes(this.props.username));
-          }
-          return people;
-        }
-        return [];
-      })
-      .then((result) => this.loadProfilePhoto(result));
-  }
-
-  renderClients() {
-    const { showClientAuthModal } = this.state;
-
-    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-    const currentPosts = this.state.clients.slice(
-      indexOfFirstPost,
-      indexOfLastPost,
-    );
-
+  const { pageNumbers, paginationClassName } = useMemo(() => {
+    const lastPage = Math.ceil(clients.length / POSTS_PER_PAGE);
     const pageNumbers: number[] = [];
-
-    for (
-      let i = 1;
-      i <= Math.ceil(this.state.clients.length / this.state.postsPerPage);
-      i += 1
-    ) {
-      pageNumbers.push(i);
-    }
-
-    const setPage = (pageNum) => {
-      this.setState({ currentPage: pageNum });
-    };
-
-    // const changeClientName = (clientFirstName, clientLastName) => `${clientFirstName}+${clientLastName}`;
-
-    const clientCards: React.ReactFragment[] = currentPosts.map((client, i) => (
-      <div
-        key={client.username}
-        className="card client-card mb-4 mr-4 flex-column"
-      >
-        <div className="dropdown lock-top-right">
-          <a href="#" id="imageDropdown" data-toggle="dropdown">
-            <img alt="menu" src={MenuDots} className="menu-height" />
-          </a>
-          <div className="dropdown-menu">
-            <Link
-              to={`/upload-document/${client.username}`}
-              className="dropdown-item primary-color"
-            >
-              <div style={{ fontWeight: 'bold' }}>
-                <img
-                  src={UploadIconBlue}
-                  style={{ height: 24 }}
-                  alt="upload icon"
-                />
-                {' Upload'}
-              </div>
-            </Link>
-            <Link
-              to={`/my-documents/${client.username}`}
-              className="dropdown-item"
-            >
-              <div className="view-docs-btn-text">
-                <img
-                  alt="doc icon"
-                  src={DocIcon}
-                  className="icon-height mx-1"
-                />
-                View Documents
-              </div>
-            </Link>
-
-            <Link
-              to={{
-                pathname: '/applications',
-                // State is stored in location prop
-                state: { clientUsername: client.username },
-              }}
-              className="dropdown-item"
-            >
-              <PrimaryButton onClick={() => {}}>
-
-                {/* Consider adding an application icon. */}
-                {/* <img
-                  alt="doc icon"
-                  src={DocIcon}
-                  className="icon-height mx-1"
-                /> */}
-
-                Fill Out Application
-              </PrimaryButton>
-            </Link>
-
-            {/* <button
-                type="button"
-                className="dropdown-item"
-                onClick={(event) =>
-                  this.handleClickSendApplication(event, client)
-                }
-              >
-                <div className="view-docs-btn-text">
-                  <img alt="doc icon" src={DocIcon} className="icon-height mr-1" />
-                  {' Complete Application'}
-                </div>
-              </button> */}
-            {/* <div className="dropdown-item">
-                <div style={{ color: '#C9302C', fontWeight: 'bold' }}>
-                  <img src={TrashCan} className="icon-height"/>
-                  {" Delete Client"}
-              </div>
-              </div> */}
-          </div>
-        </div>
-        <Link to={`/profile/${client.username}`}>
-          <div className="card-body px-0 py-0 card-body-positioning">
-            <div className="d-flex flex-row mb-3">
-              {client.photo === null ? (
-                <Image
-                  alt="a blank profile"
-                  src={GenericProfilePicture}
-                  style={{ height: 56, width: 56 }}
-                  roundedCircle
-                />
-              ) : (
-                <div id="profilePhoto">
-                  <Image
-                    alt="a blank profile"
-                    src={client.photo}
-                    style={{ height: 56, width: 56 }}
-                    roundedCircle
-                  />
-                </div>
-              )}
-            </div>
-            <div className="d-flex flex-row mb-1">
-              <h5 className="card-title h4">
-                {client.firstName} {client.lastName}
-              </h5>
-            </div>
-            <div className="d-flex flex-row mb-1">
-              <h6 className="card-subtitle text-muted">{client.phone}</h6>
-            </div>
-            <div className="d-flex flex-row mb-1">
-              <h6 className="card-subtitle text-muted">
-                {'Birth Date: '}
-                {client.birthDate}
-              </h6>
-            </div>
-          </div>
-        </Link>
-        <div className="row lock-bottom-left">
-          <Link
-            to={`/upload-document/${client.username}`}
-            className="tw-mr-1 tw-mb-2"
-            // style={{ height: 32 }}
-          >
-            {/* <div style={{ fontWeight: 'bold' }}>
-              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" />
-              {' Upload'}
-            </div> */}
-            <button type="button" className="tw-flex tw-justify-center tw-bg-twprimary tw-rounded-md tw-p-[0.32rem] tw-font-semibold tw-text-white hover:tw-bg-blue-800 hover:tw-no-underline tw-px-3 tw-font-Inter tw-border-0 tw-items-center">
-              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-1" />
-                <div className="tw-font-bold">{' Upload '}</div>
-            </button>
-            {/* <PrimaryButtonSolid onClick={()=>{}}>
-              <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className='tw-mr-1'/>
-              <div className="tw-font-bold">{' Upload '}</div>
-            </PrimaryButtonSolid> */}
-          </Link>
-          <Link
-            to={`/my-documents/${client.username}`}
-            className="btn link-secondary btn-sm primary-color-border mb-2"
-            style={{ height: 32 }}
-          >
-            <div style={{ color: '#445feb', fontWeight: 'bold' }}>
-              View Documents
-            </div>
-          </Link>
-
-          <Link
-            to={{
-              pathname: '/applications',
-              // State is stored in location prop
-              state: { clientUsername: client.username },
-            }}
-            className="btn link-secondary btn-sm primary-color-border mb-2"
-            style={{ height: 32 }}
-          >
-
-            <div style={{ color: '#445feb', fontWeight: 'bold' }}>
-              Fill Out Application
-            </div>
-
-          </Link>
-
-          {/* <Link to={`/profile/${client.username}`}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm button-height"
-              >
-                View Profile
-              </button>
-            </Link> */}
-        </div>
-        {showClientAuthModal ? this.modalRender() : null}
-      </div>
-    ));
-
-    return clientCards;
-  }
-
-  modalRender() {
-    const { showClientAuthModal } = this.state;
-    return (
-      <Modal key="authenticateAction" show={showClientAuthModal}>
-        <Modal.Header>
-          <Modal.Title>Authenticate Client Account Action</Modal.Title>
-        </Modal.Header>
-
-        <Modal.Body>
-          <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">Client Username</div>
-            <div className="col-6 card-text">
-              <input
-                type="text"
-                className="form-control form-purple"
-                id="authenticateForm"
-                readOnly
-                placeholder="Enter Username Here"
-                value={this.state.clientUsername}
-              />
-            </div>
-          </div>
-          <div className="row mb-3 mt-3">
-            <div className="col card-text mt-2">Client Password</div>
-            <div className="col-6 card-text">
-              <input
-                type="password"
-                className="form-control form-purple"
-                id="passwordVerification"
-                placeholder="Enter Password Here"
-                onChange={this.handleChangeClientPassword}
-                value={this.state.clientPassword}
-              />
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            data-dismiss="modal"
-            onClick={this.handleClickClose}
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={this.handleClickAuthenticateClient}
-          >
-            Submit
-          </button>
-        </Modal.Footer>
-      </Modal>
-    );
-  }
-
-  render() {
-    const { role } = this.props;
-    const {
-      redirectLink,
-      clientCredentialsCorrect,
-      clientUsername,
-      searchName,
-      showClients,
-    } = this.state;
-
-    const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-    const currentPosts = this.state.clients.slice(
-      indexOfFirstPost,
-      indexOfLastPost,
-    );
-    const lastPage = Math.ceil(
-      this.state.clients.length / this.state.postsPerPage,
-    );
-
-    // Implement page numbers
-    const pageNumbers: number[] = [];
-
     for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
     }
 
-    // Set current page
-    const setPage = (pageNum) => {
-      this.setState({ currentPage: pageNum });
+    const paginationClassName = (pageNum: number): string => {
+      const baseClasses = 'tw-px-3 tw-py-1 tw-border tw-border-gray-300 tw-cursor-pointer';
+      const activeClasses = 'tw-bg-twprimary tw-text-white tw-border-blue-600';
+      const inactiveClasses = 'tw-bg-white hover:tw-bg-gray-100';
+
+      let classes = `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
+      if (pageNum === 1) classes += ' tw-rounded-l-md';
+      if (pageNum === lastPage) classes += ' tw-rounded-r-md';
+
+      return classes;
     };
 
-    const paginationClassName = (pageNum) => {
-      if (pageNum === this.state.currentPage) {
-        if (pageNum === 1) {
-          return 'active-pagination-link-1';
-        }
-        if (pageNum === lastPage) {
-          return 'active-pagination-link-end';
-        }
-        return 'active-pagination-link';
-      }
-      if (pageNum === 1) {
-        return 'pagination-link-1';
-      }
-      if (pageNum === lastPage) {
-        return 'pagination-link-end';
-      }
-      return 'pagination-link';
-    };
+    return { pageNumbers, paginationClassName };
+  }, [clients.length, currentPage]);
+
+  const modalRender = () => {
+    if (!showClientAuthModal) return null;
 
     return (
-      <div>
-        <Helmet>
-          <title>Home</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container mb-4">
-            <div className="d-flex">
-              <div className="d-flex flex-column">
-                <h1 className="display-5 pb-0">
-                  {this.state.shouldFilterByAllClients
-                    ? 'All Clients'
-                    : 'My Clients'}
-                </h1>
-              </div>
-              <div className="d-flex flex-row ml-auto">
-                {role === Role.Director || role === Role.Admin ? (
-                  <Link to="/person-signup/worker">
-                    <button type="button" className="btn btn-primary mr-2 mb-2">
-                      <div>Sign Up Worker</div>
-                    </button>
-                  </Link>
-                ) : (
-                  <div />
-                )}
-                <Link to="/person-signup/client">
-                  <button type="button" className="btn btn-primary mb-2">
-                    <div>Sign Up Client</div>
+      <div className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50">
+        <div className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-w-full tw-max-w-md">
+
+          <div className="tw-border-b tw-pb-3">
+            <h3 className="tw-text-xl tw-font-semibold tw-text-gray-800">Authenticate Client Account Action</h3>
+          </div>
+
+          <div className="tw-py-4">
+            <div className="tw-mb-4">
+              <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client Username</label>
+              <input
+                type="text"
+                id="authenticateForm"
+                readOnly
+                className="tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md tw-bg-gray-100"
+                value={clientUsername}
+              />
+            </div>
+            <div>
+              <label htmlFor="passwordVerification" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client Password</label>
+              <input
+                type="password"
+                id="passwordVerification"
+                className="tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
+                placeholder="Enter Password Here"
+                onChange={handleChangeClientPassword}
+                value={clientPassword}
+              />
+            </div>
+          </div>
+
+          <div className="tw-flex tw-justify-end tw-space-x-3 tw-border-t tw-pt-4">
+            <button
+              type="button"
+              className="tw-py-2 tw-px-4 tw-bg-white tw-text-gray-800 tw-rounded-md hover:tw-bg-gray-300"
+              onClick={handleClickClose}
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              className="tw-py-2 tw-px-4 tw-bg-blue-600 tw-text-white tw-rounded-md hover:tw-bg-blue-700"
+              onClick={handleClickAuthenticateClient}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (clientCredentialsCorrect && redirectLink) {
+    return (
+      <Redirect
+        to={{
+          pathname: redirectLink,
+          state: { clientUsername },
+        }}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <Helmet>
+        <title>Home</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
+      <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
+        <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
+          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
+            <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
+              {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
+            </h1>
+            <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
+              {role === Role.Director || role === Role.Admin ? (
+                <Link to="/person-signup/worker" className="tw-mr-2">
+                  <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
+                    Sign Up Worker
                   </button>
                 </Link>
-              </div>
-            </div>
-            <div className="d-flex">
-              <form className="d-flex form-inline mr-3 justify-content-start flex-row">
-                <input
-                  className="form-control right-angle-right search-bar"
-                  type="text"
-                  onChange={this.handleChangeSearchName}
-                  value={this.state.searchName}
-                  placeholder="Search by name, phone number, email..."
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.showClientList();
-                      event.preventDefault();
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary right-angle-left"
-                  onClick={this.showClientList}
-                >
-                  <div style={{ fontWeight: 'bold' }}>Search</div>
+              ) : null}
+              <Link to="/person-signup/client">
+                <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
+                  Sign Up Client
                 </button>
-              </form>
-              <div className="d-flex ml-auto flex-column font-weight-bold">
-                Filters
-              </div>
-              <div className="d-flex ml-3 flex-column">
-                <div className="form-group form-check">
+              </Link>
+            </div>
+          </div>
+
+          <div className="tw-flex tw-flex-col md:tw-flex-row tw-items-start">
+            <form
+              className="tw-flex tw-w-full md:tw-w-auto tw-mb-4 md:tw-mb-0 md:tw-mr-4"
+              onSubmit={handleSearchSubmit}
+            >
+              <input
+                className="tw-flex-grow tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
+                type="text"
+                onChange={(e) => setSearchName(e.target.value)}
+                value={searchName}
+                placeholder="Search by name, phone, email..."
+              />
+              <button type="submit" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-r-md hover:tw-bg-blue-700 tw-border-0">
+                Search
+              </button>
+            </form>
+            <div className="tw-flex tw-items-start">
+              <div className="tw-font-bold tw-mr-4 tw-mt-1">Filters</div>
+              <div className="tw-flex tw-flex-col">
+                <div className="tw-flex tw-items-center tw-mb-2">
                   <input
-                    checked={!!this.state.shouldFilterByAllClients}
+                    checked={shouldFilterByAllClients}
                     type="radio"
-                    className="form-check-input"
                     id="showAllClients"
-                    onClick={this.handleToggleFilteredClients}
+                    name="clientFilter"
+                    className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
+                    onChange={handleToggleFilteredClients}
                   />
-                  <label className="form-check-label" htmlFor="showAllClients">
+                  <label htmlFor="showAllClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
                     Show All Clients
                   </label>
                 </div>
-                <div className="form-group form-check">
+                <div className="tw-flex tw-items-center">
                   <input
-                    checked={!this.state.shouldFilterByAllClients}
+                    checked={!shouldFilterByAllClients}
                     type="radio"
-                    className="form-check-input"
                     id="showMyAssignedClients"
-                    onClick={this.handleToggleFilteredClients}
+                    name="clientFilter"
+                    className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
+                    onChange={handleToggleFilteredClients}
                   />
-                  <label
-                    className="form-check-label"
-                    htmlFor="showMyAssignedClients"
-                  >
+                  <label htmlFor="showMyAssignedClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
                     Show My Clients
                   </label>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* <button
-      <div>
-        <Helmet>
-          <title>Home</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <div className="jumbotron pt-4 pb-0 jumbotron-fluid bg-transparent">
-          <div className="container mb-4">
-            <h1 className="display-5 pb-0">My Clients</h1>
-            <div className="d-flex flex-row justify-content-between">
-              <form className="form-inline mr-3">
-                <input
-                  className="right-angle-right form-control"
-                  type="text"
-                  onChange={this.handleChangeSearchName}
-                  value={this.state.searchName}
-                  placeholder="Search by name, email..."
-                  aria-label="Search"
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.showClientList();
-                      event.preventDefault();
-                    }
-                  }}
-                />
-                <button type="button" className="btn btn-primary right-angle-left" onClick={this.showClientList}>
-                  <div>Search</div>
-                </button>
-              </form>
+        <div className="tw-container tw-mx-auto tw-px-4">
+          {isLoading ? (
+            <div className="tw-text-center tw-py-12">
+              <h3 className="tw-text-xl tw-text-gray-700">Loading Clients</h3>
+              <PulseLoader color="#616161" size={6} />
+            </div>
+          ) : (
+            <div>
+              {clients.length > 0 ? (
+                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+                  {currentPosts.map((client) => (
+                    <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
+                      <div className="tw-absolute tw-top-3 tw-right-3">
+                        <details className="tw-relative">
+                          <summary className="tw-list-none tw-cursor-pointer">
+                            <img alt="menu" src={MenuDots} className="tw-h-6" />
+                          </summary>
+                          <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
+                            <Link
+                              to={`/upload-document/${client.username}`}
+                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                            >
+                              <div className="tw-flex tw-items-center tw-font-semibold tw-bg-twprimary">
+                                <img src={UploadIconBlue} className="tw-h-6 tw-mr-2" alt="upload icon" />
+                                Upload
+                              </div>
+                            </Link>
+                            <Link
+                              to={`/my-documents/${client.username}`}
+                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                            >
+                              <div className="tw-flex tw-items-center">
+                                <img alt="doc icon" src={DocIcon} className="tw-h-5 tw-mx-1 tw-mr-2" />
+                                View Documents
+                              </div>
+                            </Link>
+                            <Link
+                              to={{ pathname: '/applications', state: { clientUsername: client.username } }}
+                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                            >
+                              <div className="tw-flex tw-items-center">
+                                Fill Out Application
+                              </div>
+                            </Link>
+                          </div>
+                        </details>
+                      </div>
 
-              {/* <button
-                className="btn btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#advancedSearch"
-                aria-expanded="false"
-                aria-controls="collapseExample"
-              >
-                Advanced Search
-                </button> */}
+                      <Link to={`/profile/${client.username}`} className="tw-flex-grow">
+                        <div className="tw-flex tw-items-center tw-mb-3">
+                          {client.photo ? (
+                            <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                          ) : (
+                            <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                          )}
+                        </div>
+                        <div className="tw-mb-1">
+                          <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
+                            {client.firstName} {client.lastName}
+                          </h5>
+                        </div>
+                        <div className="tw-mb-1">
+                          <h6 className="tw-text-gray-500">{client.phone}</h6>
+                        </div>
+                        <div className="tw-mb-1">
+                          <h6 className="tw-text-gray-500">
+                            Birth Date: {client.birthDate}
+                          </h6>
+                        </div>
+                      </Link>
 
-          {/* <div className="collapse" id="advancedSearch">
-                <div className="card card-body mt-3 mb-2 ml-0 pl-0 w-50 border-0">
-                  <h5 className="card-title">Search on multiple fields</h5>
-                  <Select
-                    options={options}
-                    closeMenuOnSelect={false}
-                    components={animatedComponents}
-                    isMulti
+                      <div className="tw-flex tw-items-center tw-mt-4">
+                          <Link to={`/upload-document/${client.username}`} className="tw-mr-2">
+                              <button type="button" className="tw-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-0">
+                                  <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
+                                  Upload
+                              </button>
+                          </Link>
+                          <Link to={`/my-documents/${client.username}`}>
+                              <button type="button" className="tw-flex tw-items-center tw-justify-center tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-bg-white">
+                                  View Documents
+                              </button>
+                          </Link>
+                      </div>
+
+                      {showClientAuthModal && modalRender()}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="tw-text-center tw-py-12">
+                  <h3 className="tw-text-xl tw-text-gray-700">
+                    No Clients! Click &apos;Sign up Client&apos; to get started!
+                  </h3>
+                  <img
+                    className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
+                    src={VisualizationSVG}
+                    alt="Search for a client"
                   />
                 </div>
-              </div> */}
-          <div className="container">
-            {this.state.clients.length !== 0 ? (
-              <div className="container px-0">
-                <Row xs={1} md={3}>
-                  {this.renderClients()}
-                </Row>
-              </div>
-            ) : (
-              <div>
-                <h3 className="pt-4">
-                  No Clients! Click &apos;Sign up Client&apos; to get started!
-                </h3>
-                <img
-                  className="pt-4 visualization-svg"
-                  src={VisualizationSVG}
-                  alt="Search a client"
-                />
-              </div>
-            )}
-          </div>
-          <div className="container">
-            <div className="flex row justify-content-left align-items-center mt-2">
-              {this.state.clients.length !== 0 ? (
-                <div className="text-muted align-items-center mr-4">
-                  {this.state.clients.length} Results
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
+          <div className="tw-flex tw-items-center">
+            {!isLoading && clients.length > 0 && (
+              <>
+                <div className="tw-text-gray-600 tw-mr-4">
+                  {clients.length} Results
                 </div>
-              ) : null}
-              {this.state.clients.length !== 0
-                ? pageNumbers.map((pageNum, index) => (
+                <div className="tw-flex">
+                  {pageNumbers.map((pageNum) => (
                     <span
+                      key={pageNum}
                       className={paginationClassName(pageNum)}
-                      onClick={() => {
-                        setPage(pageNum);
-                      }}
+                      onClick={() => setCurrentPage(pageNum)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyPress={(e) => e.key === 'Enter' && setCurrentPage(pageNum)}
                     >
                       {pageNum}
                     </span>
-                ))
-                : null}
-            </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
-    );
-  }
-}
+
+    </div>
+  );
+};
 
 export default withAlert()(WorkerLanding);
