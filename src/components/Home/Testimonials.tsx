@@ -45,7 +45,7 @@ function Testimonials() {
     slidesToScroll: 1,
     arrows: true,
     autoplay: true,
-    autoplaySpeed: 6000,
+    autoplaySpeed: 4000,
     adaptiveHeight: true,
   };
 
