@@ -4,10 +4,10 @@ import { defineMessages, useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
 import HomepageGraphic from '../../static/images/homepage_graphic.svg';
-import EnsuringSecurity from './EnsuringSecurity';
 import FocusingOnPeople from './FocusingOnPeople';
 import HomelessStats from './HomelessStats';
 import IntroText from './IntroText';
+import Testimonials from './Testimonials';
 import WhoWeAreServing from './WhoWeAreServing';
 
 const messages = defineMessages({
@@ -111,7 +111,7 @@ function Home() {
 
       <FocusingOnPeople />
 
-      <EnsuringSecurity />
+      <Testimonials />
 
       <HomelessStats />
 
