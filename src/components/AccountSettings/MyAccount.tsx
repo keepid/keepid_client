@@ -238,20 +238,18 @@ export class MyAccount extends Component<Props, State, {}> {
         const { status } = responseJSON;
         // old passwrod entered correctly
         if (status === 'AUTH_SUCCESS') {
+          this.handleCancelPassword();
+          alert.show('Successfully updated password');
+        } else if (status === 'PASSWORD_UNCHANGED') {
           // new password is the same as the old password
-          if (enteredPassword === newPassword) {
-            this.setState({
-              passwordError: PasswordError.NewPasswordSameAsOld,
-            });
-          } else { // no error - password changed succesfully
-            this.handleCancelPassword();
-            alert.show('Successfully updated password');
-          }
+          this.setState({
+            passwordError: PasswordError.NewPasswordSameAsOld,
+          });
         } else if (status === 'AUTH_FAILURE') { // wrong old password
           this.setState({
             passwordError: PasswordError.OldPasswordWrong,
           });
-        } else if (status === 'INVALID_PARAMETER') {
+        } else if (status === 'INVALID_PARAMETER') { // invalid password
           this.setState({
             passwordError: PasswordError.NewPasswordInvalid,
           });
