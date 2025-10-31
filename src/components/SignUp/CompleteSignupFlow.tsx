@@ -10,7 +10,6 @@ import { useHistory } from 'react-router-dom';
 import AccountSetup from './pages/AccountSetup';
 import OrganizationInformation from './pages/OrganizationInformation';
 import ReviewSubmit from './pages/ReviewSubmit';
-import SignUserAgreement from './pages/SignUserAgreement';
 import { signupOrganization } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
@@ -49,7 +48,6 @@ export default function CompleteSignupFlow() {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
         SignupStage.ORGANIZATION_INFORMATION,
-        SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ]);
     }
@@ -75,7 +73,6 @@ export default function CompleteSignupFlow() {
         >
           <Steps.Step title="Account Setup" description="" />
           <Steps.Step title="Organization Information" description="" />
-          <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
         <ProgressBar
@@ -90,10 +87,6 @@ export default function CompleteSignupFlow() {
         {signUpStageStateContext.currentStage ===
         SignupStage.ORGANIZATION_INFORMATION ? (
           <OrganizationInformation />
-          ) : null}
-        {signUpStageStateContext.currentStage ===
-        SignupStage.SIGN_USER_AGREEMENT ? (
-          <SignUserAgreement />
           ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />

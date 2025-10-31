@@ -10,7 +10,6 @@ import { useHistory } from 'react-router-dom';
 import Role from '../../static/Role';
 import AccountSetup from './pages/AccountSetup';
 import ReviewSubmit from './pages/ReviewSubmit';
-import SignUserAgreement from './pages/SignUserAgreement';
 import { signupUserFromInvite } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
@@ -55,7 +54,6 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
     if (signUpStageStateContext.stages?.length !== 3) {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
-        SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ]);
     }
@@ -80,7 +78,6 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
           current={currentStageIdx}
         >
           <Steps.Step title="Account Setup" description="" />
-          <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
         <ProgressBar
@@ -91,10 +88,6 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
           <AccountSetup />
-          ) : null}
-        {signUpStageStateContext.currentStage ===
-        SignupStage.SIGN_USER_AGREEMENT ? (
-          <SignUserAgreement />
           ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />

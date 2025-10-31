@@ -11,7 +11,6 @@ import Role from '../../static/Role';
 import AccountSetup from './pages/AccountSetup';
 import AssignWorker from './pages/AssignWorker';
 import ReviewSubmit from './pages/ReviewSubmit';
-import SignUserAgreement from './pages/SignUserAgreement';
 import { assignWorkerToUser, signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
@@ -67,7 +66,6 @@ export default function PersonSignupFlow() {
       // update this to add more stages
       const signupStages = [
         SignupStage.ACCOUNT_INFORMATION,
-        SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ];
       if (personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) {
@@ -99,7 +97,6 @@ export default function PersonSignupFlow() {
           {(personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) && (
             <Steps.Step title="Assign Worker" description="" />
           )}
-          <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
         <ProgressBar
@@ -114,10 +111,6 @@ export default function PersonSignupFlow() {
         {signUpStageStateContext.currentStage === SignupStage.ASSIGN_WORKER &&
         (personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) ? (
           <AssignWorker />
-          ) : null}
-        {signUpStageStateContext.currentStage ===
-        SignupStage.SIGN_USER_AGREEMENT ? (
-          <SignUserAgreement />
           ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />
