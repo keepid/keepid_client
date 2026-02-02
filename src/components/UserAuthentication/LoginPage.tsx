@@ -321,32 +321,28 @@ class LoginPage extends Component<Props, State> {
             You were automatically logged out and redirected to this page.
           </div>
         ) : null}
-        <div className="container">
-          <div className="row tw-p-4 lg:tw-p-15">
-            <div className="col tw-hidden md:tw-block">
-              <div className="float-right w-100">
-                <img
-                  alt="Login graphic"
-                  className="w-75 mt-2 mr-3 float-right "
-                  src={LoginSVG}
-                />
-              </div>
-              <div className="row pl-3 pb-3">
-                <span className="text-muted recaptcha-login-text pt-4 mt-4 pl-5 ml-5 w-75">
-                  This page is protected by reCAPTCHA, and subject to the Google{' '}
-                  <a href="https://www.google.com/policies/privacy/">
-                    Privacy Policy{' '}
-                  </a>
-                  and{' '}
-                  <a href="https://www.google.com/policies/terms/">
-                    Terms of service
-                  </a>
-                  .
-                </span>
-              </div>
+        <div className="tw-container tw-mx-auto tw-max-w-5xl tw-px-4">
+          <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-12 tw-py-12 lg:tw-py-20 tw-min-h-[70vh] tw-items-center">
+            <div className="tw-hidden md:tw-flex tw-flex-col tw-items-center tw-justify-center">
+              <img
+                alt="Login graphic"
+                className="tw-w-4/5 tw-max-w-md"
+                src={LoginSVG}
+              />
+              <p className="tw-text-gray-500 tw-text-sm tw-mt-6 tw-text-center tw-max-w-sm">
+                This page is protected by reCAPTCHA, and subject to the Google{' '}
+                <a href="https://www.google.com/policies/privacy/">
+                  Privacy Policy{' '}
+                </a>
+                and{' '}
+                <a href="https://www.google.com/policies/terms/">
+                  Terms of service
+                </a>
+                .
+              </p>
             </div>
 
-            <div className="col">
+            <div className="tw-flex tw-justify-center">
               <form className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <GoogleLoginButton

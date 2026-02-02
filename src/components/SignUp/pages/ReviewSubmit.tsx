@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from 'react-helmet';
-import { isConstructorTypeNode } from 'typescript';
 
 import { reCaptchaKey } from '../../../configVars';
 import EyeIcon from '../../../static/images/eye.svg';
@@ -30,7 +29,18 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const [eulaAgreed, setEulaAgreed] = useState(false);
+
+  const [eulaError, setEulaError] = useState('');
+
   const onSubmit = async () => {
+    if (!eulaAgreed) {
+      setEulaError('You must agree to the EULA before submitting.');
+      return;
+    }
+
+    setEulaError('');
+
     if (recaptchaRef !== null && recaptchaRef.current !== null) {
       // @ts-ignore
       const token = await recaptchaRef.current.executeAsync();
@@ -173,6 +183,35 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
                 </tbody>
               </table>
             ) : null}
+            <div className="mb-3">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="eulaAgreement"
+                  checked={eulaAgreed}
+                  onChange={(e) => {
+                    setEulaAgreed(e.target.checked);
+                    setEulaError('');
+                  }}
+                />
+                <label className="form-check-label" htmlFor="eulaAgreement">
+                  By clicking submit, I agree to the{' '}
+                  <a
+                    href="https://docs.google.com/document/d/18O-2Q3hdjeMlDMg696F62rgBhW7fttluUSfYG5lb-uo/edit?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    End User License Agreement (EULA)
+                  </a>
+                </label>
+              </div>
+              {eulaError && (
+                <div className="text-danger mt-2 small">
+                  {eulaError}
+                </div>
+              )}
+            </div>
             <div className="mb-0">
               <div className="form-check mb-3">
                 <input

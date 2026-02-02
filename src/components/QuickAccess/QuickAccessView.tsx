@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAlert } from 'react-alert';
-import { Button, Col, Container, Image, Row } from 'react-bootstrap';
+import { Button, Image } from 'react-bootstrap';
 import { useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
 
@@ -85,21 +85,19 @@ export default function QuickAccessView({ category }: Props) {
   }
 
   return (
-    <Container>
+    <div className="tw-container tw-mx-auto tw-px-4 tw-pb-8">
       <Link to="/">
         <button type="button" className="btn btn-primary my-3 mr-2">
           <i className="fas fa-chevron-left" /> Back
         </button>
       </Link>
 
-      <Row className="justify-content-md-center">
-        <h1>
-          {intl.formatMessage(Messages[`quick-access.${category}.title`])}
-        </h1>
-      </Row>
+      <h1 className="tw-text-center tw-mb-4">
+        {intl.formatMessage(Messages[`quick-access.${category}.title`])}
+      </h1>
 
       {content}
-    </Container>
+    </div>
   );
 }
 
@@ -131,28 +129,20 @@ export function QuickAccessDocumentViewer({
 export function NoDocumentSet({ category }: Props) {
   const intl = useIntl();
   return (
-    <>
-      <Row className="justify-content-md-center">
-        <Col md={8}>
-          <p>
-            {intl.formatMessage(
-              Messages['quick-access.no-document-set.description'],
-            )}
-          </p>
-        </Col>
-      </Row>
-      <Row className="justify-content-md-center">
-        <Link to={`/quick-access/${category}/setup`}>
-          <Button>
-            {intl.formatMessage(
-              Messages['quick-access.no-document-set.button'],
-            )}
-          </Button>
-        </Link>
-      </Row>
-      <Row className="justify-content-md-center">
-        <Image src={NoDocumentSetImageSvg} />
-      </Row>
-    </>
+    <div className="tw-flex tw-flex-col tw-items-center">
+      <p className="tw-max-w-2xl tw-text-center tw-mb-4">
+        {intl.formatMessage(
+          Messages['quick-access.no-document-set.description'],
+        )}
+      </p>
+      <Link to={`/quick-access/${category}/setup`}>
+        <Button>
+          {intl.formatMessage(
+            Messages['quick-access.no-document-set.button'],
+          )}
+        </Button>
+      </Link>
+      <Image src={NoDocumentSetImageSvg} className="tw-mt-4" />
+    </div>
   );
 }

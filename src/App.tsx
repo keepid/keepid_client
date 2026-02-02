@@ -201,8 +201,8 @@ class App extends React.Component<{}, State, {}> {
     return (
       <Router>
         <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>
-        <div className="App">
-          <div className="app">
+        <div className="App tw-flex tw-flex-col tw-min-h-screen">
+          <div className="app tw-flex-1 tw-pb-12">
             <Helmet>
               <title>Keep.id</title>
               <meta
