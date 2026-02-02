@@ -11,7 +11,6 @@ import Role from '../../static/Role';
 import AccountSetup from './pages/AccountSetup';
 import AssignWorker from './pages/AssignWorker';
 import ReviewSubmit from './pages/ReviewSubmit';
-import SignUserAgreement from './pages/SignUserAgreement';
 import { assignWorkerToUser, signupUser } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
@@ -63,11 +62,11 @@ export default function PersonSignupFlow() {
       });
 
   useEffect(() => {
-    if (signUpStageStateContext.stages?.length !== 4) {
+    const expectedLength = personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director ? 3 : 2;
+    if (signUpStageStateContext.stages?.length !== expectedLength) {
       // update this to add more stages
       const signupStages = [
         SignupStage.ACCOUNT_INFORMATION,
-        SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ];
       if (personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) {
@@ -99,13 +98,12 @@ export default function PersonSignupFlow() {
           {(personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) && (
             <Steps.Step title="Assign Worker" description="" />
           )}
-          <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
         <ProgressBar
           className="d-md-none"
-          now={currentStageIdx * 33.4}
-          label={`Step ${currentStageIdx + 1} out of 4`}
+          now={signUpStageStateContext.stages?.length ? (currentStageIdx / (signUpStageStateContext.stages.length - 1)) * 100 : 0}
+          label={`Step ${currentStageIdx + 1} out of ${signUpStageStateContext.stages?.length || 1}`}
         />
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
@@ -114,10 +112,6 @@ export default function PersonSignupFlow() {
         {signUpStageStateContext.currentStage === SignupStage.ASSIGN_WORKER &&
         (personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director) ? (
           <AssignWorker />
-          ) : null}
-        {signUpStageStateContext.currentStage ===
-        SignupStage.SIGN_USER_AGREEMENT ? (
-          <SignUserAgreement />
           ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />

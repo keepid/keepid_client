@@ -10,7 +10,6 @@ import { useHistory } from 'react-router-dom';
 import Role from '../../static/Role';
 import AccountSetup from './pages/AccountSetup';
 import ReviewSubmit from './pages/ReviewSubmit';
-import SignUserAgreement from './pages/SignUserAgreement';
 import { signupUserFromInvite } from './SignUp.api';
 import SignUpContext, { SignupStage } from './SignUp.context';
 
@@ -52,10 +51,9 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
       });
 
   useEffect(() => {
-    if (signUpStageStateContext.stages?.length !== 3) {
+    if (signUpStageStateContext.stages?.length !== 2) {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
-        SignupStage.SIGN_USER_AGREEMENT,
         SignupStage.REVIEW_SUBMIT,
       ]);
     }
@@ -80,21 +78,16 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
           current={currentStageIdx}
         >
           <Steps.Step title="Account Setup" description="" />
-          <Steps.Step title="Sign User Agreement" description="" />
           <Steps.Step title="Review & Submit" description="" />
         </Steps>
         <ProgressBar
           className="d-md-none"
-          now={currentStageIdx * 33.4}
-          label={`Step ${currentStageIdx + 1} out of 4`}
+          now={signUpStageStateContext.stages?.length ? (currentStageIdx / (signUpStageStateContext.stages.length - 1)) * 100 : 0}
+          label={`Step ${currentStageIdx + 1} out of ${signUpStageStateContext.stages?.length || 1}`}
         />
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
           <AccountSetup />
-          ) : null}
-        {signUpStageStateContext.currentStage ===
-        SignupStage.SIGN_USER_AGREEMENT ? (
-          <SignUserAgreement />
           ) : null}
         {signUpStageStateContext.currentStage === SignupStage.REVIEW_SUBMIT ? (
           <ReviewSubmit onSubmit={onSubmit} />
