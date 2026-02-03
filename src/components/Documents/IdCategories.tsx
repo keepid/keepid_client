@@ -6,5 +6,6 @@ export enum IdCategories {
   MedicaidCard = 'Medical Insurance Card',
   VeteranIDCard = 'Veteran ID Card',
   SchoolTranscript = 'School Transcript',
+  IdMeRecoveryCodes = 'ID.me Recovery Codes',
   Other = 'Other',
 }
