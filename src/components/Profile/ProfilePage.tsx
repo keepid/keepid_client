@@ -109,6 +109,8 @@ export default function ProfilePage({ targetUsername }: Props) {
                     <SavedApplicationInfoSection
                       privilegeLevel={profile.privilegeLevel}
                       optionalInformation={profile.optionalInformation}
+                      usernameForUpdates={targetUsername || profile.username}
+                      onSaved={() => fetchProfile()}
                     />
 
                     {profile.username && (
