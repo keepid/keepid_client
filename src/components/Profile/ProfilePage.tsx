@@ -3,6 +3,9 @@ import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 
 import getServerURL from '../../serverOverride';
+import RecentActivity from '../MyInformation/RecentActivity';
+import EssentialAccountSection from './EssentialAccountSection';
+import SavedApplicationInfoSection from './SavedApplicationInfoSection';
 
 type Props = {
     targetUsername?: string;
@@ -34,42 +37,37 @@ export default function ProfilePage({ targetUsername }: Props) {
     return 'Profile';
   }, [targetUsername]);
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
+  async function fetchProfile(signal?: AbortSignal) {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-user-info`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(targetUsername ? { username: targetUsername } : {}),
+        signal,
+      });
+      const json = (await res.json()) as ProfileResponse;
 
-    async function fetchProfile() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`${getServerURL()}/get-user-info`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(targetUsername ? { username: targetUsername } : {}),
-          signal: controller.signal,
-        });
-        const json = (await res.json()) as ProfileResponse;
-        if (!isMounted) return;
-
-        if (json?.status && json.status !== 'SUCCESS') {
-          alert.show(`Failed to load profile: ${json.message || json.status}`, { type: 'error' });
-          setProfile(json);
-        } else {
-          setProfile(json);
-        }
-      } catch (e: any) {
-        if (e?.name !== 'AbortError') {
-          alert.show(`Failed to load profile: ${e?.message || String(e)}`, { type: 'error' });
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
+      if (json?.status && json.status !== 'SUCCESS') {
+        alert.show(`Failed to load profile: ${json.message || json.status}`, { type: 'error' });
+        setProfile(json);
+      } else {
+        setProfile(json);
       }
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        alert.show(`Failed to load profile: ${e?.message || String(e)}`, { type: 'error' });
+      }
+    } finally {
+      setIsLoading(false);
     }
+  }
 
-    fetchProfile();
-
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchProfile(controller.signal);
     return () => {
-      isMounted = false;
       controller.abort();
     };
   }, [alert, targetUsername]);
@@ -81,43 +79,47 @@ export default function ProfilePage({ targetUsername }: Props) {
                 <meta name="description" content="Keep.id Profile" />
             </Helmet>
 
-            <div className="card mt-3 mb-3 pl-5 pr-5">
-                <div className="card-body">
-                    <h5 className="card-title">Profile</h5>
-                    {targetUsername && (
+            {targetUsername && (
+                <div className="card mt-3 mb-3 pl-5 pr-5">
+                    <div className="card-body">
+                        <h5 className="card-title tw-mb-0">Profile</h5>
                         <small className="text-muted">
                             Viewing profile for <strong>{targetUsername}</strong>
                         </small>
-                    )}
+                    </div>
+                </div>
+            )}
 
-                    <hr />
+            {isLoading && (
+                <div className="card mt-3 mb-3 pl-5 pr-5">
+                    <div className="card-body">
+                        <p className="tw-mb-0">Loading...</p>
+                    </div>
+                </div>
+            )}
 
-                    {isLoading && <p>Loading...</p>}
+            {!isLoading && profile && (
+                <>
+                    <EssentialAccountSection
+                      profile={profile}
+                      targetUsername={targetUsername}
+                      onSaved={() => fetchProfile()}
+                    />
 
-                    {!isLoading && profile && (
-                        <div>
-                            <div className="row mb-2">
-                                <div className="col-3 text-primary-theme">Username</div>
-                                <div className="col-9">{profile.username || ''}</div>
-                            </div>
-                            <div className="row mb-2">
-                                <div className="col-3 text-primary-theme">Name</div>
-                                <div className="col-9">
-                                    {(profile.firstName || '')} {(profile.lastName || '')}
-                                </div>
-                            </div>
-                            <div className="row mb-2">
-                                <div className="col-3 text-primary-theme">Email</div>
-                                <div className="col-9">{profile.email || ''}</div>
+                    <SavedApplicationInfoSection
+                      privilegeLevel={profile.privilegeLevel}
+                      optionalInformation={profile.optionalInformation}
+                    />
+
+                    {profile.username && (
+                        <div className="card mt-3 mb-3 pl-5 pr-5">
+                            <div className="card-body">
+                                <RecentActivity username={{ username: profile.username }} />
                             </div>
                         </div>
                     )}
-                </div>
-            </div>
-
-            {/* Batch 2+: Essential account section */}
-            {/* Batch 4+: Saved application information tabs */}
-            {/* Batch 3+: Activity components at bottom */}
+                </>
+            )}
         </div>
   );
 }
