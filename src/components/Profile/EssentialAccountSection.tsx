@@ -166,7 +166,7 @@ export default function EssentialAccountSection({
     <div className="card mt-3 mb-3 pl-5 pr-5">
       <div className="card-body" onBlur={onBlurMaybeConfirm}>
         <div className="tw-flex tw-items-center tw-justify-between">
-          <h5 className="card-title tw-mb-0">Essential Account</h5>
+          <h5 className="card-title tw-mb-0">Account Information</h5>
           <div className="tw-flex tw-gap-2">
             {!isEditing && (
               <button
@@ -202,26 +202,26 @@ export default function EssentialAccountSection({
 
         <hr />
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Username</div>
           <div className="col-9 card-text tw-pt-2">{profile.username || ''}</div>
         </div>
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
           <div className="col-9 card-text tw-pt-2">
             {name}
           </div>
         </div>
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Birth Date</div>
           <div className="col-9 card-text tw-pt-2">
             {profile.birthDate || ''}
           </div>
         </div>
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <label htmlFor="email" className="col-3 card-text mt-2 text-primary-theme">Email</label>
           <div className="col-9 card-text">
             {isEditing ? (
@@ -238,7 +238,7 @@ export default function EssentialAccountSection({
           </div>
         </div>
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <label htmlFor="phone" className="col-3 card-text mt-2 text-primary-theme">Phone</label>
           <div className="col-9 card-text">
             {isEditing ? (
@@ -255,70 +255,47 @@ export default function EssentialAccountSection({
           </div>
         </div>
 
-        <div className="row mb-3 mt-3">
+        <div className="row tw-mb-2 tw-mt-1">
           <label htmlFor="address" className="col-3 card-text mt-2 text-primary-theme">Address</label>
           <div className="col-9 card-text">
             {isEditing ? (
-              <input
-                id="address"
-                type="text"
-                className="form-control form-purple"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+              <>
+                <input
+                  id="address"
+                  type="text"
+                  className="form-control form-purple tw-mb-1"
+                  placeholder="Street address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+                <div className="tw-flex tw-gap-2">
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="City"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="State"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="Zip"
+                    value={zipcode}
+                    onChange={(e) => setZipcode(e.target.value)}
+                  />
+                </div>
+              </>
             ) : (
-              <div className="tw-pt-2">{address}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="row mb-3 mt-3">
-          <label htmlFor="city" className="col-3 card-text mt-2 text-primary-theme">City</label>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <input
-                id="city"
-                type="text"
-                className="form-control form-purple"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
-            ) : (
-              <div className="tw-pt-2">{city}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="row mb-3 mt-3">
-          <label htmlFor="state" className="col-3 card-text mt-2 text-primary-theme">State</label>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <input
-                id="state"
-                type="text"
-                className="form-control form-purple"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-              />
-            ) : (
-              <div className="tw-pt-2">{state}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="row mb-3 mt-3">
-          <label htmlFor="zipcode" className="col-3 card-text mt-2 text-primary-theme">Zip Code</label>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <input
-                id="zipcode"
-                type="text"
-                className="form-control form-purple"
-                value={zipcode}
-                onChange={(e) => setZipcode(e.target.value)}
-              />
-            ) : (
-              <div className="tw-pt-2">{zipcode}</div>
+              <div className="tw-pt-2">
+                {[address, city, state, zipcode].filter(Boolean).join(', ')}
+              </div>
             )}
           </div>
         </div>

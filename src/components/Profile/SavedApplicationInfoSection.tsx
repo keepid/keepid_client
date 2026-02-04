@@ -87,16 +87,19 @@ export default function SavedApplicationInfoSection({
   return (
     <div className="card mt-3 mb-3 pl-5 pr-5">
       <div className="card-body">
-        <h5 className="card-title tw-mb-3">Saved Application Information</h5>
+        <h5 className="card-title tw-mb-0">Saved Application Information</h5>
 
-        <div className="tw-flex tw-border-b tw-border-gray-200 tw-mb-3 tw-gap-x-4">
+        <hr />
+
+        <div className="tw-flex tw-border-b tw-border-gray-200 tw-mb-3 tw-gap-x-4 tw-items-baseline">
           {tabLabels.map((tab) => (
             <button
               key={tab.key}
               type="button"
-              className={`tw-pb-2 tw-text-sm tw-font-medium tw-border-b-2 ${activeTab === tab.key
-                ? 'tw-border-indigo-500 tw-text-indigo-600'
-                : 'tw-border-transparent tw-text-gray-500 hover:tw-text-gray-700 hover:tw-border-gray-300'
+              className={`tw-px-1 tw-py-0.5 tw-text-sm tw-font-medium tw-border-b-2 tw-transition-colors tw-cursor-pointer tw-bg-transparent tw-border-solid tw-inline-flex tw-items-center ${
+                activeTab === tab.key
+                  ? 'tw-border-indigo-500 tw-text-indigo-600'
+                  : 'tw-border-transparent tw-text-gray-500 hover:tw-text-gray-700 hover:tw-border-gray-300'
               }`}
               onClick={() => setActiveTab(tab.key)}
             >
@@ -105,7 +108,7 @@ export default function SavedApplicationInfoSection({
           ))}
         </div>
 
-        <div>{renderTabContent()}</div>
+        <div className="tw-mt-3">{renderTabContent()}</div>
       </div>
     </div>
   );

@@ -116,7 +116,7 @@ export default function ProfilePage({ targetUsername }: Props) {
   }, [alert, targetUsername]);
 
   return (
-        <div className="container tw-py-6">
+        <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
             <Helmet>
                 <title>{title}</title>
                 <meta name="description" content="Keep.id Profile" />
