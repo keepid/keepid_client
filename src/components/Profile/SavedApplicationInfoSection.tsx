@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 
 import BasicInfoTab from './BasicInfoTab';
+import DemographicInfoTab from './DemographicInfoTab';
+import FamilyInfoTab from './FamilyInfoTab';
+import VeteranInfoTab from './VeteranInfoTab';
 
 type Props = {
   privilegeLevel?: string;
@@ -54,21 +57,27 @@ export default function SavedApplicationInfoSection({
         );
       case 'family':
         return (
-          <pre className="tw-text-xs tw-bg-gray-50 tw-p-3 tw-rounded">
-            {JSON.stringify(familyInfo, null, 2)}
-          </pre>
+          <FamilyInfoTab
+            familyInfo={familyInfo}
+            usernameForUpdates={usernameForUpdates}
+            onSaved={onSaved}
+          />
         );
       case 'demographic':
         return (
-          <pre className="tw-text-xs tw-bg-gray-50 tw-p-3 tw-rounded">
-            {JSON.stringify(demographicInfo, null, 2)}
-          </pre>
+          <DemographicInfoTab
+            demographicInfo={demographicInfo}
+            usernameForUpdates={usernameForUpdates}
+            onSaved={onSaved}
+          />
         );
       case 'veteran':
         return (
-          <pre className="tw-text-xs tw-bg-gray-50 tw-p-3 tw-rounded">
-            {JSON.stringify(veteranStatus, null, 2)}
-          </pre>
+          <VeteranInfoTab
+            veteranStatus={veteranStatus}
+            usernameForUpdates={usernameForUpdates}
+            onSaved={onSaved}
+          />
         );
       default:
         return null;
