@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
+import { toCitizenshipEnumConstant, toRaceEnumConstant } from '../../lib/demographicEnums';
 import getServerURL from '../../serverOverride';
 
 type DemographicInfo = {
@@ -116,7 +117,7 @@ export default function DemographicInfoTab({
         demographicPayload.isEthnicityHispanicLatino = isEthnicityHispanicLatino;
       }
       if (race !== initial.race) {
-        demographicPayload.race = race;
+        demographicPayload.race = toRaceEnumConstant(race);
       }
       if (cityOfBirth !== initial.cityOfBirth) {
         demographicPayload.cityOfBirth = cityOfBirth;
@@ -128,7 +129,7 @@ export default function DemographicInfoTab({
         demographicPayload.countryOfBirth = countryOfBirth;
       }
       if (citizenship !== initial.citizenship) {
-        demographicPayload.citizenship = citizenship;
+        demographicPayload.citizenship = toCitizenshipEnumConstant(citizenship);
       }
 
       if (Object.keys(demographicPayload).length === 0) {
