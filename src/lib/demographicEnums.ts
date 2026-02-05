@@ -22,6 +22,14 @@ export const CITIZENSHIP_OPTIONS: { value: string; displayName: string }[] = [
   { value: 'UNSELECTED', displayName: 'Unselected' },
 ];
 
+export const MARITAL_STATUS_OPTIONS: { value: string; displayName: string }[] = [
+  { value: 'SINGLE', displayName: 'Single' },
+  { value: 'MARRIED', displayName: 'Married' },
+  { value: 'DIVORCED', displayName: 'Divorced' },
+  { value: 'WIDOWED', displayName: 'Widowed' },
+  { value: 'UNSELECTED', displayName: 'Unselected' },
+];
+
 /** Display name -> enum constant. Matches server Race.toString() output. */
 const RACE_DISPLAY_TO_ENUM: Record<string, string> = Object.fromEntries(
   RACE_OPTIONS.map((o) => [o.displayName, o.value]),
@@ -40,6 +48,11 @@ const RACE_ENUM_TO_DISPLAY: Record<string, string> = Object.fromEntries(
 /** Enum constant -> display name. */
 const CITIZENSHIP_ENUM_TO_DISPLAY: Record<string, string> = Object.fromEntries(
   CITIZENSHIP_OPTIONS.map((o) => [o.value, o.displayName]),
+);
+
+/** Marital status enum constant -> display name. */
+const MARITAL_STATUS_ENUM_TO_DISPLAY: Record<string, string> = Object.fromEntries(
+  MARITAL_STATUS_OPTIONS.map((o) => [o.value, o.displayName]),
 );
 
 /**
@@ -78,4 +91,12 @@ export function toRaceDisplayName(value: string): string {
 export function toCitizenshipDisplayName(value: string): string {
   if (!value || !value.trim()) return value;
   return CITIZENSHIP_ENUM_TO_DISPLAY[value.trim()] ?? value;
+}
+
+/**
+ * Converts a marital status enum constant to its display name for UI display.
+ */
+export function toMaritalStatusDisplayName(value: string): string {
+  if (!value || !value.trim()) return value;
+  return MARITAL_STATUS_ENUM_TO_DISPLAY[value.trim()] ?? value;
 }

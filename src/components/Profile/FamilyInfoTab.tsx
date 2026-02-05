@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
+import {
+  MARITAL_STATUS_OPTIONS,
+  toMaritalStatusDisplayName,
+} from '../../lib/demographicEnums';
 import getServerURL from '../../serverOverride';
 
 type FamilyInfo = {
@@ -156,17 +160,23 @@ export default function FamilyInfoTab({
       </div>
 
       <div className="row mb-2">
-        <div className="col-3 card-text mt-2 text-primary-theme">Marital status (enum)</div>
+        <div className="col-3 card-text mt-2 text-primary-theme">Marital status</div>
         <div className="col-9 card-text">
           {isEditing ? (
-            <input
-              type="text"
+            <select
               className="form-control form-purple"
               value={maritalStatus}
               onChange={(e) => setMaritalStatus(e.target.value)}
-            />
+            >
+              <option value="">Select...</option>
+              {MARITAL_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.displayName}
+                </option>
+              ))}
+            </select>
           ) : (
-            <div className="tw-pt-2">{maritalStatus}</div>
+            <div className="tw-pt-2">{toMaritalStatusDisplayName(maritalStatus)}</div>
           )}
         </div>
       </div>

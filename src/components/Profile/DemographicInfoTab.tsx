@@ -1,7 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
-import { toCitizenshipEnumConstant, toRaceEnumConstant } from '../../lib/demographicEnums';
+import {
+  CITIZENSHIP_OPTIONS,
+  RACE_OPTIONS,
+  toCitizenshipDisplayName,
+  toCitizenshipEnumConstant,
+  toRaceDisplayName,
+  toRaceEnumConstant,
+} from '../../lib/demographicEnums';
 import getServerURL from '../../serverOverride';
 
 type DemographicInfo = {
@@ -253,17 +260,23 @@ export default function DemographicInfoTab({
       </div>
 
       <div className="row mb-2">
-        <div className="col-3 card-text mt-2 text-primary-theme">Race (enum)</div>
+        <div className="col-3 card-text mt-2 text-primary-theme">Race</div>
         <div className="col-9 card-text">
           {isEditing ? (
-            <input
-              type="text"
+            <select
               className="form-control form-purple"
               value={race}
               onChange={(e) => setRace(e.target.value)}
-            />
+            >
+              <option value="">Select...</option>
+              {RACE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.displayName}
+                </option>
+              ))}
+            </select>
           ) : (
-            <div className="tw-pt-2">{race}</div>
+            <div className="tw-pt-2">{toRaceDisplayName(race)}</div>
           )}
         </div>
       </div>
@@ -317,17 +330,23 @@ export default function DemographicInfoTab({
       </div>
 
       <div className="row mb-2">
-        <div className="col-3 card-text mt-2 text-primary-theme">Citizenship (enum)</div>
+        <div className="col-3 card-text mt-2 text-primary-theme">Citizenship</div>
         <div className="col-9 card-text">
           {isEditing ? (
-            <input
-              type="text"
+            <select
               className="form-control form-purple"
               value={citizenship}
               onChange={(e) => setCitizenship(e.target.value)}
-            />
+            >
+              <option value="">Select...</option>
+              {CITIZENSHIP_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.displayName}
+                </option>
+              ))}
+            </select>
           ) : (
-            <div className="tw-pt-2">{citizenship}</div>
+            <div className="tw-pt-2">{toCitizenshipDisplayName(citizenship)}</div>
           )}
         </div>
       </div>
