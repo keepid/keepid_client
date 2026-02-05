@@ -117,17 +117,17 @@ class ClientLanding extends Component<Props, State, {}> {
               />
             </div>
 
-            <div id="Information container">
+            <div id="Profile container">
               <BaseCard
-                cardTitle="Information"
+                cardTitle="Profile"
                 cardText="Manage your personal information"
-                buttonText="My Information"
+                buttonText="Profile"
                 cardSize={CardSize.SMALL_HORIZONTAL}
                 imageSrc={AtWorkPic}
                 imageSize="50%"
                 imageLoc={CardImageLoc.RIGHT}
                 imageObjectFit="contain"
-                buttonOnClick={() => history.push('/my-information/')}
+                buttonOnClick={() => history.push('/profile')}
               />
             </div>
           </div>

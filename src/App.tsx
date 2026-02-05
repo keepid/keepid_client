@@ -35,7 +35,6 @@ import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
-import MyInformation from './components/MyInformation/MyInformation';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
@@ -252,23 +251,6 @@ class App extends React.Component<{}, State, {}> {
                     return <AdminDashboard />;
                   }
                   return <Home />;
-                }}
-              />
-              <Route
-                path="/my-information"
-                render={() => {
-                  if (
-                    role === Role.Admin ||
-                    role === Role.Director ||
-                    role === Role.Worker ||
-                    role === Role.Client
-                  ) {
-                    return <MyInformation username={username} />;
-                  }
-                  if (role === Role.LoggedOut) {
-                    return <Home />;
-                  }
-                  return <Redirect to="/error" />;
                 }}
               />
               <Route path="/careers">

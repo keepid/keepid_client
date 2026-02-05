@@ -8,10 +8,10 @@ import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 
 import getServerURL from '../../serverOverride';
-import ProfileModal from '../MyInformation/ProfileModal';
-import RecentActivity from '../MyInformation/RecentActivity';
 import AccountSettingsSection from './AccountSettingsSection';
 import EssentialAccountSection from './EssentialAccountSection';
+import ProfileModal from './ProfileModal';
+import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
 
 type Props = {
