@@ -1,47 +1,46 @@
 /**
- * Race and Citizenship enum constants matching the server's OptionalUserInformation enums.
- * The API expects enum constant names (e.g. "ASIAN"), not display names (e.g. "Asian").
+ * Race and Citizenship enum constants matching the server's User.UserInformation enums.
+ * The API expects enum constant names (e.g. "ASIAN"), but we display human-readable names (e.g. "Asian").
  */
 
-export const RACE_ENUM_CONSTANTS = [
-  'NATIVE_HAWAIIAN',
-  'ALASKA_NATIVE',
-  'ASIAN',
-  'AMERICAN_INDIAN',
-  'BLACK_AFRICAN_AMERICAN',
-  'OTHER_PACIFIC_ISLANDER',
-  'WHITE',
-  'UNSELECTED',
-] as const;
+export const RACE_OPTIONS: { value: string; displayName: string }[] = [
+  { value: 'NATIVE_HAWAIIAN', displayName: 'Native Hawaiian' },
+  { value: 'ALASKA_NATIVE', displayName: 'Alaska Native' },
+  { value: 'ASIAN', displayName: 'Asian' },
+  { value: 'AMERICAN_INDIAN', displayName: 'American Indian' },
+  { value: 'BLACK_AFRICAN_AMERICAN', displayName: 'Black or African American' },
+  { value: 'OTHER_PACIFIC_ISLANDER', displayName: 'Other Pacific Islander' },
+  { value: 'WHITE', displayName: 'White / Caucasian' },
+  { value: 'UNSELECTED', displayName: 'Unselected' },
+];
 
-export const CITIZENSHIP_ENUM_CONSTANTS = [
-  'US_CITIZEN',
-  'LEGAL_ALLOWED_WORK',
-  'LEGAL_NOT_ALLOWED_WORK',
-  'OTHER',
-  'UNSELECTED',
-] as const;
+export const CITIZENSHIP_OPTIONS: { value: string; displayName: string }[] = [
+  { value: 'US_CITIZEN', displayName: 'U.S. Citizen' },
+  { value: 'LEGAL_ALLOWED_WORK', displayName: 'Legal (Allowed to work)' },
+  { value: 'LEGAL_NOT_ALLOWED_WORK', displayName: 'Legal (Not allowed to work)' },
+  { value: 'OTHER', displayName: 'Other' },
+  { value: 'UNSELECTED', displayName: 'Unselected' },
+];
 
 /** Display name -> enum constant. Matches server Race.toString() output. */
-const RACE_DISPLAY_TO_ENUM: Record<string, string> = {
-  'Native Hawaiian': 'NATIVE_HAWAIIAN',
-  'Alaska Native': 'ALASKA_NATIVE',
-  Asian: 'ASIAN',
-  'American Indian': 'AMERICAN_INDIAN',
-  'Black or African American': 'BLACK_AFRICAN_AMERICAN',
-  'Other Pacific Islander': 'OTHER_PACIFIC_ISLANDER',
-  'White / Caucasian': 'WHITE',
-  Unselected: 'UNSELECTED',
-};
+const RACE_DISPLAY_TO_ENUM: Record<string, string> = Object.fromEntries(
+  RACE_OPTIONS.map((o) => [o.displayName, o.value]),
+);
 
 /** Display name -> enum constant. Matches server Citizenship.toString() output. */
-const CITIZENSHIP_DISPLAY_TO_ENUM: Record<string, string> = {
-  'U.S. Citizen': 'US_CITIZEN',
-  'Legal (Allowed to work)': 'LEGAL_ALLOWED_WORK',
-  'Legal (Not allowed to work)': 'LEGAL_NOT_ALLOWED_WORK',
-  Other: 'OTHER',
-  Unselected: 'UNSELECTED',
-};
+const CITIZENSHIP_DISPLAY_TO_ENUM: Record<string, string> = Object.fromEntries(
+  CITIZENSHIP_OPTIONS.map((o) => [o.displayName, o.value]),
+);
+
+/** Enum constant -> display name. */
+const RACE_ENUM_TO_DISPLAY: Record<string, string> = Object.fromEntries(
+  RACE_OPTIONS.map((o) => [o.value, o.displayName]),
+);
+
+/** Enum constant -> display name. */
+const CITIZENSHIP_ENUM_TO_DISPLAY: Record<string, string> = Object.fromEntries(
+  CITIZENSHIP_OPTIONS.map((o) => [o.value, o.displayName]),
+);
 
 /**
  * Converts a race value to the enum constant expected by the API.
@@ -50,9 +49,7 @@ const CITIZENSHIP_DISPLAY_TO_ENUM: Record<string, string> = {
 export function toRaceEnumConstant(value: string): string {
   if (!value || !value.trim()) return value;
   const trimmed = value.trim();
-  if (RACE_ENUM_CONSTANTS.includes(trimmed as (typeof RACE_ENUM_CONSTANTS)[number])) {
-    return trimmed;
-  }
+  if (RACE_OPTIONS.some((o) => o.value === trimmed)) return trimmed;
   return RACE_DISPLAY_TO_ENUM[trimmed] ?? trimmed;
 }
 
@@ -63,8 +60,22 @@ export function toRaceEnumConstant(value: string): string {
 export function toCitizenshipEnumConstant(value: string): string {
   if (!value || !value.trim()) return value;
   const trimmed = value.trim();
-  if (CITIZENSHIP_ENUM_CONSTANTS.includes(trimmed as (typeof CITIZENSHIP_ENUM_CONSTANTS)[number])) {
-    return trimmed;
-  }
+  if (CITIZENSHIP_OPTIONS.some((o) => o.value === trimmed)) return trimmed;
   return CITIZENSHIP_DISPLAY_TO_ENUM[trimmed] ?? trimmed;
+}
+
+/**
+ * Converts a race enum constant to its display name for UI display.
+ */
+export function toRaceDisplayName(value: string): string {
+  if (!value || !value.trim()) return value;
+  return RACE_ENUM_TO_DISPLAY[value.trim()] ?? value;
+}
+
+/**
+ * Converts a citizenship enum constant to its display name for UI display.
+ */
+export function toCitizenshipDisplayName(value: string): string {
+  if (!value || !value.trim()) return value;
+  return CITIZENSHIP_ENUM_TO_DISPLAY[value.trim()] ?? value;
 }
