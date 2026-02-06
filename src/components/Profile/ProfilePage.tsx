@@ -16,24 +16,24 @@ import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
 
 type Props = {
-    targetUsername?: string;
+  targetUsername?: string;
 };
 
 type ProfileResponse = {
-    status?: string;
-    message?: string;
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    zipcode?: string;
-    organization?: string;
-    privilegeLevel?: string;
-    optionalInformation?: any;
+  status?: string;
+  message?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  organization?: string;
+  privilegeLevel?: string;
+  optionalInformation?: any;
 };
 
 export default function ProfilePage({ targetUsername }: Props) {
@@ -126,113 +126,117 @@ export default function ProfilePage({ targetUsername }: Props) {
   }, [alert, targetUsername]);
 
   return (
-        <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
-            <Helmet>
-                <title>{title}</title>
-                <meta name="description" content="Keep.id Profile" />
-            </Helmet>
+    <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content="Keep.id Profile" />
+      </Helmet>
 
-            {isWorkerView && (
-                <h2 className="tw-text-2xl tw-font-bold tw-text-gray-800 tw-mb-4">
-                    {displayName ? `${displayName}'s Profile` : `Profile: ${targetUsername}`}
-                </h2>
-            )}
-
-            {isLoading && (
-                <div className="card mt-3 mb-3 pl-5 pr-5">
-                    <div className="card-body">
-                        <p className="tw-mb-0">Loading...</p>
-                    </div>
-                </div>
-            )}
-
-            {!isLoading && profile && (
-                <>
-                    <div className="card mt-3 mb-3 pl-5 pr-5">
-                        <div className="card-body">
-                            <div className="tw-flex tw-items-center tw-gap-4">
-                                <div className="tw-flex-shrink-0">
-                                    {photoAvailable && photoUrl ? (
-                                        <img
-                                          src={photoUrl}
-                                          alt="Profile"
-                                          className="tw-h-16 tw-w-16 tw-rounded-full tw-object-cover tw-border tw-border-gray-200"
-                                        />
-                                    ) : (
-                                        <div className="tw-h-16 tw-w-16 tw-rounded-full tw-bg-gray-200 tw-flex tw-items-center tw-justify-center tw-text-lg tw-font-semibold tw-text-gray-600">
-                                            {(profile.firstName || profile.username || '?')
-                                              .toString()
-                                              .charAt(0)
-                                              .toUpperCase()}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="tw-flex-1">
-                                    <div className="tw-text-base tw-font-semibold">
-                                        {[profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username}
-                                    </div>
-                                    {profile.email && (
-                                        <div className="tw-text-sm tw-text-gray-500">
-                                            {profile.email}
-                                        </div>
-                                    )}
-                                </div>
-                                {profile.username && !isWorkerView && (
-                                    <div className="tw-flex-shrink-0">
-                                        <button
-                                          type="button"
-                                          className="btn btn-outline-dark btn-sm"
-                                          onClick={() => setIsPhotoModalOpen(true)}
-                                        >
-                                            Update photo
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <EssentialAccountSection
-                      profile={profile}
-                      targetUsername={targetUsername}
-                      onSaved={() => fetchProfile()}
-                    />
-
-                    {/* Organization Information - only for clients viewing their own profile */}
-                    {!isWorkerView && profile.organization && (
-                      <OrganizationInfoSection organizationName={profile.organization} />
-                    )}
-
-                    <SavedApplicationInfoSection
-                      privilegeLevel={profile.privilegeLevel}
-                      optionalInformation={profile.optionalInformation}
-                      usernameForUpdates={targetUsername || profile.username}
-                      onSaved={() => fetchProfile()}
-                    />
-
-                    {/* Only allow changing password / 2FA on own profile */}
-                    {!targetUsername && profile.username && (
-                        <AccountSettingsSection username={profile.username} />
-                    )}
-
-                    {profile.username && (
-                        <div className="card mt-3 mb-3 pl-5 pr-5">
-                            <div className="card-body">
-                                <RecentActivity username={{ username: profile.username }} />
-                            </div>
-                        </div>
-                    )}
-
-                    {isPhotoModalOpen && profile.username && (
-                        <ProfileModal
-                            // Modal expects an object with a username field
-                          username={{ username: profile.username }}
-                          setModalOpen={setIsPhotoModalOpen}
-                          loadProfilePhoto={() => loadProfilePhoto(profile.username!)}
-                        />
-                    )}
-                </>
-            )}
+      {isWorkerView && (
+        <div className="card mt-3 mb-3 pl-5 pr-5">
+          <div className="card-body">
+            <h4 className="card-title tw-mb-0 tw-font-bold">
+              {displayName ? `${displayName}'s Profile` : `Profile: ${targetUsername}`}
+            </h4>
+          </div>
         </div>
+      )}
+
+      {isLoading && (
+        <div className="card mt-3 mb-3 pl-5 pr-5">
+          <div className="card-body">
+            <p className="tw-mb-0">Loading...</p>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && profile && (
+        <>
+          <div className="card mt-3 mb-3 pl-5 pr-5">
+            <div className="card-body">
+              <div className="tw-flex tw-items-center tw-gap-4">
+                <div className="tw-flex-shrink-0">
+                  {photoAvailable && photoUrl ? (
+                    <img
+                      src={photoUrl}
+                      alt="Profile"
+                      className="tw-h-16 tw-w-16 tw-rounded-full tw-object-cover tw-border tw-border-gray-200"
+                    />
+                  ) : (
+                    <div className="tw-h-16 tw-w-16 tw-rounded-full tw-bg-gray-200 tw-flex tw-items-center tw-justify-center tw-text-lg tw-font-semibold tw-text-gray-600">
+                      {(profile.firstName || profile.username || '?')
+                        .toString()
+                        .charAt(0)
+                        .toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="tw-flex-1">
+                  <div className="tw-text-base tw-font-semibold">
+                    {[profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username}
+                  </div>
+                  {profile.email && (
+                    <div className="tw-text-sm tw-text-gray-500">
+                      {profile.email}
+                    </div>
+                  )}
+                </div>
+                {profile.username && !isWorkerView && (
+                  <div className="tw-flex-shrink-0">
+                    <button
+                      type="button"
+                      className="btn btn-outline-dark btn-sm"
+                      onClick={() => setIsPhotoModalOpen(true)}
+                    >
+                      Update photo
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <EssentialAccountSection
+            profile={profile}
+            targetUsername={targetUsername}
+            onSaved={() => fetchProfile()}
+          />
+
+          <SavedApplicationInfoSection
+            privilegeLevel={profile.privilegeLevel}
+            optionalInformation={profile.optionalInformation}
+            usernameForUpdates={targetUsername || profile.username}
+            onSaved={() => fetchProfile()}
+          />
+
+          {/* Organization Information - only for clients viewing their own profile */}
+          {!isWorkerView && profile.organization && (
+            <OrganizationInfoSection organizationName={profile.organization} />
+          )}
+
+          {/* Only allow changing password / 2FA on own profile */}
+          {!targetUsername && profile.username && (
+            <AccountSettingsSection username={profile.username} />
+          )}
+
+          {profile.username && (
+            <div className="card mt-3 mb-3 pl-5 pr-5">
+              <div className="card-body">
+                <RecentActivity username={{ username: profile.username }} />
+              </div>
+            </div>
+          )}
+
+          {isPhotoModalOpen && profile.username && (
+            <ProfileModal
+              // Modal expects an object with a username field
+              username={{ username: profile.username }}
+              setModalOpen={setIsPhotoModalOpen}
+              loadProfilePhoto={() => loadProfilePhoto(profile.username!)}
+            />
+          )}
+        </>
+      )}
+    </div>
   );
 }
