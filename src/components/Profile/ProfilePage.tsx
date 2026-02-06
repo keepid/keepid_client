@@ -10,6 +10,7 @@ import { Helmet } from 'react-helmet';
 import getServerURL from '../../serverOverride';
 import AccountSettingsSection from './AccountSettingsSection';
 import EssentialAccountSection from './EssentialAccountSection';
+import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
 import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
@@ -30,6 +31,7 @@ type ProfileResponse = {
     city?: string;
     state?: string;
     zipcode?: string;
+    organization?: string;
     privilegeLevel?: string;
     optionalInformation?: any;
 };
@@ -42,10 +44,18 @@ export default function ProfilePage({ targetUsername }: Props) {
   const [photoAvailable, setPhotoAvailable] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
+  const displayName = useMemo(() => {
+    if (!profile) return '';
+    return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username || '';
+  }, [profile]);
+
   const title = useMemo(() => {
+    if (targetUsername && displayName) return `${displayName}'s Profile`;
     if (targetUsername) return `Profile: ${targetUsername}`;
     return 'Profile';
-  }, [targetUsername]);
+  }, [targetUsername, displayName]);
+
+  const isWorkerView = !!targetUsername;
 
   const loadProfilePhoto = useCallback(
     async (username: string) => {
@@ -122,15 +132,10 @@ export default function ProfilePage({ targetUsername }: Props) {
                 <meta name="description" content="Keep.id Profile" />
             </Helmet>
 
-            {targetUsername && (
-                <div className="card mt-3 mb-3 pl-5 pr-5">
-                    <div className="card-body">
-                        <h5 className="card-title tw-mb-0">Profile</h5>
-                        <small className="text-muted">
-                            Viewing profile for <strong>{targetUsername}</strong>
-                        </small>
-                    </div>
-                </div>
+            {isWorkerView && (
+                <h2 className="tw-text-2xl tw-font-bold tw-text-gray-800 tw-mb-4">
+                    {displayName ? `${displayName}'s Profile` : `Profile: ${targetUsername}`}
+                </h2>
             )}
 
             {isLoading && (
@@ -172,7 +177,7 @@ export default function ProfilePage({ targetUsername }: Props) {
                                         </div>
                                     )}
                                 </div>
-                                {profile.username && (
+                                {profile.username && !isWorkerView && (
                                     <div className="tw-flex-shrink-0">
                                         <button
                                           type="button"
@@ -192,6 +197,11 @@ export default function ProfilePage({ targetUsername }: Props) {
                       targetUsername={targetUsername}
                       onSaved={() => fetchProfile()}
                     />
+
+                    {/* Organization Information - only for clients viewing their own profile */}
+                    {!isWorkerView && profile.organization && (
+                      <OrganizationInfoSection organizationName={profile.organization} />
+                    )}
 
                     <SavedApplicationInfoSection
                       privilegeLevel={profile.privilegeLevel}

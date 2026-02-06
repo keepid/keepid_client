@@ -20,7 +20,6 @@ import OurPartners from './components/AboutUs/OurPartners';
 import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import AdminPanel from './components/AccountSettings/AdminPanel';
-import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
@@ -524,7 +523,7 @@ class App extends React.Component<{}, State, {}> {
                 render={(props) => {
                   const clientUsername = props.match.params.username;
                   if (role !== Role.LoggedOut) {
-                    return <ClientProfilePage username={clientUsername} />;
+                    return <ProfilePage targetUsername={clientUsername} />;
                   }
                   return <Home />;
                 }}
