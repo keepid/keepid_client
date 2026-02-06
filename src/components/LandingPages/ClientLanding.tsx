@@ -88,7 +88,7 @@ class ClientLanding extends Component<Props, State, {}> {
           <QuickAccessCards />
         </div>
         <div className="tw-container tw-mx-auto tw-mt-5">
-          <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-5">
+          <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-5">
             <div id="Print container">
               <BaseCard
                 cardTitle="Documents"
@@ -114,20 +114,6 @@ class ClientLanding extends Component<Props, State, {}> {
                 imageLoc={CardImageLoc.RIGHT}
                 imageObjectFit="contain"
                 buttonOnClick={() => history.push('/applications')}
-              />
-            </div>
-
-            <div id="Information container">
-              <BaseCard
-                cardTitle="Information"
-                cardText="Manage your personal information"
-                buttonText="My Information"
-                cardSize={CardSize.SMALL_HORIZONTAL}
-                imageSrc={AtWorkPic}
-                imageSize="50%"
-                imageLoc={CardImageLoc.RIGHT}
-                imageObjectFit="contain"
-                buttonOnClick={() => history.push('/my-information/')}
               />
             </div>
           </div>
