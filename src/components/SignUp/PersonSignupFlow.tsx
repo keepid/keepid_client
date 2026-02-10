@@ -62,7 +62,8 @@ export default function PersonSignupFlow() {
       });
 
   useEffect(() => {
-    if (signUpStageStateContext.stages?.length !== 4) {
+    const expectedLength = personRole !== Role.Worker && personRole !== Role.Admin && personRole !== Role.Director ? 3 : 2;
+    if (signUpStageStateContext.stages?.length !== expectedLength) {
       // update this to add more stages
       const signupStages = [
         SignupStage.ACCOUNT_INFORMATION,
@@ -101,8 +102,8 @@ export default function PersonSignupFlow() {
         </Steps>
         <ProgressBar
           className="d-md-none"
-          now={currentStageIdx * 33.4}
-          label={`Step ${currentStageIdx + 1} out of 4`}
+          now={signUpStageStateContext.stages?.length ? (currentStageIdx / (signUpStageStateContext.stages.length - 1)) * 100 : 0}
+          label={`Step ${currentStageIdx + 1} out of ${signUpStageStateContext.stages?.length || 1}`}
         />
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (

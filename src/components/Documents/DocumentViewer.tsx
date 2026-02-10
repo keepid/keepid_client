@@ -8,7 +8,7 @@ interface Props {
 export default function DocumentViewer(props: Props): React.ReactElement {
   const { pdfFile } = props;
   return (
-        <div className="">
+        <div className="tw-container tw-mx-auto tw-max-w-4xl tw-px-4">
             <Helmet>
                 <title>
                     Document:
@@ -16,13 +16,11 @@ export default function DocumentViewer(props: Props): React.ReactElement {
                 </title>
                 <meta name="description" content="Keep.id" />
             </Helmet>
-            <div className="row embed-responsive embed-responsive-16by9 align-content-center">
-                <iframe
-                  className="embed-responsive-item"
-                  src={`${window.URL.createObjectURL(pdfFile)}#view=fitH`}
-                  title="Document"
-                />
-            </div>
+            <iframe
+              className="tw-w-full tw-h-[80vh] tw-border tw-border-gray-300 tw-rounded"
+              src={`${window.URL.createObjectURL(pdfFile)}#view=fitH`}
+              title="Document"
+            />
         </div>
   );
 }

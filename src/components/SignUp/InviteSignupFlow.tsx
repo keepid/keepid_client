@@ -51,7 +51,7 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
       });
 
   useEffect(() => {
-    if (signUpStageStateContext.stages?.length !== 3) {
+    if (signUpStageStateContext.stages?.length !== 2) {
       signUpStageStateContext?.setSignupStages?.call(null, [
         SignupStage.ACCOUNT_INFORMATION,
         SignupStage.REVIEW_SUBMIT,
@@ -82,8 +82,8 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
         </Steps>
         <ProgressBar
           className="d-md-none"
-          now={currentStageIdx * 33.4}
-          label={`Step ${currentStageIdx + 1} out of 4`}
+          now={signUpStageStateContext.stages?.length ? (currentStageIdx / (signUpStageStateContext.stages.length - 1)) * 100 : 0}
+          label={`Step ${currentStageIdx + 1} out of ${signUpStageStateContext.stages?.length || 1}`}
         />
         {signUpStageStateContext.currentStage ===
         SignupStage.ACCOUNT_INFORMATION ? (
