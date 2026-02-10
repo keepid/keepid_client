@@ -246,9 +246,30 @@ class LoginPage extends Component<Props, State> {
     fetch(`${getServerURL()}/get-session-user`, { method: 'GET', credentials: 'include' })
       .then((response) => response.json())
       .then((responseObj) => {
-        const { username, userRole, organization, fullName } = responseObj;
+        const { username, userRole, organization, fullName, googleLoginError } = responseObj;
+
+        // Check for specific Google login errors from the server
+        if (googleLoginError) {
+          if (googleLoginError === 'USER_NOT_FOUND') {
+            this.handleGoogleLoginError(
+              'No Keep.id account is linked to this Google account. Please find an organization and sign up first.',
+            );
+          } else if (googleLoginError === 'AUTH_FAILURE') {
+            this.handleGoogleLoginError(
+              'Google authentication failed. Please try again or use your username and password.',
+            );
+          } else if (googleLoginError === 'INTERNAL_ERROR') {
+            this.handleGoogleLoginError(
+              'Unable to complete Google sign-in due to a server issue. Please try again later.',
+            );
+          } else {
+            this.handleGoogleLoginError('Google sign-in failed. Please try again.');
+          }
+          return;
+        }
+
         if (!username || !userRole || !organization || !fullName) {
-          this.handleGoogleLoginError('Google Login Failed: Authentication Failure.');
+          this.handleGoogleLoginError('Google sign-in failed: Could not retrieve your account information. Please try again.');
           return;
         }
         const { logIn } = this.props;
@@ -272,7 +293,7 @@ class LoginPage extends Component<Props, State> {
       })
       .catch((_) => {
         const { alert } = this.props;
-        alert.show('Network Error: Please Try Again.');
+        alert.show('Network Error: Unable to reach the server. Please check your connection and try again.');
         this.setState({ buttonState: '' });
         this.resetRecaptcha();
       });

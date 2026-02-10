@@ -40,12 +40,14 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           '&prompt=select_account';
           sessionStorage.setItem('redirecting', 'true');
           window.location.href = googleAuthUrl;
+        } else if (data.status === 'INTERNAL_ERROR') {
+          handleGoogleLoginError('Google sign-in is temporarily unavailable. Please use username/password to log in.');
         } else {
-          handleGoogleLoginError('Google Login Failed: Request Error.');
+          handleGoogleLoginError('Could not initiate Google sign-in. Please try again.');
         }
       })
       .catch((_) => {
-        handleGoogleLoginError('Network Error: Please Try Again.');
+        handleGoogleLoginError('Network Error: Unable to reach the server. Please check your connection and try again.');
       });
   };
 
