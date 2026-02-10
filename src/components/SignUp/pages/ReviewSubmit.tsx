@@ -26,7 +26,7 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
   } = useContext(SignUpContext);
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [eulaAgreed, setEulaAgreed] = useState(false);
@@ -213,6 +213,19 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
               )}
             </div>
             <div className="mb-0">
+              <div className="form-check mb-3">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="termsCheck"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  required
+                />
+                <label className="form-check-label" htmlFor="termsCheck">
+                  I have read and agree to the Terms and Conditions and Privacy Policy
+                </label>
+              </div>
               <span className="text-muted recaptcha-login-text">
                 This page is protected by reCAPTCHA, and subject to the Google{' '}
                 <a href="https://www.google.com/policies/privacy/">
