@@ -93,7 +93,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          fileType: FileType.FORM,
+          fileType: FileType.APPLICATION_PDF,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -123,7 +123,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          fileType: FileType.FORM,
+          fileType: FileType.APPLICATION_PDF,
           targetUser: clientUsername,
           annotated: true,
         }),

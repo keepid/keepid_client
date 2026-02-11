@@ -322,7 +322,8 @@ export const formContent: ApplicationFormPage[] = [
   },
   {
     pageName: 'preview',
-    title: (_) => 'Review your application',
+    displayName: 'Sign',
+    title: (_) => 'Review and sign your application',
     options: [],
   },
   {

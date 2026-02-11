@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Form, Spinner } from 'react-bootstrap';
+import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 import { flushSync } from 'react-dom';
 import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 
+import SignaturePad from '../../lib/SignaturePad';
+import getServerURL from '../../serverOverride';
 import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import DocumentViewer from '../Documents/DocumentViewer';
 import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
@@ -14,6 +16,19 @@ import ApplicationSendPage from './ApplicationSendPage';
 import ApplicationWebForm from './ApplicationWebForm';
 import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
+
+// Convert a data-URL (e.g. from canvas.toDataURL()) to a Blob suitable for FormData
+function dataURLtoBlob(dataURL: string): Blob {
+  const arr = dataURL.split(',');
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n >= 0) {
+    n -= 1;
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: 'image/png' });
+}
 
 function WebFormPageContent({
   blankFormId,
@@ -55,6 +70,10 @@ export default function ApplicationForm() {
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
   const [fillingPdf, setFillingPdf] = useState(false);
+  const [savedFormAnswers, setSavedFormAnswers] = useState<Record<string, any>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
   const {
     pdfFile,
     blankFormId,
@@ -84,14 +103,68 @@ export default function ApplicationForm() {
     });
   };
 
-  const handleSubmit = () => {
-    disablePrompt();
-    console.log('submit', JSON.stringify(data));
+  /** Upload the signed PDF to the server. Returns true on success. */
+  const uploadSignedPdf = async (): Promise<boolean> => {
+    if (!blankFormId) {
+      setSubmitError('Application ID is missing. Please go back and try again.');
+      return false;
+    }
+
+    if (!signatureDataUrl) {
+      setSubmitError('Please sign the application on the previous step before submitting.');
+      return false;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const signatureBlob = dataURLtoBlob(signatureDataUrl);
+
+      const formData = new FormData();
+      formData.append('signature', signatureBlob, 'signature.png');
+      formData.append('clientUsername', clientUsername);
+      formData.append('applicationId', blankFormId);
+      formData.append('formAnswers', JSON.stringify(savedFormAnswers));
+
+      const response = await fetch(`${getServerURL()}/upload-signed-pdf-2`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.status !== 'SUCCESS') {
+        setSubmitError(result.message || 'Failed to save application. Please try again.');
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setSubmitError('Could not connect to the server. Please try again.');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSaveOnly = () => {
-    disablePrompt();
-    console.log('save only', JSON.stringify(data));
+  const handleSubmit = async () => {
+    const success = await uploadSignedPdf();
+    if (success) {
+      disablePrompt();
+      // TODO: optionally call /submit-mail here for direct-mail flow
+      history.push('/applications');
+    }
+  };
+
+  const handleSaveOnly = async () => {
+    const success = await uploadSignedPdf();
+    if (success) {
+      disablePrompt();
+      history.push('/applications');
+    }
   };
 
   const handleCancel = () => {
@@ -110,6 +183,9 @@ export default function ApplicationForm() {
   // Called when user submits the web form -- fills the PDF and advances to preview
   const handleWebFormSubmit = useCallback(
     async (formAnswers: Record<string, any>) => {
+      // Persist answers so they're available at final submission
+      setSavedFormAnswers(formAnswers);
+
       // If form was skipped (empty answers) or blankFormId not available, just advance
       if (!blankFormId || Object.keys(formAnswers).length === 0) {
         handleNext();
@@ -190,8 +266,31 @@ export default function ApplicationForm() {
 
         {isPreviewPage && (
           pdfFile
-            ? <DocumentViewer pdfFile={pdfFile} />
+            ? (
+              <>
+                <DocumentViewer pdfFile={pdfFile} readOnly />
+                <div className="tw-mt-8">
+                  <h4 className="tw-font-semibold tw-mb-2">Sign your application</h4>
+                  <p className="tw-text-sm tw-text-gray-500 tw-mb-2">
+                    Draw your signature in the box below. You can clear and redo it if needed.
+                  </p>
+                  <div className="tw-border tw-border-gray-300 tw-rounded" style={{ height: 200 }}>
+                    <SignaturePad
+                      canvasDataUrl={signatureDataUrl}
+                      handleCanvasSign={(dataUrl: string) => setSignatureDataUrl(dataUrl)}
+                      onEnd={(_event: any, dataUrl: string) => setSignatureDataUrl(dataUrl)}
+                    />
+                  </div>
+                </div>
+              </>
+            )
             : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center tw-border tw-rounded">Sorry, the PDF is not available for the application you selected.</div>
+        )}
+
+        {submitError && (isPreviewPage || isSendPage) && (
+          <Alert variant="danger" className="tw-mt-4" onClose={() => setSubmitError(null)} dismissible>
+            {submitError}
+          </Alert>
         )}
 
         {isSendPage && (
@@ -201,6 +300,7 @@ export default function ApplicationForm() {
             handlePrev={handlePrev}
             handleSaveOnly={handleSaveOnly}
             handleSubmit={handleSubmit}
+            submitting={submitting}
           />
         )}
 
@@ -212,7 +312,14 @@ export default function ApplicationForm() {
             Back
           </Button>
           <Button
-            onClick={handleNext}
+            onClick={() => {
+              if (isPreviewPage && !signatureDataUrl) {
+                setSubmitError('Please sign the application before continuing.');
+                return;
+              }
+              setSubmitError(null);
+              handleNext();
+            }}
             className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
           >
             Next
