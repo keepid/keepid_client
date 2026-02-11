@@ -211,7 +211,6 @@ export default function ApplicationWebForm({
         onChange={handleTextChange}
         value={formAnswers[entry.fieldName] ?? ''}
         required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
       />
       {validationErrors.has(entry.fieldName) && (
         <small className="text-danger mt-1">This field is required.</small>
@@ -232,7 +231,6 @@ export default function ApplicationWebForm({
         onChange={handleTextChange}
         value={formAnswers[entry.fieldName] ?? ''}
         required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
         rows={entry.fieldNumLines || 3}
       />
       {validationErrors.has(entry.fieldName) && (
@@ -251,7 +249,6 @@ export default function ApplicationWebForm({
           onChange={handleCheckboxChange}
           checked={!!formAnswers[entry.fieldName]}
           required={entry.fieldIsRequired}
-          readOnly={entry.fieldIsMatched}
         />
         <label className="custom-control-label font-weight-bold" htmlFor={entry.fieldName}>
           {entry.fieldQuestion || entry.fieldName}
@@ -278,7 +275,6 @@ export default function ApplicationWebForm({
             value={value}
             onChange={handleRadioChange}
             required={entry.fieldIsRequired}
-            readOnly={entry.fieldIsMatched}
           />
           <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>
             {value}
@@ -360,7 +356,6 @@ export default function ApplicationWebForm({
         onChange={(date) => handleDateChange(date, entry.fieldName)}
         className="form-control form-purple mt-1"
         required={entry.fieldIsRequired}
-        readOnly={entry.fieldIsMatched}
       />
     </div>
   );
