@@ -2,126 +2,73 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
 import { capitalizeFirst } from '../Utils/StringUtils';
-import { ApplicationFormData, formContent } from './Hooks/ApplicationFormHook';
-import { getDisplayName } from './Utils/DisplayNameMappingUtil';
+import { formContent } from './Hooks/ApplicationFormHook';
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+function stepLabelColor(isCurrent: boolean, isComplete: boolean): string {
+  if (isCurrent) return 'tw-text-indigo-600';
+  if (isComplete) return 'tw-text-gray-700 group-hover:tw-text-indigo-600';
+  return 'tw-text-gray-400';
 }
 
 interface ApplicationBreadCrumbsProps {
   page: number;
   setPage: (e: number) => void;
-  data: ApplicationFormData;
 }
 
-export default function ApplicationBreadCrumbs({ page, setPage, data }: ApplicationBreadCrumbsProps) {
-  const lastStepIdx = formContent.length - 1;
-
+export default function ApplicationBreadCrumbs({ page, setPage }: ApplicationBreadCrumbsProps) {
   return (
-    <div className="lg:tw-border-b lg:tw-border-t lg:tw-border-gray-200 tw-px-0">
-      <nav aria-label="Progress" className="tw-mx-auto tw-max-w-7xl tw-px-0">
-        <ol
-          className="tw-overflow-hidden tw-rounded-md lg:tw-flex lg:tw-rounded-none lg:tw-border-l lg:tw-border-r lg:tw-border-gray-200 tw-px-0"
-        >
-          {formContent.map((step, stepIdx) => (
-            <li key={step.pageName} className="tw-relative tw-overflow-hidden lg:tw-flex-1">
-              <div
-                className={classNames(
-                  stepIdx === 0 ? 'tw-rounded-t-md tw-border-b-0' : '',
-                  stepIdx === lastStepIdx ? 'tw-rounded-b-md tw-border-t-0' : '',
-                  'tw-overflow-hidden tw-border tw-border-gray-200 lg:tw-border-0',
-                )}
-              >
-                {stepIdx < page && (
-                  <a className="tw-group" onClick={(_) => { setPage(stepIdx); }}>
-                    <span
-                      aria-hidden="true"
-                      className="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-1 tw-bg-transparent group-hover:tw-bg-gray-200 lg:tw-bottom-0 lg:tw-top-auto lg:tw-h-1 lg:tw-w-full"
-                    />
-                    <span
-                      className={classNames(
-                        stepIdx !== 0 ? 'lg:tw-pl-9' : '',
-                        'tw-flex tw-items-start tw-px-6 tw-py-5 tw-text-sm tw-font-medium',
-                      )}
-                    >
-                      <span className="shrink-0">
-                        <span className="tw-flex tw-size-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-indigo-600">
-                          <CheckIcon aria-hidden="true" className="tw-size-6 tw-text-white" />
-                        </span>
-                      </span>
-                      <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium">{step.displayName || capitalizeFirst(step.pageName)}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : 'Complete' }
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                )}
-                {page === stepIdx && (
-                  <a aria-current="step">
-                    <span
-                      aria-hidden="true"
-                      className="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-1 tw-bg-indigo-600 lg:tw-bottom-0 lg:tw-top-auto lg:tw-h-1 lg:tw-w-full"
-                    />
-                    <span
-                      className={classNames(
-                        stepIdx !== 0 ? 'lg:tw-pl-9' : '',
-                        'tw-flex tw-items-start tw-px-6 tw-py-5 tw-text-sm tw-font-medium',
-                      )}
-                    >
-                      <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{step.displayName || capitalizeFirst(step.pageName)}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                )}
-                {stepIdx > page && (
-                  <a className="tw-group">
-                    <span
-                      aria-hidden="true"
-                      className="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-1 tw-bg-transparent group-hover:tw-bg-gray-200 lg:tw-bottom-0 lg:tw-top-auto lg:tw-h-1 lg:tw-w-full"
-                    />
-                    <span
-                      className={classNames(
-                        stepIdx !== 0 ? 'lg:tw-pl-9' : '',
-                        'tw-flex tw-items-start tw-px-6 tw-py-5 tw-text-sm tw-font-medium',
-                      )}
-                    >
-                      <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-gray-500">{step.displayName || capitalizeFirst(step.pageName)}</span>
-                        <span className="tw-text-sm tw-font-medium tw-text-gray-500">
-                          { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                )}
+    <nav aria-label="Progress" className="tw-py-4">
+      <ol className="tw-flex tw-items-center tw-justify-between tw-gap-0">
+        {formContent.map((step, idx) => {
+          const label = step.displayName || capitalizeFirst(step.pageName);
+          const isComplete = idx < page;
+          const isCurrent = idx === page;
 
-                {stepIdx !== 0 ? (
-                  <>
-                    {/* Separator */}
-                    <div aria-hidden="true" className="tw-absolute tw-inset-0 tw-left-0 tw-top-0 tw-hidden tw-w-3 lg:tw-block">
-                      <svg
-                        fill="none"
-                        viewBox="0 0 12 82"
-                        preserveAspectRatio="none"
-                        className="tw-size-full tw-text-gray-300"
-                      >
-                        <path d="M0.5 0V31L10.5 41L0.5 51V82" stroke="currentcolor" vectorEffect="non-scaling-stroke" />
-                      </svg>
-                    </div>
-                  </>
-                ) : null}
-              </div>
+          return (
+            <li key={step.pageName} className="tw-flex tw-items-center tw-flex-1 last:tw-flex-none">
+              {/* Step indicator */}
+              <button
+                type="button"
+                className="tw-flex tw-flex-col tw-items-center tw-gap-1 tw-bg-transparent tw-border-0 tw-cursor-pointer tw-group tw-min-w-0"
+                onClick={() => isComplete && setPage(idx)}
+                disabled={!isComplete}
+              >
+                {isComplete ? (
+                  <span className="tw-flex tw-items-center tw-justify-center tw-size-9 tw-rounded-full tw-bg-indigo-600 group-hover:tw-bg-indigo-700 tw-transition-colors">
+                    <CheckIcon className="tw-size-5 tw-text-white" />
+                  </span>
+                ) : (
+                  <span
+                    className={`tw-flex tw-items-center tw-justify-center tw-size-9 tw-rounded-full tw-border-2 tw-text-sm tw-font-semibold tw-transition-colors ${
+                      isCurrent
+                        ? 'tw-border-indigo-600 tw-text-indigo-600'
+                        : 'tw-border-gray-300 tw-text-gray-400'
+                    }`}
+                  >
+                    {idx + 1}
+                  </span>
+                )}
+                <span
+                  className={`tw-text-sm tw-font-medium tw-whitespace-nowrap tw-transition-colors ${stepLabelColor(isCurrent, isComplete)}`}
+                >
+                  {label}
+                </span>
+              </button>
+
+              {/* Connector line */}
+              {idx < formContent.length - 1 && (
+                <div className="tw-flex-1 tw-mx-1 tw-mb-5">
+                  <div
+                    className={`tw-h-0.5 tw-w-full ${
+                      idx < page ? 'tw-bg-indigo-600' : 'tw-bg-gray-200'
+                    }`}
+                  />
+                </div>
+              )}
             </li>
-          ))}
-        </ol>
-      </nav>
-    </div>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

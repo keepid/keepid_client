@@ -130,91 +130,93 @@ export default function ApplicationForm() {
   return (
     <>
       <PromptOnLeave shouldPrompt={shouldPrompt} />
-      <div className="container-fluid">
-        <Helmet>
-          <title>Create new application</title>
-          <meta name="description" content="Keep.id" />
-        </Helmet>
-        <ApplicationBreadCrumbs page={page} setPage={setPage} data={data} />
-        <div className="jumbotron jumbotron-fluid bg-white pb-0 tw-mt-0 tw-pt-6">
-          <div className="container tw-flex tw-flex-col tw-gap-4">
-            <div className="tw-flex tw-justify-between tw-items-end">
-              <h1>{formContent[page].title(data.type)}</h1>
-              <p>Step {page + 1} of {pageCount}</p>
-            </div>
+      <Helmet>
+        <title>Create new application</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
 
-            {formContent[page].subtitle && <h3>{formContent[page].subtitle}</h3>}
+      {/* Breadcrumbs: wider than the form so they have room to breathe */}
+      <div className="tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <ApplicationBreadCrumbs page={page} setPage={setPage} />
+      </div>
 
-            <Form
-              className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2"
-              style={{
-                gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
-                gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
-              }}
-              onClick={clickHandler}
-            >
+      {/* Form content: narrower for readability */}
+      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pb-12">
+        <div className="tw-flex tw-justify-between tw-items-end tw-mb-1">
+          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{formContent[page].title(data.type)}</h2>
+          <span className="tw-text-sm tw-text-gray-400">Step {page + 1} of {pageCount}</span>
+        </div>
 
-              {dataAttr &&
-                formContent[page].options
-                  .filter((option) => option.for === null || option.for.has(data.type as ApplicationType))
-                  .map((option) => (
-                    <ApplicationCard
-                      key={option.value}
-                      iconSrc={option.iconSrc}
-                      iconAlt={option.iconAlt}
-                      titleText={option.titleText}
-                      subtitleText={option.subtitleText}
-                      checked={data[dataAttr] === option.value}
-                      name={dataAttr}
-                      value={option.value}
-                      disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
-                    />
-                  ))}
+        {formContent[page].subtitle && (
+          <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+        )}
 
-            </Form>
+        <Form
+          className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2"
+          style={{
+            gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
+            gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
+          }}
+          onClick={clickHandler}
+        >
+          {dataAttr &&
+            formContent[page].options
+              .filter((option) => option.for === null || option.for.has(data.type as ApplicationType))
+              .map((option) => (
+                <ApplicationCard
+                  key={option.value}
+                  iconSrc={option.iconSrc}
+                  iconAlt={option.iconAlt}
+                  titleText={option.titleText}
+                  subtitleText={option.subtitleText}
+                  checked={data[dataAttr] === option.value}
+                  name={dataAttr}
+                  value={option.value}
+                  disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
+                />
+              ))}
+        </Form>
 
-            {isReviewPage && <ApplicationReviewPage data={data} />}
+        {isReviewPage && <ApplicationReviewPage data={data} />}
 
-            {isWebFormPage && (
-              <WebFormPageContent
-                blankFormId={blankFormId}
-                fillingPdf={fillingPdf}
-                onSubmit={handleWebFormSubmit}
-                clientUsername={clientUsername}
-              />
-            )}
+        {isWebFormPage && (
+          <WebFormPageContent
+            blankFormId={blankFormId}
+            fillingPdf={fillingPdf}
+            onSubmit={handleWebFormSubmit}
+            clientUsername={clientUsername}
+          />
+        )}
 
-            {isPreviewPage && (
-              pdfFile
-                ? <DocumentViewer pdfFile={pdfFile} />
-                : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center border !tw-rounded-none">Sorry, the PDF is not available for the application you selected.</div>
-            )}
+        {isPreviewPage && (
+          pdfFile
+            ? <DocumentViewer pdfFile={pdfFile} />
+            : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center tw-border tw-rounded">Sorry, the PDF is not available for the application you selected.</div>
+        )}
 
-            {isSendPage && (
-              <ApplicationSendPage
-                data={data}
-                handleCancel={handleCancel}
-                handlePrev={handlePrev}
-                handleSaveOnly={handleSaveOnly}
-                handleSubmit={handleSubmit}
-              />
-            )}
+        {isSendPage && (
+          <ApplicationSendPage
+            data={data}
+            handleCancel={handleCancel}
+            handlePrev={handlePrev}
+            handleSaveOnly={handleSaveOnly}
+            handleSubmit={handleSubmit}
+          />
+        )}
 
-            <div className="tw-flex tw-justify-between">
-              <Button
-                onClick={handlePrev}
-                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage ? 'tw-hidden ' : ' '}`}
-              >
-                Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+        <div className="tw-flex tw-justify-between tw-mt-6">
+          <Button
+            onClick={handlePrev}
+            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage ? 'tw-hidden ' : ' '}`}
+          >
+            Back
+          </Button>
+          <Button
+            onClick={handleNext}
+            className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
+          >
+            Next
+          </Button>
         </div>
       </div>
     </>

@@ -214,14 +214,14 @@ export default function ApplicationWebForm({
   // ----- Field renderers -----
 
   const renderTextField = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <input
         type="text"
-        className={`form-control form-control-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`form-control ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         id={entry.fieldName}
         onChange={handleTextChange}
         value={formAnswers[entry.fieldName] ?? ''}
@@ -234,13 +234,13 @@ export default function ApplicationWebForm({
   );
 
   const renderMultilineTextField = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <textarea
-        className={`form-control form-control-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`form-control ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         id={entry.fieldName}
         placeholder={entry.fieldQuestion || entry.fieldName}
         onChange={handleTextChange}
@@ -255,7 +255,7 @@ export default function ApplicationWebForm({
   );
 
   const renderCheckBox = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
+    <div className="tw-mb-4" key={entry.fieldID}>
       <div className="custom-control custom-checkbox">
         <input
           type="checkbox"
@@ -265,7 +265,7 @@ export default function ApplicationWebForm({
           checked={!!formAnswers[entry.fieldName]}
           required={entry.fieldIsRequired}
         />
-        <label className="custom-control-label small" htmlFor={entry.fieldName}>
+        <label className="custom-control-label" htmlFor={entry.fieldName}>
           {entry.fieldQuestion || entry.fieldName}
           {entry.fieldIsRequired && <span className="text-danger"> *</span>}
         </label>
@@ -274,8 +274,8 @@ export default function ApplicationWebForm({
   );
 
   const renderRadioButton = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
@@ -291,7 +291,7 @@ export default function ApplicationWebForm({
             onChange={handleRadioChange}
             required={entry.fieldIsRequired}
           />
-          <label className="custom-control-label small" htmlFor={`${entry.fieldName}_${value}`}>
+          <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>
             {value}
           </label>
         </div>
@@ -303,15 +303,15 @@ export default function ApplicationWebForm({
   );
 
   const renderComboBox = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <select
         id={entry.fieldName}
         onChange={handleTextChange}
-        className={`custom-select custom-select-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`custom-select ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         value={formAnswers[entry.fieldName] ?? ''}
         required={entry.fieldIsRequired}
       >
@@ -331,15 +331,15 @@ export default function ApplicationWebForm({
   );
 
   const renderListBox = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <select
         id={entry.fieldName}
         onChange={handleListChange}
-        className="custom-select custom-select-sm"
+        className="custom-select"
         multiple
         required={entry.fieldIsRequired}
       >
@@ -356,8 +356,8 @@ export default function ApplicationWebForm({
   );
 
   const renderDateField = (entry: Field) => (
-    <div className="mb-3" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
         {entry.fieldQuestion || 'Date'}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
@@ -369,7 +369,7 @@ export default function ApplicationWebForm({
             : new Date()
         }
         onChange={(date) => handleDateChange(date, entry.fieldName)}
-        className="form-control form-control-sm"
+        className="form-control"
         required={entry.fieldIsRequired}
       />
     </div>
@@ -444,23 +444,10 @@ export default function ApplicationWebForm({
 
   return (
     <div>
-      {/* Progress bar */}
-      <div className="progress mb-3" style={{ height: '6px' }}>
-        <div
-          className="progress-bar"
-          role="progressbar"
-          aria-valuenow={progressPercent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`${Math.round(progressPercent)}%`}
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
-
       {(title || description) && (
-        <div className="mb-3">
-          {title && <h5 className="mb-1">{title}</h5>}
-          {description && <p className="text-muted small mb-0">{description}</p>}
+        <div className="tw-mb-5 tw-border-b tw-border-gray-200 tw-pb-4">
+          {title && <h4 className="tw-font-semibold tw-mb-1">{title}</h4>}
+          {description && <p className="tw-text-sm tw-text-gray-500 tw-mb-0">{description}</p>}
         </div>
       )}
 
@@ -470,12 +457,11 @@ export default function ApplicationWebForm({
           return <div key={entry.fieldID}>{renderField(entry)}</div>;
         })}
 
-        <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <div className="tw-flex tw-justify-between tw-items-center tw-mt-8 tw-pt-4 tw-border-t tw-border-gray-200">
           <div>
             {currentPage > 1 && (
               <Button
                 variant="outline-secondary"
-                size="sm"
                 onClick={() => {
                   setCurrentPage((p) => p - 1);
                   window.scrollTo(0, 0);
@@ -486,15 +472,14 @@ export default function ApplicationWebForm({
             )}
           </div>
 
-          <small className="text-muted">
+          <span className="tw-text-sm tw-text-gray-400">
             Page {currentPage} of {numPages}
-          </small>
+          </span>
 
           <div>
             {currentPage < numPages ? (
               <Button
                 variant="primary"
-                size="sm"
                 onClick={() => {
                   setCurrentPage((p) => p + 1);
                   window.scrollTo(0, 0);
