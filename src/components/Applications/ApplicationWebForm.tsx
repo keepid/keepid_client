@@ -414,6 +414,9 @@ export default function ApplicationWebForm({
     return (
       <div className="p-5 text-center">
         <p className="text-danger">{error}</p>
+        <Button variant="primary" className="mt-3" onClick={() => onSubmit({})}>
+          Continue without form
+        </Button>
       </div>
     );
   }
@@ -422,6 +425,9 @@ export default function ApplicationWebForm({
     return (
       <div className="p-5 text-center">
         <p>No form questions found for this application.</p>
+        <Button variant="primary" className="mt-3" onClick={() => onSubmit({})}>
+          Continue
+        </Button>
       </div>
     );
   }

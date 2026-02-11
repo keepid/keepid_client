@@ -107,7 +107,11 @@ export default function ApplicationForm() {
   // Called when user submits the web form -- fills the PDF and advances to preview
   const handleWebFormSubmit = useCallback(
     async (formAnswers: Record<string, any>) => {
-      if (!blankFormId) return;
+      // If form was skipped (empty answers) or blankFormId not available, just advance
+      if (!blankFormId || Object.keys(formAnswers).length === 0) {
+        handleNext();
+        return;
+      }
       setFillingPdf(true);
       await fillPdf(blankFormId, formAnswers);
       setFillingPdf(false);

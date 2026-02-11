@@ -57,6 +57,7 @@ type ApplicationPageName = 'type'
 
 export interface ApplicationFormPage {
   pageName: ApplicationPageName;
+  displayName?: string;
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
@@ -314,6 +315,7 @@ export const formContent: ApplicationFormPage[] = [
   },
   {
     pageName: 'webForm',
+    displayName: 'Apply',
     title: (_) => 'Fill out your application',
     options: [],
   },

@@ -51,7 +51,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                         </span>
                       </span>
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-lg tw-font-medium">{step.displayName || capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
                           { step.dataAttr ? getDisplayName(data[step.dataAttr]) : 'Complete' }
                         </span>
@@ -72,7 +72,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                       )}
                     >
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-lg tw-font-medium tw-text-indigo-600">{step.displayName || capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
                           { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
                         </span>
@@ -93,7 +93,7 @@ export default function ApplicationBreadCrumbs({ page, setPage, data }: Applicat
                       )}
                     >
                       <span className="tw-ml-4 tw-mt-0.5 tw-flex tw-min-w-0 tw-flex-col resize-none">
-                        <span className="tw-text-lg tw-font-medium tw-text-gray-500">{capitalizeFirst(step.pageName)}</span>
+                        <span className="tw-text-lg tw-font-medium tw-text-gray-500">{step.displayName || capitalizeFirst(step.pageName)}</span>
                         <span className="tw-text-sm tw-font-medium tw-text-gray-500">
                           { step.dataAttr ? getDisplayName(data[step.dataAttr]) : '' }
                         </span>
