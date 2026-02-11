@@ -269,7 +269,7 @@ class AdminPanel extends Component<Props, State> {
                   role="group"
                   aria-label="Button group"
                 >
-                  <Link to="/my-documents">
+                  <Link to="/applications">
                     <Button type="button" variant="primary">
                       View Applications
                     </Button>
