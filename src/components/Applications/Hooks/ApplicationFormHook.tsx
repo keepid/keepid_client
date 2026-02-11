@@ -51,6 +51,7 @@ type ApplicationPageName = 'type'
   | 'person'
   | 'situation'
   | 'review'
+  | 'webForm'
   | 'preview'
   | 'send'
 
@@ -309,6 +310,11 @@ export const formContent: ApplicationFormPage[] = [
   {
     pageName: 'review',
     title: (_) => 'Review your selections',
+    options: [],
+  },
+  {
+    pageName: 'webForm',
+    title: (_) => 'Fill out your application',
     options: [],
   },
   {

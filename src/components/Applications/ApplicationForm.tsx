@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Form, Spinner } from 'react-bootstrap';
 import { flushSync } from 'react-dom';
 import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
@@ -11,8 +11,31 @@ import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
 import ApplicationSendPage from './ApplicationSendPage';
+import ApplicationWebForm from './ApplicationWebForm';
 import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
+
+function WebFormPageContent({
+  blankFormId,
+  fillingPdf,
+  onSubmit,
+}: {
+  blankFormId: string | null;
+  fillingPdf: boolean;
+  onSubmit: (formAnswers: Record<string, any>) => void;
+}) {
+  if (!blankFormId || fillingPdf) {
+    const label = fillingPdf ? 'Generating your application...' : 'Loading form...';
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <Spinner animation="border" role="status">
+          <span className="sr-only">{label}</span>
+        </Spinner>
+      </div>
+    );
+  }
+  return <ApplicationWebForm applicationId={blankFormId} onSubmit={onSubmit} />;
+}
 
 export default function ApplicationForm() {
   const {
@@ -28,31 +51,29 @@ export default function ApplicationForm() {
   } = useApplicationFormContext();
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
-  // const [previewPdf, setPreviewPdf] = useState<File | null>(null);
-  const { pdfFile, postData: postRegistryData } = useGetApplicationRegistry();
+  const [fillingPdf, setFillingPdf] = useState(false);
+  const {
+    pdfFile,
+    blankFormId,
+    fetchRegistry,
+    fillPdf,
+    postData: postRegistryData,
+  } = useGetApplicationRegistry();
   const history = useHistory();
 
   const pageCount = formContent.length;
   const hidePrev = page === 0;
   const isReviewPage = formContent[page].pageName === 'review';
+  const isWebFormPage = formContent[page].pageName === 'webForm';
   const isPreviewPage = formContent[page].pageName === 'preview';
   const isSendPage = formContent[page].pageName === 'send';
-  const MAX_Q_PER_PAGE = 10;
 
+  // Fetch registry info (blankFormId) when entering the webForm step
   useEffect(() => {
-    if (isPreviewPage) {
-      postRegistryData(
-        data,
-        isDirty,
-        setIsDirty,
-      );
+    if (isWebFormPage) {
+      fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isPreviewPage]);
-
-  // TODO: do something with the response, or remove this
-  // useEffect(() => {
-  //   console.log(registryResponse);
-  // }, [registryResponse]);
+  }, [isWebFormPage]);
 
   const disablePrompt = () => {
     flushSync(() => {
@@ -82,6 +103,18 @@ export default function ApplicationForm() {
       handleChange(e.target.name, e.target.value);
     }
   };
+
+  // Called when user submits the web form -- fills the PDF and advances to preview
+  const handleWebFormSubmit = useCallback(
+    async (formAnswers: Record<string, any>) => {
+      if (!blankFormId) return;
+      setFillingPdf(true);
+      await fillPdf(blankFormId, formAnswers);
+      setFillingPdf(false);
+      handleNext();
+    },
+    [blankFormId, fillPdf, handleNext],
+  );
 
   const availableApplications = filterAvailableApplications(data);
 
@@ -135,6 +168,14 @@ export default function ApplicationForm() {
 
             {isReviewPage && <ApplicationReviewPage data={data} />}
 
+            {isWebFormPage && (
+              <WebFormPageContent
+                blankFormId={blankFormId}
+                fillingPdf={fillingPdf}
+                onSubmit={handleWebFormSubmit}
+              />
+            )}
+
             {isPreviewPage && (
               pdfFile
                 ? <DocumentViewer pdfFile={pdfFile} />
@@ -154,7 +195,7 @@ export default function ApplicationForm() {
             <div className="tw-flex tw-justify-between">
               <Button
                 onClick={handlePrev}
-                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage ? 'tw-hidden ' : ' '}`}
+                className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage ? 'tw-hidden ' : ' '}`}
               >
                 Back
               </Button>
