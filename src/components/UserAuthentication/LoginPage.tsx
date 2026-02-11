@@ -102,7 +102,7 @@ class LoginPage extends Component<Props, State> {
     const { username, password, recaptchaPayload } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       const { alert } = this.props;
-      alert.show('Please enter a valid username or password');
+      alert.show('Please enter your username or email and password');
       this.clearInput();
       this.setState({ buttonState: '' });
       this.resetRecaptcha();
@@ -119,7 +119,7 @@ class LoginPage extends Component<Props, State> {
         .then((response) => response.json())
         .then((responseJSON) => {
           const responseObject = responseJSON;
-          const { status, userRole, organization, firstName, lastName } =
+          const { status, username: resolvedUsername, userRole, organization, firstName, lastName } =
             responseObject;
 
           const { alert } = this.props;
@@ -141,7 +141,7 @@ class LoginPage extends Component<Props, State> {
                   return Role.LoggedOut;
               }
             };
-            logIn(role(), username, organization, `${firstName} ${lastName}`); // Change
+            logIn(role(), resolvedUsername || username, organization, `${firstName} ${lastName}`);
           } else if (status === 'AUTH_FAILURE') {
             alert.show('Incorrect Username or Password');
             this.clearInput();
@@ -279,12 +279,12 @@ class LoginPage extends Component<Props, State> {
                   handleGoogleLoginError={this.handleGoogleLoginError}
                 />
                 <label htmlFor="username" className="w-100 font-weight-bold">
-                  Username
+                  Username or email
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
                     id="username"
-                    placeholder="username"
+                    placeholder="username or email"
                     value={username}
                     onChange={this.handleChangeUsername}
                     required
