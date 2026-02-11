@@ -19,10 +19,12 @@ function WebFormPageContent({
   blankFormId,
   fillingPdf,
   onSubmit,
+  clientUsername,
 }: {
   blankFormId: string | null;
   fillingPdf: boolean;
   onSubmit: (formAnswers: Record<string, any>) => void;
+  clientUsername: string;
 }) {
   if (!blankFormId || fillingPdf) {
     const label = fillingPdf ? 'Generating your application...' : 'Loading form...';
@@ -34,7 +36,7 @@ function WebFormPageContent({
       </div>
     );
   }
-  return <ApplicationWebForm applicationId={blankFormId} onSubmit={onSubmit} />;
+  return <ApplicationWebForm applicationId={blankFormId} clientUsername={clientUsername} onSubmit={onSubmit} />;
 }
 
 export default function ApplicationForm() {
@@ -48,6 +50,7 @@ export default function ApplicationForm() {
     handleChange,
     handleNext,
     handlePrev,
+    clientUsername,
   } = useApplicationFormContext();
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
@@ -113,11 +116,11 @@ export default function ApplicationForm() {
         return;
       }
       setFillingPdf(true);
-      await fillPdf(blankFormId, formAnswers);
+      await fillPdf(blankFormId, formAnswers, clientUsername);
       setFillingPdf(false);
       handleNext();
     },
-    [blankFormId, fillPdf, handleNext],
+    [blankFormId, fillPdf, handleNext, clientUsername],
   );
 
   const availableApplications = filterAvailableApplications(data);
@@ -177,6 +180,7 @@ export default function ApplicationForm() {
                 blankFormId={blankFormId}
                 fillingPdf={fillingPdf}
                 onSubmit={handleWebFormSubmit}
+                clientUsername={clientUsername}
               />
             )}
 

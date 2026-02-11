@@ -43,6 +43,21 @@ function toDateString(date: Date): string {
   ].join('/');
 }
 
+/**
+ * If a string is ALL CAPS and contains only letters/spaces, convert to Title Case.
+ * Leaves mixed-case, numeric, or short (<=2 char) strings unchanged (e.g. "PA", "19104").
+ */
+function normalizeIfAllCaps(value: string): string {
+  if (!value || value.length <= 2) return value;
+  // Only normalize strings that are strictly all uppercase letters (with optional spaces/hyphens)
+  if (/^[A-Z][A-Z\s-]+$/.test(value)) {
+    return value
+      .toLowerCase()
+      .replace(/(?:^|\s|-)\S/g, (c) => c.toUpperCase());
+  }
+  return value;
+}
+
 // ----- Component -----
 
 export default function ApplicationWebForm({
@@ -84,13 +99,14 @@ export default function ApplicationWebForm({
             fieldID: uuid(),
           }));
 
-          // Initialize answers from defaults
+          // Initialize answers from defaults, normalizing ALL CAPS values to Title Case
           const initialAnswers: FormAnswers = {};
           loadedFields.forEach((f) => {
             if (f.fieldType.toLowerCase() === 'datefield' && f.fieldIsMatched) {
               initialAnswers[f.fieldName] = new Date();
             } else {
-              initialAnswers[f.fieldName] = f.fieldDefaultValue ?? '';
+              const raw = f.fieldDefaultValue ?? '';
+              initialAnswers[f.fieldName] = typeof raw === 'string' ? normalizeIfAllCaps(raw) : raw;
             }
           });
 
@@ -198,34 +214,33 @@ export default function ApplicationWebForm({
   // ----- Field renderers -----
 
   const renderTextField = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <input
         type="text"
-        className={`form-control form-purple mt-1 ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`form-control form-control-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         id={entry.fieldName}
-        placeholder={entry.fieldQuestion || entry.fieldName}
         onChange={handleTextChange}
         value={formAnswers[entry.fieldName] ?? ''}
         required={entry.fieldIsRequired}
       />
       {validationErrors.has(entry.fieldName) && (
-        <small className="text-danger mt-1">This field is required.</small>
+        <small className="text-danger">This field is required.</small>
       )}
     </div>
   );
 
   const renderMultilineTextField = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <textarea
-        className={`form-control form-purple mt-1 ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`form-control form-control-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         id={entry.fieldName}
         placeholder={entry.fieldQuestion || entry.fieldName}
         onChange={handleTextChange}
@@ -234,23 +249,23 @@ export default function ApplicationWebForm({
         rows={entry.fieldNumLines || 3}
       />
       {validationErrors.has(entry.fieldName) && (
-        <small className="text-danger mt-1">This field is required.</small>
+        <small className="text-danger">This field is required.</small>
       )}
     </div>
   );
 
   const renderCheckBox = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <div className="custom-control custom-checkbox mx-2">
+    <div className="mb-3" key={entry.fieldID}>
+      <div className="custom-control custom-checkbox">
         <input
           type="checkbox"
-          className="custom-control-input mr-2"
+          className="custom-control-input"
           id={entry.fieldName}
           onChange={handleCheckboxChange}
           checked={!!formAnswers[entry.fieldName]}
           required={entry.fieldIsRequired}
         />
-        <label className="custom-control-label font-weight-bold" htmlFor={entry.fieldName}>
+        <label className="custom-control-label small" htmlFor={entry.fieldName}>
           {entry.fieldQuestion || entry.fieldName}
           {entry.fieldIsRequired && <span className="text-danger"> *</span>}
         </label>
@@ -259,8 +274,8 @@ export default function ApplicationWebForm({
   );
 
   const renderRadioButton = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
@@ -276,32 +291,32 @@ export default function ApplicationWebForm({
             onChange={handleRadioChange}
             required={entry.fieldIsRequired}
           />
-          <label className="custom-control-label" htmlFor={`${entry.fieldName}_${value}`}>
+          <label className="custom-control-label small" htmlFor={`${entry.fieldName}_${value}`}>
             {value}
           </label>
         </div>
       ))}
       {validationErrors.has(entry.fieldName) && (
-        <small className="text-danger mt-1">This field is required.</small>
+        <small className="text-danger">This field is required.</small>
       )}
     </div>
   );
 
   const renderComboBox = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <select
         id={entry.fieldName}
         onChange={handleTextChange}
-        className={`custom-select ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
+        className={`custom-select custom-select-sm ${validationErrors.has(entry.fieldName) ? 'is-invalid' : ''}`}
         value={formAnswers[entry.fieldName] ?? ''}
         required={entry.fieldIsRequired}
       >
         <option value="" disabled>
-          Please select your choice ...
+          Select...
         </option>
         {entry.fieldValueOptions.map((value) => (
           <option value={value} key={`${entry.fieldName}_${value}`}>
@@ -310,26 +325,26 @@ export default function ApplicationWebForm({
         ))}
       </select>
       {validationErrors.has(entry.fieldName) && (
-        <small className="text-danger mt-1">This field is required.</small>
+        <small className="text-danger">This field is required.</small>
       )}
     </div>
   );
 
   const renderListBox = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || entry.fieldName}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
       <select
         id={entry.fieldName}
         onChange={handleListChange}
-        className="custom-select"
+        className="custom-select custom-select-sm"
         multiple
         required={entry.fieldIsRequired}
       >
         <option value="" disabled>
-          Please select your choice(s) ...
+          Select...
         </option>
         {entry.fieldValueOptions.map((value) => (
           <option value={value} key={`${entry.fieldName}_${value}`}>
@@ -341,8 +356,8 @@ export default function ApplicationWebForm({
   );
 
   const renderDateField = (entry: Field) => (
-    <div className="mt-2 mb-2" key={entry.fieldID}>
-      <label htmlFor={entry.fieldName} className="w-100 font-weight-bold">
+    <div className="mb-3" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="w-100 small text-muted mb-1">
         {entry.fieldQuestion || 'Date'}
         {entry.fieldIsRequired && <span className="text-danger"> *</span>}
       </label>
@@ -354,7 +369,7 @@ export default function ApplicationWebForm({
             : new Date()
         }
         onChange={(date) => handleDateChange(date, entry.fieldName)}
-        className="form-control form-purple mt-1"
+        className="form-control form-control-sm"
         required={entry.fieldIsRequired}
       />
     </div>
@@ -429,76 +444,76 @@ export default function ApplicationWebForm({
 
   return (
     <div>
-      <div className="jumbotron jumbotron-fluid bg-white pb-0 text-center">
-        <div className="progress mb-4">
-          <div
-            className="progress-bar"
-            role="progressbar"
-            aria-valuenow={progressPercent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${Math.round(progressPercent)}%`}
-            style={{ width: `${progressPercent}%` }}
-          />
+      {/* Progress bar */}
+      <div className="progress mb-3" style={{ height: '6px' }}>
+        <div
+          className="progress-bar"
+          role="progressbar"
+          aria-valuenow={progressPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${Math.round(progressPercent)}%`}
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
+      {(title || description) && (
+        <div className="mb-3">
+          {title && <h5 className="mb-1">{title}</h5>}
+          {description && <p className="text-muted small mb-0">{description}</p>}
         </div>
-        <h2>{title}</h2>
-        {description && <p>{description}</p>}
-      </div>
+      )}
 
-      <div className="border px-5">
-        <Form onSubmit={handleSubmit}>
-          {fields.map((entry, index) => {
-            if (index < qStartIndex || index >= qStartIndex + MAX_Q_PER_PAGE) return null;
-            return <div className="my-4" key={entry.fieldID}>{renderField(entry)}</div>;
-          })}
+      <Form onSubmit={handleSubmit}>
+        {fields.map((entry, index) => {
+          if (index < qStartIndex || index >= qStartIndex + MAX_Q_PER_PAGE) return null;
+          return <div key={entry.fieldID}>{renderField(entry)}</div>;
+        })}
 
-          <div className="row justify-content-between text-center my-5">
-            <div className="col-md-2 pl-0">
-              {currentPage > 1 && (
-                <Button
-                  variant="outline-primary"
-                  onClick={() => {
-                    setCurrentPage((p) => p - 1);
-                    window.scrollTo(0, 0);
-                  }}
-                >
-                  Previous
-                </Button>
-              )}
-            </div>
-
-            <div className="col-md-4 text-center my-1">
-              <p>
-                <b>
-                  Page {currentPage} of {numPages}
-                </b>
-              </p>
-            </div>
-
-            <div className="col-md-2 mr-xs-3 mr-sm-0">
-              {currentPage < numPages ? (
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setCurrentPage((p) => p + 1);
-                    window.scrollTo(0, 0);
-                  }}
-                >
-                  Continue
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Submitting...' : 'Submit'}
-                </Button>
-              )}
-            </div>
+        <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
+          <div>
+            {currentPage > 1 && (
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => {
+                  setCurrentPage((p) => p - 1);
+                  window.scrollTo(0, 0);
+                }}
+              >
+                Previous
+              </Button>
+            )}
           </div>
-        </Form>
-      </div>
+
+          <small className="text-muted">
+            Page {currentPage} of {numPages}
+          </small>
+
+          <div>
+            {currentPage < numPages ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setCurrentPage((p) => p + 1);
+                  window.scrollTo(0, 0);
+                }}
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit Application'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </Form>
     </div>
   );
 }

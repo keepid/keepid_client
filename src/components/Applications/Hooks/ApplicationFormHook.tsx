@@ -13,6 +13,7 @@ interface ApplicationFormContextProps {
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
+  clientUsername: string;
 }
 
 export const ApplicationFormContext =
@@ -335,7 +336,7 @@ const dataAttrWithIndexes = formContent
   .map((p, i) => ({ attr: p.dataAttr, pageNum: i }))
   .filter((d) => d.attr != null) as { attr: string, pageNum: number}[];
 
-export function ApplicationFormProvider({ children }) {
+export function ApplicationFormProvider({ children, clientUsername = '' }: { children: React.ReactNode; clientUsername?: string }) {
   const [page, setPageRaw] = useState<number>(0);
   const [data, setData] = useState<ApplicationFormData>(initialData);
   const [isDirty, setIsDirty] = useState<boolean>(false);
@@ -385,6 +386,7 @@ export function ApplicationFormProvider({ children }) {
         handleChange,
         handleNext,
         handlePrev,
+        clientUsername,
       }}
     >
       {children}
