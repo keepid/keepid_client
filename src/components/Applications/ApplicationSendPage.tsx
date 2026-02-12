@@ -9,6 +9,7 @@ interface ApplicationSendPageProps {
   handlePrev: () => void;
   handleSaveOnly: () => void;
   handleSubmit: () => void;
+  submitting?: boolean;
 }
 
 export default function ApplicationSendPage(props: ApplicationSendPageProps) {
@@ -35,19 +36,19 @@ export default function ApplicationSendPage(props: ApplicationSendPageProps) {
       </Table>
       <div className="tw-flex tw-justify-between tw-gap-4">
         <div className="tw-flex tw-gap-4">
-          <button type="button" className="btn btn-outline-danger" onClick={props.handleCancel}>
+          <button type="button" className="btn btn-outline-danger" onClick={props.handleCancel} disabled={props.submitting}>
             Cancel application
           </button>
-          <button type="button" className="btn btn-outline-info" onClick={props.handlePrev}>
+          <button type="button" className="btn btn-outline-info" onClick={props.handlePrev} disabled={props.submitting}>
             Go back and make changes
           </button>
         </div>
         <div className="tw-flex tw-gap-4">
-          <button type="button" className="btn btn-outline-info" onClick={props.handleSaveOnly}>
-            No, apply later save only
+          <button type="button" className="btn btn-outline-info" onClick={props.handleSaveOnly} disabled={props.submitting}>
+            {props.submitting ? 'Saving...' : 'No, apply later save only'}
           </button>
-          <button type="button" className="btn btn-success" onClick={props.handleSubmit}>
-            Yes, agree and submit
+          <button type="button" className="btn btn-success" onClick={props.handleSubmit} disabled={props.submitting}>
+            {props.submitting ? 'Submitting...' : 'Yes, agree and submit'}
           </button>
         </div>
       </div>
