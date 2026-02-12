@@ -100,7 +100,7 @@
     "case-sensitive-paths-webpack-plugin": "1.1.4",
     "chalk": "4.1.0",
     "connect-history-api-fallback": "1.3.0",
-    "copy-webpack-plugin": "^6.0.1",
+    "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^7.0.3",
     "cross-spawn": "4.0.2",
     "css-loader": "^3.5.3",
