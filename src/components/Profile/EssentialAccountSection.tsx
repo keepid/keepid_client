@@ -27,6 +27,7 @@ export default function EssentialAccountSection({
 }: Props) {
   const alert = useAlert();
   const [isSaving, setIsSaving] = useState(false);
+  const [isSendingLoginInstructions, setIsSendingLoginInstructions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const initial = useMemo(
@@ -47,6 +48,7 @@ export default function EssentialAccountSection({
   const [city, setCity] = useState(initial.city);
   const [state, setState] = useState(initial.state);
   const [zipcode, setZipcode] = useState(initial.zipcode);
+  const hasEmail = email.trim() !== '';
 
   const isDirty = useMemo(() => (
     email !== initial.email
@@ -129,6 +131,45 @@ export default function EssentialAccountSection({
       alert.show(`Failed to save: ${e?.message || String(e)}`, { type: 'error' });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function sendEmailLoginInstructions() {
+    setIsSendingLoginInstructions(true);
+    try {
+      const payload: Record<string, string> = {};
+      if (targetUsername) {
+        payload.username = targetUsername;
+      }
+
+      const res = await fetch(`${getServerURL()}/send-email-login-instructions`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch (parseErr) {
+        alert.show(`Failed to send email: ${text || res.statusText || 'Unknown error'}`, { type: 'error' });
+        return;
+      }
+
+      const status = json?.status;
+      const message = json?.message;
+      if (status === 'SUCCESS') {
+        alert.show('Login instructions sent');
+      } else if (status === 'EMAIL_DOES_NOT_EXIST') {
+        alert.show('No email found for this account.', { type: 'error' });
+      } else {
+        alert.show(`Failed to send email: ${message || status || 'Unknown error'}`, { type: 'error' });
+      }
+    } catch (e: any) {
+      alert.show(`Failed to send email: ${e?.message || String(e)}`, { type: 'error' });
+    } finally {
+      setIsSendingLoginInstructions(false);
     }
   }
 
@@ -225,15 +266,39 @@ export default function EssentialAccountSection({
           <label htmlFor="email" className="col-3 card-text mt-2 text-primary-theme">Email</label>
           <div className="col-9 card-text">
             {isEditing ? (
-              <input
-                id="email"
-                type="text"
-                className="form-control form-purple"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div className="tw-flex tw-items-start">
+                <input
+                  id="email"
+                  type="text"
+                  className="form-control form-purple"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {targetUsername && hasEmail && (
+                  <button
+                    type="button"
+                    className="tw-bg-transparent tw-border-0 tw-p-0 tw-ml-6 tw-text-blue-600 hover:tw-text-blue-700"
+                    onClick={sendEmailLoginInstructions}
+                    disabled={isSendingLoginInstructions}
+                  >
+                    {isSendingLoginInstructions ? 'Sending...' : 'Email login instructions'}
+                  </button>
+                )}
+              </div>
             ) : (
-              <div className="tw-pt-2">{email}</div>
+              <div className="tw-flex tw-items-baseline">
+                <div>{email}</div>
+                {targetUsername && hasEmail && (
+                  <button
+                    type="button"
+                    className="tw-bg-transparent tw-border-0 tw-p-0 tw-ml-6 tw-text-blue-600 hover:tw-text-blue-700"
+                    onClick={sendEmailLoginInstructions}
+                    disabled={isSendingLoginInstructions}
+                  >
+                    {isSendingLoginInstructions ? 'Sending...' : 'Email login instructions'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

@@ -25,37 +25,6 @@ export default function AccountSettingsSection({ username }: Props) {
   const [buttonState, setButtonState] = useState('');
   const [passwordChangeReadOnly, setPasswordChangeReadOnly] = useState(true);
 
-  const [twoFactorOn, setTwoFactorOn] = useState<boolean | null>(null);
-  const [isLoading2FA, setIsLoading2FA] = useState(false);
-
-  React.useEffect(() => {
-    // Load current 2FA status once
-    const controller = new AbortController();
-    const { signal } = controller;
-    setIsLoading2FA(true);
-    fetch(`${getServerURL()}/get-user-info`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-      signal,
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json && typeof json.twoFactorOn === 'boolean') {
-          setTwoFactorOn(json.twoFactorOn);
-        }
-      })
-      .catch(() => {
-        // non-fatal
-      })
-      .finally(() => setIsLoading2FA(false));
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
   function handleEditPassword() {
     setPasswordChangeReadOnly(false);
   }
@@ -114,28 +83,6 @@ export default function AccountSettingsSection({ username }: Props) {
       });
   }
 
-  function handleChange2FA(next: boolean) {
-    const data = { twoFactorOn: next };
-    fetch(`${getServerURL()}/change-two-factor-setting`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        if (status === 'SUCCESS') {
-          setTwoFactorOn(next);
-        } else {
-          alert.show('Failed updating two-factor setting.', { type: 'error' });
-        }
-      })
-      .catch(() => {
-        alert.show('Failed updating two-factor setting.', { type: 'error' });
-      });
-  }
-
   if (!username) {
     return null;
   }
@@ -146,28 +93,6 @@ export default function AccountSettingsSection({ username }: Props) {
         <h5 className="card-title tw-mb-3">Account Settings</h5>
 
         <hr />
-
-        <div className="row tw-mb-3">
-          <div className="col-3 card-text mt-2 text-primary-theme">Two-Factor Authentication</div>
-          <div className="col-9 card-text">
-            {isLoading2FA ? (
-              <span>Loading...</span>
-            ) : (
-              <div className="form-check form-switch">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="twoFactorToggle"
-                  checked={!!twoFactorOn}
-                  onChange={(e) => handleChange2FA(e.target.checked)}
-                />
-                <label className="form-check-label" htmlFor="twoFactorToggle">
-                  {twoFactorOn ? 'On' : 'Off'}
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
 
         <div className="row tw-mb-2">
           <div className="col-3 card-text mt-2 text-primary-theme">Password</div>

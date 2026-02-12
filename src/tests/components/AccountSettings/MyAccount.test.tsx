@@ -69,8 +69,6 @@ describe.skip('MyAccount', () => {
             occurredAt: new Date().toISOString(),
           }],
         }))),
-      rest.post('http://localhost:7001/change-two-factor-setting', (req, res, ctx) =>
-        res(ctx.json({ status: 'SUCCESS' }))),
     );
   });
 

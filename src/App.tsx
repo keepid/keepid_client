@@ -183,7 +183,10 @@ class App extends React.Component<{}, State, {}> {
               this.logOut();
             }
           } else {
-            this.logOut();
+            // Server has a valid session but client has no local data.
+            // This happens after Google OAuth login redirect — trust the
+            // server and log in locally instead of destroying the session.
+            this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
         } else {
           this.logOut();
