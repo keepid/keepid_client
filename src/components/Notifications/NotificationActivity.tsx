@@ -44,7 +44,9 @@ export default function NotificationActivity({
       });
   }, [clientUsername, refreshTrigger]);
 
-  if (isLoading) { return <p className="tw-text-center tw-text-gray-500">Loading...</p>; }
+  if (isLoading) {
+    return (<p className="tw-text-center tw-text-gray-500">Loading...</p>);
+  }
 
   if (activities.length === 0) {
     return (
@@ -55,8 +57,10 @@ export default function NotificationActivity({
   }
 
   return (
-    activities.map((activity) => (
-      <ActivityCard key={activity._id} activity={activity} />
-    ))
+    <>
+      {activities.map((activity) => (
+        <ActivityCard key={activity._id} activity={activity} />
+      ))}
+    </>
   );
 }
