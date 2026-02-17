@@ -112,9 +112,6 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
                   : 'Home'}
               </NavLink>
 
-              {(role === Role.Admin || role === Role.Director) && (
-                <NavLink to="/admin-panel">Admin Panel</NavLink>
-              )}
               <NavLink to="/profile">Profile</NavLink>
 
               {(role === Role.Admin || role === Role.Director) && (
@@ -184,11 +181,6 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
                     : 'Home'}
                 </NavLink>
               </li>
-              {(role === Role.Admin || role === Role.Director) && (
-                <li>
-                  <NavLink to="/admin-panel">Admin Panel</NavLink>
-                </li>
-              )}
               <li>
                 <NavLink to="/profile">Profile</NavLink>
               </li>

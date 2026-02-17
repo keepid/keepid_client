@@ -1,573 +1,459 @@
-import React, { Component } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
-import Alert from 'react-bootstrap/Alert';
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
-import CheckSVG from '../../static/images/check.svg';
+import Role from '../../static/Role';
 
 interface Props {
   name: string;
   organization: string;
+  role: Role;
   alert: any;
 }
 
-interface State {
-  personName: string;
-  personEmail: any;
-  personRole: any;
-  isInEditMode: boolean;
-  editedPersonEmail: string;
-  editedPersonName: string;
-  editedPersonRole: any;
-  memberArr: any;
-  showPopUp: boolean;
-  numInvitesSent: number;
-  numInEditMode: number;
-  buttonLoadingState: boolean;
+interface OrgInfo {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
 }
 
-class MyOrganization extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      personName: '',
-      personEmail: '',
-      personRole: '',
-      isInEditMode: false,
-      editedPersonEmail: '',
-      editedPersonName: '',
-      editedPersonRole: '',
-      memberArr: [],
-      showPopUp: false,
-      numInvitesSent: 0,
-      numInEditMode: 0,
-      buttonLoadingState: false,
-    };
-    this.editButtonToggle = this.editButtonToggle.bind(this);
-    this.getEmailCell = this.getEmailCell.bind(this);
-    this.getNameCell = this.getNameCell.bind(this);
-    this.getRoleDropDown = this.getRoleDropDown.bind(this);
-    this.saveEdits = this.saveEdits.bind(this);
-    this.addMember = this.addMember.bind(this);
-    this.deleteMember = this.deleteMember.bind(this);
-    this.renderSuccessPopUp = this.renderSuccessPopUp.bind(this);
-    this.saveMembersBackend = this.saveMembersBackend.bind(this);
-  }
+interface Worker {
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  creationDate: string;
+  privilegeLevel: string;
+}
 
-  addMember = (e: React.MouseEvent<HTMLElement>): void => {
-    const { personName, personEmail, personRole, isInEditMode } = this.state;
+const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
+  const [orgInfo, setOrgInfo] = useState<OrgInfo>({ name: '', address: '', phone: '', email: '' });
+  const [isEditingOrg, setIsEditingOrg] = useState(false);
+  const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({ name: '', address: '', phone: '', email: '' });
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
+  const [searchName, setSearchName] = useState('');
+  const [removingUsername, setRemovingUsername] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
-    if (personName !== '' && personEmail !== '' && personRole !== '') {
-      const dateID = Date.now();
-      const newMember = {
-        name: personName,
-        email: personEmail,
-        role: personRole,
-        isInEditMode,
-        dateID,
-      };
+  const isAdmin = role === Role.Director || role === Role.Admin;
 
-      this.setState((prevState) => ({
-        memberArr: prevState.memberArr.concat(newMember),
-        personName: '',
-        personEmail: '',
-        personRole: '',
-      }));
-    } else {
-      const { alert } = this.props;
-      alert.show('missing field. name, email, and role are required');
+  const workerToRemove = useMemo(
+    () => workers.find((w) => w.username === removingUsername) ?? null,
+    [workers, removingUsername],
+  );
+
+  const fetchOrgInfo = useCallback(async () => {
+    setIsLoadingOrg(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-organization-info`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({ orgName: organization }),
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        const info: OrgInfo = {
+          name: data.name || '',
+          address: data.address || '',
+          phone: data.phone || '',
+          email: data.email || '',
+        };
+        setOrgInfo(info);
+        setEditedOrgInfo(info);
+      }
+    } catch (error) {
+      alert.show(`Failed to load organization info: ${error}`);
+    } finally {
+      setIsLoadingOrg(false);
     }
+  }, [organization, alert]);
+
+  const fetchWorkers = useCallback(async () => {
+    setIsLoadingWorkers(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-organization-members`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+          role,
+          listType: 'members',
+          name: searchName,
+        }),
+      });
+      const data = await res.json();
+      if (data.people) {
+        setWorkers(data.people);
+      } else {
+        setWorkers([]);
+      }
+    } catch (error) {
+      alert.show(`Failed to load workers: ${error}`);
+    } finally {
+      setIsLoadingWorkers(false);
+    }
+  }, [role, searchName, alert]);
+
+  useEffect(() => {
+    fetchOrgInfo();
+  }, [fetchOrgInfo]);
+
+  useEffect(() => {
+    fetchWorkers();
+  }, [fetchWorkers]);
+
+  const handleSaveOrgInfo = async () => {
+    alert.show('Organization info saved (display only - server update endpoint not yet connected).');
+    setOrgInfo(editedOrgInfo);
+    setIsEditingOrg(false);
+  };
+
+  const handleCancelEditOrg = () => {
+    setEditedOrgInfo(orgInfo);
+    setIsEditingOrg(false);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    fetchWorkers();
   };
 
-  renderTableContents = (): JSX.Element => {
-    const { memberArr } = this.state;
-    if (memberArr.length === 0) {
-      return (
-        <tr>
-          <td colSpan={5} className="bg-white brand-text text-secondary py-5">
-            No new members
-          </td>
-        </tr>
-      );
+  const handleRemoveMember = async () => {
+    if (!removingUsername) return;
+    setIsRemoving(true);
+    try {
+      const res = await fetch(`${getServerURL()}/remove-organization-member`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: removingUsername }),
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        alert.show('Member removed successfully.');
+        setRemovingUsername(null);
+        fetchWorkers();
+      } else {
+        alert.show(`Failed to remove member: ${data.message || data.status}`, { type: 'error' });
+      }
+    } catch (error) {
+      alert.show(`Failed to remove member: ${error}`, { type: 'error' });
+    } finally {
+      setIsRemoving(false);
     }
-    const row = memberArr.map((member, i) => (
-      <tr key={member.dateID}>
-        <td>{this.getNameCell(member)}</td>
-        <td>{this.getEmailCell(member)}</td>
-        <td>{this.editButtonToggle(member.dateID)}</td>
-        <td>{this.getRoleDropDown(member)}</td>
-        <td>
-          <button
-            type="button"
-            className="close float-left"
-            aria-label="Close"
-            onClick={() => this.deleteMember(i)}
-          >
-            <span aria-hidden="true" className="mx-auto">
-              &times;
-            </span>
-          </button>
-        </td>
-      </tr>
-    ));
-    return row;
   };
 
-  deleteMember = (userIndex: number): void => {
-    this.setState((prevState) => {
-      const members = prevState.memberArr.slice();
-      members.splice(userIndex, 1);
-      return { memberArr: members };
-    });
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return 'N/A';
+    try {
+      const date = new Date(dateStr);
+      if (Number.isNaN(date.getTime())) return dateStr;
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
   };
 
-  saveEdits = (dateID: Date): void => {
-    const { memberArr } = this.state;
-    const index = memberArr.findIndex((member) => member.dateID === dateID);
-    const member = { ...memberArr[index] };
-    const { editedPersonEmail, editedPersonName, editedPersonRole } =
-      this.state;
-    member.email = editedPersonEmail;
-    member.name = editedPersonName;
-    member.role = editedPersonRole;
-    member.isInEditMode = !member.isInEditMode;
-    this.setState((prevState) => {
-      const members = prevState.memberArr.slice();
-      members[index] = member;
-      return {
-        memberArr: members,
-        numInEditMode: prevState.numInEditMode - 1,
-      };
-    });
-  };
+  const renderOrgInfoContent = () => {
+    if (isLoadingOrg) {
+      return <p className="tw-mb-0 tw-text-gray-500 tw-mt-2">Loading...</p>;
+    }
 
-  editButtonToggle = (dateID: Date): JSX.Element => {
-    const { memberArr } = this.state;
-    const index = memberArr.findIndex((member) => member.dateID === dateID);
-    const member = { ...memberArr[index] };
-    const members = Object.assign([], memberArr);
-
-    if (member.isInEditMode) {
+    if (isEditingOrg) {
       return (
-        <button
-          type="button"
-          className="btn btn-sm m-0 p-1 btn-outline-*"
-          onClick={() => this.saveEdits(dateID)}
-        >
-          <img
-            alt="search"
-            src={CheckSVG}
-            width="22"
-            height="22"
-            className="d-inline-block align-middle ml-1"
-          />
-        </button>
+        <>
+          <hr />
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="orgName" className="col-3 card-text mt-2 text-primary-theme">Name</label>
+            <div className="col-9 card-text">
+              <input
+                id="orgName"
+                type="text"
+                className="form-control form-purple"
+                value={editedOrgInfo.name}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, name: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="orgAddress" className="col-3 card-text mt-2 text-primary-theme">Address</label>
+            <div className="col-9 card-text">
+              <input
+                id="orgAddress"
+                type="text"
+                className="form-control form-purple"
+                value={editedOrgInfo.address}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, address: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="orgPhone" className="col-3 card-text mt-2 text-primary-theme">Phone</label>
+            <div className="col-9 card-text">
+              <input
+                id="orgPhone"
+                type="text"
+                className="form-control form-purple"
+                value={editedOrgInfo.phone}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, phone: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="orgEmail" className="col-3 card-text mt-2 text-primary-theme">Email</label>
+            <div className="col-9 card-text">
+              <input
+                id="orgEmail"
+                type="email"
+                className="form-control form-purple"
+                value={editedOrgInfo.email}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, email: e.target.value })}
+              />
+            </div>
+          </div>
+        </>
       );
     }
 
     return (
-      <button
-        type="button"
-        className="btn btn-sm m-0 p-0 shadow-none text-primary bg-transparent"
-        onClick={() => {
-          const { numInEditMode } = this.state;
-          if (numInEditMode === 0) {
-            member.isInEditMode = !member.isInEditMode;
-            members[index] = member;
-            this.setState((prevState) => ({
-              numInEditMode: prevState.numInEditMode + 1,
-              memberArr: members,
-              editedPersonEmail: member.email,
-              editedPersonName: member.name,
-              editedPersonRole: member.role,
-            }));
-          }
-        }}
-      >
-        Edit
-      </button>
+      <>
+        <hr />
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.name || 'Not set'}</div>
+        </div>
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Address</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.address || 'Not set'}</div>
+        </div>
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.phone || 'Not set'}</div>
+        </div>
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Email</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.email || 'Not set'}</div>
+        </div>
+      </>
     );
   };
 
-  getNameCell = (member): JSX.Element => {
-    const { editedPersonName } = this.state;
-    if (member.isInEditMode) {
-      return (
-        <input
-          className="form-purple form-control input-sm"
-          type="text"
-          value={editedPersonName}
-          onChange={(e) => this.setState({ editedPersonName: e.target.value })}
-        />
-      );
+  const renderWorkerListContent = () => {
+    if (isLoadingWorkers) {
+      return <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading workers...</p>;
     }
-    return <div>{member.name}</div>;
-  };
 
-  getEmailCell = (member): JSX.Element => {
-    const { editedPersonEmail } = this.state;
-    if (member.isInEditMode) {
+    if (workers.length === 0) {
       return (
-        <input
-          className="form-purple form-control input-sm"
-          type="text"
-          value={editedPersonEmail}
-          onChange={(e) => this.setState({ editedPersonEmail: e.target.value })}
-        />
-      );
-    }
-    return <div>{member.email}</div>;
-  };
-
-  getRoleDropDown = (member): JSX.Element => {
-    const { editedPersonRole } = this.state;
-    if (member.isInEditMode) {
-      return (
-        <div>
-          <select
-            placeholder="Role"
-            id="role"
-            className="form-control form-purple"
-            value={editedPersonRole}
-            onChange={(e) =>
-              this.setState({ editedPersonRole: e.target.value })
-            }
-          >
-            <option defaultValue="" disabled hidden aria-labelledby="role" />
-            <option value="Admin">Admin</option>
-            <option value="Worker">Worker</option>
-            <option value="Client">Client</option>
-          </select>
+        <div className="tw-text-center tw-py-8">
+          <p className="tw-text-gray-500">No workers found in your organization.</p>
+          {isAdmin && (
+            <p className="tw-text-sm tw-text-gray-400 tw-mt-1">
+              Click &quot;Sign Up Worker&quot; to add team members.
+            </p>
+          )}
         </div>
       );
     }
-    return <div>{member.role}</div>;
-  };
 
-  renderSuccessPopUp = (numInvitesSent: number): JSX.Element => (
-    <div>
-      <Alert
-        className="mt-2"
-        variant="success"
-        dismissible
-        onClose={() => this.setState({ showPopUp: false })}
-      >
-        <p className="mb-0">
-          Congrats! You successfully invited {numInvitesSent} new members to
-          your team! Head to your Admin Panel to see them.
-        </p>
-      </Alert>
-    </div>
-  );
-
-  saveMembersBackend = (e: React.MouseEvent<HTMLElement>): void => {
-    e.preventDefault();
-    const { alert, name, organization } = this.props;
-    const { memberArr } = this.state;
-    const members = Object.assign([], memberArr);
-    try {
-      Object.keys(members).forEach((key) => {
-        const fullName = members[key].name;
-        const firstname = fullName.substr(0, fullName.indexOf(' '));
-        let lastname = fullName.substr(fullName.indexOf(' ') + 1);
-        lastname = lastname.trim();
-        members[key].firstName = firstname;
-        members[key].lastName = lastname;
-      });
-    } catch (error) {
-      alert.show(`Error Parsing Name : ${error}`);
-    }
-
-    this.setState({ buttonLoadingState: true });
-    fetch(`${getServerURL()}/invite-user`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        senderName: name,
-        organization,
-        data: members,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-
-        if (status === 'SUCCESS') {
-          this.setState((prevState) => ({
-            showPopUp: true,
-            numInvitesSent: prevState.memberArr.length,
-            memberArr: [],
-            buttonLoadingState: false,
-          }));
-        } else if (status === 'EMPTY_FIELD') {
-          alert.show(
-            'Missing field. Make sure to include first name, last name, email, AND role)',
-          );
-          this.setState({ buttonLoadingState: false });
-        }
-      })
-      .catch((error) => {
-        alert.show(
-          `Network Failure: ${error}. Logout and try again or report this issue to Keep.id`,
-        );
-        this.setState({ buttonLoadingState: false });
-      });
-  };
-
-  render() {
-    const {
-      showPopUp,
-      numInvitesSent,
-      personRole,
-      personName,
-      personEmail,
-      buttonLoadingState,
-    } = this.state;
     return (
-      // <div className="container">
-      //   {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
-      //   <p className="font-weight-bold text-dark my-3 h3">
-      //     Invite New Team Members
-      //   </p>
-      //   <form>
-      //     <div className="form-row">
-      //       <div className="form-group required col-xs">
-      //         <label htmlFor="exampleName">
-      //           Name
-      //           <input
-      //             placeholder="Full Name Here"
-      //             type="name"
-      //             className="form-control form-purple"
-      //             id="exampleName"
-      //             value={personName}
-      //             onChange={(e) =>
-      //               this.setState({ personName: e.target.value })
-      //             }
-      //           />
-      //         </label>
-      //       </div>
-      //       <div className="form-group required col-xs">
-      //         <label htmlFor="exampleEmail">
-      //           Email address
-      //           <input
-      //             placeholder="Enter Valid Email"
-      //             type="email"
-      //             id="exampleEmail"
-      //             className="form-control form-purple"
-      //             value={personEmail}
-      //             onChange={(e) =>
-      //               this.setState({ personEmail: e.target.value })
-      //             }
-      //           />
-      //         </label>
-      //       </div>
-      //       <div className="form-group required col-xs-4">
-      //         <label htmlFor="exampleRole">
-      //           Role
-      //           <select
-      //             placeholder="Role"
-      //             id="exampleRole"
-      //             className="form-control form-purple"
-      //             value={personRole}
-      //             onChange={(e) =>
-      //               this.setState({ personRole: e.target.value })
-      //             }
-      //           >
-      //             <option
-      //               defaultValue=""
-      //               disabled
-      //               hidden
-      //               aria-labelledby="exampleRole"
-      //             />
-      //             <option>Admin</option>
-      //             <option>Worker</option>
-      //             <option>Client</option>
-      //           </select>
-      //         </label>
-      //       </div>
-      //       <div className="col-xs mt-3">
-      //         <button
-      //           className="btn btn-primary mt-1"
-      //           type="submit"
-      //           onClick={(e) => this.addMember(e)}
-      //         >
-      //           Add Member to Queue
-      //         </button>
-      //       </div>
-      //     </div>
-      //   </form>
-      //   <p className="font-weight-bold text-dark mb-2 h3">Invite Queue</p>
-      //   <div
-      //     className="scrollbar"
-      //     style={{
-      //       maxHeight: '15.625rem',
-      //       overflow: 'scroll',
-      //       scrollbarColor: '#7B81FF',
-      //     }}
-      //   >
-      //     <table className="table table-striped table-bordered">
-      //       <thead className="position-sticky border" style={{ top: '0' }}>
-      //         <tr>
-      //           <th
-      //             aria-label="Name Column"
-      //             scope="col"
-      //             style={{ top: '0' }}
-      //             className="position-sticky bg-white border shadow-sm"
-      //           >
-      //             Name
-      //           </th>
-      //           <th
-      //             aria-label="Email Column"
-      //             scope="col"
-      //             style={{ top: '0' }}
-      //             className="position-sticky bg-white border shadow-sm"
-      //           >
-      //             Email
-      //           </th>
-      //           <th
-      //             aria-label="Edit Button Column"
-      //             scope="col"
-      //             style={{ top: '0' }}
-      //             className="position-sticky bg-white border shadow-sm"
-      //           >
-      //             Edit
-      //           </th>
-      //           <th
-      //             aria-label="Role Column"
-      //             scope="col"
-      //             style={{ top: '0' }}
-      //             className="position-sticky bg-white border shadow-sm"
-      //           >
-      //             Role
-      //           </th>
-      //           <th
-      //             aria-label="Delete Button Column"
-      //             scope="col"
-      //             style={{ top: '0', zIndex: 999 }}
-      //             className="position-sticky bg-white border shadow-sm"
-      //           />
-      //         </tr>
-      //       </thead>
-      //       <tbody className="table-striped">
-      //         {this.renderTableContents()}
-      //       </tbody>
-      //     </table>
-      //   </div>
-      //   <button
-      //     type="button"
-      //     className="btn btn-primary mt-1 float-right"
-      //     onClick={(e) => this.saveMembersBackend(e)}
-      //   >
-      //     {buttonLoadingState ? (
-      //       <div className="ld ld-ring ld-spin" />
-      //     ) : (
-      //       <div>Send Invites</div>
-      //     )}
-      //   </button>
-      // </div>
-      <div className="tw-container tw-mx-auto tw-p-6">
-        {showPopUp === true && this.renderSuccessPopUp(numInvitesSent)}
-
-        <p className="tw-font-bold tw-text-gray-800 tw-my-6 tw-text-3xl">
-          Invite New Team Members
-        </p>
-
-        <form>
-          <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-4 tw-gap-6">
-            <div className="tw-form-group lg:tw-col-span-1">
-              <label htmlFor="exampleName" className="tw-font-semibold">
+      <div className="tw-overflow-x-auto">
+        <table className="tw-min-w-full tw-divide-y tw-divide-gray-200">
+          <thead className="tw-bg-gray-50">
+            <tr>
+              <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
                 Name
-                <input
-                  placeholder="Full Name Here"
-                  type="text"
-                  className="tw-form-input tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
-                  id="exampleName"
-                  value={personName}
-                  onChange={(e) => this.setState({ personName: e.target.value })}
-                />
-              </label>
-            </div>
-
-            <div className="tw-form-group lg:tw-col-span-1">
-              <label htmlFor="exampleEmail" className="tw-font-semibold">
-                Email Address
-                <input
-                  placeholder="Enter Valid Email"
-                  type="email"
-                  id="exampleEmail"
-                  className="tw-form-input tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
-                  value={personEmail}
-                  onChange={(e) => this.setState({ personEmail: e.target.value })}
-                />
-              </label>
-            </div>
-
-            <div className="tw-form-group lg:tw-col-span-1">
-              <label htmlFor="exampleRole" className="tw-font-semibold">
+              </th>
+              <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
+                Email
+              </th>
+              <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
                 Role
-                <select
-                  id="exampleRole"
-                  className="tw-form-select tw-mt-1 tw-block tw-w-full tw-px-4 tw-py-2 tw-border tw-rounded-md tw-border-gray-300 tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
-                  value={personRole}
-                  onChange={(e) => this.setState({ personRole: e.target.value })}
-                >
-                  <option disabled hidden />
-                  <option>Admin</option>
-                  <option>Worker</option>
-                  <option>Client</option>
-                </select>
-              </label>
-            </div>
+              </th>
+              <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
+                Onboard Date
+              </th>
+              {isAdmin && (
+                <th className="tw-px-6 tw-py-3 tw-text-right tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
+                  Actions
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="tw-bg-white tw-divide-y tw-divide-gray-200">
+            {workers.map((worker) => (
+              <tr key={worker.username} className="hover:tw-bg-gray-50">
+                <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-sm tw-font-medium tw-text-gray-900">
+                  {worker.firstName} {worker.lastName}
+                </td>
+                <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-sm tw-text-gray-500">
+                  {worker.email || 'N/A'}
+                </td>
+                <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-sm tw-text-gray-500">
+                  <span className="tw-inline-flex tw-items-center tw-px-2.5 tw-py-0.5 tw-rounded-full tw-text-xs tw-font-medium tw-bg-blue-100 tw-text-blue-800">
+                    {worker.privilegeLevel}
+                  </span>
+                </td>
+                <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-sm tw-text-gray-500">
+                  {formatDate(worker.creationDate)}
+                </td>
+                {isAdmin && (
+                  <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-right tw-text-sm">
+                    {worker.privilegeLevel !== 'Admin' && worker.privilegeLevel !== 'Director' && (
+                      <button
+                        type="button"
+                        className="tw-text-red-600 hover:tw-text-red-800 tw-font-medium tw-bg-transparent tw-border-0 tw-cursor-pointer"
+                        onClick={() => setRemovingUsername(worker.username)}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
-            <div className="tw-flex tw-items-start lg:tw-col-span-1">
+  return (
+    <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
+      <Helmet>
+        <title>My Organization</title>
+        <meta name="description" content="Keep.id" />
+      </Helmet>
+
+      {/* Organization Info Section */}
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <h5 className="card-title tw-mb-0">Organization Info</h5>
+            <div className="tw-flex tw-gap-2">
+              {!isEditingOrg && isAdmin && (
+                <button
+                  type="button"
+                  className="btn btn-outline-dark"
+                  onClick={() => setIsEditingOrg(true)}
+                >
+                  Edit
+                </button>
+              )}
+              {isEditingOrg && (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark"
+                    onClick={handleCancelEditOrg}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleSaveOrgInfo}
+                  >
+                    Save
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          {renderOrgInfoContent()}
+        </div>
+      </div>
+
+      {/* Worker List Section */}
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
+            <h5 className="card-title tw-mb-0">Workers & Admins</h5>
+            {isAdmin && (
+              <Link to="/person-signup/worker">
+                <button
+                  type="button"
+                  className="btn btn-primary tw-mt-3 sm:tw-mt-0"
+                >
+                  Sign Up Worker
+                </button>
+              </Link>
+            )}
+          </div>
+
+          <form
+            className="tw-flex tw-w-full md:tw-w-96 tw-mb-4"
+            onSubmit={handleSearchSubmit}
+          >
+            <input
+              className="form-control form-purple tw-rounded-r-none"
+              type="text"
+              onChange={(e) => setSearchName(e.target.value)}
+              value={searchName}
+              placeholder="Search by name..."
+            />
+            <button
+              type="submit"
+              className="btn btn-primary tw-rounded-l-none"
+            >
+              Search
+            </button>
+          </form>
+
+          {renderWorkerListContent()}
+        </div>
+      </div>
+
+      {/* Remove Member Confirmation Modal */}
+      {removingUsername && workerToRemove && (
+        <div
+          className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
+          onClick={() => { if (!isRemoving) setRemovingUsername(null); }}
+          role="presentation"
+        >
+          <div
+            className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
+            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-2">
+              Remove Member
+            </h5>
+            <p className="tw-text-gray-600 tw-mb-4">
+              Are you sure you want to remove{' '}
+              <span className="tw-font-semibold">
+                {workerToRemove.firstName} {workerToRemove.lastName}
+              </span>{' '}
+              ({workerToRemove.email || workerToRemove.username}) from the organization?
+              This action cannot be undone.
+            </p>
+            <div className="tw-flex tw-justify-end tw-gap-3">
               <button
-                className="btn btn-primary tw-px-6 tw-py-2 tw-rounded-lg hover:tw-bg-blue-600 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
-                type="submit"
-                onClick={(e) => this.addMember(e)}
+                type="button"
+                className="btn btn-outline-dark"
+                onClick={() => setRemovingUsername(null)}
+                disabled={isRemoving}
               >
-                Add Member to Queue
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleRemoveMember}
+                disabled={isRemoving}
+              >
+                {isRemoving ? 'Removing...' : 'Remove'}
               </button>
             </div>
           </div>
-        </form>
-
-        <p className="tw-font-bold tw-text-gray-800 tw-mt-8 tw-mb-4 tw-text-2xl">
-          Invite Queue
-        </p>
-
-        <div className="tw-mt-6">
-          <table className="tw-min-w-full tw-table-auto tw-border tw-border-gray-300">
-            <thead className="tw-bg-gray-50 tw-sticky tw-top-0">
-              <tr>
-                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Name</th>
-                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Email</th>
-                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Edit</th>
-                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300">Role</th>
-                <th className="tw-px-4 tw-py-2 tw-font-semibold tw-border tw-border-gray-300" />
-              </tr>
-            </thead>
-            <tbody className="tw-divide-y tw-divide-gray-200">
-              {this.renderTableContents()}
-            </tbody>
-          </table>
-
-          <div className="tw-mt-6 tw-text-right">
-            <button
-              type="button"
-              className="btn btn-primary tw-px-6 tw-py-2 tw-rounded-lg hover:tw-bg-blue-600 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500"
-              onClick={(e) => this.saveMembersBackend(e)}
-            >
-              {buttonLoadingState ? (
-                <div className="ld ld-ring ld-spin" />
-              ) : (
-                <div>Send Invites</div>
-              )}
-            </button>
-          </div>
         </div>
-      </div>
-    );
-  }
-}
+      )}
+    </div>
+  );
+};
+
 export default withAlert()(MyOrganization);
