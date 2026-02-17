@@ -296,14 +296,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                   </button>
                 </Link>
               ) : null}
-              <Link to="/enroll-client" className="tw-mr-2">
+              <Link to="/enroll-client">
                 <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
                   Enroll Client
-                </button>
-              </Link>
-              <Link to="/person-signup/client">
-                <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
-                  Sign Up Client
                 </button>
               </Link>
             </div>
