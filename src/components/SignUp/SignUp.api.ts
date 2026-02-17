@@ -6,6 +6,24 @@ import {
 } from './SignUp.context';
 import { birthDateStringConverter, formatUrl } from './SignUp.util';
 
+export interface EnrollClientData {
+  firstname: string;
+  lastname: string;
+  birthDate: string;
+  email: string;
+  phonenumber?: string;
+}
+
+export async function enrollClient(
+  data: EnrollClientData,
+): Promise<{ status: string }> {
+  return fetch(`${getServerURL()}/enroll-client`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+}
+
 export async function isUsernameAvailable(username: string): Promise<boolean> {
   return fetch(`${getServerURL()}/username-exists`, {
     method: 'POST',
