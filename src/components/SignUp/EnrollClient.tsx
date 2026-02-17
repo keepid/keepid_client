@@ -3,10 +3,6 @@ import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { InputType } from '../BaseComponents/Inputs/FieldType';
-import StructuredFormFromFields, {
-  FormRowType,
-} from '../BaseComponents/Inputs/StructuredFormWithRows';
 import { enrollClient } from './SignUp.api';
 import { birthDateStringConverter } from './SignUp.util';
 import {
@@ -20,7 +16,7 @@ import {
 interface EnrollClientFormValues {
   firstname: string;
   lastname: string;
-  birthDate: Date | undefined;
+  birthDate: string;
   email: string;
   phonenumber: string;
 }
@@ -30,93 +26,75 @@ export default function EnrollClientPage(): JSX.Element {
   const [values, setValues] = useState<EnrollClientFormValues>({
     firstname: '',
     lastname: '',
-    birthDate: undefined,
+    birthDate: '',
     email: '',
     phonenumber: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
+  const [eulaAgreed, setEulaAgreed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [agreementError, setAgreementError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const onPropertyChange = (property: string, value: any) => {
-    setValues((prev) => ({ ...prev, [property]: value }));
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const rows: FormRowType[] = [
-    {
-      rowLabel: 'Name',
-      fields: [
-        {
-          label: 'First Name',
-          placeholder: 'First Name',
-          name: 'firstname',
-          type: InputType.TEXT,
-          validate: validateFirstname,
-        },
-        {
-          label: 'Last Name',
-          placeholder: 'Last Name',
-          name: 'lastname',
-          type: InputType.TEXT,
-          validate: validateLastname,
-        },
-      ],
-    },
-    {
-      rowLabel: 'Birth Date',
-      fields: [
-        {
-          label: 'Birth Date',
-          placeholder: 'Birth Date',
-          name: 'birthDate',
-          type: InputType.DATE,
-          validate: validateBirthdate,
-        },
-      ],
-    },
-    {
-      rowLabel: 'Email',
-      fields: [
-        {
-          label: 'Email',
-          placeholder: 'Email',
-          name: 'email',
-          type: InputType.TEXT,
-          validate: validateEmail,
-        },
-      ],
-    },
-    {
-      rowLabel: 'Phone Number',
-      fields: [
-        {
-          label: 'Phone Number',
-          placeholder: 'Phone Number (optional)',
-          name: 'phonenumber',
-          type: InputType.TEXT,
-          validate: (value: string) => {
-            if (!value || value.trim() === '') return '';
-            return validatePhonenumber(value);
-          },
-        },
-      ],
-    },
-  ];
+  const validateField = (name: string, value: string) => {
+    let error = '';
+    switch (name) {
+      case 'firstname':
+        error = validateFirstname(value);
+        break;
+      case 'lastname':
+        error = validateLastname(value);
+        break;
+      case 'email':
+        error = validateEmail(value);
+        break;
+      case 'phonenumber':
+        if (value && value.trim() !== '') error = validatePhonenumber(value);
+        break;
+      case 'birthDate':
+        if (value) {
+          const d = new Date(value);
+          error = validateBirthdate(d);
+        }
+        break;
+      default:
+        break;
+    }
+    setFieldErrors((prev) => ({ ...prev, [name]: error }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!e.currentTarget.checkValidity()) return;
 
     if (!values.birthDate) {
       alert.error('Please enter a valid birth date.');
       return;
     }
 
+    if (!eulaAgreed || !termsAccepted) {
+      setAgreementError('You must agree to the EULA and Terms and Conditions before submitting.');
+      return;
+    }
+    setAgreementError('');
+
+    const birthDateObj = new Date(values.birthDate);
+    const birthDateString = birthDateStringConverter(birthDateObj);
+
     setSubmitting(true);
     try {
       const response = await enrollClient({
         firstname: values.firstname,
         lastname: values.lastname,
-        birthDate: birthDateStringConverter(values.birthDate),
+        birthDate: birthDateString,
         email: values.email,
         phonenumber: values.phonenumber,
       });
@@ -142,6 +120,9 @@ export default function EnrollClientPage(): JSX.Element {
     }
   };
 
+  const inputClassName =
+    'tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-sm';
+
   if (enrolled) {
     return (
       <div className="tw-container tw-mx-auto tw-px-4 tw-pt-12">
@@ -161,7 +142,11 @@ export default function EnrollClientPage(): JSX.Element {
               className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-6 tw-rounded-md hover:tw-bg-blue-700 tw-border-0"
               onClick={() => {
                 setEnrolled(false);
-                setValues({ firstname: '', lastname: '', birthDate: undefined, email: '', phonenumber: '' });
+                setValues({ firstname: '', lastname: '', birthDate: '', email: '', phonenumber: '' });
+                setEulaAgreed(false);
+                setTermsAccepted(false);
+                setAgreementError('');
+                setFieldErrors({});
               }}
             >
               Enroll Another Client
@@ -187,7 +172,7 @@ export default function EnrollClientPage(): JSX.Element {
         <meta name="description" content="Keep.id" />
       </Helmet>
       <div className="tw-container tw-mx-auto tw-px-4 tw-pt-8">
-        <div className="tw-max-w-2xl tw-mx-auto">
+        <div className="tw-max-w-xl tw-mx-auto">
           <div className="tw-text-center tw-pb-4 tw-mb-2">
             <h2 className="tw-text-2xl tw-font-bold tw-text-gray-800">
               Enroll a New Client
@@ -196,13 +181,153 @@ export default function EnrollClientPage(): JSX.Element {
               The client will receive an email to set their password.
             </p>
           </div>
-          <StructuredFormFromFields
-            rows={rows}
-            onSubmit={handleSubmit}
-            onPropertyChange={onPropertyChange}
-            values={values}
-            labelClassName="d-none"
-          >
+
+          <form onSubmit={handleSubmit}>
+            <div className="tw-space-y-4">
+              <div className="tw-grid tw-grid-cols-2 tw-gap-4">
+                <div>
+                  <label htmlFor="firstname" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    First Name
+                  </label>
+                  <input
+                    id="firstname"
+                    name="firstname"
+                    type="text"
+                    placeholder="First Name"
+                    className={inputClassName}
+                    value={values.firstname}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                    required
+                  />
+                  {fieldErrors.firstname && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.firstname}</p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="lastname" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastname"
+                    name="lastname"
+                    type="text"
+                    placeholder="Last Name"
+                    className={inputClassName}
+                    value={values.lastname}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                    required
+                  />
+                  {fieldErrors.lastname && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.lastname}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="birthDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                  Birth Date
+                </label>
+                <input
+                  id="birthDate"
+                  name="birthDate"
+                  type="date"
+                  className={inputClassName}
+                  value={values.birthDate}
+                  onChange={onChange}
+                  onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  required
+                />
+                {fieldErrors.birthDate && (
+                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.birthDate}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="email" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  className={inputClassName}
+                  value={values.email}
+                  onChange={onChange}
+                  onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  required
+                />
+                {fieldErrors.email && (
+                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="phonenumber" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                  Phone Number <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                </label>
+                <input
+                  id="phonenumber"
+                  name="phonenumber"
+                  type="tel"
+                  placeholder="Phone Number"
+                  className={inputClassName}
+                  value={values.phonenumber}
+                  onChange={onChange}
+                  onBlur={(e) => validateField(e.target.name, e.target.value)}
+                />
+                {fieldErrors.phonenumber && (
+                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="tw-mt-6 tw-space-y-3">
+              <div className="tw-flex tw-items-start">
+                <input
+                  type="checkbox"
+                  id="eulaAgreement"
+                  className="tw-h-4 tw-w-4 tw-mt-0.5 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={eulaAgreed}
+                  onChange={(e) => {
+                    setEulaAgreed(e.target.checked);
+                    setAgreementError('');
+                  }}
+                />
+                <label htmlFor="eulaAgreement" className="tw-ml-2 tw-text-sm tw-text-gray-700">
+                  By clicking submit, I confirm that the client agrees to the{' '}
+                  <a
+                    href="https://docs.google.com/document/d/18O-2Q3hdjeMlDMg696F62rgBhW7fttluUSfYG5lb-uo/edit?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tw-text-blue-600 tw-underline"
+                  >
+                    End User License Agreement (EULA)
+                  </a>
+                </label>
+              </div>
+              <div className="tw-flex tw-items-start">
+                <input
+                  type="checkbox"
+                  id="termsCheck"
+                  className="tw-h-4 tw-w-4 tw-mt-0.5 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={termsAccepted}
+                  onChange={(e) => {
+                    setTermsAccepted(e.target.checked);
+                    setAgreementError('');
+                  }}
+                />
+                <label htmlFor="termsCheck" className="tw-ml-2 tw-text-sm tw-text-gray-700">
+                  I have read and agree to the Terms and Conditions and Privacy Policy
+                </label>
+              </div>
+              {agreementError && (
+                <p className="tw-text-red-600 tw-text-sm">{agreementError}</p>
+              )}
+            </div>
+
             <div className="tw-flex tw-justify-end tw-mt-6">
               <Link to="/home" className="tw-mr-3">
                 <button
@@ -220,7 +345,7 @@ export default function EnrollClientPage(): JSX.Element {
                 {submitting ? 'Enrolling...' : 'Enroll Client'}
               </button>
             </div>
-          </StructuredFormFromFields>
+          </form>
         </div>
       </div>
     </div>
