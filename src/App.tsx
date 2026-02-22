@@ -20,8 +20,6 @@ import OurPartners from './components/AboutUs/OurPartners';
 import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import AdminPanel from './components/AccountSettings/AdminPanel';
-import ClientProfilePage from './components/AccountSettings/ClientProfilePage';
-import MyAccount from './components/AccountSettings/MyAccount';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
@@ -36,8 +34,8 @@ import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
-import MyInformation from './components/MyInformation/MyInformation';
 import FindOrganization from './components/OrgFinder/FindOrganization';
+import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import SignUpRouter, {
   paths as SignUpRouterPaths,
@@ -185,7 +183,10 @@ class App extends React.Component<{}, State, {}> {
               this.logOut();
             }
           } else {
-            this.logOut();
+            // Server has a valid session but client has no local data.
+            // This happens after Google OAuth login redirect — trust the
+            // server and log in locally instead of destroying the session.
+            this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
         } else {
           this.logOut();
@@ -252,23 +253,6 @@ class App extends React.Component<{}, State, {}> {
                     return <AdminDashboard />;
                   }
                   return <Home />;
-                }}
-              />
-              <Route
-                path="/my-information"
-                render={() => {
-                  if (
-                    role === Role.Admin ||
-                    role === Role.Director ||
-                    role === Role.Worker ||
-                    role === Role.Client
-                  ) {
-                    return <MyInformation username={username} />;
-                  }
-                  if (role === Role.LoggedOut) {
-                    return <Home />;
-                  }
-                  return <Redirect to="/error" />;
                 }}
               />
               <Route path="/careers">
@@ -505,12 +489,22 @@ class App extends React.Component<{}, State, {}> {
                 path="/settings"
                 render={() => {
                   if (role !== Role.LoggedOut) {
-                    return <MyAccount />;
+                    return <Redirect to="/profile" />;
                   }
                   if (role === Role.LoggedOut) {
                     return <Home />;
                   }
                   return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/profile"
+                exact
+                render={() => {
+                  if (role !== Role.LoggedOut) {
+                    return <ProfilePage />;
+                  }
+                  return <Home />;
                 }}
               />
               <Route
@@ -532,7 +526,7 @@ class App extends React.Component<{}, State, {}> {
                 render={(props) => {
                   const clientUsername = props.match.params.username;
                   if (role !== Role.LoggedOut) {
-                    return <ClientProfilePage username={clientUsername} />;
+                    return <ProfilePage targetUsername={clientUsername} />;
                   }
                   return <Home />;
                 }}

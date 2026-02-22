@@ -93,7 +93,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          fileType: FileType.FORM,
+          fileType: FileType.APPLICATION_PDF,
           annotated: true,
         }),
       }).then((response) => response.json())
@@ -123,7 +123,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
-          fileType: FileType.FORM,
+          fileType: FileType.APPLICATION_PDF,
           targetUser: clientUsername,
           annotated: true,
         }),
@@ -181,7 +181,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
                 <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientUsername}'s`} Applications</h1>
-                <Link to="/applications/createnew">
+                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '' } }}>
                   <Button
                     className="btn btn-card mt-3 tw-mb-6"
                     style={{

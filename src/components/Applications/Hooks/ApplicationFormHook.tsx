@@ -13,6 +13,7 @@ interface ApplicationFormContextProps {
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
+  clientUsername: string;
 }
 
 export const ApplicationFormContext =
@@ -51,11 +52,13 @@ type ApplicationPageName = 'type'
   | 'person'
   | 'situation'
   | 'review'
+  | 'webForm'
   | 'preview'
   | 'send'
 
 export interface ApplicationFormPage {
   pageName: ApplicationPageName;
+  displayName?: string;
   title: (appType: string) => string;
   subtitle?: string;
   dataAttr?: DataAttribute;
@@ -312,8 +315,15 @@ export const formContent: ApplicationFormPage[] = [
     options: [],
   },
   {
+    pageName: 'webForm',
+    displayName: 'Apply',
+    title: (_) => 'Fill out your application',
+    options: [],
+  },
+  {
     pageName: 'preview',
-    title: (_) => 'Review your application',
+    displayName: 'Sign',
+    title: (_) => 'Review and sign your application',
     options: [],
   },
   {
@@ -327,7 +337,7 @@ const dataAttrWithIndexes = formContent
   .map((p, i) => ({ attr: p.dataAttr, pageNum: i }))
   .filter((d) => d.attr != null) as { attr: string, pageNum: number}[];
 
-export function ApplicationFormProvider({ children }) {
+export function ApplicationFormProvider({ children, clientUsername = '' }: { children: React.ReactNode; clientUsername?: string }) {
   const [page, setPageRaw] = useState<number>(0);
   const [data, setData] = useState<ApplicationFormData>(initialData);
   const [isDirty, setIsDirty] = useState<boolean>(false);
@@ -377,6 +387,7 @@ export function ApplicationFormProvider({ children }) {
         handleChange,
         handleNext,
         handlePrev,
+        clientUsername,
       }}
     >
       {children}
