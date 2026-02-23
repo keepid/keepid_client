@@ -19,7 +19,6 @@ import EULA from './components/AboutUs/EULA';
 import OurPartners from './components/AboutUs/OurPartners';
 import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
-import AdminPanel from './components/AccountSettings/AdminPanel';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
@@ -37,6 +36,7 @@ import WorkerLanding from './components/LandingPages/WorkerLanding';
 import FindOrganization from './components/OrgFinder/FindOrganization';
 import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
+import EnrollClientPage from './components/SignUp/EnrollClient';
 import SignUpRouter, {
   paths as SignUpRouterPaths,
 } from './components/SignUp/SignUp.router';
@@ -331,25 +331,7 @@ class App extends React.Component<{}, State, {}> {
                 }
               />
 
-              <Route
-                path="/admin-panel"
-                render={() => {
-                  if (role === Role.Director || role === Role.Admin) {
-                    return (
-                      <AdminPanel
-                        name={name}
-                        organization={organization}
-                        username={username}
-                        role={role}
-                      />
-                    );
-                  }
-                  if (role === Role.LoggedOut) {
-                    return <Home />;
-                  }
-                  return <Redirect to="/error" />;
-                }}
-              />
+              {/* Admin Panel route removed - functionality moved to My Organization page */}
               <Route
                 path="/dev-panel"
                 render={() => {
@@ -512,7 +494,11 @@ class App extends React.Component<{}, State, {}> {
                 render={() => {
                   if (role === Role.Director || role === Role.Admin) {
                     return (
-                      <MyOrganization name={name} organization={organization} />
+                      <MyOrganization
+                        name={name}
+                        organization={organization}
+                        role={role}
+                      />
                     );
                   }
                   if (role === Role.LoggedOut) {
@@ -529,6 +515,22 @@ class App extends React.Component<{}, State, {}> {
                     return <ProfilePage targetUsername={clientUsername} />;
                   }
                   return <Home />;
+                }}
+              />
+              <Route
+                path="/enroll-client"
+                render={() => {
+                  if (
+                    role === Role.Worker ||
+                    role === Role.Admin ||
+                    role === Role.Director
+                  ) {
+                    return <EnrollClientPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
                 }}
               />
               <SignUpRouter role={role} />
