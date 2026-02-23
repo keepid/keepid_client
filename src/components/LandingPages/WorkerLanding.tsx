@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
@@ -12,6 +12,7 @@ import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
 interface Props {
   username: string;
@@ -46,6 +47,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [currentPage, setCurrentPage] = useState(1);
   const [shouldFilterByAllClients, setShouldFilterByAllClients] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const { path, url } = useRouteMatch();
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
     let photos: (string | null)[];
@@ -282,210 +284,233 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         <title>Home</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
-        <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
-          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
-            <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
-              {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
-            </h1>
-            <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
-              {role === Role.Director || role === Role.Admin ? (
-                <Link to="/person-signup/worker" className="tw-mr-2">
-                  <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
-                    Sign Up Worker
-                  </button>
-                </Link>
-              ) : null}
-              <Link to="/person-signup/client">
-                <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
-                  Sign Up Client
-                </button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="tw-flex tw-flex-col md:tw-flex-row tw-items-start">
-            <form
-              className="tw-flex tw-w-full md:tw-w-auto tw-mb-4 md:tw-mb-0 md:tw-mr-4"
-              onSubmit={handleSearchSubmit}
-            >
-              <input
-                className="tw-flex-grow tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
-                type="text"
-                onChange={(e) => setSearchName(e.target.value)}
-                value={searchName}
-                placeholder="Search by name, phone, email..."
-              />
-              <button type="submit" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-r-md hover:tw-bg-blue-700 tw-border-0">
-                Search
-              </button>
-            </form>
-            <div className="tw-flex tw-items-start">
-              <div className="tw-font-bold tw-mr-4 tw-mt-1">Filters</div>
-              <div className="tw-flex tw-flex-col">
-                <div className="tw-flex tw-items-center tw-mb-2">
-                  <input
-                    checked={shouldFilterByAllClients}
-                    type="radio"
-                    id="showAllClients"
-                    name="clientFilter"
-                    className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
-                    onChange={handleToggleFilteredClients}
-                  />
-                  <label htmlFor="showAllClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
-                    Show All Clients
-                  </label>
+      <Switch>
+        <Route exact path={path}>
+          <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
+            <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
+              <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
+                <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
+                  {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
+                </h1>
+                <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
+                  {role === Role.Director || role === Role.Admin ? (
+                    <Link to="/person-signup/worker" className="tw-mr-2">
+                      <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
+                        Sign Up Worker
+                      </button>
+                    </Link>
+                  ) : null}
+                  <Link to="/person-signup/client">
+                    <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
+                      Sign Up Client
+                    </button>
+                  </Link>
                 </div>
-                <div className="tw-flex tw-items-center">
+              </div>
+
+              <div className="tw-flex tw-flex-col md:tw-flex-row tw-items-start">
+                <form
+                  className="tw-flex tw-w-full md:tw-w-auto tw-mb-4 md:tw-mb-0 md:tw-mr-4"
+                  onSubmit={handleSearchSubmit}
+                >
                   <input
-                    checked={!shouldFilterByAllClients}
-                    type="radio"
-                    id="showMyAssignedClients"
-                    name="clientFilter"
-                    className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
-                    onChange={handleToggleFilteredClients}
+                    className="tw-flex-grow tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
+                    type="text"
+                    onChange={(e) => setSearchName(e.target.value)}
+                    value={searchName}
+                    placeholder="Search by name, phone, email..."
                   />
-                  <label htmlFor="showMyAssignedClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
-                    Show My Clients
-                  </label>
+                  <button type="submit" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-r-md hover:tw-bg-blue-700 tw-border-0">
+                    Search
+                  </button>
+                </form>
+                <div className="tw-flex tw-items-start">
+                  <div className="tw-font-bold tw-mr-4 tw-mt-1">Filters</div>
+                  <div className="tw-flex tw-flex-col">
+                    <div className="tw-flex tw-items-center tw-mb-2">
+                      <input
+                        checked={shouldFilterByAllClients}
+                        type="radio"
+                        id="showAllClients"
+                        name="clientFilter"
+                        className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
+                        onChange={handleToggleFilteredClients}
+                      />
+                      <label htmlFor="showAllClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
+                        Show All Clients
+                      </label>
+                    </div>
+                    <div className="tw-flex tw-items-center">
+                      <input
+                        checked={!shouldFilterByAllClients}
+                        type="radio"
+                        id="showMyAssignedClients"
+                        name="clientFilter"
+                        className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
+                        onChange={handleToggleFilteredClients}
+                      />
+                      <label htmlFor="showMyAssignedClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
+                        Show My Clients
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="tw-container tw-mx-auto tw-px-4">
-          {isLoading ? (
-            <div className="tw-text-center tw-py-12">
-              <h3 className="tw-text-xl tw-text-gray-700">Loading Clients</h3>
-              <PulseLoader color="#616161" size={6} />
-            </div>
-          ) : (
-            <div>
-              {clients.length > 0 ? (
-                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
-                  {currentPosts.map((client) => (
-                    <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
-                      <div className="tw-absolute tw-top-3 tw-right-3">
-                        <details className="tw-relative">
-                          <summary className="tw-list-none tw-cursor-pointer">
-                            <img alt="menu" src={MenuDots} className="tw-h-6" />
-                          </summary>
-                          <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
-                            <Link
-                              to={`/upload-document/${client.username}`}
-                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                            >
-                              <div className="tw-flex tw-items-center tw-font-semibold tw-bg-twprimary">
-                                <img src={UploadIconBlue} className="tw-h-6 tw-mr-2" alt="upload icon" />
-                                Upload
-                              </div>
-                            </Link>
-                            <Link
-                              to={`/my-documents/${client.username}`}
-                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                            >
-                              <div className="tw-flex tw-items-center">
-                                <img alt="doc icon" src={DocIcon} className="tw-h-5 tw-mx-1 tw-mr-2" />
-                                View Documents
-                              </div>
-                            </Link>
-                            <Link
-                              to={{ pathname: '/applications', state: { clientUsername: client.username } }}
-                              className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                            >
-                              <div className="tw-flex tw-items-center">
-                                Fill Out Application
-                              </div>
-                            </Link>
-                          </div>
-                        </details>
-                      </div>
-
-                      <Link to={`/profile/${client.username}`} className="tw-flex-grow">
-                        <div className="tw-flex tw-items-center tw-mb-3">
-                          {client.photo ? (
-                            <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                          ) : (
-                            <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                          )}
-                        </div>
-                        <div className="tw-mb-1">
-                          <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
-                            {client.firstName} {client.lastName}
-                          </h5>
-                        </div>
-                        <div className="tw-mb-1">
-                          <h6 className="tw-text-gray-500">{client.phone}</h6>
-                        </div>
-                        <div className="tw-mb-1">
-                          <h6 className="tw-text-gray-500">
-                            Birth Date: {client.birthDate}
-                          </h6>
-                        </div>
-                      </Link>
-
-                      <div className="tw-flex tw-items-center tw-mt-4">
-                          <Link to={`/upload-document/${client.username}`} className="tw-mr-2">
-                              <button type="button" className="tw-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-0">
-                                  <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
-                                  Upload
-                              </button>
-                          </Link>
-                          <Link to={`/my-documents/${client.username}`}>
-                              <button type="button" className="tw-flex tw-items-center tw-justify-center tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-bg-white">
-                                  View Documents
-                              </button>
-                          </Link>
-                      </div>
-
-                      {showClientAuthModal && modalRender()}
-                    </div>
-                  ))}
+            <div className="tw-container tw-mx-auto tw-px-4">
+              {isLoading ? (
+                <div className="tw-text-center tw-py-12">
+                  <h3 className="tw-text-xl tw-text-gray-700">Loading Clients</h3>
+                  <PulseLoader color="#616161" size={6} />
                 </div>
               ) : (
-                <div className="tw-text-center tw-py-12">
-                  <h3 className="tw-text-xl tw-text-gray-700">
-                    No Clients! Click &apos;Sign up Client&apos; to get started!
-                  </h3>
-                  <img
-                    className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
-                    src={VisualizationSVG}
-                    alt="Search for a client"
-                  />
+                <div>
+                  {clients.length > 0 ? (
+                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+                      {currentPosts.map((client) => (
+                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
+                          <div className="tw-absolute tw-top-3 tw-right-3">
+                            <details className="tw-relative">
+                              <summary className="tw-list-none tw-cursor-pointer">
+                                <img alt="menu" src={MenuDots} className="tw-h-6" />
+                              </summary>
+                              <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
+                                <Link
+                                  to={`/upload-document/${client.username}`}
+                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                                >
+                                  <div className="tw-flex tw-items-center tw-font-semibold tw-bg-twprimary">
+                                    <img src={UploadIconBlue} className="tw-h-6 tw-mr-2" alt="upload icon" />
+                                    Upload
+                                  </div>
+                                </Link>
+                                <Link
+                                  to={`/my-documents/${client.username}`}
+                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                                >
+                                  <div className="tw-flex tw-items-center">
+                                    <img alt="doc icon" src={DocIcon} className="tw-h-5 tw-mx-1 tw-mr-2" />
+                                    View Documents
+                                  </div>
+                                </Link>
+                                <Link
+                                  to={{ pathname: '/applications', state: { clientUsername: client.username } }}
+                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
+                                >
+                                  <div className="tw-flex tw-items-center">
+                                    Fill Out Application
+                                  </div>
+                                </Link>
+                              </div>
+                            </details>
+                          </div>
+
+                          <Link to={`/profile/${client.username}`} className="tw-flex-grow">
+                            <div className="tw-flex tw-items-center tw-mb-3">
+                              {client.photo ? (
+                                <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                              ) : (
+                                <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                              )}
+                            </div>
+                            <div className="tw-mb-1">
+                              <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
+                                {client.firstName} {client.lastName}
+                              </h5>
+                            </div>
+                            <div className="tw-mb-1">
+                              <h6 className="tw-text-gray-500">{client.phone}</h6>
+                            </div>
+                            <div className="tw-mb-1">
+                              <h6 className="tw-text-gray-500">
+                                Birth Date: {client.birthDate}
+                              </h6>
+                            </div>
+                          </Link>
+
+                          <div className="tw-inline-flex tw-rounded-md tw-mt-4">
+                              <Link to={`/upload-document/${client.username}`} className="tw-relative tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-l tw-text-sm tw-border-none">
+                                  <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
+                                  Upload
+                              </Link>
+                              <Link to={`/my-documents/${client.username}`} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200">
+                                  View Documents
+                              </Link>
+                              <Link to={`${path}/notify-client/${client.username}`} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-r tw-text-sm tw-border-none">
+                                  Notify Client
+                              </Link>
+                          </div>
+
+                          {showClientAuthModal && modalRender()}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="tw-text-center tw-py-12">
+                      <h3 className="tw-text-xl tw-text-gray-700">
+                        No Clients! Click &apos;Sign up Client&apos; to get started!
+                      </h3>
+                      <img
+                        className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
+                        src={VisualizationSVG}
+                        alt="Search for a client"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
-          <div className="tw-flex tw-items-center">
-            {!isLoading && clients.length > 0 && (
-              <>
-                <div className="tw-text-gray-600 tw-mr-4">
-                  {clients.length} Results
-                </div>
-                <div className="tw-flex">
-                  {pageNumbers.map((pageNum) => (
-                    <span
-                      key={pageNum}
-                      className={paginationClassName(pageNum)}
-                      onClick={() => setCurrentPage(pageNum)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyPress={(e) => e.key === 'Enter' && setCurrentPage(pageNum)}
-                    >
-                      {pageNum}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
+            <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
+              <div className="tw-flex tw-items-center">
+                {!isLoading && clients.length > 0 && (
+                  <>
+                    <div className="tw-text-gray-600 tw-mr-4">
+                      {clients.length} Results
+                    </div>
+                    <div className="tw-flex">
+                      {pageNumbers.map((pageNum) => (
+                        <span
+                          key={pageNum}
+                          className={paginationClassName(pageNum)}
+                          onClick={() => setCurrentPage(pageNum)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyPress={(e) => e.key === 'Enter' && setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </Route>
+        <Route
+          path={`${path}/notify-client/:clientUsername`}
+          render={(props) => {
+            const { clientUsername } = props.match.params;
+            const client = clients.find((client) => client.username === clientUsername);
 
+            if (client === undefined) return <Redirect to="/home" />;
+
+            const { firstName: clientFirstName, lastName: clientLastName, phone: clientPhone } = client;
+
+            return (
+              <IdPickupNotificationForm
+                clientUsername={clientUsername}
+                workerUsername={username}
+                initialClientName={`${clientFirstName} ${clientLastName}`}
+                initialWorkerName={name}
+                initialClientPhone={clientPhone}
+              />
+            );
+          }}
+        />
+      </Switch>
     </div>
   );
 };
