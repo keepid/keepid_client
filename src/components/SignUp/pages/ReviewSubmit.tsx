@@ -104,11 +104,6 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
                   <td />
                 </tr>
                 <tr>
-                  <th scope="row">Username</th>
-                  <td>{accountInformation.username}</td>
-                  <td />
-                </tr>
-                <tr>
                   <th scope="row">Password</th>
                   <td>{(!showPassword) ?
                     (accountInformation.password &&

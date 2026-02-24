@@ -244,11 +244,6 @@ export default function EssentialAccountSection({
         <hr />
 
         <div className="row tw-mb-2 tw-mt-1">
-          <div className="col-3 card-text mt-2 text-primary-theme">Username</div>
-          <div className="col-9 card-text tw-pt-2">{profile.username || ''}</div>
-        </div>
-
-        <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
           <div className="col-9 card-text tw-pt-2">
             {name}

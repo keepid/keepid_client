@@ -30,11 +30,13 @@ interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   documents: DocumentInformation[],
-  clientUsername: string | undefined
+  clientUsername: string | undefined,
+  clientName: string | undefined,
 }
 
 interface LocationState {
-  clientUsername: string
+  clientUsername: string;
+  clientName?: string;
 }
 
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
@@ -82,6 +84,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationFilename: undefined,
       documents: [],
       clientUsername: undefined,
+      clientName: undefined,
     };
   }
 
@@ -116,9 +119,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           }
         });
     } else { // Case worker view
-      // clientName will be passed in via Link state in WorkerLanding page
-      const { clientUsername } = location.state as LocationState;
-      this.setState({ clientUsername });
+      const { clientUsername, clientName } = location.state as LocationState;
+      this.setState({ clientUsername, clientName });
       fetch(`${getServerURL()}/get-files`, {
         method: 'POST',
         credentials: 'include',
@@ -168,19 +170,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationId,
       documents,
       clientUsername,
+      clientName,
     } = this.state;
 
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="container-fluid">
+          <div className="container-fluid tw-pt-8">
             <Helmet>
               <title>Applications</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientUsername}'s`} Applications</h1>
+                <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientName || 'Client'}'s`} Applications</h1>
                 <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '' } }}>
                   <Button
                     className="btn btn-card mt-3 tw-mb-6"

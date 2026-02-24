@@ -38,7 +38,7 @@ class ForgotPassword extends Component<Props, State> {
     event.preventDefault();
     const { username } = this.state;
     if (username.trim() === '') {
-      this.props.alert.show('Please enter your username or email');
+      this.props.alert.show('Please enter your email');
       this.setState({ buttonState: '' });
     } else {
       fetch(`${getServerURL()}/forgot-password`, {
@@ -57,7 +57,7 @@ class ForgotPassword extends Component<Props, State> {
             );
             this.setState({ buttonState: '' });
           } else if (status === 'USER_NOT_FOUND') {
-            this.props.alert.show('Incorrect username or email');
+            this.props.alert.show('No account found with that email');
             this.setState({ buttonState: '' });
           } else if (status === 'NOT_VALID_EMAIL') {
             this.props.alert.show(
@@ -117,7 +117,7 @@ class ForgotPassword extends Component<Props, State> {
                   Forgot Your Password?
                 </h1>
                 <span className="text-muted">
-                  Enter your username or email to reset your password. Afterwards, check
+                  Enter your email to reset your password. Afterwards, check
                   your email or contact your nonprofit to get your password
                   recovery code.
                 </span>
@@ -125,12 +125,12 @@ class ForgotPassword extends Component<Props, State> {
                   htmlFor="username"
                   className="w-100 mt-3 font-weight-bold"
                 >
-                  Username or email
+                  Email
                   <input
                     type="text"
                     className="form-control form-purple mt-1"
                     id="username"
-                    placeholder="username or email"
+                    placeholder="email"
                     value={username}
                     onChange={this.handleChangeUsername}
                     required

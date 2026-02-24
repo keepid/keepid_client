@@ -46,12 +46,12 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const displayName = useMemo(() => {
     if (!profile) return '';
-    return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username || '';
+    return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.email || '';
   }, [profile]);
 
   const title = useMemo(() => {
     if (targetUsername && displayName) return `${displayName}'s Profile`;
-    if (targetUsername) return `Profile: ${targetUsername}`;
+    if (targetUsername) return 'Profile';
     return 'Profile';
   }, [targetUsername, displayName]);
 
@@ -136,7 +136,7 @@ export default function ProfilePage({ targetUsername }: Props) {
         <div className="card mt-3 mb-3 pl-5 pr-5">
           <div className="card-body">
             <h4 className="card-title tw-mb-0 tw-font-bold">
-              {displayName ? `${displayName}'s Profile` : `Profile: ${targetUsername}`}
+              {displayName ? `${displayName}'s Profile` : 'Profile'}
             </h4>
           </div>
         </div>
@@ -164,7 +164,7 @@ export default function ProfilePage({ targetUsername }: Props) {
                     />
                   ) : (
                     <div className="tw-h-16 tw-w-16 tw-rounded-full tw-bg-gray-200 tw-flex tw-items-center tw-justify-center tw-text-lg tw-font-semibold tw-text-gray-600">
-                      {(profile.firstName || profile.username || '?')
+                      {(profile.firstName || profile.email || '?')
                         .toString()
                         .charAt(0)
                         .toUpperCase()}
@@ -173,7 +173,7 @@ export default function ProfilePage({ targetUsername }: Props) {
                 </div>
                 <div className="tw-flex-1">
                   <div className="tw-text-base tw-font-semibold">
-                    {[profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username}
+                    {[profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.email || ''}
                   </div>
                   {profile.email && (
                     <div className="tw-text-sm tw-text-gray-500">
