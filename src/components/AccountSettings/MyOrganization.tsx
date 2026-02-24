@@ -428,7 +428,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <span className="tw-font-semibold">
                 {workerToRemove.firstName} {workerToRemove.lastName}
               </span>{' '}
-              ({workerToRemove.email || workerToRemove.username}) from the organization?
+              ({workerToRemove.email || 'no email'}) from the organization?
               This action cannot be undone.
             </p>
             <div className="tw-flex tw-justify-end tw-gap-3">

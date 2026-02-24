@@ -392,6 +392,7 @@ class App extends React.Component<{}, State, {}> {
                 path="/my-documents/:clientUsername"
                 render={(props) => {
                   const { clientUsername } = props.match.params;
+                  const locState = props.location.state as { clientName?: string } | undefined;
                   if (
                     role === Role.Admin ||
                     role === Role.Worker ||
@@ -402,6 +403,7 @@ class App extends React.Component<{}, State, {}> {
                       <MyDocuments
                         userRole={Role.Client}
                         username={clientUsername}
+                        clientName={locState?.clientName}
                       />
                     );
                   }

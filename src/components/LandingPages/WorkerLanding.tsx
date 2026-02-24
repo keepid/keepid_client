@@ -165,7 +165,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         } else if (status === 'AUTH_FAILURE') {
           alert.show('Incorrect Password');
         } else if (status === 'USER_NOT_FOUND') {
-          alert.show('Username Does Not Exist');
+          alert.show('Account not found');
         } else {
           alert.show('Server Failure: Please Try Again');
         }
@@ -222,7 +222,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
           <div className="tw-py-4">
             <div className="tw-mb-4">
-              <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client Username</label>
+              <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client</label>
               <input
                 type="text"
                 id="authenticateForm"
@@ -282,7 +282,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         <title>Home</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
+      <div className="tw-bg-transparent tw-pt-8 tw-pb-0">
         <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
             <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
@@ -376,13 +376,13 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                               to={`/upload-document/${client.username}`}
                               className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                             >
-                              <div className="tw-flex tw-items-center tw-font-semibold tw-bg-twprimary">
+                              <div className="tw-flex tw-items-center">
                                 <img src={UploadIconBlue} className="tw-h-6 tw-mr-2" alt="upload icon" />
                                 Upload
                               </div>
                             </Link>
                             <Link
-                              to={`/my-documents/${client.username}`}
+                              to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }}
                               className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                             >
                               <div className="tw-flex tw-items-center">
@@ -391,7 +391,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                               </div>
                             </Link>
                             <Link
-                              to={{ pathname: '/applications', state: { clientUsername: client.username } }}
+                              to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
                               className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                             >
                               <div className="tw-flex tw-items-center">
@@ -432,7 +432,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                                   Upload
                               </button>
                           </Link>
-                          <Link to={`/my-documents/${client.username}`}>
+                          <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }}>
                               <button type="button" className="tw-flex tw-items-center tw-justify-center tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-bg-white">
                                   View Documents
                               </button>
