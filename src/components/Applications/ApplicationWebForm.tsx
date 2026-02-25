@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import PhoneBookPicker from '../PhoneBook/PhoneBookPicker';
 
 // ----- Types -----
 
@@ -375,11 +376,43 @@ export default function ApplicationWebForm({
     </div>
   );
 
+  const isPhoneField = (entry: Field): boolean => {
+    const name = (entry.fieldName || '').toLowerCase();
+    const question = (entry.fieldQuestion || '').toLowerCase();
+    const combined = `${name} ${question}`;
+    return /phone|telephone|cell|mobile/.test(combined)
+      && !/fax/.test(combined);
+  };
+
+  const renderPhoneBookField = (entry: Field) => (
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
+        {entry.fieldQuestion || entry.fieldName}
+        {entry.fieldIsRequired && <span className="text-danger"> *</span>}
+      </label>
+      <PhoneBookPicker
+        value={formAnswers[entry.fieldName] ?? ''}
+        targetUsername={clientUsername || undefined}
+        onSelect={(phone) => {
+          setFormAnswers((prev) => ({ ...prev, [entry.fieldName]: phone }));
+          setValidationErrors((prev) => {
+            const next = new Set(prev);
+            next.delete(entry.fieldName);
+            return next;
+          });
+        }}
+      />
+      {validationErrors.has(entry.fieldName) && (
+        <small className="text-danger">This field is required.</small>
+      )}
+    </div>
+  );
+
   const renderField = (entry: Field) => {
     const type = entry.fieldType.toLowerCase();
     switch (type) {
       case 'textfield':
-        return renderTextField(entry);
+        return isPhoneField(entry) ? renderPhoneBookField(entry) : renderTextField(entry);
       case 'multilinetextfield':
         return renderMultilineTextField(entry);
       case 'checkbox':

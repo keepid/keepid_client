@@ -13,6 +13,14 @@ type OrgInfo = {
   email: string;
 };
 
+function buildAddressString(data: any): string {
+  if (data.orgAddress && typeof data.orgAddress === 'object') {
+    const a = data.orgAddress;
+    return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
+  }
+  return data.address || '';
+}
+
 export default function OrganizationInfoSection({ organizationName }: Props) {
   const [orgInfo, setOrgInfo] = useState<OrgInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +43,7 @@ export default function OrganizationInfoSection({ organizationName }: Props) {
       if (json?.status === 'SUCCESS') {
         setOrgInfo({
           name: json.name || '',
-          address: json.address || '',
+          address: buildAddressString(json),
           phone: json.phone || '',
           email: json.email || '',
         });
@@ -68,14 +76,10 @@ export default function OrganizationInfoSection({ organizationName }: Props) {
     );
   }
 
-  if (!orgInfo) {
-    return null;
-  }
+  if (!orgInfo) return null;
 
   const hasAnyInfo = orgInfo.name || orgInfo.address || orgInfo.phone || orgInfo.email;
-  if (!hasAnyInfo) {
-    return null;
-  }
+  if (!hasAnyInfo) return null;
 
   return (
     <div className="card mt-3 mb-3 pl-5 pr-5">

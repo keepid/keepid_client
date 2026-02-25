@@ -19,7 +19,29 @@ type Props = {
   targetUsername?: string;
 };
 
-type ProfileResponse = {
+export type NameObj = {
+  first?: string;
+  middle?: string;
+  last?: string;
+  suffix?: string;
+  maiden?: string;
+};
+
+export type AddressObj = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  county?: string;
+};
+
+export type PhoneBookEntry = {
+  label: string;
+  phoneNumber: string;
+};
+
+export type ProfileData = {
   status?: string;
   message?: string;
   username?: string;
@@ -27,19 +49,23 @@ type ProfileResponse = {
   lastName?: string;
   email?: string;
   phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zipcode?: string;
+  birthDate?: string;
   organization?: string;
   privilegeLevel?: string;
-  optionalInformation?: any;
+  currentName?: NameObj;
+  nameHistory?: NameObj[];
+  personalAddress?: AddressObj;
+  mailAddress?: AddressObj;
+  phoneBook?: PhoneBookEntry[];
+  sex?: string;
+  motherName?: NameObj;
+  fatherName?: NameObj;
 };
 
 export default function ProfilePage({ targetUsername }: Props) {
   const alert = useAlert();
   const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<ProfileResponse | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoAvailable, setPhotoAvailable] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -51,7 +77,6 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const title = useMemo(() => {
     if (targetUsername && displayName) return `${displayName}'s Profile`;
-    if (targetUsername) return 'Profile';
     return 'Profile';
   }, [targetUsername, displayName]);
 
@@ -76,17 +101,15 @@ export default function ProfilePage({ targetUsername }: Props) {
           setPhotoAvailable(false);
           setPhotoUrl(null);
         }
-      } catch (e) {
-        // Silent failure – profile picture is non-critical
+      } catch {
+        // Silent failure -- profile picture is non-critical
       }
     },
     [],
   );
 
   useEffect(() => {
-    if (!profile?.username) {
-      return;
-    }
+    if (!profile?.username) return;
     loadProfilePhoto(profile.username);
   }, [loadProfilePhoto, profile?.username]);
 
@@ -100,14 +123,12 @@ export default function ProfilePage({ targetUsername }: Props) {
         body: JSON.stringify(targetUsername ? { username: targetUsername } : {}),
         signal,
       });
-      const json = (await res.json()) as ProfileResponse;
+      const json = (await res.json()) as ProfileData;
 
       if (json?.status && json.status !== 'SUCCESS') {
         alert.show(`Failed to load profile: ${json.message || json.status}`, { type: 'error' });
-        setProfile(json);
-      } else {
-        setProfile(json);
       }
+      setProfile(json);
     } catch (e: any) {
       if (e?.name !== 'AbortError') {
         alert.show(`Failed to load profile: ${e?.message || String(e)}`, { type: 'error' });
@@ -120,9 +141,7 @@ export default function ProfilePage({ targetUsername }: Props) {
   useEffect(() => {
     const controller = new AbortController();
     fetchProfile(controller.signal);
-    return () => {
-      controller.abort();
-    };
+    return () => { controller.abort(); };
   }, [alert, targetUsername]);
 
   return (
@@ -173,7 +192,7 @@ export default function ProfilePage({ targetUsername }: Props) {
                 </div>
                 <div className="tw-flex-1">
                   <div className="tw-text-base tw-font-semibold">
-                    {[profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.email || ''}
+                    {displayName}
                   </div>
                   {profile.email && (
                     <div className="tw-text-sm tw-text-gray-500">
@@ -202,19 +221,18 @@ export default function ProfilePage({ targetUsername }: Props) {
             onSaved={() => fetchProfile()}
           />
 
-          <SavedApplicationInfoSection
-            privilegeLevel={profile.privilegeLevel}
-            optionalInformation={profile.optionalInformation}
-            usernameForUpdates={targetUsername || profile.username}
-            onSaved={() => fetchProfile()}
-          />
+          {profile.privilegeLevel === 'Client' && (
+            <SavedApplicationInfoSection
+              profile={profile}
+              targetUsername={targetUsername}
+              onSaved={() => fetchProfile()}
+            />
+          )}
 
-          {/* Organization Information - only for clients viewing their own profile */}
           {!isWorkerView && profile.organization && (
             <OrganizationInfoSection organizationName={profile.organization} />
           )}
 
-          {/* Only allow changing password / 2FA on own profile */}
           {!targetUsername && profile.username && (
             <AccountSettingsSection username={profile.username} />
           )}
@@ -229,7 +247,6 @@ export default function ProfilePage({ targetUsername }: Props) {
 
           {isPhotoModalOpen && profile.username && (
             <ProfileModal
-              // Modal expects an object with a username field
               username={{ username: profile.username }}
               setModalOpen={setIsPhotoModalOpen}
               loadProfilePhoto={() => loadProfilePhoto(profile.username!)}
