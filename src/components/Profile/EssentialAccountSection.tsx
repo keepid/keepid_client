@@ -3,6 +3,7 @@ import { useAlert } from 'react-alert';
 
 import { isValidPhoneNumber } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import type { ProfileData } from './ProfilePage';
 
 type PhoneBookEntry = {
   label: string;
@@ -12,18 +13,7 @@ type PhoneBookEntry = {
 const PRIMARY_LABEL = 'primary';
 
 type Props = {
-  profile: {
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    birthDate?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    zipcode?: string;
-  };
+  profile: ProfileData;
   targetUsername?: string;
   onSaved?: () => void;
 };
@@ -46,26 +36,10 @@ export default function EssentialAccountSection({
   const [isSendingLoginInstructions, setIsSendingLoginInstructions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- root field state ---
-  const initial = useMemo(
-    () => ({
-      email: profile.email || '',
-      address: profile.address || '',
-      city: profile.city || '',
-      state: profile.state || '',
-      zipcode: profile.zipcode || '',
-    }),
-    [profile.address, profile.city, profile.email, profile.state, profile.zipcode],
-  );
-
-  const [email, setEmail] = useState(initial.email);
-  const [address, setAddress] = useState(initial.address);
-  const [city, setCity] = useState(initial.city);
-  const [state, setState] = useState(initial.state);
-  const [zipcode, setZipcode] = useState(initial.zipcode);
+  const initialEmail = profile.email || '';
+  const [email, setEmail] = useState(initialEmail);
   const hasEmail = email.trim() !== '';
 
-  // --- phone book state ---
   const [phoneBook, setPhoneBook] = useState<PhoneBookEntry[]>([]);
   const [phoneBookLoading, setPhoneBookLoading] = useState(true);
   const [editedPhoneBook, setEditedPhoneBook] = useState<PhoneBookEntry[]>([]);
@@ -103,17 +77,9 @@ export default function EssentialAccountSection({
     }
   }, [buildPayload]);
 
-  useEffect(() => {
-    fetchPhoneBook();
-  }, [fetchPhoneBook]);
+  useEffect(() => { fetchPhoneBook(); }, [fetchPhoneBook]);
 
-  const rootDirty = useMemo(() => (
-    email !== initial.email
-    || address !== initial.address
-    || city !== initial.city
-    || state !== initial.state
-    || zipcode !== initial.zipcode
-  ), [address, city, email, initial, state, zipcode]);
+  const emailDirty = email !== initialEmail;
 
   const phoneBookDirty = useMemo(() => {
     if (editedPhoneBook.length !== phoneBook.length) return true;
@@ -123,13 +89,17 @@ export default function EssentialAccountSection({
     });
   }, [editedPhoneBook, phoneBook]);
 
-  const isDirty = rootDirty || phoneBookDirty || showAddRow;
+  const isDirty = emailDirty || phoneBookDirty || showAddRow;
 
   const name = useMemo(() => {
-    const fn = profile.firstName || '';
-    const ln = profile.lastName || '';
-    return `${fn} ${ln}`.trim();
-  }, [profile.firstName, profile.lastName]);
+    const parts = [
+      profile.currentName?.first,
+      profile.currentName?.middle,
+      profile.currentName?.last,
+    ].filter(Boolean);
+    if (profile.currentName?.suffix) parts.push(profile.currentName.suffix);
+    return parts.join(' ') || `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
+  }, [profile]);
 
   // --- phone book API helpers ---
 
@@ -144,7 +114,6 @@ export default function EssentialAccountSection({
   }
 
   async function savePhoneBookChanges(): Promise<boolean> {
-    // 1) handle additions
     const isFirstEntry = editedPhoneBook.length === 0;
     const resolvedLabel = isFirstEntry ? PRIMARY_LABEL : addLabel.trim();
     if (showAddRow && resolvedLabel && addPhone.trim()) {
@@ -162,7 +131,6 @@ export default function EssentialAccountSection({
       }
     }
 
-    // 2) handle edits on existing entries
     const edits = editedPhoneBook
       .map((edited, i) => ({ edited, orig: phoneBook[i] }))
       .filter(({ edited, orig }) => {
@@ -192,7 +160,6 @@ export default function EssentialAccountSection({
       }
     }
 
-    // 3) handle deletions (entries in phoneBook that are missing from editedPhoneBook)
     const editedPhones = new Set(editedPhoneBook.map((e) => e.phoneNumber));
     const deletions = phoneBook.filter(
       (orig) => !editedPhones.has(orig.phoneNumber) && orig.label.toLowerCase() !== PRIMARY_LABEL,
@@ -211,18 +178,9 @@ export default function EssentialAccountSection({
     return true;
   }
 
-  // --- root field save ---
-
-  async function saveRootFields(): Promise<boolean> {
-    const payload: Record<string, any> = {};
-    if (email !== initial.email) payload.email = email;
-    if (address !== initial.address) payload.address = address;
-    if (city !== initial.city) payload.city = city;
-    if (state !== initial.state) payload.state = state;
-    if (zipcode !== initial.zipcode) payload.zipcode = zipcode;
-
-    if (Object.keys(payload).length === 0) return true;
-
+  async function saveEmail(): Promise<boolean> {
+    if (!emailDirty) return true;
+    const payload: Record<string, any> = { email };
     if (targetUsername) payload.username = targetUsername;
 
     const res = await fetch(`${getServerURL()}/update-user-profile`, {
@@ -231,33 +189,22 @@ export default function EssentialAccountSection({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const text = await res.text();
-    let json: any = null;
-    try {
-      json = JSON.parse(text);
-    } catch {
-      alert.show(`Failed to save: ${text || res.statusText || 'Unknown error'}`, { type: 'error' });
-      return false;
-    }
+    const json = await res.json();
     if (json?.status !== 'SUCCESS') {
-      alert.show(`Failed to save: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      alert.show(`Failed to save email: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
       return false;
     }
     return true;
   }
 
-  // --- combined save ---
-
   async function handleSave() {
     setIsSaving(true);
     try {
-      const rootOk = await saveRootFields();
-      if (!rootOk) return;
+      if (!(await saveEmail())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
       if (phoneBookDirty || hasNewEntry) {
-        const pbOk = await savePhoneBookChanges();
-        if (!pbOk) return;
+        if (!(await savePhoneBookChanges())) return;
       }
 
       alert.show('Saved account info');
@@ -286,22 +233,13 @@ export default function EssentialAccountSection({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const text = await res.text();
-      let json: any = null;
-      try {
-        json = JSON.parse(text);
-      } catch {
-        alert.show(`Failed to send email: ${text || res.statusText || 'Unknown error'}`, { type: 'error' });
-        return;
-      }
-      const status = json?.status;
-      const message = json?.message;
-      if (status === 'SUCCESS') {
+      const json = await res.json();
+      if (json?.status === 'SUCCESS') {
         alert.show('Login instructions sent');
-      } else if (status === 'EMAIL_DOES_NOT_EXIST') {
+      } else if (json?.status === 'EMAIL_DOES_NOT_EXIST') {
         alert.show('No email found for this account.', { type: 'error' });
       } else {
-        alert.show(`Failed to send email: ${message || status || 'Unknown error'}`, { type: 'error' });
+        alert.show(`Failed to send email: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
       }
     } catch (e: any) {
       alert.show(`Failed to send email: ${e?.message || String(e)}`, { type: 'error' });
@@ -311,6 +249,7 @@ export default function EssentialAccountSection({
   }
 
   function beginEdit() {
+    setEmail(initialEmail);
     setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
     setShowAddRow(false);
     setAddLabel('');
@@ -319,16 +258,8 @@ export default function EssentialAccountSection({
   }
 
   function cancelEdit() {
-    if (isDirty) {
-      // eslint-disable-next-line no-alert
-      const ok = window.confirm('Discard unsaved changes?');
-      if (!ok) return;
-    }
-    setEmail(initial.email);
-    setAddress(initial.address);
-    setCity(initial.city);
-    setState(initial.state);
-    setZipcode(initial.zipcode);
+    if (isDirty && !window.confirm('Discard unsaved changes?')) return;
+    setEmail(initialEmail);
     setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
     setShowAddRow(false);
     setAddLabel('');
@@ -355,30 +286,16 @@ export default function EssentialAccountSection({
           <h5 className="card-title tw-mb-0">Account Information</h5>
           <div className="tw-flex tw-gap-2">
             {!isEditing && (
-              <button
-                type="button"
-                className="btn btn-outline-dark"
-                onClick={beginEdit}
-              >
+              <button type="button" className="btn btn-outline-dark" onClick={beginEdit}>
                 Edit
               </button>
             )}
             {isEditing && (
               <>
-                <button
-                  type="button"
-                  className="btn btn-outline-dark"
-                  onClick={cancelEdit}
-                  disabled={isSaving}
-                >
+                <button type="button" className="btn btn-outline-dark" onClick={cancelEdit} disabled={isSaving}>
                   Cancel
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSave}
-                  disabled={isSaving || !isDirty}
-                >
+                <button type="button" className="btn btn-primary" onClick={handleSave} disabled={isSaving || !isDirty}>
                   {isSaving ? 'Saving...' : 'Save'}
                 </button>
               </>
@@ -388,13 +305,13 @@ export default function EssentialAccountSection({
 
         <hr />
 
-        {/* Name */}
+        {/* Name (read-only) */}
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
           <div className="col-9 card-text tw-pt-2">{name}</div>
         </div>
 
-        {/* Birth Date */}
+        {/* Birth Date (read-only) */}
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Birth Date</div>
           <div className="col-9 card-text tw-pt-2">{profile.birthDate || ''}</div>
@@ -426,7 +343,7 @@ export default function EssentialAccountSection({
               </div>
             ) : (
               <div className="tw-flex tw-items-baseline">
-                <div>{email}</div>
+                <div className="tw-pt-2">{email}</div>
                 {targetUsername && hasEmail && (
                   <button
                     type="button"
@@ -454,12 +371,9 @@ export default function EssentialAccountSection({
                 {editedPhoneBook.map((entry, i) => {
                   const isPrimary = entry.label.toLowerCase() === PRIMARY_LABEL;
                   return (
-                    <div key={entry.phoneNumber || entry.label} className="tw-flex tw-items-center tw-gap-2">
+                    <div key={`${entry.phoneNumber}-${entry.label}`} className="tw-flex tw-items-center tw-gap-2">
                       {isPrimary ? (
-                        <span
-                          className="form-control form-purple tw-bg-gray-100 tw-text-gray-500"
-                          style={{ maxWidth: 160 }}
-                        >
+                        <span className="form-control form-purple tw-bg-gray-100 tw-text-gray-500" style={{ maxWidth: 160 }}>
                           {entry.label}
                         </span>
                       ) : (
@@ -480,11 +394,7 @@ export default function EssentialAccountSection({
                         placeholder="Phone number"
                       />
                       {!isPrimary && (
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => removeEditedEntry(i)}
-                        >
+                        <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeEditedEntry(i)}>
                           &times;
                         </button>
                       )}
@@ -495,12 +405,7 @@ export default function EssentialAccountSection({
                 {showAddRow ? (
                   <div className="tw-flex tw-items-center tw-gap-2">
                     {editedPhoneBook.length === 0 ? (
-                      <span
-                        className="form-control form-purple tw-bg-gray-100 tw-text-gray-500"
-                        style={{ maxWidth: 160 }}
-                      >
-                        primary
-                      </span>
+                      <span className="form-control form-purple tw-bg-gray-100 tw-text-gray-500" style={{ maxWidth: 160 }}>primary</span>
                     ) : (
                       <input
                         type="text"
@@ -521,21 +426,13 @@ export default function EssentialAccountSection({
                     <button
                       type="button"
                       className="btn btn-outline-dark btn-sm"
-                      onClick={() => {
-                        setShowAddRow(false);
-                        setAddLabel('');
-                        setAddPhone('');
-                      }}
+                      onClick={() => { setShowAddRow(false); setAddLabel(''); setAddPhone(''); }}
                     >
                       &times;
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn btn-outline-dark btn-sm"
-                    onClick={() => setShowAddRow(true)}
-                  >
+                  <button type="button" className="btn btn-outline-dark btn-sm" onClick={() => setShowAddRow(true)}>
                     + Add number
                   </button>
                 )}
@@ -553,52 +450,6 @@ export default function EssentialAccountSection({
                     </div>
                   ))
                 )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Address */}
-        <div className="row tw-mb-2 tw-mt-1">
-          <label htmlFor="address" className="col-3 card-text mt-2 text-primary-theme">Address</label>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <>
-                <input
-                  id="address"
-                  type="text"
-                  className="form-control form-purple tw-mb-1"
-                  placeholder="Street address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-                <div className="tw-flex tw-gap-2">
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    placeholder="City"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    placeholder="State"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    placeholder="Zip"
-                    value={zipcode}
-                    onChange={(e) => setZipcode(e.target.value)}
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="tw-pt-2">
-                {[address, city, state, zipcode].filter(Boolean).join(', ')}
               </div>
             )}
           </div>
