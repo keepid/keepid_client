@@ -13,9 +13,18 @@ interface Props {
   alert: any;
 }
 
+interface OrgAddress {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  zip: string;
+  county: string;
+}
+
 interface OrgInfo {
   name: string;
-  address: string;
+  address: OrgAddress;
   phone: string;
   email: string;
 }
@@ -29,10 +38,16 @@ interface Worker {
   privilegeLevel: string;
 }
 
+const EMPTY_ADDRESS: OrgAddress = { line1: '', line2: '', city: '', state: '', zip: '', county: '' };
+
+function formatAddress(a: OrgAddress): string {
+  return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
+}
+
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
-  const [orgInfo, setOrgInfo] = useState<OrgInfo>({ name: '', address: '', phone: '', email: '' });
+  const [orgInfo, setOrgInfo] = useState<OrgInfo>({ name: '', address: { ...EMPTY_ADDRESS }, phone: '', email: '' });
   const [isEditingOrg, setIsEditingOrg] = useState(false);
-  const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({ name: '', address: '', phone: '', email: '' });
+  const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({ name: '', address: { ...EMPTY_ADDRESS }, phone: '', email: '' });
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
@@ -57,9 +72,20 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       });
       const data = await res.json();
       if (data.status === 'SUCCESS') {
+        const addr: OrgAddress = data.orgAddress
+          ? {
+            line1: data.orgAddress.line1 || '',
+            line2: data.orgAddress.line2 || '',
+            city: data.orgAddress.city || '',
+            state: data.orgAddress.state || '',
+            zip: data.orgAddress.zip || '',
+            county: data.orgAddress.county || '',
+          }
+          : { ...EMPTY_ADDRESS };
+
         const info: OrgInfo = {
           name: data.name || '',
-          address: data.address || '',
+          address: addr,
           phone: data.phone || '',
           email: data.email || '',
         };
@@ -98,13 +124,8 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   }, [role, searchName, alert]);
 
-  useEffect(() => {
-    fetchOrgInfo();
-  }, [fetchOrgInfo]);
-
-  useEffect(() => {
-    fetchWorkers();
-  }, [fetchWorkers]);
+  useEffect(() => { fetchOrgInfo(); }, [fetchOrgInfo]);
+  useEffect(() => { fetchWorkers(); }, [fetchWorkers]);
 
   const handleSaveOrgInfo = async () => {
     alert.show('Organization info saved (display only - server update endpoint not yet connected).');
@@ -158,6 +179,13 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   };
 
+  const updateAddress = (field: keyof OrgAddress, value: string) => {
+    setEditedOrgInfo((prev) => ({
+      ...prev,
+      address: { ...prev.address, [field]: value },
+    }));
+  };
+
   const renderOrgInfoContent = () => {
     if (isLoadingOrg) {
       return <p className="tw-mb-0 tw-text-gray-500 tw-mt-2">Loading...</p>;
@@ -180,15 +208,48 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             </div>
           </div>
           <div className="row tw-mb-2 tw-mt-1">
-            <label htmlFor="orgAddress" className="col-3 card-text mt-2 text-primary-theme">Address</label>
+            <label htmlFor="orgAddrLine1" className="col-3 card-text mt-2 text-primary-theme">Address</label>
             <div className="col-9 card-text">
               <input
-                id="orgAddress"
+                id="orgAddrLine1"
                 type="text"
-                className="form-control form-purple"
-                value={editedOrgInfo.address}
-                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, address: e.target.value })}
+                className="form-control form-purple tw-mb-1"
+                placeholder="Street address"
+                value={editedOrgInfo.address.line1}
+                onChange={(e) => updateAddress('line1', e.target.value)}
               />
+              <input
+                type="text"
+                className="form-control form-purple tw-mb-1"
+                placeholder="Apt, suite, etc."
+                value={editedOrgInfo.address.line2}
+                onChange={(e) => updateAddress('line2', e.target.value)}
+              />
+              <div className="tw-flex tw-gap-2">
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="City"
+                  value={editedOrgInfo.address.city}
+                  onChange={(e) => updateAddress('city', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  style={{ maxWidth: 100 }}
+                  placeholder="State"
+                  value={editedOrgInfo.address.state}
+                  onChange={(e) => updateAddress('state', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  style={{ maxWidth: 120 }}
+                  placeholder="Zip"
+                  value={editedOrgInfo.address.zip}
+                  onChange={(e) => updateAddress('zip', e.target.value)}
+                />
+              </div>
             </div>
           </div>
           <div className="row tw-mb-2 tw-mt-1">
@@ -228,7 +289,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Address</div>
-          <div className="col-9 card-text tw-pt-2">{orgInfo.address || 'Not set'}</div>
+          <div className="col-9 card-text tw-pt-2">{formatAddress(orgInfo.address) || 'Not set'}</div>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
@@ -329,35 +390,22 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         <meta name="description" content="Keep.id" />
       </Helmet>
 
-      {/* Organization Info Section */}
       <div className="card mt-3 mb-3 pl-5 pr-5">
         <div className="card-body">
           <div className="tw-flex tw-items-center tw-justify-between">
             <h5 className="card-title tw-mb-0">Organization Info</h5>
             <div className="tw-flex tw-gap-2">
               {!isEditingOrg && isAdmin && (
-                <button
-                  type="button"
-                  className="btn btn-outline-dark"
-                  onClick={() => setIsEditingOrg(true)}
-                >
+                <button type="button" className="btn btn-outline-dark" onClick={() => setIsEditingOrg(true)}>
                   Edit
                 </button>
               )}
               {isEditingOrg && (
                 <>
-                  <button
-                    type="button"
-                    className="btn btn-outline-dark"
-                    onClick={handleCancelEditOrg}
-                  >
+                  <button type="button" className="btn btn-outline-dark" onClick={handleCancelEditOrg}>
                     Cancel
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleSaveOrgInfo}
-                  >
+                  <button type="button" className="btn btn-primary" onClick={handleSaveOrgInfo}>
                     Save
                   </button>
                 </>
@@ -368,27 +416,20 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
       </div>
 
-      {/* Worker List Section */}
       <div className="card mt-3 mb-3 pl-5 pr-5">
         <div className="card-body">
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
             <h5 className="card-title tw-mb-0">Workers & Admins</h5>
             {isAdmin && (
               <Link to="/person-signup/worker">
-                <button
-                  type="button"
-                  className="btn btn-primary tw-mt-3 sm:tw-mt-0"
-                >
+                <button type="button" className="btn btn-primary tw-mt-3 sm:tw-mt-0">
                   Sign Up Worker
                 </button>
               </Link>
             )}
           </div>
 
-          <form
-            className="tw-flex tw-w-full md:tw-w-96 tw-mb-4"
-            onSubmit={handleSearchSubmit}
-          >
+          <form className="tw-flex tw-w-full md:tw-w-96 tw-mb-4" onSubmit={handleSearchSubmit}>
             <input
               className="form-control form-purple tw-rounded-r-none"
               type="text"
@@ -396,10 +437,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               value={searchName}
               placeholder="Search by name..."
             />
-            <button
-              type="submit"
-              className="btn btn-primary tw-rounded-l-none"
-            >
+            <button type="submit" className="btn btn-primary tw-rounded-l-none">
               Search
             </button>
           </form>
@@ -408,7 +446,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
       </div>
 
-      {/* Remove Member Confirmation Modal */}
       {removingUsername && workerToRemove && (
         <div
           className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
@@ -432,20 +469,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               This action cannot be undone.
             </p>
             <div className="tw-flex tw-justify-end tw-gap-3">
-              <button
-                type="button"
-                className="btn btn-outline-dark"
-                onClick={() => setRemovingUsername(null)}
-                disabled={isRemoving}
-              >
+              <button type="button" className="btn btn-outline-dark" onClick={() => setRemovingUsername(null)} disabled={isRemoving}>
                 Cancel
               </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleRemoveMember}
-                disabled={isRemoving}
-              >
+              <button type="button" className="btn btn-danger" onClick={handleRemoveMember} disabled={isRemoving}>
                 {isRemoving ? 'Removing...' : 'Remove'}
               </button>
             </div>

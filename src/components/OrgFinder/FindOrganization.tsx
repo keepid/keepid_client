@@ -125,9 +125,14 @@ class FindOrganization extends Component<Props, State> {
     const organizationsUpdated: any[] = [];
     organizations.forEach((org) => {
       const orgUpdated = org;
-      const fullAddress = `${org.orgStreetAddress} ${org.orgCity} ${org.orgState}`;
+      const addr = org.address && typeof org.address === 'object' ? org.address : null;
+      const street = addr?.line1 || org.orgStreetAddress || '';
+      const city = addr?.city || org.orgCity || '';
+      const state = addr?.state || org.orgState || '';
+      const zip = addr?.zip || org.orgZipcode || '';
+      const fullAddress = `${street} ${city} ${state}`;
       promises.push(Geocode.fromAddress(fullAddress));
-      const formattedAddress = `${org.orgStreetAddress}, ${org.orgCity}, ${org.orgState} ${org.orgZipcode}`;
+      const formattedAddress = [street, city, state, zip].filter(Boolean).join(', ');
       orgUpdated.orgAddress = formattedAddress;
       orgUpdated.showInfo = false;
       let formattedPhoneNumber = '';
