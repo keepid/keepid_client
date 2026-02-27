@@ -30,7 +30,7 @@ const initialData = {
   state: '',
   situation: '',
   person: '',
-  org: 'TSA C.A.T.S Program', // 'Face to Face',
+  org: '',
 };
 
 const DATA_FIELD_COUNT = Object.keys(initialData).length;

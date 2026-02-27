@@ -33,15 +33,21 @@ function dataURLtoBlob(dataURL: string): Blob {
 function WebFormPageContent({
   blankFormId,
   fillingPdf,
+  registryLoading,
+  registryError,
+  onBack,
   onSubmit,
   clientUsername,
 }: {
   blankFormId: string | null;
   fillingPdf: boolean;
+  registryLoading: boolean;
+  registryError: string | null;
+  onBack: () => void;
   onSubmit: (formAnswers: Record<string, any>) => void;
   clientUsername: string;
 }) {
-  if (!blankFormId || fillingPdf) {
+  if (registryLoading || fillingPdf) {
     const label = fillingPdf ? 'Generating your application...' : 'Loading form...';
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
@@ -49,6 +55,23 @@ function WebFormPageContent({
           <span className="sr-only">{label}</span>
         </Spinner>
       </div>
+    );
+  }
+  if (registryError) {
+    return (
+      <Alert variant="warning" className="tw-mt-4">
+        <div>{registryError}</div>
+        <Button variant="outline-secondary" className="tw-mt-3" onClick={onBack}>
+          Back to selections
+        </Button>
+      </Alert>
+    );
+  }
+  if (!blankFormId) {
+    return (
+      <Alert variant="warning" className="tw-mt-4">
+        Could not load this application. Please go back and pick a different option.
+      </Alert>
     );
   }
   return <ApplicationWebForm applicationId={blankFormId} clientUsername={clientUsername} onSubmit={onSubmit} />;
@@ -74,12 +97,18 @@ export default function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [applicationAvailability, setApplicationAvailability] = useState<
+    { type: string; state: string; situation: string }[]
+  >([]);
   const {
     pdfFile,
     blankFormId,
+    registryLoading,
+    registryError,
     fetchRegistry,
     fillPdf,
-    postData: postRegistryData,
   } = useGetApplicationRegistry();
   const history = useHistory();
 
@@ -96,6 +125,37 @@ export default function ApplicationForm() {
       fetchRegistry(data, isDirty, setIsDirty);
     }
   }, [isWebFormPage]);
+
+  useEffect(() => {
+    setAvailabilityLoading(true);
+    setAvailabilityError(null);
+    fetch(`${getServerURL()}/get-available-application-options`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((items) => {
+        if (!Array.isArray(items)) {
+          setApplicationAvailability([]);
+          setAvailabilityError('Could not load application options.');
+          return;
+        }
+        setApplicationAvailability(
+          items
+            .filter((x) => x && x.type && x.state && x.situation)
+            .map((x) => ({
+              type: String(x.type),
+              state: String(x.state),
+              situation: String(x.situation),
+            })),
+        );
+      })
+      .catch(() => {
+        setApplicationAvailability([]);
+        setAvailabilityError('Could not load application options.');
+      })
+      .finally(() => setAvailabilityLoading(false));
+  }, []);
 
   const disablePrompt = () => {
     flushSync(() => {
@@ -199,7 +259,7 @@ export default function ApplicationForm() {
     [blankFormId, fillPdf, handleNext, clientUsername],
   );
 
-  const availableApplications = filterAvailableApplications(data);
+  const availableApplications = filterAvailableApplications(data, applicationAvailability);
 
   const dataAttr = formContent[page].dataAttr;
 
@@ -225,6 +285,11 @@ export default function ApplicationForm() {
 
         {formContent[page].subtitle && (
           <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+        )}
+        {availabilityError && (
+          <Alert variant="warning" className="tw-mb-4">
+            {availabilityError}
+          </Alert>
         )}
 
         <Form
@@ -259,6 +324,9 @@ export default function ApplicationForm() {
           <WebFormPageContent
             blankFormId={blankFormId}
             fillingPdf={fillingPdf}
+            registryLoading={registryLoading}
+            registryError={registryError}
+            onBack={handlePrev}
             onSubmit={handleWebFormSubmit}
             clientUsername={clientUsername}
           />
@@ -307,7 +375,7 @@ export default function ApplicationForm() {
         <div className="tw-flex tw-justify-between tw-mt-6">
           <Button
             onClick={handlePrev}
-            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage ? 'tw-hidden ' : ' '}`}
+            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage || availabilityLoading ? 'tw-hidden ' : ' '}`}
           >
             Back
           </Button>

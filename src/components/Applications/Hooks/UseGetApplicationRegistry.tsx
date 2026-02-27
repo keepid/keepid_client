@@ -6,6 +6,8 @@ import { ApplicationFormData } from './ApplicationFormHook';
 export default function useGetApplicationRegistry() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [blankFormId, setBlankFormId] = useState<string | null>(null);
+  const [registryLoading, setRegistryLoading] = useState(false);
+  const [registryError, setRegistryError] = useState<string | null>(null);
 
   /**
    * Fetches the application registry to get the blankFormId for the selected
@@ -18,6 +20,8 @@ export default function useGetApplicationRegistry() {
     setIsDirty: (e: boolean) => void,
   ): Promise<string | null> => {
     if (!isDirty) return blankFormId;
+    setRegistryLoading(true);
+    setRegistryError(null);
 
     const registryInfo = await fetch(`${getServerURL()}/get-application-registry`, {
       method: 'POST',
@@ -27,17 +31,25 @@ export default function useGetApplicationRegistry() {
       .then((res) => res.json())
       .catch((error) => {
         console.error(error);
+        setRegistryError('Could not load the selected application. Please try again.');
         return null;
       });
 
     if (!registryInfo || !registryInfo.blankFormId) {
       setBlankFormId(null);
       setPdfFile(null);
+      const serverMessage = typeof registryInfo?.message === 'string' ? registryInfo.message : '';
+      setRegistryError(
+        serverMessage || 'This application is not available for your organization.',
+      );
+      setRegistryLoading(false);
       return null;
     }
 
     setBlankFormId(registryInfo.blankFormId);
+    setRegistryError(null);
     setIsDirty(false);
+    setRegistryLoading(false);
     return registryInfo.blankFormId;
   };
 
@@ -124,6 +136,8 @@ export default function useGetApplicationRegistry() {
   return {
     pdfFile,
     blankFormId,
+    registryLoading,
+    registryError,
     postData,
     fetchRegistry,
     fillPdf,
