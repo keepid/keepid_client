@@ -67,24 +67,44 @@ export default function useGetApplicationRegistry() {
     formData.append('applicationId', applicationId);
     formData.append('formAnswers', JSON.stringify(formAnswers));
 
-    const responseBlob = await fetch(`${getServerURL()}/fill-pdf-2`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    })
-      .then((res) => res.blob())
-      .catch((error) => {
-        console.error(error);
-        return null;
+    try {
+      const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
       });
+      const responseBlob = await res.blob();
+      const responseBytes = new Uint8Array(await responseBlob.arrayBuffer());
+      const isPdf =
+        responseBytes.length >= 4
+        && responseBytes[0] === 0x25 // %
+        && responseBytes[1] === 0x50 // P
+        && responseBytes[2] === 0x44 // D
+        && responseBytes[3] === 0x46; // F
 
-    if (!responseBlob) return null;
+      if (!res.ok || !isPdf) {
+        let message = 'Failed to generate PDF from form answers.';
+        try {
+          const text = new TextDecoder().decode(responseBytes);
+          const parsed = JSON.parse(text);
+          if (typeof parsed?.message === 'string' && parsed.message.length > 0) {
+            message = parsed.message;
+          }
+        } catch {
+          // Keep default message when response isn't JSON.
+        }
+        throw new Error(message);
+      }
 
-    const filled = new File([responseBlob], 'FilledApplication.pdf', {
-      type: 'application/pdf',
-    });
-    setPdfFile(filled);
-    return filled;
+      const filled = new File([responseBlob], 'FilledApplication.pdf', {
+        type: 'application/pdf',
+      });
+      setPdfFile(filled);
+      return filled;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   };
 
   /**

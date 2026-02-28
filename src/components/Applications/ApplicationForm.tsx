@@ -100,7 +100,7 @@ export default function ApplicationForm() {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [applicationAvailability, setApplicationAvailability] = useState<
-    { type: string; state: string; situation: string }[]
+    { type: string; state: string; situation: string; lookupKey: string }[]
   >([]);
   const {
     pdfFile,
@@ -124,7 +124,7 @@ export default function ApplicationForm() {
     if (isWebFormPage) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isWebFormPage]);
+  }, [isWebFormPage, data, isDirty]);
 
   useEffect(() => {
     setAvailabilityLoading(true);
@@ -147,6 +147,7 @@ export default function ApplicationForm() {
               type: String(x.type),
               state: String(x.state),
               situation: String(x.situation),
+              lookupKey: String(x.lookupKey || `${x.type}$${x.state}$${x.situation}`),
             })),
         );
       })
@@ -252,8 +253,13 @@ export default function ApplicationForm() {
         return;
       }
       setFillingPdf(true);
-      await fillPdf(blankFormId, formAnswers, clientUsername);
+      setSubmitError(null);
+      const filledPdf = await fillPdf(blankFormId, formAnswers, clientUsername);
       setFillingPdf(false);
+      if (!filledPdf) {
+        setSubmitError('Could not generate preview PDF. Please review form answers and try again.');
+        return;
+      }
       handleNext();
     },
     [blankFormId, fillPdf, handleNext, clientUsername],
@@ -355,7 +361,7 @@ export default function ApplicationForm() {
             : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center tw-border tw-rounded">Sorry, the PDF is not available for the application you selected.</div>
         )}
 
-        {submitError && (isPreviewPage || isSendPage) && (
+        {submitError && (isWebFormPage || isPreviewPage || isSendPage) && (
           <Alert variant="danger" className="tw-mt-4" onClose={() => setSubmitError(null)} dismissible>
             {submitError}
           </Alert>

@@ -337,10 +337,25 @@ const dataAttrWithIndexes = formContent
   .map((p, i) => ({ attr: p.dataAttr, pageNum: i }))
   .filter((d) => d.attr != null) as { attr: string, pageNum: number}[];
 
-export function ApplicationFormProvider({ children, clientUsername = '' }: { children: React.ReactNode; clientUsername?: string }) {
-  const [page, setPageRaw] = useState<number>(0);
-  const [data, setData] = useState<ApplicationFormData>(initialData);
-  const [isDirty, setIsDirty] = useState<boolean>(false);
+export function ApplicationFormProvider({
+  children,
+  clientUsername = '',
+  initialPage = 0,
+  initialDataOverride,
+  initialDirty = false,
+}: {
+  children: React.ReactNode;
+  clientUsername?: string;
+  initialPage?: number;
+  initialDataOverride?: Partial<ApplicationFormData>;
+  initialDirty?: boolean;
+}) {
+  const [page, setPageRaw] = useState<number>(initialPage);
+  const [data, setData] = useState<ApplicationFormData>({
+    ...initialData,
+    ...(initialDataOverride ?? {}),
+  });
+  const [isDirty, setIsDirty] = useState<boolean>(initialDirty);
 
   const setPage = (p: number) => {
     // erase the data from later pages
