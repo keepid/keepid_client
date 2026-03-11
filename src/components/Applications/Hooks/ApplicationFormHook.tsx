@@ -53,8 +53,7 @@ type ApplicationPageName = 'type'
   | 'situation'
   | 'review'
   | 'webForm'
-  | 'preview'
-  | 'send'
+  | 'signAndDownload'
 
 export interface ApplicationFormPage {
   pageName: ApplicationPageName;
@@ -321,14 +320,9 @@ export const formContent: ApplicationFormPage[] = [
     options: [],
   },
   {
-    pageName: 'preview',
-    displayName: 'Sign',
-    title: (_) => 'Review and sign your application',
-    options: [],
-  },
-  {
-    pageName: 'send',
-    title: (_) => 'Last steps...',
+    pageName: 'signAndDownload',
+    displayName: 'Sign & Download',
+    title: (_) => 'Sign and download your application',
     options: [],
   },
 ];
