@@ -12,11 +12,10 @@ import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
 import type { BuilderState } from '../InteractiveForms/types';
 import { fillPdfBlob } from './api/interactiveForm';
-import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
-import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import { ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
 function WebFormPageContent({
@@ -78,11 +77,17 @@ function WebFormPageContent({
   );
 }
 
+function getOptionLabel(pageName: 'type' | 'person', value: string): string | null {
+  if (!value) return null;
+  const pageConfig = applicationFormPages.find((entry) => entry.pageName === pageName);
+  const option = pageConfig?.options.find((entry) => entry.value === value);
+  return option?.titleText ?? null;
+}
+
 export default function ApplicationForm() {
   const {
     formContent,
     page,
-    setPage,
     data,
     isDirty,
     setIsDirty,
@@ -90,6 +95,7 @@ export default function ApplicationForm() {
     handleNext,
     handlePrev,
     clientUsername,
+    clientName,
   } = useApplicationFormContext();
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
@@ -218,6 +224,11 @@ export default function ApplicationForm() {
   const availableApplications = filterAvailableApplications(data, applicationAvailability);
 
   const dataAttr = formContent[page].dataAttr;
+  const applicationTypeLabel = getOptionLabel('type', data.type) ?? 'your';
+  const targetPersonLabel = clientName || clientUsername || getOptionLabel('person', data.person) || 'you';
+  const pageTitle = isWebFormPage
+    ? `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`
+    : formContent[page].title(data.type);
 
   return (
     <>
@@ -227,16 +238,10 @@ export default function ApplicationForm() {
         <meta name="description" content="Keep.id" />
       </Helmet>
 
-      {/* Breadcrumbs: wider than the form so they have room to breathe */}
-      <div className="tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8">
-        <ApplicationBreadCrumbs page={page} setPage={setPage} />
-      </div>
-
       {/* Form content: narrower for readability */}
-      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pb-12">
-        <div className="tw-flex tw-justify-between tw-items-end tw-mb-1">
-          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{formContent[page].title(data.type)}</h2>
-          <span className="tw-text-sm tw-text-gray-400">Step {page + 1} of {pageCount}</span>
+      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
+        <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
+          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
         </div>
 
         {formContent[page].subtitle && (

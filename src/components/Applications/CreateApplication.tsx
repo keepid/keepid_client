@@ -7,6 +7,7 @@ import { ApplicationFormProvider, formContent } from './Hooks/ApplicationFormHoo
 export default function CreateApplication() {
   const location = useLocation<{
     clientUsername?: string;
+    clientName?: string;
     presetApplication?: {
       lookupKey: string;
       type: string;
@@ -16,6 +17,7 @@ export default function CreateApplication() {
     startAtReview?: boolean;
   }>();
   const clientUsername = location.state?.clientUsername || '';
+  const clientName = location.state?.clientName || '';
   const preset = location.state?.presetApplication;
   const startAtReview = Boolean(location.state?.startAtReview && preset);
   const reviewPageIndex = formContent.findIndex((p) => p.pageName === 'review');
@@ -23,6 +25,7 @@ export default function CreateApplication() {
   return (
     <ApplicationFormProvider
       clientUsername={clientUsername}
+      clientName={clientName}
       initialPage={startAtReview && reviewPageIndex >= 0 ? reviewPageIndex : 0}
       initialDirty={startAtReview}
       initialDataOverride={

@@ -228,6 +228,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       clientName,
       availableApplications,
     } = this.state;
+    const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
+      ? 'My'
+      : `${clientName || clientUsername || 'Client'}'s`;
 
     return (
       <Switch>
@@ -239,8 +242,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientName || 'Client'}'s`} Applications</h1>
-                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '' } }}>
+                <h1 className="display-4">{applicationsOwner} applications</h1>
+                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
                   <Button
                     className="btn btn-card mt-3 tw-mb-6"
                     style={{
@@ -298,6 +301,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                                 pathname: '/applications/createnew',
                                 state: {
                                   clientUsername: clientUsername || '',
+                                  clientName: clientName || '',
                                   startAtReview: true,
                                   presetApplication: {
                                     lookupKey: app.lookupKey,

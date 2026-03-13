@@ -14,6 +14,7 @@ interface ApplicationFormContextProps {
   handlePrev: () => void;
   handleNext: () => void;
   clientUsername: string;
+  clientName: string;
 }
 
 export const ApplicationFormContext =
@@ -334,12 +335,14 @@ const dataAttrWithIndexes = formContent
 export function ApplicationFormProvider({
   children,
   clientUsername = '',
+  clientName = '',
   initialPage = 0,
   initialDataOverride,
   initialDirty = false,
 }: {
   children: React.ReactNode;
   clientUsername?: string;
+  clientName?: string;
   initialPage?: number;
   initialDataOverride?: Partial<ApplicationFormData>;
   initialDirty?: boolean;
@@ -397,6 +400,7 @@ export function ApplicationFormProvider({
         handleNext,
         handlePrev,
         clientUsername,
+        clientName,
       }}
     >
       {children}

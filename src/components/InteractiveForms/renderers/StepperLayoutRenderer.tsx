@@ -72,22 +72,23 @@ function StepperLayoutRendererInner({
           const label = el?.label ?? `Step ${visiblePos + 1}`;
           const isActive = visiblePos === safeStep;
           const isPast = visiblePos < safeStep;
-          let stepBtnClass = 'tw-bg-gray-200 tw-text-gray-600 hover:tw-bg-gray-300';
-          if (isActive) stepBtnClass = 'tw-bg-blue-600 tw-text-white tw-ring-2 tw-ring-blue-300';
-          else if (isPast) stepBtnClass = 'tw-bg-emerald-600 tw-text-white';
+          let stepBtnClass =
+            'tw-bg-[#E8E9FF] tw-text-secondary-theme tw-border tw-border-primary-theme hover:tw-bg-[#D9DEFF]';
+          if (isActive) stepBtnClass = 'tw-bg-primary-theme tw-text-white tw-border tw-border-primary-theme tw-ring-2 tw-ring-[#C9D2FF]';
+          else if (isPast) stepBtnClass = 'tw-bg-secondary-theme tw-text-white tw-border tw-border-secondary-theme';
           return (
             <React.Fragment key={actualIdx}>
               <button
                 type="button"
                 onClick={() => setActiveStep(visiblePos)}
-                className={`tw-rounded-full tw-w-8 tw-h-8 tw-text-sm tw-font-medium tw-transition-colors ${stepBtnClass}`}
+                className={`tw-rounded-full tw-w-9 tw-h-9 tw-text-sm tw-font-semibold tw-transition-colors ${stepBtnClass}`}
                 title={String(label)}
               >
                 {visiblePos + 1}
               </button>
               {visiblePos < visibleIndices.length - 1 && (
                 <div
-                  className={`tw-w-6 tw-h-0.5 tw-rounded ${isPast ? 'tw-bg-emerald-500' : 'tw-bg-gray-200'}`}
+                  className={`tw-w-6 tw-h-0.5 tw-rounded ${isPast ? 'tw-bg-primary-theme' : 'tw-bg-[#D9DEFF]'}`}
                   aria-hidden
                 />
               )}
@@ -95,18 +96,18 @@ function StepperLayoutRendererInner({
           );
         })}
       </div>
-      <div className="tw-text-sm tw-text-gray-500 tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
+      <div className="tw-text-sm tw-text-secondary-theme tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
         <span>
           Step {safeStep + 1} of {visibleIndices.length}: {category?.label ?? ''}
         </span>
         {hasConditionalSteps && (
-          <span className="tw-text-gray-400 tw-text-xs">Some steps may be skipped based on your answers.</span>
+          <span className="tw-text-gray-600 tw-text-xs">Some steps may be skipped based on your answers.</span>
         )}
       </div>
 
-      <div className="tw-h-1 tw-bg-gray-200 tw-rounded-full tw-overflow-hidden">
+      <div className="tw-h-1 tw-bg-[#E8E9FF] tw-rounded-full tw-overflow-hidden">
         <div
-          className="tw-h-full tw-bg-blue-600 tw-transition-all tw-duration-300"
+          className="tw-h-full tw-bg-primary-theme tw-transition-all tw-duration-300"
           style={{ width: visibleIndices.length ? `${((safeStep + 1) / visibleIndices.length) * 100}%` : '0%' }}
         />
       </div>
@@ -123,19 +124,22 @@ function StepperLayoutRendererInner({
       </div>
 
       <div className="tw-flex tw-justify-between tw-items-center tw-pt-6 tw-mt-2 tw-border-t tw-border-gray-200">
-        <button
-          type="button"
-          onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
-          disabled={safeStep <= 0}
-          className="tw-px-4 tw-py-2 tw-text-gray-700 tw-bg-gray-100 tw-rounded-lg hover:tw-bg-gray-200 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-text-sm tw-font-medium"
-        >
-          ← Previous
-        </button>
+        {safeStep > 0 ? (
+          <button
+            type="button"
+            onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+            className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
+          >
+            ← Previous
+          </button>
+        ) : (
+          <div />
+        )}
         {!isLast ? (
           <button
             type="button"
             onClick={() => setActiveStep((s) => Math.min(visibleIndices.length - 1, s + 1))}
-            className="tw-px-6 tw-py-2 tw-bg-blue-600 tw-text-white tw-rounded-lg hover:tw-bg-blue-700 tw-text-sm tw-font-medium"
+            className="tw-px-6 tw-py-2 tw-bg-primary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#3B54D3] tw-text-sm tw-font-medium"
           >
             Next →
           </button>
@@ -143,7 +147,7 @@ function StepperLayoutRendererInner({
           <button
             type="button"
             onClick={() => requestSubmit?.()}
-            className="tw-px-6 tw-py-2 tw-bg-green-600 tw-text-white tw-rounded-lg hover:tw-bg-green-700 tw-text-sm tw-font-medium"
+            className="tw-px-6 tw-py-2 tw-bg-secondary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#343347] tw-text-sm tw-font-medium"
           >
             Submit
           </button>
