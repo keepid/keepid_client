@@ -1,0 +1,470 @@
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+import { PDFDocument } from 'pdf-lib';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+import { uploadCompletedPdf } from '../Applications/api/interactiveForm';
+import type { SignaturePlacement } from './types';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
+
+export interface SignAndDownloadViewerProps {
+  fileUrl: string;
+  signaturePlacements: SignaturePlacement[];
+  title?: string;
+  applicationId: string;
+  formAnswers: Record<string, unknown>;
+  clientUsername?: string;
+  onSaveSuccess?: () => void;
+}
+
+export default function SignAndDownloadViewer({
+  fileUrl,
+  signaturePlacements,
+  title,
+  applicationId,
+  formAnswers,
+  clientUsername = '',
+  onSaveSuccess,
+}: SignAndDownloadViewerProps) {
+  const [numPages, setNumPages] = useState(1);
+  const [pageNum, setPageNum] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pdfWrapperRef = useRef<HTMLDivElement>(null);
+  const sigPadAreaRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(560);
+  const [currentSigDataUrl, setCurrentSigDataUrl] = useState<string | null>(null);
+  const [activePlacementIdx, setActivePlacementIdx] = useState<number | null>(null);
+  const [livePdfUrl, setLivePdfUrl] = useState<string>(fileUrl);
+  const [embeddedBoxes, setEmbeddedBoxes] = useState<Set<number>>(new Set());
+  const [applying, setApplying] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
+  const [pdfVersion, setPdfVersion] = useState(0);
+  const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => setContainerWidth(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const renderedWidth = Math.max(100, containerWidth - 32);
+
+  const signedCount = embeddedBoxes.size;
+  const allSigned = signaturePlacements.length > 0 && signedCount === signaturePlacements.length;
+
+  const activeRect = activePlacementIdx !== null ? signaturePlacements[activePlacementIdx]?.rect : null;
+  const padAspect = activeRect ? activeRect[2] / activeRect[3] : 4;
+  const PAD_CSS_HEIGHT = 100;
+  const PAD_RESOLUTION_SCALE = 3;
+  const padCanvasH = Math.round(PAD_CSS_HEIGHT * PAD_RESOLUTION_SCALE);
+  const padCanvasW = Math.round(padCanvasH * padAspect);
+
+  const onPageLoadForOverlays = useCallback(
+    (page: any) => {
+      const baseVp = page.getViewport({ scale: 1, rotation: page.rotate });
+      const w = renderedWidth > 0 ? renderedWidth : baseVp.width;
+      const sf = w / baseVp.width;
+      const vp = page.getViewport({ scale: sf, rotation: page.rotate });
+      const pageIndex = typeof page.pageIndex === 'number' ? page.pageIndex : pageNum - 1;
+      const rects = signaturePlacements
+        .map((p, idx) => ({ p, idx }))
+        .filter(({ p }) => p.page === pageIndex)
+        .map(({ p, idx }) => {
+          const [x, y, pw, ph] = p.rect;
+          const [vx1, vy1, vx2, vy2] = vp.convertToViewportRectangle([x, y, x + pw, y + ph]);
+          return {
+            left: Math.min(vx1, vx2),
+            top: Math.min(vy1, vy2),
+            width: Math.abs(vx2 - vx1),
+            height: Math.abs(vy2 - vy1),
+            placementIdx: idx,
+          };
+        });
+      setSigOverlays(rects);
+    },
+    [renderedWidth, signaturePlacements, pageNum],
+  );
+
+  useEffect(() => {
+    if (signaturePlacements.length > 0 && activePlacementIdx === null) {
+      const firstUnsigned = signaturePlacements.findIndex((_, i) => !embeddedBoxes.has(i));
+      if (firstUnsigned >= 0) {
+        setActivePlacementIdx(firstUnsigned);
+        setPageNum(signaturePlacements[firstUnsigned].page + 1);
+      }
+    }
+  }, [signaturePlacements, activePlacementIdx, embeddedBoxes]);
+
+  const selectBox = useCallback((idx: number) => {
+    if (embeddedBoxes.has(idx)) return;
+    setActivePlacementIdx(idx);
+    setCurrentSigDataUrl(null);
+    setPageNum(signaturePlacements[idx].page + 1);
+    requestAnimationFrame(() => sigPadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+  }, [embeddedBoxes, signaturePlacements]);
+
+  const handleEmbedSignature = useCallback(async () => {
+    if (activePlacementIdx === null || !currentSigDataUrl) return;
+    setApplying(true);
+    try {
+      let pdfBytes: ArrayBuffer | Uint8Array;
+      if (pdfDocRef.current?.saveDocument) {
+        pdfBytes = await pdfDocRef.current.saveDocument();
+      } else {
+        pdfBytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
+      }
+      const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      const imgBytes = await fetch(currentSigDataUrl).then((r) => r.arrayBuffer());
+      const sigImage = await pdfDoc.embedPng(imgBytes);
+      const p = signaturePlacements[activePlacementIdx];
+      const page = pdfDoc.getPage(p.page);
+      const [x, y, w, h] = p.rect;
+      const imgAspect = sigImage.width / sigImage.height;
+      const boxAspect = w / h;
+      let drawW = w; let drawH = h;
+      if (imgAspect > boxAspect) { drawH = w / imgAspect; } else { drawW = h * imgAspect; }
+      page.drawImage(sigImage, { x: x + (w - drawW) / 2, y: y + (h - drawH) / 2, width: drawW, height: drawH });
+      const bytes = await pdfDoc.save();
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const oldUrl = livePdfUrl;
+      const newUrl = URL.createObjectURL(blob);
+      setLivePdfUrl(newUrl);
+      setPdfVersion((v) => v + 1);
+      if (oldUrl !== fileUrl) URL.revokeObjectURL(oldUrl);
+      setEmbeddedBoxes((prev) => new Set(prev).add(activePlacementIdx));
+      setCurrentSigDataUrl(null);
+      const nextUnsigned = signaturePlacements.findIndex((_, i) => i !== activePlacementIdx && !embeddedBoxes.has(i));
+      if (nextUnsigned >= 0) {
+        setActivePlacementIdx(nextUnsigned);
+        setPageNum(signaturePlacements[nextUnsigned].page + 1);
+      } else {
+        setActivePlacementIdx(null);
+      }
+    } catch (err) {
+      console.error('Failed to embed signature', err);
+    } finally {
+      setApplying(false);
+    }
+  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes]);
+
+  const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
+    if (pdfDocRef.current?.saveDocument) {
+      const bytes = await pdfDocRef.current.saveDocument();
+      return new Blob([bytes], { type: 'application/pdf' });
+    }
+    const res = await fetch(livePdfUrl);
+    return res.blob();
+  }, [livePdfUrl]);
+
+  const handlePrint = useCallback(async () => {
+    try {
+      const blob = await getCurrentPdfBlob();
+      const url = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } finally {
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(url);
+          }, 1000);
+        }
+      };
+    } catch (err) {
+      console.error('Print failed', err);
+      const printWindow = window.open(livePdfUrl, '_blank');
+      if (printWindow) printWindow.onload = () => printWindow.print();
+    }
+  }, [livePdfUrl, getCurrentPdfBlob]);
+
+  const handleDownload = useCallback(async () => {
+    try {
+      const blob = await getCurrentPdfBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title?.replace(/[^a-zA-Z0-9_-]/g, '_') || 'signed'}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed', err);
+      const a = document.createElement('a');
+      a.href = livePdfUrl;
+      a.download = `${title?.replace(/[^a-zA-Z0-9_-]/g, '_') || 'signed'}.pdf`;
+      a.click();
+    }
+  }, [livePdfUrl, title, getCurrentPdfBlob]);
+
+  const handleSave = useCallback(async () => {
+    setSaveError(null);
+    setSaving(true);
+    try {
+      const blob = await getCurrentPdfBlob();
+      await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
+      onSaveSuccess?.();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save application');
+    } finally {
+      setSaving(false);
+    }
+  }, [getCurrentPdfBlob, applicationId, formAnswers, clientUsername, onSaveSuccess]);
+
+  const handleReset = useCallback(() => {
+    setCurrentSigDataUrl(null);
+    if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl);
+    setLivePdfUrl(fileUrl);
+    setPdfVersion((v) => v + 1);
+    setEmbeddedBoxes(new Set());
+    const first = signaturePlacements.length > 0 ? 0 : null;
+    setActivePlacementIdx(first);
+    if (first !== null) setPageNum(signaturePlacements[first].page + 1);
+  }, [livePdfUrl, fileUrl, signaturePlacements]);
+
+  useEffect(() => () => { if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl); }, [livePdfUrl, fileUrl]);
+
+  useEffect(() => () => { pdfDocRef.current = null; }, []);
+
+  return (
+    <div ref={containerRef} className="tw-w-full tw-space-y-3">
+      {allSigned && (
+        <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
+          <span className="tw-text-sm tw-font-medium tw-text-green-800">
+            All {signaturePlacements.length} signature{signaturePlacements.length > 1 ? 's' : ''} embedded
+          </span>
+          <button type="button" onClick={handleReset} className="tw-text-xs tw-text-green-700 hover:tw-text-green-900 tw-underline">
+            Reset &amp; re-sign
+          </button>
+        </div>
+      )}
+
+      <Document
+        file={livePdfUrl}
+        key={`doc-${pdfVersion}`}
+        onLoadSuccess={(pdf) => {
+          setNumPages(pdf.numPages);
+          pdfDocRef.current = pdf;
+        }}
+        loading={<div className="tw-flex tw-items-center tw-justify-center tw-h-64 tw-text-gray-400">Loading PDF...</div>}
+      >
+        <div className="tw-flex tw-flex-col tw-items-center tw-gap-3">
+          {numPages > 1 && (
+            <div className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-600">
+              <button type="button" onClick={() => setPageNum((p) => Math.max(1, p - 1))} disabled={pageNum <= 1} className="hover:tw-text-gray-900 disabled:tw-text-gray-300">&larr; Prev</button>
+              <span>Page {pageNum} / {numPages}</span>
+              <button type="button" onClick={() => setPageNum((p) => Math.min(numPages, p + 1))} disabled={pageNum >= numPages} className="hover:tw-text-gray-900 disabled:tw-text-gray-300">Next &rarr;</button>
+            </div>
+          )}
+          <div ref={pdfWrapperRef} className="tw-relative tw-inline-block tw-shadow-sm tw-rounded-lg tw-overflow-visible tw-bg-gray-200 tw-p-3">
+            <div className="tw-bg-gray-100 tw-rounded tw-inline-block">
+              <Page
+                key={`preview-${pageNum}-v${pdfVersion}`}
+                pageNumber={pageNum}
+                onLoadSuccess={onPageLoadForOverlays}
+                width={renderedWidth > 0 ? renderedWidth : undefined}
+                renderAnnotationLayer
+                renderTextLayer
+                renderForms
+              />
+            </div>
+            {sigOverlays.map((rect) => {
+              const isEmbedded = embeddedBoxes.has(rect.placementIdx);
+              if (isEmbedded) return null;
+              const isActive = activePlacementIdx === rect.placementIdx;
+              return (
+                <div
+                  key={`sig-preview-${rect.placementIdx}`}
+                  style={{ position: 'absolute', left: rect.left, top: rect.top, width: rect.width, height: rect.height, zIndex: 20 }}
+                  className={`tw-border tw-border-dashed tw-rounded tw-flex tw-items-center tw-justify-center tw-cursor-pointer tw-transition-colors tw-outline-none focus:tw-outline-none focus:tw-ring-0 ${
+                    isActive
+                      ? 'tw-border-blue-400 tw-bg-blue-50/60'
+                      : 'tw-border-blue-300 tw-bg-blue-50/40 hover:tw-bg-blue-50/60'
+                  }`}
+                  onClick={() => selectBox(rect.placementIdx)}
+                >
+                  <span className={`tw-text-xs tw-font-medium tw-select-none tw-pointer-events-none ${isActive ? 'tw-text-blue-700' : 'tw-text-blue-600'}`}>
+                    {isActive ? 'Draw below ↓' : 'Click to sign'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </Document>
+
+      {activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
+        <div ref={sigPadAreaRef} className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-px-4 tw-py-3 tw-space-y-2">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <span className="tw-text-xs tw-font-semibold tw-text-gray-800">
+              Signing box {activePlacementIdx + 1} of {signaturePlacements.length}
+            </span>
+            {signedCount > 0 && <span className="tw-text-[10px] tw-text-gray-500">{signedCount}/{signaturePlacements.length} done</span>}
+          </div>
+          <SignaturePadCanvas
+            key={activePlacementIdx}
+            canvasWidth={padCanvasW}
+            canvasHeight={padCanvasH}
+            cssHeight={PAD_CSS_HEIGHT}
+            onSignatureChange={setCurrentSigDataUrl}
+          />
+          <button
+            type="button"
+            disabled={!currentSigDataUrl || applying}
+            onClick={handleEmbedSignature}
+            className={`tw-w-full tw-py-2 tw-rounded-lg tw-text-xs tw-font-medium tw-transition-colors disabled:tw-cursor-not-allowed tw-border-0 ${
+              currentSigDataUrl && !applying
+                ? 'tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700'
+                : 'tw-text-gray-600 tw-bg-gray-300'
+            }`}
+          >
+            {applying ? 'Embedding...' : 'Embed signature'}
+          </button>
+        </div>
+      )}
+
+      <div className="tw-flex tw-gap-2 tw-flex-col sm:tw-flex-row tw-flex-wrap">
+        <button
+          type="button"
+          onClick={handleDownload}
+          className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${
+            signedCount > 0
+              ? 'tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700'
+              : 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50'
+          }`}
+        >
+          Download {(() => {
+          if (signedCount > 0) return 'signed';
+          if (signaturePlacements.length > 0) return 'unsigned';
+          return 'filled';
+        })()} PDF
+        </button>
+        <button
+          type="button"
+          onClick={handlePrint}
+          className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50 tw-transition-colors"
+        >
+          Print
+        </button>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={handleSave}
+          className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-green-600 hover:tw-bg-green-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
+        >
+          {saving ? 'Saving...' : 'Save Application'}
+        </button>
+      </div>
+
+      {saveError && (
+        <div className="tw-p-3 tw-rounded-lg tw-bg-red-50 tw-border tw-border-red-200 tw-text-red-700 tw-text-sm">
+          {saveError}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SignaturePadCanvas({
+  canvasWidth,
+  canvasHeight,
+  cssHeight,
+  onSignatureChange,
+}: {
+  canvasWidth: number;
+  canvasHeight: number;
+  cssHeight: number;
+  onSignatureChange: (dataUrl: string | null) => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawing = useRef(false);
+
+  const getCtx = () => canvasRef.current?.getContext('2d') ?? null;
+
+  const getPos = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
+    const c = canvasRef.current;
+    if (!c) return null;
+    const r = c.getBoundingClientRect();
+    const scaleX = c.width / r.width;
+    const scaleY = c.height / r.height;
+    if ('touches' in e) {
+      const t = e.touches[0];
+      return { x: (t.clientX - r.left) * scaleX, y: (t.clientY - r.top) * scaleY };
+    }
+    return { x: ((e as React.MouseEvent).clientX - r.left) * scaleX, y: ((e as React.MouseEvent).clientY - r.top) * scaleY };
+  };
+
+  const startStroke = (e: React.MouseEvent | React.TouchEvent) => {
+    const ctx = getCtx();
+    const pos = getPos(e);
+    if (!ctx || !pos) return;
+    isDrawing.current = true;
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const continueStroke = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing.current) return;
+    const ctx = getCtx();
+    const pos = getPos(e);
+    if (!ctx || !pos) return;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  };
+
+  const endStroke = () => {
+    if (!isDrawing.current) return;
+    isDrawing.current = false;
+    const c = canvasRef.current;
+    if (c) onSignatureChange(c.toDataURL('image/png'));
+  };
+
+  const clear = () => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+    onSignatureChange(null);
+  };
+
+  return (
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        className="tw-w-full tw-bg-white tw-rounded tw-border tw-border-gray-200 tw-cursor-crosshair tw-touch-none"
+        style={{ height: cssHeight }}
+        onMouseDown={startStroke}
+        onMouseMove={continueStroke}
+        onMouseUp={endStroke}
+        onMouseLeave={endStroke}
+        onTouchStart={startStroke}
+        onTouchMove={continueStroke}
+        onTouchEnd={endStroke}
+      />
+      <button type="button" onClick={clear} className="tw-mt-1 tw-text-xs tw-text-gray-700 hover:tw-text-gray-900 tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer">
+        Clear
+      </button>
+    </div>
+  );
+}

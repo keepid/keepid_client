@@ -14,6 +14,7 @@ interface Field {
   fieldID: string;
   fieldName: string;
   fieldType: string;
+  fieldDirective?: string;
   fieldValueOptions: string[];
   fieldDefaultValue: any;
   fieldIsRequired: boolean;
@@ -376,12 +377,27 @@ export default function ApplicationWebForm({
     </div>
   );
 
-  const isPhoneField = (entry: Field): boolean => {
-    const name = (entry.fieldName || '').toLowerCase();
-    const question = (entry.fieldQuestion || '').toLowerCase();
-    const combined = `${name} ${question}`;
-    return /phone|telephone|cell|mobile/.test(combined)
-      && !/fax/.test(combined);
+  const shouldUseClientPhonePicker = (entry: Field): boolean => {
+    const rawDirective = (entry.fieldDirective || '').trim();
+    if (!rawDirective) return false;
+
+    const normalized = rawDirective.toLowerCase();
+    if (!normalized.startsWith('client.')) return false;
+
+    const clientDirective = normalized.slice('client.'.length);
+    const isComputedPhonePartDirective = new Set([
+      '$primaryphoneareacode',
+      '$primaryphonetelephoneprefix',
+      '$primaryphonelinenumber',
+      'primaryphoneareacode',
+      'primaryphonetelephoneprefix',
+      'primaryphonelinenumber',
+    ]).has(clientDirective);
+    if (isComputedPhonePartDirective) return false;
+
+    return clientDirective === 'phone'
+      || clientDirective === 'phonenumber'
+      || /^phonebook\.\d+\.phonenumber$/.test(clientDirective);
   };
 
   const renderPhoneBookField = (entry: Field) => (
@@ -412,7 +428,7 @@ export default function ApplicationWebForm({
     const type = entry.fieldType.toLowerCase();
     switch (type) {
       case 'textfield':
-        return isPhoneField(entry) ? renderPhoneBookField(entry) : renderTextField(entry);
+        return shouldUseClientPhonePicker(entry) ? renderPhoneBookField(entry) : renderTextField(entry);
       case 'multilinetextfield':
         return renderMultilineTextField(entry);
       case 'checkbox':
