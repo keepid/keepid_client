@@ -102,7 +102,7 @@ export default function EnrollClientPage(): JSX.Element {
       if (response.status === 'ENROLL_SUCCESS') {
         setEnrolled(true);
         alert.success(
-          `${values.firstname} ${values.lastname} has been enrolled. Login instructions were sent to ${values.email}.`,
+          `${values.firstname} ${values.lastname} has been enrolled successfully.`,
         );
       } else if (response.status === 'EMAIL_ALREADY_EXISTS') {
         alert.error('A user with this email already exists.');
@@ -132,9 +132,8 @@ export default function EnrollClientPage(): JSX.Element {
           </h2>
           <p className="tw-text-gray-600 tw-mb-6">
             <strong>{values.firstname} {values.lastname}</strong> has been enrolled.
-            Login instructions have been sent to <strong>{values.email}</strong>.
-            They can log in via Google OAuth using the same email, or set a password
-            using Forgot Password on the login page.
+            The client can log in via Google OAuth using <strong>{values.email}</strong>,
+            or set a password using Forgot Password on the login page.
           </p>
           <div className="tw-flex tw-justify-center tw-space-x-4">
             <button
@@ -178,7 +177,7 @@ export default function EnrollClientPage(): JSX.Element {
               Enroll a New Client
             </h2>
             <p className="tw-text-gray-500 tw-mt-2">
-              The client will receive an email to set their password.
+              The client can use Forgot Password to set their password.
             </p>
           </div>
 
