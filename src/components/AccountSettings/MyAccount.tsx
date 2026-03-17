@@ -296,29 +296,6 @@ export class MyAccount extends Component<Props, State, {}> {
         <div className="card mt-3 mb-3 pl-5 pr-5">
           <div className="card-body">
             <div className="mb-3">
-              <h5 className="card-title float-left">My Account</h5>
-              <small className="float-right text-muted">This field cannot be changed.</small>
-            </div>
-            <br />
-            <div className="row mb-3 mt-3">
-              <div className="col-3 card-text mt-2 text-primary-theme">Username</div>
-              <div className="col-9 card-text">
-                <input
-                  type="text"
-                  className="form-control form-purple"
-                  name="username"
-                  id="username"
-                  value={username}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card mt-3 mb-3 pl-5 pr-5">
-          <div className="card-body">
-            <div className="mb-3">
               <h5 className="card-title float-left">Basic Information</h5>
             </div>
             <br />

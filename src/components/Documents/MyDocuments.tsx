@@ -23,6 +23,7 @@ interface Props {
   alert: any;
   userRole: Role;
   username: string;
+  clientName?: string;
 }
 
 interface State {
@@ -426,11 +427,11 @@ class MyDocuments extends Component<Props, State> {
           ) : (
             <div className="container">
             <Helmet>
-              <title>My Documents</title>
+              <title>{this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <h1 className="display-4">My Documents</h1>
+              <h1 className="display-4">{this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}</h1>
               <p className="lead pt-3">
                 You can edit, download, and delete your documents you currently
                 have stored on Keep.id.

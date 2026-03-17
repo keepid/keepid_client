@@ -30,11 +30,20 @@ interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   documents: DocumentInformation[],
-  clientUsername: string | undefined
+  clientUsername: string | undefined,
+  clientName: string | undefined,
+  availableApplications: {
+    lookupKey: string;
+    type: string;
+    state: string;
+    situation: string;
+    canStart: boolean;
+  }[],
 }
 
 interface LocationState {
-  clientUsername: string
+  clientUsername: string;
+  clientName?: string;
 }
 
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
@@ -82,10 +91,59 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationFilename: undefined,
       documents: [],
       clientUsername: undefined,
+      clientName: undefined,
+      availableApplications: [],
     };
   }
 
+  parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
+    const parseWithDelimiter = (delimiter: string) => {
+      const first = lookupKey.indexOf(delimiter);
+      const second = lookupKey.indexOf(delimiter, first + 1);
+      if (first < 0 || second < 0) return null;
+      return {
+        type: lookupKey.substring(0, first),
+        state: lookupKey.substring(first + 1, second),
+        situation: lookupKey.substring(second + 1),
+      };
+    };
+
+    return parseWithDelimiter('$') || parseWithDelimiter('#');
+  };
+
+  loadAvailableApplications = () => {
+    fetch(`${getServerURL()}/get-available-application-options`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((items) => {
+        if (!Array.isArray(items)) {
+          this.setState({ availableApplications: [] });
+          return;
+        }
+        const parsed = items
+          .filter((x) => x && x.lookupKey)
+          .map((x) => {
+            const lookupKey = String(x.lookupKey);
+            const split = this.parseLookupKey(lookupKey);
+            return {
+              lookupKey,
+              type: split?.type || String(x.type || ''),
+              state: split?.state || String(x.state || ''),
+              situation: split?.situation || String(x.situation || ''),
+              canStart: Boolean(split?.type && split?.state && split?.situation),
+            };
+          });
+        this.setState({ availableApplications: parsed });
+      })
+      .catch(() => {
+        this.setState({ availableApplications: [] });
+      });
+  };
+
   componentDidMount() {
+    this.loadAvailableApplications();
     const { location } = this.props;
     // Client view, uncertain if location.state is undefined by default
     if (location.state === undefined) {
@@ -116,9 +174,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           }
         });
     } else { // Case worker view
-      // clientName will be passed in via Link state in WorkerLanding page
-      const { clientUsername } = location.state as LocationState;
-      this.setState({ clientUsername });
+      const { clientUsername, clientName } = location.state as LocationState;
+      this.setState({ clientUsername, clientName });
       fetch(`${getServerURL()}/get-files`, {
         method: 'POST',
         credentials: 'include',
@@ -168,20 +225,25 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationId,
       documents,
       clientUsername,
+      clientName,
+      availableApplications,
     } = this.state;
+    const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
+      ? 'My'
+      : `${clientName || clientUsername || 'Client'}'s`;
 
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="container-fluid">
+          <div className="container-fluid tw-pt-8">
             <Helmet>
               <title>Applications</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{(clientUsername === '' || clientUsername === undefined) ? 'My' : `${clientUsername}'s`} Applications</h1>
-                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '' } }}>
+                <h1 className="display-4">{applicationsOwner} applications</h1>
+                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
                   <Button
                     className="btn btn-card mt-3 tw-mb-6"
                     style={{
@@ -203,6 +265,68 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     data={documents}
                     emptyInfo={{ description: 'No Applications Present' }}
                   />
+                </div>
+              </div>
+              <div className="pt-4">
+                <h4>Available Applications</h4>
+                <p className="text-muted mb-2">
+                  Click an entry to start directly at Review with this lookup key.
+                </p>
+                <div className="table-responsive">
+                  <table className="table table-sm table-bordered bg-white">
+                    <thead>
+                      <tr>
+                        <th>Lookup Key</th>
+                        <th>Type</th>
+                        <th>State</th>
+                        <th>Situation</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {availableApplications.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="text-muted">No applications available.</td>
+                        </tr>
+                      )}
+                      {availableApplications.map((app) => (
+                        <tr key={app.lookupKey}>
+                          <td>{app.lookupKey}</td>
+                          <td>{app.type || '-'}</td>
+                          <td>{app.state || '-'}</td>
+                          <td>{app.situation || '-'}</td>
+                          <td>
+                            <Link
+                              to={{
+                                pathname: '/applications/createnew',
+                                state: {
+                                  clientUsername: clientUsername || '',
+                                  clientName: clientName || '',
+                                  startAtReview: true,
+                                  presetApplication: {
+                                    lookupKey: app.lookupKey,
+                                    type: app.type,
+                                    state: app.state,
+                                    situation: app.situation,
+                                  },
+                                },
+                              }}
+                            >
+                              <Button
+                                type="button"
+                                variant="primary"
+                                size="sm"
+                                disabled={!app.canStart}
+                                title={app.canStart ? 'Start' : 'Lookup key not parseable'}
+                              >
+                                Start
+                              </Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

@@ -1,0 +1,57 @@
+/* Form preview: vanilla JSON Forms output (inputs, labels, validation) */
+.form-preview input[type="text"],
+.form-preview input[type="number"],
+.form-preview input[type="email"],
+.form-preview input[type="date"],
+.form-preview textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  color: #111827;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.form-preview input::placeholder,
+.form-preview textarea::placeholder {
+  color: #9ca3af;
+}
+.form-preview input:focus,
+.form-preview textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.form-preview .form-preview-group-item {
+  min-width: 6rem;
+}
+
+.form-preview .control > label:first-child {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.form-preview .form-preview-group-item label,
+.form-preview .form-preview-group-item .block {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.form-preview .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.form-preview .radio-label {
+  color: #4b5563;
+}
+
+.form-preview .validation {
+  margin-top: 0.75rem;
+}
+.form-preview .validation_error {
+  color: #dc2626;
+}

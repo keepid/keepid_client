@@ -41,7 +41,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           sessionStorage.setItem('redirecting', 'true');
           window.location.href = googleAuthUrl;
         } else if (data.status === 'INTERNAL_ERROR') {
-          handleGoogleLoginError('Google sign-in is temporarily unavailable. Please use username/password to log in.');
+          handleGoogleLoginError('Google sign-in is temporarily unavailable. Please use email/password to log in.');
         } else {
           handleGoogleLoginError('Could not initiate Google sign-in. Please try again.');
         }

@@ -92,7 +92,7 @@ class ResetPassword extends Component<Props, State> {
             this.props.alert.show('Successfully reset password');
             this.setState({ buttonState: '', collapseState: 'show' });
           } else if (status === 'USER_NOT_FOUND') {
-            this.props.alert.show('Incorrect Username');
+            this.props.alert.show('Account not found');
             this.setState({ buttonState: '' });
           } else if (status === 'AUTH_FAILURE') {
             this.props.alert.show(

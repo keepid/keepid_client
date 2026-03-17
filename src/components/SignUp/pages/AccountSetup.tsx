@@ -10,7 +10,6 @@ import SignUpContext from '../SignUp.context';
 import {
   validateConfirmPassword,
   validatePassword,
-  validateUsername,
 } from '../SignUp.validators';
 import * as validators from '../SignUp.validators';
 
@@ -64,19 +63,6 @@ export default function AccountSetup(): JSX.Element {
           name: 'birthDate',
           type: InputType.DATE,
           validate: validators.validateBirthdate,
-        },
-      ],
-    },
-    {
-      rowLabel: 'Username',
-      fields: [
-        {
-          label: 'Username',
-          placeholder: 'Username',
-          name: 'username',
-          required: true,
-          type: InputType.TEXT,
-          validate: validateUsername,
         },
       ],
     },

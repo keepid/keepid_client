@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
+import PhoneBookPicker from '../PhoneBook/PhoneBookPicker';
 
 // ----- Types -----
 
@@ -13,6 +14,7 @@ interface Field {
   fieldID: string;
   fieldName: string;
   fieldType: string;
+  fieldDirective?: string;
   fieldValueOptions: string[];
   fieldDefaultValue: any;
   fieldIsRequired: boolean;
@@ -375,11 +377,58 @@ export default function ApplicationWebForm({
     </div>
   );
 
+  const shouldUseClientPhonePicker = (entry: Field): boolean => {
+    const rawDirective = (entry.fieldDirective || '').trim();
+    if (!rawDirective) return false;
+
+    const normalized = rawDirective.toLowerCase();
+    if (!normalized.startsWith('client.')) return false;
+
+    const clientDirective = normalized.slice('client.'.length);
+    const isComputedPhonePartDirective = new Set([
+      '$primaryphoneareacode',
+      '$primaryphonetelephoneprefix',
+      '$primaryphonelinenumber',
+      'primaryphoneareacode',
+      'primaryphonetelephoneprefix',
+      'primaryphonelinenumber',
+    ]).has(clientDirective);
+    if (isComputedPhonePartDirective) return false;
+
+    return clientDirective === 'phone'
+      || clientDirective === 'phonenumber'
+      || /^phonebook\.\d+\.phonenumber$/.test(clientDirective);
+  };
+
+  const renderPhoneBookField = (entry: Field) => (
+    <div className="tw-mb-4" key={entry.fieldID}>
+      <label htmlFor={entry.fieldName} className="tw-block tw-text-sm tw-font-medium tw-text-gray-600 tw-mb-1">
+        {entry.fieldQuestion || entry.fieldName}
+        {entry.fieldIsRequired && <span className="text-danger"> *</span>}
+      </label>
+      <PhoneBookPicker
+        value={formAnswers[entry.fieldName] ?? ''}
+        targetUsername={clientUsername || undefined}
+        onSelect={(phone) => {
+          setFormAnswers((prev) => ({ ...prev, [entry.fieldName]: phone }));
+          setValidationErrors((prev) => {
+            const next = new Set(prev);
+            next.delete(entry.fieldName);
+            return next;
+          });
+        }}
+      />
+      {validationErrors.has(entry.fieldName) && (
+        <small className="text-danger">This field is required.</small>
+      )}
+    </div>
+  );
+
   const renderField = (entry: Field) => {
     const type = entry.fieldType.toLowerCase();
     switch (type) {
       case 'textfield':
-        return renderTextField(entry);
+        return shouldUseClientPhonePicker(entry) ? renderPhoneBookField(entry) : renderTextField(entry);
       case 'multilinetextfield':
         return renderMultilineTextField(entry);
       case 'checkbox':

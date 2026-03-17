@@ -19,6 +19,7 @@ interface State {
   buttonState: string;
   recaptchaPayload: string;
   showPassword: boolean;
+  showManualLogin: boolean;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -53,6 +54,7 @@ class LoginPage extends Component<Props, State> {
       buttonState: '',
       recaptchaPayload: '',
       showPassword: false,
+      showManualLogin: false,
     };
   }
 
@@ -102,7 +104,7 @@ class LoginPage extends Component<Props, State> {
     const { username, password, recaptchaPayload } = this.state;
     if (username.trim() === '' || password.trim() === '') {
       const { alert } = this.props;
-      alert.show('Please enter your username or email and password');
+      alert.show('Please enter your email or username and password');
       this.clearInput();
       this.setState({ buttonState: '' });
       this.resetRecaptcha();
@@ -143,12 +145,12 @@ class LoginPage extends Component<Props, State> {
             };
             logIn(role(), resolvedUsername || username, organization, `${firstName} ${lastName}`);
           } else if (status === 'AUTH_FAILURE') {
-            alert.show('Incorrect Username or Password');
+            alert.show('Incorrect email or password');
             this.clearInput();
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
-            alert.show('Incorrect Username or Password');
+            alert.show('Incorrect email or password');
             this.clearInput();
             this.setState({ buttonState: '' });
             this.resetRecaptcha();
@@ -181,7 +183,7 @@ class LoginPage extends Component<Props, State> {
             );
           } else if (googleLoginError === 'AUTH_FAILURE') {
             this.handleGoogleLoginError(
-              'Google authentication failed. Please try again or use your username and password.',
+              'Google authentication failed. Please try again or use your email and password.',
             );
           } else if (googleLoginError === 'INTERNAL_ERROR') {
             this.handleGoogleLoginError(
@@ -237,6 +239,7 @@ class LoginPage extends Component<Props, State> {
       password,
       buttonState,
       showPassword,
+      showManualLogin,
     } = this.state;
     const { autoLogout } = this.props;
     return (
@@ -272,97 +275,107 @@ class LoginPage extends Component<Props, State> {
             </div>
 
             <div className="tw-flex tw-justify-center">
-              <form className="form-signin pt-2">
+              <div className="form-signin pt-2">
                 <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
                 <GoogleLoginButton
                   handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
                   handleGoogleLoginError={this.handleGoogleLoginError}
                 />
-                <label htmlFor="username" className="w-100 font-weight-bold">
-                  Username or email
-                  <input
-                    type="text"
-                    className="form-control form-purple mt-1"
-                    id="username"
-                    placeholder="username or email"
-                    value={username}
-                    onChange={this.handleChangeUsername}
-                    required
-                  />
-                </label>
-                <label
-                  htmlFor="password"
-                  className="w-100 pt-2 font-weight-bold"
-                >
-                  Password
-                  <div className="pass-wrapper form-control form-purple mt-1">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="pass-input"
-                      id="password"
-                      placeholder="password"
-                      value={password}
-                      onChange={this.handleChangePassword}
-                      required
-                    />
+
+                {!showManualLogin ? (
+                  <div className="tw-text-center tw-mt-3">
                     <button
                       type="button"
-                      className="pass-icon"
-                      onClick={this.togglePassword}
+                      className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer"
+                      onClick={() => this.setState({ showManualLogin: true })}
                     >
-                      <img
-                        src={showPassword ? SlashEye : EyeIcon}
-                        className="eye-size"
-                        alt={showPassword ? 'Show' : 'Hide'}
-                      />
+                      No Google account? Sign in with email and password
                     </button>
                   </div>
-                </label>
-                <div className="pt-3">
-                  <div className="pb-2">
-                    <Button
-                      type="submit"
-                      onKeyDown={(e) =>
-                        LoginPage.enterKeyPressed(
-                          e,
-                          this.onSubmitWithReCAPTCHA,
-                        )
-                      }
-                      onClick={this.onSubmitWithReCAPTCHA}
-                      variant="primary"
-                      className={`px-5 ld-ext-right ${buttonState}`}
-                    >
-                      Sign In
-                      <div className="ld ld-ring ld-spin" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="pb-3">
-                  <Link to="/forgot-password" className="text-decoration-none">
-                    <span className="">Forgot your password?</span>
-                  </Link>
-                </div>
-                <div className="pb-1">
-                  <span className="pt-3">Don&apos;t have an account?</span>
-                </div>
-                <div className="">
-                  <div className="col-10 pl-0">
-                    <Link to="/find-organizations">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary w-100 "
+                ) : (
+                  <>
+                    <div className="tw-flex tw-items-center tw-mt-3 tw-mb-2">
+                      <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
+                      <span className="tw-px-3 tw-text-sm tw-text-gray-500">or</span>
+                      <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
+                    </div>
+                    <form>
+                      <label htmlFor="username" className="w-100 font-weight-bold">
+                        Email or username
+                        <input
+                          type="text"
+                          className="form-control form-purple mt-1"
+                          id="username"
+                          placeholder="email or username"
+                          value={username}
+                          onChange={this.handleChangeUsername}
+                          required
+                        />
+                      </label>
+                      <label
+                        htmlFor="password"
+                        className="w-100 pt-2 font-weight-bold"
                       >
-                        Find Organizations
-                      </button>
-                    </Link>
-                  </div>
-                </div>
+                        Password
+                        <div className="pass-wrapper form-control form-purple mt-1">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            className="pass-input"
+                            id="password"
+                            placeholder="password"
+                            value={password}
+                            onChange={this.handleChangePassword}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="pass-icon"
+                            onClick={this.togglePassword}
+                          >
+                            <img
+                              src={showPassword ? SlashEye : EyeIcon}
+                              className="eye-size"
+                              alt={showPassword ? 'Show' : 'Hide'}
+                            />
+                          </button>
+                        </div>
+                      </label>
+                      <div className="pt-3">
+                        <div className="pb-2">
+                          <Button
+                            type="submit"
+                            onKeyDown={(e) =>
+                              LoginPage.enterKeyPressed(
+                                e,
+                                this.onSubmitWithReCAPTCHA,
+                              )
+                            }
+                            onClick={this.onSubmitWithReCAPTCHA}
+                            variant="primary"
+                            className={`w-100 ld-ext-right ${buttonState}`}
+                          >
+                            Sign In
+                            <div className="ld ld-ring ld-spin" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="pb-3">
+                        <Link to="/forgot-password" className="text-decoration-none">
+                          <span>Forgot your password?</span>
+                        </Link>
+                      </div>
+                    </form>
+                  </>
+                )}
+
+                <hr className="tw-my-4" />
+
                 <div className="pb-1">
                   <span className="pt-3">
                     Are you a nonprofit organization?
                   </span>
                 </div>
-                <div className="">
+                <div>
                   <div className="col-10 pl-0">
                     <Link to="/organization-signup">
                       <button
@@ -374,7 +387,7 @@ class LoginPage extends Component<Props, State> {
                     </Link>
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

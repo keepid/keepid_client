@@ -1,47 +1,45 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import '../InteractiveForms/form-preview.css';
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 import { flushSync } from 'react-dom';
 import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 
-import SignaturePad from '../../lib/SignaturePad';
 import getServerURL from '../../serverOverride';
 import PromptOnLeave from '../BaseComponents/PromptOnLeave';
-import DocumentViewer from '../Documents/DocumentViewer';
-import ApplicationBreadCrumbs from './ApplicationBreadCrumbs';
+import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
+import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
+import type { BuilderState } from '../InteractiveForms/types';
+import { fillPdfBlob } from './api/interactiveForm';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
-import ApplicationSendPage from './ApplicationSendPage';
-import ApplicationWebForm from './ApplicationWebForm';
-import { ApplicationType, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import { ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
-
-// Convert a data-URL (e.g. from canvas.toDataURL()) to a Blob suitable for FormData
-function dataURLtoBlob(dataURL: string): Blob {
-  const arr = dataURL.split(',');
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n >= 0) {
-    n -= 1;
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], { type: 'image/png' });
-}
 
 function WebFormPageContent({
   blankFormId,
   fillingPdf,
-  onSubmit,
+  registryLoading,
+  registryError,
+  onBack,
+  onWizardSubmit,
+  onConfigLoaded,
   clientUsername,
+  restoredFormData,
 }: {
   blankFormId: string | null;
   fillingPdf: boolean;
-  onSubmit: (formAnswers: Record<string, any>) => void;
+  registryLoading: boolean;
+  registryError: string | null;
+  onBack: () => void;
+  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => void;
+  onConfigLoaded: (config: { builderState: BuilderState | null; formTitle: string }) => void;
   clientUsername: string;
+  restoredFormData?: Record<string, unknown> | null;
 }) {
-  if (!blankFormId || fillingPdf) {
+  if (registryLoading || fillingPdf) {
     const label = fillingPdf ? 'Generating your application...' : 'Loading form...';
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
@@ -51,14 +49,45 @@ function WebFormPageContent({
       </div>
     );
   }
-  return <ApplicationWebForm applicationId={blankFormId} clientUsername={clientUsername} onSubmit={onSubmit} />;
+  if (registryError) {
+    return (
+      <Alert variant="warning" className="tw-mt-4">
+        <div>{registryError}</div>
+        <Button variant="outline-secondary" className="tw-mt-3" onClick={onBack}>
+          Back to selections
+        </Button>
+      </Alert>
+    );
+  }
+  if (!blankFormId) {
+    return (
+      <Alert variant="warning" className="tw-mt-4">
+        Could not load this application. Please go back and pick a different option.
+      </Alert>
+    );
+  }
+  return (
+    <InteractiveFormWizard
+      applicationId={blankFormId}
+      clientUsername={clientUsername}
+      onSubmit={onWizardSubmit}
+      onConfigLoaded={onConfigLoaded}
+      initialData={restoredFormData ?? undefined}
+    />
+  );
+}
+
+function getOptionLabel(pageName: 'type' | 'person', value: string): string | null {
+  if (!value) return null;
+  const pageConfig = applicationFormPages.find((entry) => entry.pageName === pageName);
+  const option = pageConfig?.options.find((entry) => entry.value === value);
+  return option?.titleText ?? null;
 }
 
 export default function ApplicationForm() {
   const {
     formContent,
     page,
-    setPage,
     data,
     isDirty,
     setIsDirty,
@@ -66,20 +95,27 @@ export default function ApplicationForm() {
     handleNext,
     handlePrev,
     clientUsername,
+    clientName,
   } = useApplicationFormContext();
 
   const [shouldPrompt, setShouldPrompt] = useState(true);
   const [fillingPdf, setFillingPdf] = useState(false);
-  const [savedFormAnswers, setSavedFormAnswers] = useState<Record<string, any>>({});
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [applicationAvailability, setApplicationAvailability] = useState<
+    { type: string; state: string; situation: string; lookupKey: string }[]
+  >([]);
+  const [filledPdfUrl, setFilledPdfUrl] = useState<string | null>(null);
+  const [wizardFormOutput, setWizardFormOutput] = useState<Record<string, unknown> | null>(null);
+  const [wizardFormData, setWizardFormData] = useState<Record<string, unknown> | null>(null);
+  const builderStateRef = useRef<BuilderState | null>(null);
+  const formTitleRef = useRef<string>('');
   const {
-    pdfFile,
     blankFormId,
+    registryLoading,
+    registryError,
     fetchRegistry,
-    fillPdf,
-    postData: postRegistryData,
   } = useGetApplicationRegistry();
   const history = useHistory();
 
@@ -87,15 +123,46 @@ export default function ApplicationForm() {
   const hidePrev = page === 0;
   const isReviewPage = formContent[page].pageName === 'review';
   const isWebFormPage = formContent[page].pageName === 'webForm';
-  const isPreviewPage = formContent[page].pageName === 'preview';
-  const isSendPage = formContent[page].pageName === 'send';
+  const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
 
   // Fetch registry info (blankFormId) when entering the webForm step
   useEffect(() => {
     if (isWebFormPage) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isWebFormPage]);
+  }, [isWebFormPage, data, isDirty]);
+
+  useEffect(() => {
+    setAvailabilityLoading(true);
+    setAvailabilityError(null);
+    fetch(`${getServerURL()}/get-available-application-options`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((items) => {
+        if (!Array.isArray(items)) {
+          setApplicationAvailability([]);
+          setAvailabilityError('Could not load application options.');
+          return;
+        }
+        setApplicationAvailability(
+          items
+            .filter((x) => x && x.type && x.state && x.situation)
+            .map((x) => ({
+              type: String(x.type),
+              state: String(x.state),
+              situation: String(x.situation),
+              lookupKey: String(x.lookupKey || `${x.type}$${x.state}$${x.situation}`),
+            })),
+        );
+      })
+      .catch(() => {
+        setApplicationAvailability([]);
+        setAvailabilityError('Could not load application options.');
+      })
+      .finally(() => setAvailabilityLoading(false));
+  }, []);
 
   const disablePrompt = () => {
     flushSync(() => {
@@ -103,76 +170,50 @@ export default function ApplicationForm() {
     });
   };
 
-  /** Upload the signed PDF to the server. Returns true on success. */
-  const uploadSignedPdf = async (): Promise<boolean> => {
-    if (!blankFormId) {
-      setSubmitError('Application ID is missing. Please go back and try again.');
-      return false;
-    }
+  const handleConfigLoaded = useCallback((config: { builderState: BuilderState | null; formTitle: string }) => {
+    builderStateRef.current = config.builderState;
+    formTitleRef.current = config.formTitle;
+  }, []);
 
-    if (!signatureDataUrl) {
-      setSubmitError('Please sign the application on the previous step before submitting.');
-      return false;
-    }
-
-    setSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      const signatureBlob = dataURLtoBlob(signatureDataUrl);
-
-      const formData = new FormData();
-      formData.append('signature', signatureBlob, 'signature.png');
-      formData.append('clientUsername', clientUsername);
-      formData.append('applicationId', blankFormId);
-      formData.append('formAnswers', JSON.stringify(savedFormAnswers));
-
-      const response = await fetch(`${getServerURL()}/upload-signed-pdf-2`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.status !== 'SUCCESS') {
-        setSubmitError(result.message || 'Failed to save application. Please try again.');
-        return false;
+  const handleWizardSubmit = useCallback(
+    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => {
+      if (!blankFormId || Object.keys(pdfFill).length === 0) {
+        handleNext();
+        return;
       }
+      setFillingPdf(true);
+      setSubmitError(null);
+      try {
+        const blob = await fillPdfBlob(blankFormId, pdfFill, clientUsername);
+        const url = URL.createObjectURL(blob);
+        setFilledPdfUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
+        setWizardFormOutput(formOutput);
+        setWizardFormData(formData);
+        handleNext();
+      } catch (err) {
+        setSubmitError(err instanceof Error ? err.message : 'Could not generate PDF. Please try again.');
+      } finally {
+        setFillingPdf(false);
+      }
+    },
+    [blankFormId, clientUsername, handleNext],
+  );
 
-      return true;
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setSubmitError('Could not connect to the server. Please try again.');
-      return false;
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const handleSaveSuccess = useCallback(() => {
+    if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
+    setFilledPdfUrl(null);
+    setWizardFormOutput(null);
+    setWizardFormData(null);
+    disablePrompt();
+    history.push('/applications');
+  }, [filledPdfUrl, history]);
 
-  const handleSubmit = async () => {
-    const success = await uploadSignedPdf();
-    if (success) {
-      disablePrompt();
-      // TODO: optionally call /submit-mail here for direct-mail flow
-      history.push('/applications');
-    }
-  };
-
-  const handleSaveOnly = async () => {
-    const success = await uploadSignedPdf();
-    if (success) {
-      disablePrompt();
-      history.push('/applications');
-    }
-  };
-
-  const handleCancel = () => {
-    if (window.confirm('Do you really want to cancel this application?')) {
-      disablePrompt();
-      history.push('/applications');
-    }
-  };
+  useEffect(() => () => {
+    if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
+  }, [filledPdfUrl]);
 
   const clickHandler = (e: React.MouseEvent) => {
     if (e.target instanceof HTMLInputElement) {
@@ -180,28 +221,14 @@ export default function ApplicationForm() {
     }
   };
 
-  // Called when user submits the web form -- fills the PDF and advances to preview
-  const handleWebFormSubmit = useCallback(
-    async (formAnswers: Record<string, any>) => {
-      // Persist answers so they're available at final submission
-      setSavedFormAnswers(formAnswers);
-
-      // If form was skipped (empty answers) or blankFormId not available, just advance
-      if (!blankFormId || Object.keys(formAnswers).length === 0) {
-        handleNext();
-        return;
-      }
-      setFillingPdf(true);
-      await fillPdf(blankFormId, formAnswers, clientUsername);
-      setFillingPdf(false);
-      handleNext();
-    },
-    [blankFormId, fillPdf, handleNext, clientUsername],
-  );
-
-  const availableApplications = filterAvailableApplications(data);
+  const availableApplications = filterAvailableApplications(data, applicationAvailability);
 
   const dataAttr = formContent[page].dataAttr;
+  const applicationTypeLabel = getOptionLabel('type', data.type) ?? 'your';
+  const targetPersonLabel = clientName || clientUsername || getOptionLabel('person', data.person) || 'you';
+  const pageTitle = isWebFormPage
+    ? `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`
+    : formContent[page].title(data.type);
 
   return (
     <>
@@ -211,20 +238,19 @@ export default function ApplicationForm() {
         <meta name="description" content="Keep.id" />
       </Helmet>
 
-      {/* Breadcrumbs: wider than the form so they have room to breathe */}
-      <div className="tw-max-w-6xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8">
-        <ApplicationBreadCrumbs page={page} setPage={setPage} />
-      </div>
-
       {/* Form content: narrower for readability */}
-      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pb-12">
-        <div className="tw-flex tw-justify-between tw-items-end tw-mb-1">
-          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{formContent[page].title(data.type)}</h2>
-          <span className="tw-text-sm tw-text-gray-400">Step {page + 1} of {pageCount}</span>
+      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
+        <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
+          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
         </div>
 
         {formContent[page].subtitle && (
           <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+        )}
+        {availabilityError && (
+          <Alert variant="warning" className="tw-mb-4">
+            {availabilityError}
+          </Alert>
         )}
 
         <Form
@@ -259,68 +285,53 @@ export default function ApplicationForm() {
           <WebFormPageContent
             blankFormId={blankFormId}
             fillingPdf={fillingPdf}
-            onSubmit={handleWebFormSubmit}
+            registryLoading={registryLoading}
+            registryError={registryError}
+            onBack={handlePrev}
+            onWizardSubmit={handleWizardSubmit}
+            onConfigLoaded={handleConfigLoaded}
             clientUsername={clientUsername}
+            restoredFormData={wizardFormData}
           />
         )}
 
-        {isPreviewPage && (
-          pdfFile
-            ? (
-              <>
-                <DocumentViewer pdfFile={pdfFile} readOnly />
-                <div className="tw-mt-8">
-                  <h4 className="tw-font-semibold tw-mb-2">Sign your application</h4>
-                  <p className="tw-text-sm tw-text-gray-500 tw-mb-2">
-                    Draw your signature in the box below. You can clear and redo it if needed.
-                  </p>
-                  <div className="tw-border tw-border-gray-300 tw-rounded" style={{ height: 200 }}>
-                    <SignaturePad
-                      canvasDataUrl={signatureDataUrl}
-                      handleCanvasSign={(dataUrl: string) => setSignatureDataUrl(dataUrl)}
-                      onEnd={(_event: any, dataUrl: string) => setSignatureDataUrl(dataUrl)}
-                    />
-                  </div>
-                </div>
-              </>
-            )
-            : <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center tw-border tw-rounded">Sorry, the PDF is not available for the application you selected.</div>
+        {isSignAndDownloadPage && filledPdfUrl && blankFormId && wizardFormOutput && (
+          <SignAndDownloadViewer
+            fileUrl={filledPdfUrl}
+            signaturePlacements={builderStateRef.current?.signaturePlacements ?? []}
+            title={formTitleRef.current}
+            applicationId={blankFormId}
+            formAnswers={wizardFormOutput}
+            clientUsername={clientUsername}
+            onSaveSuccess={handleSaveSuccess}
+          />
         )}
 
-        {submitError && (isPreviewPage || isSendPage) && (
+        {isSignAndDownloadPage && !filledPdfUrl && (
+          <div className="tw-flex tw-bg-gray-100 tw-w-full tw-h-56 tw-justify-center tw-items-center tw-border tw-rounded tw-text-gray-500">
+            Please complete the form on the previous step to generate your PDF.
+          </div>
+        )}
+
+        {submitError && (isWebFormPage || isSignAndDownloadPage) && (
           <Alert variant="danger" className="tw-mt-4" onClose={() => setSubmitError(null)} dismissible>
             {submitError}
           </Alert>
         )}
 
-        {isSendPage && (
-          <ApplicationSendPage
-            data={data}
-            handleCancel={handleCancel}
-            handlePrev={handlePrev}
-            handleSaveOnly={handleSaveOnly}
-            handleSubmit={handleSubmit}
-            submitting={submitting}
-          />
-        )}
-
         <div className="tw-flex tw-justify-between tw-mt-6">
           <Button
             onClick={handlePrev}
-            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isSendPage || isWebFormPage ? 'tw-hidden ' : ' '}`}
+            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading ? 'tw-hidden ' : ' '}`}
           >
             Back
           </Button>
           <Button
             onClick={() => {
-              if (isPreviewPage && !signatureDataUrl) {
-                setSubmitError('Please sign the application before continuing.');
-                return;
-              }
               setSubmitError(null);
               handleNext();
             }}
-            className={`${isReviewPage || isPreviewPage ? ' ' : 'tw-hidden '}`}
+            className={`${isReviewPage ? ' ' : 'tw-hidden '}`}
           >
             Next
           </Button>

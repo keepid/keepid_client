@@ -14,6 +14,7 @@ interface ApplicationFormContextProps {
   handlePrev: () => void;
   handleNext: () => void;
   clientUsername: string;
+  clientName: string;
 }
 
 export const ApplicationFormContext =
@@ -30,7 +31,7 @@ const initialData = {
   state: '',
   situation: '',
   person: '',
-  org: 'TSA C.A.T.S Program', // 'Face to Face',
+  org: '',
 };
 
 const DATA_FIELD_COUNT = Object.keys(initialData).length;
@@ -53,8 +54,7 @@ type ApplicationPageName = 'type'
   | 'situation'
   | 'review'
   | 'webForm'
-  | 'preview'
-  | 'send'
+  | 'signAndDownload'
 
 export interface ApplicationFormPage {
   pageName: ApplicationPageName;
@@ -321,14 +321,9 @@ export const formContent: ApplicationFormPage[] = [
     options: [],
   },
   {
-    pageName: 'preview',
-    displayName: 'Sign',
-    title: (_) => 'Review and sign your application',
-    options: [],
-  },
-  {
-    pageName: 'send',
-    title: (_) => 'Last steps...',
+    pageName: 'signAndDownload',
+    displayName: 'Sign & Download',
+    title: (_) => 'Sign and download your application',
     options: [],
   },
 ];
@@ -337,10 +332,27 @@ const dataAttrWithIndexes = formContent
   .map((p, i) => ({ attr: p.dataAttr, pageNum: i }))
   .filter((d) => d.attr != null) as { attr: string, pageNum: number}[];
 
-export function ApplicationFormProvider({ children, clientUsername = '' }: { children: React.ReactNode; clientUsername?: string }) {
-  const [page, setPageRaw] = useState<number>(0);
-  const [data, setData] = useState<ApplicationFormData>(initialData);
-  const [isDirty, setIsDirty] = useState<boolean>(false);
+export function ApplicationFormProvider({
+  children,
+  clientUsername = '',
+  clientName = '',
+  initialPage = 0,
+  initialDataOverride,
+  initialDirty = false,
+}: {
+  children: React.ReactNode;
+  clientUsername?: string;
+  clientName?: string;
+  initialPage?: number;
+  initialDataOverride?: Partial<ApplicationFormData>;
+  initialDirty?: boolean;
+}) {
+  const [page, setPageRaw] = useState<number>(initialPage);
+  const [data, setData] = useState<ApplicationFormData>({
+    ...initialData,
+    ...(initialDataOverride ?? {}),
+  });
+  const [isDirty, setIsDirty] = useState<boolean>(initialDirty);
 
   const setPage = (p: number) => {
     // erase the data from later pages
@@ -388,6 +400,7 @@ export function ApplicationFormProvider({ children, clientUsername = '' }: { chi
         handleNext,
         handlePrev,
         clientUsername,
+        clientName,
       }}
     >
       {children}

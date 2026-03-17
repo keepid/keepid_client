@@ -167,7 +167,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         } else if (status === 'AUTH_FAILURE') {
           alert.show('Incorrect Password');
         } else if (status === 'USER_NOT_FOUND') {
-          alert.show('Username Does Not Exist');
+          alert.show('Account not found');
         } else {
           alert.show('Server Failure: Please Try Again');
         }
@@ -224,7 +224,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
           <div className="tw-py-4">
             <div className="tw-mb-4">
-              <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client Username</label>
+              <label htmlFor="authenticateForm" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">Client</label>
               <input
                 type="text"
                 id="authenticateForm"
@@ -286,7 +286,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       </Helmet>
       <Switch>
         <Route exact path={path}>
-          <div className="tw-bg-transparent tw-pt-4 tw-pb-0">
+          <div className="tw-bg-transparent tw-pt-8 tw-pb-0">
             <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
               <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
                 <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
@@ -294,15 +294,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                 </h1>
                 <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
                   {role === Role.Director || role === Role.Admin ? (
-                    <Link to="/person-signup/worker" className="tw-mr-2">
-                      <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
-                        Sign Up Worker
+                    <Link to="/applications" className="tw-mr-2">
+                      <button type="button" className="tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md tw-bg-white">
+                        View Applications
                       </button>
                     </Link>
                   ) : null}
-                  <Link to="/person-signup/client">
+                  <Link to="/enroll-client">
                     <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
-                      Sign Up Client
+                      Enroll Client
                     </button>
                   </Link>
                 </div>
@@ -386,7 +386,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                                   </div>
                                 </Link>
                                 <Link
-                                  to={`/my-documents/${client.username}`}
+                                  to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }}
                                   className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                                 >
                                   <div className="tw-flex tw-items-center">
@@ -395,7 +395,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                                   </div>
                                 </Link>
                                 <Link
-                                  to={{ pathname: '/applications', state: { clientUsername: client.username } }}
+                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
                                   className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                                 >
                                   <div className="tw-flex tw-items-center">
@@ -434,7 +434,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                                   <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
                                   Upload
                               </Link>
-                              <Link to={`/my-documents/${client.username}`} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200">
+                              <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200">
                                   View Documents
                               </Link>
                               <Link to={`${path}/notify-client/${client.username}`} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-r tw-text-sm tw-border-none">
@@ -449,7 +449,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                   ) : (
                     <div className="tw-text-center tw-py-12">
                       <h3 className="tw-text-xl tw-text-gray-700">
-                        No Clients! Click &apos;Sign up Client&apos; to get started!
+                        No Clients! Click &apos;Enroll Client&apos; to get started!
                       </h3>
                       <img
                         className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
