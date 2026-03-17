@@ -20,18 +20,21 @@ const FIELD_ID_MAP: Record<string, string> = {
   pickupCity: 'city',
   pickupState: 'state',
   pickupZipCode: 'zip-code',
-  pickupHours: 'pickup-hours',
 };
 
 export default function IdPickupNotificationForm({
   clientUsername,
   workerUsername,
+  organizationName,
+  initialIdCategory,
   initialWorkerName,
   initialClientName,
   initialClientPhone,
 }: {
   clientUsername: string;
   workerUsername: string;
+  organizationName: string;
+  initialIdCategory?: string;
   initialWorkerName: string;
   initialClientName: string;
   initialClientPhone: string;
@@ -47,7 +50,15 @@ export default function IdPickupNotificationForm({
     onChange,
     onSubmit,
     getMessagePreview,
-  } = useIdPickupNotificationForm(clientUsername, workerUsername, initialWorkerName, initialClientName, initialClientPhone);
+  } = useIdPickupNotificationForm(
+    clientUsername,
+    workerUsername,
+    organizationName,
+    initialIdCategory,
+    initialWorkerName,
+    initialClientName,
+    initialClientPhone,
+  );
 
   const ringClass = (fieldName: keyof IdPickupFormErrors) =>
     hasAttemptedSubmit && errors[fieldName]
@@ -320,28 +331,6 @@ export default function IdPickupNotificationForm({
                             className={`${BASE_INPUT_CLASS} ${ringClass('pickupZipCode')}`}
                           />
                           {renderError('pickupZipCode')}
-                        </div>
-                      </div>
-                    </li>
-
-                    <li>
-                      <div className="tw-bg-gray-100 tw-text-md tw-text-gray-700 tw-py-4 sm:tw-grid sm:tw-grid-cols-5">
-                        <label
-                          htmlFor="pickup-hours"
-                          className="tw-block tw-mb-0 tw-pl-5 tw-font-medium tw-self-center sm:tw-col-span-2"
-                        >
-                          Pickup Hours
-                        </label>
-                        <div className="tw-col-span-2 tw-px-5 sm:tw-px-0">
-                          <input
-                            type="text"
-                            id="pickup-hours"
-                            placeholder="e.g. Mon-Fri 9am-5pm"
-                            value={formValues.pickupHours as string}
-                            onChange={(e) => onChange('pickupHours', e.target.value)}
-                            className={`${BASE_INPUT_CLASS} ${ringClass('pickupHours')}`}
-                          />
-                          {renderError('pickupHours')}
                         </div>
                       </div>
                     </li>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAlert } from 'react-alert';
 
 import getServerURL from '../../../serverOverride';
@@ -10,6 +10,17 @@ const MIN_LOADING_DURATION = 500;
 
 const toE164US = (phone: string): string =>
   `+1${phone.replace(/\D/g, '')}`;
+
+const mapIdCategoryToPickupOption = (idCategory?: string): string => {
+  const normalized = (idCategory || '').trim().toLowerCase();
+  if (!normalized) return '';
+  if (normalized === 'birth certificate') return 'Birth Certificate';
+  if (normalized === 'social security card') return 'Social Security Card';
+  if (normalized === "driver's license" || normalized === 'drivers license / photo id') {
+    return 'Photo ID';
+  }
+  return '';
+};
 
 export const ID_PICKUP_OPTIONS = [
   "Driver's License",
@@ -29,7 +40,6 @@ export interface IdPickupFormValues {
   pickupCity: string;
   pickupState: string;
   pickupZipCode: string;
-  pickupHours: string;
   additionalComments: string;
 }
 
@@ -43,7 +53,6 @@ export interface IdPickupFormErrors {
   pickupCity?: string;
   pickupState?: string;
   pickupZipCode?: string;
-  pickupHours?: string;
 }
 
 const validate = (values: IdPickupFormValues): IdPickupFormErrors => {
@@ -79,14 +88,14 @@ const validate = (values: IdPickupFormValues): IdPickupFormErrors => {
     errors.pickupZipCode = 'Enter a valid ZIP code (e.g. 19104)';
   }
 
-  if (!values.pickupHours.trim()) errors.pickupHours = 'Pickup hours are required';
-
   return errors;
 };
 
 export default function useIdPickupNotificationForm(
   clientUsername: string,
   workerUsername: string,
+  organizationName: string,
+  initialIdCategory: string | undefined,
   initialWorkerName: string,
   initialClientName: string,
   initialClientPhone: string,
@@ -97,13 +106,12 @@ export default function useIdPickupNotificationForm(
     workerName: initialWorkerName,
     clientName: initialClientName,
     clientPhone: initialClientPhone,
-    idToPickup: '',
+    idToPickup: mapIdCategoryToPickupOption(initialIdCategory),
     customIdToPickup: '',
     pickupStreetAddress: '',
     pickupCity: '',
     pickupState: '',
     pickupZipCode: '',
-    pickupHours: '',
     additionalComments: '',
   });
 
@@ -112,6 +120,113 @@ export default function useIdPickupNotificationForm(
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
+
+  useEffect(() => {
+    const shouldFetchClientDetails = !initialClientName.trim() || !initialClientPhone.trim();
+    const shouldFetchWorkerName = !initialWorkerName.trim();
+    if (!shouldFetchClientDetails && !shouldFetchWorkerName) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    const fetchUserInfo = async (username: string) => {
+      const res = await fetch(`${getServerURL()}/get-user-info`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+        signal: controller.signal,
+      });
+      return res.json();
+    };
+
+    const hydrateMissingUserDetails = async () => {
+      try {
+        if (shouldFetchClientDetails && clientUsername.trim()) {
+          const clientData = await fetchUserInfo(clientUsername);
+          if (clientData?.status === 'SUCCESS') {
+            const fetchedClientName = [clientData.firstName, clientData.lastName].filter(Boolean).join(' ').trim();
+            const fetchedClientPhone = clientData.phone || '';
+            setFormValues((prev) => ({
+              ...prev,
+              clientName: prev.clientName || fetchedClientName,
+              clientPhone: prev.clientPhone || fetchedClientPhone,
+            }));
+          }
+        }
+
+        if (shouldFetchWorkerName && workerUsername.trim()) {
+          const workerData = await fetchUserInfo(workerUsername);
+          if (workerData?.status === 'SUCCESS') {
+            const fetchedWorkerName = [workerData.firstName, workerData.lastName].filter(Boolean).join(' ').trim();
+            setFormValues((prev) => ({
+              ...prev,
+              workerName: prev.workerName || fetchedWorkerName,
+            }));
+          }
+        }
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          // Best-effort autofill only.
+        }
+      }
+    };
+
+    hydrateMissingUserDetails();
+
+    return () => controller.abort();
+  }, [
+    clientUsername,
+    workerUsername,
+    initialClientName,
+    initialClientPhone,
+    initialWorkerName,
+  ]);
+
+  useEffect(() => {
+    if (!organizationName.trim()) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    const fetchOrganizationInfo = async () => {
+      try {
+        const res = await fetch(`${getServerURL()}/get-organization-info`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orgName: organizationName }),
+          signal: controller.signal,
+        });
+        const data = await res.json();
+
+        if (data?.status !== 'SUCCESS' || !data?.orgAddress) {
+          return;
+        }
+
+        const { line1 = '', line2 = '', city = '', state = '', zip = '' } = data.orgAddress;
+        const pickupStreetAddress = [line1, line2].filter(Boolean).join(', ');
+
+        setFormValues((prev) => ({
+          ...prev,
+          pickupStreetAddress: prev.pickupStreetAddress || pickupStreetAddress,
+          pickupCity: prev.pickupCity || city,
+          pickupState: prev.pickupState || state,
+          pickupZipCode: prev.pickupZipCode || zip,
+        }));
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          // Best-effort autofill; keep form usable even if org fetch fails.
+        }
+      }
+    };
+
+    fetchOrganizationInfo();
+
+    return () => controller.abort();
+  }, [organizationName]);
 
   const onChange = (field: keyof IdPickupFormValues, value: string) => {
     const newValues = { ...formValues, [field]: value };
@@ -136,7 +251,7 @@ export default function useIdPickupNotificationForm(
   const getMessagePreview = (): string => {
     const location = `${formValues.pickupStreetAddress}, ${formValues.pickupCity}, ${formValues.pickupState} ${formValues.pickupZipCode}`;
 
-    let message = `Hi ${formValues.clientName || '___'}, your ${getIdLabel() || '___'} is ready for pickup at ${location || '___'}. Pickup hours: ${formValues.pickupHours || '___'}. Your case worker ${formValues.workerName || '___'} is ready to help with further ID needs.`;
+    let message = `Hi ${formValues.clientName || '___'}, your ${getIdLabel() || '___'} is ready for pickup at ${location || '___'}. Your case worker ${formValues.workerName || '___'} is ready to help with further ID needs.`;
 
     if (formValues.additionalComments.trim()) {
       message += ` ${formValues.additionalComments}`;

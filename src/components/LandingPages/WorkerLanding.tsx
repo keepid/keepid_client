@@ -434,11 +434,8 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                                   <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
                                   Upload
                               </Link>
-                              <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200">
+                              <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-r">
                                   View Documents
-                              </Link>
-                              <Link to={`${path}/notify-client/${client.username}`} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-r tw-text-sm tw-border-none">
-                                  Notify Client
                               </Link>
                           </div>
 
@@ -494,18 +491,24 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
           render={(props) => {
             const { clientUsername } = props.match.params;
             const client = clients.find((client) => client.username === clientUsername);
-
-            if (client === undefined) return <Redirect to="/home" />;
-
-            const { firstName: clientFirstName, lastName: clientLastName, phone: clientPhone } = client;
+            const routeState = props.location.state as
+              | { clientName?: string; clientPhone?: string; prefilledIdCategory?: string }
+              | undefined;
+            const clientFirstName = client?.firstName || '';
+            const clientLastName = client?.lastName || '';
+            const fullClientName = `${clientFirstName} ${clientLastName}`.trim();
+            const initialClientName = fullClientName || routeState?.clientName || '';
+            const initialClientPhone = client?.phone || routeState?.clientPhone || '';
 
             return (
               <IdPickupNotificationForm
                 clientUsername={clientUsername}
                 workerUsername={username}
-                initialClientName={`${clientFirstName} ${clientLastName}`}
+                organizationName={organization}
+                initialIdCategory={routeState?.prefilledIdCategory}
+                initialClientName={initialClientName}
                 initialWorkerName={name}
-                initialClientPhone={clientPhone}
+                initialClientPhone={initialClientPhone}
               />
             );
           }}
