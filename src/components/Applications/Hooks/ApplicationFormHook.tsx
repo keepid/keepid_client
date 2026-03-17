@@ -1,5 +1,7 @@
 import React, { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
+import Role from '../../../static/Role';
+
 interface ApplicationFormContextProps {
   formContent: ApplicationFormPage[];
   page: number;
@@ -13,8 +15,15 @@ interface ApplicationFormContextProps {
   handleChange: (name: string, value: string) => void;
   handlePrev: () => void;
   handleNext: () => void;
+  userRole: Role;
+  shouldShowWhoForStep: boolean;
+  whoForNextPage: number;
   clientUsername: string;
   clientName: string;
+  targetClientUsername: string;
+  setTargetClientUsername: Dispatch<SetStateAction<string>>;
+  targetClientName: string;
+  setTargetClientName: Dispatch<SetStateAction<string>>;
 }
 
 export const ApplicationFormContext =
@@ -48,7 +57,8 @@ interface ApplicationOption {
   for: Set<ApplicationType> | null, // null indicates that this option is for ALL application types
 }
 
-type ApplicationPageName = 'type'
+type ApplicationPageName = 'whoFor'
+  | 'type'
   | 'state'
   | 'person'
   | 'situation'
@@ -68,6 +78,11 @@ export interface ApplicationFormPage {
 }
 
 export const formContent: ApplicationFormPage[] = [
+  {
+    pageName: 'whoFor',
+    title: (_) => 'Who is this for?',
+    options: [],
+  },
   {
     pageName: 'type',
     title: (_) => 'Start an Application',
@@ -334,25 +349,44 @@ const dataAttrWithIndexes = formContent
 
 export function ApplicationFormProvider({
   children,
+  userRole = Role.Client,
   clientUsername = '',
   clientName = '',
   initialPage = 0,
   initialDataOverride,
   initialDirty = false,
+  whoForNextPage,
 }: {
   children: React.ReactNode;
+  userRole?: Role;
   clientUsername?: string;
   clientName?: string;
   initialPage?: number;
   initialDataOverride?: Partial<ApplicationFormData>;
   initialDirty?: boolean;
+  whoForNextPage?: number;
 }) {
+  const shouldShowWhoForStep = userRole === Role.Worker
+    || userRole === Role.Admin
+    || userRole === Role.Director;
+  const typePageIndex = formContent.findIndex((p) => p.pageName === 'type');
   const [page, setPageRaw] = useState<number>(initialPage);
   const [data, setData] = useState<ApplicationFormData>({
     ...initialData,
     ...(initialDataOverride ?? {}),
   });
   const [isDirty, setIsDirty] = useState<boolean>(initialDirty);
+  const [targetClientUsername, setTargetClientUsername] = useState<string>(clientUsername);
+  const [targetClientName, setTargetClientName] = useState<string>(clientName);
+  const [resolvedWhoForNextPage] = useState<number>(() => {
+    if (!shouldShowWhoForStep) {
+      return typePageIndex;
+    }
+    if (typeof whoForNextPage === 'number') {
+      return whoForNextPage;
+    }
+    return typePageIndex;
+  });
 
   const setPage = (p: number) => {
     // erase the data from later pages
@@ -399,8 +433,15 @@ export function ApplicationFormProvider({
         handleChange,
         handleNext,
         handlePrev,
+        userRole,
+        shouldShowWhoForStep,
+        whoForNextPage: resolvedWhoForNextPage,
         clientUsername,
         clientName,
+        targetClientUsername,
+        setTargetClientUsername,
+        targetClientName,
+        setTargetClientName,
       }}
     >
       {children}

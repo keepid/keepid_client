@@ -1,6 +1,21 @@
 /* eslint-disable no-nested-ternary */
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import SearchIcon from '@mui/icons-material/Search';
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
@@ -9,7 +24,6 @@ import { Link, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import Table from '../BaseComponents/Table';
 import ApplicationForm from './OldApplication/ApplicationForm';
 
 interface DocumentInformation {
@@ -18,6 +32,7 @@ interface DocumentInformation {
   id: string,
   uploadDate: string,
   filename: string,
+  formattedUploadDate?: string,
 }
 
 interface Props {
@@ -30,6 +45,10 @@ interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   documents: DocumentInformation[],
+  searchInput: string,
+  debouncedSearch: string,
+  searchDebounceTimeout: number | undefined,
+  currentPage: number,
   clientUsername: string | undefined,
   clientName: string | undefined,
   availableApplications: {
@@ -46,55 +65,89 @@ interface LocationState {
   clientName?: string;
 }
 
+const PAGE_SIZE = 10;
+
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
-  ButtonFormatter = (cell, row) => (
-    <div>
-      <Link to="/applications/send">
-        <button type="button" className="btn btn-primary w-75 btn-sm p-2 m-1" onClick={(event) => this.handleViewDocument(event, row)}>View Application</button>
-      </Link>
-    </div>
-  );
-
-  OverflowFormatter = (cell) => (
-    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-      <small>{ cell }</small>
-    </div>
-  );
-
-  tableCols = [{
-    dataField: 'filename',
-    text: 'Application Name',
-    sort: true,
-    // formatter: this.OverflowFormatter, // OverflowFormatter handles long filenames
-  }, {
-    dataField: 'organizationName',
-    text: 'Organization',
-    sort: true,
-  }, {
-    dataField: 'uploadDate',
-    text: 'Upload Date',
-    sort: true,
-  }, {
-    dataField: 'uploader',
-    text: 'Uploader',
-    sort: true,
-  }, {
-    dataField: 'actions',
-    text: 'Actions',
-    formatter: this.ButtonFormatter,
-  }];
-
   constructor(props: Props & RouteComponentProps) {
     super(props);
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
       documents: [],
+      searchInput: '',
+      debouncedSearch: '',
+      searchDebounceTimeout: undefined,
+      currentPage: 1,
       clientUsername: undefined,
       clientName: undefined,
       availableApplications: [],
     };
   }
+
+  componentWillUnmount() {
+    const { searchDebounceTimeout } = this.state;
+    if (searchDebounceTimeout) {
+      window.clearTimeout(searchDebounceTimeout);
+    }
+  }
+
+  formatUploadDate = (rawDate: string): string => {
+    const parsed = new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return rawDate;
+    }
+    return parsed.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  mapDocuments = (documents: DocumentInformation[]): DocumentInformation[] =>
+    documents.map((doc) => ({
+      ...doc,
+      formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
+    }));
+
+  handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value;
+    const { searchDebounceTimeout } = this.state;
+    if (searchDebounceTimeout) {
+      window.clearTimeout(searchDebounceTimeout);
+    }
+    const timeout = window.setTimeout(() => {
+      this.setState({ debouncedSearch: nextValue.trim().toLowerCase(), currentPage: 1 });
+    }, 300);
+    this.setState({
+      searchInput: nextValue,
+      searchDebounceTimeout: timeout,
+    });
+  };
+
+  handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const { searchInput, searchDebounceTimeout } = this.state;
+    if (searchDebounceTimeout) {
+      window.clearTimeout(searchDebounceTimeout);
+    }
+    this.setState({
+      debouncedSearch: searchInput.trim().toLowerCase(),
+      searchDebounceTimeout: undefined,
+      currentPage: 1,
+    });
+  };
+
+  goToNextPage = (totalPages: number) => {
+    this.setState((prevState) => ({
+      currentPage: Math.min(prevState.currentPage + 1, totalPages),
+    }));
+  };
+
+  goToPreviousPage = () => {
+    this.setState((prevState) => ({
+      currentPage: Math.max(prevState.currentPage - 1, 1),
+    }));
+  };
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
     const parseWithDelimiter = (delimiter: string) => {
@@ -162,12 +215,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           } = responseJSON;
           const numElements = documents.length;
           if (status === 'SUCCESS') {
-            const newDocuments: DocumentInformation[] = [];
+            let newDocuments: DocumentInformation[] = [];
             for (let i = 0; i < numElements; i += 1) {
               const row = documents[i];
               row.index = i;
               newDocuments.push(row);
             }
+            newDocuments = this.mapDocuments(newDocuments);
             this.setState({
               documents: newDocuments,
             });
@@ -192,12 +246,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           } = responseJSON;
           const numElements = documents.length;
           if (status === 'SUCCESS') {
-            const newDocuments: DocumentInformation[] = [];
+            let newDocuments: DocumentInformation[] = [];
             for (let i = 0; i < numElements; i += 1) {
               const row = documents[i];
               row.index = i;
               newDocuments.push(row);
             }
+            newDocuments = this.mapDocuments(newDocuments);
             this.setState({
               documents: newDocuments,
             });
@@ -206,7 +261,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     }
   }
 
-  handleViewDocument = (event: any, row: any) => {
+  handleOpenApplication = (row: DocumentInformation) => {
     const {
       id,
       filename,
@@ -216,6 +271,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         currentApplicationId: id,
         currentApplicationFilename: filename,
       },
+      () => {
+        this.props.history.push('/applications/send');
+      },
     );
   };
 
@@ -224,28 +282,64 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationFilename,
       currentApplicationId,
       documents,
+      searchInput,
+      debouncedSearch,
+      currentPage,
       clientUsername,
       clientName,
       availableApplications,
     } = this.state;
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
-      ? 'My'
+      ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
+    const filteredDocuments = debouncedSearch
+      ? documents.filter((doc) => [
+        doc.filename,
+        doc.uploader,
+        doc.organizationName,
+      ].join(' ').toLowerCase().includes(debouncedSearch))
+      : documents;
+    const totalResults = filteredDocuments.length;
+    const totalPages = Math.max(Math.ceil(totalResults / PAGE_SIZE), 1);
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
+    const endIndex = Math.min(startIndex + PAGE_SIZE, totalResults);
+    const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
 
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="container-fluid tw-pt-8">
+          <div className="container-fluid tw-pt-12">
             <Helmet>
               <title>Applications</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{applicationsOwner} applications</h1>
+                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : 'Applications'}</h1>
+              </div>
+            </div>
+            <div className="container">
+              <div className="tw-mb-4 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-3">
+                <form onSubmit={this.handleSearchSubmit} className="tw-w-full md:tw-w-96 tw-relative">
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={searchInput}
+                    onChange={this.handleSearchChange}
+                    placeholder="Search by client or application name..."
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </form>
                 <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
                   <Button
-                    className="btn btn-card mt-3 tw-mb-6"
+                    className="btn btn-card"
                     style={{
                       borderRadius: 10,
                     }}
@@ -254,19 +348,66 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     Start a new application
                   </Button>
                 </Link>
-                <p className="lead">See all of your applications. Check the status of each of your applications here.</p>
               </div>
-            </div>
-            <div className="container">
-              <div className="d-flex flex-row bd-highlight mb-3 pt-5">
-                <div className="w-100 pd-3">
-                  <Table
-                    columns={this.tableCols}
-                    data={documents}
-                    emptyInfo={{ description: 'No Applications Present' }}
-                  />
-                </div>
-              </div>
+              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', mb: 2 }}>
+                <Table size="medium">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Application Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Client</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Upload Date</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {totalResults === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          <Typography variant="body2" color="text.secondary">No Applications Present</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : paginatedDocuments.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        hover
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => this.handleOpenApplication(row)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            this.handleOpenApplication(row);
+                          }
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.filename}</TableCell>
+                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.uploader}</TableCell>
+                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.formattedUploadDate || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {totalResults > 0 && (
+                  <Box sx={{ borderTop: '1px solid #e5e7eb', py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    <IconButton
+                      size="small"
+                      onClick={this.goToPreviousPage}
+                      disabled={safeCurrentPage === 1}
+                    >
+                      <ChevronLeftIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="caption" color="text.secondary">
+                      {`Showing ${startIndex + 1}-${endIndex} of ${totalResults}`}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => this.goToNextPage(totalPages)}
+                      disabled={safeCurrentPage === totalPages}
+                    >
+                      <ChevronRightIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
+              </TableContainer>
               <div className="pt-4">
                 <h4>Available Applications</h4>
                 <p className="text-muted mb-2">
