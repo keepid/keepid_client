@@ -81,6 +81,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length > 0 && signedCount === signaturePlacements.length;
+  const toPdfBlob = (bytes: Uint8Array) => {
+    const arrayBuffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(arrayBuffer).set(bytes);
+    return new Blob([arrayBuffer], { type: 'application/pdf' });
+  };
 
   const activeRect = activePlacementIdx !== null ? signaturePlacements[activePlacementIdx]?.rect : null;
   const padAspect = activeRect ? activeRect[2] / activeRect[3] : 4;
@@ -92,9 +97,19 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const onPageLoadForOverlays = useCallback(
     (page: any) => {
       const baseVp = page.getViewport({ scale: 1, rotation: page.rotate });
-      const w = renderedWidth > 0 ? renderedWidth : baseVp.width;
-      const sf = w / baseVp.width;
+      const pageElement = pdfWrapperRef.current?.querySelector('.react-pdf__Page') as HTMLElement | null;
+      const pageCanvas = pageElement?.querySelector('canvas') as HTMLCanvasElement | null;
+      const displayedPageWidth = pageCanvas?.clientWidth || (renderedWidth > 0 ? renderedWidth : baseVp.width);
+      const sf = displayedPageWidth / baseVp.width;
       const vp = page.getViewport({ scale: sf, rotation: page.rotate });
+      let offsetLeft = 0;
+      let offsetTop = 0;
+      if (pageElement && pdfWrapperRef.current) {
+        const pageRect = pageElement.getBoundingClientRect();
+        const wrapperRect = pdfWrapperRef.current.getBoundingClientRect();
+        offsetLeft = pageRect.left - wrapperRect.left;
+        offsetTop = pageRect.top - wrapperRect.top;
+      }
       const pageIndex = typeof page.pageIndex === 'number' ? page.pageIndex : pageNum - 1;
       const rects = signaturePlacements
         .map((p, idx) => ({ p, idx }))
@@ -103,8 +118,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           const [x, y, pw, ph] = p.rect;
           const [vx1, vy1, vx2, vy2] = vp.convertToViewportRectangle([x, y, x + pw, y + ph]);
           return {
-            left: Math.min(vx1, vx2),
-            top: Math.min(vy1, vy2),
+            left: Math.min(vx1, vx2) + offsetLeft,
+            top: Math.min(vy1, vy2) + offsetTop,
             width: Math.abs(vx2 - vx1),
             height: Math.abs(vy2 - vy1),
             placementIdx: idx,
@@ -155,7 +170,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       if (imgAspect > boxAspect) { drawH = w / imgAspect; } else { drawW = h * imgAspect; }
       page.drawImage(sigImage, { x: x + (w - drawW) / 2, y: y + (h - drawH) / 2, width: drawW, height: drawH });
       const bytes = await pdfDoc.save();
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blob = toPdfBlob(bytes);
       const oldUrl = livePdfUrl;
       const newUrl = URL.createObjectURL(blob);
       setLivePdfUrl(newUrl);
@@ -180,7 +195,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     if (pdfDocRef.current?.saveDocument) {
       const bytes = await pdfDocRef.current.saveDocument();
-      return new Blob([bytes], { type: 'application/pdf' });
+      return toPdfBlob(bytes);
     }
     const res = await fetch(livePdfUrl);
     return res.blob();
