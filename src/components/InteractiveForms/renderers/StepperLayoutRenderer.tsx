@@ -5,7 +5,33 @@ import React, { useEffect, useState } from 'react';
 
 import { useRestoredForm, useWizardSubmit } from '../InteractiveFormWizardContext';
 
-type CategoryWithRule = Category & { rule?: { effect: string; condition?: { scope?: string; schema?: { const?: unknown; not?: { const?: unknown } } } } };
+type RuleSchema = { const?: unknown; not?: { const?: unknown }; minLength?: number; maxLength?: number };
+type RuleCondition = { scope?: string; schema?: RuleSchema; allOf?: RuleCondition[]; anyOf?: RuleCondition[] };
+type CategoryWithRule = Category & { rule?: { effect: string; condition?: RuleCondition } };
+
+function evaluateRuleCondition(
+  condition: RuleCondition | undefined,
+  data: Record<string, unknown> | undefined,
+  path: string,
+): boolean {
+  if (!condition) return false;
+  if (Array.isArray(condition.allOf) && condition.allOf.length > 0) {
+    return condition.allOf.every((c) => evaluateRuleCondition(c, data, path));
+  }
+  if (Array.isArray(condition.anyOf) && condition.anyOf.length > 0) {
+    return condition.anyOf.some((c) => evaluateRuleCondition(c, data, path));
+  }
+  if (!condition.scope || !condition.schema) return false;
+  const basePath = path && path.length > 0 ? `${path}.` : '';
+  const dataPath = basePath + toDataPath(condition.scope);
+  const value = resolveData(data ?? {}, dataPath);
+  const schema = condition.schema;
+  if (schema.const !== undefined) return value === schema.const;
+  if (schema.not?.const !== undefined) return value !== schema.not.const;
+  if (typeof schema.minLength === 'number') return String(value ?? '').length >= schema.minLength;
+  if (typeof schema.maxLength === 'number') return String(value ?? '').length <= schema.maxLength;
+  return false;
+}
 
 function isCategoryHidden(
   category: CategoryWithRule,
@@ -13,14 +39,8 @@ function isCategoryHidden(
   path: string,
 ): boolean {
   const rule = category?.rule;
-  if (!rule || rule.effect !== 'HIDE' || !rule.condition?.scope || !rule.condition?.schema) return false;
-  const basePath = path && path.length > 0 ? `${path}.` : '';
-  const dataPath = basePath + toDataPath(rule.condition.scope);
-  const value = resolveData(data ?? {}, dataPath);
-  const schema = rule.condition.schema as { const?: unknown; not?: { const?: unknown } };
-  if (schema.const !== undefined) return value === schema.const;
-  if (schema.not?.const !== undefined) return value !== schema.not.const;
-  return false;
+  if (!rule || rule.effect !== 'HIDE') return false;
+  return evaluateRuleCondition(rule.condition, data, path);
 }
 
 function StepperLayoutRendererInner({
@@ -41,28 +61,35 @@ function StepperLayoutRendererInner({
     .filter(({ el }) => !isCategoryHidden(el, formData, path ?? ''))
     .map(({ idx }) => idx);
 
-  const initialStep = startAtLastStep && visibleIndices.length > 0 ? visibleIndices.length - 1 : 0;
-  const [activeStep, setActiveStep] = useState(initialStep);
+  const initialCategoryIndex = startAtLastStep && visibleIndices.length > 0
+    ? visibleIndices[visibleIndices.length - 1]
+    : (visibleIndices[0] ?? 0);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(initialCategoryIndex);
 
   useEffect(() => {
     if (startAtLastStep && visibleIndices.length > 0) {
-      setActiveStep(visibleIndices.length - 1);
+      setActiveCategoryIndex(visibleIndices[visibleIndices.length - 1]);
     }
-  }, [startAtLastStep, visibleIndices.length]);
+  }, [startAtLastStep, visibleIndices]);
 
   useEffect(() => {
-    if (visibleIndices.length > 0 && activeStep >= visibleIndices.length) {
-      setActiveStep(Math.max(0, visibleIndices.length - 1));
-    }
-  }, [visibleIndices.length, activeStep]);
+    if (visibleIndices.length === 0) return;
+    setActiveCategoryIndex((current) => {
+      if (visibleIndices.includes(current)) return current;
+      const nextVisible = visibleIndices.find((idx) => idx > current);
+      if (nextVisible !== undefined) return nextVisible;
+      return visibleIndices[visibleIndices.length - 1];
+    });
+  }, [visibleIndices]);
 
-  const safeStep = Math.max(0, Math.min(activeStep, visibleIndices.length - 1));
-  const actualCategoryIndex = visibleIndices[safeStep] ?? 0;
+  if (visibleIndices.length === 0 || visible === false) return null;
+
+  const activeVisiblePos = visibleIndices.indexOf(activeCategoryIndex);
+  const safeStep = activeVisiblePos >= 0 ? activeVisiblePos : 0;
+  const actualCategoryIndex = visibleIndices[safeStep] ?? visibleIndices[0];
   const category = elements[actualCategoryIndex] as Category;
   const isLast = safeStep === visibleIndices.length - 1;
   const hasConditionalSteps = elements.some((el) => (el as CategoryWithRule).rule != null);
-
-  if (visible === false) return null;
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-8">
@@ -80,7 +107,7 @@ function StepperLayoutRendererInner({
             <React.Fragment key={actualIdx}>
               <button
                 type="button"
-                onClick={() => setActiveStep(visiblePos)}
+                onClick={() => setActiveCategoryIndex(actualIdx)}
                 className={`tw-rounded-full tw-w-9 tw-h-9 tw-text-sm tw-font-semibold tw-transition-colors ${stepBtnClass}`}
                 title={String(label)}
               >
@@ -127,7 +154,11 @@ function StepperLayoutRendererInner({
         {safeStep > 0 ? (
           <button
             type="button"
-            onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+            onClick={() => setActiveCategoryIndex((current) => {
+              const currentPos = Math.max(0, visibleIndices.indexOf(current));
+              const prevPos = Math.max(0, currentPos - 1);
+              return visibleIndices[prevPos] ?? current;
+            })}
             className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
           >
             ← Previous
@@ -138,7 +169,11 @@ function StepperLayoutRendererInner({
         {!isLast ? (
           <button
             type="button"
-            onClick={() => setActiveStep((s) => Math.min(visibleIndices.length - 1, s + 1))}
+            onClick={() => setActiveCategoryIndex((current) => {
+              const currentPos = Math.max(0, visibleIndices.indexOf(current));
+              const nextPos = Math.min(visibleIndices.length - 1, currentPos + 1);
+              return visibleIndices[nextPos] ?? current;
+            })}
             className="tw-px-6 tw-py-2 tw-bg-primary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#3B54D3] tw-text-sm tw-font-medium"
           >
             Next →
