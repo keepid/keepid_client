@@ -8,7 +8,9 @@ import { birthDateStringConverter, formatUrl } from './SignUp.util';
 
 export interface EnrollClientData {
   firstname: string;
+  middlename?: string;
   lastname: string;
+  suffix?: string;
   birthDate: string;
   email: string;
   phonenumber?: string;

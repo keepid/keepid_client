@@ -139,7 +139,9 @@ export default function ApplicationForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [enrollForm, setEnrollForm] = useState({
     firstname: '',
+    middlename: '',
     lastname: '',
+    suffix: '',
     birthDate: '',
     email: '',
     phonenumber: '',
@@ -275,6 +277,12 @@ export default function ApplicationForm() {
         return validateFirstname(value);
       case 'lastname':
         return validateLastname(value);
+      case 'middlename':
+        if (value.trim() === '') return '';
+        return validateFirstname(value);
+      case 'suffix':
+        if (value.trim() === '') return '';
+        return validateLastname(value);
       case 'email':
         return validateEmail(value);
       case 'birthDate':
@@ -348,7 +356,7 @@ export default function ApplicationForm() {
   };
 
   const handleEnrollNewClient = useCallback(async () => {
-    const fieldNames = ['firstname', 'lastname', 'birthDate', 'email', 'phonenumber'] as const;
+    const fieldNames = ['firstname', 'middlename', 'lastname', 'suffix', 'birthDate', 'email', 'phonenumber'] as const;
     const nextErrors: Record<string, string> = {};
     fieldNames.forEach((fieldName) => {
       const error = validateEnrollField(fieldName, enrollForm[fieldName]);
@@ -369,7 +377,9 @@ export default function ApplicationForm() {
     try {
       const response = await enrollClient({
         firstname: enrollForm.firstname,
+        middlename: enrollForm.middlename.trim() || undefined,
         lastname: enrollForm.lastname,
+        suffix: enrollForm.suffix.trim() || undefined,
         birthDate: birthDateStringConverter(new Date(enrollForm.birthDate)),
         email: enrollForm.email,
         phonenumber: enrollForm.phonenumber,
@@ -601,6 +611,33 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.lastname && <small className="tw-text-red-600">{enrollFieldErrors.lastname}</small>}
                       </Form.Group>
+                      <Form.Group controlId="newClientMiddleName">
+                        <Form.Label>Middle Name (optional)</Form.Label>
+                        <Form.Control
+                          name="middlename"
+                          value={enrollForm.middlename}
+                          onChange={handleEnrollFieldChange}
+                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
+                            ...prev,
+                            middlename: validateEnrollField('middlename', e.target.value),
+                          }))}
+                        />
+                        {enrollFieldErrors.middlename && <small className="tw-text-red-600">{enrollFieldErrors.middlename}</small>}
+                      </Form.Group>
+                      <Form.Group controlId="newClientSuffix">
+                        <Form.Label>Suffix (optional)</Form.Label>
+                        <Form.Control
+                          name="suffix"
+                          placeholder="e.g. Jr, III"
+                          value={enrollForm.suffix}
+                          onChange={handleEnrollFieldChange}
+                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
+                            ...prev,
+                            suffix: validateEnrollField('suffix', e.target.value),
+                          }))}
+                        />
+                        {enrollFieldErrors.suffix && <small className="tw-text-red-600">{enrollFieldErrors.suffix}</small>}
+                      </Form.Group>
                       <Form.Group controlId="newClientDob">
                         <Form.Label>Date of Birth</Form.Label>
                         <Form.Control
@@ -676,6 +713,9 @@ export default function ApplicationForm() {
                       />
                       {agreementError && <small className="tw-text-red-600">{agreementError}</small>}
                     </div>
+                    <Alert variant="info" className="tw-mt-3 tw-mb-0">
+                      This information is used as the applicant information for this application.
+                    </Alert>
                   </div>
                 )}
 
