@@ -34,6 +34,80 @@ function reformatDateToSlash(raw: unknown): string | undefined {
   return `${parts[0]}/${parts[1]}/${parts[2]}`;
 }
 
+function parseBirthDate(raw: unknown): Date | undefined {
+  if (typeof raw !== 'string' || !raw) return undefined;
+  const v = raw.trim();
+  let m: RegExpMatchArray | null;
+  // yyyy-mm-dd
+  m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }
+  // mm-dd-yyyy or mm/dd/yyyy
+  m = v.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+  if (m) {
+    const d = new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }
+  return undefined;
+}
+
+function computeAgeFromBirthDate(profile: Record<string, unknown> | undefined): string | undefined {
+  const birthDate = parseBirthDate(getByPath(profile, 'birthDate'));
+  if (!birthDate) return undefined;
+  const now = new Date();
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const monthDiff = now.getMonth() - birthDate.getMonth();
+  const dayDiff = now.getDate() - birthDate.getDate();
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age -= 1;
+  }
+  return age >= 0 ? String(age) : undefined;
+}
+
+function combineAddressLine1And2(
+  profile: Record<string, unknown> | undefined,
+  prefix: string,
+): string | undefined {
+  const line1 = String(getByPath(profile, `${prefix}.line1`) ?? '').trim();
+  const line2 = String(getByPath(profile, `${prefix}.line2`) ?? '').trim();
+  if (line1 && line2) return `${line1}, ${line2}`;
+  if (line1) return line1;
+  if (line2) return line2;
+  return undefined;
+}
+
+function resolveAddressLine1And2Directive(
+  directive: string,
+  profiles: ResolvedProfiles,
+): string | undefined {
+  const match = directive.trim().match(
+    /^(?:(client|worker|org)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1\+2$/i,
+  );
+  if (!match) return undefined;
+
+  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org';
+  const rawPrefix = match[2]?.toLowerCase();
+  const profile = profiles[profileKey] as Record<string, unknown> | undefined;
+  if (!profile) return undefined;
+
+  if (rawPrefix === 'personaladdress') return combineAddressLine1And2(profile, 'personalAddress');
+  if (rawPrefix === 'mailaddress') return combineAddressLine1And2(profile, 'mailAddress');
+  if (rawPrefix === 'orgaddress') return combineAddressLine1And2(profile, 'orgAddress');
+  if (rawPrefix === 'address') {
+    if (profileKey === 'org') {
+      return combineAddressLine1And2(profile, 'address') ?? combineAddressLine1And2(profile, 'orgAddress');
+    }
+    return combineAddressLine1And2(profile, 'personalAddress') ?? combineAddressLine1And2(profile, 'mailAddress');
+  }
+
+  if (profileKey === 'org') {
+    return combineAddressLine1And2(profile, 'address') ?? combineAddressLine1And2(profile, 'orgAddress');
+  }
+  return combineAddressLine1And2(profile, 'personalAddress') ?? combineAddressLine1And2(profile, 'mailAddress');
+}
+
 /** Resolve directive string to value from profiles, e.g. "client.currentName.first" */
 export function resolveDirectiveFromProfiles(
   directive: string,
@@ -47,6 +121,16 @@ export function resolveDirectiveFromProfiles(
     const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker';
     const profile = profiles[profileKey];
     return reformatDateToSlash(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
+  }
+  const ageMatch = directive.trim().match(/^(client|worker)\.\$age$/i);
+  if (ageMatch) {
+    const profileKey = ageMatch[1].toLowerCase() as 'client' | 'worker';
+    return computeAgeFromBirthDate(profiles[profileKey] as Record<string, unknown> | undefined);
+  }
+
+  const addressLine1And2 = resolveAddressLine1And2Directive(directive, profiles);
+  if (addressLine1And2 !== undefined) {
+    return addressLine1And2;
   }
 
   if (lower.startsWith('client.') && profiles.client) {
