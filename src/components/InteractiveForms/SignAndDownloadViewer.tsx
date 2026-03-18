@@ -1,8 +1,9 @@
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import './sign-and-download-viewer.css';
 
 import { PDFDocument } from 'pdf-lib';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import { uploadCompletedPdf } from '../Applications/api/interactiveForm';
@@ -21,9 +22,18 @@ export interface SignAndDownloadViewerProps {
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
   onSaveSuccess?: () => void;
+  showSaveButton?: boolean;
+  showPdfEditControls?: boolean;
+  pdfFormsReadOnly?: boolean;
+  startInEditMode?: boolean;
 }
 
-export default function SignAndDownloadViewer({
+export interface SignAndDownloadViewerHandle {
+  savePdfEdits: () => Promise<boolean>;
+  discardPdfEdits: () => void;
+}
+
+const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, SignAndDownloadViewerProps>(({
   fileUrl,
   signaturePlacements,
   title,
@@ -31,35 +41,51 @@ export default function SignAndDownloadViewer({
   formAnswers,
   clientUsername = '',
   onSaveSuccess,
-}: SignAndDownloadViewerProps) {
+  showSaveButton = true,
+  showPdfEditControls = false,
+  pdfFormsReadOnly = false,
+  startInEditMode = false,
+}, ref) => {
+  const FRAME_MAX_WIDTH_CLASS = 'tw-max-w-[760px]';
   const [numPages, setNumPages] = useState(1);
   const [pageNum, setPageNum] = useState(1);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const pdfWrapperRef = useRef<HTMLDivElement>(null);
   const sigPadAreaRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(560);
+  const [frameWidth, setFrameWidth] = useState(560);
   const [currentSigDataUrl, setCurrentSigDataUrl] = useState<string | null>(null);
   const [activePlacementIdx, setActivePlacementIdx] = useState<number | null>(null);
   const [livePdfUrl, setLivePdfUrl] = useState<string>(fileUrl);
   const [embeddedBoxes, setEmbeddedBoxes] = useState<Set<number>>(new Set());
   const [applying, setApplying] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingPdfEdits, setSavingPdfEdits] = useState(false);
+  const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isPdfEditMode, setIsPdfEditMode] = useState(startInEditMode);
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
 
   useEffect(() => {
-    const el = containerRef.current;
+    const el = frameRef.current;
     if (!el) return undefined;
-    const ro = new ResizeObserver(() => setContainerWidth(el.clientWidth));
+    const updateWidth = () => setFrameWidth(el.clientWidth);
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const renderedWidth = Math.max(100, containerWidth - 32);
+  // Keep PDF page width aligned with the frame; minimal gutter for a larger default preview.
+  const renderedWidth = Math.max(100, frameWidth - 2);
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length > 0 && signedCount === signaturePlacements.length;
+  const toPdfBlob = (bytes: Uint8Array) => {
+    const arrayBuffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(arrayBuffer).set(bytes);
+    return new Blob([arrayBuffer], { type: 'application/pdf' });
+  };
 
   const activeRect = activePlacementIdx !== null ? signaturePlacements[activePlacementIdx]?.rect : null;
   const padAspect = activeRect ? activeRect[2] / activeRect[3] : 4;
@@ -71,9 +97,19 @@ export default function SignAndDownloadViewer({
   const onPageLoadForOverlays = useCallback(
     (page: any) => {
       const baseVp = page.getViewport({ scale: 1, rotation: page.rotate });
-      const w = renderedWidth > 0 ? renderedWidth : baseVp.width;
-      const sf = w / baseVp.width;
+      const pageElement = pdfWrapperRef.current?.querySelector('.react-pdf__Page') as HTMLElement | null;
+      const pageCanvas = pageElement?.querySelector('canvas') as HTMLCanvasElement | null;
+      const displayedPageWidth = pageCanvas?.clientWidth || (renderedWidth > 0 ? renderedWidth : baseVp.width);
+      const sf = displayedPageWidth / baseVp.width;
       const vp = page.getViewport({ scale: sf, rotation: page.rotate });
+      let offsetLeft = 0;
+      let offsetTop = 0;
+      if (pageElement && pdfWrapperRef.current) {
+        const pageRect = pageElement.getBoundingClientRect();
+        const wrapperRect = pdfWrapperRef.current.getBoundingClientRect();
+        offsetLeft = pageRect.left - wrapperRect.left;
+        offsetTop = pageRect.top - wrapperRect.top;
+      }
       const pageIndex = typeof page.pageIndex === 'number' ? page.pageIndex : pageNum - 1;
       const rects = signaturePlacements
         .map((p, idx) => ({ p, idx }))
@@ -82,8 +118,8 @@ export default function SignAndDownloadViewer({
           const [x, y, pw, ph] = p.rect;
           const [vx1, vy1, vx2, vy2] = vp.convertToViewportRectangle([x, y, x + pw, y + ph]);
           return {
-            left: Math.min(vx1, vx2),
-            top: Math.min(vy1, vy2),
+            left: Math.min(vx1, vx2) + offsetLeft,
+            top: Math.min(vy1, vy2) + offsetTop,
             width: Math.abs(vx2 - vx1),
             height: Math.abs(vy2 - vy1),
             placementIdx: idx,
@@ -134,7 +170,7 @@ export default function SignAndDownloadViewer({
       if (imgAspect > boxAspect) { drawH = w / imgAspect; } else { drawW = h * imgAspect; }
       page.drawImage(sigImage, { x: x + (w - drawW) / 2, y: y + (h - drawH) / 2, width: drawW, height: drawH });
       const bytes = await pdfDoc.save();
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blob = toPdfBlob(bytes);
       const oldUrl = livePdfUrl;
       const newUrl = URL.createObjectURL(blob);
       setLivePdfUrl(newUrl);
@@ -159,7 +195,7 @@ export default function SignAndDownloadViewer({
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     if (pdfDocRef.current?.saveDocument) {
       const bytes = await pdfDocRef.current.saveDocument();
-      return new Blob([bytes], { type: 'application/pdf' });
+      return toPdfBlob(bytes);
     }
     const res = await fetch(livePdfUrl);
     return res.blob();
@@ -226,6 +262,36 @@ export default function SignAndDownloadViewer({
     }
   }, [getCurrentPdfBlob, applicationId, formAnswers, clientUsername, onSaveSuccess]);
 
+  const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {
+    setSaveError(null);
+    setPdfEditSavedMessage(null);
+    setSavingPdfEdits(true);
+    try {
+      const blob = await getCurrentPdfBlob();
+      await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
+      const previousUrl = livePdfUrl;
+      const nextUrl = URL.createObjectURL(blob);
+      setLivePdfUrl(nextUrl);
+      setPdfVersion((v) => v + 1);
+      if (previousUrl !== fileUrl) URL.revokeObjectURL(previousUrl);
+      setIsPdfEditMode(false);
+      setPdfEditSavedMessage('Changes saved.');
+      return true;
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save PDF edits');
+      return false;
+    } finally {
+      setSavingPdfEdits(false);
+    }
+  }, [applicationId, clientUsername, fileUrl, formAnswers, getCurrentPdfBlob, livePdfUrl]);
+
+  const handleCancelPdfEdits = useCallback(() => {
+    // Reload the current committed PDF source and discard unsaved in-memory form edits.
+    setPdfEditSavedMessage(null);
+    setPdfVersion((v) => v + 1);
+    setIsPdfEditMode(false);
+  }, []);
+
   const handleReset = useCallback(() => {
     setCurrentSigDataUrl(null);
     if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl);
@@ -241,16 +307,83 @@ export default function SignAndDownloadViewer({
 
   useEffect(() => () => { pdfDocRef.current = null; }, []);
 
+  useEffect(() => {
+    if (startInEditMode) {
+      setIsPdfEditMode(true);
+    }
+  }, [startInEditMode]);
+
+  useImperativeHandle(ref, () => ({
+    savePdfEdits: async () => handleSavePdfEdits(),
+    discardPdfEdits: () => {
+      handleCancelPdfEdits();
+    },
+  }), [handleSavePdfEdits, handleCancelPdfEdits]);
+
+  const formsLocked = pdfFormsReadOnly || (showPdfEditControls && !isPdfEditMode);
+  const isPdfActionsLocked = showPdfEditControls && isPdfEditMode;
+  const hasMultiplePages = numPages > 1;
+  let downloadButtonClass = 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50';
+  if (isPdfActionsLocked) {
+    downloadButtonClass = 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed';
+  } else if (signedCount > 0) {
+    downloadButtonClass = 'tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700';
+  }
+  const printButtonClass = isPdfActionsLocked
+    ? 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed'
+    : 'tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50';
+
   return (
-    <div ref={containerRef} className="tw-w-full tw-space-y-3">
+    <div className={`keepid-pdf-preview ${formsLocked ? 'keepid-pdf-edit-locked' : ''} tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS} tw-space-y-2`}>
       {allSigned && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
           <span className="tw-text-sm tw-font-medium tw-text-green-800">
             All {signaturePlacements.length} signature{signaturePlacements.length > 1 ? 's' : ''} embedded
           </span>
-          <button type="button" onClick={handleReset} className="tw-text-xs tw-text-green-700 hover:tw-text-green-900 tw-underline">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="tw-text-xs tw-text-green-700 hover:tw-text-green-900 tw-underline tw-bg-transparent tw-border-0 tw-p-0 focus:tw-outline-none focus:tw-ring-0"
+          >
             Reset &amp; re-sign
           </button>
+        </div>
+      )}
+
+      {showPdfEditControls && (
+        <div className="tw-flex tw-justify-end tw-items-center tw-gap-2">
+          {!isPdfEditMode ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSaveError(null);
+                setPdfEditSavedMessage(null);
+                setIsPdfEditMode(true);
+              }}
+              className="tw-px-3 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 tw-transition-colors"
+            >
+              Edit PDF
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleSavePdfEdits}
+                disabled={savingPdfEdits}
+                className="tw-px-3 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-green-600 hover:tw-bg-green-700 tw-transition-colors"
+              >
+                {savingPdfEdits ? 'Saving changes...' : 'Save changes'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelPdfEdits}
+                className="tw-px-3 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50 tw-transition-colors"
+              >
+                Cancel
+              </button>
+              <span className="tw-text-xs tw-text-gray-500">Editing enabled</span>
+            </>
+          )}
         </div>
       )}
 
@@ -263,50 +396,79 @@ export default function SignAndDownloadViewer({
         }}
         loading={<div className="tw-flex tw-items-center tw-justify-center tw-h-64 tw-text-gray-400">Loading PDF...</div>}
       >
-        <div className="tw-flex tw-flex-col tw-items-center tw-gap-3">
-          {numPages > 1 && (
-            <div className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-600">
-              <button type="button" onClick={() => setPageNum((p) => Math.max(1, p - 1))} disabled={pageNum <= 1} className="hover:tw-text-gray-900 disabled:tw-text-gray-300">&larr; Prev</button>
-              <span>Page {pageNum} / {numPages}</span>
-              <button type="button" onClick={() => setPageNum((p) => Math.min(numPages, p + 1))} disabled={pageNum >= numPages} className="hover:tw-text-gray-900 disabled:tw-text-gray-300">Next &rarr;</button>
+        <div className="tw-flex tw-flex-col tw-items-center tw-gap-1">
+          <div
+            ref={frameRef}
+            className={`tw-w-full ${FRAME_MAX_WIDTH_CLASS} tw-rounded-xl tw-border tw-border-gray-200 tw-bg-gray-200 tw-shadow-sm tw-overflow-hidden`}
+          >
+            <div className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-pt-2 tw-pb-1 tw-text-sm tw-bg-gray-200">
+              <button
+                type="button"
+                onClick={() => setPageNum((p) => Math.max(1, p - 1))}
+                disabled={!hasMultiplePages || pageNum <= 1}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+              >
+                &larr; Prev
+              </button>
+              <span className="tw-text-sm tw-text-gray-700 tw-font-normal">Page {pageNum} / {numPages}</span>
+              <button
+                type="button"
+                onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
+                disabled={!hasMultiplePages || pageNum >= numPages}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+              >
+                Next &rarr;
+              </button>
             </div>
-          )}
-          <div ref={pdfWrapperRef} className="tw-relative tw-inline-block tw-shadow-sm tw-rounded-lg tw-overflow-visible tw-bg-gray-200 tw-p-3">
-            <div className="tw-bg-gray-100 tw-rounded tw-inline-block">
-              <Page
-                key={`preview-${pageNum}-v${pdfVersion}`}
-                pageNumber={pageNum}
-                onLoadSuccess={onPageLoadForOverlays}
-                width={renderedWidth > 0 ? renderedWidth : undefined}
-                renderAnnotationLayer
-                renderTextLayer
-                renderForms
-              />
-            </div>
-            {sigOverlays.map((rect) => {
-              const isEmbedded = embeddedBoxes.has(rect.placementIdx);
-              if (isEmbedded) return null;
-              const isActive = activePlacementIdx === rect.placementIdx;
-              return (
+            <div ref={pdfWrapperRef} className="tw-relative tw-bg-gray-200 tw-px-1 tw-pb-1">
+              <div className="tw-bg-gray-100 tw-rounded tw-w-full tw-overflow-hidden">
+                <Page
+                  key={`preview-${pageNum}-v${pdfVersion}`}
+                  pageNumber={pageNum}
+                  onLoadSuccess={onPageLoadForOverlays}
+                  width={renderedWidth > 0 ? renderedWidth : undefined}
+                  renderAnnotationLayer
+                  renderTextLayer
+                  renderForms
+                />
+              </div>
+              {formsLocked && (
                 <div
-                  key={`sig-preview-${rect.placementIdx}`}
-                  style={{ position: 'absolute', left: rect.left, top: rect.top, width: rect.width, height: rect.height, zIndex: 20 }}
-                  className={`tw-border tw-border-dashed tw-rounded tw-flex tw-items-center tw-justify-center tw-cursor-pointer tw-transition-colors tw-outline-none focus:tw-outline-none focus:tw-ring-0 ${
-                    isActive
-                      ? 'tw-border-blue-400 tw-bg-blue-50/60'
-                      : 'tw-border-blue-300 tw-bg-blue-50/40 hover:tw-bg-blue-50/60'
-                  }`}
-                  onClick={() => selectBox(rect.placementIdx)}
-                >
-                  <span className={`tw-text-xs tw-font-medium tw-select-none tw-pointer-events-none ${isActive ? 'tw-text-blue-700' : 'tw-text-blue-600'}`}>
-                    {isActive ? 'Draw below ↓' : 'Click to sign'}
-                  </span>
-                </div>
-              );
-            })}
+                  className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
+                  title="PDF is read-only. Click Edit PDF to make changes."
+                />
+              )}
+              {sigOverlays.map((rect) => {
+                const isEmbedded = embeddedBoxes.has(rect.placementIdx);
+                if (isEmbedded) return null;
+                const isActive = activePlacementIdx === rect.placementIdx;
+                return (
+                  <div
+                    key={`sig-preview-${rect.placementIdx}`}
+                    style={{ position: 'absolute', left: rect.left, top: rect.top, width: rect.width, height: rect.height, zIndex: 20 }}
+                    className={`tw-border tw-border-dashed tw-rounded tw-flex tw-items-center tw-justify-center tw-cursor-pointer tw-transition-colors tw-outline-none focus:tw-outline-none focus:tw-ring-0 ${
+                      isActive
+                        ? 'tw-border-blue-400 tw-bg-blue-50/60'
+                        : 'tw-border-blue-300 tw-bg-blue-50/40 hover:tw-bg-blue-50/60'
+                    }`}
+                    onClick={() => selectBox(rect.placementIdx)}
+                  >
+                    <span className={`tw-text-xs tw-font-medium tw-select-none tw-pointer-events-none ${isActive ? 'tw-text-blue-700' : 'tw-text-blue-600'}`}>
+                      {isActive ? 'Draw below ↓' : 'Click to sign'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </Document>
+
+      {pdfEditSavedMessage && (
+        <div className="tw-p-3 tw-rounded-lg tw-bg-green-50 tw-border tw-border-green-200 tw-text-green-700 tw-text-sm">
+          {pdfEditSavedMessage}
+        </div>
+      )}
 
       {activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
         <div ref={sigPadAreaRef} className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-px-4 tw-py-3 tw-space-y-2">
@@ -342,11 +504,8 @@ export default function SignAndDownloadViewer({
         <button
           type="button"
           onClick={handleDownload}
-          className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${
-            signedCount > 0
-              ? 'tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700'
-              : 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50'
-          }`}
+          disabled={isPdfActionsLocked}
+          className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${downloadButtonClass}`}
         >
           Download {(() => {
           if (signedCount > 0) return 'signed';
@@ -357,18 +516,21 @@ export default function SignAndDownloadViewer({
         <button
           type="button"
           onClick={handlePrint}
-          className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50 tw-transition-colors"
+          disabled={isPdfActionsLocked}
+          className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${printButtonClass}`}
         >
           Print
         </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={handleSave}
-          className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-green-600 hover:tw-bg-green-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
-        >
-          {saving ? 'Saving...' : 'Save Application'}
-        </button>
+        {showSaveButton && (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={handleSave}
+            className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-green-600 hover:tw-bg-green-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
+          >
+            {saving ? 'Saving...' : 'Save Application'}
+          </button>
+        )}
       </div>
 
       {saveError && (
@@ -378,7 +540,9 @@ export default function SignAndDownloadViewer({
       )}
     </div>
   );
-}
+});
+
+export default SignAndDownloadViewer;
 
 function SignaturePadCanvas({
   canvasWidth,

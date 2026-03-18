@@ -289,13 +289,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
               {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
             </h1>
             <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
-              {role === Role.Director || role === Role.Admin ? (
-                <Link to="/applications" className="tw-mr-2">
-                  <button type="button" className="tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md tw-bg-white">
-                    View Applications
-                  </button>
-                </Link>
-              ) : null}
               <Link to="/enroll-client">
                 <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
                   Enroll Client
