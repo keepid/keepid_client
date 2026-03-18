@@ -13,6 +13,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   TextField,
   Typography,
 } from '@mui/material';
@@ -52,6 +53,8 @@ interface State {
   debouncedSearch: string,
   searchDebounceTimeout: number | undefined,
   currentPage: number,
+  sortBy: 'uploadDate' | 'uploader',
+  sortDirection: 'asc' | 'desc',
   clientUsername: string | undefined,
   clientName: string | undefined,
   availableApplications: {
@@ -84,6 +87,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       debouncedSearch: '',
       searchDebounceTimeout: undefined,
       currentPage: 1,
+      sortBy: 'uploadDate',
+      sortDirection: 'desc',
       clientUsername: undefined,
       clientName: undefined,
       availableApplications: [],
@@ -153,6 +158,23 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.setState((prevState) => ({
       currentPage: Math.max(prevState.currentPage - 1, 1),
     }));
+  };
+
+  handleSort = (field: 'uploadDate' | 'uploader') => {
+    this.setState((prevState): Pick<State, 'sortBy' | 'sortDirection' | 'currentPage'> => {
+      if (prevState.sortBy === field) {
+        return {
+          sortBy: prevState.sortBy,
+          sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc',
+          currentPage: 1,
+        };
+      }
+      return {
+        sortBy: field,
+        sortDirection: field === 'uploadDate' ? 'desc' : 'asc',
+        currentPage: 1,
+      };
+    });
   };
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
@@ -301,6 +323,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       searchInput,
       debouncedSearch,
       currentPage,
+      sortBy,
+      sortDirection,
       clientUsername,
       clientName,
       availableApplications,
@@ -315,12 +339,29 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         doc.organizationName,
       ].join(' ').toLowerCase().includes(debouncedSearch))
       : documents;
-    const totalResults = filteredDocuments.length;
+    const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+      if (sortBy === 'uploader') {
+        const nameCompare = (a.uploader || '').localeCompare(b.uploader || '', undefined, { sensitivity: 'base' });
+        if (nameCompare !== 0) {
+          return sortDirection === 'asc' ? nameCompare : -nameCompare;
+        }
+      } else {
+        const timeA = new Date(a.uploadDate || '').getTime();
+        const timeB = new Date(b.uploadDate || '').getTime();
+        const normalizedA = Number.isNaN(timeA) ? 0 : timeA;
+        const normalizedB = Number.isNaN(timeB) ? 0 : timeB;
+        if (normalizedA !== normalizedB) {
+          return sortDirection === 'asc' ? normalizedA - normalizedB : normalizedB - normalizedA;
+        }
+      }
+      return (a.filename || '').localeCompare(b.filename || '', undefined, { sensitivity: 'base' });
+    });
+    const totalResults = sortedDocuments.length;
     const totalPages = Math.max(Math.ceil(totalResults / PAGE_SIZE), 1);
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
     const endIndex = Math.min(startIndex + PAGE_SIZE, totalResults);
-    const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
+    const paginatedDocuments = sortedDocuments.slice(startIndex, endIndex);
 
     return (
       <Switch>
@@ -370,8 +411,28 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Application Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Client</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Upload Date</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                        <TableSortLabel
+                          active={sortBy === 'uploader'}
+                          direction={sortBy === 'uploader' ? sortDirection : 'asc'}
+                          onClick={() => this.handleSort('uploader')}
+                          hideSortIcon={false}
+                          sx={{ '& .MuiTableSortLabel-icon': { opacity: 1 } }}
+                        >
+                          Client
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                        <TableSortLabel
+                          active={sortBy === 'uploadDate'}
+                          direction={sortBy === 'uploadDate' ? sortDirection : 'desc'}
+                          onClick={() => this.handleSort('uploadDate')}
+                          hideSortIcon={false}
+                          sx={{ '& .MuiTableSortLabel-icon': { opacity: 1 } }}
+                        >
+                          Upload Date
+                        </TableSortLabel>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
