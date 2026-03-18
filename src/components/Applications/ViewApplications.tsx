@@ -20,11 +20,11 @@ import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Redirect, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
-import ApplicationForm from './OldApplication/ApplicationForm';
+import ApplicationPdfPreview from './ApplicationPdfPreview';
 
 interface DocumentInformation {
   uploader: string,
@@ -44,7 +44,10 @@ interface Props {
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
+  currentApplicationUploader: string | undefined,
   documents: DocumentInformation[],
+  isLoadingDocuments: boolean,
+  documentsError: string | null,
   searchInput: string,
   debouncedSearch: string,
   searchDebounceTimeout: number | undefined,
@@ -73,7 +76,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.state = {
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
+      currentApplicationUploader: undefined,
       documents: [],
+      isLoadingDocuments: false,
+      documentsError: null,
       searchInput: '',
       debouncedSearch: '',
       searchDebounceTimeout: undefined,
@@ -195,84 +201,91 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
+  loadDocuments = (targetUsername?: string, targetName?: string) => {
+    const isWorkerView = Boolean(targetUsername && targetUsername.trim().length > 0);
+    if (isWorkerView) {
+      this.setState({ clientUsername: targetUsername, clientName: targetName });
+    } else {
+      this.setState({ clientUsername: undefined, clientName: undefined });
+    }
+
+    this.setState({ isLoadingDocuments: true, documentsError: null });
+    fetch(`${getServerURL()}/get-files`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileType: FileType.APPLICATION_PDF,
+        ...(isWorkerView ? { targetUser: targetUsername } : {}),
+        annotated: true,
+      }),
+    }).then((response) => response.json())
+      .then((responseJSON) => {
+        const { status } = responseJSON;
+        const documents = Array.isArray(responseJSON.documents) ? responseJSON.documents : [];
+        if (status === 'SUCCESS') {
+          let newDocuments: DocumentInformation[] = [];
+          for (let i = 0; i < documents.length; i += 1) {
+            const row = documents[i];
+            row.index = i;
+            newDocuments.push(row);
+          }
+          newDocuments = this.mapDocuments(newDocuments);
+          this.setState({
+            documents: newDocuments,
+            isLoadingDocuments: false,
+            documentsError: null,
+          });
+          return;
+        }
+        this.setState({
+          documents: [],
+          isLoadingDocuments: false,
+          documentsError: responseJSON.message || 'Could not load applications.',
+        });
+      })
+      .catch(() => {
+        this.setState({
+          documents: [],
+          isLoadingDocuments: false,
+          documentsError: 'Could not load applications.',
+        });
+      });
+  };
+
   componentDidMount() {
     this.loadAvailableApplications();
     const { location } = this.props;
-    // Client view, uncertain if location.state is undefined by default
-    if (location.state === undefined) {
-      fetch(`${getServerURL()}/get-files`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({
-          fileType: FileType.APPLICATION_PDF,
-          annotated: true,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const {
-            status,
-            documents,
-          } = responseJSON;
-          const numElements = documents.length;
-          if (status === 'SUCCESS') {
-            let newDocuments: DocumentInformation[] = [];
-            for (let i = 0; i < numElements; i += 1) {
-              const row = documents[i];
-              row.index = i;
-              newDocuments.push(row);
-            }
-            newDocuments = this.mapDocuments(newDocuments);
-            this.setState({
-              documents: newDocuments,
-            });
-          }
-        });
-    } else { // Case worker view
-      const { clientUsername, clientName } = location.state as LocationState;
-      this.setState({ clientUsername, clientName });
-      fetch(`${getServerURL()}/get-files`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({
-          fileType: FileType.APPLICATION_PDF,
-          targetUser: clientUsername,
-          annotated: true,
-        }),
-      }).then((response) => response.json())
-        .then((responseJSON) => {
-          const {
-            status,
-            documents,
-          } = responseJSON;
-          const numElements = documents.length;
-          if (status === 'SUCCESS') {
-            let newDocuments: DocumentInformation[] = [];
-            for (let i = 0; i < numElements; i += 1) {
-              const row = documents[i];
-              row.index = i;
-              newDocuments.push(row);
-            }
-            newDocuments = this.mapDocuments(newDocuments);
-            this.setState({
-              documents: newDocuments,
-            });
-          }
-        });
-    }
+    const state = location.state as LocationState | undefined;
+    const locationClientUsername = state?.clientUsername && state.clientUsername.trim().length > 0
+      ? state.clientUsername
+      : undefined;
+    const locationClientName = state?.clientName;
+    this.loadDocuments(locationClientUsername, locationClientName);
   }
 
   handleOpenApplication = (row: DocumentInformation) => {
     const {
       id,
       filename,
+      uploader,
     } = row;
+    const { clientUsername } = this.state;
     this.setState(
       {
         currentApplicationId: id,
         currentApplicationFilename: filename,
+        currentApplicationUploader: uploader,
       },
       () => {
-        this.props.history.push('/applications/send');
+        this.props.history.push({
+          pathname: '/applications/preview',
+          state: {
+            applicationId: id,
+            applicationFilename: filename,
+            targetUser: uploader,
+            clientUsername: clientUsername || '',
+          },
+        });
       },
     );
   };
@@ -281,7 +294,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     const {
       currentApplicationFilename,
       currentApplicationId,
+      currentApplicationUploader,
       documents,
+      isLoadingDocuments,
+      documentsError,
       searchInput,
       debouncedSearch,
       currentPage,
@@ -359,7 +375,19 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {totalResults === 0 ? (
+                    {isLoadingDocuments ? (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          <Typography variant="body2" color="text.secondary">Loading applications...</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : documentsError ? (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          <Typography variant="body2" color="error">{documentsError}</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : totalResults === 0 ? (
                       <TableRow>
                         <TableCell colSpan={3}>
                           <Typography variant="body2" color="text.secondary">No Applications Present</Typography>
@@ -386,7 +414,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     ))}
                   </TableBody>
                 </Table>
-                {totalResults > 0 && (
+                {!isLoadingDocuments && !documentsError && totalResults > 0 && (
                   <Box sx={{ borderTop: '1px solid #e5e7eb', py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                     <IconButton
                       size="small"
@@ -473,13 +501,27 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             </div>
           </div>
         </Route>
+        <Route path="/applications/preview">
+          <ApplicationPdfPreview editable={false} />
+        </Route>
+        <Route path="/applications/edit">
+          <ApplicationPdfPreview editable />
+        </Route>
         <Route path="/applications/send">
           {currentApplicationId && currentApplicationFilename
-            ? (clientUsername
-              // Case worker view
-              ? <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} clientUsername={clientUsername} />
-              // Client view, clientUsername will default to empty string which is not a valid username
-              : <ApplicationForm applicationFilename={currentApplicationFilename} applicationId={currentApplicationId} clientUsername="" />)
+            ? (
+              <Redirect
+                to={{
+                  pathname: '/applications/preview',
+                  state: {
+                    applicationId: currentApplicationId,
+                    applicationFilename: currentApplicationFilename,
+                    targetUser: currentApplicationUploader || '',
+                    clientUsername: clientUsername || '',
+                  },
+                }}
+              />
+            )
             : <div />}
         </Route>
       </Switch>
