@@ -172,6 +172,8 @@ export default function ApplicationForm() {
   const isWebFormPage = formContent[page].pageName === 'webForm';
   const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
   const targetClientResolved = targetClientUsername.trim().length > 0;
+  const whoForInputClassName =
+    'tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-sm';
 
   // Fetch registry info (blankFormId) when entering the webForm step
   useEffect(() => {
@@ -509,32 +511,42 @@ export default function ApplicationForm() {
         )}
 
         {isWhoForPage ? (
-          <div className="tw-bg-white tw-border tw-rounded-md tw-p-4">
+          <div className="tw-bg-white tw-border tw-border-gray-200 tw-rounded-xl tw-p-5 tw-shadow-sm tw-max-w-3xl tw-mx-auto">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
                 This step is only shown to workers, admins, and directors.
               </Alert>
             ) : (
               <>
-                <div className="tw-flex tw-gap-3 tw-mb-4">
-                  <Button
-                    variant={whoForMode === 'existing' ? 'primary' : 'outline-primary'}
+                <div className="tw-flex tw-gap-3 tw-mb-5">
+                  <button
+                    type="button"
                     onClick={() => {
                       setWhoForMode('existing');
                       setSubmitError(null);
                     }}
+                    className={`tw-px-4 tw-py-2 tw-rounded-md tw-text-base tw-font-medium tw-border tw-transition-colors ${
+                      whoForMode === 'existing'
+                        ? 'tw-bg-twprimary tw-text-white tw-border-twprimary hover:tw-bg-blue-700'
+                        : 'tw-bg-white tw-text-twprimary tw-border-twprimary hover:tw-bg-blue-50'
+                    }`}
                   >
                     Existing Client
-                  </Button>
-                  <Button
-                    variant={whoForMode === 'new' ? 'primary' : 'outline-primary'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       setWhoForMode('new');
                       setSubmitError(null);
                     }}
+                    className={`tw-px-4 tw-py-2 tw-rounded-md tw-text-base tw-font-medium tw-border tw-transition-colors ${
+                      whoForMode === 'new'
+                        ? 'tw-bg-twprimary tw-text-white tw-border-twprimary hover:tw-bg-blue-700'
+                        : 'tw-bg-white tw-text-twprimary tw-border-twprimary hover:tw-bg-blue-50'
+                    }`}
                   >
                     New Client
-                  </Button>
+                  </button>
                 </div>
 
                 {whoForMode === 'existing' ? (
@@ -543,6 +555,7 @@ export default function ApplicationForm() {
                       <Form.Label>Search client by name</Form.Label>
                       <Form.Control
                         type="text"
+                        className={whoForInputClassName}
                         placeholder="Start typing a client name..."
                         value={clientQuery}
                         onChange={(event) => {
@@ -588,6 +601,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientFirstName">
                         <Form.Label>First Name</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           name="firstname"
                           value={enrollForm.firstname}
                           onChange={handleEnrollFieldChange}
@@ -601,6 +615,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientLastName">
                         <Form.Label>Last Name</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           name="lastname"
                           value={enrollForm.lastname}
                           onChange={handleEnrollFieldChange}
@@ -614,6 +629,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientMiddleName">
                         <Form.Label>Middle Name (optional)</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           name="middlename"
                           value={enrollForm.middlename}
                           onChange={handleEnrollFieldChange}
@@ -627,6 +643,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientSuffix">
                         <Form.Label>Suffix (optional)</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           name="suffix"
                           placeholder="e.g. Jr, III"
                           value={enrollForm.suffix}
@@ -641,6 +658,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientDob">
                         <Form.Label>Date of Birth</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           type="date"
                           name="birthDate"
                           value={enrollForm.birthDate}
@@ -655,6 +673,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientEmail">
                         <Form.Label>Email</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           type="email"
                           name="email"
                           value={enrollForm.email}
@@ -669,6 +688,7 @@ export default function ApplicationForm() {
                       <Form.Group controlId="newClientPhone">
                         <Form.Label>Phone (optional)</Form.Label>
                         <Form.Control
+                          className={whoForInputClassName}
                           name="phonenumber"
                           value={enrollForm.phonenumber}
                           onChange={handleEnrollFieldChange}
@@ -713,9 +733,9 @@ export default function ApplicationForm() {
                       />
                       {agreementError && <small className="tw-text-red-600">{agreementError}</small>}
                     </div>
-                    <Alert variant="info" className="tw-mt-3 tw-mb-0">
+                    <p className="tw-mt-3 tw-mb-0 tw-text-sm tw-text-blue-600">
                       This information is used as the applicant information for this application.
-                    </Alert>
+                    </p>
                   </div>
                 )}
 
