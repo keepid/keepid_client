@@ -307,6 +307,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   const formsLocked = pdfFormsReadOnly || (showPdfEditControls && !isPdfEditMode);
   const isPdfActionsLocked = showPdfEditControls && isPdfEditMode;
+  const hasMultiplePages = numPages > 1;
   let downloadButtonClass = 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50';
   if (isPdfActionsLocked) {
     downloadButtonClass = 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed';
@@ -385,27 +386,25 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
             ref={frameRef}
             className={`tw-w-full ${FRAME_MAX_WIDTH_CLASS} tw-rounded-xl tw-border tw-border-gray-200 tw-bg-gray-200 tw-shadow-sm tw-overflow-hidden`}
           >
-            {numPages > 1 && (
-              <div className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-pt-2 tw-pb-1 tw-text-sm tw-bg-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setPageNum((p) => Math.max(1, p - 1))}
-                  disabled={pageNum <= 1}
-                  className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0"
-                >
-                  &larr; Prev
-                </button>
-                <span className="tw-text-sm tw-text-gray-700 tw-font-normal">Page {pageNum} / {numPages}</span>
-                <button
-                  type="button"
-                  onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
-                  disabled={pageNum >= numPages}
-                  className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0"
-                >
-                  Next &rarr;
-                </button>
-              </div>
-            )}
+            <div className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-pt-2 tw-pb-1 tw-text-sm tw-bg-gray-200">
+              <button
+                type="button"
+                onClick={() => setPageNum((p) => Math.max(1, p - 1))}
+                disabled={!hasMultiplePages || pageNum <= 1}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+              >
+                &larr; Prev
+              </button>
+              <span className="tw-text-sm tw-text-gray-700 tw-font-normal">Page {pageNum} / {numPages}</span>
+              <button
+                type="button"
+                onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
+                disabled={!hasMultiplePages || pageNum >= numPages}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+              >
+                Next &rarr;
+              </button>
+            </div>
             <div ref={pdfWrapperRef} className="tw-relative tw-bg-gray-200 tw-px-1 tw-pb-1">
               <div className="tw-bg-gray-100 tw-rounded tw-w-full tw-overflow-hidden">
                 <Page
