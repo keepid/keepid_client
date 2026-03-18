@@ -102,6 +102,33 @@ interface ClientSearchResult {
   birthDate?: string;
 }
 
+const MAX_CLIENT_RESULTS = 25;
+
+function normalizeSearchText(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function matchesClientSearchQuery(client: ClientSearchResult, query: string): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return false;
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return false;
+
+  const first = normalizeSearchText(client.firstName || '');
+  const last = normalizeSearchText(client.lastName || '');
+  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
+  const username = normalizeSearchText(client.username || '');
+  const email = normalizeSearchText(client.email || '');
+
+  return tokens.every((token) => (
+    first.includes(token)
+    || last.includes(token)
+    || full.includes(token)
+    || username.includes(token)
+    || email.includes(token)
+  ));
+}
+
 export default function ApplicationForm() {
   const {
     formContent,
@@ -132,6 +159,7 @@ export default function ApplicationForm() {
   const [debouncedClientQuery, setDebouncedClientQuery] = useState('');
   const [searchingClients, setSearchingClients] = useState(false);
   const [searchResults, setSearchResults] = useState<ClientSearchResult[]>([]);
+  const [showClientResults, setShowClientResults] = useState(true);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [enrollSubmitting, setEnrollSubmitting] = useState(false);
   const [agreementError, setAgreementError] = useState('');
@@ -164,6 +192,7 @@ export default function ApplicationForm() {
     fetchRegistry,
   } = useGetApplicationRegistry();
   const history = useHistory();
+  const clientSearchRequestIdRef = useRef(0);
 
   const pageCount = formContent.length;
   const hidePrev = page === 0;
@@ -228,7 +257,7 @@ export default function ApplicationForm() {
   }, [targetClientName, targetClientResolved, targetClientUsername, clientQuery]);
 
   useEffect(() => {
-    if (!isWhoForPage || !shouldShowWhoForStep || whoForMode !== 'existing') {
+    if (!isWhoForPage || !shouldShowWhoForStep || whoForMode !== 'existing' || !showClientResults) {
       return () => {};
     }
     if (debouncedClientQuery.length < 2) {
@@ -238,6 +267,8 @@ export default function ApplicationForm() {
     }
 
     const controller = new AbortController();
+    const requestId = clientSearchRequestIdRef.current + 1;
+    clientSearchRequestIdRef.current = requestId;
     setSearchingClients(true);
     setSearchError(null);
 
@@ -253,8 +284,12 @@ export default function ApplicationForm() {
     })
       .then((response) => response.json())
       .then((responseJSON) => {
+        if (clientSearchRequestIdRef.current !== requestId) return;
         if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
-          setSearchResults(responseJSON.people);
+          const filtered = responseJSON.people
+            .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, debouncedClientQuery))
+            .slice(0, MAX_CLIENT_RESULTS);
+          setSearchResults(filtered);
           return;
         }
         setSearchResults([]);
@@ -263,15 +298,19 @@ export default function ApplicationForm() {
         }
       })
       .catch((error) => {
+        if (clientSearchRequestIdRef.current !== requestId) return;
         if (error.name !== 'AbortError') {
           setSearchResults([]);
           setSearchError('Could not load client search results.');
         }
       })
-      .finally(() => setSearchingClients(false));
+      .finally(() => {
+        if (clientSearchRequestIdRef.current !== requestId) return;
+        setSearchingClients(false);
+      });
 
     return () => controller.abort();
-  }, [debouncedClientQuery, isWhoForPage, shouldShowWhoForStep, userRole, whoForMode]);
+  }, [debouncedClientQuery, isWhoForPage, shouldShowWhoForStep, userRole, whoForMode, showClientResults]);
 
   const validateEnrollField = useCallback((name: string, value: string): string => {
     switch (name) {
@@ -345,6 +384,7 @@ export default function ApplicationForm() {
     setTargetClientUsername(client.username);
     setTargetClientName(resolvedName);
     setClientQuery(resolvedName);
+    setShowClientResults(false);
     setSearchResults([]);
     setSearchError(null);
   }, [setTargetClientName, setTargetClientUsername]);
@@ -523,6 +563,7 @@ export default function ApplicationForm() {
                     type="button"
                     onClick={() => {
                       setWhoForMode('existing');
+                      setShowClientResults(true);
                       setSubmitError(null);
                     }}
                     className={`tw-px-4 tw-py-2 tw-rounded-md tw-text-base tw-font-medium tw-border tw-transition-colors ${
@@ -560,7 +601,9 @@ export default function ApplicationForm() {
                         value={clientQuery}
                         onChange={(event) => {
                           setClientQuery(event.target.value);
+                          setShowClientResults(true);
                           setSearchError(null);
+                          setSearchResults([]);
                           if (targetClientUsername) {
                             setTargetClientUsername('');
                             setTargetClientName('');
@@ -576,8 +619,8 @@ export default function ApplicationForm() {
                         {searchError}
                       </Alert>
                     )}
-                    {searchResults.length > 0 && (
-                      <div className="tw-border tw-rounded-md tw-mt-3 tw-divide-y">
+                    {showClientResults && searchResults.length > 0 && (
+                      <div className="tw-border tw-rounded-md tw-mt-3 tw-divide-y tw-max-h-64 tw-overflow-y-auto">
                         {searchResults.map((client) => {
                           const displayName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
                           return (

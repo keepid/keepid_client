@@ -73,7 +73,7 @@ function resolveConditionalDirective(
 
 function buildFormAnswers(
   uiSchema: Record<string, unknown>,
-  _jsonSchema: Record<string, unknown>,
+  jsonSchema: Record<string, unknown>,
   data: Record<string, unknown>,
   resolvedProfiles: GetQuestionsV2Response['resolvedProfiles'] | null,
 ): Record<string, unknown> {
@@ -83,6 +83,12 @@ function buildFormAnswers(
   function getPropValue(scope: string): unknown {
     const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
     return getByPath(data, propPath);
+  }
+
+  function isBooleanScope(scope: string): boolean {
+    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
+    const props = (jsonSchema.properties as Record<string, { type?: unknown }> | undefined) ?? {};
+    return props[propPath]?.type === 'boolean';
   }
 
   function processElement(element: Record<string, unknown>) {
@@ -116,10 +122,17 @@ function buildFormAnswers(
             }
           }
         }
-        if (options.fillValue !== undefined && options.fillValue !== null) value = options.fillValue;
-        if (typeof value === 'boolean') {
-          if (value) out[pdfField] = 'true';
+        const boolScope = isBooleanScope(scope);
+        if (boolScope || typeof value === 'boolean') {
+          const isChecked = value === true || value === 'true' || value === 1 || value === '1';
+          if (isChecked) {
+            const token = (typeof options.fillValue === 'string' && options.fillValue !== '')
+              ? options.fillValue
+              : 'true';
+            out[pdfField] = token;
+          }
         } else if (value !== undefined && value !== null && value !== '') {
+          if (options.fillValue !== undefined && options.fillValue !== null) value = options.fillValue;
           out[pdfField] = formatDateForPdf(value);
         }
       }

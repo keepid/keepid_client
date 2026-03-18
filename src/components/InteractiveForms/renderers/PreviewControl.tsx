@@ -23,8 +23,11 @@ class PreviewControl extends Control<ControlProps, { isFocused: boolean }> {
       config,
     } = this.props;
 
-    const isValid = errors.length === 0;
     const schemaObj = schema as JsonSchema;
+    const schemaType = (schemaObj as Record<string, unknown> | undefined)?.type;
+    const isBooleanSchema = schemaType === 'boolean';
+    const shouldShowError = errors.length > 0 && !isBooleanSchema;
+    const isValid = !shouldShowError;
     const hasEnum = schemaObj && (Array.isArray((schemaObj as Record<string, unknown>).enum));
     const format = uischema.options && (uischema.options as Record<string, unknown>).format;
     const isRadioFormat = format === 'radio' || (hasEnum && format !== 'select');
