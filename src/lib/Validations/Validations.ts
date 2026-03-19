@@ -33,7 +33,7 @@ const namePattern: RegExp =
 let isValidEmail = (input: string): boolean => {
     return input !== null
         && !(input.trim() === "")
-        && emailPattern.test(input);
+        && input.includes("@");
 }
 
 let isValidPhoneNumber = (input: string): boolean => {
