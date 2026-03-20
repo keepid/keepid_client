@@ -1,11 +1,7 @@
-import { privateDecrypt } from 'crypto';
-import { address } from 'faker';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
-import { setConstantValue } from 'typescript';
 
-import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
@@ -23,14 +19,33 @@ interface Props {
   documentUploader: string;
   targetUser: string;
   fileType: FileType;
+  idCategory?: string;
+  clientName?: string;
+  viewerRole?: Role;
+  onDownloadCurrentDocument: () => void;
+  onRequestDeleteCurrentDocument: () => void;
   resetDocumentId: ()=> void;
 }
 
-const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, fileType, resetDocumentId }) => {
+const ViewDocument: React.FC<Props> = ({
+  alert,
+  userRole,
+  documentId,
+  documentName,
+  documentDate,
+  documentUploader,
+  targetUser,
+  fileType,
+  idCategory,
+  clientName,
+  viewerRole,
+  onDownloadCurrentDocument,
+  onRequestDeleteCurrentDocument,
+  resetDocumentId,
+}) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
-  const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
     fetch(`${getServerURL()}/download-file`, {
@@ -61,18 +76,14 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       });
   }, [alert, documentId, documentName, userRole, targetUser]);
 
-  const setLink = () => {
-    if (userRole === Role.Client) {
-      return '/my-documents';
-    }
-    return `/my-documents/${targetUser}`;
-  };
-
   let fileName = '';
   if (pdfFile) {
-    const splitName = pdfFile.name.split('.');
-    fileName = splitName[0];
+    fileName = pdfFile.name.replace(/\.pdf$/i, '');
   }
+
+  const isStaffViewer = viewerRole === Role.Worker
+    || viewerRole === Role.Admin
+    || viewerRole === Role.Director;
 
   return (
     <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
@@ -90,6 +101,49 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
           </svg>
           <span className="tw-align-middle tw-pt-[1px] tw-pl-1">Mail</span>
         </PrimaryButtonSolid>
+
+        <button
+          type="button"
+          className="tw-bg-transparent tw-border-0 tw-text-gray-500 hover:tw-text-gray-700 tw-p-0"
+          onClick={onDownloadCurrentDocument}
+          title="Download"
+          aria-label="Download"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-5 tw-w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v10m0 0 4-4m-4 4-4-4m8 8H8" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          className="tw-bg-transparent tw-border-0 tw-text-gray-500 hover:tw-text-red-600 tw-p-0"
+          onClick={onRequestDeleteCurrentDocument}
+          title="Delete"
+          aria-label="Delete"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-5 tw-w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V5h6v2m-7 4v7m4-7v7m4-7v7M8 21h8a1 1 0 0 0 1-1V7H7v13a1 1 0 0 0 1 1z" />
+          </svg>
+        </button>
+
+        {isStaffViewer && (
+          <Link
+            to={{
+              pathname: `/home/notify-client/${targetUser}`,
+              state: {
+                clientName,
+                prefilledIdCategory: idCategory,
+              },
+            }}
+            className="tw-text-gray-500 hover:tw-text-gray-700"
+            title="Notify Client"
+            aria-label="Notify Client"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-5 tw-w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8m-8 4h5m-7 6 1.5-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-6l-4 4z" />
+            </svg>
+          </Link>
+        )}
 
       </div>
 

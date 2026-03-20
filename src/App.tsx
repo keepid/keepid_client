@@ -403,6 +403,7 @@ class App extends React.Component<{}, State, {}> {
                     return (
                       <MyDocuments
                         userRole={Role.Client}
+                        viewerRole={role}
                         username={clientUsername}
                         clientName={locState?.clientName}
                       />
@@ -421,7 +422,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
-                    return <MyDocuments userRole={role} username={username} />;
+                    return <MyDocuments userRole={role} viewerRole={role} username={username} />;
                   }
                   return <Home />;
                 }}
