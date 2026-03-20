@@ -31,9 +31,9 @@ const namePattern: RegExp =
     new RegExp("^[" + validCharacters + ", .'-]{1,150}$");
 
 let isValidEmail = (input: string): boolean => {
-    return input !== null
-        && !(input.trim() === "")
-        && emailPattern.test(input);
+    if (input === null || input.trim() === "") return false;
+    const parts = input.split("@");
+    return parts.length === 2 && parts[0].length > 0 && parts[1].length > 0;
 }
 
 let isValidPhoneNumber = (input: string): boolean => {

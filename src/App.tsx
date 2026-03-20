@@ -380,6 +380,7 @@ class App extends React.Component<{}, State, {}> {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
+                    role === Role.Director ||
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
@@ -417,6 +418,7 @@ class App extends React.Component<{}, State, {}> {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
+                    role === Role.Director ||
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
@@ -435,7 +437,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Developer
                   ) {
                     return (
-                      <CreateApplication />
+                      <CreateApplication userRole={role} />
                     );
                   }
                   if (role === Role.LoggedOut) {

@@ -73,15 +73,22 @@ function resolveConditionalDirective(
 
 function buildFormAnswers(
   uiSchema: Record<string, unknown>,
-  _jsonSchema: Record<string, unknown>,
+  jsonSchema: Record<string, unknown>,
   data: Record<string, unknown>,
   resolvedProfiles: GetQuestionsV2Response['resolvedProfiles'] | null,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
+  const ON_PLACEHOLDER = 'On';
 
   function getPropValue(scope: string): unknown {
     const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
     return getByPath(data, propPath);
+  }
+
+  function isBooleanScope(scope: string): boolean {
+    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
+    const props = (jsonSchema.properties as Record<string, { type?: unknown }> | undefined) ?? {};
+    return props[propPath]?.type === 'boolean';
   }
 
   function processElement(element: Record<string, unknown>) {
@@ -90,8 +97,13 @@ function buildFormAnswers(
     if (type === 'Control') {
       const scope = element.scope as string | undefined;
       const options = element.options as Record<string, unknown> | undefined;
+      const optionMappings = options?.optionMappings as Array<Record<string, unknown>> | undefined;
+      const hasOptionMappings = Array.isArray(optionMappings) && optionMappings.length > 0;
 
-      if (options?.pdfField && scope) {
+      // Avoid generic value->pdfField fallback for controls that define explicit optionMappings.
+      // For shared group targets (radio-style PDFs), generic fallback commonly emits UI labels or booleans
+      // that are not valid PDF option tokens.
+      if (options?.pdfField && scope && !hasOptionMappings) {
         const pdfField = options.pdfField as string;
         let value: unknown = getPropValue(scope);
         const directive = options.directive;
@@ -110,24 +122,55 @@ function buildFormAnswers(
             }
           }
         }
-        if (options.fillValue !== undefined && options.fillValue !== null) value = options.fillValue;
-        if (typeof value === 'boolean') {
-          if (value) out[pdfField] = 'true';
+        const boolScope = isBooleanScope(scope);
+        if (boolScope || typeof value === 'boolean') {
+          const isChecked = value === true || value === 'true' || value === 1 || value === '1';
+          if (isChecked) {
+            const token = (typeof options.fillValue === 'string' && options.fillValue !== '')
+              ? options.fillValue
+              : 'true';
+            out[pdfField] = token;
+          }
         } else if (value !== undefined && value !== null && value !== '') {
+          if (options.fillValue !== undefined && options.fillValue !== null) value = options.fillValue;
           out[pdfField] = formatDateForPdf(value);
         }
       }
 
-      const optionMappings = options?.optionMappings as Array<Record<string, unknown>> | undefined;
       if (optionMappings && scope) {
         const currentVal = getPropValue(scope);
+        const mappingCountByPdfField = optionMappings.reduce<Record<string, number>>((acc, m) => {
+          const key = m.pdfField as string | undefined;
+          if (!key) return acc;
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
         optionMappings.forEach((m) => {
           const pdfField = m.pdfField as string | undefined;
           const forOption = m.forOption as string | undefined;
           if (!pdfField || forOption == null) return;
           if (currentVal !== forOption) return;
-          const fillVal = m.fillValue ?? (m.directive && resolvedProfiles
-            ? resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles) : undefined);
+          const explicitFill = m.fillValue;
+          const isSharedGroupField = (mappingCountByPdfField[pdfField] ?? 0) > 1;
+          let fillVal: unknown;
+          if (isSharedGroupField) {
+            // Tight mapping for shared-group targets:
+            // require an explicit PDF token or directive result; never fall back to UI option value.
+            if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
+              if (explicitFill === ON_PLACEHOLDER) return;
+              fillVal = explicitFill;
+            } else if (m.directive && resolvedProfiles) {
+              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+            } else {
+              return;
+            }
+          } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
+            fillVal = explicitFill;
+          } else if (m.directive && resolvedProfiles) {
+            fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+          } else {
+            fillVal = currentVal;
+          }
           if (fillVal !== undefined) out[pdfField] = formatDateForPdf(fillVal);
         });
       }
@@ -161,13 +204,37 @@ function buildFormAnswers(
       const firstScope = (element.elements as Record<string, unknown>[]).find((e) => e.scope)?.scope as string | undefined;
       if (optionMappings && firstScope) {
         const val = getPropValue(firstScope);
+        const mappingCountByPdfField = optionMappings.reduce<Record<string, number>>((acc, m) => {
+          const key = m.pdfField as string | undefined;
+          if (!key) return acc;
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
         optionMappings.forEach((m) => {
           const pdfField = m.pdfField as string | undefined;
           const forOption = m.forOption as string | undefined;
           if (!pdfField || forOption == null) return;
           if (val === forOption) {
-            const fillVal = m.fillValue ?? (m.directive && resolvedProfiles
-              ? resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles) : undefined);
+            const explicitFill = m.fillValue;
+            const isSharedGroupField = (mappingCountByPdfField[pdfField] ?? 0) > 1;
+            let fillVal: unknown;
+            if (isSharedGroupField) {
+              // Same strict behavior for Group-level mappings.
+              if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
+                if (explicitFill === ON_PLACEHOLDER) return;
+                fillVal = explicitFill;
+              } else if (m.directive && resolvedProfiles) {
+                fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+              } else {
+                return;
+              }
+            } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
+              fillVal = explicitFill;
+            } else if (m.directive && resolvedProfiles) {
+              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+            } else {
+              fillVal = val;
+            }
             if (fillVal !== undefined) out[pdfField] = formatDateForPdf(fillVal);
           }
         });

@@ -15,7 +15,9 @@ import {
 
 interface EnrollClientFormValues {
   firstname: string;
+  middlename: string;
   lastname: string;
+  suffix: string;
   birthDate: string;
   email: string;
   phonenumber: string;
@@ -25,7 +27,9 @@ export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
   const [values, setValues] = useState<EnrollClientFormValues>({
     firstname: '',
+    middlename: '',
     lastname: '',
+    suffix: '',
     birthDate: '',
     email: '',
     phonenumber: '',
@@ -53,6 +57,12 @@ export default function EnrollClientPage(): JSX.Element {
         break;
       case 'lastname':
         error = validateLastname(value);
+        break;
+      case 'middlename':
+        if (value.trim() !== '') error = validateFirstname(value);
+        break;
+      case 'suffix':
+        if (value.trim() !== '') error = validateLastname(value);
         break;
       case 'email':
         error = validateEmail(value);
@@ -93,7 +103,9 @@ export default function EnrollClientPage(): JSX.Element {
     try {
       const response = await enrollClient({
         firstname: values.firstname,
+        middlename: values.middlename.trim() || undefined,
         lastname: values.lastname,
+        suffix: values.suffix.trim() || undefined,
         birthDate: birthDateString,
         email: values.email,
         phonenumber: values.phonenumber,
@@ -141,7 +153,15 @@ export default function EnrollClientPage(): JSX.Element {
               className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-6 tw-rounded-md hover:tw-bg-blue-700 tw-border-0"
               onClick={() => {
                 setEnrolled(false);
-                setValues({ firstname: '', lastname: '', birthDate: '', email: '', phonenumber: '' });
+                setValues({
+                  firstname: '',
+                  middlename: '',
+                  lastname: '',
+                  suffix: '',
+                  birthDate: '',
+                  email: '',
+                  phonenumber: '',
+                });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
                 setAgreementError('');
@@ -204,6 +224,24 @@ export default function EnrollClientPage(): JSX.Element {
                   )}
                 </div>
                 <div>
+                  <label htmlFor="middlename" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Middle Name <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="middlename"
+                    name="middlename"
+                    type="text"
+                    placeholder="Middle Name"
+                    className={inputClassName}
+                    value={values.middlename}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  />
+                  {fieldErrors.middlename && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.middlename}</p>
+                  )}
+                </div>
+                <div>
                   <label htmlFor="lastname" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
                     Last Name
                   </label>
@@ -220,6 +258,24 @@ export default function EnrollClientPage(): JSX.Element {
                   />
                   {fieldErrors.lastname && (
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.lastname}</p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="suffix" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Suffix <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="suffix"
+                    name="suffix"
+                    type="text"
+                    placeholder="Suffix (e.g. Jr, III)"
+                    className={inputClassName}
+                    value={values.suffix}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  />
+                  {fieldErrors.suffix && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.suffix}</p>
                   )}
                 </div>
               </div>

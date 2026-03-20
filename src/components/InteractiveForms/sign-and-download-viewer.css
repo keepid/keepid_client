@@ -1,0 +1,19 @@
+.keepid-pdf-preview .react-pdf__Page {
+  width: 100%;
+}
+
+.keepid-pdf-preview .react-pdf__Page canvas {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+.keepid-pdf-preview .react-pdf__Page__textContent,
+.keepid-pdf-preview .react-pdf__Page__annotations {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.keepid-pdf-preview.keepid-pdf-edit-locked .react-pdf__Page__annotations {
+  pointer-events: none;
+}
