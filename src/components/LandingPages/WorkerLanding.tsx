@@ -5,10 +5,8 @@ import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
-import DocIcon from '../../static/images/doc-icon.png';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import MenuDots from '../../static/images/menu-dots.png';
-import UploadIconBlue from '../../static/images/upload-blue.png';
 import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
@@ -377,36 +375,18 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                               </summary>
                               <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
                                 <Link
-                                  to={`/upload-document/${client.username}`}
-                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                                >
-                                  <div className="tw-flex tw-items-center tw-font-semibold tw-bg-twprimary">
-                                    <img src={UploadIconBlue} className="tw-h-6 tw-mr-2" alt="upload icon" />
-                                    Upload
-                                  </div>
-                                </Link>
-                                <Link
-                                  to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }}
+                                  to={`/profile/${client.username}`}
                                   className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
                                 >
                                   <div className="tw-flex tw-items-center">
-                                    <img alt="doc icon" src={DocIcon} className="tw-h-5 tw-mx-1 tw-mr-2" />
-                                    View Documents
-                                  </div>
-                                </Link>
-                                <Link
-                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
-                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                                >
-                                  <div className="tw-flex tw-items-center">
-                                    Fill Out Application
+                                    Profile
                                   </div>
                                 </Link>
                               </div>
                             </details>
                           </div>
 
-                          <Link to={`/profile/${client.username}`} className="tw-flex-grow">
+                          <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-flex-grow">
                             <div className="tw-flex tw-items-center tw-mb-3">
                               {client.photo ? (
                                 <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
@@ -429,13 +409,28 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                             </div>
                           </Link>
 
-                          <div className="tw-inline-flex tw-rounded-md tw-mt-4">
-                              <Link to={`/upload-document/${client.username}`} className="tw-relative tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-l tw-text-sm tw-border-none">
+                          <div className="tw-flex tw-gap-2 tw-mt-4">
+                              <Link to={`/upload-document/${client.username}`} className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none">
                                   <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
                                   Upload
                               </Link>
-                              <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-relative -ml-px tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-r">
-                                  View Documents
+                              <Link
+                                to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
+                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                              >
+                                  Apply
+                              </Link>
+                              <Link
+                                to={{
+                                  pathname: `${url}/notify-client/${client.username}`,
+                                  state: {
+                                    clientName: `${client.firstName} ${client.lastName}`.trim(),
+                                    clientPhone: client.phone,
+                                  },
+                                }}
+                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                              >
+                                  Notify
                               </Link>
                           </div>
 

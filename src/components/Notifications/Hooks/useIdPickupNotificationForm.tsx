@@ -4,94 +4,54 @@ import { useAlert } from 'react-alert';
 import getServerURL from '../../../serverOverride';
 
 const PHONE_REGEX = /^\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}$/;
-const STATE_REGEX = /^[A-Z]{2}$/;
-const ZIP_REGEX = /^\d{5}(-\d{4})?$/;
 const MIN_LOADING_DURATION = 500;
 
 const toE164US = (phone: string): string =>
   `+1${phone.replace(/\D/g, '')}`;
 
 const mapIdCategoryToPickupOption = (idCategory?: string): string => {
-  const normalized = (idCategory || '').trim().toLowerCase();
+  const normalized = (idCategory || '').trim().toLowerCase().replace(/_/g, ' ');
   if (!normalized) return '';
   if (normalized === 'birth certificate') return 'Birth Certificate';
   if (normalized === 'social security card') return 'Social Security Card';
-  if (normalized === "driver's license" || normalized === 'drivers license / photo id') {
+  if (normalized.includes('driver') || normalized.includes('photo id')) {
     return 'Photo ID';
   }
   return '';
 };
 
-export const ID_PICKUP_OPTIONS = [
-  "Driver's License",
-  'Photo ID',
-  'Birth Certificate',
-  'Social Security Card',
-  'Other',
-] as const;
+const formatIdLabel = (category?: string): string => {
+  if (!category || category.toUpperCase() === 'NONE') return '______';
+  const mapped = mapIdCategoryToPickupOption(category);
+  if (mapped) return mapped;
+  return category
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+};
 
-export interface IdPickupFormValues {
-  workerName: string;
-  clientName: string;
-  clientPhone: string;
-  idToPickup: string;
-  customIdToPickup: string;
-  pickupStreetAddress: string;
-  pickupCity: string;
-  pickupState: string;
-  pickupZipCode: string;
-  additionalComments: string;
-}
-
-export interface IdPickupFormErrors {
-  workerName?: string;
-  clientName?: string;
+export interface NotificationFormErrors {
   clientPhone?: string;
-  idToPickup?: string;
-  customIdToPickup?: string;
-  pickupStreetAddress?: string;
-  pickupCity?: string;
-  pickupState?: string;
-  pickupZipCode?: string;
+  message?: string;
 }
 
-const validate = (values: IdPickupFormValues): IdPickupFormErrors => {
-  const errors: IdPickupFormErrors = {};
-
-  if (!values.workerName.trim()) errors.workerName = 'Worker name is required';
-  if (!values.clientName.trim()) errors.clientName = 'Client name is required';
-
-  if (!values.clientPhone.trim()) {
+const validateForm = (
+  phone: string,
+  message: string,
+): NotificationFormErrors => {
+  const errors: NotificationFormErrors = {};
+  if (!phone.trim()) {
     errors.clientPhone = 'Phone number is required';
-  } else if (!PHONE_REGEX.test(values.clientPhone.trim())) {
+  } else if (!PHONE_REGEX.test(phone.trim())) {
     errors.clientPhone = 'Enter a valid phone number (e.g. 215-555-1234)';
   }
-
-  if (!values.idToPickup) {
-    errors.idToPickup = 'Please select an ID type';
-  } else if (values.idToPickup === 'Other' && !values.customIdToPickup.trim()) {
-    errors.customIdToPickup = 'Please specify the ID type';
+  if (!message.trim()) {
+    errors.message = 'Message is required';
   }
-
-  if (!values.pickupStreetAddress.trim()) errors.pickupStreetAddress = 'Street address is required';
-  if (!values.pickupCity.trim()) errors.pickupCity = 'City is required';
-
-  if (!values.pickupState.trim()) {
-    errors.pickupState = 'State is required';
-  } else if (!STATE_REGEX.test(values.pickupState.trim().toUpperCase())) {
-    errors.pickupState = 'Enter a valid 2-letter state code (e.g. PA)';
-  }
-
-  if (!values.pickupZipCode.trim()) {
-    errors.pickupZipCode = 'ZIP code is required';
-  } else if (!ZIP_REGEX.test(values.pickupZipCode.trim())) {
-    errors.pickupZipCode = 'Enter a valid ZIP code (e.g. 19104)';
-  }
-
   return errors;
 };
 
-export default function useIdPickupNotificationForm(
+export default function useNotificationForm(
   clientUsername: string,
   workerUsername: string,
   organizationName: string,
@@ -102,96 +62,79 @@ export default function useIdPickupNotificationForm(
 ) {
   const alert = useAlert();
 
-  const [formValues, setFormValues] = useState<IdPickupFormValues>({
-    workerName: initialWorkerName,
-    clientName: initialClientName,
-    clientPhone: initialClientPhone,
-    idToPickup: mapIdCategoryToPickupOption(initialIdCategory),
-    customIdToPickup: '',
-    pickupStreetAddress: '',
-    pickupCity: '',
-    pickupState: '',
-    pickupZipCode: '',
-    additionalComments: '',
-  });
+  const [clientName, setClientName] = useState(initialClientName);
+  const [clientPhone, setClientPhone] = useState(initialClientPhone);
+  const [workerName, setWorkerName] = useState(initialWorkerName);
+  const [message, setMessage] = useState('');
 
-  const [errors, setErrors] = useState<IdPickupFormErrors>({});
+  const [orgAddress, setOrgAddress] = useState({
+    street: '', city: '', state: '', zip: '',
+  });
+  const [orgAddressLoaded, setOrgAddressLoaded] = useState(false);
+  const [messageInitialized, setMessageInitialized] = useState(!initialIdCategory);
+
+  const [errors, setErrors] = useState<NotificationFormErrors>({});
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [serverError, setServerError] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [serverError, setServerError] = useState('');
 
   useEffect(() => {
-    const shouldFetchClientDetails = !initialClientName.trim() || !initialClientPhone.trim();
-    const shouldFetchWorkerName = !initialWorkerName.trim();
-    if (!shouldFetchClientDetails && !shouldFetchWorkerName) {
-      return undefined;
-    }
+    const needClientInfo = !initialClientName.trim() || !initialClientPhone.trim();
+    const needWorkerName = !initialWorkerName.trim();
+    if (!needClientInfo && !needWorkerName) return undefined;
 
     const controller = new AbortController();
 
-    const fetchUserInfo = async (username: string) => {
+    const fetchUserInfo = async (uname: string) => {
       const res = await fetch(`${getServerURL()}/get-user-info`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: uname }),
         signal: controller.signal,
       });
       return res.json();
     };
 
-    const hydrateMissingUserDetails = async () => {
+    const hydrate = async () => {
       try {
-        if (shouldFetchClientDetails && clientUsername.trim()) {
-          const clientData = await fetchUserInfo(clientUsername);
-          if (clientData?.status === 'SUCCESS') {
-            const fetchedClientName = [clientData.firstName, clientData.lastName].filter(Boolean).join(' ').trim();
-            const fetchedClientPhone = clientData.phone || '';
-            setFormValues((prev) => ({
-              ...prev,
-              clientName: prev.clientName || fetchedClientName,
-              clientPhone: prev.clientPhone || fetchedClientPhone,
-            }));
+        if (needClientInfo && clientUsername.trim()) {
+          const data = await fetchUserInfo(clientUsername);
+          if (data?.status === 'SUCCESS') {
+            const fetchedName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim();
+            const fetchedPhone = data.phone || '';
+            setClientName((prev) => prev || fetchedName);
+            setClientPhone((prev) => prev || fetchedPhone);
           }
         }
-
-        if (shouldFetchWorkerName && workerUsername.trim()) {
-          const workerData = await fetchUserInfo(workerUsername);
-          if (workerData?.status === 'SUCCESS') {
-            const fetchedWorkerName = [workerData.firstName, workerData.lastName].filter(Boolean).join(' ').trim();
-            setFormValues((prev) => ({
-              ...prev,
-              workerName: prev.workerName || fetchedWorkerName,
-            }));
+        if (needWorkerName && workerUsername.trim()) {
+          const data = await fetchUserInfo(workerUsername);
+          if (data?.status === 'SUCCESS') {
+            const fetchedName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim();
+            setWorkerName((prev) => prev || fetchedName);
           }
         }
       } catch (e: any) {
         if (e?.name !== 'AbortError') {
-          // Best-effort autofill only.
+          // Best-effort autofill
         }
       }
     };
 
-    hydrateMissingUserDetails();
-
+    hydrate();
     return () => controller.abort();
-  }, [
-    clientUsername,
-    workerUsername,
-    initialClientName,
-    initialClientPhone,
-    initialWorkerName,
-  ]);
+  }, [clientUsername, workerUsername, initialClientName, initialClientPhone, initialWorkerName]);
 
   useEffect(() => {
     if (!organizationName.trim()) {
+      setOrgAddressLoaded(true);
       return undefined;
     }
 
     const controller = new AbortController();
 
-    const fetchOrganizationInfo = async () => {
+    const fetchOrgInfo = async () => {
       try {
         const res = await fetch(`${getServerURL()}/get-organization-info`, {
           method: 'POST',
@@ -201,76 +144,70 @@ export default function useIdPickupNotificationForm(
           signal: controller.signal,
         });
         const data = await res.json();
-
-        if (data?.status !== 'SUCCESS' || !data?.orgAddress) {
-          return;
+        if (data?.status === 'SUCCESS' && data?.orgAddress) {
+          const { line1 = '', line2 = '', city = '', state = '', zip = '' } = data.orgAddress;
+          setOrgAddress({
+            street: [line1, line2].filter(Boolean).join(', '),
+            city,
+            state,
+            zip,
+          });
         }
-
-        const { line1 = '', line2 = '', city = '', state = '', zip = '' } = data.orgAddress;
-        const pickupStreetAddress = [line1, line2].filter(Boolean).join(', ');
-
-        setFormValues((prev) => ({
-          ...prev,
-          pickupStreetAddress: prev.pickupStreetAddress || pickupStreetAddress,
-          pickupCity: prev.pickupCity || city,
-          pickupState: prev.pickupState || state,
-          pickupZipCode: prev.pickupZipCode || zip,
-        }));
       } catch (e: any) {
         if (e?.name !== 'AbortError') {
-          // Best-effort autofill; keep form usable even if org fetch fails.
+          // Best-effort
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setOrgAddressLoaded(true);
         }
       }
     };
 
-    fetchOrganizationInfo();
-
+    fetchOrgInfo();
     return () => controller.abort();
   }, [organizationName]);
 
-  const onChange = (field: keyof IdPickupFormValues, value: string) => {
-    const newValues = { ...formValues, [field]: value };
-    if (field === 'idToPickup' && value !== 'Other') {
-      newValues.customIdToPickup = '';
-    }
-    setFormValues(newValues);
+  useEffect(() => {
+    if (messageInitialized) return;
+    if (!clientName) return;
+    if (!orgAddressLoaded) return;
 
+    const idLabel = formatIdLabel(initialIdCategory);
+    const addressParts = [orgAddress.street, orgAddress.city, `${orgAddress.state} ${orgAddress.zip}`.trim()]
+      .filter(Boolean);
+    const address = addressParts.length > 0 ? addressParts.join(', ') : '[pickup location]';
+
+    const msg = `Hi ${clientName}, your ${idLabel} is ready for pickup at ${address}.`
+      + ` Your case worker ${workerName || '[worker]'} is ready to help with further ID needs.`
+      + '\n\nDo not reply to this message.';
+    setMessage(msg);
+    setMessageInitialized(true);
+  }, [clientName, workerName, orgAddress, orgAddressLoaded, initialIdCategory, messageInitialized]);
+
+  const onPhoneChange = (value: string) => {
+    setClientPhone(value);
     if (hasAttemptedSubmit) {
-      setErrors(validate(newValues));
+      setErrors(validateForm(value, message));
     }
   };
 
-  const getIdLabel = (): string => {
-    const idLabel = formValues.idToPickup === 'Other'
-      ? formValues.customIdToPickup
-      : formValues.idToPickup;
-
-    return idLabel;
-  };
-
-  const getMessagePreview = (): string => {
-    const location = `${formValues.pickupStreetAddress}, ${formValues.pickupCity}, ${formValues.pickupState} ${formValues.pickupZipCode}`;
-
-    let message = `Hi ${formValues.clientName || '___'}, your ${getIdLabel() || '___'} is ready for pickup at ${location || '___'}. Your case worker ${formValues.workerName || '___'} is ready to help with further ID needs.`;
-
-    if (formValues.additionalComments.trim()) {
-      message += ` ${formValues.additionalComments}`;
+  const onMessageChange = (value: string) => {
+    setMessage(value);
+    if (hasAttemptedSubmit) {
+      setErrors(validateForm(clientPhone, value));
     }
-
-    return message;
   };
 
-  const onSubmit = async (): Promise<IdPickupFormErrors> => {
+  const onSubmit = async (): Promise<NotificationFormErrors> => {
     setHasAttemptedSubmit(true);
     setServerError('');
-    const validationErrors = validate(formValues);
+    const validationErrors = validateForm(clientPhone, message);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
       return validationErrors;
     }
-
-    const message = getMessagePreview();
 
     const startTime = Date.now();
 
@@ -282,32 +219,32 @@ export default function useIdPickupNotificationForm(
         body: JSON.stringify({
           workerUsername,
           clientUsername,
-          idToPickup: getIdLabel(),
-          clientPhoneNumber: toE164US(formValues.clientPhone),
+          idToPickup: initialIdCategory ? formatIdLabel(initialIdCategory) : 'General',
+          clientPhoneNumber: toE164US(clientPhone),
           message,
         }),
       });
 
       const data = await res.json();
-
-      const elapsedTime = Date.now() - startTime;
-      const remainingTime = Math.max(0, MIN_LOADING_DURATION - elapsedTime);
-
-      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      const elapsed = Date.now() - startTime;
+      await new Promise((resolve) => {
+        setTimeout(resolve, Math.max(0, MIN_LOADING_DURATION - elapsed));
+      });
 
       setIsLoading(false);
       if (data.status === 'SUCCESS') {
+        setMessage('');
+        setHasAttemptedSubmit(false);
         alert.show('Notification sent successfully');
         setRefreshTrigger((prev) => prev + 1);
       } else {
         setServerError(data.message || 'Failed to send notification. Please try again.');
       }
     } catch {
-      const elapsedTime = Date.now() - startTime;
-      const remainingTime = Math.max(0, MIN_LOADING_DURATION - elapsedTime);
-
-      await new Promise((resolve) => setTimeout(resolve, remainingTime));
-
+      const elapsed = Date.now() - startTime;
+      await new Promise((resolve) => {
+        setTimeout(resolve, Math.max(0, MIN_LOADING_DURATION - elapsed));
+      });
       setIsLoading(false);
       setServerError('Network error. Please try again.');
     }
@@ -316,14 +253,16 @@ export default function useIdPickupNotificationForm(
   };
 
   return {
-    formValues,
+    clientName,
+    clientPhone,
+    message,
     errors,
     hasAttemptedSubmit,
     serverError,
     refreshTrigger,
     isLoading,
-    onChange,
+    onPhoneChange,
+    onMessageChange,
     onSubmit,
-    getMessagePreview,
   };
 }
