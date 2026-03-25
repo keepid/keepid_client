@@ -1,22 +1,3 @@
-/* eslint-disable no-nested-ternary */
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import SearchIcon from '@mui/icons-material/Search';
-import {
-  Box,
-  IconButton,
-  InputAdornment,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TextField,
-  Typography,
-} from '@mui/material';
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
@@ -25,6 +6,7 @@ import { Link, Redirect, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 
 interface DocumentInformation {
@@ -49,12 +31,6 @@ interface State {
   documents: DocumentInformation[],
   isLoadingDocuments: boolean,
   documentsError: string | null,
-  searchInput: string,
-  debouncedSearch: string,
-  searchDebounceTimeout: number | undefined,
-  currentPage: number,
-  sortBy: 'uploadDate' | 'uploader',
-  sortDirection: 'asc' | 'desc',
   clientUsername: string | undefined,
   clientName: string | undefined,
   availableApplications: {
@@ -71,8 +47,6 @@ interface LocationState {
   clientName?: string;
 }
 
-const PAGE_SIZE = 10;
-
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
   constructor(props: Props & RouteComponentProps) {
     super(props);
@@ -83,23 +57,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       documents: [],
       isLoadingDocuments: false,
       documentsError: null,
-      searchInput: '',
-      debouncedSearch: '',
-      searchDebounceTimeout: undefined,
-      currentPage: 1,
-      sortBy: 'uploadDate',
-      sortDirection: 'desc',
       clientUsername: undefined,
       clientName: undefined,
       availableApplications: [],
     };
-  }
-
-  componentWillUnmount() {
-    const { searchDebounceTimeout } = this.state;
-    if (searchDebounceTimeout) {
-      window.clearTimeout(searchDebounceTimeout);
-    }
   }
 
   formatUploadDate = (rawDate: string): string => {
@@ -119,63 +80,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       ...doc,
       formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
     }));
-
-  handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value;
-    const { searchDebounceTimeout } = this.state;
-    if (searchDebounceTimeout) {
-      window.clearTimeout(searchDebounceTimeout);
-    }
-    const timeout = window.setTimeout(() => {
-      this.setState({ debouncedSearch: nextValue.trim().toLowerCase(), currentPage: 1 });
-    }, 300);
-    this.setState({
-      searchInput: nextValue,
-      searchDebounceTimeout: timeout,
-    });
-  };
-
-  handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const { searchInput, searchDebounceTimeout } = this.state;
-    if (searchDebounceTimeout) {
-      window.clearTimeout(searchDebounceTimeout);
-    }
-    this.setState({
-      debouncedSearch: searchInput.trim().toLowerCase(),
-      searchDebounceTimeout: undefined,
-      currentPage: 1,
-    });
-  };
-
-  goToNextPage = (totalPages: number) => {
-    this.setState((prevState) => ({
-      currentPage: Math.min(prevState.currentPage + 1, totalPages),
-    }));
-  };
-
-  goToPreviousPage = () => {
-    this.setState((prevState) => ({
-      currentPage: Math.max(prevState.currentPage - 1, 1),
-    }));
-  };
-
-  handleSort = (field: 'uploadDate' | 'uploader') => {
-    this.setState((prevState): Pick<State, 'sortBy' | 'sortDirection' | 'currentPage'> => {
-      if (prevState.sortBy === field) {
-        return {
-          sortBy: prevState.sortBy,
-          sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc',
-          currentPage: 1,
-        };
-      }
-      return {
-        sortBy: field,
-        sortDirection: field === 'uploadDate' ? 'desc' : 'asc',
-        currentPage: 1,
-      };
-    });
-  };
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
     const parseWithDelimiter = (delimiter: string) => {
@@ -320,11 +224,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       documents,
       isLoadingDocuments,
       documentsError,
-      searchInput,
-      debouncedSearch,
-      currentPage,
-      sortBy,
-      sortDirection,
       clientUsername,
       clientName,
       availableApplications,
@@ -332,36 +231,19 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
-    const filteredDocuments = debouncedSearch
-      ? documents.filter((doc) => [
-        doc.filename,
-        doc.uploader,
-        doc.organizationName,
-      ].join(' ').toLowerCase().includes(debouncedSearch))
-      : documents;
-    const sortedDocuments = [...filteredDocuments].sort((a, b) => {
-      if (sortBy === 'uploader') {
-        const nameCompare = (a.uploader || '').localeCompare(b.uploader || '', undefined, { sensitivity: 'base' });
-        if (nameCompare !== 0) {
-          return sortDirection === 'asc' ? nameCompare : -nameCompare;
-        }
-      } else {
-        const timeA = new Date(a.uploadDate || '').getTime();
-        const timeB = new Date(b.uploadDate || '').getTime();
-        const normalizedA = Number.isNaN(timeA) ? 0 : timeA;
-        const normalizedB = Number.isNaN(timeB) ? 0 : timeB;
-        if (normalizedA !== normalizedB) {
-          return sortDirection === 'asc' ? normalizedA - normalizedB : normalizedB - normalizedA;
-        }
-      }
-      return (a.filename || '').localeCompare(b.filename || '', undefined, { sensitivity: 'base' });
-    });
-    const totalResults = sortedDocuments.length;
-    const totalPages = Math.max(Math.ceil(totalResults / PAGE_SIZE), 1);
-    const safeCurrentPage = Math.min(currentPage, totalPages);
-    const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
-    const endIndex = Math.min(startIndex + PAGE_SIZE, totalResults);
-    const paginatedDocuments = sortedDocuments.slice(startIndex, endIndex);
+
+    const columns: DataTableColumn<DocumentInformation>[] = [
+      { field: 'filename', headerName: 'Application Name' },
+      { field: 'uploader', headerName: 'Client', sortable: true, width: '25%' },
+      {
+        field: 'uploadDate',
+        headerName: 'Upload Date',
+        sortable: true,
+        sortType: 'date',
+        width: '20%',
+        renderCell: (row) => row.formattedUploadDate || '-',
+      },
+    ];
 
     return (
       <Switch>
@@ -377,126 +259,30 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               </div>
             </div>
             <div className="container">
-              <div className="tw-mb-4 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-3">
-                <form onSubmit={this.handleSearchSubmit} className="tw-w-full md:tw-w-96 tw-relative">
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={searchInput}
-                    onChange={this.handleSearchChange}
-                    placeholder="Search by client or application name..."
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </form>
-                <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
-                  <Button
-                    className="btn btn-card"
-                    style={{
-                      borderRadius: 10,
-                    }}
-                    type="button"
-                  >
-                    Start a new application
-                  </Button>
-                </Link>
-              </div>
-              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', mb: 2 }}>
-                <Table size="medium">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>Application Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                        <TableSortLabel
-                          active={sortBy === 'uploader'}
-                          direction={sortBy === 'uploader' ? sortDirection : 'asc'}
-                          onClick={() => this.handleSort('uploader')}
-                          hideSortIcon={false}
-                          sx={{ '& .MuiTableSortLabel-icon': { opacity: 1 } }}
-                        >
-                          Client
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                        <TableSortLabel
-                          active={sortBy === 'uploadDate'}
-                          direction={sortBy === 'uploadDate' ? sortDirection : 'desc'}
-                          onClick={() => this.handleSort('uploadDate')}
-                          hideSortIcon={false}
-                          sx={{ '& .MuiTableSortLabel-icon': { opacity: 1 } }}
-                        >
-                          Upload Date
-                        </TableSortLabel>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {isLoadingDocuments ? (
-                      <TableRow>
-                        <TableCell colSpan={3}>
-                          <Typography variant="body2" color="text.secondary">Loading applications...</Typography>
-                        </TableCell>
-                      </TableRow>
-                    ) : documentsError ? (
-                      <TableRow>
-                        <TableCell colSpan={3}>
-                          <Typography variant="body2" color="error">{documentsError}</Typography>
-                        </TableCell>
-                      </TableRow>
-                    ) : totalResults === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={3}>
-                          <Typography variant="body2" color="text.secondary">No Applications Present</Typography>
-                        </TableCell>
-                      </TableRow>
-                    ) : paginatedDocuments.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        hover
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => this.handleOpenApplication(row)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') {
-                            this.handleOpenApplication(row);
-                          }
-                        }}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.filename}</TableCell>
-                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.uploader}</TableCell>
-                        <TableCell sx={{ fontSize: '0.95rem' }}>{row.formattedUploadDate || '-'}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                {!isLoadingDocuments && !documentsError && totalResults > 0 && (
-                  <Box sx={{ borderTop: '1px solid #e5e7eb', py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                    <IconButton
-                      size="small"
-                      onClick={this.goToPreviousPage}
-                      disabled={safeCurrentPage === 1}
+              <DataTable
+                columns={columns}
+                data={documents}
+                isLoading={isLoadingDocuments}
+                errorMessage={documentsError}
+                emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
+                searchPlaceholder="Search by client or application name..."
+                searchFields={['filename', 'uploader', 'organizationName']}
+                pageSize={10}
+                defaultSortField="uploadDate"
+                defaultSortDirection="desc"
+                onRowClick={this.handleOpenApplication}
+                headerRight={(
+                  <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
+                    <Button
+                      className="btn btn-card"
+                      style={{ borderRadius: 10 }}
+                      type="button"
                     >
-                      <ChevronLeftIcon fontSize="small" />
-                    </IconButton>
-                    <Typography variant="caption" color="text.secondary">
-                      {`Showing ${startIndex + 1}-${endIndex} of ${totalResults}`}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => this.goToNextPage(totalPages)}
-                      disabled={safeCurrentPage === totalPages}
-                    >
-                      <ChevronRightIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                      Start a new application
+                    </Button>
+                  </Link>
                 )}
-              </TableContainer>
+              />
               <div className="pt-4">
                 <h4>Available Applications</h4>
                 <p className="text-muted mb-2">
@@ -590,5 +376,4 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   }
 }
 
-// withRouter needed to access location in props
 export default withRouter(ViewApplications);

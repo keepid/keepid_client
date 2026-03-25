@@ -1,14 +1,12 @@
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-
 import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Switch } from 'react-router-dom';
-import uuid from 'react-uuid';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 
@@ -33,8 +31,6 @@ interface State {
   currentDocumentIdCategory: string | undefined;
   documentData: any;
   deleteTargetDocument: any | null;
-  searchTerm: string;
-  currentPage: number;
 }
 
 interface PDFProps {
@@ -42,7 +38,6 @@ interface PDFProps {
 }
 
 const MAX_NUM_OF_FILES: number = 5;
-const DOCUMENTS_PER_PAGE = 20;
 
 function RenderPDF(props: PDFProps): React.ReactElement {
   const [showResults, setShowResults] = useState(false);
@@ -89,8 +84,6 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentIdCategory: undefined,
       documentData: [],
       deleteTargetDocument: null,
-      searchTerm: '',
-      currentPage: 1,
     };
     this.getDocumentData = this.getDocumentData.bind(this);
     this.onViewDocument = this.onViewDocument.bind(this);
@@ -323,18 +316,6 @@ class MyDocuments extends Component<Props, State> {
     });
   }
 
-  onSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchTerm: event.target.value, currentPage: 1 });
-  };
-
-  goToPreviousPage = () => {
-    this.setState((prev) => ({ currentPage: Math.max(1, prev.currentPage - 1) }));
-  };
-
-  goToNextPage = (lastPage: number) => {
-    this.setState((prev) => ({ currentPage: Math.min(lastPage, prev.currentPage + 1) }));
-  };
-
   getDocumentData() {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
@@ -389,10 +370,9 @@ class MyDocuments extends Component<Props, State> {
         <span
           className="tw-font-medium tw-text-gray-900 tw-block"
           style={{
-            whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            maxWidth: '100%',
+            wordBreak: 'break-word',
           }}
         >
           {displayName}
@@ -483,28 +463,38 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentFileType,
       currentDocumentIdCategory,
       deleteTargetDocument,
-      searchTerm,
-      currentPage,
     } = this.state;
     const safeDocuments = Array.isArray(documentData) ? documentData : [];
-    const filteredDocuments = safeDocuments.filter((row) => {
-      if (!row || typeof row !== 'object') return false;
-      const filename = typeof row.filename === 'string' ? row.filename : '';
-      const idCategory = typeof row.idCategory === 'string' ? row.idCategory : '';
-      const uploadDate = typeof row.uploadDate === 'string' ? row.uploadDate : '';
-      const haystack = `${filename} ${idCategory} ${uploadDate}`.toLowerCase();
-      return haystack.includes(searchTerm.toLowerCase());
-    });
-    const totalCount = filteredDocuments.length;
-    const lastPage = Math.max(1, Math.ceil(totalCount / DOCUMENTS_PER_PAGE));
-    const safeCurrentPage = Math.min(currentPage, lastPage);
-    const startIndex = (safeCurrentPage - 1) * DOCUMENTS_PER_PAGE;
-    const paginatedDocuments = filteredDocuments.slice(
-      startIndex,
-      startIndex + DOCUMENTS_PER_PAGE,
-    );
-    const showingStart = totalCount === 0 ? 0 : startIndex + 1;
-    const showingEnd = totalCount === 0 ? 0 : Math.min(startIndex + DOCUMENTS_PER_PAGE, totalCount);
+
+    const columns: DataTableColumn[] = [
+      {
+        field: 'filename',
+        headerName: 'Name',
+        renderCell: (row: any) => this.nameFormatter(null, row),
+      },
+      {
+        field: 'idCategory',
+        headerName: 'ID Type',
+        align: 'center',
+        width: '20%',
+        renderCell: (row: any) => MyDocuments.formatIdCategory(row.idCategory),
+      },
+      {
+        field: 'uploadDate',
+        headerName: 'Date Uploaded',
+        sortable: true,
+        sortType: 'date',
+        width: '18%',
+        renderCell: (row: any) => MyDocuments.formatUploadDate(row.uploadDate),
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        align: 'right',
+        width: '10%',
+        renderCell: (row: any) => this.RowActions(row),
+      },
+    ];
 
     return (
       <Switch>
@@ -557,64 +547,17 @@ class MyDocuments extends Component<Props, State> {
 
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
               <div className="w-100 pd-3">
-                <div className="tw-mb-4">
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={searchTerm}
-                    onChange={this.onSearchTermChange}
-                    placeholder="Search documents..."
-                  />
-                </div>
-                <div className="tw-border tw-border-gray-200 tw-rounded-md tw-overflow-hidden">
-                  <div className="tw-grid tw-grid-cols-12 tw-items-center tw-px-4 tw-py-3 tw-bg-gray-50 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">
-                    <div className="tw-col-span-6">Name</div>
-                    <div className="tw-col-span-3 tw-text-center">ID Type</div>
-                    <div className="tw-col-span-2">Date Uploaded</div>
-                    <div className="tw-col-span-1 tw-text-right">Actions</div>
-                  </div>
-                  {paginatedDocuments.length === 0 ? (
-                    <div className="tw-p-6 tw-text-gray-500 tw-border-t tw-border-gray-200">No documents found</div>
-                  ) : (
-                    paginatedDocuments.map((row: any, index: number) => (
-                      <div key={row.id || `${row.filename || 'doc'}-${index}`} className="tw-grid tw-grid-cols-12 tw-items-center tw-gap-3 tw-px-4 tw-py-4 tw-border-t tw-border-gray-200">
-                        <div className="tw-col-span-6 tw-min-w-0">
-                          {this.nameFormatter(null, row)}
-                        </div>
-                        <div className="tw-col-span-3 tw-text-sm tw-text-gray-700 tw-text-center">
-                          {MyDocuments.formatIdCategory(row.idCategory)}
-                        </div>
-                        <div className="tw-col-span-2 tw-text-sm tw-text-gray-500">
-                          {MyDocuments.formatUploadDate(row.uploadDate)}
-                        </div>
-                        <div className="tw-col-span-1">
-                          {this.RowActions(row)}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="tw-flex tw-items-center tw-justify-between tw-pt-3 tw-text-sm tw-text-gray-500">
-                  <span>{`Showing ${showingStart}-${showingEnd} of ${totalCount}`}</span>
-                  <div className="tw-flex tw-items-center tw-gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      onClick={this.goToPreviousPage}
-                      disabled={safeCurrentPage <= 1}
-                    >
-                      Prev
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      onClick={() => this.goToNextPage(lastPage)}
-                      disabled={safeCurrentPage >= lastPage}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <DataTable
+                  columns={columns}
+                  data={safeDocuments}
+                  keyField="id"
+                  emptyMessage={this.props.clientName ? `No documents for ${this.props.clientName}` : 'No documents found'}
+                  searchPlaceholder="Search documents..."
+                  searchFields={['filename', 'idCategory', 'uploadDate']}
+                  pageSize={20}
+                  defaultSortField="uploadDate"
+                  defaultSortDirection="desc"
+                />
               </div>
             </div>
             </div>
