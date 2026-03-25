@@ -16,6 +16,7 @@ import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
 import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
+import WorkerNotesSection from './WorkerNotesSection';
 
 type Props = {
   targetUsername?: string;
@@ -62,6 +63,7 @@ export type ProfileData = {
   sex?: string;
   motherName?: NameObj;
   fatherName?: NameObj;
+  workerNotes?: string;
 };
 
 export default function ProfilePage({ targetUsername }: Props) {
@@ -261,6 +263,13 @@ export default function ProfilePage({ targetUsername }: Props) {
             targetUsername={targetUsername}
             onSaved={() => fetchProfile()}
           />
+
+          {isWorkerView && profile.username && (
+            <WorkerNotesSection
+              workerNotes={profile.workerNotes}
+              targetUsername={targetUsername!}
+            />
+          )}
 
           {profile.privilegeLevel === 'Client' && (
             <SavedApplicationInfoSection
