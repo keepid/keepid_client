@@ -1,22 +1,28 @@
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
+import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 
-interface Props {
+interface OwnProps {
   alert: any;
   userRole: Role;
   viewerRole?: Role;
   username: string;
   clientName?: string;
 }
+
+type Props = OwnProps & RouteComponentProps;
 
 interface State {
   pdfFiles: FileList | undefined;
@@ -381,66 +387,40 @@ class MyDocuments extends Component<Props, State> {
     );
   };
 
-  downloadIconButton = (row: any) => (
-    <button
-      type="button"
-      onClick={() => this.handleFileDownload(row)}
-      className="tw-bg-transparent tw-border-0 tw-text-gray-500 hover:tw-text-gray-700 tw-p-0"
-      title="Download"
-      aria-label="Download"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-4 tw-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v10m0 0 4-4m-4 4-4-4m8 8H8" />
-      </svg>
-    </button>
-  );
+  getRowActions = (row: any): RowAction[] => {
+    const actions: RowAction[] = [
+      {
+        label: 'Download',
+        icon: <FileDownloadOutlinedIcon fontSize="small" />,
+        onClick: () => this.handleFileDownload(row),
+      },
+    ];
 
-  deleteIconButton = (row: any) => (
-    <button
-      type="button"
-      onClick={() => this.requestDeleteDocument(row)}
-      className="tw-bg-transparent tw-border-0 tw-text-gray-500 hover:tw-text-red-600 tw-p-0"
-      title="Delete"
-      aria-label="Delete"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-4 tw-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V5h6v2m-7 4v7m4-7v7m4-7v7M8 21h8a1 1 0 0 0 1-1V7H7v13a1 1 0 0 0 1 1z" />
-      </svg>
-    </button>
-  );
-
-  notifyIconButton = (row: any) => {
-    if (!(this.props.userRole === Role.Client && this.isStaffViewer())) {
-      return null;
+    if (this.props.userRole === Role.Client && this.isStaffViewer()) {
+      actions.push({
+        label: 'Notify',
+        icon: <MessageOutlinedIcon fontSize="small" />,
+        onClick: () => {
+          this.props.history.push({
+            pathname: `/home/notify-client/${this.props.username}`,
+            state: {
+              clientName: this.props.clientName,
+              prefilledIdCategory: row.idCategory,
+            },
+          });
+        },
+      });
     }
 
-    return (
-      <Link
-        to={{
-          pathname: `/home/notify-client/${this.props.username}`,
-          state: {
-            clientName: this.props.clientName,
-            prefilledIdCategory: row.idCategory,
-          },
-        }}
-        className="tw-text-gray-500 hover:tw-text-gray-700"
-        title="Notify Client"
-        aria-label="Notify Client"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="tw-h-4 tw-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8m-8 4h5m-7 6 1.5-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-6l-4 4z" />
-        </svg>
-      </Link>
-    );
-  };
+    actions.push({
+      label: 'Delete',
+      icon: <DeleteOutlineIcon fontSize="small" />,
+      onClick: () => this.requestDeleteDocument(row),
+      danger: true,
+    });
 
-  RowActions = (row: any) => (
-    <div className="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-flex-shrink-0">
-      {this.downloadIconButton(row)}
-      {this.deleteIconButton(row)}
-      {this.notifyIconButton(row)}
-    </div>
-  );
+    return actions;
+  };
 
   setLink() {
     if (this.props.userRole !== Role.Client) {
@@ -489,10 +469,12 @@ class MyDocuments extends Component<Props, State> {
       },
       {
         field: 'actions',
-        headerName: 'Actions',
+        headerName: '',
         align: 'right',
-        width: '10%',
-        renderCell: (row: any) => this.RowActions(row),
+        width: '48px',
+        renderCell: (row: any) => (
+          <RowActionMenu actions={this.getRowActions(row)} />
+        ),
       },
     ];
 
@@ -600,4 +582,4 @@ class MyDocuments extends Component<Props, State> {
   }
 }
 
-export default withAlert()(MyDocuments);
+export default withRouter(withAlert()(MyDocuments) as any) as any;

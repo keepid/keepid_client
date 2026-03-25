@@ -6,8 +6,10 @@ import React, {
 } from 'react';
 import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
+import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
+import Role from '../../static/Role';
 import AccountSettingsSection from './AccountSettingsSection';
 import EssentialAccountSection from './EssentialAccountSection';
 import OrganizationInfoSection from './OrganizationInfoSection';
@@ -64,11 +66,24 @@ export type ProfileData = {
 
 export default function ProfilePage({ targetUsername }: Props) {
   const alert = useAlert();
+  const history = useHistory();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoAvailable, setPhotoAvailable] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const currentUserRole = useMemo(() => {
+    try {
+      const raw = sessionStorage.getItem('mySessionStorageData');
+      if (raw) return JSON.parse(raw).role as string;
+    } catch { /* ignore */ }
+    return '';
+  }, []);
+
+  const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
 
   const displayName = useMemo(() => {
     if (!profile) return '';
@@ -81,6 +96,7 @@ export default function ProfilePage({ targetUsername }: Props) {
   }, [targetUsername, displayName]);
 
   const isWorkerView = !!targetUsername;
+  const canRemoveClient = isWorkerView && isAdmin && profile?.privilegeLevel === 'Client';
 
   const loadProfilePhoto = useCallback(
     async (username: string) => {
@@ -143,6 +159,31 @@ export default function ProfilePage({ targetUsername }: Props) {
     fetchProfile(controller.signal);
     return () => { controller.abort(); };
   }, [alert, targetUsername]);
+
+  async function handleRemoveClient() {
+    if (!targetUsername) return;
+    setIsRemoving(true);
+    try {
+      const res = await fetch(`${getServerURL()}/remove-organization-member`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: targetUsername }),
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        alert.show('Client removed successfully.', { type: 'success' });
+        setShowRemoveModal(false);
+        history.push('/home');
+      } else {
+        alert.show(`Failed to remove client: ${data.message || data.status}`, { type: 'error' });
+      }
+    } catch (error) {
+      alert.show(`Failed to remove client: ${error}`, { type: 'error' });
+    } finally {
+      setIsRemoving(false);
+    }
+  }
 
   return (
     <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
@@ -245,12 +286,73 @@ export default function ProfilePage({ targetUsername }: Props) {
             </div>
           )}
 
+          {canRemoveClient && (
+            <div className="card mt-3 mb-3 pl-5 pr-5 tw-border-red-200">
+              <div className="card-body">
+                <h5 className="card-title tw-text-red-700">Danger Zone</h5>
+                <p className="tw-text-sm tw-text-gray-600 tw-mb-3">
+                  Removing this client will permanently delete their account and all associated data
+                  including documents, applications, and activity history. This action cannot be undone.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => setShowRemoveModal(true)}
+                >
+                  Remove Client
+                </button>
+              </div>
+            </div>
+          )}
+
           {isPhotoModalOpen && profile.username && (
             <ProfileModal
               username={{ username: profile.username }}
               setModalOpen={setIsPhotoModalOpen}
               loadProfilePhoto={() => loadProfilePhoto(profile.username!)}
             />
+          )}
+
+          {showRemoveModal && (
+            <div
+              className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
+              onClick={() => { if (!isRemoving) setShowRemoveModal(false); }}
+              role="presentation"
+            >
+              <div
+                className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
+                onClick={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-2">
+                  Remove Client
+                </h5>
+                <p className="tw-text-gray-600 tw-mb-4">
+                  Are you sure you want to permanently remove{' '}
+                  <span className="tw-font-semibold">{displayName}</span>?
+                  All of their documents, applications, and activity history will be deleted.
+                  This action cannot be undone.
+                </p>
+                <div className="tw-flex tw-justify-end tw-gap-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark"
+                    onClick={() => setShowRemoveModal(false)}
+                    disabled={isRemoving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleRemoveClient}
+                    disabled={isRemoving}
+                  >
+                    {isRemoving ? 'Removing...' : 'Remove Client'}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

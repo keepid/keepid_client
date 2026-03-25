@@ -1,3 +1,5 @@
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
@@ -7,6 +9,7 @@ import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
+import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 
 interface DocumentInformation {
@@ -33,6 +36,7 @@ interface State {
   documentsError: string | null,
   clientUsername: string | undefined,
   clientName: string | undefined,
+  deleteTargetApplication: DocumentInformation | null,
   availableApplications: {
     lookupKey: string;
     type: string;
@@ -59,6 +63,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       documentsError: null,
       clientUsername: undefined,
       clientName: undefined,
+      deleteTargetApplication: null,
       availableApplications: [],
     };
   }
@@ -216,6 +221,64 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     );
   };
 
+  handleDownloadApplication = (row: DocumentInformation) => {
+    fetch(`${getServerURL()}/download-file`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileId: row.id,
+        fileType: FileType.APPLICATION_PDF,
+        targetUser: row.uploader,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = row.filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch(() => {});
+  };
+
+  confirmDeleteApplication = () => {
+    const { deleteTargetApplication } = this.state;
+    if (!deleteTargetApplication) return;
+
+    fetch(`${getServerURL()}/delete-file`, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        fileId: deleteTargetApplication.id,
+        fileType: FileType.APPLICATION_PDF,
+        targetUser: deleteTargetApplication.uploader,
+      }),
+    })
+      .then((response) => response.json())
+      .then(() => {
+        this.setState({ deleteTargetApplication: null });
+        const { clientUsername, clientName } = this.state;
+        this.loadDocuments(clientUsername, clientName);
+      });
+  };
+
+  getRowActions = (row: DocumentInformation): RowAction[] => [
+    {
+      label: 'Download',
+      icon: <FileDownloadOutlinedIcon fontSize="small" />,
+      onClick: () => this.handleDownloadApplication(row),
+    },
+    {
+      label: 'Delete',
+      icon: <DeleteOutlineIcon fontSize="small" />,
+      onClick: () => this.setState({ deleteTargetApplication: row }),
+      danger: true,
+    },
+  ];
+
   render() {
     const {
       currentApplicationFilename,
@@ -226,6 +289,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       documentsError,
       clientUsername,
       clientName,
+      deleteTargetApplication,
       availableApplications,
     } = this.state;
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
@@ -242,6 +306,15 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         sortType: 'date',
         width: '20%',
         renderCell: (row) => row.formattedUploadDate || '-',
+      },
+      {
+        field: 'actions',
+        headerName: '',
+        align: 'right',
+        width: '48px',
+        renderCell: (row) => (
+          <RowActionMenu actions={this.getRowActions(row)} />
+        ),
       },
     ];
 
@@ -347,6 +420,46 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               </div>
             </div>
           </div>
+          {deleteTargetApplication && (
+            <div
+              className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
+              onClick={() => this.setState({ deleteTargetApplication: null })}
+              role="presentation"
+            >
+              <div
+                className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
+                onClick={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-2">
+                  Delete Application
+                </h5>
+                <p className="tw-text-gray-600 tw-mb-4">
+                  Are you sure you want to delete{' '}
+                  <span className="tw-font-semibold">
+                    {deleteTargetApplication.filename?.replace(/\.pdf$/i, '')}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+                <div className="tw-flex tw-justify-end tw-gap-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark"
+                    onClick={() => this.setState({ deleteTargetApplication: null })}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={this.confirmDeleteApplication}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </Route>
         <Route path="/applications/preview">
           <ApplicationPdfPreview editable={false} />
