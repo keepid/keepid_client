@@ -1,4 +1,5 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 import React, { Component, useState } from 'react';
@@ -37,6 +38,9 @@ interface State {
   currentDocumentIdCategory: string | undefined;
   documentData: any;
   deleteTargetDocument: any | null;
+  renameTarget: any | null;
+  renameValue: string;
+  isRenaming: boolean;
 }
 
 interface PDFProps {
@@ -90,6 +94,9 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentIdCategory: undefined,
       documentData: [],
       deleteTargetDocument: null,
+      renameTarget: null,
+      renameValue: '',
+      isRenaming: false,
     };
     this.getDocumentData = this.getDocumentData.bind(this);
     this.onViewDocument = this.onViewDocument.bind(this);
@@ -384,6 +391,52 @@ class MyDocuments extends Component<Props, State> {
     );
   };
 
+  openRenameModal = (row: any) => {
+    this.setState({
+      renameTarget: row,
+      renameValue: MyDocuments.getDisplayFileName(row.filename),
+    });
+  };
+
+  closeRenameModal = () => {
+    this.setState({ renameTarget: null, renameValue: '', isRenaming: false });
+  };
+
+  confirmRename = () => {
+    const { renameTarget, renameValue } = this.state;
+    if (!renameTarget || !renameValue.trim()) return;
+
+    const { alert } = this.props;
+    const newFilename = renameValue.trim().endsWith('.pdf')
+      ? renameValue.trim()
+      : `${renameValue.trim()}.pdf`;
+
+    this.setState({ isRenaming: true });
+    fetch(`${getServerURL()}/rename-file`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileId: renameTarget.id,
+        newFilename,
+      }),
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        if (json?.status === 'SUCCESS') {
+          this.closeRenameModal();
+          this.getDocumentData();
+        } else {
+          alert.show(`Failed to rename: ${json?.message || 'Unknown error'}`, { type: 'error' });
+          this.setState({ isRenaming: false });
+        }
+      })
+      .catch((err) => {
+        alert.show(`Failed to rename: ${err}`, { type: 'error' });
+        this.setState({ isRenaming: false });
+      });
+  };
+
   getRowActions = (row: any): RowAction[] => {
     const actions: RowAction[] = [
       {
@@ -392,6 +445,14 @@ class MyDocuments extends Component<Props, State> {
         onClick: () => this.handleFileDownload(row),
       },
     ];
+
+    if (this.isStaffViewer()) {
+      actions.push({
+        label: 'Rename',
+        icon: <DriveFileRenameOutlineIcon fontSize="small" />,
+        onClick: () => this.openRenameModal(row),
+      });
+    }
 
     if (this.props.userRole === Role.Client && this.isStaffViewer()) {
       actions.push({
@@ -440,6 +501,9 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentFileType,
       currentDocumentIdCategory,
       deleteTargetDocument,
+      renameTarget,
+      renameValue,
+      isRenaming,
     } = this.state;
     const safeDocuments = Array.isArray(documentData) ? documentData : [];
 
@@ -569,6 +633,51 @@ class MyDocuments extends Component<Props, State> {
                   </button>
                   <button type="button" className="btn btn-danger" onClick={this.confirmDeleteDocument}>
                     Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {renameTarget && (
+            <div
+              className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
+              onClick={() => { if (!isRenaming) this.closeRenameModal(); }}
+              role="presentation"
+            >
+              <div
+                className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
+                onClick={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-4">
+                  Rename Document
+                </h5>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={renameValue}
+                  onChange={(e) => this.setState({ renameValue: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && renameValue.trim()) this.confirmRename(); }}
+                  disabled={isRenaming}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                />
+                <div className="tw-flex tw-justify-end tw-gap-3 tw-mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark"
+                    onClick={this.closeRenameModal}
+                    disabled={isRenaming}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={this.confirmRename}
+                    disabled={isRenaming || !renameValue.trim()}
+                  >
+                    {isRenaming ? 'Renaming...' : 'Rename'}
                   </button>
                 </div>
               </div>

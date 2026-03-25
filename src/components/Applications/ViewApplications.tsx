@@ -1,4 +1,5 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
@@ -37,6 +38,9 @@ interface State {
   clientUsername: string | undefined,
   clientName: string | undefined,
   deleteTargetApplication: DocumentInformation | null,
+  renameTarget: DocumentInformation | null,
+  renameValue: string,
+  isRenaming: boolean,
   availableApplications: {
     lookupKey: string;
     type: string;
@@ -64,6 +68,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       clientUsername: undefined,
       clientName: undefined,
       deleteTargetApplication: null,
+      renameTarget: null,
+      renameValue: '',
+      isRenaming: false,
       availableApplications: [],
     };
   }
@@ -265,11 +272,58 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
+  openRenameModal = (row: DocumentInformation) => {
+    const displayName = row.filename?.replace(/\.pdf$/i, '') || '';
+    this.setState({ renameTarget: row, renameValue: displayName });
+  };
+
+  closeRenameModal = () => {
+    this.setState({ renameTarget: null, renameValue: '', isRenaming: false });
+  };
+
+  confirmRename = () => {
+    const { renameTarget, renameValue } = this.state;
+    if (!renameTarget || !renameValue.trim()) return;
+
+    const newFilename = renameValue.trim().endsWith('.pdf')
+      ? renameValue.trim()
+      : `${renameValue.trim()}.pdf`;
+
+    this.setState({ isRenaming: true });
+    fetch(`${getServerURL()}/rename-file`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileId: renameTarget.id,
+        newFilename,
+      }),
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        if (json?.status === 'SUCCESS') {
+          this.closeRenameModal();
+          const { clientUsername, clientName } = this.state;
+          this.loadDocuments(clientUsername, clientName);
+        } else {
+          this.setState({ isRenaming: false });
+        }
+      })
+      .catch(() => {
+        this.setState({ isRenaming: false });
+      });
+  };
+
   getRowActions = (row: DocumentInformation): RowAction[] => [
     {
       label: 'Download',
       icon: <FileDownloadOutlinedIcon fontSize="small" />,
       onClick: () => this.handleDownloadApplication(row),
+    },
+    {
+      label: 'Rename',
+      icon: <DriveFileRenameOutlineIcon fontSize="small" />,
+      onClick: () => this.openRenameModal(row),
     },
     {
       label: 'Delete',
@@ -290,6 +344,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       clientUsername,
       clientName,
       deleteTargetApplication,
+      renameTarget,
+      renameValue,
+      isRenaming,
       availableApplications,
     } = this.state;
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
@@ -455,6 +512,51 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     onClick={this.confirmDeleteApplication}
                   >
                     Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {renameTarget && (
+            <div
+              className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
+              onClick={() => { if (!isRenaming) this.closeRenameModal(); }}
+              role="presentation"
+            >
+              <div
+                className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
+                onClick={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-4">
+                  Rename Application
+                </h5>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={renameValue}
+                  onChange={(e) => this.setState({ renameValue: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && renameValue.trim()) this.confirmRename(); }}
+                  disabled={isRenaming}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                />
+                <div className="tw-flex tw-justify-end tw-gap-3 tw-mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark"
+                    onClick={this.closeRenameModal}
+                    disabled={isRenaming}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={this.confirmRename}
+                    disabled={isRenaming || !renameValue.trim()}
+                  >
+                    {isRenaming ? 'Renaming...' : 'Rename'}
                   </button>
                 </div>
               </div>
