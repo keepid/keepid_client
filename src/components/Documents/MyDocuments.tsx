@@ -218,6 +218,10 @@ class MyDocuments extends Component<Props, State> {
     this.getDocumentData();
   }
 
+  handleRowClick = (row: any) => {
+    this.onViewDocument(null, row);
+  };
+
   onViewDocument(event: any, row: any) {
     const { id, filename, uploadDate, uploader, idCategory } = row;
     const { userRole } = this.props;
@@ -364,26 +368,19 @@ class MyDocuments extends Component<Props, State> {
     || this.props.viewerRole === Role.Admin
     || this.props.viewerRole === Role.Director;
 
-  nameFormatter = (cell: any, row: any) => {
+  nameFormatter = (row: any) => {
     const displayName = MyDocuments.getDisplayFileName(row.filename);
     return (
-      <button
-        type="button"
-        onClick={(event) => this.onViewDocument(event, row)}
-        className="tw-bg-transparent tw-border-0 tw-text-left tw-p-0 tw-w-full"
-        title={displayName}
+      <span
+        className="tw-font-medium tw-text-gray-900 tw-block"
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          wordBreak: 'break-word',
+        }}
       >
-        <span
-          className="tw-font-medium tw-text-gray-900 tw-block"
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            wordBreak: 'break-word',
-          }}
-        >
-          {displayName}
-        </span>
-      </button>
+        {displayName}
+      </span>
     );
   };
 
@@ -450,7 +447,7 @@ class MyDocuments extends Component<Props, State> {
       {
         field: 'filename',
         headerName: 'Name',
-        renderCell: (row: any) => this.nameFormatter(null, row),
+        renderCell: (row: any) => this.nameFormatter(row),
       },
       {
         field: 'idCategory',
@@ -539,6 +536,7 @@ class MyDocuments extends Component<Props, State> {
                   pageSize={20}
                   defaultSortField="uploadDate"
                   defaultSortDirection="desc"
+                  onRowClick={this.handleRowClick}
                 />
               </div>
             </div>
