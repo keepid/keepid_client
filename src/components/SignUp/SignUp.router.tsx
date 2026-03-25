@@ -135,6 +135,11 @@ function SignUpRouter({ role }: SignUpRouterProps) {
           const personRoleFromParams = roleFromString(
             props.match.params.roleString,
           );
+
+          if (personRoleFromParams === Role.Worker || personRoleFromParams === Role.Admin) {
+            return <Redirect to="/enroll-worker" />;
+          }
+
           if (personRoleFromParams !== personRole) {
             setPersonRole(personRoleFromParams);
           }

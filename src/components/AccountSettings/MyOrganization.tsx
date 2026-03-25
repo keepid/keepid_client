@@ -314,7 +314,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           <p className="tw-text-gray-500">No workers found in your organization.</p>
           {isAdmin && (
             <p className="tw-text-sm tw-text-gray-400 tw-mt-1">
-              Click &quot;Sign Up Worker&quot; to add team members.
+              Click &quot;Enroll Worker&quot; to add team members.
             </p>
           )}
         </div>
@@ -421,9 +421,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
             <h5 className="card-title tw-mb-0">Workers & Admins</h5>
             {isAdmin && (
-              <Link to="/person-signup/worker">
+              <Link to="/enroll-worker">
                 <button type="button" className="btn btn-primary tw-mt-3 sm:tw-mt-0">
-                  Sign Up Worker
+                  Enroll Worker
                 </button>
               </Link>
             )}

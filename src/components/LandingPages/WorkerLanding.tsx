@@ -43,7 +43,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [clientCredentialsCorrect, setClientCredentialsCorrect] = useState(false);
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [shouldFilterByAllClients, setShouldFilterByAllClients] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const { path, url } = useRouteMatch();
 
@@ -108,10 +107,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
         let filteredPeople: TargetClient[] = [];
         if (status !== 'USER_NOT_FOUND' && people) {
-          filteredPeople = shouldFilterByAllClients
-            ? people
-            : people.filter((person: TargetClient) =>
-              person.assignedWorkerUsernames.includes(username));
+          filteredPeople = people;
         }
 
         if (filteredPeople.length > 0) {
@@ -135,15 +131,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return () => {
       controller.abort();
     };
-  }, [submittedSearchName, role, shouldFilterByAllClients, username, loadProfilePhoto, alert]);
+  }, [submittedSearchName, role, username, loadProfilePhoto, alert]);
 
   const handleClickClose = () => {
     setClientPassword('');
     setShowClientAuthModal(false);
-  };
-
-  const handleToggleFilteredClients = () => {
-    setShouldFilterByAllClients((prev) => !prev);
   };
 
   const handleClickAuthenticateClient = (event: React.MouseEvent) => {
@@ -288,16 +280,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
             <div className="tw-container tw-mx-auto tw-px-4 tw-mb-4">
               <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-6">
                 <h1 className="tw-text-3xl tw-font-bold tw-text-gray-800">
-                  {shouldFilterByAllClients ? 'All Clients' : 'My Clients'}
+                  All Clients
                 </h1>
                 <div className="tw-flex tw-items-center tw-mt-4 sm:tw-mt-0">
-                  {role === Role.Director || role === Role.Admin ? (
-                    <Link to="/applications" className="tw-mr-2">
-                      <button type="button" className="tw-border tw-border-twprimary tw-text-twprimary hover:tw-bg-blue-50 tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md tw-bg-white">
-                        View Applications
-                      </button>
-                    </Link>
-                  ) : null}
                   <Link to="/enroll-client">
                     <button type="button" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-md hover:tw-bg-blue-700 tw-border-0">
                       Enroll Client
@@ -322,37 +307,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                     Search
                   </button>
                 </form>
-                <div className="tw-flex tw-items-start">
-                  <div className="tw-font-bold tw-mr-4 tw-mt-1">Filters</div>
-                  <div className="tw-flex tw-flex-col">
-                    <div className="tw-flex tw-items-center tw-mb-2">
-                      <input
-                        checked={shouldFilterByAllClients}
-                        type="radio"
-                        id="showAllClients"
-                        name="clientFilter"
-                        className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
-                        onChange={handleToggleFilteredClients}
-                      />
-                      <label htmlFor="showAllClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
-                        Show All Clients
-                      </label>
-                    </div>
-                    <div className="tw-flex tw-items-center">
-                      <input
-                        checked={!shouldFilterByAllClients}
-                        type="radio"
-                        id="showMyAssignedClients"
-                        name="clientFilter"
-                        className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 focus:tw-ring-blue-500"
-                        onChange={handleToggleFilteredClients}
-                      />
-                      <label htmlFor="showMyAssignedClients" className="tw-ml-2 tw-block tw-text-sm tw-text-gray-900">
-                        Show My Clients
-                      </label>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
