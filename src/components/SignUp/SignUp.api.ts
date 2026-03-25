@@ -31,7 +31,6 @@ export interface EnrollWorkerData {
   middlename?: string;
   lastname: string;
   suffix?: string;
-  maiden?: string;
   birthDate: string;
   email: string;
   phonenumber?: string;

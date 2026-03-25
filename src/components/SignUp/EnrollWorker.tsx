@@ -18,7 +18,6 @@ interface EnrollWorkerFormValues {
   middlename: string;
   lastname: string;
   suffix: string;
-  maiden: string;
   birthDate: string;
   email: string;
   phonenumber: string;
@@ -32,7 +31,6 @@ export default function EnrollWorkerPage(): JSX.Element {
     middlename: '',
     lastname: '',
     suffix: '',
-    maiden: '',
     birthDate: '',
     email: '',
     phonenumber: '',
@@ -66,9 +64,6 @@ export default function EnrollWorkerPage(): JSX.Element {
         error = validateLastname(value);
         break;
       case 'suffix':
-        if (value.trim() !== '') error = validateLastname(value);
-        break;
-      case 'maiden':
         if (value.trim() !== '') error = validateLastname(value);
         break;
       case 'email':
@@ -113,7 +108,6 @@ export default function EnrollWorkerPage(): JSX.Element {
         middlename: values.middlename.trim() || undefined,
         lastname: values.lastname,
         suffix: values.suffix.trim() || undefined,
-        maiden: values.maiden.trim() || undefined,
         birthDate: birthDateString,
         email: values.email,
         phonenumber: values.phonenumber,
@@ -168,7 +162,6 @@ export default function EnrollWorkerPage(): JSX.Element {
                   middlename: '',
                   lastname: '',
                   suffix: '',
-                  maiden: '',
                   birthDate: '',
                   email: '',
                   phonenumber: '',
@@ -290,25 +283,6 @@ export default function EnrollWorkerPage(): JSX.Element {
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.suffix}</p>
                   )}
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="maiden" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                  Maiden Name <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
-                </label>
-                <input
-                  id="maiden"
-                  name="maiden"
-                  type="text"
-                  placeholder="Maiden Name"
-                  className={inputClassName}
-                  value={values.maiden}
-                  onChange={onChange}
-                  onBlur={(e) => validateField(e.target.name, e.target.value)}
-                />
-                {fieldErrors.maiden && (
-                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.maiden}</p>
-                )}
               </div>
 
               <div>
