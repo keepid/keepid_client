@@ -7,15 +7,14 @@ type Props = {
   targetUsername: string;
 };
 
-type SaveState = 'idle' | 'saving' | 'saved';
+type SaveState = 'idle' | 'saving' | 'saved' | 'initial';
 
 const DEBOUNCE_MS = 1000;
 
 export default function WorkerNotesSection({ workerNotes, targetUsername }: Props) {
   const [notes, setNotes] = useState(workerNotes ?? '');
-  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [saveState, setSaveState] = useState<SaveState>('initial');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -24,7 +23,6 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
 
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     abortRef.current?.abort();
   }, []);
 
@@ -46,7 +44,6 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
         const data = await res.json();
         if (data.status === 'SUCCESS') {
           setSaveState('saved');
-          savedTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
         } else {
           setSaveState('idle');
         }
@@ -63,9 +60,6 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
     setNotes(text);
 
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
-
-    setSaveState('idle');
     timerRef.current = setTimeout(() => save(text), DEBOUNCE_MS);
   }
 
@@ -91,13 +85,13 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
 }
 
 function SaveIndicator({ state }: { state: SaveState }) {
-  if (state === 'idle') return null;
+  if (state === 'initial' || state === 'idle') return null;
 
   if (state === 'saving') {
     return (
-      <div className="tw-flex tw-items-center tw-gap-1.5 tw-text-sm tw-text-gray-500">
+      <div className="tw-flex tw-items-center tw-gap-1 tw-text-xs tw-text-gray-400">
         <svg
-          className="tw-animate-spin tw-h-4 tw-w-4"
+          className="tw-animate-spin tw-h-3 tw-w-3"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -119,15 +113,6 @@ function SaveIndicator({ state }: { state: SaveState }) {
   }
 
   return (
-    <div className="tw-flex tw-items-center tw-gap-1.5 tw-text-sm tw-text-green-600">
-      <svg className="tw-h-4 tw-w-4" viewBox="0 0 20 20" fill="currentColor">
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-      Saved
-    </div>
+    <span className="tw-text-xs tw-text-gray-400">Saved</span>
   );
 }
