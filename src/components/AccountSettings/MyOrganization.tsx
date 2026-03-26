@@ -44,6 +44,27 @@ function formatAddress(a: OrgAddress): string {
   return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
 }
 
+interface MailSummaryEntry {
+  id: string;
+  mailStatus: string;
+  lobCreatedAt: number | null;
+  expectedDeliveryDate: string | null;
+  costCents: number;
+  mailType: string;
+  checkAmount: string;
+  mailingAddressName: string;
+  targetUsername: string;
+  trackingEvents: { type: string; name: string; time: number | null; location: string }[];
+}
+
+interface MailSummaryData {
+  items: MailSummaryEntry[];
+  totalLetters: number;
+  totalChecks: number;
+  totalMailingCostCents: number;
+  totalCheckAmount: string;
+}
+
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
   const [orgInfo, setOrgInfo] = useState<OrgInfo>({ name: '', address: { ...EMPTY_ADDRESS }, phone: '', email: '' });
   const [isEditingOrg, setIsEditingOrg] = useState(false);
@@ -54,6 +75,14 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [searchName, setSearchName] = useState('');
   const [removingUsername, setRemovingUsername] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [mailSummary, setMailSummary] = useState<MailSummaryData | null>(null);
+  const [isLoadingMailSummary, setIsLoadingMailSummary] = useState(false);
+  const [mailDateFrom, setMailDateFrom] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [mailDateTo, setMailDateTo] = useState(() => new Date().toISOString().split('T')[0]);
 
   const isAdmin = role === Role.Director || role === Role.Admin;
 
@@ -124,8 +153,33 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   }, [role, searchName, alert]);
 
+  const fetchMailSummary = useCallback(async () => {
+    setIsLoadingMailSummary(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-org-mail-summary`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationName: organization,
+          fromDate: mailDateFrom,
+          toDate: mailDateTo,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMailSummary(data);
+      }
+    } catch (error) {
+      console.error('Failed to load mail summary:', error);
+    } finally {
+      setIsLoadingMailSummary(false);
+    }
+  }, [organization, mailDateFrom, mailDateTo]);
+
   useEffect(() => { fetchOrgInfo(); }, [fetchOrgInfo]);
   useEffect(() => { fetchWorkers(); }, [fetchWorkers]);
+  useEffect(() => { fetchMailSummary(); }, [fetchMailSummary]);
 
   const handleSaveOrgInfo = async () => {
     alert.show('Organization info saved (display only - server update endpoint not yet connected).');
@@ -443,6 +497,85 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           </form>
 
           {renderWorkerListContent()}
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
+            <h5 className="card-title tw-mb-0">Mail Summary</h5>
+            <div className="tw-flex tw-items-center tw-gap-2 tw-mt-3 sm:tw-mt-0">
+              <input
+                type="date"
+                className="form-control form-purple"
+                style={{ maxWidth: 160 }}
+                value={mailDateFrom}
+                onChange={(e) => setMailDateFrom(e.target.value)}
+              />
+              <span className="tw-text-gray-500">to</span>
+              <input
+                type="date"
+                className="form-control form-purple"
+                style={{ maxWidth: 160 }}
+                value={mailDateTo}
+                onChange={(e) => setMailDateTo(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {isLoadingMailSummary && (
+            <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading mail summary...</p>
+          )}
+
+          {!isLoadingMailSummary && mailSummary && (
+            <>
+              <div className="tw-flex tw-gap-6 tw-text-sm tw-text-gray-600 tw-mb-4">
+                <span><span className="tw-font-semibold tw-text-gray-900">{mailSummary.totalLetters + mailSummary.totalChecks}</span> mailed</span>
+                <span><span className="tw-font-semibold tw-text-gray-900">${((mailSummary.totalMailingCostCents / 100) + parseFloat(mailSummary.totalCheckAmount || '0')).toFixed(2)}</span> total cost</span>
+              </div>
+
+              {mailSummary.items.length === 0 ? (
+                <p className="tw-text-gray-500 tw-text-center tw-py-4">
+                  No mailings found for this period.
+                </p>
+              ) : (
+                <div className="tw-overflow-x-auto">
+                  <table className="tw-min-w-full tw-divide-y tw-divide-gray-200">
+                    <thead className="tw-bg-gray-50">
+                      <tr>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Date</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Destination</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Mail Cost</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Check Amt</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="tw-bg-white tw-divide-y tw-divide-gray-200">
+                      {mailSummary.items.map((item: MailSummaryEntry) => (
+                        <tr key={item.id} className="hover:tw-bg-gray-50">
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            {item.lobCreatedAt ? new Date(item.lobCreatedAt).toLocaleDateString() : '—'}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            {item.mailingAddressName || '—'}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            ${(item.costCents / 100).toFixed(2)}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            {item.checkAmount && item.checkAmount !== '0' ? `$${item.checkAmount}` : '—'}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-600">
+                            {item.mailStatus}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 

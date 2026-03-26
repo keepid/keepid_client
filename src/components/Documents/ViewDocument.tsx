@@ -7,7 +7,6 @@ import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
-import { MailConfirmation, MailModal } from './MailModal';
 
 interface Props {
   alert: any;
@@ -44,8 +43,6 @@ const ViewDocument: React.FC<Props> = ({
   resetDocumentId,
 }) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
-  const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
-  const [showMailSuccess, setShowMailSuccess] = useState(false);
 
   useEffect(() => {
     fetch(`${getServerURL()}/download-file`, {
@@ -99,9 +96,6 @@ const ViewDocument: React.FC<Props> = ({
           <PrimaryButtonSolid onClick={onDownloadCurrentDocument}>
             Download
           </PrimaryButtonSolid>
-          <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
-            Mail
-          </PrimaryButtonSolid>
           {isStaffViewer && (
             <Link
               to={{
@@ -151,22 +145,6 @@ const ViewDocument: React.FC<Props> = ({
         <div />
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
-
-      <MailModal
-        alert={alert}
-        isVisible={mailDialogIsOpen}
-        setIsVisible={setMailDialogIsOpen}
-        showMailSuccess={showMailSuccess}
-        setShowMailSuccess={setShowMailSuccess}
-        userRole={userRole}
-        targetUser={targetUser}
-        documentId={documentId}
-        documentUploader={documentUploader}
-        documentDate={documentDate}
-        documentName={documentName}
-      />
-      <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
-
     </div>
   );
 };
