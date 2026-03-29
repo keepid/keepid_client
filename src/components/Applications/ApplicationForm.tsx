@@ -204,12 +204,12 @@ export default function ApplicationForm() {
   const whoForInputClassName =
     'tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-sm';
 
-  // Fetch registry info (blankFormId) when entering the webForm step
+  // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
-    if (isWebFormPage) {
+    if (isReviewPage || isWebFormPage) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isWebFormPage, data, isDirty]);
+  }, [isReviewPage, isWebFormPage, data, isDirty]);
 
   useEffect(() => {
     setAvailabilityLoading(true);
@@ -818,7 +818,7 @@ export default function ApplicationForm() {
           </Form>
         )}
 
-        {isReviewPage && <ApplicationReviewPage data={data} />}
+        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} />}
 
         {isWebFormPage && (
           <WebFormPageContent
@@ -843,6 +843,7 @@ export default function ApplicationForm() {
             formAnswers={wizardFormOutput}
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
+            postRequirements={builderStateRef.current?.postRequirements}
           />
         )}
 

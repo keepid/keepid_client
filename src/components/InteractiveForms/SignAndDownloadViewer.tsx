@@ -4,6 +4,7 @@ import './sign-and-download-viewer.css';
 
 import { PDFDocument } from 'pdf-lib';
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import { uploadCompletedPdf } from '../Applications/api/interactiveForm';
@@ -22,6 +23,7 @@ export interface SignAndDownloadViewerProps {
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
   onSaveSuccess?: () => void;
+  postRequirements?: string;
   showSaveButton?: boolean;
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
@@ -41,6 +43,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   formAnswers,
   clientUsername = '',
   onSaveSuccess,
+  postRequirements,
   showSaveButton = true,
   showPdfEditControls = false,
   pdfFormsReadOnly = false,
@@ -334,7 +337,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     : 'tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50';
 
   return (
-    <div className={`keepid-pdf-preview ${formsLocked ? 'keepid-pdf-edit-locked' : ''} tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS} tw-space-y-2`}>
+    <div className={`tw-flex tw-gap-8 ${postRequirements ? 'tw-flex-col lg:tw-flex-row' : 'tw-flex-col'} tw-items-start tw-w-full tw-mx-auto ${postRequirements ? 'tw-max-w-[1100px]' : FRAME_MAX_WIDTH_CLASS}`}>
+      <div className={`keepid-pdf-preview ${formsLocked ? 'keepid-pdf-edit-locked' : ''} tw-space-y-4 ${postRequirements ? 'tw-flex-1 tw-min-w-0' : 'tw-w-full'}`}>
       {allSigned && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
           <span className="tw-text-sm tw-font-medium tw-text-green-800">
@@ -536,6 +540,18 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       {saveError && (
         <div className="tw-p-3 tw-rounded-lg tw-bg-red-50 tw-border tw-border-red-200 tw-text-red-700 tw-text-sm">
           {saveError}
+        </div>
+      )}
+      </div>
+
+      {postRequirements && (
+        <div className="tw-w-full lg:tw-w-[340px] tw-shrink-0">
+          <div className="tw-bg-white tw-rounded-xl tw-border tw-border-gray-200 tw-p-6 tw-shadow-sm sticky tw-top-4">
+            <h3 className="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4 tw-pb-4 tw-border-b tw-border-gray-100">Post Application Instructions</h3>
+            <div className="prose prose-sm tw-text-gray-700 tw-prose-headings:text-gray-900 tw-prose-a:text-blue-600">
+              <ReactMarkdown>{postRequirements}</ReactMarkdown>
+            </div>
+          </div>
         </div>
       )}
     </div>
