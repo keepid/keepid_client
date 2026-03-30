@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } 
 import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 
+import getServerURL from '../../serverOverride';
 import { uploadCompletedPdf } from '../Applications/api/interactiveForm';
 import type { SignaturePlacement } from './types';
 
@@ -62,6 +63,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [embeddedBoxes, setEmbeddedBoxes] = useState<Set<number>>(new Set());
   const [applying, setApplying] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Org Documents State
+  const [orgDocs, setOrgDocs] = useState<{ id: string; filename: string }[]>([]);
+  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
+  const [isAppendingDocs, setIsAppendingDocs] = useState(false);
+  const [basePdfBlob, setBasePdfBlob] = useState<Blob | null>(null);
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -134,6 +141,25 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   );
 
   useEffect(() => {
+    async function fetchDocs() {
+      try {
+        const res = await fetch(`${getServerURL()}/get-files`, {
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
+        });
+        const data = await res.json();
+        if (data.status === 'SUCCESS' && data.documents) {
+          setOrgDocs(data.documents);
+        }
+      } catch (err) {
+        console.error('Failed to load org docs', err);
+      }
+    }
+    fetchDocs();
+  }, []);
+
+  useEffect(() => {
     if (signaturePlacements.length > 0 && activePlacementIdx === null) {
       const firstUnsigned = signaturePlacements.findIndex((_, i) => !embeddedBoxes.has(i));
       if (firstUnsigned >= 0) {
@@ -194,6 +220,80 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       setApplying(false);
     }
   }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes]);
+
+  const toggleOrgDoc = useCallback(async (docId: string) => {
+    setIsAppendingDocs(true);
+    try {
+      const nextSelected = new Set(selectedDocs);
+      if (nextSelected.has(docId)) {
+        nextSelected.delete(docId);
+      } else {
+        nextSelected.add(docId);
+      }
+
+      let baseBlob = basePdfBlob;
+      // If we are currently at 0 docs, capture the CURRENT state as the new base.
+      if (selectedDocs.size === 0) {
+        let bytes: ArrayBuffer | Uint8Array;
+        if (pdfDocRef.current?.saveDocument) {
+          bytes = await pdfDocRef.current.saveDocument();
+        } else {
+          bytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
+        }
+        baseBlob = toPdfBlob(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+        setBasePdfBlob(baseBlob);
+      }
+
+      // If the new selection is 0, just revert to the base blob
+      if (nextSelected.size === 0 && baseBlob) {
+        const newUrl = URL.createObjectURL(baseBlob);
+        setLivePdfUrl(newUrl);
+        setPdfVersion((v) => v + 1);
+        setSelectedDocs(nextSelected);
+        setIsAppendingDocs(false);
+        return;
+      }
+
+      if (!baseBlob) {
+         setIsAppendingDocs(false);
+         return;
+      }
+
+      // Otherwise, rebuild exactly from baseBlob + nextSelected
+      const baseBytes = await baseBlob.arrayBuffer();
+      const baseDoc = await PDFDocument.load(baseBytes, { ignoreEncryption: true });
+
+      // Fetch each selected doc and append
+      for (const id of orgDocs.map((d) => d.id)) {
+        if (!nextSelected.has(id)) continue;
+        const res = await fetch(`${getServerURL()}/download`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileId: id, fileType: 'ORG_DOCUMENT' }),
+        });
+        if (res.ok) {
+          const docBytes = await res.arrayBuffer();
+          const appendDoc = await PDFDocument.load(docBytes, { ignoreEncryption: true });
+          const copiedPages = await baseDoc.copyPages(appendDoc, appendDoc.getPageIndices());
+          copiedPages.forEach((page) => baseDoc.addPage(page));
+        }
+      }
+
+      const newBytes = await baseDoc.save();
+      const newBlob = toPdfBlob(newBytes);
+      const newUrl = URL.createObjectURL(newBlob);
+      const oldUrl = livePdfUrl;
+      setLivePdfUrl(newUrl);
+      setPdfVersion((v) => v + 1);
+      if (oldUrl !== fileUrl && oldUrl !== (baseBlob as any)?.url) URL.revokeObjectURL(oldUrl);
+      setSelectedDocs(nextSelected);
+    } catch (err) {
+      console.error('Failed to toggle doc', err);
+    } finally {
+      setIsAppendingDocs(false);
+    }
+  }, [basePdfBlob, selectedDocs, livePdfUrl, fileUrl, orgDocs]);
 
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     if (pdfDocRef.current?.saveDocument) {
@@ -301,6 +401,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setLivePdfUrl(fileUrl);
     setPdfVersion((v) => v + 1);
     setEmbeddedBoxes(new Set());
+    setSelectedDocs(new Set());
+    setBasePdfBlob(null);
     const first = signaturePlacements.length > 0 ? 0 : null;
     setActivePlacementIdx(first);
     if (first !== null) setPageNum(signaturePlacements[first].page + 1);
@@ -474,7 +576,13 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         </div>
       )}
 
-      {activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
+      {selectedDocs.size > 0 && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
+        <div className="tw-p-3 tw-rounded-lg tw-bg-yellow-50 tw-border tw-border-yellow-200 tw-text-yellow-700 tw-text-sm">
+          Please uncheck appended documents to continue embedding signatures.
+        </div>
+      )}
+
+      {selectedDocs.size === 0 && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
         <div ref={sigPadAreaRef} className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-px-4 tw-py-3 tw-space-y-2">
           <div className="tw-flex tw-items-center tw-justify-between">
             <span className="tw-text-xs tw-font-semibold tw-text-gray-800">
@@ -501,6 +609,35 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           >
             {applying ? 'Embedding...' : 'Embed signature'}
           </button>
+        </div>
+      )}
+
+      {orgDocs.length > 0 && (
+        <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
+          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Append Organization Documents</h4>
+          <p className="tw-text-xs tw-text-gray-600 tw-mb-3">
+            Check the documents you want to append to the end of this application PDF. 
+            <i> (Note: Any unsaved form modifications may be reset when toggling documents.)</i>
+          </p>
+          <div className="tw-flex tw-flex-col tw-gap-2">
+            {orgDocs.map((doc) => (
+              <label key={doc.id} className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-800 tw-cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedDocs.has(doc.id)}
+                  disabled={isAppendingDocs}
+                  onChange={() => toggleOrgDoc(doc.id)}
+                  className="tw-form-checkbox tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
+                />
+                {doc.filename}
+              </label>
+            ))}
+          </div>
+          {isAppendingDocs && (
+            <div className="tw-text-xs tw-text-blue-600 tw-mt-2 tw-font-medium">
+              Updating PDF preview...
+            </div>
+          )}
         </div>
       )}
 
@@ -548,7 +685,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         <div className="tw-w-full lg:tw-w-[340px] tw-shrink-0">
           <div className="tw-bg-white tw-rounded-xl tw-border tw-border-gray-200 tw-p-6 tw-shadow-sm sticky tw-top-4">
             <h3 className="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4 tw-pb-4 tw-border-b tw-border-gray-100">Post Application Instructions</h3>
-            <div className="prose prose-sm tw-text-gray-700 tw-prose-headings:text-gray-900 tw-prose-a:text-blue-600">
+            <div className="tw-prose tw-prose-sm tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
               <ReactMarkdown>{postRequirements}</ReactMarkdown>
             </div>
           </div>

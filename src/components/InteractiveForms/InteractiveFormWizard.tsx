@@ -45,8 +45,8 @@ export interface InteractiveFormWizardProps {
   onDebugUpdate?: (formAnswers: Record<string, unknown>) => void;
   /** Called when config is loaded, so parent can access builderState (e.g. signaturePlacements) and formTitle. */
   onConfigLoaded?: (config: { builderState: BuilderState | null; formTitle: string }) => void;
-  /** Restored form data when returning from sign step (Back button). Preserves answers. */
   initialData?: Record<string, unknown>;
+  onBack?: () => void;
 }
 
 export default function InteractiveFormWizard({
@@ -58,6 +58,7 @@ export default function InteractiveFormWizard({
   onDebugUpdate,
   onConfigLoaded,
   initialData,
+  onBack,
 }: InteractiveFormWizardProps) {
   const { loading, error, jsonSchema, uiSchema, getFormAnswers, getInitialData, resolvedProfiles, builderState, formTitle } = useInteractiveForm({
     applicationId,
@@ -129,7 +130,7 @@ export default function InteractiveFormWizard({
   }
 
   return (
-    <WizardSubmitProvider requestSubmit={requestSubmit} startAtLastStep={!!(initialData && Object.keys(initialData).length > 0)}>
+    <WizardSubmitProvider requestSubmit={requestSubmit} onBack={onBack} startAtLastStep={!!(initialData && Object.keys(initialData).length > 0)}>
       <div className="form-preview">
         <JsonForms
           schema={jsonSchema}

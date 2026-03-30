@@ -401,17 +401,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 defaultSortField="uploadDate"
                 defaultSortDirection="desc"
                 onRowClick={this.handleOpenApplication}
-                headerRight={(
-                  <Link to={{ pathname: '/applications/createnew', state: { clientUsername: clientUsername || '', clientName: clientName || '' } }}>
-                    <Button
-                      className="btn btn-card"
-                      style={{ borderRadius: 10 }}
-                      type="button"
-                    >
-                      Start a new application
-                    </Button>
-                  </Link>
-                )}
               />
               <div className="pt-4">
                 <h4>Available Applications</h4>
@@ -422,26 +411,33 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   <table className="table table-sm table-bordered bg-white">
                     <thead>
                       <tr>
+                        <th>Application</th>
                         <th>Lookup Key</th>
-                        <th>Type</th>
-                        <th>State</th>
-                        <th>Situation</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {availableApplications.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="text-muted">No applications available.</td>
+                          <td colSpan={3} className="text-muted">No applications available.</td>
                         </tr>
                       )}
-                      {availableApplications.map((app) => (
-                        <tr key={app.lookupKey}>
-                          <td>{app.lookupKey}</td>
-                          <td>{app.type || '-'}</td>
-                          <td>{app.state || '-'}</td>
-                          <td>{app.situation || '-'}</td>
-                          <td>
+                      {availableApplications.map((app) => {
+                        let appType = app.type;
+                        switch (app.type) {
+                          case 'SS': appType = 'Social Security Card'; break;
+                          case 'ID': appType = 'State ID'; break;
+                          case 'DL': appType = 'Driver License'; break;
+                          case 'BC': appType = 'Birth Certificate'; break;
+                          case 'VISA': appType = 'Visa'; break;
+                          case 'PASSPORT': appType = 'Passport'; break;
+                          default: break;
+                        }
+                        return (
+                          <tr key={app.lookupKey}>
+                            <td className="tw-capitalize">{appType} application</td>
+                            <td>{app.lookupKey}</td>
+                            <td>
                             <Link
                               to={{
                                 pathname: '/applications/createnew',
@@ -468,9 +464,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                                 Start
                               </Button>
                             </Link>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -44,6 +44,13 @@ function formatAddress(a: OrgAddress): string {
   return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
 }
 
+interface OrgDocument {
+  id: string;
+  filename: string;
+  uploadDate: string;
+  uploader: string;
+}
+
 interface MailSummaryEntry {
   id: string;
   mailStatus: string;
@@ -83,6 +90,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     return d.toISOString().split('T')[0];
   });
   const [mailDateTo, setMailDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+
+  const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
 
   const isAdmin = role === Role.Director || role === Role.Admin;
 
@@ -177,9 +188,31 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   }, [organization, mailDateFrom, mailDateTo]);
 
+  const fetchOrgDocs = useCallback(async () => {
+    setIsLoadingDocs(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-files`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS' && data.documents) {
+        setOrgDocs(data.documents);
+      } else {
+        setOrgDocs([]);
+      }
+    } catch (error) {
+      console.error('Failed to load org docs', error);
+    } finally {
+      setIsLoadingDocs(false);
+    }
+  }, []);
+
   useEffect(() => { fetchOrgInfo(); }, [fetchOrgInfo]);
   useEffect(() => { fetchWorkers(); }, [fetchWorkers]);
   useEffect(() => { fetchMailSummary(); }, [fetchMailSummary]);
+  useEffect(() => { fetchOrgDocs(); }, [fetchOrgDocs]);
 
   const handleSaveOrgInfo = async () => {
     alert.show('Organization info saved (display only - server update endpoint not yet connected).');
@@ -238,6 +271,55 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       ...prev,
       address: { ...prev.address, [field]: value },
     }));
+  };
+
+  const handleUploadDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+      formData.append('fileType', 'ORG_DOCUMENT');
+
+      const res = await fetch(`${getServerURL()}/upload-file`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        alert.show('Organization document uploaded successfully.');
+        fetchOrgDocs();
+      } else {
+        alert.show(`Failed to upload document: ${data.message || data.status}`, { type: 'error' });
+      }
+    } catch (error) {
+      alert.show(`Failed to upload document: ${error}`, { type: 'error' });
+    } finally {
+      setIsUploadingDoc(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteDoc = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    try {
+      const res = await fetch(`${getServerURL()}/delete-file`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({ fileId: id, fileType: 'ORG_DOCUMENT' }),
+      });
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        alert.show('Document deleted successfully.');
+        fetchOrgDocs();
+      } else {
+        alert.show(`Failed to delete document: ${data.message || data.status}`, { type: 'error' });
+      }
+    } catch (error) {
+      alert.show(`Failed to delete document: ${error}`, { type: 'error' });
+    }
   };
 
   const renderOrgInfoContent = () => {
@@ -575,6 +657,90 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 </div>
               )}
             </>
+          )}
+        </div>
+      </div>
+
+      <div className="card mt-3 mb-3 pl-5 pr-5">
+        <div className="card-body">
+          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
+            <h5 className="card-title tw-mb-0">Organization Documents</h5>
+            <div className="tw-mt-3 sm:tw-mt-0">
+              <input
+                type="file"
+                accept="application/pdf"
+                id="org-doc-upload"
+                className="tw-hidden"
+                onChange={handleUploadDoc}
+                disabled={isUploadingDoc}
+              />
+              <label
+                htmlFor="org-doc-upload"
+                className={`btn btn-primary tw-m-0 ${isUploadingDoc ? 'tw-opacity-50 tw-cursor-not-allowed' : 'tw-cursor-pointer'}`}
+              >
+                {isUploadingDoc ? 'Uploading...' : 'Upload PDF'}
+              </label>
+            </div>
+          </div>
+
+          <p className="tw-text-sm tw-text-gray-500 tw-mb-4">
+            These documents can be appended to application PDFs before saving. Only PDF files are supported.
+          </p>
+
+          {isLoadingDocs && (
+            <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading documents...</p>
+          )}
+
+          {!isLoadingDocs && orgDocs.length === 0 ? (
+            <div className="tw-text-center tw-py-8">
+              <p className="tw-text-gray-500 tw-mb-0">No organization documents uploaded yet.</p>
+            </div>
+          ) : !isLoadingDocs && (
+            <div className="tw-overflow-x-auto">
+              <table className="tw-min-w-full tw-divide-y tw-divide-gray-200">
+                <thead className="tw-bg-gray-50">
+                  <tr>
+                    <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Filename</th>
+                    <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Uploaded By</th>
+                    <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Date</th>
+                    <th className="tw-px-4 tw-py-3 tw-text-right tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="tw-bg-white tw-divide-y tw-divide-gray-200">
+                  {orgDocs.map((doc: OrgDocument) => (
+                    <tr key={doc.id} className="hover:tw-bg-gray-50">
+                      <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-900 tw-font-medium">
+                        {doc.filename}
+                      </td>
+                      <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                        {doc.uploader}
+                      </td>
+                      <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                        {formatDate(doc.uploadDate)}
+                      </td>
+                      <td className="tw-px-4 tw-py-3 tw-text-right tw-text-sm">
+                        <button
+                          type="button"
+                          className="tw-text-blue-600 hover:tw-text-blue-800 tw-font-medium tw-bg-transparent tw-border-0 tw-cursor-pointer tw-mr-3"
+                          onClick={() => {
+                            window.open(`${getServerURL()}/download?fileId=${doc.id}&fileType=ORG_DOCUMENT&download=true`, '_blank');
+                          }}
+                        >
+                          Download
+                        </button>
+                        <button
+                          type="button"
+                          className="tw-text-red-600 hover:tw-text-red-800 tw-font-medium tw-bg-transparent tw-border-0 tw-cursor-pointer"
+                          onClick={() => handleDeleteDoc(doc.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

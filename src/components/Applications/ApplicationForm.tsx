@@ -83,6 +83,7 @@ function WebFormPageContent({
       onSubmit={onWizardSubmit}
       onConfigLoaded={onConfigLoaded}
       initialData={restoredFormData ?? undefined}
+      onBack={onBack}
     />
   );
 }
@@ -537,12 +538,15 @@ export default function ApplicationForm() {
 
       {/* Form content: narrower for readability */}
       <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
-        <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
-          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
-        </div>
-
-        {formContent[page].subtitle && (
-          <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+        {!isReviewPage && (
+          <>
+            <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
+              <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
+            </div>
+            {formContent[page].subtitle && (
+              <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+            )}
+          </>
         )}
         {availabilityError && (
           <Alert variant="warning" className="tw-mb-4">
@@ -818,7 +822,7 @@ export default function ApplicationForm() {
           </Form>
         )}
 
-        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} />}
+        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} clientName={targetClientName || targetClientUsername} />}
 
         {isWebFormPage && (
           <WebFormPageContent

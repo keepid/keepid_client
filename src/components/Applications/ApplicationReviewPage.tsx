@@ -6,7 +6,7 @@ import type { BuilderState } from '../InteractiveForms/types';
 import { getInteractiveFormConfig } from './api/interactiveForm';
 import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
-export default function ApplicationReviewPage({ data, blankFormId }: { data: ApplicationFormData; blankFormId: string | null }) {
+export default function ApplicationReviewPage({ data, blankFormId, clientName }: { data: ApplicationFormData; blankFormId: string | null; clientName: string }) {
   const emphasis = 'tw-font-bold';
   const [builderState, setBuilderState] = React.useState<BuilderState | null>(null);
   const [loadingConfig, setLoadingConfig] = React.useState(false);
@@ -97,9 +97,11 @@ export default function ApplicationReviewPage({ data, blankFormId }: { data: App
 
   if (builderState && builderState.preRequirements) {
     return (
-      <div className="tw-mx-auto tw-bg-white tw-shadow-[0_4px_24px_rgba(0,0,0,0.06)] tw-rounded-2xl tw-p-10 tw-max-w-[800px] tw-border-2 tw-border-gray-100">
-        <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">Important Prerequisites</h2>
-        <div className="prose prose-lg max-w-none tw-text-gray-700 tw-prose-headings:text-gray-900 tw-prose-a:text-blue-600">
+      <div className="tw-mx-auto tw-max-w-[800px]">
+        <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">
+          Fill out {appType} application for {clientName}
+        </h2>
+        <div className="tw-prose tw-prose-lg tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
           <ReactMarkdown>{builderState.preRequirements}</ReactMarkdown>
         </div>
       </div>
