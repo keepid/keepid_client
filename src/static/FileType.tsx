@@ -3,7 +3,8 @@ enum FileType {
     IDENTIFICATION_PDF='IDENTIFICATION_PDF',
     FORM='FORM',
     PROFILE_PICTURE='PROFILE_PICTURE',
-    MISC='MISC'
+    MISC='MISC',
+    ORG_DOCUMENT='ORG_DOCUMENT'
 }
 
 export default FileType;

@@ -69,9 +69,7 @@ export const MailModal: React.FC<Props> = ({
   documentName,
 }) => {
   const { username, organization } = useContext(UserContext);
-  const [isAddressSelectorOpen, setAddressSelectorOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<AddressData | null>(null);
-  const [allAddressData, setAllAddressData] = useState<AddressData[]>([]);
   const [metadataLocked, setMetadataLocked] = useState(false);
   const [mailHistory, setMailHistory] = useState<MailHistoryEntry[]>([]);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
@@ -92,86 +90,42 @@ export const MailModal: React.FC<Props> = ({
 
   const [showInputError, setShowInputError] = useState(false);
 
-  const getInitialReturnAddress = (): AddressData => {
-    if (organization === 'Team Keep') {
-      return {
-        index: 'TEAM_KEEP',
-        nameForCheck: '',
-        officeName: 'Team Keep',
-        street1: '520 Carpenter Ln',
-        street2: 'COMM',
-        city: 'Philadelphia',
-        state: 'PA',
-        zipcode: '19119',
-        description: '',
-        name: '',
-        checkAmount: '',
-      };
-    }
-    if (organization === 'Why not Prosper') {
-      return {
-        index: 'WHY_NOT_PROSPER',
-        nameForCheck: '',
-        officeName: 'Why Not Prosper',
-        street1: '717 E Chelten Ave',
-        street2: '',
-        city: 'Philadelphia',
-        state: 'PA',
-        zipcode: '19144',
-        description: '',
-        name: '',
-        checkAmount: '',
-      };
-    }
-    return {
-      index: '',
-      nameForCheck: '',
-      officeName: '',
-      street1: '',
-      street2: '',
-      city: '',
-      state: '',
-      zipcode: '',
-      description: '',
-      name: '',
-      checkAmount: '',
-    };
-  };
-
   useEffect(() => {
-    setReturnAddressData(getInitialReturnAddress());
+    const fetchReturnAddress = async () => {
+      try {
+        const response = await fetch(`${getServerURL()}/get-organization-info`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orgName: organization }),
+        });
+        if (response.ok) {
+          const orgInfo = await response.json();
+          const addr = orgInfo.orgAddress || {};
+          setReturnAddressData({
+            index: '',
+            nameForCheck: '',
+            officeName: orgInfo.name || organization,
+            street1: addr.addressLineOne || '',
+            street2: '',
+            city: addr.city || '',
+            state: addr.state || '',
+            zipcode: addr.zipCode || addr.zipcode || '',
+            description: '',
+            name: '',
+            checkAmount: '',
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    if (organization) {
+      fetchReturnAddress();
+    }
   }, [organization]);
 
-  const fetchAddresses = async () => {
-    try {
-      const response = await fetch(`${getServerURL()}/get-form-mail-addresses`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      const transformed = Object.keys(data).map((key) => ({
-        index: key,
-        nameForCheck: data[key].name_for_check,
-        officeName: data[key].office_name,
-        state: data[key].state,
-        street1: data[key].street1,
-        street2: data[key].street2,
-        city: data[key].city,
-        zipcode: data[key].zipcode,
-        description: data[key].description,
-        name: data[key].name,
-        checkAmount: data[key].check_amount,
-      }));
-      setAllAddressData(transformed);
-      return transformed;
-    } catch (err: any) {
-      console.error('Error fetching addresses:', err.message);
-      return [];
-    }
-  };
-
-  const fetchMailInfo = async (addresses: AddressData[]) => {
+  const fetchMailInfo = async () => {
     try {
       const response = await fetch(`${getServerURL()}/get-application-mail-info`, {
         method: 'POST',
@@ -181,14 +135,21 @@ export const MailModal: React.FC<Props> = ({
       });
       if (!response.ok) return;
       const data = await response.json();
-      if (data.mailKey) {
-        const match = addresses.find(
-          (a) => a.index.toLowerCase() === data.mailKey.toLowerCase(),
-        );
-        if (match) {
-          setSelectedAddress(match);
-          setMetadataLocked(true);
-        }
+      if (data.mailDestinationName || data.mailDestinationOfficeName || data.mailDestinationStreet1) {
+        setSelectedAddress({
+          index: data.mailDestinationNameForCheck || 'DYNAMIC',
+          nameForCheck: data.mailDestinationNameForCheck || '',
+          officeName: data.mailDestinationOfficeName || '',
+          street1: data.mailDestinationStreet1 || '',
+          street2: data.mailDestinationStreet2 || '',
+          city: data.mailDestinationCity || '',
+          state: data.mailDestinationState || '',
+          zipcode: data.mailDestinationZip || '',
+          description: data.mailDestinationDescription || '',
+          name: data.mailDestinationName || '',
+          checkAmount: data.mailDestinationCheckAmount || '0',
+        });
+        setMetadataLocked(true);
       }
     } catch (err: any) {
       console.error('Error fetching mail info:', err.message);
@@ -237,8 +198,7 @@ export const MailModal: React.FC<Props> = ({
       setSelectedAddress(null);
       setMailHistory([]);
       (async () => {
-        const addresses = await fetchAddresses();
-        await Promise.all([fetchMailInfo(addresses), fetchMailHistory()]);
+        await Promise.all([fetchMailInfo(), fetchMailHistory()]);
       })();
     }
   }, [isVisible]);
@@ -253,11 +213,6 @@ export const MailModal: React.FC<Props> = ({
     if (isReturnAddress) {
       setReturnAddressData((prev) => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleOptionSelect = (option: AddressData) => {
-    setSelectedAddress(option);
-    setAddressSelectorOpen(false);
   };
 
   const alreadyMailed = mailHistory.some(
@@ -285,7 +240,7 @@ export const MailModal: React.FC<Props> = ({
         body: JSON.stringify({
           username: targetUser,
           fileId: documentId,
-          mailKey: selectedAddress.index,
+          mailDestination: selectedAddress,
           returnAddress: {
             name: returnAddressData.name || returnAddressData.officeName,
             officeName: returnAddressData.officeName,
@@ -482,55 +437,9 @@ export const MailModal: React.FC<Props> = ({
                     </div>
                   </div>
                 ) : (
-                  <>
-                    <div className="tw-relative tw-w-full tw-mt-2">
-                      <div
-                        className={`tw-relative tw-w-full tw-border tw-rounded-md tw-bg-gray-100 tw-p-3 tw-cursor-pointer tw-flex tw-items-center tw-justify-between hover:tw-bg-gray-200 ${
-                          isAddressSelectorOpen ? 'tw-ring-2 tw-ring-indigo-500' : ''
-                        }`}
-                        onClick={() => setAddressSelectorOpen(!isAddressSelectorOpen)}
-                      >
-                        <span className={selectedAddress ? 'tw-text-gray-900' : 'tw-text-gray-500'}>
-                          {selectedAddress ? `${selectedAddress.name} - $${selectedAddress.checkAmount}` : 'Select an option'}
-                        </span>
-                        <svg
-                          className={`tw-w-5 tw-h-5 tw-transform ${isAddressSelectorOpen ? 'tw-rotate-180' : 'tw-rotate-0'} tw-transition-transform`}
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-
-                      {isAddressSelectorOpen && (
-                        <ul className="tw-absolute tw-left-0 tw-w-full tw-border tw-bg-white tw-z-10 tw-mt-1 tw-rounded-md tw-shadow-lg">
-                          {allAddressData.map((item) => (
-                            <li
-                              key={item.index}
-                              className="tw-flex tw-justify-between tw-px-4 tw-py-2 hover:tw-bg-gray-100 tw-cursor-pointer"
-                              onClick={() => handleOptionSelect(item)}
-                            >
-                              <span className="tw-text-left">{item.name}</span>
-                              <span className="tw-text-right">${item.checkAmount}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-
-                    {selectedAddress && (
-                      <div className="tw-bg-gray-100 tw-mt-4 tw-p-4 tw-rounded-md tw-border">
-                        <h3 className="tw-text-lg tw-font-semibold tw-mb-2">Selected Address Details</h3>
-                        <div className="tw-text-sm tw-text-gray-700 tw-space-y-1">
-                          {selectedAddress.description && <p>{selectedAddress.description}</p>}
-                          <p>{selectedAddress.street1} {selectedAddress.street2}</p>
-                          <p>{selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipcode}</p>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  <div className="tw-bg-gray-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-gray-200 tw-text-center tw-text-gray-500">
+                    No Mail Destination is configured for this application. Please update the application in the Dev Portal to enable mailing.
+                  </div>
                 )}
               </div>
 
