@@ -6,7 +6,7 @@ import { resolveDirectiveFromProfiles } from '../../utils/directives';
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
-import { useInteractiveForm } from './useInteractiveForm';
+import { extractDirectivesFromUiSchema, useInteractiveForm } from './useInteractiveForm';
 
 function applyAutoFillFields(
   pdfFill: Record<string, unknown>,
@@ -41,7 +41,7 @@ export interface InteractiveFormWizardProps {
   clientUsername?: string;
   outputFields?: OutputFieldDefinition[];
   autoFillFields?: AutoFillField[];
-  onSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => void;
+  onSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => void;
   onDebugUpdate?: (formAnswers: Record<string, unknown>) => void;
   /** Called when config is loaded, so parent can access builderState (e.g. signaturePlacements) and formTitle. */
   onConfigLoaded?: (config: { builderState: BuilderState | null; formTitle: string }) => void;
@@ -101,9 +101,10 @@ export default function InteractiveFormWizard({
     const baseFill = getFormAnswers(data);
     const pdfFill = applyAutoFillFields(baseFill, effectiveAutoFillFields, resolvedProfiles);
     const metadata = computeMetadata(effectiveOutputFields, data, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
+    const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, data) : {};
     const formOutput = { ...pdfFill, metadata };
-    onSubmit(pdfFill, formOutput, data);
-  }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles]);
+    onSubmit(pdfFill, formOutput, data, profileUpdates);
+  }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema]);
 
   if (loading) {
     return (

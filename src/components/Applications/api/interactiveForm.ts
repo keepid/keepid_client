@@ -95,3 +95,23 @@ export async function uploadCompletedPdf(
   }
   return json;
 }
+
+export async function updateProfileFromDirectives(
+  directivesMap: Record<string, unknown>,
+  clientUsername = '',
+): Promise<{ status: string }> {
+  const res = await fetch(`${getServerURL()}/update-profile-from-directives`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: clientUsername,
+      directives: directivesMap,
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || res.statusText);
+  }
+  return json;
+}

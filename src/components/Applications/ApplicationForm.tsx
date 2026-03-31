@@ -21,7 +21,7 @@ import {
   validateLastname,
   validatePhonenumber,
 } from '../SignUp/SignUp.validators';
-import { fillPdfBlob } from './api/interactiveForm';
+import { fillPdfBlob, updateProfileFromDirectives } from './api/interactiveForm';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
@@ -44,7 +44,7 @@ function WebFormPageContent({
   registryLoading: boolean;
   registryError: string | null;
   onBack: () => void;
-  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => void;
+  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => void;
   onConfigLoaded: (config: { builderState: BuilderState | null; formTitle: string }) => void;
   clientUsername: string;
   restoredFormData?: Record<string, unknown> | null;
@@ -465,7 +465,7 @@ export default function ApplicationForm() {
   ]);
 
   const handleWizardSubmit = useCallback(
-    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => {
+    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => {
       if (!blankFormId || Object.keys(pdfFill).length === 0) {
         handleNext();
         return;
@@ -474,6 +474,13 @@ export default function ApplicationForm() {
       setSubmitError(null);
       try {
         const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
+        if (profileUpdates && Object.keys(profileUpdates).length > 0) {
+          try {
+            await updateProfileFromDirectives(profileUpdates, targetClientUsername);
+          } catch (updateErr) {
+            console.warn('Failed to update profile from form directives in background', updateErr);
+          }
+        }
         const url = URL.createObjectURL(blob);
         setFilledPdfUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);
