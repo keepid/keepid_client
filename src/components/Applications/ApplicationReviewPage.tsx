@@ -97,7 +97,7 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
 
   if (builderState && builderState.preRequirements) {
     return (
-      <div className="tw-mx-auto tw-max-w-[800px]">
+      <div className="tw-mx-auto tw-max-w-[800px] tw-pb-12">
         <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">
           Fill out {appType} application for {clientName}
         </h2>

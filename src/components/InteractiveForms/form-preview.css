@@ -28,6 +28,15 @@
   min-width: 6rem;
 }
 
+.form-preview .form-preview-group-item > .form-preview-control {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-preview .form-preview-group-item > .form-preview-control > label + * {
+  margin-top: auto;
+}
+
 .form-preview .control > label:first-child {
   font-size: 1rem;
   font-weight: 600;

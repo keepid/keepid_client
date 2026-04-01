@@ -191,7 +191,7 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
         {loading && (
           <div className="d-flex justify-content-center align-items-center py-5">
             <Spinner animation="border" role="status">
-              <span className="sr-only">Loading PDF preview...</span>
+              <span className="visually-hidden">Loading PDF preview...</span>
             </Spinner>
           </div>
         )}

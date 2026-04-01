@@ -54,7 +54,7 @@ function WebFormPageContent({
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <Spinner animation="border" role="status">
-          <span className="sr-only">{label}</span>
+          <span className="visually-hidden">{label}</span>
         </Spinner>
       </div>
     );
@@ -870,10 +870,10 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        <div className="tw-flex tw-justify-between tw-mt-6">
+        <div className={`tw-flex tw-mt-6 ${isReviewPage ? 'tw-justify-end' : 'tw-justify-between'}`}>
           <Button
             onClick={handlePrev}
-            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading || isWhoForPage ? 'tw-hidden ' : ' '}`}
+            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading || isWhoForPage || isReviewPage ? 'tw-hidden ' : ' '}`}
           >
             Back
           </Button>

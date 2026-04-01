@@ -55,6 +55,15 @@ interface LocationState {
   clientName?: string;
 }
 
+function displayNameFromUsername(username: string): string {
+  const parts = username.split('-');
+  if (parts.length >= 3 && /^\d{8,}$/.test(parts[parts.length - 2])) {
+    const nameParts = parts.slice(0, -2);
+    return nameParts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+  }
+  return username;
+}
+
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
   constructor(props: Props & RouteComponentProps) {
     super(props);
@@ -355,7 +364,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     const columns: DataTableColumn<DocumentInformation>[] = [
       { field: 'filename', headerName: 'Application Name' },
-      { field: 'uploader', headerName: 'Client', sortable: true, width: '25%' },
+      {
+        field: 'uploader',
+        headerName: 'Client',
+        sortable: true,
+        width: '25%',
+        renderCell: (row) => displayNameFromUsername(row.uploader),
+      },
       {
         field: 'uploadDate',
         headerName: 'Upload Date',
@@ -378,7 +393,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="container-fluid tw-pt-12">
+          <div className="tw-container tw-mx-auto tw-px-4 tw-pt-12">
             <Helmet>
               <title>Applications</title>
               <meta name="description" content="Keep.id" />

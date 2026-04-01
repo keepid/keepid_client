@@ -88,7 +88,22 @@ export const MailModal: React.FC<Props> = ({
     checkAmount: '',
   });
 
+  const [manualAddress, setManualAddress] = useState<AddressData>({
+    index: 'DYNAMIC',
+    nameForCheck: '',
+    officeName: '',
+    state: '',
+    street1: '',
+    street2: '',
+    city: '',
+    zipcode: '',
+    description: '',
+    name: '',
+    checkAmount: '0',
+  });
+
   const [showInputError, setShowInputError] = useState(false);
+  const [editingReturnAddress, setEditingReturnAddress] = useState(false);
 
   useEffect(() => {
     const fetchReturnAddress = async () => {
@@ -106,11 +121,11 @@ export const MailModal: React.FC<Props> = ({
             index: '',
             nameForCheck: '',
             officeName: orgInfo.name || organization,
-            street1: addr.addressLineOne || '',
-            street2: '',
+            street1: addr.line1 || '',
+            street2: addr.line2 || '',
             city: addr.city || '',
             state: addr.state || '',
-            zipcode: addr.zipCode || addr.zipcode || '',
+            zipcode: addr.zip || '',
             description: '',
             name: '',
             checkAmount: '',
@@ -194,8 +209,14 @@ export const MailModal: React.FC<Props> = ({
   useEffect(() => {
     if (isVisible) {
       setShowInputError(false);
+      setEditingReturnAddress(false);
       setMetadataLocked(false);
       setSelectedAddress(null);
+      setManualAddress({
+        index: 'DYNAMIC', nameForCheck: '', officeName: '', state: '',
+        street1: '', street2: '', city: '', zipcode: '',
+        description: '', name: '', checkAmount: '0',
+      });
       setMailHistory([]);
       (async () => {
         await Promise.all([fetchMailInfo(), fetchMailHistory()]);
@@ -208,10 +229,12 @@ export const MailModal: React.FC<Props> = ({
     setShowInputError(false);
   };
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>, isReturnAddress: boolean) => {
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'return' | 'manual') => {
     const { name, value } = e.target;
-    if (isReturnAddress) {
+    if (target === 'return') {
       setReturnAddressData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setManualAddress((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -220,7 +243,13 @@ export const MailModal: React.FC<Props> = ({
   );
 
   const mailForm = async () => {
-    if (!selectedAddress) {
+    const destination = selectedAddress || manualAddress;
+    const requiredDestFields: (keyof AddressData)[] = ['street1', 'city', 'state', 'zipcode'];
+    const isDestValid = selectedAddress
+      ? true
+      : requiredDestFields.every((field) => manualAddress[field] !== '')
+      && (manualAddress.name !== '' || manualAddress.officeName !== '');
+    if (!isDestValid) {
       setShowInputError(true);
       return;
     }
@@ -240,7 +269,7 @@ export const MailModal: React.FC<Props> = ({
         body: JSON.stringify({
           username: targetUser,
           fileId: documentId,
-          mailDestination: selectedAddress,
+          mailDestination: destination,
           returnAddress: {
             name: returnAddressData.name || returnAddressData.officeName,
             officeName: returnAddressData.officeName,
@@ -335,18 +364,31 @@ export const MailModal: React.FC<Props> = ({
     );
   };
 
-  const renderAddressFields = (data: AddressData, isReturnAddress: boolean) => (
+  const renderAddressFields = (data: AddressData, target: 'return' | 'manual', editable: boolean) => (
     <div className="tw-space-y-4 tw-p-4">
+      {target === 'manual' && (
+        <div>
+          <label className="tw-block tw-mb-1 tw-font-semibold">Recipient Name</label>
+          <input
+            type="text"
+            name="name"
+            value={data.name || ''}
+            onChange={(e) => handleAddressChange(e, target)}
+            className={`tw-w-full tw-p-2 tw-border ${showInputError && !data.name && !data.officeName ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+            placeholder="Person or organization name"
+          />
+        </div>
+      )}
       <div>
         <label className="tw-block tw-mb-1 tw-font-semibold">Office Name</label>
         <input
           type="text"
           name="officeName"
           value={data.officeName}
-          onChange={(e) => handleAddressChange(e, isReturnAddress)}
-          className={`tw-w-full tw-p-2 tw-border ${showInputError && data.officeName === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
+          onChange={(e) => handleAddressChange(e, target)}
+          className={`tw-w-full tw-p-2 tw-border ${showInputError && data.officeName === '' && target === 'return' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
           placeholder="Enter office name"
-          readOnly={!isReturnAddress}
+          readOnly={!editable}
         />
       </div>
       <div>
@@ -355,19 +397,19 @@ export const MailModal: React.FC<Props> = ({
           type="text"
           name="street1"
           value={data.street1}
-          onChange={(e) => handleAddressChange(e, isReturnAddress)}
+          onChange={(e) => handleAddressChange(e, target)}
           className={`tw-w-full tw-p-2 tw-border ${showInputError && data.street1 === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded tw-mb-2`}
           placeholder="Street Address or P.O. Box"
-          readOnly={!isReturnAddress}
+          readOnly={!editable}
         />
         <input
           type="text"
           name="street2"
           value={data.street2}
-          onChange={(e) => handleAddressChange(e, isReturnAddress)}
+          onChange={(e) => handleAddressChange(e, target)}
           className="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded"
           placeholder="Apt, suite, building, floor, etc. (optional)"
-          readOnly={!isReturnAddress}
+          readOnly={!editable}
         />
       </div>
       <div className="tw-flex tw-space-x-2">
@@ -377,10 +419,10 @@ export const MailModal: React.FC<Props> = ({
             type="text"
             name="city"
             value={data.city}
-            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            onChange={(e) => handleAddressChange(e, target)}
             className={`tw-w-full tw-p-2 tw-border ${showInputError && data.city === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
             placeholder="E.g. Philadelphia"
-            readOnly={!isReturnAddress}
+            readOnly={!editable}
           />
         </div>
         <div className="tw-w-20">
@@ -389,10 +431,10 @@ export const MailModal: React.FC<Props> = ({
             type="text"
             name="state"
             value={data.state}
-            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            onChange={(e) => handleAddressChange(e, target)}
             className={`tw-w-full tw-p-2 tw-border ${showInputError && data.state === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
             placeholder="E.g. PA"
-            readOnly={!isReturnAddress}
+            readOnly={!editable}
           />
         </div>
         <div className="tw-w-32">
@@ -401,10 +443,10 @@ export const MailModal: React.FC<Props> = ({
             type="text"
             name="zipcode"
             value={data.zipcode}
-            onChange={(e) => handleAddressChange(e, isReturnAddress)}
+            onChange={(e) => handleAddressChange(e, target)}
             className={`tw-w-full tw-p-2 tw-border ${showInputError && data.zipcode === '' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
             placeholder="5 digit ZIP code"
-            readOnly={!isReturnAddress}
+            readOnly={!editable}
           />
         </div>
       </div>
@@ -422,7 +464,7 @@ export const MailModal: React.FC<Props> = ({
                 {renderMailHistory()}
 
                 <p className="tw-text-left tw-text-2xl tw-font-semibold">
-                  {metadataLocked ? 'Mail Destination (from application)' : 'Please Select your target Mail Address'}
+                  {metadataLocked ? 'Mail Destination (from application)' : 'Mail Destination'}
                 </p>
 
                 {metadataLocked && selectedAddress ? (
@@ -437,15 +479,46 @@ export const MailModal: React.FC<Props> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="tw-bg-gray-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-gray-200 tw-text-center tw-text-gray-500">
-                    No Mail Destination is configured for this application. Please update the application in the Dev Portal to enable mailing.
+                  <div className="tw-mt-2">
+                    <div className="tw-bg-amber-50 tw-border tw-border-amber-300 tw-rounded-md tw-p-4 tw-mb-3">
+                      <p className="tw-text-amber-800 tw-text-sm tw-font-medium">
+                        This application cannot be submitted via mail through Keep.id. If you would like to mail it anyway to yourself or a partner for an 81 cent fee, enter the destination address below.
+                      </p>
+                    </div>
+                    {renderAddressFields(manualAddress, 'manual', true)}
                   </div>
                 )}
               </div>
 
-              <div>
-                <h3 className="tw-text-lg tw-font-semibold tw-p-2">Return Address</h3>
-                {renderAddressFields(returnAddressData, true)}
+              <div className="tw-px-4 tw-pb-2">
+                <div className="tw-flex tw-items-center tw-justify-between tw-mb-3">
+                  <h3 className="tw-text-lg tw-font-semibold">Return Address</h3>
+                  <button
+                    type="button"
+                    className="tw-text-sm tw-text-blue-600 hover:tw-text-blue-800 tw-font-medium"
+                    onClick={() => setEditingReturnAddress(!editingReturnAddress)}
+                  >
+                    {editingReturnAddress ? 'Done' : 'Edit'}
+                  </button>
+                </div>
+
+                {editingReturnAddress ? (
+                  renderAddressFields(returnAddressData, 'return', true)
+                ) : (
+                  <div className="tw-bg-gray-50 tw-rounded-md tw-border tw-border-gray-200 tw-p-4">
+                    <p className="tw-font-medium tw-text-gray-900">{returnAddressData.officeName || <span className="tw-text-gray-400 tw-italic">No office name</span>}</p>
+                    <p className="tw-text-sm tw-text-gray-700 tw-mt-1">
+                      {returnAddressData.street1 || <span className="tw-text-gray-400 tw-italic">No address</span>}
+                    </p>
+                    {returnAddressData.street2 && (
+                      <p className="tw-text-sm tw-text-gray-700">{returnAddressData.street2}</p>
+                    )}
+                    <p className="tw-text-sm tw-text-gray-700">
+                      {[returnAddressData.city, returnAddressData.state].filter(Boolean).join(', ')}
+                      {returnAddressData.zipcode ? ` ${returnAddressData.zipcode}` : ''}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {showInputError && (
@@ -454,15 +527,15 @@ export const MailModal: React.FC<Props> = ({
                 </p>
               )}
 
-              <div className="tw-m-8 tw-mt-10 tw-flex tw-justify-between">
+              <div className="tw-px-6 tw-py-5 tw-flex tw-items-center tw-justify-end tw-gap-3 tw-border-t tw-border-gray-200">
                 <button
                   type="button"
-                  className="tw-inline-flex tw-justify-center tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-gray-900 tw-shadow-sm tw-ring-1 tw-ring-inset tw-ring-gray-300 hover:tw-bg-gray-50"
+                  className="tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-text-gray-900 hover:tw-bg-gray-100 tw-rounded-md tw-transition-colors"
                   onClick={handleCloseModal}
                 >
                   Cancel
                 </button>
-                <LoadingButton onClick={mailForm}>Yes, mail</LoadingButton>
+                <LoadingButton onClick={mailForm}>Send mail</LoadingButton>
               </div>
             </div>
           </Dialog.Panel>
