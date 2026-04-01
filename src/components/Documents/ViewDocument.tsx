@@ -1,17 +1,12 @@
-import { privateDecrypt } from 'crypto';
-import { address } from 'faker';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Link } from 'react-router-dom';
-import { setConstantValue } from 'typescript';
 
-import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import DocumentViewer from './DocumentViewer';
-import { MailConfirmation, MailModal } from './MailModal';
 
 interface Props {
   alert: any;
@@ -23,14 +18,31 @@ interface Props {
   documentUploader: string;
   targetUser: string;
   fileType: FileType;
+  idCategory?: string;
+  clientName?: string;
+  viewerRole?: Role;
+  onDownloadCurrentDocument: () => void;
+  onRequestDeleteCurrentDocument: () => void;
   resetDocumentId: ()=> void;
 }
 
-const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentName, documentDate, documentUploader, targetUser, fileType, resetDocumentId }) => {
+const ViewDocument: React.FC<Props> = ({
+  alert,
+  userRole,
+  documentId,
+  documentName,
+  documentDate,
+  documentUploader,
+  targetUser,
+  fileType,
+  idCategory,
+  clientName,
+  viewerRole,
+  onDownloadCurrentDocument,
+  onRequestDeleteCurrentDocument,
+  resetDocumentId,
+}) => {
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined);
-  const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
-  const [showMailSuccess, setShowMailSuccess] = useState(false);
-  const { username, organization } = useContext(UserContext);
 
   useEffect(() => {
     fetch(`${getServerURL()}/download-file`, {
@@ -61,22 +73,18 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
       });
   }, [alert, documentId, documentName, userRole, targetUser]);
 
-  const setLink = () => {
-    if (userRole === Role.Client) {
-      return '/my-documents';
-    }
-    return `/my-documents/${targetUser}`;
-  };
-
   let fileName = '';
   if (pdfFile) {
-    const splitName = pdfFile.name.split('.');
-    fileName = splitName[0];
+    fileName = pdfFile.name.replace(/\.pdf$/i, '');
   }
+
+  const isStaffViewer = viewerRole === Role.Worker
+    || viewerRole === Role.Admin
+    || viewerRole === Role.Director;
 
   return (
     <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
-      <div className="tw-flex tw-mt-5 tw-space-x-2 ">
+      <div className="tw-flex tw-items-center tw-justify-between tw-mt-5">
         <PrimaryButton onClick={resetDocumentId}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
             <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -84,13 +92,34 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
           <span className="tw-align-middle">Back to My Documents</span>
         </PrimaryButton>
 
-        <PrimaryButtonSolid onClick={() => setMailDialogIsOpen(true)}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="tw-w-6 tw-h-6 tw-pr-1 tw-inline tw-align-middle">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-          </svg>
-          <span className="tw-align-middle tw-pt-[1px] tw-pl-1">Mail</span>
-        </PrimaryButtonSolid>
-
+        <div className="tw-flex tw-items-center tw-space-x-2">
+          <PrimaryButtonSolid onClick={onDownloadCurrentDocument}>
+            Download
+          </PrimaryButtonSolid>
+          {isStaffViewer && (
+            <Link
+              to={{
+                pathname: `/home/notify-client/${targetUser}`,
+                state: {
+                  clientName,
+                  prefilledIdCategory: idCategory,
+                },
+              }}
+              className="tw-no-underline"
+            >
+              <PrimaryButtonSolid onClick={() => {}}>
+                Notify
+              </PrimaryButtonSolid>
+            </Link>
+          )}
+          <button
+            type="button"
+            className="tw-flex tw-justify-center tw-bg-white tw-border tw-border-red-500 tw-rounded-md tw-p-1.5 tw-font-semibold tw-text-red-500 hover:tw-bg-red-50 hover:tw-no-underline tw-px-3 tw-font-Inter"
+            onClick={onRequestDeleteCurrentDocument}
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {pdfFile ? (
@@ -116,22 +145,6 @@ const ViewDocument: React.FC<Props> = ({ alert, userRole, documentId, documentNa
         <div />
       )}
       {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
-
-      <MailModal
-        alert={alert}
-        isVisible={mailDialogIsOpen}
-        setIsVisible={setMailDialogIsOpen}
-        showMailSuccess={showMailSuccess}
-        setShowMailSuccess={setShowMailSuccess}
-        userRole={userRole}
-        targetUser={targetUser}
-        documentId={documentId}
-        documentUploader={documentUploader}
-        documentDate={documentDate}
-        documentName={documentName}
-      />
-      <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
-
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useAlert } from 'react-alert';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import SignAndDownloadViewer, { SignAndDownloadViewerHandle } from '../InteractiveForms/SignAndDownloadViewer';
 
 interface PreviewLocationState {
@@ -17,6 +19,7 @@ interface PreviewLocationState {
 export default function ApplicationPdfPreview({ editable = false }: { editable?: boolean }) {
   const location = useLocation<PreviewLocationState>();
   const history = useHistory();
+  const alert = useAlert();
 
   const applicationId = location.state?.applicationId || '';
   const applicationFilename = location.state?.applicationFilename || 'application-preview.pdf';
@@ -29,6 +32,8 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSavingEdits, setIsSavingEdits] = useState(false);
+  const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
+  const [showMailSuccess, setShowMailSuccess] = useState(false);
   const viewerRef = useRef<SignAndDownloadViewerHandle>(null);
 
   useEffect(() => {
@@ -126,6 +131,11 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
             )}
           </div>
           <div className="tw-flex tw-items-center tw-gap-2">
+            {applicationId && (
+              <Button variant="primary" onClick={() => setMailDialogIsOpen(true)}>
+                Mail
+              </Button>
+            )}
             {applicationId && !editable && (
               <Link
                 to={{
@@ -181,7 +191,7 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
         {loading && (
           <div className="d-flex justify-content-center align-items-center py-5">
             <Spinner animation="border" role="status">
-              <span className="sr-only">Loading PDF preview...</span>
+              <span className="visually-hidden">Loading PDF preview...</span>
             </Spinner>
           </div>
         )}
@@ -207,6 +217,21 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
           />
         )}
       </div>
+
+      <MailModal
+        alert={alert}
+        isVisible={mailDialogIsOpen}
+        setIsVisible={setMailDialogIsOpen}
+        showMailSuccess={showMailSuccess}
+        setShowMailSuccess={setShowMailSuccess}
+        userRole=""
+        targetUser={editTargetUsername}
+        documentId={applicationId}
+        documentUploader=""
+        documentDate=""
+        documentName={applicationFilename}
+      />
+      <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
     </div>
   );
 }

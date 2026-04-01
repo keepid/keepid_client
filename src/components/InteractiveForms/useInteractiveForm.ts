@@ -425,3 +425,57 @@ export function useInteractiveForm({
     getInitialData,
   };
 }
+
+export function extractDirectivesFromUiSchema(
+  uiSchema: Record<string, unknown>,
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  const directivesMap: Record<string, unknown> = {};
+
+  function getPropValue(scope: string): unknown {
+    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
+    return getByPath(data, propPath);
+  }
+
+  function processElement(element: Record<string, unknown>) {
+    const type = element.type as string;
+
+    if (type === 'Control') {
+      const scope = element.scope as string | undefined;
+      const options = element.options as Record<string, unknown> | undefined;
+      const directive = options?.directive;
+
+      if (scope && directive != null) {
+        const value = getPropValue(scope);
+        if (value !== undefined && value !== null && value !== '') {
+          if (typeof directive === 'string') {
+            directivesMap[directive] = value;
+          } else if (Array.isArray(directive)) {
+            const useDirective = resolveConditionalDirective(
+              directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
+              data,
+            );
+            if (useDirective) {
+              directivesMap[useDirective] = value;
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    if (type === 'Group' || type === 'Category' || type === 'Categorization') {
+      if (Array.isArray(element.elements)) {
+        (element.elements as Record<string, unknown>[]).forEach((el) => processElement(el));
+      }
+      return;
+    }
+
+    if (Array.isArray(element.elements)) {
+      (element.elements as Record<string, unknown>[]).forEach((el) => processElement(el));
+    }
+  }
+
+  processElement(uiSchema);
+  return directivesMap;
+}

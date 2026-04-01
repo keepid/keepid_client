@@ -463,7 +463,7 @@ export default function ApplicationWebForm({
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <Spinner animation="border" role="status">
-          <span className="sr-only">Loading form...</span>
+          <span className="visually-hidden">Loading form...</span>
         </Spinner>
       </div>
     );

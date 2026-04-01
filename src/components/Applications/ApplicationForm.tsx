@@ -21,7 +21,7 @@ import {
   validateLastname,
   validatePhonenumber,
 } from '../SignUp/SignUp.validators';
-import { fillPdfBlob } from './api/interactiveForm';
+import { fillPdfBlob, updateProfileFromDirectives } from './api/interactiveForm';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
@@ -44,7 +44,7 @@ function WebFormPageContent({
   registryLoading: boolean;
   registryError: string | null;
   onBack: () => void;
-  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => void;
+  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => void;
   onConfigLoaded: (config: { builderState: BuilderState | null; formTitle: string }) => void;
   clientUsername: string;
   restoredFormData?: Record<string, unknown> | null;
@@ -54,7 +54,7 @@ function WebFormPageContent({
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <Spinner animation="border" role="status">
-          <span className="sr-only">{label}</span>
+          <span className="visually-hidden">{label}</span>
         </Spinner>
       </div>
     );
@@ -83,6 +83,7 @@ function WebFormPageContent({
       onSubmit={onWizardSubmit}
       onConfigLoaded={onConfigLoaded}
       initialData={restoredFormData ?? undefined}
+      onBack={onBack}
     />
   );
 }
@@ -204,12 +205,12 @@ export default function ApplicationForm() {
   const whoForInputClassName =
     'tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-sm';
 
-  // Fetch registry info (blankFormId) when entering the webForm step
+  // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
-    if (isWebFormPage) {
+    if (isReviewPage || isWebFormPage) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isWebFormPage, data, isDirty]);
+  }, [isReviewPage, isWebFormPage, data, isDirty]);
 
   useEffect(() => {
     setAvailabilityLoading(true);
@@ -464,7 +465,7 @@ export default function ApplicationForm() {
   ]);
 
   const handleWizardSubmit = useCallback(
-    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>) => {
+    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => {
       if (!blankFormId || Object.keys(pdfFill).length === 0) {
         handleNext();
         return;
@@ -473,6 +474,13 @@ export default function ApplicationForm() {
       setSubmitError(null);
       try {
         const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
+        if (profileUpdates && Object.keys(profileUpdates).length > 0) {
+          try {
+            await updateProfileFromDirectives(profileUpdates, targetClientUsername);
+          } catch (updateErr) {
+            console.warn('Failed to update profile from form directives in background', updateErr);
+          }
+        }
         const url = URL.createObjectURL(blob);
         setFilledPdfUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);
@@ -537,12 +545,15 @@ export default function ApplicationForm() {
 
       {/* Form content: narrower for readability */}
       <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
-        <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
-          <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
-        </div>
-
-        {formContent[page].subtitle && (
-          <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+        {!isReviewPage && (
+          <>
+            <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
+              <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
+            </div>
+            {formContent[page].subtitle && (
+              <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+            )}
+          </>
         )}
         {availabilityError && (
           <Alert variant="warning" className="tw-mb-4">
@@ -818,7 +829,7 @@ export default function ApplicationForm() {
           </Form>
         )}
 
-        {isReviewPage && <ApplicationReviewPage data={data} />}
+        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} clientName={targetClientName || targetClientUsername} />}
 
         {isWebFormPage && (
           <WebFormPageContent
@@ -843,6 +854,7 @@ export default function ApplicationForm() {
             formAnswers={wizardFormOutput}
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
+            postRequirements={builderStateRef.current?.postRequirements}
           />
         )}
 
@@ -858,10 +870,10 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        <div className="tw-flex tw-justify-between tw-mt-6">
+        <div className={`tw-flex tw-mt-6 ${isReviewPage ? 'tw-justify-end' : 'tw-justify-between'}`}>
           <Button
             onClick={handlePrev}
-            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading || isWhoForPage ? 'tw-hidden ' : ' '}`}
+            className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading || isWhoForPage || isReviewPage ? 'tw-hidden ' : ' '}`}
           >
             Back
           </Button>

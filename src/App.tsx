@@ -37,6 +37,7 @@ import FindOrganization from './components/OrgFinder/FindOrganization';
 import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import EnrollClientPage from './components/SignUp/EnrollClient';
+import EnrollWorkerPage from './components/SignUp/EnrollWorker';
 import SignUpRouter, {
   paths as SignUpRouterPaths,
 } from './components/SignUp/SignUp.router';
@@ -403,6 +404,7 @@ class App extends React.Component<{}, State, {}> {
                     return (
                       <MyDocuments
                         userRole={Role.Client}
+                        viewerRole={role}
                         username={clientUsername}
                         clientName={locState?.clientName}
                       />
@@ -421,7 +423,7 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
-                    return <MyDocuments userRole={role} username={username} />;
+                    return <MyDocuments userRole={role} viewerRole={role} username={username} />;
                   }
                   return <Home />;
                 }}
@@ -530,6 +532,21 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Director
                   ) {
                     return <EnrollClientPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return <Home />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/enroll-worker"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director
+                  ) {
+                    return <EnrollWorkerPage />;
                   }
                   if (role === Role.LoggedOut) {
                     return <Home />;

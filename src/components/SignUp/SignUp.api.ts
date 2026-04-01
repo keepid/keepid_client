@@ -26,6 +26,27 @@ export async function enrollClient(
   }).then((response) => response.json());
 }
 
+export interface EnrollWorkerData {
+  firstname: string;
+  middlename?: string;
+  lastname: string;
+  suffix?: string;
+  birthDate: string;
+  email: string;
+  phonenumber?: string;
+  personRole: 'Worker' | 'Admin';
+}
+
+export async function enrollWorker(
+  data: EnrollWorkerData,
+): Promise<{ status: string }> {
+  return fetch(`${getServerURL()}/enroll-worker`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+}
+
 export async function isUsernameAvailable(username: string): Promise<boolean> {
   return fetch(`${getServerURL()}/username-exists`, {
     method: 'POST',

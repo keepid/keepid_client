@@ -3,7 +3,7 @@ import { rankWith, resolveData, toDataPath, uiTypeIs } from '@jsonforms/core';
 import { JsonFormsDispatch, useJsonForms, withJsonFormsLayoutProps } from '@jsonforms/react';
 import React, { useEffect, useState } from 'react';
 
-import { useRestoredForm, useWizardSubmit } from '../InteractiveFormWizardContext';
+import { useRestoredForm, useWizardBack, useWizardSubmit } from '../InteractiveFormWizardContext';
 
 type RuleSchema = { const?: unknown; not?: { const?: unknown }; minLength?: number; maxLength?: number };
 type RuleCondition = { scope?: string; schema?: RuleSchema; allOf?: RuleCondition[]; anyOf?: RuleCondition[] };
@@ -51,6 +51,7 @@ function StepperLayoutRendererInner({
   data: dataFromProps,
 }: LayoutProps) {
   const requestSubmit = useWizardSubmit();
+  const requestBack = useWizardBack();
   const startAtLastStep = useRestoredForm();
   const { core } = useJsonForms();
   const categorization = uischema as Categorization;
@@ -162,6 +163,14 @@ function StepperLayoutRendererInner({
             className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
           >
             ← Previous
+          </button>
+        ) : requestBack ? (
+          <button
+            type="button"
+            onClick={() => requestBack()}
+            className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
+          >
+            ← Back
           </button>
         ) : (
           <div />
