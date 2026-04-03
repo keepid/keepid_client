@@ -44,3 +44,4 @@ scripts/
 agents/
 start-agent.sh
 stop-agent.sh
+WALKTHROUGH.md
