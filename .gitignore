@@ -29,3 +29,18 @@ yarn-error.log*
 stale_outputs_checked
 
 ./src/serverOverride.ts
+# --- Agent (auto-added by setup-nightly.sh) ---
+agent-logs/
+.agent-stop
+.claude/settings.local.json
+.claude/journal.md
+.claude/session-stats.log
+
+.claude/
+CLAUDE.md
+BACKLOG.md
+MISSION.md
+scripts/
+agents/
+start-agent.sh
+stop-agent.sh
