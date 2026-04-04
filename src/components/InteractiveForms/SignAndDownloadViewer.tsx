@@ -92,8 +92,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  // Keep PDF page width aligned with the frame; minimal gutter for a larger default preview.
   const renderedWidth = Math.max(100, frameWidth - 2);
+  /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
+  const usePdfJsFormWidgets = !pdfFormsReadOnly;
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length === 0 || signedCount === signaturePlacements.length;
@@ -188,7 +189,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setApplying(true);
     try {
       let pdfBytes: ArrayBuffer | Uint8Array;
-      if (isPdfEditMode && pdfDocRef.current?.saveDocument) {
+      if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
         pdfBytes = await pdfDocRef.current.saveDocument();
       } else {
         pdfBytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
@@ -225,7 +226,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setApplying(false);
     }
-  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes]);
+  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, usePdfJsFormWidgets]);
 
   const toggleStagedDoc = useCallback((docId: string) => {
     setStagedDocs((prev) => {
@@ -245,7 +246,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       // If we are currently at 0 docs, capture the CURRENT state as the new base.
       if (selectedDocs.size === 0) {
         let bytes: ArrayBuffer | Uint8Array;
-        if (isPdfEditMode && pdfDocRef.current?.saveDocument) {
+        if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
           bytes = await pdfDocRef.current.saveDocument();
         } else {
           bytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
@@ -309,16 +310,16 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setIsAppendingDocs(false);
     }
-  }, [basePdfBlob, stagedDocs, selectedDocs, livePdfUrl, fileUrl, orgDocs, isPdfEditMode]);
+  }, [basePdfBlob, stagedDocs, selectedDocs, livePdfUrl, fileUrl, orgDocs, usePdfJsFormWidgets]);
 
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
-    if (isPdfEditMode && pdfDocRef.current?.saveDocument) {
+    if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
       const bytes = await pdfDocRef.current.saveDocument();
       return toPdfBlob(bytes);
     }
     const res = await fetch(livePdfUrl);
     return res.blob();
-  }, [livePdfUrl, isPdfEditMode]);
+  }, [livePdfUrl, usePdfJsFormWidgets]);
 
   const handlePrint = useCallback(async () => {
     try {
@@ -442,7 +443,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     },
   }), [handleSavePdfEdits, handleCancelPdfEdits]);
 
-  const formsLocked = pdfFormsReadOnly || (showPdfEditControls && !isPdfEditMode);
   const isPdfActionsLocked = showPdfEditControls && isPdfEditMode;
   const hasMultiplePages = numPages > 1;
   let downloadButtonClass = 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50';
@@ -457,7 +457,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   return (
     <div className={`tw-flex tw-flex-col tw-gap-8 tw-items-start tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS}`}>
-      <div className={`keepid-pdf-preview ${formsLocked ? 'keepid-pdf-edit-locked' : ''} tw-space-y-4 tw-w-full`}>
+      <div
+        className={`keepid-pdf-preview ${pdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${usePdfJsFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
+      >
       {allSigned && signaturePlacements.length > 0 && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
           <span className="tw-text-sm tw-font-medium tw-text-green-800">
@@ -552,13 +554,13 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                   width={renderedWidth > 0 ? renderedWidth : undefined}
                   renderAnnotationLayer
                   renderTextLayer
-                  renderForms
+                  renderForms={usePdfJsFormWidgets}
                 />
               </div>
-              {formsLocked && (
+              {pdfFormsReadOnly && (
                 <div
                   className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
-                  title="PDF is read-only. Click Edit PDF to make changes."
+                  title="PDF is read-only."
                 />
               )}
               {sigOverlays.map((rect) => {
