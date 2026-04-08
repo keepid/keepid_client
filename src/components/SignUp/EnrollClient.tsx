@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { enrollClient } from './SignUp.api';
-import { birthDateStringConverter } from './SignUp.util';
+import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
 import {
   validateBirthdate,
   validateEmail,
@@ -72,8 +72,8 @@ export default function EnrollClientPage(): JSX.Element {
         break;
       case 'birthDate':
         if (value) {
-          const d = new Date(value);
-          error = validateBirthdate(d);
+          const d = localDateFromIsoDateOnly(value);
+          error = d === undefined ? 'Invalid birth date' : validateBirthdate(d);
         }
         break;
       default:
@@ -96,8 +96,11 @@ export default function EnrollClientPage(): JSX.Element {
     }
     setAgreementError('');
 
-    const birthDateObj = new Date(values.birthDate);
-    const birthDateString = birthDateStringConverter(birthDateObj);
+    const birthDateString = birthDateStringFromIsoDateOnly(values.birthDate);
+    if (!birthDateString) {
+      alert.error('Please enter a valid birth date.');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -190,8 +193,8 @@ export default function EnrollClientPage(): JSX.Element {
         <title>Enroll Client</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="tw-container tw-mx-auto tw-px-4 tw-pt-8">
-        <div className="tw-max-w-xl tw-mx-auto">
+      <div className="tw-container tw-mx-auto tw-max-w-6xl tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-8">
+        <div className="tw-w-full tw-max-w-5xl tw-mx-auto">
           <div className="tw-text-center tw-pb-4 tw-mb-2">
             <h2 className="tw-text-2xl tw-font-bold tw-text-gray-800">
               Enroll a New Client
@@ -203,8 +206,8 @@ export default function EnrollClientPage(): JSX.Element {
 
           <form onSubmit={handleSubmit}>
             <div className="tw-space-y-4">
-              <div className="tw-grid tw-grid-cols-2 tw-gap-4">
-                <div>
+              <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4 tw-min-w-0">
+                <div className="tw-min-w-0">
                   <label htmlFor="firstname" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
                     First Name
                   </label>
@@ -223,7 +226,7 @@ export default function EnrollClientPage(): JSX.Element {
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.firstname}</p>
                   )}
                 </div>
-                <div>
+                <div className="tw-min-w-0">
                   <label htmlFor="middlename" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
                     Middle Name <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
                   </label>
@@ -241,7 +244,7 @@ export default function EnrollClientPage(): JSX.Element {
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.middlename}</p>
                   )}
                 </div>
-                <div>
+                <div className="tw-min-w-0">
                   <label htmlFor="lastname" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
                     Last Name
                   </label>
@@ -260,7 +263,7 @@ export default function EnrollClientPage(): JSX.Element {
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.lastname}</p>
                   )}
                 </div>
-                <div>
+                <div className="tw-min-w-0">
                   <label htmlFor="suffix" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
                     Suffix <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
                   </label>

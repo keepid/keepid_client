@@ -13,7 +13,7 @@ import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
 import type { BuilderState } from '../InteractiveForms/types';
 import { enrollClient } from '../SignUp/SignUp.api';
-import { birthDateStringConverter } from '../SignUp/SignUp.util';
+import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from '../SignUp/SignUp.util';
 import {
   validateBirthdate,
   validateEmail,
@@ -329,7 +329,11 @@ export default function ApplicationForm() {
         return validateEmail(value);
       case 'birthDate':
         if (!value) return 'Birth date is required';
-        return validateBirthdate(new Date(value));
+        {
+          const d = localDateFromIsoDateOnly(value);
+          if (d === undefined) return 'Invalid birth date';
+          return validateBirthdate(d);
+        }
       case 'phonenumber':
         if (value.trim() === '') return '';
         return validatePhonenumber(value);
@@ -358,7 +362,8 @@ export default function ApplicationForm() {
       return null;
     }
 
-    const normalizedBirthDate = birthDateStringConverter(new Date(birthDate));
+    const normalizedBirthDate = birthDateStringFromIsoDateOnly(birthDate);
+    if (!normalizedBirthDate) return null;
     const match = response.people.find((person: ClientSearchResult) =>
       person?.email?.toLowerCase() === email.toLowerCase()
       || (
@@ -415,6 +420,11 @@ export default function ApplicationForm() {
       return;
     }
     setAgreementError('');
+    const birthDatePayload = birthDateStringFromIsoDateOnly(enrollForm.birthDate);
+    if (!birthDatePayload) {
+      setEnrollFieldErrors((prev) => ({ ...prev, birthDate: 'Invalid birth date' }));
+      return;
+    }
     setEnrollSubmitting(true);
 
     try {
@@ -423,7 +433,7 @@ export default function ApplicationForm() {
         middlename: enrollForm.middlename.trim() || undefined,
         lastname: enrollForm.lastname,
         suffix: enrollForm.suffix.trim() || undefined,
-        birthDate: birthDateStringConverter(new Date(enrollForm.birthDate)),
+        birthDate: birthDatePayload,
         email: enrollForm.email,
         phonenumber: enrollForm.phonenumber,
       });
@@ -544,7 +554,11 @@ export default function ApplicationForm() {
       </Helmet>
 
       {/* Form content: narrower for readability */}
-      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
+      <div
+        className={`tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12 ${
+          isWhoForPage ? 'tw-max-w-6xl' : 'tw-max-w-4xl'
+        }`}
+      >
         {!isReviewPage && (
           <>
             <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
@@ -562,7 +576,7 @@ export default function ApplicationForm() {
         )}
 
         {isWhoForPage ? (
-          <div className="tw-bg-white tw-border tw-border-gray-200 tw-rounded-xl tw-p-5 tw-shadow-sm tw-max-w-3xl tw-mx-auto">
+          <div className="tw-bg-white tw-border tw-border-gray-200 tw-rounded-xl tw-p-5 tw-shadow-sm tw-w-full">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
                 This step is only shown to workers, admins, and directors.
@@ -651,8 +665,8 @@ export default function ApplicationForm() {
                   </div>
                 ) : (
                   <div>
-                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
-                      <Form.Group controlId="newClientFirstName">
+                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-3 tw-min-w-0">
+                      <Form.Group controlId="newClientFirstName" className="tw-min-w-0">
                         <Form.Label>First Name</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -666,21 +680,7 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.firstname && <small className="tw-text-red-600">{enrollFieldErrors.firstname}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientLastName">
-                        <Form.Label>Last Name</Form.Label>
-                        <Form.Control
-                          className={whoForInputClassName}
-                          name="lastname"
-                          value={enrollForm.lastname}
-                          onChange={handleEnrollFieldChange}
-                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
-                            ...prev,
-                            lastname: validateEnrollField('lastname', e.target.value),
-                          }))}
-                        />
-                        {enrollFieldErrors.lastname && <small className="tw-text-red-600">{enrollFieldErrors.lastname}</small>}
-                      </Form.Group>
-                      <Form.Group controlId="newClientMiddleName">
+                      <Form.Group controlId="newClientMiddleName" className="tw-min-w-0">
                         <Form.Label>Middle Name (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -694,7 +694,21 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.middlename && <small className="tw-text-red-600">{enrollFieldErrors.middlename}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientSuffix">
+                      <Form.Group controlId="newClientLastName" className="tw-min-w-0">
+                        <Form.Label>Last Name</Form.Label>
+                        <Form.Control
+                          className={whoForInputClassName}
+                          name="lastname"
+                          value={enrollForm.lastname}
+                          onChange={handleEnrollFieldChange}
+                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
+                            ...prev,
+                            lastname: validateEnrollField('lastname', e.target.value),
+                          }))}
+                        />
+                        {enrollFieldErrors.lastname && <small className="tw-text-red-600">{enrollFieldErrors.lastname}</small>}
+                      </Form.Group>
+                      <Form.Group controlId="newClientSuffix" className="tw-min-w-0">
                         <Form.Label>Suffix (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -709,6 +723,8 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.suffix && <small className="tw-text-red-600">{enrollFieldErrors.suffix}</small>}
                       </Form.Group>
+                    </div>
+                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3 tw-mt-3">
                       <Form.Group controlId="newClientDob">
                         <Form.Label>Date of Birth</Form.Label>
                         <Form.Control
@@ -739,7 +755,7 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.email && <small className="tw-text-red-600">{enrollFieldErrors.email}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientPhone">
+                      <Form.Group controlId="newClientPhone" className="md:tw-col-span-2">
                         <Form.Label>Phone (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
