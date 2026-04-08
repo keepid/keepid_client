@@ -381,34 +381,74 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     return res.blob();
   }, [livePdfUrl, usePdfJsFormWidgets]);
 
-  const handlePrint = useCallback(async () => {
-    try {
-      const blob = await getCurrentPdfBlob();
-      const url = URL.createObjectURL(blob);
+  const handlePrint = useCallback(() => {
+    // Open a tab synchronously on click so we keep user activation after async blob work.
+    // (window.open after await is often blocked; a 0×0 iframe often fails to print PDFs.)
+    const printWindow = window.open('about:blank', '_blank');
+
+    const printWithIframe = (objectUrl: string) => {
       const iframe = document.createElement('iframe');
-      iframe.style.position = 'absolute';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
-      iframe.src = url;
+      iframe.setAttribute('aria-hidden', 'true');
+      Object.assign(iframe.style, {
+        position: 'fixed',
+        top: '0',
+        left: '-9999px',
+        width: '1024px',
+        height: '768px',
+        border: '0',
+        opacity: '0',
+        pointerEvents: 'none',
+      });
+      iframe.src = objectUrl;
       document.body.appendChild(iframe);
-      iframe.onload = () => {
+      const cleanup = () => {
+        iframe.remove();
+        URL.revokeObjectURL(objectUrl);
+      };
+      const trigger = () => {
         try {
           iframe.contentWindow?.focus();
           iframe.contentWindow?.print();
         } finally {
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-            URL.revokeObjectURL(url);
-          }, 1000);
+          window.setTimeout(cleanup, 1000);
         }
       };
-    } catch (err) {
-      console.error('Print failed', err);
-      const printWindow = window.open(livePdfUrl, '_blank');
-      if (printWindow) printWindow.onload = () => printWindow.print();
-    }
-  }, [livePdfUrl, getCurrentPdfBlob]);
+      iframe.onload = () => window.setTimeout(trigger, 300);
+    };
+
+    (async () => {
+      let objectUrl: string | null = null;
+      try {
+        const blob = await getCurrentPdfBlob();
+        objectUrl = URL.createObjectURL(blob);
+
+        if (printWindow && !printWindow.closed) {
+          printWindow.location.href = objectUrl;
+          let printScheduled = false;
+          const schedulePrint = () => {
+            if (printScheduled || printWindow.closed) return;
+            printScheduled = true;
+            window.setTimeout(() => {
+              try {
+                printWindow.focus();
+                printWindow.print();
+              } catch {
+                /* ignore */
+              }
+            }, 300);
+          };
+          printWindow.addEventListener('load', schedulePrint, { once: true });
+          window.setTimeout(schedulePrint, 1500);
+          return;
+        }
+
+        printWithIframe(objectUrl);
+      } catch {
+        printWindow?.close();
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      }
+    })().catch(() => {});
+  }, [getCurrentPdfBlob]);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -732,15 +772,24 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 <XMarkIcon className="tw-h-5 tw-w-5" aria-hidden />
               </button>
             </div>
-            <div className="tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-p-4 sm:tw-p-6">
-              <SignaturePadCanvas
-                key={`modal-${activePlacementIdx}`}
-                canvasWidth={modalPadCanvasW}
-                canvasHeight={modalPadCanvasH}
-                cssHeight={modalPadCssHeight}
-                initialDataUrl={modalSigSnapshot}
-                onSignatureChange={handleSignatureChange}
-              />
+            <div className="tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-bg-slate-100/90 tw-p-4 sm:tw-p-6">
+              <div className="tw-mx-auto tw-max-w-4xl tw-rounded-xl tw-border-2 tw-border-blue-400 tw-bg-blue-50 tw-p-3 tw-shadow-sm sm:tw-p-4">
+                <p className="tw-mb-1 tw-text-sm tw-font-semibold tw-text-blue-950">Signing area</p>
+                <p className="tw-mb-3 tw-text-xs tw-text-blue-900/80">
+                  Sign inside the white rectangle below. This outline matches where your signature will appear on the PDF.
+                </p>
+                <div className="tw-rounded-lg tw-border-2 tw-border-dashed tw-border-blue-500 tw-bg-white tw-p-2 tw-ring-2 tw-ring-blue-200/60">
+                  <SignaturePadCanvas
+                    key={`modal-${activePlacementIdx}`}
+                    canvasWidth={modalPadCanvasW}
+                    canvasHeight={modalPadCanvasH}
+                    cssHeight={modalPadCssHeight}
+                    initialDataUrl={modalSigSnapshot}
+                    onSignatureChange={handleSignatureChange}
+                    canvasClassName="tw-w-full tw-bg-white tw-rounded-md tw-border-2 tw-border-blue-200 tw-cursor-crosshair tw-touch-none"
+                  />
+                </div>
+              </div>
             </div>
             <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-2 tw-border-t tw-border-gray-200 tw-px-4 tw-py-3 tw-bg-gray-50">
               <button
@@ -897,15 +946,20 @@ function SignaturePadCanvas({
   cssHeight,
   initialDataUrl = null,
   onSignatureChange,
+  canvasClassName = 'tw-w-full tw-bg-white tw-rounded tw-border tw-border-gray-200 tw-cursor-crosshair tw-touch-none',
 }: {
   canvasWidth: number;
   canvasHeight: number;
   cssHeight: number;
   initialDataUrl?: string | null;
   onSignatureChange: (dataUrl: string | null) => void;
+  /** Tailwind classes for the canvas element (default matches inline pad). */
+  canvasClassName?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
+  /** Scale stroke with bitmap size so large modal canvases do not produce hairline strokes when embedded. */
+  const strokeLineWidth = Math.max(7, Math.round(Math.min(canvasWidth, canvasHeight) * 0.022));
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -956,10 +1010,10 @@ function SignaturePadCanvas({
     const ctx = getCtx();
     const pos = getPos(e);
     if (!ctx || !pos) return;
-    ctx.lineWidth = 6;
+    ctx.lineWidth = strokeLineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#1a1a1a';
+    ctx.strokeStyle = '#0f172a';
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   };
@@ -985,7 +1039,7 @@ function SignaturePadCanvas({
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        className="tw-w-full tw-bg-white tw-rounded tw-border tw-border-gray-200 tw-cursor-crosshair tw-touch-none"
+        className={canvasClassName}
         style={{ height: cssHeight }}
         onMouseDown={startStroke}
         onMouseMove={continueStroke}

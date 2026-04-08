@@ -16,6 +16,8 @@ interface InputProps {
   inputValue: string | Date,
   alert: any,
   inputType: string,
+  /** When true, field is display-only (no Edit/Save); e.g. client birth date. */
+  viewOnly?: boolean,
 }
 
 interface InputState {
@@ -71,6 +73,7 @@ class RenderInput extends Component<InputProps, InputState> {
 
   // edit input
   handleEdit() {
+    if (this.props.viewOnly) return;
     this.setState({
       readOnly: false,
     });
@@ -199,6 +202,7 @@ class RenderInput extends Component<InputProps, InputState> {
       inputLabel,
       inputName,
       inputType,
+      viewOnly,
     } = this.props;
 
     const {
@@ -208,6 +212,27 @@ class RenderInput extends Component<InputProps, InputState> {
       buttonState,
       wrongPasswordInModal,
     } = this.state;
+
+    const locked = viewOnly === true;
+    const fieldReadOnly = readOnly || locked;
+
+    let actionButtons: React.ReactNode = null;
+    if (!locked) {
+      if (readOnly) {
+        actionButtons = (
+          <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={this.handleEdit}>
+            Edit
+          </button>
+        );
+      } else {
+        actionButtons = (
+          <span className="float-right">
+            <button type="button" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
+            <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={this.handleOpenPasswordConfirmModal}>Save</button>
+          </span>
+        );
+      }
+    }
 
     return (
       <div className="row mb-3 mt-3">
@@ -221,13 +246,13 @@ class RenderInput extends Component<InputProps, InputState> {
                 name={inputName}
                 value={input}
                 onChange={this.handleInputChange}
-                disabled={readOnly}
+                disabled={fieldReadOnly}
               >
                 {USStates.map((USState) => (<option key={uuid()}>{USState.abbreviation}</option>))}
               </select>
             ) : null}
           { inputType === 'text' || inputType === 'tel'
-            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={this.handleInputChange} readOnly={readOnly} />
+            ? <input type={inputType} className="form-control form-purple" name={inputName} id={inputName} value={input} onChange={this.handleInputChange} readOnly={fieldReadOnly} />
             : null}
           { inputType === 'date' ? (
             <DatePicker
@@ -235,18 +260,12 @@ class RenderInput extends Component<InputProps, InputState> {
               onChange={this.handleInputChange}
               selected={input}
               className="form-control form-purple"
-              readOnly={readOnly}
+              readOnly={fieldReadOnly}
             />
           ) : null}
         </div>
         <div className="col-3">
-          { readOnly ? <button type="button" name={inputName} className="btn btn-outline-dark float-right" onClick={this.handleEdit}>Edit</button>
-            : (
-              <span className="float-right">
-                <button type="button" name={inputName} className="btn btn-light mr-3" onClick={this.handleCancel}>Cancel</button>
-                <button type="submit" name={inputName} className="btn btn-outline-dark" onClick={this.handleOpenPasswordConfirmModal}>Save</button>
-              </span>
-            )}
+          {actionButtons}
         </div>
         <ConfirmPasswordModal show={showPasswordConfirm} section={inputName} buttonState={buttonState} wrongPasswordInModal={wrongPasswordInModal} handleSaveInfo={this.handleSaveInfo} handleClosePasswordConfirm={this.handleClosePasswordConfirm} />
       </div>

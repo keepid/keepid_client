@@ -151,3 +151,27 @@ export function resolveDirectiveFromProfiles(
   }
   return undefined;
 }
+
+const NAME_HISTORY_DIRECTIVE_RE = /^nameHistory\.\d+\.(first|middle|last|suffix|maiden)$/;
+
+/**
+ * Legal name, DOB, and name history are not saved from interactive forms (see server
+ * UpdateProfileFromFormService#isExcludedFromInteractiveFormSync).
+ */
+export function isExcludedFromProfileFormSync(directiveKey: string): boolean {
+  let d = directiveKey.trim();
+  const lastColon = d.lastIndexOf(':');
+  if (lastColon >= 0 && lastColon + 1 < d.length) {
+    d = d.slice(lastColon + 1);
+  }
+  if (d.startsWith('client.')) {
+    d = d.slice('client.'.length);
+  }
+  if (d === 'birthDate' || d === 'firstName' || d === 'lastName' || d === 'middleName') {
+    return true;
+  }
+  if (d.startsWith('currentName.')) {
+    return true;
+  }
+  return NAME_HISTORY_DIRECTIVE_RE.test(d);
+}

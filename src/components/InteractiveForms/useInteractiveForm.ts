@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { getByPath, resolveDirectiveFromProfiles } from '../../utils/directives';
+import { getByPath, isExcludedFromProfileFormSync, resolveDirectiveFromProfiles } from '../../utils/directives';
 import {
   type GetQuestionsV2Response,
   getInteractiveFormConfig,
@@ -449,13 +449,15 @@ export function extractDirectivesFromUiSchema(
         const value = getPropValue(scope);
         if (value !== undefined && value !== null && value !== '') {
           if (typeof directive === 'string') {
-            directivesMap[directive] = value;
+            if (!isExcludedFromProfileFormSync(directive)) {
+              directivesMap[directive] = value;
+            }
           } else if (Array.isArray(directive)) {
             const useDirective = resolveConditionalDirective(
               directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
               data,
             );
-            if (useDirective) {
+            if (useDirective && !isExcludedFromProfileFormSync(useDirective)) {
               directivesMap[useDirective] = value;
             }
           }

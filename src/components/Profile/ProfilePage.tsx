@@ -87,7 +87,21 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
 
-  const canEditNameAndBirthDate = useMemo(() => {
+  const canEditName = useMemo(() => {
+    if (!profile) return true;
+    if (!targetUsername) return true;
+    if (profile.privilegeLevel === 'Client') {
+      return currentUserRole === Role.Worker;
+    }
+    return (
+      currentUserRole === Role.Worker
+      || currentUserRole === Role.Admin
+      || currentUserRole === Role.Director
+    );
+  }, [profile, targetUsername, currentUserRole]);
+
+  const canEditBirthDate = useMemo(() => {
+    if (currentUserRole === Role.Client) return false;
     if (!profile) return true;
     if (!targetUsername) return true;
     if (profile.privilegeLevel === 'Client') {
@@ -280,7 +294,8 @@ export default function ProfilePage({ targetUsername }: Props) {
           <EssentialAccountSection
             profile={profile}
             targetUsername={targetUsername}
-            canEditNameAndBirthDate={canEditNameAndBirthDate}
+            canEditName={canEditName}
+            canEditBirthDate={canEditBirthDate}
             onSaved={() => fetchProfile()}
           />
 

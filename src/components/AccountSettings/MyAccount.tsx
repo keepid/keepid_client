@@ -32,6 +32,7 @@ interface Props {
 interface State {
   // user info
   username: string,
+  privilegeLevel: string,
   // basic info
   birthDate: Date,
   firstName: string,
@@ -78,6 +79,7 @@ export class MyAccount extends Component<Props, State, {}> {
     this.state = {
       // user info
       username: '',
+      privilegeLevel: '',
 
       // basic info
       birthDate: new Date(),
@@ -119,12 +121,20 @@ export class MyAccount extends Component<Props, State, {}> {
       },
     }).then((response) => response.json())
       .then((responseJSON) => {
-        const date = responseJSON.birthDate.split('-');
+        let birthDate = new Date();
+        const rawBd = responseJSON.birthDate;
+        if (rawBd && typeof rawBd === 'string') {
+          const parts = rawBd.split('-');
+          if (parts.length === 3) {
+            birthDate = new Date(Number(parts[2]), Number(parts[0]) - 1, Number(parts[1]));
+          }
+        }
         const newState = {
           username: responseJSON.username,
+          privilegeLevel: responseJSON.privilegeLevel || '',
           firstName: responseJSON.firstName,
           lastName: responseJSON.lastName,
-          birthDate: new Date(date[2], date[0] - 1, date[1]),
+          birthDate,
           email: responseJSON.email,
           phone: responseJSON.phone,
           city: responseJSON.city,
@@ -264,6 +274,7 @@ export class MyAccount extends Component<Props, State, {}> {
   render() {
     const {
       username,
+      privilegeLevel,
       birthDate,
       firstName,
       lastName,
@@ -320,6 +331,7 @@ export class MyAccount extends Component<Props, State, {}> {
                 inputValue={birthDate}
                 inputType="date"
                 alert={alert}
+                viewOnly={privilegeLevel === 'Client'}
               />
               <RenderInput inputLabel="Email" inputName="email" inputValue={email} inputType="text" alert={alert} />
               <RenderInput

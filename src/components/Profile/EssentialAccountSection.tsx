@@ -21,8 +21,10 @@ const PRIMARY_LABEL = 'primary';
 type Props = {
   profile: ProfileData;
   targetUsername?: string;
-  /** When false, name and birth date stay read-only (e.g. non-worker viewing a client). */
-  canEditNameAndBirthDate?: boolean;
+  /** Legal name (first/middle/last/suffix); workers may edit a client’s name, etc. */
+  canEditName?: boolean;
+  /** Birth date; clients cannot edit their own DOB (workers correct it). */
+  canEditBirthDate?: boolean;
   onSaved?: () => void;
 };
 
@@ -60,7 +62,8 @@ function formatPhone(phone: string): string {
 export default function EssentialAccountSection({
   profile,
   targetUsername,
-  canEditNameAndBirthDate = true,
+  canEditName = true,
+  canEditBirthDate = true,
   onSaved,
 }: Props) {
   const alert = useAlert();
@@ -127,11 +130,17 @@ export default function EssentialAccountSection({
     });
   }, [editedPhoneBook, phoneBook]);
 
-  const identityDirty = useMemo(() => {
-    if (!canEditNameAndBirthDate || !identitySnapshot) return false;
-    return !accountNameEqual(editName, identitySnapshot.name)
-      || editBirthIso !== identitySnapshot.birthIso;
-  }, [canEditNameAndBirthDate, identitySnapshot, editName, editBirthIso]);
+  const nameDirty = useMemo(() => {
+    if (!canEditName || !identitySnapshot) return false;
+    return !accountNameEqual(editName, identitySnapshot.name);
+  }, [canEditName, identitySnapshot, editName]);
+
+  const birthDirty = useMemo(() => {
+    if (!canEditBirthDate || !identitySnapshot) return false;
+    return editBirthIso !== identitySnapshot.birthIso;
+  }, [canEditBirthDate, identitySnapshot, editBirthIso]);
+
+  const identityDirty = nameDirty || birthDirty;
 
   const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty;
 
@@ -225,7 +234,7 @@ export default function EssentialAccountSection({
   async function saveIdentity(): Promise<boolean> {
     if (!identitySnapshot || !identityDirty) return true;
     const payload: Record<string, unknown> = {};
-    if (!accountNameEqual(editName, identitySnapshot.name)) {
+    if (nameDirty) {
       const f = (editName.first || '').trim();
       const l = (editName.last || '').trim();
       if (!isValidFirstName(f)) {
@@ -243,7 +252,7 @@ export default function EssentialAccountSection({
         suffix: (editName.suffix || '').trim() || null,
       };
     }
-    if (editBirthIso !== identitySnapshot.birthIso) {
+    if (birthDirty) {
       if (!editBirthIso.trim()) {
         payload.birthDate = null;
       } else {
@@ -350,12 +359,18 @@ export default function EssentialAccountSection({
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
-    if (canEditNameAndBirthDate) {
+    if (canEditName || canEditBirthDate) {
       const snapName = initialNameFromProfile(profile);
       const snapBirth = birthDateApiToIso(profile.birthDate);
       setIdentitySnapshot({ name: { ...snapName }, birthIso: snapBirth });
-      setEditName({ ...snapName });
-      setEditBirthIso(snapBirth);
+      if (canEditName) {
+        setEditName({ ...snapName });
+      }
+      if (canEditBirthDate) {
+        setEditBirthIso(snapBirth);
+      } else {
+        setEditBirthIso('');
+      }
     } else {
       setIdentitySnapshot(null);
     }
@@ -415,7 +430,7 @@ export default function EssentialAccountSection({
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
           <div className="col-9 card-text">
-            {isEditing && canEditNameAndBirthDate ? (
+            {isEditing && canEditName ? (
               <div className="tw-space-y-2 tw-pt-1">
                 <div className="tw-flex tw-flex-wrap tw-gap-2">
                   <input
@@ -462,7 +477,7 @@ export default function EssentialAccountSection({
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Birth Date</div>
           <div className="col-9 card-text">
-            {isEditing && canEditNameAndBirthDate ? (
+            {isEditing && canEditBirthDate ? (
               <div className="tw-pt-1">
                 <input
                   type="date"
