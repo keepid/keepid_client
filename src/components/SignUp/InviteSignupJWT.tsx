@@ -15,6 +15,7 @@ function InviteSignupJWT() {
         <InviteSignupFlow
           orgName={decoded.organization}
           personRole={decoded.role}
+          inviteJwt={jwt}
         />
       );
     }

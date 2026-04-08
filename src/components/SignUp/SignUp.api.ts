@@ -107,12 +107,14 @@ async function _createUser({
   recaptchaPayload,
   personRole,
   orgName,
+  inviteJwt,
   endpoint,
 }: {
   accountInformation: AccountInformationProperties;
   recaptchaPayload: string;
   personRole: string;
   orgName?: string;
+  inviteJwt?: string;
   endpoint: string;
 }) {
   const { firstname, lastname, birthDate, username, password } =
@@ -120,26 +122,34 @@ async function _createUser({
 
   const birthDateString = birthDateStringConverter(birthDate || new Date());
 
+  const payload: Record<string, unknown> = {
+    firstname,
+    lastname,
+    birthDate: birthDateString,
+    email: '',
+    phonenumber: '',
+    address: '',
+    city: '',
+    state: '',
+    zipcode: '',
+    twoFactorOn: false,
+    username,
+    password,
+    recaptchaPayload,
+  };
+  if (inviteJwt) {
+    payload.inviteJwt = inviteJwt;
+  } else {
+    payload.personRole = personRole;
+  }
+  if (orgName) {
+    payload.orgName = orgName;
+  }
+
   return fetch(`${getServerURL()}/${endpoint}`, {
     method: 'POST',
     credentials: 'include',
-    body: JSON.stringify({
-      firstname,
-      lastname,
-      birthDate: birthDateString,
-      email: '',
-      phonenumber: '',
-      address: '',
-      city: '',
-      state: '',
-      zipcode: '',
-      twoFactorOn: false,
-      username,
-      password,
-      personRole,
-      recaptchaPayload,
-      orgName,
-    }),
+    body: JSON.stringify(payload),
   }).then((response) => response.json());
 }
 
@@ -167,11 +177,13 @@ export async function signupUserFromInvite({
   recaptchaPayload,
   personRole,
   orgName,
+  inviteJwt,
 }: {
   accountInformation: AccountInformationProperties;
   recaptchaPayload: string;
   personRole: string;
   orgName: string;
+  inviteJwt: string;
 }) {
   const endpoint = 'create-invited-user';
 
@@ -180,6 +192,7 @@ export async function signupUserFromInvite({
     recaptchaPayload,
     personRole,
     orgName,
+    inviteJwt,
     endpoint,
   });
 }

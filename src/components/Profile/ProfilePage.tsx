@@ -87,37 +87,45 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
 
+  const canEditClientIdentityFields = useMemo(
+    () =>
+      currentUserRole === Role.Worker
+      || currentUserRole === Role.Admin
+      || currentUserRole === Role.Director,
+    [currentUserRole],
+  );
+
   const canEditName = useMemo(() => {
     if (!profile) return true;
     if (!targetUsername) return true;
     if (profile.privilegeLevel === 'Client') {
-      return currentUserRole === Role.Worker;
+      return canEditClientIdentityFields;
     }
     return (
       currentUserRole === Role.Worker
       || currentUserRole === Role.Admin
       || currentUserRole === Role.Director
     );
-  }, [profile, targetUsername, currentUserRole]);
+  }, [profile, targetUsername, currentUserRole, canEditClientIdentityFields]);
 
   const canEditBirthDate = useMemo(() => {
     if (currentUserRole === Role.Client) return false;
     if (!profile) return true;
     if (!targetUsername) return true;
     if (profile.privilegeLevel === 'Client') {
-      return currentUserRole === Role.Worker;
+      return canEditClientIdentityFields;
     }
     return (
       currentUserRole === Role.Worker
       || currentUserRole === Role.Admin
       || currentUserRole === Role.Director
     );
-  }, [profile, targetUsername, currentUserRole]);
+  }, [profile, targetUsername, currentUserRole, canEditClientIdentityFields]);
 
   const lockClientLegalNameInSavedSection = Boolean(
     targetUsername
     && profile?.privilegeLevel === 'Client'
-    && currentUserRole !== Role.Worker,
+    && !canEditClientIdentityFields,
   );
 
   const displayName = useMemo(() => {

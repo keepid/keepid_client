@@ -6,8 +6,6 @@ import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
-import MenuDots from '../../static/images/menu-dots.png';
-import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
@@ -394,26 +392,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                   {sortedClients.length > 0 ? (
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
                       {currentPosts.map((client) => (
-                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
-                          <div className="tw-absolute tw-top-3 tw-right-3">
-                            <details className="tw-relative">
-                              <summary className="tw-list-none tw-cursor-pointer">
-                                <img alt="menu" src={MenuDots} className="tw-h-6" />
-                              </summary>
-                              <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
-                                <Link
-                                  to={`/profile/${client.username}`}
-                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                                >
-                                  <div className="tw-flex tw-items-center">
-                                    Profile
-                                  </div>
-                                </Link>
-                              </div>
-                            </details>
-                          </div>
-
-                          <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-flex-grow">
+                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+                          <Link
+                            to={`/profile/${client.username}`}
+                            className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
+                          >
                             <div className="tw-flex tw-items-center tw-mb-3">
                               {client.photo ? (
                                 <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
@@ -436,10 +419,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                             </div>
                           </Link>
 
-                          <div className="tw-flex tw-gap-2 tw-mt-4">
-                              <Link to={`/upload-document/${client.username}`} className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none">
-                                  <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
-                                  Upload
+                          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
+                              <Link
+                                to={{
+                                  pathname: `/my-documents/${client.username}`,
+                                  state: { clientName: `${client.firstName} ${client.lastName}`.trim() },
+                                }}
+                                className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none"
+                              >
+                                Documents
                               </Link>
                               <Link
                                 to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}

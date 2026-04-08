@@ -5,13 +5,14 @@ import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
+import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
+import DocumentsInlineUpload from './DocumentsInlineUpload';
 import DocumentViewer from './DocumentViewer';
 import ViewDocument from './ViewDocument';
 
@@ -480,15 +481,8 @@ class MyDocuments extends Component<Props, State> {
     return actions;
   };
 
-  setLink() {
-    if (this.props.userRole !== Role.Client) {
-      return '/upload-document/';
-    }
-    return `/upload-document/${this.props.username}`;
-  }
-
   render() {
-    const { pdfFiles, buttonState, currentUserRole } = this.state;
+    const { currentUserRole } = this.state;
 
     const { userRole, username } = this.props;
     const {
@@ -573,19 +567,16 @@ class MyDocuments extends Component<Props, State> {
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <h1 className="display-4">{this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}</h1>
-              <p className="lead pt-3">
-                You can edit, download, and delete your documents you currently
-                have stored on Keep.id.
-              </p>
-              <button
-                type="button"
-                className="btn btn-outline-primary btn-sm mr-3"
-              >
-                <Link className="nav-link" to={this.setLink()}>
-                  Upload Documents
-                </Link>
-              </button>
+              <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h1 className="display-4 mb-0">
+                  {this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}
+                </h1>
+                <DocumentsInlineUpload
+                  targetUser={username}
+                  alert={this.props.alert}
+                  onUploadComplete={() => this.getDocumentData()}
+                />
+              </div>
             </div>
 
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
