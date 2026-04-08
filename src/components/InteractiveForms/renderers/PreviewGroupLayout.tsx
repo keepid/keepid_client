@@ -25,11 +25,11 @@ function PreviewGroupLayoutComponent({
   return (
     <fieldset className="form-preview-group tw-mb-6" hidden={visible === undefined || visible === null ? false : !visible}>
       {hasLabel(label) && (
-        <legend className="form-preview-group-legend tw-block tw-text-base tw-font-semibold tw-text-gray-800 tw-mb-4">
+        <legend className="form-preview-group-legend tw-block tw-text-xl tw-font-semibold tw-text-gray-800 tw-mb-5">
           {label}
         </legend>
       )}
-      <div className="form-preview-group-fields tw-flex tw-flex-wrap tw-gap-6">
+      <div className="form-preview-group-fields tw-flex tw-flex-wrap tw-gap-8">
         {elements.map((child, index) => (
           <div key={`${path}-${(child as { scope?: string }).scope ?? `el-${index}`}`} className="form-preview-group-item tw-flex tw-flex-col tw-min-w-0 tw-flex-1">
             <JsonFormsDispatch

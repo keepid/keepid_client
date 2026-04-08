@@ -65,7 +65,7 @@ export default function EnrollClientPage(): JSX.Element {
         if (value.trim() !== '') error = validateLastname(value);
         break;
       case 'email':
-        error = validateEmail(value);
+        if (value.trim() !== '') error = validateEmail(value);
         break;
       case 'phonenumber':
         if (value && value.trim() !== '') error = validatePhonenumber(value);
@@ -96,6 +96,16 @@ export default function EnrollClientPage(): JSX.Element {
     }
     setAgreementError('');
 
+    const emailTrimmed = values.email.trim();
+    if (emailTrimmed !== '') {
+      const emailErr = validateEmail(values.email);
+      if (emailErr) {
+        setFieldErrors((prev) => ({ ...prev, email: emailErr }));
+        alert.error('Please enter a valid email or leave the field blank.');
+        return;
+      }
+    }
+
     const birthDateString = birthDateStringFromIsoDateOnly(values.birthDate);
     if (!birthDateString) {
       alert.error('Please enter a valid birth date.');
@@ -110,7 +120,7 @@ export default function EnrollClientPage(): JSX.Element {
         lastname: values.lastname,
         suffix: values.suffix.trim() || undefined,
         birthDate: birthDateString,
-        email: values.email,
+        email: emailTrimmed,
         phonenumber: values.phonenumber,
       });
 
@@ -147,8 +157,20 @@ export default function EnrollClientPage(): JSX.Element {
           </h2>
           <p className="tw-text-gray-600 tw-mb-6">
             <strong>{values.firstname} {values.lastname}</strong> has been enrolled.
-            The client can log in via Google OAuth using <strong>{values.email}</strong>,
-            or set a password using Forgot Password on the login page.
+            {values.email.trim() ? (
+              <>
+                {' '}
+                The client can log in via Google OAuth using <strong>{values.email.trim()}</strong>,
+                or set a password using Forgot Password on the login page.
+              </>
+            ) : (
+              <>
+                {' '}
+                No email was provided. The client can sign in with Google if their Google account is
+                linked later, or use their username with Forgot Password once an email is added to
+                their profile.
+              </>
+            )}
           </p>
           <div className="tw-flex tw-justify-center tw-space-x-4">
             <button
@@ -200,7 +222,7 @@ export default function EnrollClientPage(): JSX.Element {
               Enroll a New Client
             </h2>
             <p className="tw-text-gray-500 tw-mt-2">
-              The client can use Forgot Password to set their password.
+              Email is optional. If provided, the client can use Forgot Password to set their password.
             </p>
           </div>
 
@@ -304,7 +326,7 @@ export default function EnrollClientPage(): JSX.Element {
 
               <div>
                 <label htmlFor="email" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                  Email
+                  Email <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
                 </label>
                 <input
                   id="email"
@@ -315,7 +337,6 @@ export default function EnrollClientPage(): JSX.Element {
                   value={values.email}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  required
                 />
                 {fieldErrors.email && (
                   <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.email}</p>

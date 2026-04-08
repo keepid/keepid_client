@@ -12,7 +12,8 @@ export interface EnrollClientData {
   lastname: string;
   suffix?: string;
   birthDate: string;
-  email: string;
+  /** Omit or leave empty when the client has no email. */
+  email?: string;
   phonenumber?: string;
 }
 

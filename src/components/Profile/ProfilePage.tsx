@@ -87,6 +87,25 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
 
+  const canEditNameAndBirthDate = useMemo(() => {
+    if (!profile) return true;
+    if (!targetUsername) return true;
+    if (profile.privilegeLevel === 'Client') {
+      return currentUserRole === Role.Worker;
+    }
+    return (
+      currentUserRole === Role.Worker
+      || currentUserRole === Role.Admin
+      || currentUserRole === Role.Director
+    );
+  }, [profile, targetUsername, currentUserRole]);
+
+  const lockClientLegalNameInSavedSection = Boolean(
+    targetUsername
+    && profile?.privilegeLevel === 'Client'
+    && currentUserRole !== Role.Worker,
+  );
+
   const displayName = useMemo(() => {
     if (!profile) return '';
     return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.email || '';
@@ -261,6 +280,7 @@ export default function ProfilePage({ targetUsername }: Props) {
           <EssentialAccountSection
             profile={profile}
             targetUsername={targetUsername}
+            canEditNameAndBirthDate={canEditNameAndBirthDate}
             onSaved={() => fetchProfile()}
           />
 
@@ -275,6 +295,7 @@ export default function ProfilePage({ targetUsername }: Props) {
             <SavedApplicationInfoSection
               profile={profile}
               targetUsername={targetUsername}
+              lockClientLegalNameFields={lockClientLegalNameInSavedSection}
               onSaved={() => fetchProfile()}
             />
           )}

@@ -1,9 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
-import { isValidPhoneNumber } from '../../lib/Validations/Validations';
+import {
+  isValidBirthDate,
+  isValidFirstName,
+  isValidLastName,
+  isValidPhoneNumber,
+} from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
-import type { ProfileData } from './ProfilePage';
+import { birthDateStringFromIsoDateOnly } from '../SignUp/SignUp.util';
+import type { NameObj, ProfileData } from './ProfilePage';
 
 type PhoneBookEntry = {
   label: string;
@@ -15,8 +21,33 @@ const PRIMARY_LABEL = 'primary';
 type Props = {
   profile: ProfileData;
   targetUsername?: string;
+  /** When false, name and birth date stay read-only (e.g. non-worker viewing a client). */
+  canEditNameAndBirthDate?: boolean;
   onSaved?: () => void;
 };
+
+function birthDateApiToIso(api: string | undefined): string {
+  if (!api?.trim()) return '';
+  const m = api.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!m) return '';
+  return `${m[3]}-${m[1]}-${m[2]}`;
+}
+
+function initialNameFromProfile(profile: ProfileData): NameObj {
+  return {
+    first: profile.currentName?.first ?? profile.firstName ?? '',
+    middle: profile.currentName?.middle ?? '',
+    last: profile.currentName?.last ?? profile.lastName ?? '',
+    suffix: profile.currentName?.suffix ?? '',
+  };
+}
+
+function accountNameEqual(a: NameObj, b: NameObj): boolean {
+  return (a.first || '') === (b.first || '')
+    && (a.middle || '') === (b.middle || '')
+    && (a.last || '') === (b.last || '')
+    && (a.suffix || '') === (b.suffix || '');
+}
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/[^0-9]/g, '');
@@ -29,12 +60,19 @@ function formatPhone(phone: string): string {
 export default function EssentialAccountSection({
   profile,
   targetUsername,
+  canEditNameAndBirthDate = true,
   onSaved,
 }: Props) {
   const alert = useAlert();
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingLoginInstructions, setIsSendingLoginInstructions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [identitySnapshot, setIdentitySnapshot] = useState<{
+    name: NameObj;
+    birthIso: string;
+  } | null>(null);
+  const [editName, setEditName] = useState<NameObj>(initialNameFromProfile(profile));
+  const [editBirthIso, setEditBirthIso] = useState('');
 
   const initialEmail = profile.email || '';
   const [email, setEmail] = useState(initialEmail);
@@ -89,7 +127,13 @@ export default function EssentialAccountSection({
     });
   }, [editedPhoneBook, phoneBook]);
 
-  const isDirty = emailDirty || phoneBookDirty || showAddRow;
+  const identityDirty = useMemo(() => {
+    if (!canEditNameAndBirthDate || !identitySnapshot) return false;
+    return !accountNameEqual(editName, identitySnapshot.name)
+      || editBirthIso !== identitySnapshot.birthIso;
+  }, [canEditNameAndBirthDate, identitySnapshot, editName, editBirthIso]);
+
+  const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty;
 
   const name = useMemo(() => {
     const parts = [
@@ -178,6 +222,56 @@ export default function EssentialAccountSection({
     return true;
   }
 
+  async function saveIdentity(): Promise<boolean> {
+    if (!identitySnapshot || !identityDirty) return true;
+    const payload: Record<string, unknown> = {};
+    if (!accountNameEqual(editName, identitySnapshot.name)) {
+      const f = (editName.first || '').trim();
+      const l = (editName.last || '').trim();
+      if (!isValidFirstName(f)) {
+        alert.show('Please enter a valid first name.', { type: 'error' });
+        return false;
+      }
+      if (!isValidLastName(l)) {
+        alert.show('Please enter a valid last name.', { type: 'error' });
+        return false;
+      }
+      payload.currentName = {
+        first: f,
+        middle: (editName.middle || '').trim() || null,
+        last: l,
+        suffix: (editName.suffix || '').trim() || null,
+      };
+    }
+    if (editBirthIso !== identitySnapshot.birthIso) {
+      if (!editBirthIso.trim()) {
+        payload.birthDate = null;
+      } else {
+        const apiBd = birthDateStringFromIsoDateOnly(editBirthIso);
+        if (!apiBd || !isValidBirthDate(apiBd)) {
+          alert.show('Please enter a valid birth date.', { type: 'error' });
+          return false;
+        }
+        payload.birthDate = apiBd;
+      }
+    }
+    if (Object.keys(payload).length === 0) return true;
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save name or birth date: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
   async function saveEmail(): Promise<boolean> {
     if (!emailDirty) return true;
     const payload: Record<string, any> = { email };
@@ -200,6 +294,7 @@ export default function EssentialAccountSection({
   async function handleSave() {
     setIsSaving(true);
     try {
+      if (!(await saveIdentity())) return;
       if (!(await saveEmail())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
@@ -209,6 +304,7 @@ export default function EssentialAccountSection({
 
       alert.show('Saved account info');
       setIsEditing(false);
+      setIdentitySnapshot(null);
       setShowAddRow(false);
       setAddLabel('');
       setAddPhone('');
@@ -254,6 +350,15 @@ export default function EssentialAccountSection({
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
+    if (canEditNameAndBirthDate) {
+      const snapName = initialNameFromProfile(profile);
+      const snapBirth = birthDateApiToIso(profile.birthDate);
+      setIdentitySnapshot({ name: { ...snapName }, birthIso: snapBirth });
+      setEditName({ ...snapName });
+      setEditBirthIso(snapBirth);
+    } else {
+      setIdentitySnapshot(null);
+    }
     setIsEditing(true);
   }
 
@@ -264,6 +369,7 @@ export default function EssentialAccountSection({
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
+    setIdentitySnapshot(null);
     setIsEditing(false);
   }
 
@@ -305,16 +411,74 @@ export default function EssentialAccountSection({
 
         <hr />
 
-        {/* Name (read-only) */}
+        {/* Name */}
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Name</div>
-          <div className="col-9 card-text tw-pt-2">{name}</div>
+          <div className="col-9 card-text">
+            {isEditing && canEditNameAndBirthDate ? (
+              <div className="tw-space-y-2 tw-pt-1">
+                <div className="tw-flex tw-flex-wrap tw-gap-2">
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    style={{ minWidth: 120 }}
+                    placeholder="First"
+                    value={editName.first || ''}
+                    onChange={(e) => setEditName({ ...editName, first: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    style={{ minWidth: 100 }}
+                    placeholder="Middle"
+                    value={editName.middle || ''}
+                    onChange={(e) => setEditName({ ...editName, middle: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    style={{ minWidth: 120 }}
+                    placeholder="Last"
+                    value={editName.last || ''}
+                    onChange={(e) => setEditName({ ...editName, last: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    style={{ minWidth: 100, maxWidth: 140 }}
+                    placeholder="Suffix"
+                    value={editName.suffix || ''}
+                    onChange={(e) => setEditName({ ...editName, suffix: e.target.value })}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="tw-pt-2">{name}</div>
+            )}
+          </div>
         </div>
 
-        {/* Birth Date (read-only) */}
+        {/* Birth Date */}
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Birth Date</div>
-          <div className="col-9 card-text tw-pt-2">{profile.birthDate || ''}</div>
+          <div className="col-9 card-text">
+            {isEditing && canEditNameAndBirthDate ? (
+              <div className="tw-pt-1">
+                <input
+                  type="date"
+                  className="form-control form-purple"
+                  style={{ maxWidth: 220 }}
+                  value={editBirthIso}
+                  onChange={(e) => setEditBirthIso(e.target.value)}
+                />
+                <div className="tw-text-xs tw-text-gray-500 tw-mt-1">
+                  Stored as MM-DD-YYYY. Clear the field to remove the birth date.
+                </div>
+              </div>
+            ) : (
+              <div className="tw-pt-2">{profile.birthDate || ''}</div>
+            )}
+          </div>
         </div>
 
         {/* Email */}

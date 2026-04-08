@@ -108,7 +108,7 @@ export default function InteractiveFormWizard({
 
   if (loading) {
     return (
-      <div className="tw-flex tw-items-center tw-justify-center tw-py-12 tw-text-gray-500">
+      <div className="tw-flex tw-items-center tw-justify-center tw-py-16 tw-text-lg tw-text-gray-600">
         Loading form...
       </div>
     );
@@ -116,15 +116,15 @@ export default function InteractiveFormWizard({
 
   if (error) {
     return (
-      <div className="tw-p-6 tw-text-center">
-        <p className="tw-text-red-600">{error}</p>
+      <div className="tw-p-8 tw-text-center">
+        <p className="tw-text-lg tw-text-red-600">{error}</p>
       </div>
     );
   }
 
   if (!jsonSchema || !uiSchema) {
     return (
-      <div className="tw-p-6 tw-text-center tw-text-gray-500">
+      <div className="tw-p-8 tw-text-center tw-text-lg tw-text-gray-600">
         No form configuration found for this application.
       </div>
     );

@@ -1,17 +1,24 @@
-/* Form preview: vanilla JSON Forms output (inputs, labels, validation) */
+/* Form preview: vanilla JSON Forms output (inputs, labels, validation) — sized for client readability */
 .form-preview input[type="text"],
 .form-preview input[type="number"],
 .form-preview input[type="email"],
 .form-preview input[type="date"],
-.form-preview textarea {
+.form-preview textarea,
+.form-preview select {
   display: block;
   width: 100%;
   min-width: 0;
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-  padding: 0.5rem 0.75rem;
+  min-height: 3rem;
+  border-radius: 0.5rem;
+  border: 2px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  font-size: 1.125rem;
+  line-height: 1.5;
   color: #111827;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.form-preview textarea {
+  min-height: 6rem;
 }
 .form-preview input::placeholder,
 .form-preview textarea::placeholder {
@@ -38,29 +45,32 @@
 }
 
 .form-preview .control > label:first-child {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1f2937;
 }
 
 .form-preview .form-preview-group-item label,
 .form-preview .form-preview-group-item .block {
-  color: #6b7280;
-  font-size: 0.875rem;
+  color: #4b5563;
+  font-size: 1rem;
 }
 
 .form-preview .radio-option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 .form-preview .radio-label {
-  color: #4b5563;
+  color: #374151;
+  font-size: 1.0625rem;
 }
 
 .form-preview .validation {
   margin-top: 0.75rem;
+  font-size: 1rem;
 }
 .form-preview .validation_error {
   color: #dc2626;
+  font-size: 1rem;
 }

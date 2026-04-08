@@ -2,6 +2,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './sign-and-download-viewer.css';
 
+import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { PDFDocument } from 'pdf-lib';
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useAlert } from 'react-alert';
@@ -60,6 +61,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const sigPadAreaRef = useRef<HTMLDivElement>(null);
   const [frameWidth, setFrameWidth] = useState(560);
   const [currentSigDataUrl, setCurrentSigDataUrl] = useState<string | null>(null);
+  const currentSigRef = useRef<string | null>(null);
+  currentSigRef.current = currentSigDataUrl;
+  const [sigExpandModalOpen, setSigExpandModalOpen] = useState(false);
+  const [modalPadCssHeight, setModalPadCssHeight] = useState(320);
+  /** Hydrates inline pad after modal close; not updated on every stroke (avoids wiping the canvas). */
+  const [inlineSigRestoreUrl, setInlineSigRestoreUrl] = useState<string | null>(null);
+  /** Snapshot when opening expanded pad; stable while drawing in the modal. */
+  const [modalSigSnapshot, setModalSigSnapshot] = useState<string | null>(null);
   const alert = useAlert();
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
@@ -83,6 +92,21 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [pdfVersion, setPdfVersion] = useState(0);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
 
+  const handleSignatureChange = useCallback((url: string | null) => {
+    setCurrentSigDataUrl(url);
+    if (url === null) setInlineSigRestoreUrl(null);
+  }, []);
+
+  const openSigExpandModal = useCallback(() => {
+    setModalSigSnapshot(currentSigRef.current);
+    setSigExpandModalOpen(true);
+  }, []);
+
+  const closeSigExpandModal = useCallback(() => {
+    setSigExpandModalOpen(false);
+    setInlineSigRestoreUrl(currentSigRef.current);
+  }, []);
+
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return undefined;
@@ -92,6 +116,33 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    const updateModalPadHeight = () => {
+      setModalPadCssHeight(Math.min(520, Math.max(240, Math.round(window.innerHeight * 0.52))));
+    };
+    updateModalPadHeight();
+    window.addEventListener('resize', updateModalPadHeight);
+    return () => window.removeEventListener('resize', updateModalPadHeight);
+  }, []);
+
+  useEffect(() => {
+    if (!sigExpandModalOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [sigExpandModalOpen]);
+
+  useEffect(() => {
+    if (!sigExpandModalOpen) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeSigExpandModal();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sigExpandModalOpen, closeSigExpandModal]);
   const renderedWidth = Math.max(100, frameWidth - 2);
   /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
   const usePdfJsFormWidgets = !pdfFormsReadOnly;
@@ -110,6 +161,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const PAD_RESOLUTION_SCALE = 3;
   const padCanvasH = Math.round(PAD_CSS_HEIGHT * PAD_RESOLUTION_SCALE);
   const padCanvasW = Math.round(padCanvasH * padAspect);
+  const modalPadCanvasH = Math.round(modalPadCssHeight * PAD_RESOLUTION_SCALE);
+  const modalPadCanvasW = Math.round(modalPadCanvasH * padAspect);
 
   const onPageLoadForOverlays = useCallback(
     (page: any) => {
@@ -180,12 +233,15 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     if (embeddedBoxes.has(idx)) return;
     setActivePlacementIdx(idx);
     setCurrentSigDataUrl(null);
+    setInlineSigRestoreUrl(null);
+    setModalSigSnapshot(null);
+    setSigExpandModalOpen(false);
     setPageNum(signaturePlacements[idx].page + 1);
     requestAnimationFrame(() => sigPadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   }, [embeddedBoxes, signaturePlacements]);
 
-  const handleEmbedSignature = useCallback(async () => {
-    if (activePlacementIdx === null || !currentSigDataUrl) return;
+  const handleEmbedSignature = useCallback(async (): Promise<boolean> => {
+    if (activePlacementIdx === null || !currentSigDataUrl) return false;
     setApplying(true);
     try {
       let pdfBytes: ArrayBuffer | Uint8Array;
@@ -214,6 +270,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       if (oldUrl !== fileUrl) URL.revokeObjectURL(oldUrl);
       setEmbeddedBoxes((prev) => new Set(prev).add(activePlacementIdx));
       setCurrentSigDataUrl(null);
+      setInlineSigRestoreUrl(null);
+      setModalSigSnapshot(null);
       const nextUnsigned = signaturePlacements.findIndex((_, i) => i !== activePlacementIdx && !embeddedBoxes.has(i));
       if (nextUnsigned >= 0) {
         setActivePlacementIdx(nextUnsigned);
@@ -221,8 +279,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       } else {
         setActivePlacementIdx(null);
       }
+      return true;
     } catch (err) {
       console.error('Failed to embed signature', err);
+      return false;
     } finally {
       setApplying(false);
     }
@@ -266,8 +326,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       }
 
       if (!baseBlob) {
-         setIsAppendingDocs(false);
-         return;
+        setIsAppendingDocs(false);
+        return;
       }
 
       // Otherwise, rebuild exactly from baseBlob + nextSelected
@@ -414,6 +474,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   const handleReset = useCallback(() => {
     setCurrentSigDataUrl(null);
+    setInlineSigRestoreUrl(null);
+    setModalSigSnapshot(null);
+    setSigExpandModalOpen(false);
     if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl);
     setLivePdfUrl(fileUrl);
     setPdfVersion((v) => v + 1);
@@ -596,19 +659,37 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       )}
       {selectedDocs.size === 0 && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
         <div ref={sigPadAreaRef} className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-px-4 tw-py-3 tw-space-y-2">
-          <div className="tw-flex tw-items-center tw-justify-between">
+          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
             <span className="tw-text-xs tw-font-semibold tw-text-gray-800">
               Signing box {activePlacementIdx + 1} of {signaturePlacements.length}
             </span>
-            {signedCount > 0 && <span className="tw-text-[10px] tw-text-gray-500">{signedCount}/{signaturePlacements.length} done</span>}
+            <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+              {signedCount > 0 && <span className="tw-text-[10px] tw-text-gray-500">{signedCount}/{signaturePlacements.length} done</span>}
+              <button
+                type="button"
+                onClick={openSigExpandModal}
+                className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-p-1 tw-text-gray-600 hover:tw-bg-blue-100 hover:tw-text-gray-900 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-1"
+                aria-label="Expand signature pad"
+                title="Expand signature pad"
+              >
+                <ArrowsPointingOutIcon className="tw-h-5 tw-w-5" aria-hidden />
+              </button>
+            </div>
           </div>
-          <SignaturePadCanvas
-            key={activePlacementIdx}
-            canvasWidth={padCanvasW}
-            canvasHeight={padCanvasH}
-            cssHeight={PAD_CSS_HEIGHT}
-            onSignatureChange={setCurrentSigDataUrl}
-          />
+          {!sigExpandModalOpen ? (
+            <SignaturePadCanvas
+              key={`inline-${activePlacementIdx}`}
+              canvasWidth={padCanvasW}
+              canvasHeight={padCanvasH}
+              cssHeight={PAD_CSS_HEIGHT}
+              initialDataUrl={inlineSigRestoreUrl}
+              onSignatureChange={handleSignatureChange}
+            />
+          ) : (
+            <p className="tw-text-xs tw-text-gray-600 tw-py-2">
+              Use the expanded window to sign. Close it when you are done, then embed your signature below.
+            </p>
+          )}
           <button
             type="button"
             disabled={!currentSigDataUrl || applying}
@@ -621,6 +702,71 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           >
             {applying ? 'Embedding...' : 'Embed signature'}
           </button>
+        </div>
+      )}
+
+      {sigExpandModalOpen && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && selectedDocs.size === 0 && (
+        <div
+          className="tw-fixed tw-inset-0 tw-z-[1040] tw-flex tw-items-center tw-justify-center tw-p-3 sm:tw-p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="keepid-sig-expand-title"
+        >
+          <button
+            type="button"
+            className="tw-absolute tw-inset-0 tw-border-0 tw-bg-black/50 tw-p-0 tw-cursor-pointer"
+            aria-label="Close expanded signature"
+            onClick={closeSigExpandModal}
+          />
+          <div className="tw-relative tw-z-10 tw-flex tw-max-h-[min(92vh,900px)] tw-w-full tw-max-w-[min(96vw,1100px)] tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-gray-200 tw-bg-white tw-shadow-2xl">
+            <div className="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-gray-200 tw-px-4 tw-py-3">
+              <h2 id="keepid-sig-expand-title" className="tw-m-0 tw-text-sm tw-font-semibold tw-text-gray-900">
+                Sign here
+              </h2>
+              <button
+                type="button"
+                onClick={closeSigExpandModal}
+                className="tw-inline-flex tw-items-center tw-justify-center tw-rounded-md tw-p-1.5 tw-text-gray-500 hover:tw-bg-gray-100 hover:tw-text-gray-800 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+                aria-label="Close"
+              >
+                <XMarkIcon className="tw-h-5 tw-w-5" aria-hidden />
+              </button>
+            </div>
+            <div className="tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-p-4 sm:tw-p-6">
+              <SignaturePadCanvas
+                key={`modal-${activePlacementIdx}`}
+                canvasWidth={modalPadCanvasW}
+                canvasHeight={modalPadCanvasH}
+                cssHeight={modalPadCssHeight}
+                initialDataUrl={modalSigSnapshot}
+                onSignatureChange={handleSignatureChange}
+              />
+            </div>
+            <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-2 tw-border-t tw-border-gray-200 tw-px-4 tw-py-3 tw-bg-gray-50">
+              <button
+                type="button"
+                onClick={closeSigExpandModal}
+                className="tw-rounded-lg tw-border tw-border-gray-300 tw-bg-white tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-bg-gray-50"
+              >
+                Done
+              </button>
+              <button
+                type="button"
+                disabled={!currentSigDataUrl || applying}
+                onClick={async () => {
+                  const ok = await handleEmbedSignature();
+                  if (ok) closeSigExpandModal();
+                }}
+                className={`tw-rounded-lg tw-border-0 tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-transition-colors disabled:tw-cursor-not-allowed ${
+                  currentSigDataUrl && !applying
+                    ? 'tw-bg-blue-600 tw-text-white hover:tw-bg-blue-700'
+                    : 'tw-bg-gray-300 tw-text-gray-600'
+                }`}
+              >
+                {applying ? 'Embedding...' : 'Embed signature'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -749,15 +895,37 @@ function SignaturePadCanvas({
   canvasWidth,
   canvasHeight,
   cssHeight,
+  initialDataUrl = null,
   onSignatureChange,
 }: {
   canvasWidth: number;
   canvasHeight: number;
   cssHeight: number;
+  initialDataUrl?: string | null;
   onSignatureChange: (dataUrl: string | null) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    if (!initialDataUrl) {
+      ctx.clearRect(0, 0, c.width, c.height);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+    };
+    img.onerror = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+    };
+    img.src = initialDataUrl;
+  }, [initialDataUrl, canvasWidth, canvasHeight]);
 
   const getCtx = () => canvasRef.current?.getContext('2d') ?? null;
 

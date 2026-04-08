@@ -93,8 +93,8 @@ function StepperLayoutRendererInner({
   const hasConditionalSteps = elements.some((el) => (el as CategoryWithRule).rule != null);
 
   return (
-    <div className="tw-flex tw-flex-col tw-gap-8">
-      <div className="tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
+    <div className="tw-flex tw-flex-col tw-gap-10">
+      <div className="tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
         {visibleIndices.map((actualIdx, visiblePos) => {
           const el = elements[actualIdx] as Category;
           const label = el?.label ?? `Step ${visiblePos + 1}`;
@@ -109,14 +109,14 @@ function StepperLayoutRendererInner({
               <button
                 type="button"
                 onClick={() => setActiveCategoryIndex(actualIdx)}
-                className={`tw-rounded-full tw-w-9 tw-h-9 tw-text-sm tw-font-semibold tw-transition-colors ${stepBtnClass}`}
+                className={`tw-rounded-full tw-w-12 tw-h-12 tw-text-base tw-font-semibold tw-transition-colors ${stepBtnClass}`}
                 title={String(label)}
               >
                 {visiblePos + 1}
               </button>
               {visiblePos < visibleIndices.length - 1 && (
                 <div
-                  className={`tw-w-6 tw-h-0.5 tw-rounded ${isPast ? 'tw-bg-primary-theme' : 'tw-bg-[#D9DEFF]'}`}
+                  className={`tw-w-8 tw-h-1 tw-rounded ${isPast ? 'tw-bg-primary-theme' : 'tw-bg-[#D9DEFF]'}`}
                   aria-hidden
                 />
               )}
@@ -124,23 +124,23 @@ function StepperLayoutRendererInner({
           );
         })}
       </div>
-      <div className="tw-text-sm tw-text-secondary-theme tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
+      <div className="tw-text-lg tw-text-secondary-theme tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
         <span>
           Step {safeStep + 1} of {visibleIndices.length}: {category?.label ?? ''}
         </span>
         {hasConditionalSteps && (
-          <span className="tw-text-gray-600 tw-text-xs">Some steps may be skipped based on your answers.</span>
+          <span className="tw-text-gray-600 tw-text-sm">Some steps may be skipped based on your answers.</span>
         )}
       </div>
 
-      <div className="tw-h-1 tw-bg-[#E8E9FF] tw-rounded-full tw-overflow-hidden">
+      <div className="tw-h-1.5 tw-bg-[#E8E9FF] tw-rounded-full tw-overflow-hidden">
         <div
           className="tw-h-full tw-bg-primary-theme tw-transition-all tw-duration-300"
           style={{ width: visibleIndices.length ? `${((safeStep + 1) / visibleIndices.length) * 100}%` : '0%' }}
         />
       </div>
 
-      <div className="tw-min-h-[200px] tw-space-y-6">
+      <div className="tw-min-h-[240px] tw-space-y-8">
         {category?.elements?.map((child: unknown, index: number) => (
           <JsonFormsDispatch
             key={`${path}-${actualCategoryIndex}-${(child as { scope?: string }).scope ?? `el-${index}`}`}
@@ -151,30 +151,34 @@ function StepperLayoutRendererInner({
         ))}
       </div>
 
-      <div className="tw-flex tw-justify-between tw-items-center tw-pt-6 tw-mt-2 tw-border-t tw-border-gray-200">
-        {safeStep > 0 ? (
-          <button
-            type="button"
-            onClick={() => setActiveCategoryIndex((current) => {
-              const currentPos = Math.max(0, visibleIndices.indexOf(current));
-              const prevPos = Math.max(0, currentPos - 1);
-              return visibleIndices[prevPos] ?? current;
-            })}
-            className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
-          >
-            ← Previous
-          </button>
-        ) : requestBack ? (
-          <button
-            type="button"
-            onClick={() => requestBack()}
-            className="tw-px-4 tw-py-2 tw-text-primary-theme tw-bg-white tw-border tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-sm tw-font-medium"
-          >
-            ← Back
-          </button>
-        ) : (
-          <div />
-        )}
+      <div className="tw-flex tw-justify-between tw-items-center tw-gap-4 tw-pt-8 tw-mt-4 tw-border-t-2 tw-border-gray-200">
+        {(() => {
+          const backBtnClass =
+            'tw-px-6 tw-py-3 tw-min-h-[3rem] tw-text-primary-theme tw-bg-white tw-border-2 tw-border-primary-theme tw-rounded-lg hover:tw-bg-[#E8E9FF] tw-text-base tw-font-semibold';
+          if (safeStep > 0) {
+            return (
+              <button
+                type="button"
+                onClick={() => setActiveCategoryIndex((current) => {
+                  const currentPos = Math.max(0, visibleIndices.indexOf(current));
+                  const prevPos = Math.max(0, currentPos - 1);
+                  return visibleIndices[prevPos] ?? current;
+                })}
+                className={backBtnClass}
+              >
+                ← Previous
+              </button>
+            );
+          }
+          if (requestBack) {
+            return (
+              <button type="button" onClick={() => requestBack()} className={backBtnClass}>
+                ← Back
+              </button>
+            );
+          }
+          return <div />;
+        })()}
         {!isLast ? (
           <button
             type="button"
@@ -183,7 +187,7 @@ function StepperLayoutRendererInner({
               const nextPos = Math.min(visibleIndices.length - 1, currentPos + 1);
               return visibleIndices[nextPos] ?? current;
             })}
-            className="tw-px-6 tw-py-2 tw-bg-primary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#3B54D3] tw-text-sm tw-font-medium"
+            className="tw-px-8 tw-py-3 tw-min-h-[3rem] tw-bg-primary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#3B54D3] tw-text-base tw-font-semibold"
           >
             Next →
           </button>
@@ -191,7 +195,7 @@ function StepperLayoutRendererInner({
           <button
             type="button"
             onClick={() => requestSubmit?.()}
-            className="tw-px-6 tw-py-2 tw-bg-secondary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#343347] tw-text-sm tw-font-medium"
+            className="tw-px-8 tw-py-3 tw-min-h-[3rem] tw-bg-secondary-theme tw-text-white tw-rounded-lg hover:tw-bg-[#343347] tw-text-base tw-font-semibold"
           >
             Submit
           </button>
