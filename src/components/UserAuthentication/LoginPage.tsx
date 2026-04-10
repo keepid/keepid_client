@@ -365,7 +365,7 @@ class LoginPage extends Component<Props, State> {
 
     if (embedded) {
       return (
-        <div className="tw-w-full tw-max-w-md">
+        <div className="tw-w-full tw-max-w-lg tw-px-3 md:tw-px-4 tw-py-2">
           {autoLogout ? (
             <div className="alert alert-warning" role="alert">
               You were automatically logged out and redirected to this page.
