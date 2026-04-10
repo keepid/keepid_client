@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { defineMessages, useIntl } from 'react-intl';
-import { Link } from 'react-router-dom';
 
-import HomepageGraphic from '../../static/images/homepage_graphic.svg';
+import Role from '../../static/Role';
 import EnsuringSecurity from './EnsuringSecurity';
 import FocusingOnPeople from './FocusingOnPeople';
+import HeroAuthSection from './HeroAuthSection';
 import HomelessStats from './HomelessStats';
 import IntroText from './IntroText';
 import WhoWeAreServing from './WhoWeAreServing';
@@ -25,11 +25,22 @@ const messages = defineMessages({
     id: 'home.sub-header',
     defaultMessage: 'for those experiencing homelessness',
   },
-  getStarted: { id: 'home.get-started', defaultMessage: 'Get Started' },
-  learnMore: { id: 'home.learn-more', defaultMessage: 'Donate' },
 });
 
-function Home() {
+interface HomeProps {
+  logIn?: (
+    role: Role,
+    username: string,
+    organization: string,
+    name: string
+  ) => void;
+  logOut?: () => void;
+  role?: Role;
+  autoLogout?: boolean;
+  setAutoLogout?: (logout: boolean) => void;
+}
+
+function Home({ logIn, logOut, role, autoLogout, setAutoLogout }: HomeProps) {
   const intl = useIntl();
 
   useEffect(() => {
@@ -61,51 +72,15 @@ function Home() {
         <meta name="description" content="Keep.id" />
       </Helmet>
       {/* <StatementOfSolidarity /> */}
-      <div className="tw-container-fluid tw-my-auto">
-        <div className="tw-flex tw-flex-col md:tw-flex-row mt-5 tw-justify-center tw-img-fluid">
-          {/* Left Column */}
-          <div className="tw-flex tw-flex-col tw-px-4 tw-items-center tw-justify-center">
-            <div className="tw-rounded tw-mb-3 tw-pb-5">
-              <div className="tw-text-center">
-                <span className="brand-text" id="brand-header">
-                  {intl.formatMessage(messages.brandHeader)}
-                </span>
-              </div>
-              <p className="tw-pt-2 tw-pb-2 tw-text-center md:tw-text-left home-subtext">
-                {intl.formatMessage(messages.subHeader)}
-              </p>
-              <div className="tw-text-center md:tw-text-left">
-                <Link to="/signup-branch">
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-lg w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4 tw-rounded-lg"
-                  >
-                    {intl.formatMessage(messages.getStarted)}
-                  </button>
-                </Link>
-                <a
-                  href="https://team.keep.id"
-                  type="button"
-                  className="btn tw-outline btn-outline-secondary btn-lg tw-w-40 tw-mr-2 tw-mb-2 tw-py-2 tw-px-4"
-                >
-                  {intl.formatMessage(messages.learnMore)}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="tw-flex tw-flex-col tw-items-center tw-px-5 tw-py-4 md:tw-py-0">
-            <div className="tw-text-center tw-w-full">
-              <img
-                alt="Document Platform"
-                src={HomepageGraphic}
-                className="tw-w-full tw-overflow-hidden tw-min-w-[18.75rem] tw-max-w-[48.75rem] tw-ml-0 tw-pl-0 "
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <HeroAuthSection
+        brandHeader={intl.formatMessage(messages.brandHeader)}
+        subHeader={intl.formatMessage(messages.subHeader)}
+        logIn={logIn}
+        logOut={logOut}
+        role={role}
+        autoLogout={autoLogout}
+        setAutoLogout={setAutoLogout}
+      />
 
       <IntroText />
 

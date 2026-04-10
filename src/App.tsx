@@ -33,7 +33,6 @@ import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
 import DevPanel from './components/LandingPages/DeveloperLanding';
 import WorkerLanding from './components/LandingPages/WorkerLanding';
-import FindOrganization from './components/OrgFinder/FindOrganization';
 import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import EnrollClientPage from './components/SignUp/EnrollClient';
@@ -43,7 +42,6 @@ import SignUpRouter, {
 } from './components/SignUp/SignUp.router';
 import AutoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
-import LoginPage from './components/UserAuthentication/LoginPage';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
@@ -200,6 +198,15 @@ class App extends React.Component<{}, State, {}> {
 
   render() {
     const { role, username, name, organization, autoLogout } = this.state;
+    const renderHome = () => (
+      <Home
+        logIn={this.logIn}
+        logOut={this.logOut}
+        role={role}
+        autoLogout={autoLogout}
+        setAutoLogout={this.setAutoLogout}
+      />
+    );
     return (
       <Router>
         <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>
@@ -244,7 +251,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role !== Role.LoggedOut) {
                     return <EULA />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -253,7 +260,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role === Role.Admin || role === Role.Director) {
                     return <AdminDashboard />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route path="/careers">
@@ -307,29 +314,16 @@ class App extends React.Component<{}, State, {}> {
                       />
                     );
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
                 path="/find-organizations"
-                render={() => <FindOrganization />}
+                render={() => <Redirect to="/home" />}
               />
               <Route
                 path="/login"
-                render={() =>
-                  role !== Role.LoggedOut ? (
-                    <Redirect to="/home" />
-                  ) : (
-                    <LoginPage
-                      isLoggedIn={role !== Role.LoggedOut}
-                      logIn={this.logIn}
-                      logOut={this.logOut}
-                      role={role}
-                      autoLogout={autoLogout}
-                      setAutoLogout={this.setAutoLogout}
-                    />
-                  )
-                }
+                render={() => <Redirect to="/home" />}
               />
 
               {/* Admin Panel route removed - functionality moved to My Organization page */}
@@ -347,7 +341,7 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -370,7 +364,7 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -387,7 +381,7 @@ class App extends React.Component<{}, State, {}> {
                   ) {
                     return <UploadDocs userRole={role} username={username} />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -410,7 +404,7 @@ class App extends React.Component<{}, State, {}> {
                       />
                     );
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -425,7 +419,7 @@ class App extends React.Component<{}, State, {}> {
                   ) {
                     return <MyDocuments userRole={role} viewerRole={role} username={username} />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -442,7 +436,7 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -465,7 +459,7 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -480,7 +474,7 @@ class App extends React.Component<{}, State, {}> {
                     return <Redirect to="/profile" />;
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -492,7 +486,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role !== Role.LoggedOut) {
                     return <ProfilePage />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -508,7 +502,7 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -520,7 +514,7 @@ class App extends React.Component<{}, State, {}> {
                   if (role !== Role.LoggedOut) {
                     return <ProfilePage targetUsername={clientUsername} />;
                   }
-                  return <Home />;
+                  return renderHome();
                 }}
               />
               <Route
@@ -534,7 +528,7 @@ class App extends React.Component<{}, State, {}> {
                     return <EnrollClientPage />;
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -549,7 +543,7 @@ class App extends React.Component<{}, State, {}> {
                     return <EnrollWorkerPage />;
                   }
                   if (role === Role.LoggedOut) {
-                    return <Home />;
+                    return renderHome();
                   }
                   return <Redirect to="/error" />;
                 }}
