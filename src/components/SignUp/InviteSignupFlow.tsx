@@ -16,9 +16,10 @@ import SignUpContext, { SignupStage } from './SignUp.context';
 interface Props {
   orgName: string;
   personRole: Role;
+  inviteJwt: string;
 }
 
-export default function InviteSignupFlow({ orgName, personRole }: Props) {
+export default function InviteSignupFlow({ orgName, personRole, inviteJwt }: Props) {
   const { signUpStageStateContext, accountInformationContext } =
     useContext(SignUpContext);
   const alert = useAlert();
@@ -30,6 +31,7 @@ export default function InviteSignupFlow({ orgName, personRole }: Props) {
       recaptchaPayload: recaptchaToken,
       orgName,
       personRole,
+      inviteJwt,
     })
       .then((responseJSON) => {
         const { status, message } = responseJSON;

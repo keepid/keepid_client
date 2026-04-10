@@ -63,27 +63,27 @@ class PreviewControl extends Control<ControlProps, { isFocused: boolean }> {
     if (hasEnum && isRadioFormat) {
       return (
         <div className="form-preview-control tw-mb-6 tw-flex tw-flex-col" hidden={!visible} id={id}>
-          <span className="tw-block tw-text-base tw-font-semibold tw-text-gray-800 tw-mb-3">
+          <span className="tw-block tw-text-xl tw-font-semibold tw-text-gray-800 tw-mb-3">
             {computeLabel(label, required, appliedUiSchemaOptions.hideRequiredAsterisk)}
           </span>
-          <div className="tw-flex tw-flex-col tw-flex-nowrap tw-gap-3">
+          <div className="tw-flex tw-flex-col tw-flex-nowrap tw-gap-4">
             {enumValues.map((val, i) => (
-              <label key={val} className={`tw-flex tw-items-center tw-gap-3 tw-text-sm tw-text-gray-600 tw-w-full ${!enabled ? 'tw-opacity-50' : 'tw-cursor-pointer'}`}>
+              <label key={val} className={`tw-flex tw-items-center tw-gap-4 tw-text-lg tw-text-gray-700 tw-w-full ${!enabled ? 'tw-opacity-50' : 'tw-cursor-pointer'}`}>
                 <input
                   type="radio"
                   name={`${id}-radio`}
                   checked={currentValue === val}
                   onChange={() => this.props.handleChange(path, val)}
                   disabled={!enabled}
-                  className="tw-h-4 tw-w-4 tw-shrink-0 tw-border-gray-300 tw-text-blue-600 focus:tw-ring-2 focus:tw-ring-blue-500"
+                  className="tw-h-5 tw-w-5 tw-shrink-0 tw-border-gray-300 tw-text-blue-600 focus:tw-ring-2 focus:tw-ring-blue-500"
                 />
                 <span className="tw-block">{enumNames?.[i] || val}</span>
               </label>
             ))}
           </div>
           <div className={(() => {
-            if (!isValid) return 'tw-text-sm tw-text-red-600 tw-mt-1';
-            return showDescription ? 'tw-text-sm tw-text-gray-500 tw-mt-1' : '';
+            if (!isValid) return 'tw-text-base tw-text-red-600 tw-mt-2';
+            return showDescription ? 'tw-text-base tw-text-gray-600 tw-mt-2' : '';
           })()}
           >
             {(() => {
@@ -103,7 +103,7 @@ class PreviewControl extends Control<ControlProps, { isFocused: boolean }> {
         onBlur={() => this.setState({ isFocused: false })}
         id={id}
       >
-        <label htmlFor={`${id}-input`} className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+        <label htmlFor={`${id}-input`} className="tw-block tw-text-lg tw-font-semibold tw-text-gray-800 tw-mb-2">
           {computeLabel(label, required, appliedUiSchemaOptions.hideRequiredAsterisk)}
         </label>
         <DispatchCell
@@ -114,8 +114,8 @@ class PreviewControl extends Control<ControlProps, { isFocused: boolean }> {
           enabled={enabled}
         />
         <div className={(() => {
-          if (!isValid) return 'tw-text-sm tw-text-red-600 tw-mt-2';
-          return showDescription ? 'tw-text-sm tw-text-gray-500 tw-mt-2' : '';
+          if (!isValid) return 'tw-text-base tw-text-red-600 tw-mt-2';
+          return showDescription ? 'tw-text-base tw-text-gray-600 tw-mt-2' : '';
         })()}
         >
           {(() => {

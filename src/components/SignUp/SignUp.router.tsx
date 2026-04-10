@@ -163,6 +163,7 @@ function SignUpRouter({ role }: SignUpRouterProps) {
                 <InviteSignupFlow
                   orgName={decoded.organization}
                   personRole={decoded.role}
+                  inviteJwt={jwt}
                 />
               );
             }

@@ -48,6 +48,44 @@ interface Worker {
 
 const EMPTY_ADDRESS: OrgAddress = { line1: '', line2: '', city: '', state: '', zip: '', county: '' };
 
+async function downloadOrgDocumentPdf(fileId: string, filename: string, alert: any) {
+  try {
+    const res = await fetch(`${getServerURL()}/download-file`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileId,
+        fileType: FileType.ORG_DOCUMENT,
+      }),
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || contentType.includes('json')) {
+      const text = await res.text();
+      let msg = text;
+      try {
+        const j = JSON.parse(text) as { message?: string };
+        if (j.message) msg = j.message;
+      } catch {
+        /* keep raw */
+      }
+      throw new Error(msg);
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeName = filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
+    a.download = safeName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert.show(`Error downloading file: ${err instanceof Error ? err.message : err}`, { type: 'error' });
+  }
+}
+
 function formatAddress(a: OrgAddress): string {
   return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
 }
@@ -425,7 +463,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         label: 'Download',
         icon: <FileDownloadOutlinedIcon fontSize="small" />,
         onClick: () => {
-          window.open(`${getServerURL()}/download?fileId=${row.id}&fileType=ORG_DOCUMENT&download=true`, '_blank');
+          downloadOrgDocumentPdf(row.id, row.filename, alert);
         },
       },
       {
@@ -693,7 +731,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           fileType={FileType.ORG_DOCUMENT}
           idCategory={'NONE'}
           onDownloadCurrentDocument={() => {
-            window.open(`${getServerURL()}/download?fileId=${currentDocumentId}&fileType=ORG_DOCUMENT&download=true`, '_blank');
+            downloadOrgDocumentPdf(currentDocumentId!, currentDocumentName!, alert);
           }}
           onRequestDeleteCurrentDocument={() => setDeleteTargetDocument({
             id: currentDocumentId!,

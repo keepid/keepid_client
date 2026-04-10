@@ -13,7 +13,7 @@ import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
 import type { BuilderState } from '../InteractiveForms/types';
 import { enrollClient } from '../SignUp/SignUp.api';
-import { birthDateStringConverter } from '../SignUp/SignUp.util';
+import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from '../SignUp/SignUp.util';
 import {
   validateBirthdate,
   validateEmail,
@@ -203,7 +203,7 @@ export default function ApplicationForm() {
   const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
   const targetClientResolved = targetClientUsername.trim().length > 0;
   const whoForInputClassName =
-    'tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-sm';
+    'tw-w-full tw-min-h-[3rem] tw-px-4 tw-py-3 tw-border-2 tw-border-gray-300 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-lg';
 
   // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
@@ -326,10 +326,15 @@ export default function ApplicationForm() {
         if (value.trim() === '') return '';
         return validateLastname(value);
       case 'email':
+        if (value.trim() === '') return '';
         return validateEmail(value);
       case 'birthDate':
         if (!value) return 'Birth date is required';
-        return validateBirthdate(new Date(value));
+        {
+          const d = localDateFromIsoDateOnly(value);
+          if (d === undefined) return 'Invalid birth date';
+          return validateBirthdate(d);
+        }
       case 'phonenumber':
         if (value.trim() === '') return '';
         return validatePhonenumber(value);
@@ -358,9 +363,11 @@ export default function ApplicationForm() {
       return null;
     }
 
-    const normalizedBirthDate = birthDateStringConverter(new Date(birthDate));
+    const normalizedBirthDate = birthDateStringFromIsoDateOnly(birthDate);
+    if (!normalizedBirthDate) return null;
+    const emailTrimmed = email.trim();
     const match = response.people.find((person: ClientSearchResult) =>
-      person?.email?.toLowerCase() === email.toLowerCase()
+      (emailTrimmed !== '' && person?.email?.toLowerCase() === emailTrimmed.toLowerCase())
       || (
         person.firstName?.toLowerCase() === firstname.toLowerCase()
         && person.lastName?.toLowerCase() === lastname.toLowerCase()
@@ -415,6 +422,11 @@ export default function ApplicationForm() {
       return;
     }
     setAgreementError('');
+    const birthDatePayload = birthDateStringFromIsoDateOnly(enrollForm.birthDate);
+    if (!birthDatePayload) {
+      setEnrollFieldErrors((prev) => ({ ...prev, birthDate: 'Invalid birth date' }));
+      return;
+    }
     setEnrollSubmitting(true);
 
     try {
@@ -423,8 +435,8 @@ export default function ApplicationForm() {
         middlename: enrollForm.middlename.trim() || undefined,
         lastname: enrollForm.lastname,
         suffix: enrollForm.suffix.trim() || undefined,
-        birthDate: birthDateStringConverter(new Date(enrollForm.birthDate)),
-        email: enrollForm.email,
+        birthDate: birthDatePayload,
+        email: enrollForm.email.trim(),
         phonenumber: enrollForm.phonenumber,
       });
 
@@ -436,7 +448,7 @@ export default function ApplicationForm() {
       const createdUser = await tryAutoSelectNewlyCreatedClient(
         enrollForm.firstname,
         enrollForm.lastname,
-        enrollForm.email,
+        enrollForm.email.trim(),
         enrollForm.birthDate,
       );
       if (!createdUser) {
@@ -543,15 +555,19 @@ export default function ApplicationForm() {
         <meta name="description" content="Keep.id" />
       </Helmet>
 
-      {/* Form content: narrower for readability */}
-      <div className="tw-max-w-4xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-10 tw-pb-12">
+      {/* Form content: wide container with comfortable type for client readability */}
+      <div
+        className={`tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-10 tw-pt-10 tw-pb-12 ${
+          isWhoForPage ? 'tw-max-w-7xl' : 'tw-max-w-6xl'
+        }`}
+      >
         {!isReviewPage && (
           <>
             <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
-              <h2 className="tw-text-2xl tw-font-semibold tw-m-0">{pageTitle}</h2>
+              <h2 className="tw-text-3xl tw-font-semibold tw-m-0">{pageTitle}</h2>
             </div>
             {formContent[page].subtitle && (
-              <p className="tw-text-gray-500 tw-mb-4">{formContent[page].subtitle}</p>
+              <p className="tw-text-lg tw-text-gray-600 tw-mb-4">{formContent[page].subtitle}</p>
             )}
           </>
         )}
@@ -562,7 +578,7 @@ export default function ApplicationForm() {
         )}
 
         {isWhoForPage ? (
-          <div className="tw-bg-white tw-border tw-border-gray-200 tw-rounded-xl tw-p-5 tw-shadow-sm tw-max-w-3xl tw-mx-auto">
+          <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full [&_.form-label]:tw-text-lg [&_.form-check-label]:tw-text-base [&_.form-check-input]:tw-mt-1 [&_.form-check-input]:tw-scale-125 [&_small]:tw-text-base">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
                 This step is only shown to workers, admins, and directors.
@@ -577,7 +593,7 @@ export default function ApplicationForm() {
                       setShowClientResults(true);
                       setSubmitError(null);
                     }}
-                    className={`tw-px-4 tw-py-2 tw-rounded-md tw-text-base tw-font-medium tw-border tw-transition-colors ${
+                    className={`tw-px-6 tw-py-3 tw-rounded-lg tw-text-lg tw-font-medium tw-border-2 tw-transition-colors ${
                       whoForMode === 'existing'
                         ? 'tw-bg-twprimary tw-text-white tw-border-twprimary hover:tw-bg-blue-700'
                         : 'tw-bg-white tw-text-twprimary tw-border-twprimary hover:tw-bg-blue-50'
@@ -591,7 +607,7 @@ export default function ApplicationForm() {
                       setWhoForMode('new');
                       setSubmitError(null);
                     }}
-                    className={`tw-px-4 tw-py-2 tw-rounded-md tw-text-base tw-font-medium tw-border tw-transition-colors ${
+                    className={`tw-px-6 tw-py-3 tw-rounded-lg tw-text-lg tw-font-medium tw-border-2 tw-transition-colors ${
                       whoForMode === 'new'
                         ? 'tw-bg-twprimary tw-text-white tw-border-twprimary hover:tw-bg-blue-700'
                         : 'tw-bg-white tw-text-twprimary tw-border-twprimary hover:tw-bg-blue-50'
@@ -623,7 +639,7 @@ export default function ApplicationForm() {
                       />
                     </Form.Group>
                     {searchingClients && (
-                      <div className="tw-text-sm tw-text-gray-500 tw-mt-2">Searching...</div>
+                      <div className="tw-text-base tw-text-gray-500 tw-mt-2">Searching...</div>
                     )}
                     {searchError && (
                       <Alert variant="warning" className="tw-mt-3">
@@ -631,7 +647,7 @@ export default function ApplicationForm() {
                       </Alert>
                     )}
                     {showClientResults && searchResults.length > 0 && (
-                      <div className="tw-border tw-rounded-md tw-mt-3 tw-divide-y tw-max-h-64 tw-overflow-y-auto">
+                      <div className="tw-border-2 tw-rounded-lg tw-mt-3 tw-divide-y tw-divide-gray-200 tw-max-h-80 tw-overflow-y-auto">
                         {searchResults.map((client) => {
                           const displayName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
                           return (
@@ -639,10 +655,10 @@ export default function ApplicationForm() {
                               key={client.username}
                               type="button"
                               onClick={() => selectExistingClient(client)}
-                              className="tw-w-full tw-text-left tw-px-3 tw-py-2 hover:tw-bg-gray-50 tw-border-0 tw-bg-white"
+                              className="tw-w-full tw-text-left tw-px-5 tw-py-4 hover:tw-bg-gray-50 tw-border-0 tw-bg-white"
                             >
-                              <div className="tw-font-medium">{displayName}</div>
-                              <div className="tw-text-xs tw-text-gray-500">{client.username}</div>
+                              <div className="tw-font-semibold tw-text-lg">{displayName}</div>
+                              <div className="tw-text-sm tw-text-gray-500">{client.username}</div>
                             </button>
                           );
                         })}
@@ -651,8 +667,8 @@ export default function ApplicationForm() {
                   </div>
                 ) : (
                   <div>
-                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
-                      <Form.Group controlId="newClientFirstName">
+                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4 tw-min-w-0">
+                      <Form.Group controlId="newClientFirstName" className="tw-min-w-0">
                         <Form.Label>First Name</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -666,21 +682,7 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.firstname && <small className="tw-text-red-600">{enrollFieldErrors.firstname}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientLastName">
-                        <Form.Label>Last Name</Form.Label>
-                        <Form.Control
-                          className={whoForInputClassName}
-                          name="lastname"
-                          value={enrollForm.lastname}
-                          onChange={handleEnrollFieldChange}
-                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
-                            ...prev,
-                            lastname: validateEnrollField('lastname', e.target.value),
-                          }))}
-                        />
-                        {enrollFieldErrors.lastname && <small className="tw-text-red-600">{enrollFieldErrors.lastname}</small>}
-                      </Form.Group>
-                      <Form.Group controlId="newClientMiddleName">
+                      <Form.Group controlId="newClientMiddleName" className="tw-min-w-0">
                         <Form.Label>Middle Name (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -694,7 +696,21 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.middlename && <small className="tw-text-red-600">{enrollFieldErrors.middlename}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientSuffix">
+                      <Form.Group controlId="newClientLastName" className="tw-min-w-0">
+                        <Form.Label>Last Name</Form.Label>
+                        <Form.Control
+                          className={whoForInputClassName}
+                          name="lastname"
+                          value={enrollForm.lastname}
+                          onChange={handleEnrollFieldChange}
+                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
+                            ...prev,
+                            lastname: validateEnrollField('lastname', e.target.value),
+                          }))}
+                        />
+                        {enrollFieldErrors.lastname && <small className="tw-text-red-600">{enrollFieldErrors.lastname}</small>}
+                      </Form.Group>
+                      <Form.Group controlId="newClientSuffix" className="tw-min-w-0">
                         <Form.Label>Suffix (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -709,6 +725,8 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.suffix && <small className="tw-text-red-600">{enrollFieldErrors.suffix}</small>}
                       </Form.Group>
+                    </div>
+                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-mt-4">
                       <Form.Group controlId="newClientDob">
                         <Form.Label>Date of Birth</Form.Label>
                         <Form.Control
@@ -725,7 +743,7 @@ export default function ApplicationForm() {
                         {enrollFieldErrors.birthDate && <small className="tw-text-red-600">{enrollFieldErrors.birthDate}</small>}
                       </Form.Group>
                       <Form.Group controlId="newClientEmail">
-                        <Form.Label>Email</Form.Label>
+                        <Form.Label>Email (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
                           type="email"
@@ -739,7 +757,7 @@ export default function ApplicationForm() {
                         />
                         {enrollFieldErrors.email && <small className="tw-text-red-600">{enrollFieldErrors.email}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientPhone">
+                      <Form.Group controlId="newClientPhone" className="md:tw-col-span-2">
                         <Form.Label>Phone (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -787,7 +805,7 @@ export default function ApplicationForm() {
                       />
                       {agreementError && <small className="tw-text-red-600">{agreementError}</small>}
                     </div>
-                    <p className="tw-mt-3 tw-mb-0 tw-text-sm tw-text-blue-600">
+                    <p className="tw-mt-4 tw-mb-0 tw-text-base tw-text-blue-600">
                       This information is used as the applicant information for this application.
                     </p>
                   </div>
@@ -803,7 +821,7 @@ export default function ApplicationForm() {
           </div>
         ) : (
           <Form
-            className="form tw-grid tw-gap-4 tw-justify-center tw-grid-cols-2"
+            className="form tw-grid tw-gap-6 tw-justify-center tw-grid-cols-2"
             style={{
               gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
               gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
@@ -870,14 +888,16 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        <div className={`tw-flex tw-mt-6 ${isReviewPage ? 'tw-justify-end' : 'tw-justify-between'}`}>
+        <div className={`tw-flex tw-mt-8 tw-gap-4 ${isReviewPage ? 'tw-justify-end' : 'tw-justify-between'}`}>
           <Button
+            size="lg"
             onClick={handlePrev}
             className={`${hidePrev ? 'tw-invisible ' : ' '} ${isWebFormPage || availabilityLoading || isWhoForPage || isReviewPage ? 'tw-hidden ' : ' '}`}
           >
             Back
           </Button>
           <Button
+            size="lg"
             onClick={async () => {
               setSubmitError(null);
               if (isWhoForPage) {

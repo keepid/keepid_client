@@ -7,6 +7,8 @@ import type { AddressObj, NameObj, ProfileData } from './ProfilePage';
 type Props = {
   profile: ProfileData;
   targetUsername?: string;
+  /** When true, client legal name fields cannot be changed here (only workers may edit). */
+  lockClientLegalNameFields?: boolean;
   onSaved?: () => void;
 };
 
@@ -62,6 +64,7 @@ function nameHistoryEqual(a: NameObj[], b: NameObj[]): boolean {
 export default function SavedApplicationInfoSection({
   profile,
   targetUsername,
+  lockClientLegalNameFields = false,
   onSaved,
 }: Props) {
   const alert = useAlert();
@@ -86,11 +89,16 @@ export default function SavedApplicationInfoSection({
   const [fatherName, setFatherName] = useState(initial.fatherName);
   const [nameHistory, setNameHistory] = useState(initial.nameHistory);
 
-  const currentNameDirty = useMemo(() => (
-    (currentName.middle || '') !== (initial.currentName.middle || '')
-    || (currentName.suffix || '') !== (initial.currentName.suffix || '')
-    || (currentName.maiden || '') !== (initial.currentName.maiden || '')
-  ), [currentName, initial.currentName]);
+  const currentNameDirty = useMemo(() => {
+    if (lockClientLegalNameFields) {
+      return false;
+    }
+    return (currentName.first || '') !== (initial.currentName.first || '')
+      || (currentName.middle || '') !== (initial.currentName.middle || '')
+      || (currentName.last || '') !== (initial.currentName.last || '')
+      || (currentName.suffix || '') !== (initial.currentName.suffix || '')
+      || (currentName.maiden || '') !== (initial.currentName.maiden || '');
+  }, [currentName, initial.currentName, lockClientLegalNameFields]);
 
   const isDirty = useMemo(() => (
     currentNameDirty
@@ -151,9 +159,9 @@ export default function SavedApplicationInfoSection({
 
       if (currentNameDirty) {
         payload.currentName = {
-          first: initial.currentName.first || null,
+          first: currentName.first || null,
           middle: currentName.middle || null,
-          last: initial.currentName.last || null,
+          last: currentName.last || null,
           suffix: currentName.suffix || null,
           maiden: currentName.maiden || null,
         };
@@ -351,18 +359,18 @@ export default function SavedApplicationInfoSection({
 
         <hr />
 
-        {/* Full Name -- first & last are read-only, middle/suffix/maiden editable */}
+        {/* Full name: workers may edit all parts for clients; self-service clients edit own; admins/directors cannot change client legal name here */}
         <div className="row tw-mb-5">
           <div className="col-3 card-text mt-2 text-primary-theme">Full Name</div>
           <div className="col-9 card-text">
-            {isEditing ? (
+            {isEditing && !lockClientLegalNameFields ? (
               <div className="tw-space-y-1">
-                <div className="tw-flex tw-gap-2">
+                <div className="tw-flex tw-gap-2 tw-flex-wrap">
                   <input
                     type="text"
-                    className="form-control form-purple tw-bg-gray-100 tw-text-gray-500"
+                    className="form-control form-purple"
                     value={currentName.first || ''}
-                    disabled
+                    onChange={(e) => setCurrentName({ ...currentName, first: e.target.value })}
                     placeholder="First"
                   />
                   <input
@@ -374,13 +382,13 @@ export default function SavedApplicationInfoSection({
                   />
                   <input
                     type="text"
-                    className="form-control form-purple tw-bg-gray-100 tw-text-gray-500"
+                    className="form-control form-purple"
                     value={currentName.last || ''}
-                    disabled
+                    onChange={(e) => setCurrentName({ ...currentName, last: e.target.value })}
                     placeholder="Last"
                   />
                 </div>
-                <div className="tw-flex tw-gap-2">
+                <div className="tw-flex tw-gap-2 tw-flex-wrap">
                   <input
                     type="text"
                     className="form-control form-purple"
@@ -399,7 +407,14 @@ export default function SavedApplicationInfoSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{nameToDisplay(currentName) || <span className="tw-text-gray-400">Not provided</span>}</div>
+              <div className="tw-pt-2">
+                {nameToDisplay(currentName) || <span className="tw-text-gray-400">Not provided</span>}
+                {isEditing && lockClientLegalNameFields && (
+                  <p className="tw-text-xs tw-text-gray-500 tw-mt-2 tw-mb-0">
+                    {'Only workers can change this client\'s legal name. Use Account Information above if you have access.'}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

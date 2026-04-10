@@ -37,6 +37,7 @@ interface Props {
   alert: any;
   autoLogout: boolean; // whether or not the user was logged out automatically
   setAutoLogout: (boolean) => void; // stop showing the logged out automatically banner once user navigates away from the page
+  embedded?: boolean;
 }
 
 class LoginPage extends Component<Props, State> {
@@ -233,7 +234,7 @@ class LoginPage extends Component<Props, State> {
     this.resetRecaptcha();
   };
 
-  render() {
+  renderAuthCard = (embedded = false) => {
     const {
       username,
       password,
@@ -241,7 +242,146 @@ class LoginPage extends Component<Props, State> {
       showPassword,
       showManualLogin,
     } = this.state;
-    const { autoLogout } = this.props;
+
+    return (
+      <div className="form-signin pt-2">
+        {embedded ? null : <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>}
+        <GoogleLoginButton
+          handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
+          handleGoogleLoginError={this.handleGoogleLoginError}
+        />
+
+        {!showManualLogin ? (
+          <div className="tw-text-center tw-mt-3">
+            <button
+              type="button"
+              className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer"
+              onClick={() => this.setState({ showManualLogin: true })}
+            >
+              No Google account? Sign in with email and password
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="tw-flex tw-items-center tw-mt-3 tw-mb-2">
+              <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
+              <span className="tw-px-3 tw-text-sm tw-text-gray-500">or</span>
+              <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
+            </div>
+            <form>
+              <label htmlFor="username" className="w-100 font-weight-bold">
+                Email or username
+                <input
+                  type="text"
+                  className="form-control form-purple mt-1"
+                  id="username"
+                  placeholder="email or username"
+                  value={username}
+                  onChange={this.handleChangeUsername}
+                  required
+                />
+              </label>
+              <label
+                htmlFor="password"
+                className="w-100 pt-2 font-weight-bold"
+              >
+                Password
+                <div className="pass-wrapper form-control form-purple mt-1">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="pass-input"
+                    id="password"
+                    placeholder="password"
+                    value={password}
+                    onChange={this.handleChangePassword}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="pass-icon"
+                    onClick={this.togglePassword}
+                  >
+                    <img
+                      src={showPassword ? SlashEye : EyeIcon}
+                      className="eye-size"
+                      alt={showPassword ? 'Show' : 'Hide'}
+                    />
+                  </button>
+                </div>
+              </label>
+              <div className="pt-3">
+                <div className="pb-2">
+                  <Button
+                    type="submit"
+                    onKeyDown={(e) =>
+                      LoginPage.enterKeyPressed(
+                        e,
+                        this.onSubmitWithReCAPTCHA,
+                      )
+                    }
+                    onClick={this.onSubmitWithReCAPTCHA}
+                    variant="primary"
+                    className={`w-100 ld-ext-right ${buttonState}`}
+                  >
+                    Sign In
+                    <div className="ld ld-ring ld-spin" />
+                  </Button>
+                </div>
+              </div>
+              <div className="pb-3">
+                <Link to="/forgot-password" className="text-decoration-none">
+                  <span>Forgot your password?</span>
+                </Link>
+              </div>
+            </form>
+          </>
+        )}
+
+        <hr className="tw-my-4" />
+
+        <div className="pb-1 tw-text-center">
+          <span className="pt-3">
+            Are you a nonprofit organization?
+          </span>
+        </div>
+        <div className="tw-flex tw-justify-center">
+          <div className="tw-w-full tw-max-w-xs">
+            <Link to="/organization-signup">
+              <button
+                type="button"
+                className="btn btn-outline-primary w-100"
+              >
+                Sign Up with Us
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  render() {
+    const { autoLogout, embedded = false } = this.props;
+
+    if (embedded) {
+      return (
+        <div className="tw-w-full tw-max-w-lg tw-px-3 md:tw-px-4 tw-py-2">
+          {autoLogout ? (
+            <div className="alert alert-warning" role="alert">
+              You were automatically logged out and redirected to this page.
+            </div>
+          ) : null}
+          {this.renderAuthCard(true)}
+          <ReCAPTCHA
+            theme="dark"
+            size="invisible"
+            ref={recaptchaRef}
+            sitekey={reCaptchaKey}
+          />
+        </div>
+      );
+    }
+
     return (
       <div>
         <Helmet>
@@ -275,119 +415,7 @@ class LoginPage extends Component<Props, State> {
             </div>
 
             <div className="tw-flex tw-justify-center">
-              <div className="form-signin pt-2">
-                <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
-                <GoogleLoginButton
-                  handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
-                  handleGoogleLoginError={this.handleGoogleLoginError}
-                />
-
-                {!showManualLogin ? (
-                  <div className="tw-text-center tw-mt-3">
-                    <button
-                      type="button"
-                      className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer"
-                      onClick={() => this.setState({ showManualLogin: true })}
-                    >
-                      No Google account? Sign in with email and password
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="tw-flex tw-items-center tw-mt-3 tw-mb-2">
-                      <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
-                      <span className="tw-px-3 tw-text-sm tw-text-gray-500">or</span>
-                      <div className="tw-flex-1 tw-border-t tw-border-gray-300" />
-                    </div>
-                    <form>
-                      <label htmlFor="username" className="w-100 font-weight-bold">
-                        Email or username
-                        <input
-                          type="text"
-                          className="form-control form-purple mt-1"
-                          id="username"
-                          placeholder="email or username"
-                          value={username}
-                          onChange={this.handleChangeUsername}
-                          required
-                        />
-                      </label>
-                      <label
-                        htmlFor="password"
-                        className="w-100 pt-2 font-weight-bold"
-                      >
-                        Password
-                        <div className="pass-wrapper form-control form-purple mt-1">
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            className="pass-input"
-                            id="password"
-                            placeholder="password"
-                            value={password}
-                            onChange={this.handleChangePassword}
-                            required
-                          />
-                          <button
-                            type="button"
-                            className="pass-icon"
-                            onClick={this.togglePassword}
-                          >
-                            <img
-                              src={showPassword ? SlashEye : EyeIcon}
-                              className="eye-size"
-                              alt={showPassword ? 'Show' : 'Hide'}
-                            />
-                          </button>
-                        </div>
-                      </label>
-                      <div className="pt-3">
-                        <div className="pb-2">
-                          <Button
-                            type="submit"
-                            onKeyDown={(e) =>
-                              LoginPage.enterKeyPressed(
-                                e,
-                                this.onSubmitWithReCAPTCHA,
-                              )
-                            }
-                            onClick={this.onSubmitWithReCAPTCHA}
-                            variant="primary"
-                            className={`w-100 ld-ext-right ${buttonState}`}
-                          >
-                            Sign In
-                            <div className="ld ld-ring ld-spin" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="pb-3">
-                        <Link to="/forgot-password" className="text-decoration-none">
-                          <span>Forgot your password?</span>
-                        </Link>
-                      </div>
-                    </form>
-                  </>
-                )}
-
-                <hr className="tw-my-4" />
-
-                <div className="pb-1">
-                  <span className="pt-3">
-                    Are you a nonprofit organization?
-                  </span>
-                </div>
-                <div>
-                  <div className="col-10 pl-0">
-                    <Link to="/organization-signup">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary w-100"
-                      >
-                        Sign Up with Us
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              {this.renderAuthCard()}
             </div>
           </div>
         </div>

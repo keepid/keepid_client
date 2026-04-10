@@ -6,8 +6,6 @@ import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
-import MenuDots from '../../static/images/menu-dots.png';
-import UploadIcon from '../../static/images/upload-icon.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
@@ -28,6 +26,56 @@ interface TargetClient {
   birthDate: string;
   photo: string | null;
   assignedWorkerUsernames: string[];
+  /** ISO or parseable date string from get-organization-members */
+  creationDate?: string | null;
+}
+
+type ClientSortMode = 'name-asc' | 'name-desc' | 'date-asc' | 'date-desc';
+
+function displayNameSortKey(client: TargetClient): string {
+  return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim().toLowerCase();
+}
+
+function creationTimeMs(client: TargetClient): number | null {
+  const raw = client.creationDate;
+  if (raw == null || raw === '') return null;
+  const t = new Date(raw).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
+  const next = list.slice();
+  switch (mode) {
+    case 'name-asc':
+      next.sort((a, b) => displayNameSortKey(a).localeCompare(displayNameSortKey(b), undefined, { sensitivity: 'base' }));
+      break;
+    case 'name-desc':
+      next.sort((a, b) => displayNameSortKey(b).localeCompare(displayNameSortKey(a), undefined, { sensitivity: 'base' }));
+      break;
+    case 'date-asc': {
+      next.sort((a, b) => {
+        const ta = creationTimeMs(a);
+        const tb = creationTimeMs(b);
+        const aKey = ta === null ? Number.POSITIVE_INFINITY : ta;
+        const bKey = tb === null ? Number.POSITIVE_INFINITY : tb;
+        return aKey - bKey;
+      });
+      break;
+    }
+    case 'date-desc': {
+      next.sort((a, b) => {
+        const ta = creationTimeMs(a);
+        const tb = creationTimeMs(b);
+        const aKey = ta === null ? Number.NEGATIVE_INFINITY : ta;
+        const bKey = tb === null ? Number.NEGATIVE_INFINITY : tb;
+        return bKey - aKey;
+      });
+      break;
+    }
+    default:
+      break;
+  }
+  return next;
 }
 
 const POSTS_PER_PAGE = 6;
@@ -43,6 +91,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [clientCredentialsCorrect, setClientCredentialsCorrect] = useState(false);
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortMode, setSortMode] = useState<ClientSortMode>('name-asc');
   const [isLoading, setIsLoading] = useState(true);
   const { path, url } = useRouteMatch();
 
@@ -133,6 +182,12 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     };
   }, [submittedSearchName, role, username, loadProfilePhoto, alert]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortMode]);
+
+  const sortedClients = useMemo(() => sortClients(clients, sortMode), [clients, sortMode]);
+
   const handleClickClose = () => {
     setClientPassword('');
     setShowClientAuthModal(false);
@@ -176,11 +231,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const currentPosts = useMemo(() => {
     const indexOfLastPost = currentPage * POSTS_PER_PAGE;
     const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
-    return clients.slice(indexOfFirstPost, indexOfLastPost);
-  }, [clients, currentPage]);
+    return sortedClients.slice(indexOfFirstPost, indexOfLastPost);
+  }, [sortedClients, currentPage]);
 
   const { pageNumbers, paginationClassName } = useMemo(() => {
-    const lastPage = Math.ceil(clients.length / POSTS_PER_PAGE);
+    const lastPage = Math.ceil(sortedClients.length / POSTS_PER_PAGE);
     const pageNumbers: number[] = [];
     for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
@@ -199,7 +254,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     };
 
     return { pageNumbers, paginationClassName };
-  }, [clients.length, currentPage]);
+  }, [sortedClients.length, currentPage]);
 
   const modalRender = () => {
     if (!showClientAuthModal) return null;
@@ -291,9 +346,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                 </div>
               </div>
 
-              <div className="tw-flex tw-flex-col md:tw-flex-row tw-items-start">
+              <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end tw-items-stretch tw-gap-4">
                 <form
-                  className="tw-flex tw-w-full md:tw-w-auto tw-mb-4 md:tw-mb-0 md:tw-mr-4"
+                  className="tw-flex tw-w-full md:tw-w-auto tw-flex-shrink-0"
                   onSubmit={handleSearchSubmit}
                 >
                   <input
@@ -307,6 +362,22 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                     Search
                   </button>
                 </form>
+                <div className="tw-flex tw-flex-col tw-w-full md:tw-w-64">
+                  <label htmlFor="worker-client-sort" className="tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Sort
+                  </label>
+                  <select
+                    id="worker-client-sort"
+                    className="tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-bg-white"
+                    value={sortMode}
+                    onChange={(e) => setSortMode(e.target.value as ClientSortMode)}
+                  >
+                    <option value="name-asc">Name (A–Z)</option>
+                    <option value="name-desc">Name (Z–A)</option>
+                    <option value="date-asc">Account created (oldest first)</option>
+                    <option value="date-desc">Account created (newest first)</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -318,29 +389,14 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                 </div>
               ) : (
                 <div>
-                  {clients.length > 0 ? (
+                  {sortedClients.length > 0 ? (
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
                       {currentPosts.map((client) => (
-                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-relative hover:tw-border-1 hover:tw-bg-gray-50">
-                          <div className="tw-absolute tw-top-3 tw-right-3">
-                            <details className="tw-relative">
-                              <summary className="tw-list-none tw-cursor-pointer">
-                                <img alt="menu" src={MenuDots} className="tw-h-6" />
-                              </summary>
-                              <div className="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-bg-white tw-border tw-border-gray-200 tw-rounded-md tw-shadow-xl tw-z-10">
-                                <Link
-                                  to={`/profile/${client.username}`}
-                                  className="tw-block tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100"
-                                >
-                                  <div className="tw-flex tw-items-center">
-                                    Profile
-                                  </div>
-                                </Link>
-                              </div>
-                            </details>
-                          </div>
-
-                          <Link to={{ pathname: `/my-documents/${client.username}`, state: { clientName: `${client.firstName} ${client.lastName}`.trim() } }} className="tw-flex-grow">
+                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+                          <Link
+                            to={`/profile/${client.username}`}
+                            className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
+                          >
                             <div className="tw-flex tw-items-center tw-mb-3">
                               {client.photo ? (
                                 <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
@@ -363,10 +419,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                             </div>
                           </Link>
 
-                          <div className="tw-flex tw-gap-2 tw-mt-4">
-                              <Link to={`/upload-document/${client.username}`} className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none">
-                                  <img src={UploadIcon} style={{ height: 14 }} alt="upload icon" className="tw-mr-2" />
-                                  Upload
+                          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
+                              <Link
+                                to={{
+                                  pathname: `/my-documents/${client.username}`,
+                                  state: { clientName: `${client.firstName} ${client.lastName}`.trim() },
+                                }}
+                                className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none"
+                              >
+                                Documents
                               </Link>
                               <Link
                                 to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
@@ -410,10 +471,10 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
             <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
               <div className="tw-flex tw-items-center">
-                {!isLoading && clients.length > 0 && (
+                {!isLoading && sortedClients.length > 0 && (
                   <>
                     <div className="tw-text-gray-600 tw-mr-4">
-                      {clients.length} Results
+                      {sortedClients.length} Results
                     </div>
                     <div className="tw-flex">
                       {pageNumbers.map((pageNum) => (

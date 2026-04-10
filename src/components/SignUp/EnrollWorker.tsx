@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { enrollWorker } from './SignUp.api';
-import { birthDateStringConverter } from './SignUp.util';
+import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
 import {
   validateBirthdate,
   validateEmail,
@@ -74,8 +74,8 @@ export default function EnrollWorkerPage(): JSX.Element {
         break;
       case 'birthDate':
         if (value) {
-          const d = new Date(value);
-          error = validateBirthdate(d);
+          const d = localDateFromIsoDateOnly(value);
+          error = d === undefined ? 'Invalid birth date' : validateBirthdate(d);
         }
         break;
       default:
@@ -98,8 +98,11 @@ export default function EnrollWorkerPage(): JSX.Element {
     }
     setAgreementError('');
 
-    const birthDateObj = new Date(values.birthDate);
-    const birthDateString = birthDateStringConverter(birthDateObj);
+    const birthDateString = birthDateStringFromIsoDateOnly(values.birthDate);
+    if (!birthDateString) {
+      alert.error('Please enter a valid birth date.');
+      return;
+    }
 
     setSubmitting(true);
     try {

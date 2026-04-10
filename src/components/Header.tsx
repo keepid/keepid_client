@@ -127,8 +127,6 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
             </>
           ) : (
             <>
-              <NavLink to="/">Home</NavLink>
-              <NavLink to="/find-organizations">Find Organizations</NavLink>
               <a
                 href="https://team.keep.id"
                 className="tw-block tw-py-2 tw-px-4
@@ -140,29 +138,6 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               >
                 About
               </a>
-
-              <Link to="/login">
-                <button className="btn btn-primary outline-white w-40 mr-2">
-                  Log in
-                </button>
-              </Link>
-              <Link to="/signup-branch">
-                <button className="
-                  tw-border
-                  tw-border-secondary-theme
-                  tw-text-secondary-theme
-                  tw-no-underline
-                  hover:tw-bg-secondary-theme
-                  hover:tw-text-white
-                  hover:tw-no-underline
-                  tw-py-2
-                  tw-px-4
-                  tw-rounded
-                  tw-mr-2"
-                >
-                  Sign Up
-                </button>
-              </Link>
             </>
           )}
         </div>
@@ -204,44 +179,12 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
           ) : (
             <>
               <li>
-                <NavLink to="/">Home</NavLink>
-              </li>
-              <li>
-                <NavLink to="/find-organizations">Find Organizations</NavLink>
-              </li>
-              <li>
                 <a
                   href="https://team.keep.id"
                   className="tw-block tw-py-2 tw-px-4 tw-text-secondary-text-color tw-hover:tw-text-white tw-visited:tw-text-white"
                 >
                   About
                 </a>
-              </li>
-              <li className="tw-px-4 tw-py-2">
-                <Link to="/login">
-                  <button className="btn btn-primary outline-white tw-w-full mr-2">
-                    Log in
-                  </button>
-                </Link>
-              </li>
-              <li className="tw-px-4 tw-py-2">
-                <Link to="/signup-branch">
-                  <button className="
-                    tw-border
-                    tw-border-secondary-theme
-                    tw-text-secondary-theme
-                    tw-no-underline
-                    hover:tw-bg-secondary-theme
-                    hover:tw-text-white
-                    hover:tw-no-underline
-                    tw-w-full
-                    tw-py-2
-                    tw-rounded
-                    tw-mr-2"
-                  >
-                    Sign Up
-                  </button>
-                </Link>
               </li>
             </>
           )}

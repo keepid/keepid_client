@@ -10,6 +10,7 @@ export default function InviteSignupFlowFixture() {
       <InviteSignupFlow
         orgName="My Test Organization"
         personRole={Role.Client}
+        inviteJwt="fixture-invite-jwt-placeholder"
       />
     </BaseSignupFixture>
   );
