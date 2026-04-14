@@ -39,6 +39,12 @@ export interface SignAndDownloadViewerHandle {
   discardPdfEdits: () => void;
 }
 
+type PacketPartResponse = {
+  fileId: string;
+  partType: string;
+  enabled?: boolean;
+};
+
 const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, SignAndDownloadViewerProps>(({
   fileUrl,
   signaturePlacements,
@@ -84,6 +90,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [stagedDocs, setStagedDocs] = useState<Set<string>>(new Set());
   const [isAppendingDocs, setIsAppendingDocs] = useState(false);
   const [basePdfBlob, setBasePdfBlob] = useState<Blob | null>(null);
+  const [packetStateLoaded, setPacketStateLoaded] = useState(false);
+  const [packetSelectionHydrated, setPacketSelectionHydrated] = useState(false);
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -220,6 +228,40 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    async function fetchPacketSelection() {
+      try {
+        const res = await fetch(`${getServerURL()}/get-packet-for-application`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ applicationId }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.status === 'SUCCESS' && data.packet?.parts) {
+          const parts: PacketPartResponse[] = Array.isArray(data.packet.parts) ? data.packet.parts : [];
+          const attachedIds = new Set<string>(
+            parts
+              .filter((part) => part.partType === 'ORG_ATTACHMENT' && part.enabled !== false)
+              .map((part) => part.fileId),
+          );
+          setSelectedDocs(attachedIds);
+          setStagedDocs(new Set(attachedIds));
+        }
+      } catch (err) {
+        console.error('Failed to load packet selection', err);
+      } finally {
+        if (!cancelled) setPacketStateLoaded(true);
+      }
+    }
+    fetchPacketSelection();
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  useEffect(() => {
     if (signaturePlacements.length > 0 && activePlacementIdx === null) {
       const firstUnsigned = signaturePlacements.findIndex((_, i) => !embeddedBoxes.has(i));
       if (firstUnsigned >= 0) {
@@ -297,14 +339,42 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     });
   }, []);
 
-  const applyOrgDocs = useCallback(async () => {
+  const composeWithSelection = useCallback(async (
+    nextSelected: Set<string>,
+    previousSelected: Set<string>,
+    persistSelection: boolean,
+  ) => {
     setIsAppendingDocs(true);
     try {
-      const nextSelected = new Set(stagedDocs);
+      if (persistSelection) {
+        const toAttach = Array.from(nextSelected).filter((id) => !previousSelected.has(id));
+        const toDetach = Array.from(previousSelected).filter((id) => !nextSelected.has(id));
+
+        for (let i = 0; i < toAttach.length; i += 1) {
+          const id = toAttach[i];
+          /* eslint-disable-next-line no-await-in-loop */
+          await fetch(`${getServerURL()}/attach-packet-part`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ applicationId, fileId: id }),
+          });
+        }
+        for (let i = 0; i < toDetach.length; i += 1) {
+          const id = toDetach[i];
+          /* eslint-disable-next-line no-await-in-loop */
+          await fetch(`${getServerURL()}/detach-packet-part`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ applicationId, fileId: id }),
+          });
+        }
+      }
 
       let baseBlob = basePdfBlob;
       // If we are currently at 0 docs, capture the CURRENT state as the new base.
-      if (selectedDocs.size === 0) {
+      if (previousSelected.size === 0) {
         let bytes: ArrayBuffer | Uint8Array;
         if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
           bytes = await pdfDocRef.current.saveDocument();
@@ -370,7 +440,29 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setIsAppendingDocs(false);
     }
-  }, [basePdfBlob, stagedDocs, selectedDocs, livePdfUrl, fileUrl, orgDocs, usePdfJsFormWidgets]);
+  }, [applicationId, basePdfBlob, livePdfUrl, fileUrl, orgDocs, usePdfJsFormWidgets]);
+
+  const applyOrgDocs = useCallback(async () => {
+    const nextSelected = new Set(stagedDocs);
+    await composeWithSelection(nextSelected, selectedDocs, true);
+  }, [composeWithSelection, stagedDocs, selectedDocs]);
+
+  useEffect(() => {
+    if (!packetStateLoaded || packetSelectionHydrated || selectedDocs.size === 0 || orgDocs.length === 0) {
+      return;
+    }
+    composeWithSelection(new Set(selectedDocs), new Set(), false)
+      .catch((err) => {
+        console.error('Failed to hydrate packet document composition', err);
+      })
+      .finally(() => setPacketSelectionHydrated(true));
+  }, [packetStateLoaded, packetSelectionHydrated, selectedDocs, orgDocs, composeWithSelection]);
+
+  useEffect(() => {
+    if (packetStateLoaded && selectedDocs.size === 0 && !packetSelectionHydrated) {
+      setPacketSelectionHydrated(true);
+    }
+  }, [packetStateLoaded, selectedDocs, packetSelectionHydrated]);
 
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
