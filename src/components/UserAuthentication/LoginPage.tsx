@@ -12,6 +12,7 @@ import SlashEye from '../../static/images/eye-slash.svg';
 import LoginSVG from '../../static/images/login-svg.svg';
 import Role from '../../static/Role';
 import GoogleLoginButton from './GoogleLoginButton';
+import MicrosoftLoginButton from './MicrosoftLoginButton';
 
 interface State {
   username: string;
@@ -171,33 +172,55 @@ class LoginPage extends Component<Props, State> {
   };
 
   handleGoogleLoginSuccess = () => {
+    this.handleOAuthLoginSuccess('google');
+  };
+
+  handleMicrosoftLoginSuccess = () => {
+    this.handleOAuthLoginSuccess('microsoft');
+  };
+
+  handleOAuthLoginSuccess = (provider: 'google' | 'microsoft') => {
     fetch(`${getServerURL()}/get-session-user`, { method: 'GET', credentials: 'include' })
       .then((response) => response.json())
       .then((responseObj) => {
-        const { username, userRole, organization, fullName, googleLoginError } = responseObj;
+        const {
+          username,
+          userRole,
+          organization,
+          fullName,
+          googleLoginError,
+          microsoftLoginError,
+        } = responseObj;
+        const oauthError = provider === 'google' ? googleLoginError : microsoftLoginError;
 
-        // Check for specific Google login errors from the server
-        if (googleLoginError) {
-          if (googleLoginError === 'USER_NOT_FOUND') {
-            this.handleGoogleLoginError(
-              'No Keep.id account is linked to this Google account. Please find an organization and sign up first.',
+        // Check for specific social login errors from the server
+        if (oauthError) {
+          if (oauthError === 'USER_NOT_FOUND') {
+            this.handleOAuthLoginError(
+              provider,
+              `No Keep.id account is linked to this ${provider === 'google' ? 'Google' : 'Microsoft'} account. Please find an organization and sign up first.`,
             );
-          } else if (googleLoginError === 'AUTH_FAILURE') {
-            this.handleGoogleLoginError(
-              'Google authentication failed. Please try again or use your email and password.',
+          } else if (oauthError === 'AUTH_FAILURE') {
+            this.handleOAuthLoginError(
+              provider,
+              `${provider === 'google' ? 'Google' : 'Microsoft'} authentication failed. Please try again or use your email and password.`,
             );
-          } else if (googleLoginError === 'INTERNAL_ERROR') {
-            this.handleGoogleLoginError(
-              'Unable to complete Google sign-in due to a server issue. Please try again later.',
+          } else if (oauthError === 'INTERNAL_ERROR') {
+            this.handleOAuthLoginError(
+              provider,
+              `Unable to complete ${provider === 'google' ? 'Google' : 'Microsoft'} sign-in due to a server issue. Please try again later.`,
             );
           } else {
-            this.handleGoogleLoginError('Google sign-in failed. Please try again.');
+            this.handleOAuthLoginError(provider, `${provider === 'google' ? 'Google' : 'Microsoft'} sign-in failed. Please try again.`);
           }
           return;
         }
 
         if (!username || !userRole || !organization || !fullName) {
-          this.handleGoogleLoginError('Google sign-in failed: Could not retrieve your account information. Please try again.');
+          this.handleOAuthLoginError(
+            provider,
+            `${provider === 'google' ? 'Google' : 'Microsoft'} sign-in failed: Could not retrieve your account information. Please try again.`,
+          );
           return;
         }
         const { logIn } = this.props;
@@ -220,14 +243,19 @@ class LoginPage extends Component<Props, State> {
         logIn(role(), username, organization, fullName);
       })
       .catch((_) => {
-        const { alert } = this.props;
-        alert.show('Network Error: Unable to reach the server. Please check your connection and try again.');
-        this.setState({ buttonState: '' });
-        this.resetRecaptcha();
+        this.handleOAuthLoginError(provider, 'Network Error: Unable to reach the server. Please check your connection and try again.');
       });
   };
 
   handleGoogleLoginError = async (msg) => {
+    this.handleOAuthLoginError('google', msg);
+  };
+
+  handleMicrosoftLoginError = async (msg) => {
+    this.handleOAuthLoginError('microsoft', msg);
+  };
+
+  handleOAuthLoginError = async (_provider: 'google' | 'microsoft', msg: string) => {
     const { alert } = this.props;
     alert.show(msg);
     this.setState({ buttonState: '' });
@@ -250,6 +278,10 @@ class LoginPage extends Component<Props, State> {
           handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
           handleGoogleLoginError={this.handleGoogleLoginError}
         />
+        <MicrosoftLoginButton
+          handleMicrosoftLoginSuccess={this.handleMicrosoftLoginSuccess}
+          handleMicrosoftLoginError={this.handleMicrosoftLoginError}
+        />
 
         {!showManualLogin ? (
           <div className="tw-text-center tw-mt-3">
@@ -258,7 +290,7 @@ class LoginPage extends Component<Props, State> {
               className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer"
               onClick={() => this.setState({ showManualLogin: true })}
             >
-              No Google account? Sign in with email and password
+              Prefer password login? Sign in with email and password
             </button>
           </div>
         ) : (

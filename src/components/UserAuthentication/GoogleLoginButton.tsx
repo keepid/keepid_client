@@ -4,12 +4,19 @@ import getServerURL from '../../serverOverride';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const currentMode = import.meta.env.MODE;
+const originUri = currentMode === 'production'
+  ? 'https://keep.id'
+  : currentMode === 'staging'
+    ? 'https://staged.keep.id'
+    : 'http://localhost:3000';
 
 export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoogleLoginError }) {
   useEffect(() => {
     const redirecting = sessionStorage.getItem('redirecting');
-    if (redirecting === 'true') {
+    const provider = sessionStorage.getItem('oauth_redirect_provider');
+    if (redirecting === 'true' && (!provider || provider === 'google')) {
       sessionStorage.removeItem('redirecting');
+      sessionStorage.removeItem('oauth_redirect_provider');
       handleGoogleLoginSuccess();
     }
   }, []);
@@ -20,8 +27,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
       credentials: 'include',
       body: JSON.stringify({
         redirectUri: `${getServerURL()}/googleLoginResponse`,
-        originUri: currentMode === 'production' ?
-          'https://keep.id' : 'http://localhost:3000',
+        originUri,
       }),
     })
       .then((response) => response.json())
@@ -39,6 +45,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           `&code_challenge=${codeChallenge}` +
           '&prompt=select_account';
           sessionStorage.setItem('redirecting', 'true');
+          sessionStorage.setItem('oauth_redirect_provider', 'google');
           window.location.href = googleAuthUrl;
         } else if (data.status === 'INTERNAL_ERROR') {
           handleGoogleLoginError('Google sign-in is temporarily unavailable. Please use email/password to log in.');
