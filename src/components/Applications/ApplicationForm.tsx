@@ -21,7 +21,12 @@ import {
   validateLastname,
   validatePhonenumber,
 } from '../SignUp/SignUp.validators';
-import { fillPdfBlob, updateProfileFromDirectives } from './api/interactiveForm';
+import {
+  fillPdfBlob,
+  listApplicationPdfIds,
+  updateProfileFromDirectives,
+  uploadCompletedPdf,
+} from './api/interactiveForm';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
@@ -182,6 +187,7 @@ export default function ApplicationForm() {
     { type: string; state: string; situation: string; lookupKey: string }[]
   >([]);
   const [filledPdfUrl, setFilledPdfUrl] = useState<string | null>(null);
+  const [persistedApplicationId, setPersistedApplicationId] = useState<string | null>(null);
   const [wizardFormOutput, setWizardFormOutput] = useState<Record<string, unknown> | null>(null);
   const [wizardFormData, setWizardFormData] = useState<Record<string, unknown> | null>(null);
   const builderStateRef = useRef<BuilderState | null>(null);
@@ -485,7 +491,28 @@ export default function ApplicationForm() {
       setFillingPdf(true);
       setSubmitError(null);
       try {
+        let existingApplicationIdsBeforeSave: Set<string> | null = null;
+        try {
+          existingApplicationIdsBeforeSave = new Set(await listApplicationPdfIds(targetClientUsername));
+        } catch {
+          existingApplicationIdsBeforeSave = null;
+        }
         const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
+        const uploadResult = await uploadCompletedPdf(blob, blankFormId, formOutput, targetClientUsername);
+        let persistedId = uploadResult.applicationId || uploadResult.fileId;
+        if (!persistedId && existingApplicationIdsBeforeSave) {
+          const applicationIdsAfterSave = await listApplicationPdfIds(targetClientUsername);
+          const newlyCreatedApplicationIds = applicationIdsAfterSave.filter(
+            (id) => !existingApplicationIdsBeforeSave?.has(id),
+          );
+          if (newlyCreatedApplicationIds.length === 1) {
+            persistedId = newlyCreatedApplicationIds[0];
+          }
+        }
+        if (!persistedId) {
+          throw new Error('Could not create a persisted application record. Please try again.');
+        }
+        setPersistedApplicationId(persistedId);
         if (profileUpdates && Object.keys(profileUpdates).length > 0) {
           try {
             await updateProfileFromDirectives(profileUpdates, targetClientUsername);
@@ -513,6 +540,7 @@ export default function ApplicationForm() {
   const handleSaveSuccess = useCallback(() => {
     if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
     setFilledPdfUrl(null);
+    setPersistedApplicationId(null);
     setWizardFormOutput(null);
     setWizardFormData(null);
     disablePrompt();
@@ -538,6 +566,8 @@ export default function ApplicationForm() {
     ? `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`
     : formContent[page].title(data.type);
   const canContinueWhoFor = !shouldShowWhoForStep || targetClientResolved;
+  const canEditAttachments =
+    userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director;
   let nextButtonLabel = 'Next';
   if (isWhoForPage) {
     if (whoForMode === 'new') {
@@ -863,16 +893,17 @@ export default function ApplicationForm() {
           />
         )}
 
-        {isSignAndDownloadPage && filledPdfUrl && blankFormId && wizardFormOutput && (
+        {isSignAndDownloadPage && filledPdfUrl && persistedApplicationId && wizardFormOutput && (
           <SignAndDownloadViewer
             fileUrl={filledPdfUrl}
             signaturePlacements={builderStateRef.current?.signaturePlacements ?? []}
             title={formTitleRef.current}
-            applicationId={blankFormId}
+            applicationId={persistedApplicationId}
             formAnswers={wizardFormOutput}
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
             postRequirements={builderStateRef.current?.postRequirements}
+            canEditAttachments={canEditAttachments}
           />
         )}
 

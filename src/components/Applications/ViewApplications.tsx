@@ -9,6 +9,7 @@ import { Link, Redirect, Route, Switch } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import Role from '../../static/Role';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
@@ -26,6 +27,7 @@ interface Props {
   username: string,
   name: string,
   organization: string,
+  role: Role,
 }
 
 interface State {
@@ -576,10 +578,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           )}
         </Route>
         <Route path="/applications/preview">
-          <ApplicationPdfPreview editable={false} />
+          <ApplicationPdfPreview
+            editable={false}
+            allowAttachmentEditing={false}
+          />
         </Route>
         <Route path="/applications/edit">
-          <ApplicationPdfPreview editable />
+          <ApplicationPdfPreview
+            editable
+            allowAttachmentEditing={
+              this.props.role === Role.Worker
+              || this.props.role === Role.Admin
+              || this.props.role === Role.Director
+            }
+          />
         </Route>
         <Route path="/applications/send">
           {currentApplicationId && currentApplicationFilename

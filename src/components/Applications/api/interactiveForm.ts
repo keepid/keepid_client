@@ -78,7 +78,7 @@ export async function uploadCompletedPdf(
   applicationId: string,
   formAnswers: Record<string, unknown>,
   clientUsername = '',
-): Promise<{ status: string }> {
+): Promise<{ status: string; applicationId?: string; fileId?: string }> {
   const form = new FormData();
   form.append('file', file, file instanceof File ? file.name : 'application.pdf');
   form.append('applicationId', applicationId);
@@ -90,7 +90,49 @@ export async function uploadCompletedPdf(
     body: form,
   });
   const json = await res.json();
-  if (!res.ok) {
+  if (!res.ok || json?.status !== 'SUCCESS') {
+    throw new Error(json.message || json.error || res.statusText);
+  }
+  return json;
+}
+
+export async function listApplicationPdfIds(
+  clientUsername = '',
+): Promise<string[]> {
+  const res = await fetch(`${getServerURL()}/get-files`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fileType: 'APPLICATION_PDF',
+      ...(clientUsername ? { targetUser: clientUsername } : {}),
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS' || !Array.isArray(json?.documents)) {
+    throw new Error(json?.message || json?.error || res.statusText);
+  }
+  return json.documents
+    .map((doc: { id?: string }) => doc.id)
+    .filter((id: string | undefined): id is string => Boolean(id));
+}
+
+export async function updateApplicationAttachmentPdf(
+  file: Blob | File,
+  applicationId: string,
+  fileId: string,
+): Promise<{ status: string; fileId?: string }> {
+  const form = new FormData();
+  form.append('file', file, file instanceof File ? file.name : 'attachment.pdf');
+  form.append('applicationId', applicationId);
+  form.append('fileId', fileId);
+  const res = await fetch(`${getServerURL()}/update-application-attachment-pdf`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS') {
     throw new Error(json.message || json.error || res.statusText);
   }
   return json;

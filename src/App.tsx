@@ -455,6 +455,7 @@ class App extends React.Component<{}, State, {}> {
                         name={name}
                         organization={organization}
                         username={username}
+                        role={role}
                       />
                     );
                   }

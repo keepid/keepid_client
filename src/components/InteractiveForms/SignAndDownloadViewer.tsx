@@ -4,13 +4,13 @@ import './sign-and-download-viewer.css';
 
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { PDFDocument } from 'pdf-lib';
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useAlert } from 'react-alert';
 import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
-import { uploadCompletedPdf } from '../Applications/api/interactiveForm';
+import { updateApplicationAttachmentPdf, uploadCompletedPdf } from '../Applications/api/interactiveForm';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import type { SignaturePlacement } from './types';
 
@@ -32,12 +32,27 @@ export interface SignAndDownloadViewerProps {
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
   startInEditMode?: boolean;
+  canEditAttachments?: boolean;
 }
 
 export interface SignAndDownloadViewerHandle {
   savePdfEdits: () => Promise<boolean>;
   discardPdfEdits: () => void;
 }
+
+type PacketPartResponse = {
+  fileId: string;
+  partType: string;
+  sourceFileId?: string;
+  order?: number;
+  enabled?: boolean;
+};
+
+type CurrentPdfBlobOptions = {
+  flattenInteractiveFields?: boolean;
+};
+
+type AttachmentPreviewDoc = { id: string; sourceFileId: string; url: string; filename: string; pageCount: number };
 
 const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, SignAndDownloadViewerProps>(({
   fileUrl,
@@ -52,6 +67,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   showPdfEditControls = false,
   pdfFormsReadOnly = false,
   startInEditMode = false,
+  canEditAttachments = false,
 }, ref) => {
   const FRAME_MAX_WIDTH_CLASS = 'tw-max-w-4xl';
   const [numPages, setNumPages] = useState(1);
@@ -83,7 +99,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
   const [stagedDocs, setStagedDocs] = useState<Set<string>>(new Set());
   const [isAppendingDocs, setIsAppendingDocs] = useState(false);
-  const [basePdfBlob, setBasePdfBlob] = useState<Blob | null>(null);
+  const [packetStateLoaded, setPacketStateLoaded] = useState(false);
+  const [packetSelectionHydrated, setPacketSelectionHydrated] = useState(false);
+  const [packetPersistenceAvailable, setPacketPersistenceAvailable] = useState(true);
+  const [attachmentPreviewDocs, setAttachmentPreviewDocs] = useState<AttachmentPreviewDoc[]>([]);
+  const [attachedCloneBySourceId, setAttachedCloneBySourceId] = useState<Map<string, string>>(new Map());
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -91,6 +111,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
+  const attachmentPdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
+  const hydrationComposeInFlightRef = useRef(false);
 
   const handleSignatureChange = useCallback((url: string | null) => {
     setCurrentSigDataUrl(url);
@@ -144,6 +166,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     return () => window.removeEventListener('keydown', onKey);
   }, [sigExpandModalOpen, closeSigExpandModal]);
   const renderedWidth = Math.max(100, frameWidth - 2);
+  const pageDevicePixelRatio = typeof window === 'undefined'
+    ? 2
+    : Math.max(window.devicePixelRatio || 1, 2);
   /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
   const usePdfJsFormWidgets = !pdfFormsReadOnly;
 
@@ -218,6 +243,61 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     }
     fetchDocs();
   }, []);
+
+  const readPacketSelection = useCallback((data: any) => {
+    if (data?.status === 'NO_SUCH_FILE') {
+      // Freshly created applications can have no packet yet; treat as empty selection, not a hard failure.
+      setPacketPersistenceAvailable(true);
+      setAttachedCloneBySourceId(new Map());
+      setSelectedDocs(new Set());
+      setStagedDocs(new Set());
+      return;
+    }
+    if (data?.status !== 'SUCCESS') {
+      setPacketPersistenceAvailable(false);
+      return;
+    }
+    setPacketPersistenceAvailable(true);
+    const parts: PacketPartResponse[] = Array.isArray(data.packet?.parts) ? data.packet.parts : [];
+    const attachmentParts = parts
+      .filter((part) => part.partType === 'ORG_ATTACHMENT' && part.enabled !== false)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const sourceToCloneEntries = attachmentParts.map((part) => [part.sourceFileId || part.fileId, part.fileId] as const);
+    const selectedSourceIds = sourceToCloneEntries.map(([sourceId]) => sourceId);
+    setAttachedCloneBySourceId(new Map(sourceToCloneEntries));
+    setSelectedDocs(new Set(selectedSourceIds));
+    setStagedDocs(new Set(selectedSourceIds));
+  }, []);
+
+  const fetchPacketSelection = useCallback(async () => {
+    const res = await fetch(`${getServerURL()}/get-packet-for-application`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applicationId }),
+    });
+    const data = await res.json();
+    readPacketSelection(data);
+    return data;
+  }, [applicationId, readPacketSelection]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function initPacketSelection() {
+      try {
+        await fetchPacketSelection();
+      } catch (err) {
+        console.error('Failed to load packet selection', err);
+        setPacketPersistenceAvailable(false);
+      } finally {
+        if (!cancelled) setPacketStateLoaded(true);
+      }
+    }
+    initPacketSelection();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchPacketSelection]);
 
   useEffect(() => {
     if (signaturePlacements.length > 0 && activePlacementIdx === null) {
@@ -297,89 +377,261 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     });
   }, []);
 
-  const applyOrgDocs = useCallback(async () => {
+  const composeWithSelection = useCallback(async (
+    nextSelected: Set<string>,
+    previousSelected: Set<string>,
+    persistSelection: boolean,
+  ) => {
     setIsAppendingDocs(true);
     try {
-      const nextSelected = new Set(stagedDocs);
+      if (persistSelection) {
+        if (packetPersistenceAvailable) {
+          const toAttach = Array.from(nextSelected).filter((id) => !previousSelected.has(id));
+          const toDetach = Array.from(previousSelected).filter((id) => !nextSelected.has(id));
 
-      let baseBlob = basePdfBlob;
-      // If we are currently at 0 docs, capture the CURRENT state as the new base.
-      if (selectedDocs.size === 0) {
-        let bytes: ArrayBuffer | Uint8Array;
-        if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
-          bytes = await pdfDocRef.current.saveDocument();
-        } else {
-          bytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
-        }
-        baseBlob = toPdfBlob(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
-        setBasePdfBlob(baseBlob);
-      }
-
-      // If the new selection is 0, just revert to the base blob
-      if (nextSelected.size === 0 && baseBlob) {
-        const newUrl = URL.createObjectURL(baseBlob);
-        setLivePdfUrl(newUrl);
-        setPdfVersion((v) => v + 1);
-        setSelectedDocs(nextSelected);
-        setIsAppendingDocs(false);
-        return;
-      }
-
-      if (!baseBlob) {
-        setIsAppendingDocs(false);
-        return;
-      }
-
-      // Otherwise, rebuild exactly from baseBlob + nextSelected
-      const baseBytes = await baseBlob.arrayBuffer();
-      const baseDoc = await PDFDocument.load(baseBytes, { ignoreEncryption: true });
-
-      // Fetch each selected doc and append
-      for (let i = 0; i < orgDocs.length; i += 1) {
-        const id = orgDocs[i].id;
-        if (nextSelected.has(id)) {
-          /* eslint-disable-next-line no-await-in-loop */
-          const res = await fetch(`${getServerURL()}/download-file`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileId: id, fileType: 'ORG_DOCUMENT' }),
-          });
-          if (res.ok) {
+          for (let i = 0; i < toAttach.length; i += 1) {
+            const id = toAttach[i];
             /* eslint-disable-next-line no-await-in-loop */
-            const docBytes = await res.arrayBuffer();
+            const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ applicationId, fileId: id }),
+            });
             /* eslint-disable-next-line no-await-in-loop */
-            const appendDoc = await PDFDocument.load(docBytes, { ignoreEncryption: true });
-            /* eslint-disable-next-line no-await-in-loop */
-            const copiedPages = await baseDoc.copyPages(appendDoc, appendDoc.getPageIndices());
-            copiedPages.forEach((page) => baseDoc.addPage(page));
+            const attachData = await attachResponse.json().catch(() => ({}));
+            if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
+              if (attachData?.status === 'NO_SUCH_FILE') {
+                setPacketPersistenceAvailable(false);
+              }
+              throw new Error(attachData?.message || 'Failed to attach document to application');
+            }
+            if (typeof attachData?.attachedFileId === 'string') {
+              setAttachedCloneBySourceId((prev) => {
+                const next = new Map(prev);
+                next.set(id, attachData.attachedFileId);
+                return next;
+              });
+            }
           }
+          for (let i = 0; i < toDetach.length; i += 1) {
+            const sourceId = toDetach[i];
+            const id = attachedCloneBySourceId.get(sourceId) || sourceId;
+            /* eslint-disable-next-line no-await-in-loop */
+            const detachResponse = await fetch(`${getServerURL()}/detach-packet-part`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ applicationId, fileId: id }),
+            });
+            /* eslint-disable-next-line no-await-in-loop */
+            const detachData = await detachResponse.json().catch(() => ({}));
+            if (!detachResponse.ok || detachData?.status !== 'SUCCESS') {
+              if (detachData?.status === 'NO_SUCH_FILE') {
+                setPacketPersistenceAvailable(false);
+              }
+              throw new Error(detachData?.message || 'Failed to detach document from application');
+            }
+          }
+          await fetchPacketSelection();
         }
       }
 
-      const newBytes = await baseDoc.save();
-      const newBlob = toPdfBlob(newBytes);
-      const newUrl = URL.createObjectURL(newBlob);
-      const oldUrl = livePdfUrl;
-      setLivePdfUrl(newUrl);
-      setPdfVersion((v) => v + 1);
-      if (oldUrl !== fileUrl && oldUrl !== (baseBlob as any)?.url) URL.revokeObjectURL(oldUrl);
-      setSelectedDocs(nextSelected);
+      await loadAttachmentPreviews(nextSelected, orgDocs, attachedCloneBySourceId);
+      if (nextSelected.size === 0 && livePdfUrl !== fileUrl) {
+        const oldUrl = livePdfUrl;
+        setLivePdfUrl(fileUrl);
+        setPdfVersion((v) => v + 1);
+        URL.revokeObjectURL(oldUrl);
+      }
+      setSelectedDocs((prev) => {
+        if (prev.size === nextSelected.size && Array.from(prev).every((id) => nextSelected.has(id))) {
+          return prev;
+        }
+        return nextSelected;
+      });
     } catch (err) {
       console.error('Failed to append doc', err);
+      setSaveError(err instanceof Error ? err.message : 'Failed to apply attachment changes');
     } finally {
       setIsAppendingDocs(false);
     }
-  }, [basePdfBlob, stagedDocs, selectedDocs, livePdfUrl, fileUrl, orgDocs, usePdfJsFormWidgets]);
+  }, [
+    applicationId,
+    livePdfUrl,
+    fileUrl,
+    fetchPacketSelection,
+    packetPersistenceAvailable,
+    attachedCloneBySourceId,
+    orgDocs,
+    setSaveError,
+  ]);
 
-  const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
-    if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
-      const bytes = await pdfDocRef.current.saveDocument();
+  const applyOrgDocs = useCallback(async () => {
+    const nextSelected = new Set(stagedDocs);
+    await composeWithSelection(nextSelected, selectedDocs, true);
+  }, [composeWithSelection, stagedDocs, selectedDocs]);
+  const hasAttachmentSelectionChanges =
+    stagedDocs.size !== selectedDocs.size
+    || Array.from(stagedDocs).some((id) => !selectedDocs.has(id));
+
+  async function loadAttachmentPreviews(
+    selectedIds: Set<string>,
+    docsMetadata: { id: string; filename: string }[],
+    sourceToCloneMap: Map<string, string>,
+  ) {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) {
+      setAttachmentPreviewDocs((prev) => {
+        prev.forEach((entry) => URL.revokeObjectURL(entry.url));
+        return [];
+      });
+      return;
+    }
+
+    const nextPreviewDocs: Array<{ id: string; sourceFileId: string; url: string; filename: string; pageCount: number }> = [];
+    for (let i = 0; i < ids.length; i += 1) {
+      const sourceId = ids[i];
+      const fileIdToPreview = sourceToCloneMap.get(sourceId) || sourceId;
+      /* eslint-disable-next-line no-await-in-loop */
+      const res = await fetch(`${getServerURL()}/download-file`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId: fileIdToPreview, fileType: 'ORG_DOCUMENT' }),
+      });
+      if (res.ok) {
+        /* eslint-disable-next-line no-await-in-loop */
+        const rawBytes = await res.arrayBuffer();
+        // Use independent copies: pdfjs may transfer/detach the provided buffer.
+        const pageCountBytes = rawBytes.slice(0);
+        const previewBytes = rawBytes.slice(0);
+        /* eslint-disable-next-line no-await-in-loop */
+        const pageCount = await pdfjs.getDocument({ data: pageCountBytes }).promise.then((pdf) => pdf.numPages).catch(() => 0);
+        const filename = docsMetadata.find((doc) => doc.id === sourceId)?.filename || sourceId;
+        const url = URL.createObjectURL(new Blob([previewBytes], { type: 'application/pdf' }));
+        nextPreviewDocs.push({ id: fileIdToPreview, sourceFileId: sourceId, url, filename, pageCount });
+      }
+    }
+    setAttachmentPreviewDocs((prev) => {
+      prev.forEach((entry) => URL.revokeObjectURL(entry.url));
+      return nextPreviewDocs;
+    });
+  }
+
+  useEffect(() => {
+    if (!packetStateLoaded || packetSelectionHydrated || selectedDocs.size === 0 || hydrationComposeInFlightRef.current) {
+      return;
+    }
+    hydrationComposeInFlightRef.current = true;
+    setPacketSelectionHydrated(true);
+    composeWithSelection(new Set(selectedDocs), new Set(), false)
+      .catch((err) => {
+        console.error('Failed to hydrate packet document composition', err);
+      })
+      .finally(() => {
+        hydrationComposeInFlightRef.current = false;
+      });
+  }, [packetStateLoaded, packetSelectionHydrated, selectedDocs, composeWithSelection]);
+
+  useEffect(() => {
+    if (packetStateLoaded && selectedDocs.size === 0 && !packetSelectionHydrated) {
+      setPacketSelectionHydrated(true);
+    }
+  }, [packetStateLoaded, selectedDocs, packetSelectionHydrated]);
+
+  useEffect(() => () => {
+    setAttachmentPreviewDocs((prev) => {
+      prev.forEach((entry) => URL.revokeObjectURL(entry.url));
+      return [];
+    });
+  }, []);
+
+  const totalAttachedPages = attachmentPreviewDocs.reduce((sum, doc) => sum + doc.pageCount, 0);
+  const combinedViewerDocs = useMemo(
+    () => [
+      { id: 'main', url: livePdfUrl, pageCount: numPages, kind: 'main' as const },
+      ...attachmentPreviewDocs
+        .filter((doc) => doc.pageCount > 0)
+        .map((doc) => ({
+          id: doc.id,
+          sourceFileId: doc.sourceFileId,
+          url: doc.url,
+          pageCount: doc.pageCount,
+          kind: 'attachment' as const,
+        })),
+    ],
+    [attachmentPreviewDocs, livePdfUrl, numPages],
+  );
+  const totalViewerPages = useMemo(
+    () => combinedViewerDocs.reduce((sum, doc) => sum + doc.pageCount, 0),
+    [combinedViewerDocs],
+  );
+  const currentViewerPageMeta = useMemo(() => {
+    let remaining = pageNum;
+    for (let i = 0; i < combinedViewerDocs.length; i += 1) {
+      const doc = combinedViewerDocs[i];
+      if (remaining <= doc.pageCount) {
+        return { doc, localPage: remaining };
+      }
+      remaining -= doc.pageCount;
+    }
+    const fallbackDoc = combinedViewerDocs[0];
+    return { doc: fallbackDoc, localPage: 1 };
+  }, [combinedViewerDocs, pageNum]);
+  const isViewingMainPdf = currentViewerPageMeta.doc.kind === 'main';
+  const canEditCurrentAttachment =
+    currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !pdfFormsReadOnly;
+
+  const flattenPdfBytes = useCallback(async (bytes: Uint8Array): Promise<Uint8Array> => {
+    try {
+      const pdfDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+      const form = pdfDoc.getForm();
+      const fields = form.getFields();
+      if (fields.length === 0) {
+        return bytes;
+      }
+      form.updateFieldAppearances();
+      form.flatten();
+      return await pdfDoc.save();
+    } catch {
+      return bytes;
+    }
+  }, []);
+
+  const getCurrentPdfBlob = useCallback(async (options: CurrentPdfBlobOptions = {}): Promise<Blob> => {
+    const { flattenInteractiveFields = false } = options;
+    let bytes: Uint8Array;
+    const shouldUseSaveDocument = usePdfJsFormWidgets && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
+    if (shouldUseSaveDocument && pdfDocRef.current?.saveDocument) {
+      try {
+        bytes = await pdfDocRef.current.saveDocument();
+      } catch {
+        const res = await fetch(livePdfUrl);
+        const buffer = await res.arrayBuffer();
+        bytes = new Uint8Array(buffer);
+      }
+    } else {
+      const res = await fetch(livePdfUrl);
+      const buffer = await res.arrayBuffer();
+      bytes = new Uint8Array(buffer);
+    }
+    const bytesBeforeFlatten = bytes.byteLength;
+    if (flattenInteractiveFields) {
+      bytes = await flattenPdfBytes(bytes);
+    }
+    return toPdfBlob(bytes);
+  }, [fileUrl, livePdfUrl, numPages, pageNum, usePdfJsFormWidgets, flattenPdfBytes]);
+
+  const getCurrentAttachmentPdfBlob = useCallback(async (): Promise<Blob> => {
+    if (attachmentPdfDocRef.current?.saveDocument && usePdfJsFormWidgets) {
+      const bytes = await attachmentPdfDocRef.current.saveDocument();
       return toPdfBlob(bytes);
     }
-    const res = await fetch(livePdfUrl);
-    return res.blob();
-  }, [livePdfUrl, usePdfJsFormWidgets]);
+    const response = await fetch(currentViewerPageMeta.doc.url);
+    const bytes = await response.arrayBuffer();
+    return new Blob([bytes], { type: 'application/pdf' });
+  }, [currentViewerPageMeta.doc.url, usePdfJsFormWidgets]);
 
   const handlePrint = useCallback(() => {
     // Open a tab synchronously on click so we keep user activation after async blob work.
@@ -419,7 +671,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     (async () => {
       let objectUrl: string | null = null;
       try {
-        const blob = await getCurrentPdfBlob();
+        const blob = await getCurrentPdfBlob({ flattenInteractiveFields: true });
         objectUrl = URL.createObjectURL(blob);
 
         if (printWindow && !printWindow.closed) {
@@ -452,7 +704,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   const handleDownload = useCallback(async () => {
     try {
-      const blob = await getCurrentPdfBlob();
+      const blob = await getCurrentPdfBlob({ flattenInteractiveFields: true });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -472,6 +724,28 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSaveError(null);
     setSaving(true);
     try {
+      if (currentViewerPageMeta.doc.kind === 'attachment') {
+        if (!canEditAttachments || pdfFormsReadOnly) {
+          throw new Error('Attachment editing is not available in this mode.');
+        }
+        const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
+        const attachmentFileId = attachedCloneBySourceId.get(sourceFileId) || currentViewerPageMeta.doc.id;
+        const attachmentBlob = await getCurrentAttachmentPdfBlob();
+        await updateApplicationAttachmentPdf(attachmentBlob, applicationId, attachmentFileId);
+        const updatedPageCount = await pdfjs
+          .getDocument({ data: await attachmentBlob.arrayBuffer() })
+          .promise
+          .then((pdf) => pdf.numPages)
+          .catch(() => 0);
+        const updatedUrl = URL.createObjectURL(attachmentBlob);
+        setAttachmentPreviewDocs((prev) =>
+          prev.map((entry) => {
+            if (entry.id !== attachmentFileId) return entry;
+            URL.revokeObjectURL(entry.url);
+            return { ...entry, url: updatedUrl, pageCount: updatedPageCount || entry.pageCount };
+          }));
+        setPdfVersion((v) => v + 1);
+      }
       const blob = await getCurrentPdfBlob();
       await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
       onSaveSuccess?.();
@@ -480,13 +754,49 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setSaving(false);
     }
-  }, [getCurrentPdfBlob, applicationId, formAnswers, clientUsername, onSaveSuccess]);
+  }, [
+    applicationId,
+    attachedCloneBySourceId,
+    canEditAttachments,
+    clientUsername,
+    currentViewerPageMeta.doc,
+    formAnswers,
+    getCurrentAttachmentPdfBlob,
+    getCurrentPdfBlob,
+    onSaveSuccess,
+    pdfFormsReadOnly,
+  ]);
 
   const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {
     setSaveError(null);
     setPdfEditSavedMessage(null);
     setSavingPdfEdits(true);
     try {
+      if (currentViewerPageMeta.doc.kind === 'attachment') {
+        if (!canEditAttachments || pdfFormsReadOnly) {
+          throw new Error('Attachment editing is not available in this mode.');
+        }
+        const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
+        const attachmentFileId = attachedCloneBySourceId.get(sourceFileId) || currentViewerPageMeta.doc.id;
+        const blob = await getCurrentAttachmentPdfBlob();
+        await updateApplicationAttachmentPdf(blob, applicationId, attachmentFileId);
+        const updatedPageCount = await pdfjs
+          .getDocument({ data: await blob.arrayBuffer() })
+          .promise
+          .then((pdf) => pdf.numPages)
+          .catch(() => 0);
+        const updatedUrl = URL.createObjectURL(blob);
+        setAttachmentPreviewDocs((prev) =>
+          prev.map((entry) => {
+            if (entry.id !== attachmentFileId) return entry;
+            URL.revokeObjectURL(entry.url);
+            return { ...entry, url: updatedUrl, pageCount: updatedPageCount || entry.pageCount };
+          }));
+        setPdfVersion((v) => v + 1);
+        setIsPdfEditMode(false);
+        setPdfEditSavedMessage('Attachment changes saved.');
+        return true;
+      }
       const blob = await getCurrentPdfBlob();
       await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
       const previousUrl = livePdfUrl;
@@ -503,7 +813,19 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setSavingPdfEdits(false);
     }
-  }, [applicationId, clientUsername, fileUrl, formAnswers, getCurrentPdfBlob, livePdfUrl]);
+  }, [
+    applicationId,
+    attachedCloneBySourceId,
+    canEditAttachments,
+    clientUsername,
+    currentViewerPageMeta.doc,
+    fileUrl,
+    formAnswers,
+    getCurrentAttachmentPdfBlob,
+    getCurrentPdfBlob,
+    livePdfUrl,
+    pdfFormsReadOnly,
+  ]);
 
   const handleCancelPdfEdits = useCallback(() => {
     // Reload the current committed PDF source and discard unsaved in-memory form edits.
@@ -523,7 +845,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setEmbeddedBoxes(new Set());
     setSelectedDocs(new Set());
     setStagedDocs(new Set());
-    setBasePdfBlob(null);
     const first = signaturePlacements.length > 0 ? 0 : null;
     setActivePlacementIdx(first);
     if (first !== null) setPageNum(signaturePlacements[first].page + 1);
@@ -531,7 +852,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
 
   useEffect(() => () => { if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl); }, [livePdfUrl, fileUrl]);
 
-  useEffect(() => () => { pdfDocRef.current = null; }, []);
+  useEffect(() => {
+    pdfDocRef.current = null;
+  }, [livePdfUrl]);
+
+  useEffect(() => () => {
+    pdfDocRef.current = null;
+    attachmentPdfDocRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (startInEditMode) {
@@ -547,7 +875,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }), [handleSavePdfEdits, handleCancelPdfEdits]);
 
   const isPdfActionsLocked = showPdfEditControls && isPdfEditMode;
-  const hasMultiplePages = numPages > 1;
   let downloadButtonClass = 'tw-text-gray-700 tw-border tw-border-gray-300 hover:tw-bg-gray-50';
   if (isPdfActionsLocked) {
     downloadButtonClass = 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed';
@@ -557,6 +884,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const printButtonClass = isPdfActionsLocked
     ? 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed'
     : 'tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50';
+
+  useEffect(() => {
+    if (pageNum > totalViewerPages) {
+      setPageNum(Math.max(1, totalViewerPages));
+    }
+  }, [pageNum, totalViewerPages]);
 
   return (
     <div className={`tw-flex tw-flex-col tw-gap-8 tw-items-start tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS}`}>
@@ -616,11 +949,16 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       )}
 
       <Document
-        file={livePdfUrl}
-        key={`doc-${pdfVersion}`}
+        file={currentViewerPageMeta.doc.url}
+        key={`doc-${currentViewerPageMeta.doc.id}-${pdfVersion}`}
         onLoadSuccess={(pdf) => {
-          setNumPages(pdf.numPages);
-          pdfDocRef.current = pdf;
+          if (currentViewerPageMeta.doc.kind === 'main') {
+            setNumPages(pdf.numPages);
+            pdfDocRef.current = pdf;
+            attachmentPdfDocRef.current = null;
+          } else {
+            attachmentPdfDocRef.current = pdf;
+          }
         }}
         loading={<div className="tw-flex tw-items-center tw-justify-center tw-h-64 tw-text-gray-400">Loading PDF...</div>}
       >
@@ -633,31 +971,42 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               <button
                 type="button"
                 onClick={() => setPageNum((p) => Math.max(1, p - 1))}
-                disabled={!hasMultiplePages || pageNum <= 1}
-                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+                disabled={totalViewerPages <= 1 || pageNum <= 1}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${totalViewerPages <= 1 ? 'tw-invisible' : ''}`}
               >
                 &larr; Prev
               </button>
-              <span className="tw-text-sm tw-text-gray-700 tw-font-normal">Page {pageNum} / {numPages}</span>
+              <span className="tw-text-sm tw-text-gray-700 tw-font-normal">Page {pageNum} / {totalViewerPages}</span>
               <button
                 type="button"
-                onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
-                disabled={!hasMultiplePages || pageNum >= numPages}
-                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${!hasMultiplePages ? 'tw-invisible' : ''}`}
+                onClick={() => setPageNum((p) => Math.min(totalViewerPages, p + 1))}
+                disabled={totalViewerPages <= 1 || pageNum >= totalViewerPages}
+                className={`tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-font-normal tw-text-gray-600 hover:tw-text-gray-800 disabled:tw-text-gray-400 focus:tw-outline-none focus:tw-ring-0 ${totalViewerPages <= 1 ? 'tw-invisible' : ''}`}
               >
                 Next &rarr;
               </button>
             </div>
+            {attachmentPreviewDocs.length > 0 && (
+              <div className="tw-px-3 tw-pb-2 tw-text-xs tw-text-blue-700 tw-font-medium">
+                Attached pages appended: {totalAttachedPages}
+              </div>
+            )}
+            {!pdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (
+              <div className="tw-px-3 tw-pb-2 tw-text-xs tw-text-amber-700 tw-font-medium">
+                Attachment pages are view-only. Edit fields on the main application pages.
+              </div>
+            )}
             <div ref={pdfWrapperRef} className="tw-relative tw-bg-gray-200 tw-px-1 tw-pb-1">
               <div className="tw-bg-gray-100 tw-rounded tw-w-full tw-overflow-hidden">
                 <Page
-                  key={`preview-${pageNum}-v${pdfVersion}`}
-                  pageNumber={pageNum}
-                  onLoadSuccess={onPageLoadForOverlays}
+                  key={`preview-${pageNum}-${currentViewerPageMeta.doc.id}-v${pdfVersion}`}
+                  pageNumber={currentViewerPageMeta.localPage}
+                  onLoadSuccess={isViewingMainPdf ? onPageLoadForOverlays : undefined}
                   width={renderedWidth > 0 ? renderedWidth : undefined}
+                  devicePixelRatio={pageDevicePixelRatio}
                   renderAnnotationLayer
                   renderTextLayer
-                  renderForms={usePdfJsFormWidgets}
+                  renderForms={usePdfJsFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
                 />
               </div>
               {pdfFormsReadOnly && (
@@ -666,7 +1015,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                   title="PDF is read-only."
                 />
               )}
-              {sigOverlays.map((rect) => {
+              {isViewingMainPdf && sigOverlays.map((rect) => {
                 const isEmbedded = embeddedBoxes.has(rect.placementIdx);
                 if (isEmbedded) return null;
                 const isActive = activePlacementIdx === rect.placementIdx;
@@ -828,9 +1177,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         </div>
       )}
 
-      {orgDocs.length > 0 && (
+      {orgDocs.length > 0 && !pdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
-          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Append Organization Documents</h4>
+          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Attached Organization Documents</h4>
           {!allSigned ? (
             <div className="tw-p-3 tw-rounded-lg tw-bg-yellow-50 tw-text-yellow-800 tw-text-sm tw-mb-2">
               Please complete all signatures above before appending additional documents to the application.
@@ -838,16 +1187,21 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           ) : (
             <>
               <p className="tw-text-xs tw-text-gray-600 tw-mb-3">
-                Check the documents you want to append to the end of this application PDF.
+                Check the documents you want attached to this application PDF.
                 <i> (Note: Any unsaved form modifications may be reset when toggling documents.)</i>
               </p>
+              {!packetPersistenceAvailable && (
+                <div className="tw-text-xs tw-text-amber-700 tw-bg-amber-50 tw-border tw-border-amber-200 tw-rounded tw-p-2 tw-mb-2">
+                  Packet persistence is currently unavailable for this application record. Attachment changes are disabled until persistence is restored.
+                </div>
+              )}
               <div className="tw-flex tw-flex-col tw-gap-2">
                 {orgDocs.map((doc) => (
                   <label key={doc.id} className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-800 tw-cursor-pointer">
                     <input
                       type="checkbox"
                       checked={stagedDocs.has(doc.id)}
-                      disabled={isAppendingDocs}
+                      disabled={isAppendingDocs || !packetPersistenceAvailable}
                       onChange={() => toggleStagedDoc(doc.id)}
                       className="tw-form-checkbox tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
                     />
@@ -858,10 +1212,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               <button
                 type="button"
                 onClick={applyOrgDocs}
-                disabled={isAppendingDocs}
+                disabled={isAppendingDocs || !hasAttachmentSelectionChanges || !packetPersistenceAvailable}
                 className="tw-mt-3 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-transition-colors"
               >
-                {isAppendingDocs ? 'Re-rendering PDF...' : 'Attach Checked Documents'}
+                {isAppendingDocs ? 'Applying changes...' : 'Apply Changes'}
               </button>
               {isAppendingDocs && (
                 <div className="tw-text-xs tw-text-blue-600 tw-mt-2 tw-font-medium">
