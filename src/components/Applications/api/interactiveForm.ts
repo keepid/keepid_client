@@ -9,6 +9,7 @@ export interface GetQuestionsV2Response {
     client?: Record<string, unknown>;
     worker?: Record<string, unknown>;
     org?: Record<string, unknown>;
+    director?: Record<string, unknown>;
   };
 }
 
