@@ -724,6 +724,28 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSaveError(null);
     setSaving(true);
     try {
+      if (currentViewerPageMeta.doc.kind === 'attachment') {
+        if (!canEditAttachments || pdfFormsReadOnly) {
+          throw new Error('Attachment editing is not available in this mode.');
+        }
+        const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
+        const attachmentFileId = attachedCloneBySourceId.get(sourceFileId) || currentViewerPageMeta.doc.id;
+        const attachmentBlob = await getCurrentAttachmentPdfBlob();
+        await updateApplicationAttachmentPdf(attachmentBlob, applicationId, attachmentFileId);
+        const updatedPageCount = await pdfjs
+          .getDocument({ data: await attachmentBlob.arrayBuffer() })
+          .promise
+          .then((pdf) => pdf.numPages)
+          .catch(() => 0);
+        const updatedUrl = URL.createObjectURL(attachmentBlob);
+        setAttachmentPreviewDocs((prev) =>
+          prev.map((entry) => {
+            if (entry.id !== attachmentFileId) return entry;
+            URL.revokeObjectURL(entry.url);
+            return { ...entry, url: updatedUrl, pageCount: updatedPageCount || entry.pageCount };
+          }));
+        setPdfVersion((v) => v + 1);
+      }
       const blob = await getCurrentPdfBlob();
       await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
       onSaveSuccess?.();
@@ -732,7 +754,18 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setSaving(false);
     }
-  }, [getCurrentPdfBlob, applicationId, formAnswers, clientUsername, onSaveSuccess]);
+  }, [
+    applicationId,
+    attachedCloneBySourceId,
+    canEditAttachments,
+    clientUsername,
+    currentViewerPageMeta.doc,
+    formAnswers,
+    getCurrentAttachmentPdfBlob,
+    getCurrentPdfBlob,
+    onSaveSuccess,
+    pdfFormsReadOnly,
+  ]);
 
   const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {
     setSaveError(null);
