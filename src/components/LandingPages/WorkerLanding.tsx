@@ -23,6 +23,7 @@ interface TargetClient {
   firstName: string;
   lastName: string;
   phone: string;
+  email?: string;
   birthDate: string;
   photo: string | null;
   assignedWorkerUsernames: string[];
@@ -41,6 +42,34 @@ function creationTimeMs(client: TargetClient): number | null {
   if (raw == null || raw === '') return null;
   const t = new Date(raw).getTime();
   return Number.isNaN(t) ? null : t;
+}
+
+function normalizeSearchText(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function matchesClientSearchQuery(client: TargetClient, query: string): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return true;
+
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  const first = normalizeSearchText(client.firstName || '');
+  const last = normalizeSearchText(client.lastName || '');
+  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
+  const username = normalizeSearchText(client.username || '');
+  const phone = normalizeSearchText(client.phone || '');
+  const email = normalizeSearchText(client.email || '');
+
+  return tokens.every((token) => (
+    first.includes(token)
+    || last.includes(token)
+    || full.includes(token)
+    || username.includes(token)
+    || phone.includes(token)
+    || email.includes(token)
+  ));
 }
 
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
@@ -155,8 +184,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         const { people, status } = responseJSON;
 
         let filteredPeople: TargetClient[] = [];
-        if (status !== 'USER_NOT_FOUND' && people) {
-          filteredPeople = people;
+        if (status !== 'USER_NOT_FOUND' && Array.isArray(people)) {
+          filteredPeople = people.filter((person: TargetClient) =>
+            matchesClientSearchQuery(person, submittedSearchName));
         }
 
         if (filteredPeople.length > 0) {
@@ -185,6 +215,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   useEffect(() => {
     setCurrentPage(1);
   }, [sortMode]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const trimmedSearch = searchName.trim();
+      setSubmittedSearchName((prev) => (prev === trimmedSearch ? prev : trimmedSearch));
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchName]);
 
   const sortedClients = useMemo(() => sortClients(clients, sortMode), [clients, sortMode]);
 
@@ -225,7 +264,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    setSubmittedSearchName(searchName);
+    setSubmittedSearchName(searchName.trim());
   };
 
   const currentPosts = useMemo(() => {

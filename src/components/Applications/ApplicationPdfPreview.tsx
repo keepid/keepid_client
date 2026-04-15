@@ -16,7 +16,13 @@ interface PreviewLocationState {
   targetUser?: string;
 }
 
-export default function ApplicationPdfPreview({ editable = false }: { editable?: boolean }) {
+export default function ApplicationPdfPreview({
+  editable = false,
+  allowAttachmentEditing = false,
+}: {
+  editable?: boolean;
+  allowAttachmentEditing?: boolean;
+}) {
   const location = useLocation<PreviewLocationState>();
   const history = useHistory();
   const alert = useAlert();
@@ -26,15 +32,33 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
   const clientUsername = location.state?.clientUsername || '';
   const targetUser = location.state?.targetUser || '';
   const editTargetUsername = targetUser || clientUsername;
+  const canEditAttachments = editable && allowAttachmentEditing;
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(editable);
   const [isSavingEdits, setIsSavingEdits] = useState(false);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
   const viewerRef = useRef<SignAndDownloadViewerHandle>(null);
+  const goToPreviewRoute = () => {
+    history.replace({
+      pathname: '/applications/preview',
+      state: {
+        applicationId,
+        applicationFilename,
+        targetUser,
+        clientUsername,
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (editable) {
+      setIsEditMode(true);
+    }
+  }, [editable]);
 
   useEffect(() => {
     if (!applicationId) {
@@ -169,7 +193,7 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
                     setIsSavingEdits(true);
                     const success = await viewerRef.current.savePdfEdits();
                     setIsSavingEdits(false);
-                    if (success) setIsEditMode(false);
+                    if (success) goToPreviewRoute();
                   }}
                 >
                   {isSavingEdits ? 'Saving changes...' : 'Save changes'}
@@ -178,7 +202,7 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
                   variant="outline-secondary"
                   onClick={() => {
                     viewerRef.current?.discardPdfEdits();
-                    setIsEditMode(false);
+                    goToPreviewRoute();
                   }}
                 >
                   Cancel
@@ -214,6 +238,7 @@ export default function ApplicationPdfPreview({ editable = false }: { editable?:
             showSaveButton={false}
             showPdfEditControls={false}
             pdfFormsReadOnly={!editable || !isEditMode}
+            canEditAttachments={canEditAttachments}
           />
         )}
       </div>

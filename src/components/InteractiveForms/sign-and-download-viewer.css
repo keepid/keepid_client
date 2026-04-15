@@ -6,6 +6,8 @@
   width: 100% !important;
   height: auto !important;
   display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .keepid-pdf-preview .react-pdf__Page__textContent,
