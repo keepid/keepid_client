@@ -2,6 +2,7 @@ export interface ResolvedProfiles {
   client?: Record<string, unknown>;
   worker?: Record<string, unknown>;
   org?: Record<string, unknown>;
+  director?: Record<string, unknown>;
 }
 
 /**
@@ -66,6 +67,21 @@ function computeAgeFromBirthDate(profile: Record<string, unknown> | undefined): 
   return age >= 0 ? String(age) : undefined;
 }
 
+function computeBirthMonthNumber(profile: Record<string, unknown> | undefined): string | undefined {
+  const birthDate = parseBirthDate(getByPath(profile, 'birthDate'));
+  if (!birthDate) return undefined;
+  return String(birthDate.getMonth() + 1);
+}
+
+function computePhoneLast7(profile: Record<string, unknown> | undefined): string | undefined {
+  const raw = getByPath(profile, 'phoneBook.0.phoneNumber') ?? getByPath(profile, 'phone');
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length < 7) return undefined;
+  const lastSeven = digits.slice(-7);
+  return `${lastSeven.slice(0, 3)}-${lastSeven.slice(3)}`;
+}
+
 function combineAddressLine1And2(
   profile: Record<string, unknown> | undefined,
   prefix: string,
@@ -83,11 +99,11 @@ function resolveAddressLine1And2Directive(
   profiles: ResolvedProfiles,
 ): string | undefined {
   const match = directive.trim().match(
-    /^(?:(client|worker|org)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1\+2$/i,
+    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1\+2$/i,
   );
   if (!match) return undefined;
 
-  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org';
+  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org' | 'director';
   const rawPrefix = match[2]?.toLowerCase();
   const profile = profiles[profileKey] as Record<string, unknown> | undefined;
   if (!profile) return undefined;
@@ -116,16 +132,26 @@ export function resolveDirectiveFromProfiles(
   if (!profiles) return undefined;
   const lower = directive.trim().toLowerCase();
 
-  const dobMatch = directive.trim().match(/^(client|worker)\.\$dob_mm\/dd\/yyyy$/i);
+  const dobMatch = directive.trim().match(/^(client|worker|director)\.\$dob_mm\/dd\/yyyy$/i);
   if (dobMatch) {
-    const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker';
+    const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const profile = profiles[profileKey];
     return reformatDateToSlash(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
   }
-  const ageMatch = directive.trim().match(/^(client|worker)\.\$age$/i);
+  const ageMatch = directive.trim().match(/^(client|worker|director)\.\$age$/i);
   if (ageMatch) {
-    const profileKey = ageMatch[1].toLowerCase() as 'client' | 'worker';
+    const profileKey = ageMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeAgeFromBirthDate(profiles[profileKey] as Record<string, unknown> | undefined);
+  }
+  const monthNumberMatch = directive.trim().match(/^(client|worker|director)\.\$(birthMonth|dobMonthNumber)$/i);
+  if (monthNumberMatch) {
+    const profileKey = monthNumberMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    return computeBirthMonthNumber(profiles[profileKey] as Record<string, unknown> | undefined);
+  }
+  const phoneLast7Match = directive.trim().match(/^(client|worker|director)\.\$phoneLast7$/i);
+  if (phoneLast7Match) {
+    const profileKey = phoneLast7Match[1].toLowerCase() as 'client' | 'worker' | 'director';
+    return computePhoneLast7(profiles[profileKey] as Record<string, unknown> | undefined);
   }
 
   const addressLine1And2 = resolveAddressLine1And2Directive(directive, profiles);
@@ -141,6 +167,9 @@ export function resolveDirectiveFromProfiles(
   }
   if (lower.startsWith('org.') && profiles.org) {
     return getByPath(profiles.org, directive.slice(4));
+  }
+  if (lower.startsWith('director.') && profiles.director) {
+    return getByPath(profiles.director, directive.slice(9));
   }
   if (lower === 'anydate' || lower === 'currentdate') {
     const d = new Date();

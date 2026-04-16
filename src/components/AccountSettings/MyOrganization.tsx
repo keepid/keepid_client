@@ -35,6 +35,7 @@ interface OrgInfo {
   address: OrgAddress;
   phone: string;
   email: string;
+  designatedDirectorUsername: string;
 }
 
 interface Worker {
@@ -119,9 +120,21 @@ interface MailSummaryData {
 }
 
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
-  const [orgInfo, setOrgInfo] = useState<OrgInfo>({ name: '', address: { ...EMPTY_ADDRESS }, phone: '', email: '' });
+  const [orgInfo, setOrgInfo] = useState<OrgInfo>({
+    name: '',
+    address: { ...EMPTY_ADDRESS },
+    phone: '',
+    email: '',
+    designatedDirectorUsername: '',
+  });
   const [isEditingOrg, setIsEditingOrg] = useState(false);
-  const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({ name: '', address: { ...EMPTY_ADDRESS }, phone: '', email: '' });
+  const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({
+    name: '',
+    address: { ...EMPTY_ADDRESS },
+    phone: '',
+    email: '',
+    designatedDirectorUsername: '',
+  });
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
@@ -151,7 +164,20 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [isRenaming, setIsRenaming] = useState(false);
   const [deleteTargetDocument, setDeleteTargetDocument] = useState<OrgDocument | null>(null);
 
-  const isAdmin = role === Role.Director || role === Role.Admin;
+  const canManageMembers = role === Role.Director || role === Role.Admin;
+  const canEditOrganization = role === Role.Admin;
+
+  const adminMembers = useMemo(
+    () => workers.filter((worker) => worker.privilegeLevel === 'Admin'),
+    [workers],
+  );
+
+  const designatedDirectorDisplayName = useMemo(() => {
+    if (!orgInfo.designatedDirectorUsername) return '';
+    const selected = workers.find((worker) => worker.username === orgInfo.designatedDirectorUsername);
+    if (!selected) return orgInfo.designatedDirectorUsername;
+    return `${selected.firstName} ${selected.lastName}`.trim() || selected.username;
+  }, [orgInfo.designatedDirectorUsername, workers]);
 
   const workerToRemove = useMemo(
     () => workers.find((w) => w.username === removingUsername) ?? null,
@@ -184,6 +210,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           address: addr,
           phone: data.phone || '',
           email: data.email || '',
+          designatedDirectorUsername: data.designatedDirectorUsername || '',
         };
         setOrgInfo(info);
         setEditedOrgInfo(info);
@@ -282,6 +309,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           address: editedOrgInfo.address,
           phone: editedOrgInfo.phone,
           email: editedOrgInfo.email,
+          designatedDirectorUsername: editedOrgInfo.designatedDirectorUsername || null,
         }),
       });
       const data = await res.json();
@@ -604,6 +632,24 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               />
             </div>
           </div>
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="designatedDirectorUsername" className="col-3 card-text mt-2 text-primary-theme">Director</label>
+            <div className="col-9 card-text">
+              <select
+                id="designatedDirectorUsername"
+                className="form-control form-purple"
+                value={editedOrgInfo.designatedDirectorUsername}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, designatedDirectorUsername: e.target.value })}
+              >
+                <option value="">No designated director</option>
+                {adminMembers.map((member) => (
+                  <option key={member.username} value={member.username}>
+                    {member.firstName} {member.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </>
       );
     }
@@ -627,6 +673,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           <div className="col-3 card-text mt-2 text-primary-theme">Email</div>
           <div className="col-9 card-text tw-pt-2">{orgInfo.email || 'Not set'}</div>
         </div>
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Director</div>
+          <div className="col-9 card-text tw-pt-2">{designatedDirectorDisplayName || 'Not set'}</div>
+        </div>
       </>
     );
   };
@@ -640,7 +690,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       return (
         <div className="tw-text-center tw-py-8">
           <p className="tw-text-gray-500">No workers found in your organization.</p>
-          {isAdmin && (
+          {canManageMembers && (
             <p className="tw-text-sm tw-text-gray-400 tw-mt-1">
               Click &quot;Enroll Worker&quot; to add team members.
             </p>
@@ -666,7 +716,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
                 Onboard Date
               </th>
-              {isAdmin && (
+              {canManageMembers && (
                 <th className="tw-px-6 tw-py-3 tw-text-right tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
                   Actions
                 </th>
@@ -690,7 +740,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-sm tw-text-gray-500">
                   {formatDate(worker.creationDate)}
                 </td>
-                {isAdmin && (
+                {canManageMembers && (
                   <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap tw-text-right tw-text-sm">
                     {worker.privilegeLevel !== 'Admin' && worker.privilegeLevel !== 'Director' && (
                       <button
@@ -729,7 +779,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           documentUploader={currentUploader || 'Unknown'}
           targetUser={undefined as unknown as string} // Omit targetUser to avoid backend USER_NOT_FOUND
           fileType={FileType.ORG_DOCUMENT}
-          idCategory={'NONE'}
+          idCategory="NONE"
           onDownloadCurrentDocument={() => {
             downloadOrgDocumentPdf(currentDocumentId!, currentDocumentName!, alert);
           }}
@@ -744,43 +794,43 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       ) : (
         <>
           <div className="card mt-3 mb-3 pl-5 pr-5">
-        <div className="card-body">
-          <div className="tw-flex tw-items-center tw-justify-between">
-            <h5 className="card-title tw-mb-0">Organization Info</h5>
-            <div className="tw-flex tw-gap-2">
-              {!isEditingOrg && isAdmin && (
-                <button type="button" className="btn btn-outline-dark" onClick={() => setIsEditingOrg(true)}>
-                  Edit
-                </button>
-              )}
-              {isEditingOrg && (
-                <>
-                  <button type="button" className="btn btn-outline-dark" onClick={handleCancelEditOrg}>
-                    Cancel
-                  </button>
-                  <button type="button" className="btn btn-primary" onClick={handleSaveOrgInfo}>
-                    Save
-                  </button>
-                </>
-              )}
+            <div className="card-body">
+              <div className="tw-flex tw-items-center tw-justify-between">
+                <h5 className="card-title tw-mb-0">Organization Info</h5>
+                <div className="tw-flex tw-gap-2">
+                  {!isEditingOrg && canEditOrganization && (
+                    <button type="button" className="btn btn-outline-dark" onClick={() => setIsEditingOrg(true)}>
+                      Edit
+                    </button>
+                  )}
+                  {isEditingOrg && (
+                    <>
+                      <button type="button" className="btn btn-outline-dark" onClick={handleCancelEditOrg}>
+                        Cancel
+                      </button>
+                      <button type="button" className="btn btn-primary" onClick={handleSaveOrgInfo}>
+                        Save
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {renderOrgInfoContent()}
             </div>
           </div>
-          {renderOrgInfoContent()}
-        </div>
-      </div>
 
-      <div className="card mt-3 mb-3 pl-5 pr-5">
-        <div className="card-body">
-          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
-            <h5 className="card-title tw-mb-0">Workers & Admins</h5>
-            {isAdmin && (
-              <Link to="/enroll-worker">
-                <button type="button" className="btn btn-primary tw-mt-3 sm:tw-mt-0">
-                  Enroll Worker
-                </button>
-              </Link>
-            )}
-          </div>
+          <div className="card mt-3 mb-3 pl-5 pr-5">
+            <div className="card-body">
+              <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
+                <h5 className="card-title tw-mb-0">Workers & Admins</h5>
+                {canManageMembers && (
+                  <Link to="/enroll-worker">
+                    <button type="button" className="btn btn-primary tw-mt-3 sm:tw-mt-0">
+                      Enroll Worker
+                    </button>
+                  </Link>
+                )}
+              </div>
 
           <form className="tw-flex tw-w-full md:tw-w-96 tw-mb-4" onSubmit={handleSearchSubmit}>
             <input
@@ -795,12 +845,12 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             </button>
           </form>
 
-          {renderWorkerListContent()}
-        </div>
-      </div>
+              {renderWorkerListContent()}
+            </div>
+          </div>
 
-      <div className="card mt-3 mb-3 pl-5 pr-5">
-        <div className="card-body">
+          <div className="card mt-3 mb-3 pl-5 pr-5">
+            <div className="card-body">
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
             <h5 className="card-title tw-mb-0">Mail Summary</h5>
             <div className="tw-flex tw-items-center tw-gap-2 tw-mt-3 sm:tw-mt-0">
@@ -875,11 +925,11 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               )}
             </>
           )}
-        </div>
-      </div>
+            </div>
+          </div>
 
-      <div className="card mt-3 mb-3 pl-5 pr-5">
-        <div className="card-body">
+          <div className="card mt-3 mb-3 pl-5 pr-5">
+            <div className="card-body">
           <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
             <h5 className="card-title tw-mb-0">Organization Documents</h5>
             <div className="tw-mt-3 sm:tw-mt-0">
@@ -922,9 +972,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               onRowClick={handleRowClick}
             />
           )}
-        </div>
-      </div>
-      </>
+            </div>
+          </div>
+        </>
       )}
 
       {deleteTargetDocument && (
