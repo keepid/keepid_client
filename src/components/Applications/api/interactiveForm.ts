@@ -57,10 +57,22 @@ export async function fillPdfBlob(
   formAnswers: Record<string, unknown>,
   clientUsername = '',
 ): Promise<Blob> {
+  return fillPdfBlobWithOptions(applicationId, formAnswers, clientUsername, false);
+}
+
+async function fillPdfBlobWithOptions(
+  applicationId: string,
+  formAnswers: Record<string, unknown>,
+  clientUsername: string,
+  preview: boolean,
+): Promise<Blob> {
   const form = new FormData();
   form.append('applicationId', applicationId);
   form.append('formAnswers', JSON.stringify(formAnswers));
   form.append('clientUsername', clientUsername);
+  if (preview) {
+    form.append('preview', 'true');
+  }
   const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
     method: 'POST',
     credentials: 'include',
@@ -70,8 +82,30 @@ export async function fillPdfBlob(
     const text = await res.text();
     throw new Error(text || res.statusText);
   }
+
+  const contentType = res.headers.get('content-type')?.toLowerCase() ?? '';
+  if (!contentType.includes('application/pdf')) {
+    const text = await res.text();
+    let message = text || 'Failed to fill PDF';
+    try {
+      const parsed = JSON.parse(text) as { message?: string; status?: string };
+      message = parsed.message || parsed.status || message;
+    } catch {
+      // leave message as-is for non-JSON payloads
+    }
+    throw new Error(message);
+  }
+
   const blob = await res.blob();
   return blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
+}
+
+export async function fillAttachmentPdfBlob(
+  attachmentFileId: string,
+  formAnswers: Record<string, unknown>,
+  clientUsername = '',
+): Promise<Blob> {
+  return fillPdfBlobWithOptions(attachmentFileId, formAnswers, clientUsername, true);
 }
 
 export async function uploadCompletedPdf(

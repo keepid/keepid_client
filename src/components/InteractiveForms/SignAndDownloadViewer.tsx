@@ -10,8 +10,14 @@ import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
-import { updateApplicationAttachmentPdf, uploadCompletedPdf } from '../Applications/api/interactiveForm';
+import {
+  fillAttachmentPdfBlob,
+  getQuestionsV2,
+  updateApplicationAttachmentPdf,
+  uploadCompletedPdf,
+} from '../Applications/api/interactiveForm';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
+import { buildOrgAttachmentAutofillAnswers } from './attachmentAutofill';
 import type { SignaturePlacement } from './types';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -107,6 +113,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [attachmentAutofillWarning, setAttachmentAutofillWarning] = useState<string | null>(null);
   const [isPdfEditMode, setIsPdfEditMode] = useState(startInEditMode);
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
@@ -124,9 +131,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSigExpandModalOpen(true);
   }, []);
 
-  const closeSigExpandModal = useCallback(() => {
+  const closeSigExpandModal = useCallback((restoreCurrentSignature = true) => {
     setSigExpandModalOpen(false);
-    setInlineSigRestoreUrl(currentSigRef.current);
+    setInlineSigRestoreUrl(restoreCurrentSignature ? currentSigRef.current : null);
   }, []);
 
   useEffect(() => {
@@ -338,8 +345,18 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       const [x, y, w, h] = p.rect;
       const imgAspect = sigImage.width / sigImage.height;
       const boxAspect = w / h;
-      let drawW = w; let drawH = h;
-      if (imgAspect > boxAspect) { drawH = w / imgAspect; } else { drawW = h * imgAspect; }
+      // Keep a little breathing room so signatures do not run end-to-end in the PDF box.
+      const EMBED_FILL_RATIO = 0.88;
+      const maxDrawW = w * EMBED_FILL_RATIO;
+      const maxDrawH = h * EMBED_FILL_RATIO;
+      const maxAspect = maxDrawW / maxDrawH;
+      let drawW = maxDrawW;
+      let drawH = maxDrawH;
+      if (imgAspect > maxAspect) {
+        drawH = maxDrawW / imgAspect;
+      } else {
+        drawW = maxDrawH * imgAspect;
+      }
       page.drawImage(sigImage, { x: x + (w - drawW) / 2, y: y + (h - drawH) / 2, width: drawW, height: drawH });
       const bytes = await pdfDoc.save();
       const blob = toPdfBlob(bytes);
@@ -383,40 +400,82 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     persistSelection: boolean,
   ) => {
     setIsAppendingDocs(true);
+    setAttachmentAutofillWarning(null);
     try {
+      const nextCloneMap = new Map(attachedCloneBySourceId);
+      let effectiveSelected = new Set(nextSelected);
       if (persistSelection) {
         if (packetPersistenceAvailable) {
           const toAttach = Array.from(nextSelected).filter((id) => !previousSelected.has(id));
           const toDetach = Array.from(previousSelected).filter((id) => !nextSelected.has(id));
+          const autofillFailures: string[] = [];
+          let attachmentAutofillAnswers: Record<string, string> | null = null;
+
+          if (toAttach.length > 0) {
+            try {
+              const questionsResponse = await getQuestionsV2(applicationId, clientUsername);
+              attachmentAutofillAnswers = buildOrgAttachmentAutofillAnswers(questionsResponse.resolvedProfiles);
+            } catch {
+              toAttach.forEach((sourceId) => autofillFailures.push(sourceId));
+            }
+          }
 
           for (let i = 0; i < toAttach.length; i += 1) {
             const id = toAttach[i];
-            /* eslint-disable-next-line no-await-in-loop */
-            const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ applicationId, fileId: id }),
-            });
-            /* eslint-disable-next-line no-await-in-loop */
-            const attachData = await attachResponse.json().catch(() => ({}));
-            if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
-              if (attachData?.status === 'NO_SUCH_FILE') {
-                setPacketPersistenceAvailable(false);
-              }
-              throw new Error(attachData?.message || 'Failed to attach document to application');
-            }
-            if (typeof attachData?.attachedFileId === 'string') {
-              setAttachedCloneBySourceId((prev) => {
-                const next = new Map(prev);
-                next.set(id, attachData.attachedFileId);
-                return next;
+            if (!autofillFailures.includes(id)) {
+              /* eslint-disable-next-line no-await-in-loop */
+              const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ applicationId, fileId: id }),
               });
+              /* eslint-disable-next-line no-await-in-loop */
+              const attachData = await attachResponse.json().catch(() => ({}));
+              if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
+                if (attachData?.status === 'NO_SUCH_FILE') {
+                  setPacketPersistenceAvailable(false);
+                }
+                autofillFailures.push(id);
+              } else {
+                const attachedFileId = typeof attachData?.attachedFileId === 'string'
+                  ? attachData.attachedFileId
+                  : undefined;
+                if (!attachedFileId) {
+                  autofillFailures.push(id);
+                } else {
+                  nextCloneMap.set(id, attachedFileId);
+
+                  try {
+                    if (!attachmentAutofillAnswers) {
+                      throw new Error('Unable to resolve directive values for attachment autofill.');
+                    }
+                    /* eslint-disable-next-line no-await-in-loop */
+                    const filledAttachmentBlob = await fillAttachmentPdfBlob(
+                      attachedFileId,
+                      attachmentAutofillAnswers,
+                      clientUsername,
+                    );
+                    /* eslint-disable-next-line no-await-in-loop */
+                    await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
+                  } catch {
+                    /* eslint-disable-next-line no-await-in-loop */
+                    await fetch(`${getServerURL()}/detach-packet-part`, {
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ applicationId, fileId: attachedFileId }),
+                    }).catch(() => ({}));
+                    nextCloneMap.delete(id);
+                    autofillFailures.push(id);
+                  }
+                }
+              }
             }
           }
           for (let i = 0; i < toDetach.length; i += 1) {
             const sourceId = toDetach[i];
-            const id = attachedCloneBySourceId.get(sourceId) || sourceId;
+            const id = nextCloneMap.get(sourceId) || sourceId;
             /* eslint-disable-next-line no-await-in-loop */
             const detachResponse = await fetch(`${getServerURL()}/detach-packet-part`, {
               method: 'POST',
@@ -432,23 +491,35 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               }
               throw new Error(detachData?.message || 'Failed to detach document from application');
             }
+            nextCloneMap.delete(sourceId);
           }
+          if (autofillFailures.length > 0) {
+            effectiveSelected = new Set(Array.from(nextSelected).filter((id) => !autofillFailures.includes(id)));
+            const failedDocNames = autofillFailures
+              .map((id) => orgDocs.find((doc) => doc.id === id)?.filename || id)
+              .join(', ');
+            setAttachmentAutofillWarning(
+              `Skipped attachment autofill for: ${failedDocNames}. Other attachment changes were applied.`,
+            );
+            setStagedDocs(new Set(effectiveSelected));
+          }
+          setAttachedCloneBySourceId(nextCloneMap);
           await fetchPacketSelection();
         }
       }
 
-      await loadAttachmentPreviews(nextSelected, orgDocs, attachedCloneBySourceId);
-      if (nextSelected.size === 0 && livePdfUrl !== fileUrl) {
+      await loadAttachmentPreviews(effectiveSelected, orgDocs, nextCloneMap);
+      if (effectiveSelected.size === 0 && livePdfUrl !== fileUrl) {
         const oldUrl = livePdfUrl;
         setLivePdfUrl(fileUrl);
         setPdfVersion((v) => v + 1);
         URL.revokeObjectURL(oldUrl);
       }
       setSelectedDocs((prev) => {
-        if (prev.size === nextSelected.size && Array.from(prev).every((id) => nextSelected.has(id))) {
+        if (prev.size === effectiveSelected.size && Array.from(prev).every((id) => effectiveSelected.has(id))) {
           return prev;
         }
-        return nextSelected;
+        return effectiveSelected;
       });
     } catch (err) {
       console.error('Failed to append doc', err);
@@ -464,6 +535,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     packetPersistenceAvailable,
     attachedCloneBySourceId,
     orgDocs,
+    clientUsername,
     setSaveError,
   ]);
 
@@ -1107,7 +1179,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
             aria-label="Close expanded signature"
             onClick={closeSigExpandModal}
           />
-          <div className="tw-relative tw-z-10 tw-flex tw-max-h-[min(92vh,900px)] tw-w-full tw-max-w-[min(96vw,1100px)] tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-gray-200 tw-bg-white tw-shadow-2xl">
+          <div className="tw-relative tw-z-10 tw-flex tw-max-h-[min(92vh,900px)] tw-w-full tw-max-w-[min(98vw,1300px)] tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-gray-200 tw-bg-white tw-shadow-2xl">
             <div className="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-gray-200 tw-px-4 tw-py-3">
               <h2 id="keepid-sig-expand-title" className="tw-m-0 tw-text-sm tw-font-semibold tw-text-gray-900">
                 Sign here
@@ -1122,22 +1194,19 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               </button>
             </div>
             <div className="tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-bg-slate-100/90 tw-p-4 sm:tw-p-6">
-              <div className="tw-mx-auto tw-max-w-4xl tw-rounded-xl tw-border-2 tw-border-blue-400 tw-bg-blue-50 tw-p-3 tw-shadow-sm sm:tw-p-4">
-                <p className="tw-mb-1 tw-text-sm tw-font-semibold tw-text-blue-950">Signing area</p>
-                <p className="tw-mb-3 tw-text-xs tw-text-blue-900/80">
-                  Sign inside the white rectangle below. This outline matches where your signature will appear on the PDF.
-                </p>
-                <div className="tw-rounded-lg tw-border-2 tw-border-dashed tw-border-blue-500 tw-bg-white tw-p-2 tw-ring-2 tw-ring-blue-200/60">
-                  <SignaturePadCanvas
-                    key={`modal-${activePlacementIdx}`}
-                    canvasWidth={modalPadCanvasW}
-                    canvasHeight={modalPadCanvasH}
-                    cssHeight={modalPadCssHeight}
-                    initialDataUrl={modalSigSnapshot}
-                    onSignatureChange={handleSignatureChange}
-                    canvasClassName="tw-w-full tw-bg-white tw-rounded-md tw-border-2 tw-border-blue-200 tw-cursor-crosshair tw-touch-none"
-                  />
-                </div>
+              <p className="tw-mb-3 tw-text-xs tw-text-blue-900/80">
+                Sign inside the white rectangle below. This outline matches where your signature will appear on the PDF.
+              </p>
+              <div className="tw-rounded-lg tw-border-2 tw-border-dashed tw-border-blue-500 tw-bg-white tw-p-2 tw-ring-2 tw-ring-blue-200/60">
+                <SignaturePadCanvas
+                  key={`modal-${activePlacementIdx}`}
+                  canvasWidth={modalPadCanvasW}
+                  canvasHeight={modalPadCanvasH}
+                  cssHeight={modalPadCssHeight}
+                  initialDataUrl={modalSigSnapshot}
+                  onSignatureChange={handleSignatureChange}
+                  canvasClassName="tw-w-full tw-bg-white tw-rounded-md tw-border-2 tw-border-blue-200 tw-cursor-crosshair tw-touch-none"
+                />
               </div>
             </div>
             <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-2 tw-border-t tw-border-gray-200 tw-px-4 tw-py-3 tw-bg-gray-50">
@@ -1153,7 +1222,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 disabled={!currentSigDataUrl || applying}
                 onClick={async () => {
                   const ok = await handleEmbedSignature();
-                  if (ok) closeSigExpandModal();
+                  if (ok) closeSigExpandModal(false);
                 }}
                 className={`tw-rounded-lg tw-border-0 tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-transition-colors disabled:tw-cursor-not-allowed ${
                   currentSigDataUrl && !applying
@@ -1271,6 +1340,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       {saveError && (
         <div className="tw-p-3 tw-rounded-lg tw-bg-red-50 tw-border tw-border-red-200 tw-text-red-700 tw-text-sm">
           {saveError}
+        </div>
+      )}
+      {attachmentAutofillWarning && (
+        <div className="tw-p-3 tw-rounded-lg tw-bg-amber-50 tw-border tw-border-amber-200 tw-text-amber-800 tw-text-sm">
+          {attachmentAutofillWarning}
         </div>
       )}
       </div>
