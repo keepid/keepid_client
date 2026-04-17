@@ -408,71 +408,69 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         if (packetPersistenceAvailable) {
           const toAttach = Array.from(nextSelected).filter((id) => !previousSelected.has(id));
           const toDetach = Array.from(previousSelected).filter((id) => !nextSelected.has(id));
-          const autofillFailures: string[] = [];
+          const attachmentFailures: string[] = [];
+          const attachedWithoutAutofill: string[] = [];
           let attachmentAutofillAnswers: Record<string, string> | null = null;
+          let canResolveAutofill = true;
 
           if (toAttach.length > 0) {
             try {
               const questionsResponse = await getQuestionsV2(applicationId, clientUsername);
               attachmentAutofillAnswers = buildOrgAttachmentAutofillAnswers(questionsResponse.resolvedProfiles);
             } catch {
-              toAttach.forEach((sourceId) => autofillFailures.push(sourceId));
+              canResolveAutofill = false;
             }
           }
 
           for (let i = 0; i < toAttach.length; i += 1) {
             const id = toAttach[i];
-            if (!autofillFailures.includes(id)) {
-              /* eslint-disable-next-line no-await-in-loop */
-              const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId, fileId: id }),
-              });
-              /* eslint-disable-next-line no-await-in-loop */
-              const attachData = await attachResponse.json().catch(() => ({}));
-              if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
-                if (attachData?.status === 'NO_SUCH_FILE') {
-                  setPacketPersistenceAvailable(false);
-                }
-                autofillFailures.push(id);
-              } else {
-                const attachedFileId = typeof attachData?.attachedFileId === 'string'
-                  ? attachData.attachedFileId
-                  : undefined;
-                if (!attachedFileId) {
-                  autofillFailures.push(id);
-                } else {
-                  nextCloneMap.set(id, attachedFileId);
-
-                  try {
-                    if (!attachmentAutofillAnswers) {
-                      throw new Error('Unable to resolve directive values for attachment autofill.');
-                    }
-                    /* eslint-disable-next-line no-await-in-loop */
-                    const filledAttachmentBlob = await fillAttachmentPdfBlob(
-                      attachedFileId,
-                      attachmentAutofillAnswers,
-                      clientUsername,
-                    );
-                    /* eslint-disable-next-line no-await-in-loop */
-                    await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
-                  } catch {
-                    /* eslint-disable-next-line no-await-in-loop */
-                    await fetch(`${getServerURL()}/detach-packet-part`, {
-                      method: 'POST',
-                      credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ applicationId, fileId: attachedFileId }),
-                    }).catch(() => ({}));
-                    nextCloneMap.delete(id);
-                    autofillFailures.push(id);
-                  }
-                }
+            /* eslint-disable-next-line no-await-in-loop */
+            const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ applicationId, fileId: id }),
+            });
+            /* eslint-disable-next-line no-await-in-loop */
+            const attachData = await attachResponse.json().catch(() => ({}));
+            if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
+              if (attachData?.status === 'NO_SUCH_FILE') {
+                setPacketPersistenceAvailable(false);
               }
+              attachmentFailures.push(id);
+              continue;
+            }
+
+            const attachedFileId = typeof attachData?.attachedFileId === 'string'
+              ? attachData.attachedFileId
+              : undefined;
+            if (!attachedFileId) {
+              attachmentFailures.push(id);
+              continue;
+            }
+            nextCloneMap.set(id, attachedFileId);
+
+            const hasAutofillAnswers = !!attachmentAutofillAnswers
+              && Object.keys(attachmentAutofillAnswers).length > 0;
+            if (!canResolveAutofill || !hasAutofillAnswers) {
+              attachedWithoutAutofill.push(id);
+              continue;
+            }
+
+            try {
+              /* eslint-disable-next-line no-await-in-loop */
+              const filledAttachmentBlob = await fillAttachmentPdfBlob(
+                attachedFileId,
+                attachmentAutofillAnswers,
+                clientUsername,
+              );
+              /* eslint-disable-next-line no-await-in-loop */
+              await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
+            } catch {
+              attachedWithoutAutofill.push(id);
             }
           }
+
           for (let i = 0; i < toDetach.length; i += 1) {
             const sourceId = toDetach[i];
             const id = nextCloneMap.get(sourceId) || sourceId;
@@ -488,20 +486,30 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
             if (!detachResponse.ok || detachData?.status !== 'SUCCESS') {
               if (detachData?.status === 'NO_SUCH_FILE') {
                 setPacketPersistenceAvailable(false);
+              } else {
+                throw new Error(detachData?.message || 'Failed to detach document from application');
               }
-              throw new Error(detachData?.message || 'Failed to detach document from application');
             }
             nextCloneMap.delete(sourceId);
           }
-          if (autofillFailures.length > 0) {
-            effectiveSelected = new Set(Array.from(nextSelected).filter((id) => !autofillFailures.includes(id)));
-            const failedDocNames = autofillFailures
+          if (attachmentFailures.length > 0) {
+            effectiveSelected = new Set(Array.from(nextSelected).filter((id) => !attachmentFailures.includes(id)));
+            const failedDocNames = attachmentFailures
               .map((id) => orgDocs.find((doc) => doc.id === id)?.filename || id)
               .join(', ');
             setAttachmentAutofillWarning(
-              `Skipped attachment autofill for: ${failedDocNames}. Other attachment changes were applied.`,
+              `Failed to attach: ${failedDocNames}. Other attachment changes were applied.`,
             );
             setStagedDocs(new Set(effectiveSelected));
+          }
+          if (attachedWithoutAutofill.length > 0) {
+            const unfilledDocNames = attachedWithoutAutofill
+              .map((id) => orgDocs.find((doc) => doc.id === id)?.filename || id)
+              .join(', ');
+            const prefix = attachmentFailures.length > 0
+              ? 'Some attached without autofill'
+              : 'Attached without autofill';
+            setAttachmentAutofillWarning(`${prefix}: ${unfilledDocNames}.`);
           }
           setAttachedCloneBySourceId(nextCloneMap);
           await fetchPacketSelection();
