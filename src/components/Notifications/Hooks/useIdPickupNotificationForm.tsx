@@ -216,6 +216,7 @@ export default function useNotificationForm(
       const res = await fetch(`${getServerURL()}/notify-id-pickup`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           workerUsername,
           clientUsername,
@@ -225,20 +226,30 @@ export default function useNotificationForm(
         }),
       });
 
-      const data = await res.json();
+      const responseText = await res.text();
+      let data: { status?: string; message?: string } = {};
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = {};
+        }
+      }
       const elapsed = Date.now() - startTime;
       await new Promise((resolve) => {
         setTimeout(resolve, Math.max(0, MIN_LOADING_DURATION - elapsed));
       });
 
       setIsLoading(false);
-      if (data.status === 'SUCCESS') {
+      if (res.ok && data.status === 'SUCCESS') {
         setMessage('');
         setHasAttemptedSubmit(false);
         alert.show('Notification sent successfully');
         setRefreshTrigger((prev) => prev + 1);
       } else {
-        setServerError(data.message || 'Failed to send notification. Please try again.');
+        setServerError(
+          data.message || `Failed to send notification (HTTP ${res.status}). Please try again.`,
+        );
       }
     } catch {
       const elapsed = Date.now() - startTime;
@@ -246,7 +257,7 @@ export default function useNotificationForm(
         setTimeout(resolve, Math.max(0, MIN_LOADING_DURATION - elapsed));
       });
       setIsLoading(false);
-      setServerError('Network error. Please try again.');
+      setServerError('Unable to reach notification service. Please check your connection and try again.');
     }
 
     return {};

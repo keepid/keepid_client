@@ -21,11 +21,6 @@ export default defineConfig({
     exclude: ['bootstrap'],
     include: ['buffer', 'process'],
   },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/tests/setup.ts',
-  },
   resolve: {
     alias: {
       buffer: 'buffer',
