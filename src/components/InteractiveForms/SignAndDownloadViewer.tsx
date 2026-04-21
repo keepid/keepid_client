@@ -3,7 +3,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import './sign-and-download-viewer.css';
 
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFTextField, StandardFonts } from 'pdf-lib';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useAlert } from 'react-alert';
 import ReactMarkdown from 'react-markdown';
@@ -664,6 +664,13 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !pdfFormsReadOnly;
 
   const flattenPdfBytes = useCallback(async (bytes: Uint8Array): Promise<Uint8Array> => {
+    // Constants mirror keepid_server NormalizePdfFieldAppearancesService / FillPDFServiceV2 so
+    // preview and print converge on the same intended size.
+    const DEFAULT_FONT_SIZE = 14;
+    const MIN_FONT_SIZE = 8;
+    const FIELD_HEIGHT_FONT_RATIO = 0.58;
+    const WIDTH_SAFETY_RATIO = 0.95;
+
     try {
       const pdfDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
       const form = pdfDoc.getForm();
@@ -671,7 +678,51 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       if (fields.length === 0) {
         return bytes;
       }
-      form.updateFieldAppearances();
+      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+      fields.filter((f): f is PDFTextField => f instanceof PDFTextField).forEach((field) => {
+        const rawValue = field.getText();
+        const value = typeof rawValue === 'string' ? rawValue : '';
+        if (!value) return;
+
+        let minWidth = Number.POSITIVE_INFINITY;
+        let minHeight = Number.POSITIVE_INFINITY;
+        try {
+          field.acroField.getWidgets().forEach((widget) => {
+            const rect = widget.getRectangle();
+            if (rect.width > 0 && rect.width < minWidth) minWidth = rect.width;
+            if (rect.height > 0 && rect.height < minHeight) minHeight = rect.height;
+          });
+        } catch {
+          // Widget rect probing is best-effort; fall back to default pt on failure.
+        }
+
+        let pt = DEFAULT_FONT_SIZE;
+        if (Number.isFinite(minHeight)) {
+          pt = Math.min(pt, Math.max(MIN_FONT_SIZE, Math.floor(minHeight * FIELD_HEIGHT_FONT_RATIO)));
+        }
+        let isMultiline = false;
+        try {
+          isMultiline = field.isMultiline();
+        } catch {
+          isMultiline = false;
+        }
+        if (!isMultiline && Number.isFinite(minWidth)) {
+          const maxWidth = minWidth * WIDTH_SAFETY_RATIO;
+          while (pt > MIN_FONT_SIZE && helvetica.widthOfTextAtSize(value, pt) > maxWidth) {
+            pt -= 1;
+          }
+        }
+        try {
+          field.setFontSize(pt);
+        } catch {
+          // Some fields forbid font-size mutation (e.g. no DA); appearance still regenerated below.
+        }
+      });
+
+      // Force every field's appearance stream to Helvetica at the pinned sizes; native PDF viewers
+      // then render the flattened result at the same sizes pdf.js showed in-app.
+      form.updateFieldAppearances(helvetica);
       form.flatten();
       return await pdfDoc.save();
     } catch {
