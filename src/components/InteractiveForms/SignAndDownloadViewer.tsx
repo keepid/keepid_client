@@ -3,7 +3,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import './sign-and-download-viewer.css';
 
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { PDFDocument, PDFTextField, StandardFonts } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useAlert } from 'react-alert';
 import ReactMarkdown from 'react-markdown';
@@ -13,6 +13,7 @@ import getServerURL from '../../serverOverride';
 import {
   fillAttachmentPdfBlob,
   getQuestionsV2,
+  renderApplicationPacket,
   updateApplicationAttachmentPdf,
   uploadCompletedPdf,
 } from '../Applications/api/interactiveForm';
@@ -52,10 +53,6 @@ type PacketPartResponse = {
   sourceFileId?: string;
   order?: number;
   enabled?: boolean;
-};
-
-type CurrentPdfBlobOptions = {
-  flattenInteractiveFields?: boolean;
 };
 
 type AttachmentPreviewDoc = { id: string; sourceFileId: string; url: string; filename: string; pageCount: number };
@@ -111,6 +108,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [attachmentPreviewDocs, setAttachmentPreviewDocs] = useState<AttachmentPreviewDoc[]>([]);
   const [attachedCloneBySourceId, setAttachedCloneBySourceId] = useState<Map<string, string>>(new Map());
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
+  /** Tracks which export button (if any) is currently building a combined PDF, so we can
+   * disable both buttons and show a "Preparing..." label. Prevents rage-clicks from spawning
+   * duplicate flatten+merge passes. */
+  const [preparingExport, setPreparingExport] = useState<null | 'download' | 'print'>(null);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [attachmentAutofillWarning, setAttachmentAutofillWarning] = useState<string | null>(null);
@@ -663,96 +664,24 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const canEditCurrentAttachment =
     currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !pdfFormsReadOnly;
 
-  const flattenPdfBytes = useCallback(async (bytes: Uint8Array): Promise<Uint8Array> => {
-    // Constants mirror keepid_server NormalizePdfFieldAppearancesService / FillPDFServiceV2 so
-    // preview and print converge on the same intended size.
-    const DEFAULT_FONT_SIZE = 14;
-    const MIN_FONT_SIZE = 8;
-    const FIELD_HEIGHT_FONT_RATIO = 0.58;
-    const WIDTH_SAFETY_RATIO = 0.95;
-
-    try {
-      const pdfDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-      const form = pdfDoc.getForm();
-      const fields = form.getFields();
-      if (fields.length === 0) {
-        return bytes;
-      }
-      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-      fields.filter((f): f is PDFTextField => f instanceof PDFTextField).forEach((field) => {
-        const rawValue = field.getText();
-        const value = typeof rawValue === 'string' ? rawValue : '';
-        if (!value) return;
-
-        let minWidth = Number.POSITIVE_INFINITY;
-        let minHeight = Number.POSITIVE_INFINITY;
-        try {
-          field.acroField.getWidgets().forEach((widget) => {
-            const rect = widget.getRectangle();
-            if (rect.width > 0 && rect.width < minWidth) minWidth = rect.width;
-            if (rect.height > 0 && rect.height < minHeight) minHeight = rect.height;
-          });
-        } catch {
-          // Widget rect probing is best-effort; fall back to default pt on failure.
-        }
-
-        let pt = DEFAULT_FONT_SIZE;
-        if (Number.isFinite(minHeight)) {
-          pt = Math.min(pt, Math.max(MIN_FONT_SIZE, Math.floor(minHeight * FIELD_HEIGHT_FONT_RATIO)));
-        }
-        let isMultiline = false;
-        try {
-          isMultiline = field.isMultiline();
-        } catch {
-          isMultiline = false;
-        }
-        if (!isMultiline && Number.isFinite(minWidth)) {
-          const maxWidth = minWidth * WIDTH_SAFETY_RATIO;
-          while (pt > MIN_FONT_SIZE && helvetica.widthOfTextAtSize(value, pt) > maxWidth) {
-            pt -= 1;
-          }
-        }
-        try {
-          field.setFontSize(pt);
-        } catch {
-          // Some fields forbid font-size mutation (e.g. no DA); appearance still regenerated below.
-        }
-      });
-
-      // Force every field's appearance stream to Helvetica at the pinned sizes; native PDF viewers
-      // then render the flattened result at the same sizes pdf.js showed in-app.
-      form.updateFieldAppearances(helvetica);
-      form.flatten();
-      return await pdfDoc.save();
-    } catch {
-      return bytes;
-    }
-  }, []);
-
-  const getCurrentPdfBlob = useCallback(async (options: CurrentPdfBlobOptions = {}): Promise<Blob> => {
-    const { flattenInteractiveFields = false } = options;
-    let bytes: Uint8Array;
+  const getMainPdfBytes = useCallback(async (): Promise<Uint8Array> => {
     const shouldUseSaveDocument = usePdfJsFormWidgets && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
     if (shouldUseSaveDocument && pdfDocRef.current?.saveDocument) {
       try {
-        bytes = await pdfDocRef.current.saveDocument();
+        return await pdfDocRef.current.saveDocument();
       } catch {
-        const res = await fetch(livePdfUrl);
-        const buffer = await res.arrayBuffer();
-        bytes = new Uint8Array(buffer);
+        // fall through to fetch
       }
-    } else {
-      const res = await fetch(livePdfUrl);
-      const buffer = await res.arrayBuffer();
-      bytes = new Uint8Array(buffer);
     }
-    const bytesBeforeFlatten = bytes.byteLength;
-    if (flattenInteractiveFields) {
-      bytes = await flattenPdfBytes(bytes);
-    }
+    const res = await fetch(livePdfUrl);
+    const buffer = await res.arrayBuffer();
+    return new Uint8Array(buffer);
+  }, [livePdfUrl, numPages, pageNum, usePdfJsFormWidgets]);
+
+  const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
+    const bytes = await getMainPdfBytes();
     return toPdfBlob(bytes);
-  }, [fileUrl, livePdfUrl, numPages, pageNum, usePdfJsFormWidgets, flattenPdfBytes]);
+  }, [getMainPdfBytes]);
 
   const getCurrentAttachmentPdfBlob = useCallback(async (): Promise<Blob> => {
     if (attachmentPdfDocRef.current?.saveDocument && usePdfJsFormWidgets) {
@@ -764,10 +693,51 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     return new Blob([bytes], { type: 'application/pdf' });
   }, [currentViewerPageMeta.doc.url, usePdfJsFormWidgets]);
 
+  /**
+   * Builds the bytes that downstream viewers see on Print/Download by delegating the merge +
+   * flatten + appearance-normalize pipeline to the server. The server uses the exact same
+   * RenderPacketPdfService that Lob mailing uses, so Print / Download / Mail all produce
+   * byte-identical output for a given application state.
+   *
+   * <p>We capture the client-side live state (pdf.js in-memory form widget edits and any
+   * embedded signatures that haven't been saved yet) by sending the current main PDF bytes as
+   * an override -- the server uses those bytes as the APPLICATION_BASE part, fetches attachment
+   * parts from storage, and flattens everything with PDFBox. The override is not persisted;
+   * "Save Application" remains the explicit commit path.
+   *
+   * <p>This replaces the previous pdf-lib client-side flatten + copyPages pipeline, which
+   * couldn't produce deterministic field appearances (pdf-lib's text appearance provider
+   * overrode our sizing), produced orphan widgets when merging attachments unless we flattened
+   * them first, and cost hundreds of ms of main-thread CPU per click. Moving the work to the
+   * server (which has real Helvetica metrics via PDFBox + a single normalization pass) produces
+   * smaller, more print-friendly bytes too, which measurably speeds up Chromium's print
+   * preview render.
+   */
+  const getRenderedPacketBlob = useCallback(async (): Promise<Blob> => {
+    const mainBytes = await getMainPdfBytes();
+    const mainOverride = toPdfBlob(mainBytes);
+    return renderApplicationPacket(applicationId, mainOverride);
+  }, [applicationId, getMainPdfBytes]);
+
   const handlePrint = useCallback(() => {
+    if (preparingExport !== null) return;
+    setPreparingExport('print');
     // Open a tab synchronously on click so we keep user activation after async blob work.
     // (window.open after await is often blocked; a 0×0 iframe often fails to print PDFs.)
     const printWindow = window.open('about:blank', '_blank');
+    if (printWindow && !printWindow.closed) {
+      try {
+        // Show a placeholder so the popup isn't a stark white page during the build.
+        printWindow.document.title = 'Preparing PDF for print...';
+        printWindow.document.body.innerHTML = (
+          '<div style="font-family:system-ui,sans-serif;color:#475569;padding:24px;font-size:14px;">'
+          + 'Preparing PDF for print...'
+          + '</div>'
+        );
+      } catch {
+        // Cross-origin or about:blank quirks -- non-fatal, the navigation below replaces it.
+      }
+    }
 
     const printWithIframe = (objectUrl: string) => {
       const iframe = document.createElement('iframe');
@@ -802,7 +772,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     (async () => {
       let objectUrl: string | null = null;
       try {
-        const blob = await getCurrentPdfBlob({ flattenInteractiveFields: true });
+        const blob = await getRenderedPacketBlob();
         objectUrl = URL.createObjectURL(blob);
 
         if (printWindow && !printWindow.closed) {
@@ -815,8 +785,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               try {
                 printWindow.focus();
                 printWindow.print();
-              } catch {
-                /* ignore */
+              } catch (printErr) {
+                console.error('printWindow.print() threw', printErr);
               }
             }, 300);
           };
@@ -826,16 +796,28 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         }
 
         printWithIframe(objectUrl);
-      } catch {
+      } catch (err) {
+        console.error('Print failed while building combined PDF', err);
+        setSaveError(
+          err instanceof Error
+            ? `Couldn't prepare PDF for print: ${err.message}`
+            : "Couldn't prepare PDF for print.",
+        );
         printWindow?.close();
         if (objectUrl) URL.revokeObjectURL(objectUrl);
+      } finally {
+        setPreparingExport((current) => (current === 'print' ? null : current));
       }
-    })().catch(() => {});
-  }, [getCurrentPdfBlob]);
+    })().catch((err) => {
+      console.error('Print outer promise rejected', err);
+    });
+  }, [getRenderedPacketBlob, preparingExport]);
 
   const handleDownload = useCallback(async () => {
+    if (preparingExport !== null) return;
+    setPreparingExport('download');
     try {
-      const blob = await getCurrentPdfBlob({ flattenInteractiveFields: true });
+      const blob = await getRenderedPacketBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -843,13 +825,22 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Download failed', err);
+      console.error('Download failed; falling back to unmerged main PDF', err);
+      // Surface the failure so the user knows why the download lacks attachments -- otherwise
+      // the fallback looks like a silent regression in the attachment-merge feature.
+      setSaveError(
+        err instanceof Error
+          ? `Couldn't build the combined PDF (${err.message}). Downloaded the main application without attachments as a fallback.`
+          : "Couldn't build the combined PDF. Downloaded the main application without attachments as a fallback.",
+      );
       const a = document.createElement('a');
       a.href = livePdfUrl;
       a.download = `${title?.replace(/[^a-zA-Z0-9_-]/g, '_') || 'signed'}.pdf`;
       a.click();
+    } finally {
+      setPreparingExport((current) => (current === 'download' ? null : current));
     }
-  }, [livePdfUrl, title, getCurrentPdfBlob]);
+  }, [livePdfUrl, title, getRenderedPacketBlob, preparingExport]);
 
   const handleSave = useCallback(async () => {
     setSaveError(null);
@@ -1015,6 +1006,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const printButtonClass = isPdfActionsLocked
     ? 'tw-text-gray-500 tw-bg-gray-200 tw-cursor-not-allowed'
     : 'tw-text-gray-700 tw-border tw-border-gray-300 tw-bg-white hover:tw-bg-gray-50';
+
+  let downloadStateLabel = 'filled';
+  if (signedCount > 0) downloadStateLabel = 'signed';
+  else if (signaturePlacements.length > 0) downloadStateLabel = 'unsigned';
+  const downloadButtonLabel = preparingExport === 'download'
+    ? 'Preparing PDF...'
+    : `Download ${downloadStateLabel} PDF`;
+  const printButtonLabel = preparingExport === 'print' ? 'Preparing PDF...' : 'Print';
 
   useEffect(() => {
     if (pageNum > totalViewerPages) {
@@ -1359,22 +1358,18 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         <button
           type="button"
           onClick={handleDownload}
-          disabled={isPdfActionsLocked}
+          disabled={isPdfActionsLocked || preparingExport !== null}
           className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${downloadButtonClass}`}
         >
-          Download {(() => {
-          if (signedCount > 0) return 'signed';
-          if (signaturePlacements.length > 0) return 'unsigned';
-          return 'filled';
-        })()} PDF
+          {downloadButtonLabel}
         </button>
         <button
           type="button"
           onClick={handlePrint}
-          disabled={isPdfActionsLocked}
+          disabled={isPdfActionsLocked || preparingExport !== null}
           className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${printButtonClass}`}
         >
-          Print
+          {printButtonLabel}
         </button>
         <button
           type="button"

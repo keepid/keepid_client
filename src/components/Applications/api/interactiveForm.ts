@@ -152,6 +152,61 @@ export async function listApplicationPdfIds(
     .filter((id: string | undefined): id is string => Boolean(id));
 }
 
+/**
+ * Asks the server to render the full application packet (base PDF + enabled attachments) into a
+ * single flattened PDF using the same PDFBox-based pipeline that Lob mailing uses, so Print /
+ * Download / Mail all produce byte-identical bytes for a given application state.
+ *
+ * When `mainPdfOverride` is provided, those bytes replace the stored application PDF for this
+ * render only -- this lets the UI print/download the user's in-progress in-viewer edits (live
+ * pdf.js form widget text + embedded signatures) without having to press "Save" first. The
+ * override is NOT persisted on the server.
+ */
+export async function renderApplicationPacket(
+  applicationId: string,
+  mainPdfOverride?: Blob | File,
+): Promise<Blob> {
+  const form = new FormData();
+  form.append('applicationId', applicationId);
+  if (mainPdfOverride) {
+    form.append(
+      'mainPdf',
+      mainPdfOverride,
+      mainPdfOverride instanceof File ? mainPdfOverride.name : 'application.pdf',
+    );
+  }
+  const res = await fetch(`${getServerURL()}/render-application-packet`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let message = text || res.statusText || 'Failed to render application packet';
+    try {
+      const parsed = JSON.parse(text) as { message?: string; status?: string };
+      message = parsed.message || parsed.status || message;
+    } catch {
+      // leave message as-is for non-JSON payloads
+    }
+    throw new Error(message);
+  }
+  const contentType = res.headers.get('content-type')?.toLowerCase() ?? '';
+  if (!contentType.includes('application/pdf')) {
+    const text = await res.text();
+    let message = text || 'Server returned non-PDF response';
+    try {
+      const parsed = JSON.parse(text) as { message?: string; status?: string };
+      message = parsed.message || parsed.status || message;
+    } catch {
+      // leave as-is
+    }
+    throw new Error(message);
+  }
+  const blob = await res.blob();
+  return blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
+}
+
 export async function updateApplicationAttachmentPdf(
   file: Blob | File,
   applicationId: string,
