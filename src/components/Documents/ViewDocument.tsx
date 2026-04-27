@@ -6,7 +6,7 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
-import DocumentViewer from './DocumentViewer';
+import ApplicationStylePdfViewer from './ApplicationStylePdfViewer';
 
 interface Props {
   alert: any;
@@ -19,6 +19,8 @@ interface Props {
   targetUser: string;
   fileType: FileType;
   idCategory?: string;
+  idCategoryDisplay?: string;
+  customIdCategory?: string;
   clientName?: string;
   viewerRole?: Role;
   onDownloadCurrentDocument: () => void;
@@ -36,6 +38,8 @@ const ViewDocument: React.FC<Props> = ({
   targetUser,
   fileType,
   idCategory,
+  idCategoryDisplay,
+  customIdCategory,
   clientName,
   viewerRole,
   onDownloadCurrentDocument,
@@ -78,13 +82,30 @@ const ViewDocument: React.FC<Props> = ({
     fileName = pdfFile.name.replace(/\.pdf$/i, '');
   }
 
+  const documentTypeLabel = (() => {
+    const custom = (customIdCategory || '').trim();
+    if (custom) return custom;
+    const display = (idCategoryDisplay || '').trim();
+    if (display && display.toUpperCase() !== 'NONE') return display;
+    const normalized = (idCategory || '').trim();
+    if (!normalized || normalized.toUpperCase() === 'NONE') return 'Uncategorized';
+    if (normalized.includes('_')) {
+      return normalized
+        .toLowerCase()
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    return normalized;
+  })();
+
   const isStaffViewer = viewerRole === Role.Worker
     || viewerRole === Role.Admin
     || viewerRole === Role.Director;
 
   return (
-    <div className="tw-mx-5 tw-my-10 sm:tw-mx-32">
-      <div className="tw-flex tw-items-center tw-justify-between tw-mt-5">
+    <div className="tw-w-full tw-pt-12 sm:tw-pt-16 tw-pb-14 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+      <div className="tw-mx-auto tw-w-full tw-max-w-4xl">
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
         <PrimaryButton onClick={resetDocumentId}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
             <path strokeLinecap="square" strokeLinejoin="inherit" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -102,7 +123,7 @@ const ViewDocument: React.FC<Props> = ({
                 pathname: `/home/notify-client/${targetUser}`,
                 state: {
                   clientName,
-                  prefilledIdCategory: idCategory,
+                  prefilledIdCategory: documentTypeLabel,
                 },
               }}
               className="tw-no-underline"
@@ -120,31 +141,28 @@ const ViewDocument: React.FC<Props> = ({
             Delete
           </button>
         </div>
-      </div>
+        </div>
 
-      {pdfFile ? (
-        <div className="">
-          <div className="tw-mt-5">
-            <h1 className="tw-text-6xl tw-text-left"> {fileName} </h1>
-          </div>
-          <div className="">
-            <div className="row justify-content-between">
-              <h3>{pdfFile.name}</h3>
-              <div>
-                <div className="row justify-content-end">
-                  <h6>Uploaded on: {documentDate}</h6>
-                </div>
-                <div className="row justify-content-end">
-                  <h6>Uploaded by: {documentUploader}</h6>
-                </div>
-              </div>
+        {pdfFile ? (
+        <>
+          <div className="tw-mt-10 tw-flex tw-flex-col tw-gap-4 lg:tw-mt-12 lg:tw-flex-row lg:tw-items-start lg:tw-justify-between">
+            <h1 className="tw-mb-0 tw-text-left tw-text-4xl tw-font-semibold tw-text-gray-900 sm:tw-text-5xl">
+              {documentTypeLabel}
+            </h1>
+            <div className="tw-flex tw-shrink-0 tw-flex-col tw-gap-1 tw-text-sm tw-text-gray-600 lg:tw-items-end lg:tw-text-right lg:tw-text-base">
+              <div>Uploaded on: {documentDate}</div>
+              <div>Uploaded by: {documentUploader}</div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div />
-      )}
-      {pdfFile ? <DocumentViewer pdfFile={pdfFile} /> : <div />}
+          <h2 className="tw-mt-3 tw-text-xl tw-font-medium tw-text-gray-800 lg:tw-mt-4">{fileName}</h2>
+        </>
+        ) : null}
+        {pdfFile ? (
+          <div className="tw-mt-10 lg:tw-mt-12">
+            <ApplicationStylePdfViewer pdfFile={pdfFile} />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 };

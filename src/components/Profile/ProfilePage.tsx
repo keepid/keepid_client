@@ -135,7 +135,7 @@ export default function ProfilePage({ targetUsername }: Props) {
 
   const title = useMemo(() => {
     if (targetUsername && displayName) return `${displayName}'s Profile`;
-    return 'Profile';
+    return 'My Profile';
   }, [targetUsername, displayName]);
 
   const isWorkerView = !!targetUsername;

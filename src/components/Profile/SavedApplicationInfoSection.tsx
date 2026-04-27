@@ -70,6 +70,7 @@ export default function SavedApplicationInfoSection({
   const alert = useAlert();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const initial = useMemo(() => ({
     currentName: toName(profile.currentName),
@@ -337,14 +338,25 @@ export default function SavedApplicationInfoSection({
     <div className="card mt-3 mb-3 pl-5 pr-5">
       <div className="card-body">
         <div className="tw-flex tw-items-center tw-justify-between">
-          <h5 className="card-title tw-mb-0">Saved Application Information</h5>
+          <button
+            type="button"
+            className="btn btn-link tw-p-0 tw-text-left tw-no-underline hover:tw-no-underline focus:tw-no-underline"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? 'Expand saved application information' : 'Collapse saved application information'}
+          >
+            <h5 className="card-title tw-mb-0">
+              Saved Application Information
+              <span className="tw-ml-2 tw-text-gray-500">{isCollapsed ? '▸' : '▾'}</span>
+            </h5>
+          </button>
           <div className="tw-flex tw-gap-2">
-            {!isEditing && (
+            {!isCollapsed && !isEditing && (
               <button type="button" className="btn btn-outline-dark" onClick={beginEdit}>
                 Edit
               </button>
             )}
-            {isEditing && (
+            {!isCollapsed && isEditing && (
               <>
                 <button type="button" className="btn btn-outline-dark" onClick={cancelEdit} disabled={isSaving}>
                   Cancel
@@ -357,194 +369,198 @@ export default function SavedApplicationInfoSection({
           </div>
         </div>
 
-        <hr />
+        {!isCollapsed && <hr />}
 
-        {/* Full name: workers may edit all parts for clients; self-service clients edit own; admins/directors cannot change client legal name here */}
-        <div className="row tw-mb-5">
-          <div className="col-3 card-text mt-2 text-primary-theme">Full Name</div>
-          <div className="col-9 card-text">
-            {isEditing && !lockClientLegalNameFields ? (
-              <div className="tw-space-y-1">
-                <div className="tw-flex tw-gap-2 tw-flex-wrap">
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    value={currentName.first || ''}
-                    onChange={(e) => setCurrentName({ ...currentName, first: e.target.value })}
-                    placeholder="First"
-                  />
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    placeholder="Middle"
-                    value={currentName.middle || ''}
-                    onChange={(e) => setCurrentName({ ...currentName, middle: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    value={currentName.last || ''}
-                    onChange={(e) => setCurrentName({ ...currentName, last: e.target.value })}
-                    placeholder="Last"
-                  />
-                </div>
-                <div className="tw-flex tw-gap-2 tw-flex-wrap">
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    style={{ maxWidth: 160 }}
-                    placeholder="Suffix (optional)"
-                    value={currentName.suffix || ''}
-                    onChange={(e) => setCurrentName({ ...currentName, suffix: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="form-control form-purple"
-                    placeholder="Maiden name (optional)"
-                    value={currentName.maiden || ''}
-                    onChange={(e) => setCurrentName({ ...currentName, maiden: e.target.value })}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="tw-pt-2">
-                {nameToDisplay(currentName) || <span className="tw-text-gray-400">Not provided</span>}
-                {isEditing && lockClientLegalNameFields && (
-                  <p className="tw-text-xs tw-text-gray-500 tw-mt-2 tw-mb-0">
-                    {'Only workers can change this client\'s legal name. Use Account Information above if you have access.'}
-                  </p>
+        {!isCollapsed && (
+          <>
+            {/* Full name: workers may edit all parts for clients; self-service clients edit own; admins/directors cannot change client legal name here */}
+            <div className="row tw-mb-5">
+              <div className="col-3 card-text mt-2 text-primary-theme">Full Name</div>
+              <div className="col-9 card-text">
+                {isEditing && !lockClientLegalNameFields ? (
+                  <div className="tw-space-y-1">
+                    <div className="tw-flex tw-gap-2 tw-flex-wrap">
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        value={currentName.first || ''}
+                        onChange={(e) => setCurrentName({ ...currentName, first: e.target.value })}
+                        placeholder="First"
+                      />
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        placeholder="Middle"
+                        value={currentName.middle || ''}
+                        onChange={(e) => setCurrentName({ ...currentName, middle: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        value={currentName.last || ''}
+                        onChange={(e) => setCurrentName({ ...currentName, last: e.target.value })}
+                        placeholder="Last"
+                      />
+                    </div>
+                    <div className="tw-flex tw-gap-2 tw-flex-wrap">
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        style={{ maxWidth: 160 }}
+                        placeholder="Suffix (optional)"
+                        value={currentName.suffix || ''}
+                        onChange={(e) => setCurrentName({ ...currentName, suffix: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        className="form-control form-purple"
+                        placeholder="Maiden name (optional)"
+                        value={currentName.maiden || ''}
+                        onChange={(e) => setCurrentName({ ...currentName, maiden: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="tw-pt-2">
+                    {nameToDisplay(currentName) || <span className="tw-text-gray-400">Not provided</span>}
+                    {isEditing && lockClientLegalNameFields && (
+                      <p className="tw-text-xs tw-text-gray-500 tw-mt-2 tw-mb-0">
+                        {'Only workers can change this client\'s legal name. Use Account Information above if you have access.'}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Sex */}
-        <div className="row tw-mb-5">
-          <div className="col-3 card-text mt-2 text-primary-theme">Sex</div>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <select
-                className="form-control form-purple"
-                value={sex}
-                onChange={(e) => setSex(e.target.value)}
-              >
-                <option value="">Select...</option>
-                {SEX_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-            ) : (
-              <div className="tw-pt-2">{sex || <span className="tw-text-gray-400">Not provided</span>}</div>
-            )}
-          </div>
-        </div>
+            {/* Sex */}
+            <div className="row tw-mb-5">
+              <div className="col-3 card-text mt-2 text-primary-theme">Sex</div>
+              <div className="col-9 card-text">
+                {isEditing ? (
+                  <select
+                    className="form-control form-purple"
+                    value={sex}
+                    onChange={(e) => setSex(e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    {SEX_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="tw-pt-2">{sex || <span className="tw-text-gray-400">Not provided</span>}</div>
+                )}
+              </div>
+            </div>
 
-        {renderAddressFields('Personal Address', personalAddress, setPersonalAddress)}
-        {renderAddressFields('Mailing Address', mailAddress, setMailAddress)}
-        {renderNameFields("Mother's Name", motherName, setMotherName, true)}
-        {renderNameFields("Father's Name", fatherName, setFatherName, true)}
+            {renderAddressFields('Personal Address', personalAddress, setPersonalAddress)}
+            {renderAddressFields('Mailing Address', mailAddress, setMailAddress)}
+            {renderNameFields("Mother's Name", motherName, setMotherName, true)}
+            {renderNameFields("Father's Name", fatherName, setFatherName, true)}
 
-        {/* Name History */}
-        <div className="row tw-mb-5">
-          <div className="col-3 card-text mt-2 text-primary-theme">Name History</div>
-          <div className="col-9 card-text">
-            {isEditing ? (
-              <div className="tw-space-y-2">
-                {nameHistory.map((entry, i) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <div key={i} className="tw-flex tw-items-start tw-gap-2">
-                    <div className="tw-flex-1 tw-space-y-1">
-                      <div className="tw-flex tw-gap-2">
-                        <input
-                          type="text"
-                          className="form-control form-purple"
-                          placeholder="First"
-                          value={entry.first || ''}
-                          onChange={(e) => {
-                            const copy = nameHistory.map((n) => ({ ...n }));
-                            copy[i].first = e.target.value;
-                            setNameHistory(copy);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          className="form-control form-purple"
-                          placeholder="Middle"
-                          value={entry.middle || ''}
-                          onChange={(e) => {
-                            const copy = nameHistory.map((n) => ({ ...n }));
-                            copy[i].middle = e.target.value;
-                            setNameHistory(copy);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          className="form-control form-purple"
-                          placeholder="Last"
-                          value={entry.last || ''}
-                          onChange={(e) => {
-                            const copy = nameHistory.map((n) => ({ ...n }));
-                            copy[i].last = e.target.value;
-                            setNameHistory(copy);
-                          }}
-                        />
+            {/* Name History */}
+            <div className="row tw-mb-5">
+              <div className="col-3 card-text mt-2 text-primary-theme">Name History</div>
+              <div className="col-9 card-text">
+                {isEditing ? (
+                  <div className="tw-space-y-2">
+                    {nameHistory.map((entry, i) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <div key={i} className="tw-flex tw-items-start tw-gap-2">
+                        <div className="tw-flex-1 tw-space-y-1">
+                          <div className="tw-flex tw-gap-2">
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              placeholder="First"
+                              value={entry.first || ''}
+                              onChange={(e) => {
+                                const copy = nameHistory.map((n) => ({ ...n }));
+                                copy[i].first = e.target.value;
+                                setNameHistory(copy);
+                              }}
+                            />
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              placeholder="Middle"
+                              value={entry.middle || ''}
+                              onChange={(e) => {
+                                const copy = nameHistory.map((n) => ({ ...n }));
+                                copy[i].middle = e.target.value;
+                                setNameHistory(copy);
+                              }}
+                            />
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              placeholder="Last"
+                              value={entry.last || ''}
+                              onChange={(e) => {
+                                const copy = nameHistory.map((n) => ({ ...n }));
+                                copy[i].last = e.target.value;
+                                setNameHistory(copy);
+                              }}
+                            />
+                          </div>
+                          <div className="tw-flex tw-gap-2">
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              style={{ maxWidth: 160 }}
+                              placeholder="Suffix"
+                              value={entry.suffix || ''}
+                              onChange={(e) => {
+                                const copy = nameHistory.map((n) => ({ ...n }));
+                                copy[i].suffix = e.target.value;
+                                setNameHistory(copy);
+                              }}
+                            />
+                            <input
+                              type="text"
+                              className="form-control form-purple"
+                              placeholder="Maiden"
+                              value={entry.maiden || ''}
+                              onChange={(e) => {
+                                const copy = nameHistory.map((n) => ({ ...n }));
+                                copy[i].maiden = e.target.value;
+                                setNameHistory(copy);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm tw-mt-1"
+                          onClick={() => setNameHistory((prev) => prev.filter((_, j) => j !== i))}
+                        >
+                          &times;
+                        </button>
                       </div>
-                      <div className="tw-flex tw-gap-2">
-                        <input
-                          type="text"
-                          className="form-control form-purple"
-                          style={{ maxWidth: 160 }}
-                          placeholder="Suffix"
-                          value={entry.suffix || ''}
-                          onChange={(e) => {
-                            const copy = nameHistory.map((n) => ({ ...n }));
-                            copy[i].suffix = e.target.value;
-                            setNameHistory(copy);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          className="form-control form-purple"
-                          placeholder="Maiden"
-                          value={entry.maiden || ''}
-                          onChange={(e) => {
-                            const copy = nameHistory.map((n) => ({ ...n }));
-                            copy[i].maiden = e.target.value;
-                            setNameHistory(copy);
-                          }}
-                        />
-                      </div>
-                    </div>
+                    ))}
                     <button
                       type="button"
-                      className="btn btn-outline-danger btn-sm tw-mt-1"
-                      onClick={() => setNameHistory((prev) => prev.filter((_, j) => j !== i))}
+                      className="btn btn-outline-dark btn-sm"
+                      onClick={() => setNameHistory((prev) => [...prev, { ...EMPTY_NAME }])}
                     >
-                      &times;
+                      + Add previous name
                     </button>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  className="btn btn-outline-dark btn-sm"
-                  onClick={() => setNameHistory((prev) => [...prev, { ...EMPTY_NAME }])}
-                >
-                  + Add previous name
-                </button>
+                ) : (
+                  <div className="tw-pt-2">
+                    {nameHistory.length === 0
+                      ? <span className="tw-text-gray-400">None</span>
+                      : nameHistory.map((entry, i) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <div key={i}>{nameToDisplay(entry)}</div>
+                      ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="tw-pt-2">
-                {nameHistory.length === 0
-                  ? <span className="tw-text-gray-400">None</span>
-                  : nameHistory.map((entry, i) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <div key={i}>{nameToDisplay(entry)}</div>
-                  ))}
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

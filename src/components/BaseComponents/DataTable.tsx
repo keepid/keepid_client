@@ -42,6 +42,7 @@ export interface DataTableProps<T = any> {
   defaultSortDirection?: 'asc' | 'desc';
   onRowClick?: (row: T) => void;
   headerRight?: React.ReactNode;
+  showSearch?: boolean;
 }
 
 function getFieldValue(obj: any, field: string): any {
@@ -78,6 +79,7 @@ export default function DataTable<T extends Record<string, any>>({
   defaultSortDirection = 'desc',
   onRowClick,
   headerRight,
+  showSearch = true,
 }: DataTableProps<T>) {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -196,32 +198,36 @@ export default function DataTable<T extends Record<string, any>>({
 
   return (
     <div>
-      <div className="tw-mb-4 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setDebouncedSearch(searchInput.trim().toLowerCase());
-            setCurrentPage(1);
-          }}
-          className="tw-w-full md:tw-w-96"
-        >
-          <TextField
-            fullWidth
-            size="small"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={searchPlaceholder}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </form>
-        {headerRight}
-      </div>
+      {(showSearch || headerRight) && (
+        <div className="tw-mb-4 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-3">
+          {showSearch && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setDebouncedSearch(searchInput.trim().toLowerCase());
+                setCurrentPage(1);
+              }}
+              className="tw-w-full md:tw-w-96"
+            >
+              <TextField
+                fullWidth
+                size="small"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={searchPlaceholder}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </form>
+          )}
+          {headerRight}
+        </div>
+      )}
       <TableContainer
         component={Paper}
         elevation={0}

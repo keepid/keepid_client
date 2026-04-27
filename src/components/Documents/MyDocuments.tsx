@@ -22,6 +22,9 @@ interface OwnProps {
   viewerRole?: Role;
   username: string;
   clientName?: string;
+  viewerUsername?: string;
+  viewerName?: string;
+  organizationName?: string;
 }
 
 type Props = OwnProps & RouteComponentProps;
@@ -37,11 +40,14 @@ interface State {
   currentDocumentFileType: FileType | undefined;
   currentDocumentTargetUser: string | undefined;
   currentDocumentIdCategory: string | undefined;
+  currentDocumentIdCategoryDisplay: string | undefined;
+  currentDocumentCustomIdCategory: string | undefined;
   documentData: any;
   deleteTargetDocument: any | null;
   renameTarget: any | null;
   renameValue: string;
   isRenaming: boolean;
+  showAllDocuments: boolean;
 }
 
 interface PDFProps {
@@ -93,11 +99,14 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentFileType: undefined,
       currentDocumentTargetUser: undefined,
       currentDocumentIdCategory: undefined,
+      currentDocumentIdCategoryDisplay: undefined,
+      currentDocumentCustomIdCategory: undefined,
       documentData: [],
       deleteTargetDocument: null,
       renameTarget: null,
       renameValue: '',
       isRenaming: false,
+      showAllDocuments: false,
     };
     this.getDocumentData = this.getDocumentData.bind(this);
     this.onViewDocument = this.onViewDocument.bind(this);
@@ -109,8 +118,13 @@ class MyDocuments extends Component<Props, State> {
   }
 
   resetDocumentId = () => {
-    this.setState({ currentDocumentId: undefined });
-    this.setState({ currentDocumentName: undefined });
+    this.setState({
+      currentDocumentId: undefined,
+      currentDocumentName: undefined,
+      currentDocumentIdCategory: undefined,
+      currentDocumentIdCategoryDisplay: undefined,
+      currentDocumentCustomIdCategory: undefined,
+    });
   };
 
   static fileNamesUnique(files) {
@@ -231,7 +245,15 @@ class MyDocuments extends Component<Props, State> {
   };
 
   onViewDocument(event: any, row: any) {
-    const { id, filename, uploadDate, uploader, idCategory } = row;
+    const {
+      id,
+      filename,
+      uploadDate,
+      uploader,
+      idCategory,
+      idCategoryDisplay,
+      customIdCategory,
+    } = row;
     const { userRole } = this.props;
 
     let fileType; let
@@ -258,6 +280,8 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentFileType: fileType,
       currentDocumentTargetUser: targetUser,
       currentDocumentIdCategory: idCategory,
+      currentDocumentIdCategoryDisplay: idCategoryDisplay,
+      currentDocumentCustomIdCategory: customIdCategory,
     });
   }
 
@@ -317,9 +341,32 @@ class MyDocuments extends Component<Props, State> {
     return fileName.replace(/\.pdf$/i, '');
   }
 
-  static formatIdCategory(idCategory?: string) {
-    if (!idCategory || idCategory === 'NONE') return 'Uncategorized';
-    return idCategory.replace(/_/g, ' ');
+  static toTitleCase(value: string) {
+    return value
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  static getDocumentTypeLabel(row: any) {
+    const custom = typeof row?.customIdCategory === 'string' ? row.customIdCategory.trim() : '';
+    if (custom) return custom;
+
+    const display = typeof row?.idCategoryDisplay === 'string' ? row.idCategoryDisplay.trim() : '';
+    if (display && display.toUpperCase() !== 'NONE') return display;
+
+    const idCategory = typeof row?.idCategory === 'string' ? row.idCategory.trim() : '';
+    if (!idCategory || idCategory.toUpperCase() === 'NONE') return 'Uncategorized';
+    if (idCategory.includes('_')) return MyDocuments.toTitleCase(idCategory.replace(/_/g, ' '));
+    return idCategory;
+  }
+
+  static getDocumentTypeKey(row: any) {
+    const custom = typeof row?.customIdCategory === 'string' ? row.customIdCategory.trim() : '';
+    if (custom) return `custom:${custom.toLowerCase()}`;
+    const idCategory = typeof row?.idCategory === 'string' ? row.idCategory.trim() : '';
+    const display = typeof row?.idCategoryDisplay === 'string' ? row.idCategoryDisplay.trim() : '';
+    const base = idCategory || display || 'NONE';
+    return `type:${base.toUpperCase()}`;
   }
 
   static formatUploadDate(uploadDate?: string) {
@@ -356,7 +403,7 @@ class MyDocuments extends Component<Props, State> {
       fileType = undefined;
     }
 
-    fetch(`${getServerURL()}/get-files `, {
+    fetch(`${getServerURL()}/get-files`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
@@ -376,21 +423,8 @@ class MyDocuments extends Component<Props, State> {
     || this.props.viewerRole === Role.Admin
     || this.props.viewerRole === Role.Director;
 
-  nameFormatter = (row: any) => {
-    const displayName = MyDocuments.getDisplayFileName(row.filename);
-    return (
-      <span
-        className="tw-font-medium tw-text-gray-900 tw-block"
-        style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          wordBreak: 'break-word',
-        }}
-      >
-        {displayName}
-      </span>
-    );
-  };
+  shouldUseClientUi = () =>
+    this.props.userRole === Role.Client && !this.isStaffViewer();
 
   openRenameModal = (row: any) => {
     this.setState({
@@ -464,7 +498,7 @@ class MyDocuments extends Component<Props, State> {
             pathname: `/home/notify-client/${this.props.username}`,
             state: {
               clientName: this.props.clientName,
-              prefilledIdCategory: row.idCategory,
+              prefilledIdCategory: MyDocuments.getDocumentTypeLabel(row),
             },
           });
         },
@@ -494,44 +528,97 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentTargetUser,
       currentDocumentFileType,
       currentDocumentIdCategory,
+      currentDocumentIdCategoryDisplay,
+      currentDocumentCustomIdCategory,
       deleteTargetDocument,
       renameTarget,
       renameValue,
       isRenaming,
+      showAllDocuments,
     } = this.state;
-    const safeDocuments = Array.isArray(documentData) ? documentData : [];
+    const shouldUseClientUi = this.shouldUseClientUi();
+    const safeDocuments = Array.isArray(documentData)
+      ? [...documentData].sort((a: any, b: any) => {
+        const aTime = new Date(a.uploadDate || '').getTime();
+        const bTime = new Date(b.uploadDate || '').getTime();
+        return (Number.isNaN(bTime) ? 0 : bTime) - (Number.isNaN(aTime) ? 0 : aTime);
+      })
+      : [];
 
-    const columns: DataTableColumn[] = [
+    const mostRecentByType = new Map<string, any>();
+    safeDocuments.forEach((row: any) => {
+      const typeKey = MyDocuments.getDocumentTypeKey(row);
+      if (!mostRecentByType.has(typeKey)) {
+        mostRecentByType.set(typeKey, row);
+      }
+    });
+
+    const latestDocuments = Array.from(mostRecentByType.values());
+    const allDocuments = safeDocuments;
+
+    const allDocumentsColumns: DataTableColumn[] = [
       {
-        field: 'filename',
-        headerName: 'Name',
-        renderCell: (row: any) => this.nameFormatter(row),
-      },
-      {
-        field: 'idCategory',
+        field: 'idType',
         headerName: 'ID Type',
-        align: 'center',
-        width: '20%',
-        renderCell: (row: any) => MyDocuments.formatIdCategory(row.idCategory),
+        renderCell: (row: any) => (
+          <span className="tw-font-medium tw-text-gray-900">
+            {MyDocuments.getDocumentTypeLabel(row)}
+          </span>
+        ),
       },
       {
         field: 'uploadDate',
-        headerName: 'Date Uploaded',
-        sortable: true,
+        headerName: 'Uploaded',
+        align: 'center',
+        width: '20%',
         sortType: 'date',
-        width: '18%',
+        sortable: true,
         renderCell: (row: any) => MyDocuments.formatUploadDate(row.uploadDate),
       },
       {
+        field: 'uploader',
+        headerName: 'Uploaded By',
+        align: 'center',
+        width: '20%',
+      },
+      {
         field: 'actions',
-        headerName: '',
+        headerName: shouldUseClientUi ? 'Actions' : '',
         align: 'right',
-        width: '48px',
+        width: shouldUseClientUi ? '26%' : '48px',
         renderCell: (row: any) => (
-          <RowActionMenu actions={this.getRowActions(row)} />
+          shouldUseClientUi ? (
+            <div className="tw-flex tw-justify-end tw-gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.handleFileDownload(row);
+                }}
+              >
+                Download
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.requestDeleteDocument(row);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <RowActionMenu actions={this.getRowActions(row)} />
+          )
         ),
       },
     ];
+    const mostRecentColumns: DataTableColumn[] = allDocumentsColumns.filter(
+      (column) => column.field !== 'uploadDate' && column.field !== 'uploader',
+    );
 
     return (
       <Switch>
@@ -547,16 +634,21 @@ class MyDocuments extends Component<Props, State> {
               targetUser={currentDocumentTargetUser}
               fileType={currentDocumentFileType}
               idCategory={currentDocumentIdCategory}
+              idCategoryDisplay={currentDocumentIdCategoryDisplay}
+              customIdCategory={currentDocumentCustomIdCategory}
               clientName={this.props.clientName}
               onDownloadCurrentDocument={() => this.handleFileDownload({
                 id: currentDocumentId,
                 filename: currentDocumentName,
-                uploader: currentDocumentTargetUser,
+                uploader: currentUploader,
               })}
               onRequestDeleteCurrentDocument={() => this.requestDeleteDocument({
                 id: currentDocumentId,
                 filename: currentDocumentName,
                 idCategory: currentDocumentIdCategory,
+                idCategoryDisplay: currentDocumentIdCategoryDisplay,
+                customIdCategory: currentDocumentCustomIdCategory,
+                uploadDate: currentUploadDate,
               })}
               resetDocumentId={this.resetDocumentId}
             />
@@ -567,32 +659,89 @@ class MyDocuments extends Component<Props, State> {
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <h1 className="display-4 mb-0">
-                  {this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}
-                </h1>
+              <button
+                type="button"
+                className="btn btn-primary mt-3 mb-4 mr-2"
+                onClick={() => this.props.history.goBack()}
+              >
+                <i className="fas fa-chevron-left" /> Back
+              </button>
+              <div className="mb-4">
                 <DocumentsInlineUpload
                   targetUser={username}
                   alert={this.props.alert}
                   onUploadComplete={() => this.getDocumentData()}
+                  collapsible
+                  collapsibleHeaderStart={(
+                    <h1 className="display-4 mb-0">
+                      {this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}
+                    </h1>
+                  )}
+                  viewerUsername={this.isStaffViewer() ? this.props.viewerUsername : undefined}
+                  viewerName={this.isStaffViewer() ? this.props.viewerName : undefined}
+                  organizationName={this.isStaffViewer() ? this.props.organizationName : undefined}
+                  clientName={this.props.clientName}
                 />
               </div>
             </div>
 
             <div className="d-flex flex-row bd-highlight mb-3 pt-5">
               <div className="w-100 pd-3">
+                <h4 className="mb-3">Most Recent</h4>
                 <DataTable
-                  columns={columns}
-                  data={safeDocuments}
+                  columns={mostRecentColumns}
+                  data={latestDocuments}
                   keyField="id"
                   emptyMessage={this.props.clientName ? `No documents for ${this.props.clientName}` : 'No documents found'}
-                  searchPlaceholder="Search documents..."
-                  searchFields={['filename', 'idCategory', 'uploadDate']}
+                  showSearch={false}
                   pageSize={20}
-                  defaultSortField="uploadDate"
-                  defaultSortDirection="desc"
                   onRowClick={this.handleRowClick}
                 />
+                <div className="tw-mt-6">
+                  {shouldUseClientUi ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => this.setState((prevState) => ({
+                          showAllDocuments: !prevState.showAllDocuments,
+                        }))}
+                      >
+                        {showAllDocuments ? 'Hide all documents' : 'Show all documents'}
+                      </button>
+                      {showAllDocuments && (
+                        <div className="tw-mt-3">
+                          <DataTable
+                            columns={allDocumentsColumns}
+                            data={allDocuments}
+                            keyField="id"
+                            emptyMessage="No documents found."
+                            showSearch={false}
+                            pageSize={20}
+                            onRowClick={this.handleRowClick}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <details>
+                      <summary className="tw-cursor-pointer tw-font-medium tw-text-gray-800">
+                        All Documents
+                      </summary>
+                      <div className="tw-mt-3">
+                        <DataTable
+                          columns={allDocumentsColumns}
+                          data={allDocuments}
+                          keyField="id"
+                          emptyMessage="No documents found."
+                          showSearch={false}
+                          pageSize={20}
+                          onRowClick={this.handleRowClick}
+                        />
+                      </div>
+                    </details>
+                  )}
+                </div>
               </div>
             </div>
             </div>
@@ -614,8 +763,13 @@ class MyDocuments extends Component<Props, State> {
                 <p className="tw-text-gray-600 tw-mb-4">
                   Are you sure you want to delete{' '}
                   <span className="tw-font-semibold">
-                    {MyDocuments.getDisplayFileName(deleteTargetDocument.filename)}
+                    {MyDocuments.getDocumentTypeLabel(deleteTargetDocument)}
                   </span>
+                  {deleteTargetDocument.uploadDate ? (
+                    <>
+                      {' '}uploaded on {MyDocuments.formatUploadDate(deleteTargetDocument.uploadDate)}
+                    </>
+                  ) : null}
                   ? This action cannot be undone.
                 </p>
                 <div className="tw-flex tw-justify-end tw-gap-3">

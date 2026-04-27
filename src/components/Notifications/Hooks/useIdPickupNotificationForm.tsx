@@ -2,33 +2,16 @@ import { useEffect, useState } from 'react';
 import { useAlert } from 'react-alert';
 
 import getServerURL from '../../../serverOverride';
+import {
+  buildPickupMessage,
+  EMPTY_ORG_ADDRESS,
+  formatIdLabel,
+  isValidUSPhone,
+  OrgAddress,
+  toE164US,
+} from '../pickupNotificationTemplate';
 
-const PHONE_REGEX = /^\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}$/;
 const MIN_LOADING_DURATION = 500;
-
-const toE164US = (phone: string): string =>
-  `+1${phone.replace(/\D/g, '')}`;
-
-const mapIdCategoryToPickupOption = (idCategory?: string): string => {
-  const normalized = (idCategory || '').trim().toLowerCase().replace(/_/g, ' ');
-  if (!normalized) return '';
-  if (normalized === 'birth certificate') return 'Birth Certificate';
-  if (normalized === 'social security card') return 'Social Security Card';
-  if (normalized.includes('driver') || normalized.includes('photo id')) {
-    return 'Photo ID';
-  }
-  return '';
-};
-
-const formatIdLabel = (category?: string): string => {
-  if (!category || category.toUpperCase() === 'NONE') return '______';
-  const mapped = mapIdCategoryToPickupOption(category);
-  if (mapped) return mapped;
-  return category
-    .replace(/_/g, ' ')
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-};
 
 export interface NotificationFormErrors {
   clientPhone?: string;
@@ -42,7 +25,7 @@ const validateForm = (
   const errors: NotificationFormErrors = {};
   if (!phone.trim()) {
     errors.clientPhone = 'Phone number is required';
-  } else if (!PHONE_REGEX.test(phone.trim())) {
+  } else if (!isValidUSPhone(phone)) {
     errors.clientPhone = 'Enter a valid phone number (e.g. 215-555-1234)';
   }
   if (!message.trim()) {
@@ -67,9 +50,7 @@ export default function useNotificationForm(
   const [workerName, setWorkerName] = useState(initialWorkerName);
   const [message, setMessage] = useState('');
 
-  const [orgAddress, setOrgAddress] = useState({
-    street: '', city: '', state: '', zip: '',
-  });
+  const [orgAddress, setOrgAddress] = useState<OrgAddress>(EMPTY_ORG_ADDRESS);
   const [orgAddressLoaded, setOrgAddressLoaded] = useState(false);
   const [messageInitialized, setMessageInitialized] = useState(!initialIdCategory);
 
@@ -173,15 +154,14 @@ export default function useNotificationForm(
     if (!clientName) return;
     if (!orgAddressLoaded) return;
 
-    const idLabel = formatIdLabel(initialIdCategory);
-    const addressParts = [orgAddress.street, orgAddress.city, `${orgAddress.state} ${orgAddress.zip}`.trim()]
-      .filter(Boolean);
-    const address = addressParts.length > 0 ? addressParts.join(', ') : '[pickup location]';
-
-    const msg = `Hi ${clientName}, your ${idLabel} is ready for pickup at ${address}.`
-      + ` Your case worker ${workerName || '[worker]'} is ready to help with further ID needs.`
-      + '\n\nDo not reply to this message.';
-    setMessage(msg);
+    setMessage(
+      buildPickupMessage({
+        clientName,
+        workerName,
+        idCategory: initialIdCategory,
+        orgAddress,
+      }),
+    );
     setMessageInitialized(true);
   }, [clientName, workerName, orgAddress, orgAddressLoaded, initialIdCategory, messageInitialized]);
 

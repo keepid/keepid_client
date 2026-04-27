@@ -287,10 +287,10 @@ class LoginPage extends Component<Props, State> {
           <div className="tw-text-center tw-mt-3">
             <button
               type="button"
-              className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer"
+              className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer tw-underline"
               onClick={() => this.setState({ showManualLogin: true })}
             >
-              Prefer password login? Sign in with email and password
+              Click here for email and password login
             </button>
           </div>
         ) : (

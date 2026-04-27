@@ -2,7 +2,6 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { Component } from 'react';
-import { Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Link, Redirect, Route, Switch } from 'react-router-dom';
@@ -20,7 +19,11 @@ interface DocumentInformation {
   id: string,
   uploadDate: string,
   filename: string,
+  applicationDisplayName?: string,
   formattedUploadDate?: string,
+  status?: string,
+  applicationStatus?: string,
+  applicationState?: string,
 }
 
 interface Props {
@@ -57,15 +60,6 @@ interface LocationState {
   clientName?: string;
 }
 
-function displayNameFromUsername(username: string): string {
-  const parts = username.split('-');
-  if (parts.length >= 3 && /^\d{8,}$/.test(parts[parts.length - 2])) {
-    const nameParts = parts.slice(0, -2);
-    return nameParts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-  }
-  return username;
-}
-
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
   constructor(props: Props & RouteComponentProps) {
     super(props);
@@ -97,6 +91,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       year: 'numeric',
     });
   };
+
+  getApplicationDisplayName = (row: DocumentInformation): string => {
+    const preferredName = row.applicationDisplayName?.trim();
+    if (preferredName) return preferredName;
+    if (!row.filename) return '';
+    return row.filename
+      .replace(/\.pdf$/i, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  getApplicationStatus = (row: DocumentInformation): string =>
+    row.status || row.applicationStatus || row.applicationState || 'Ongoing';
 
   mapDocuments = (documents: DocumentInformation[]): DocumentInformation[] =>
     documents.map((doc) => ({
@@ -202,7 +210,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   };
 
   componentDidMount() {
-    this.loadAvailableApplications();
     const { location } = this.props;
     const state = location.state as LocationState | undefined;
     const locationClientUsername = state?.clientUsername && state.clientUsername.trim().length > 0
@@ -325,24 +332,42 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
-  getRowActions = (row: DocumentInformation): RowAction[] => [
-    {
-      label: 'Download',
-      icon: <FileDownloadOutlinedIcon fontSize="small" />,
-      onClick: () => this.handleDownloadApplication(row),
-    },
-    {
-      label: 'Rename',
-      icon: <DriveFileRenameOutlineIcon fontSize="small" />,
-      onClick: () => this.openRenameModal(row),
-    },
-    {
-      label: 'Delete',
-      icon: <DeleteOutlineIcon fontSize="small" />,
-      onClick: () => this.setState({ deleteTargetApplication: row }),
-      danger: true,
-    },
-  ];
+  getRowActions = (row: DocumentInformation): RowAction[] => {
+    if (this.props.role === Role.Client) {
+      return [
+        {
+          label: 'Download',
+          icon: <FileDownloadOutlinedIcon fontSize="small" />,
+          onClick: () => this.handleDownloadApplication(row),
+        },
+        {
+          label: 'Delete',
+          icon: <DeleteOutlineIcon fontSize="small" />,
+          onClick: () => this.setState({ deleteTargetApplication: row }),
+          danger: true,
+        },
+      ];
+    }
+
+    return [
+      {
+        label: 'Download',
+        icon: <FileDownloadOutlinedIcon fontSize="small" />,
+        onClick: () => this.handleDownloadApplication(row),
+      },
+      {
+        label: 'Rename',
+        icon: <DriveFileRenameOutlineIcon fontSize="small" />,
+        onClick: () => this.openRenameModal(row),
+      },
+      {
+        label: 'Delete',
+        icon: <DeleteOutlineIcon fontSize="small" />,
+        onClick: () => this.setState({ deleteTargetApplication: row }),
+        danger: true,
+      },
+    ];
+  };
 
   render() {
     const {
@@ -358,36 +383,65 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       renameTarget,
       renameValue,
       isRenaming,
-      availableApplications,
     } = this.state;
+    const isClientUser = this.props.role === Role.Client;
+    const pageTitle = isClientUser ? 'My Applications' : 'Applications';
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
 
     const columns: DataTableColumn<DocumentInformation>[] = [
-      { field: 'filename', headerName: 'Application Name' },
       {
-        field: 'uploader',
-        headerName: 'Client',
-        sortable: true,
-        width: '25%',
-        renderCell: (row) => displayNameFromUsername(row.uploader),
+        field: 'filename',
+        headerName: 'Application Name',
+        renderCell: (row) => this.getApplicationDisplayName(row),
       },
       {
         field: 'uploadDate',
-        headerName: 'Upload Date',
+        headerName: isClientUser ? 'Completed' : 'Upload Date',
         sortable: true,
         sortType: 'date',
         width: '20%',
         renderCell: (row) => row.formattedUploadDate || '-',
       },
       {
+        field: 'status',
+        headerName: 'Status',
+        width: '18%',
+        renderCell: (row) => this.getApplicationStatus(row),
+      },
+      {
         field: 'actions',
-        headerName: '',
+        headerName: isClientUser ? 'Actions' : '',
         align: 'right',
-        width: '48px',
+        width: isClientUser ? '26%' : '48px',
         renderCell: (row) => (
-          <RowActionMenu actions={this.getRowActions(row)} />
+          isClientUser ? (
+            <div className="tw-flex tw-justify-end tw-gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.handleDownloadApplication(row);
+                }}
+              >
+                Download
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.setState({ deleteTargetApplication: row });
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <RowActionMenu actions={this.getRowActions(row)} />
+          )
         ),
       },
     ];
@@ -397,12 +451,18 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         <Route exact path="/applications">
           <div className="tw-container tw-mx-auto tw-px-4 tw-pt-12">
             <Helmet>
-              <title>Applications</title>
+              <title>{pageTitle}</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
+            <div className="tw-mb-3">
+              <Link to="/" className="btn btn-outline-secondary">
+                <i className="fas fa-chevron-left me-1" aria-hidden />
+                Back
+              </Link>
+            </div>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div className="container">
-                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : 'Applications'}</h1>
+                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : pageTitle}</h1>
               </div>
             </div>
             <div className="container">
@@ -412,83 +472,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 isLoading={isLoadingDocuments}
                 errorMessage={documentsError}
                 emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
-                searchPlaceholder="Search by client or application name..."
-                searchFields={['filename', 'uploader', 'organizationName']}
+                showSearch={false}
                 pageSize={10}
                 defaultSortField="uploadDate"
                 defaultSortDirection="desc"
                 onRowClick={this.handleOpenApplication}
               />
-              <div className="pt-4">
-                <h4>Available Applications</h4>
-                <p className="text-muted mb-2">
-                  Click an entry to start directly at Review with this lookup key.
-                </p>
-                <div className="table-responsive">
-                  <table className="table table-sm table-bordered bg-white">
-                    <thead>
-                      <tr>
-                        <th>Application</th>
-                        <th>Lookup Key</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {availableApplications.length === 0 && (
-                        <tr>
-                          <td colSpan={3} className="text-muted">No applications available.</td>
-                        </tr>
-                      )}
-                      {availableApplications.map((app) => {
-                        let appType = app.type;
-                        switch (app.type) {
-                          case 'SS': appType = 'Social Security Card'; break;
-                          case 'ID': appType = 'State ID'; break;
-                          case 'DL': appType = 'Driver License'; break;
-                          case 'BC': appType = 'Birth Certificate'; break;
-                          case 'VISA': appType = 'Visa'; break;
-                          case 'PASSPORT': appType = 'Passport'; break;
-                          default: break;
-                        }
-                        return (
-                          <tr key={app.lookupKey}>
-                            <td className="tw-capitalize">{appType} application</td>
-                            <td>{app.lookupKey}</td>
-                            <td>
-                            <Link
-                              to={{
-                                pathname: '/applications/createnew',
-                                state: {
-                                  clientUsername: clientUsername || '',
-                                  clientName: clientName || '',
-                                  startAtReview: true,
-                                  presetApplication: {
-                                    lookupKey: app.lookupKey,
-                                    type: app.type,
-                                    state: app.state,
-                                    situation: app.situation,
-                                  },
-                                },
-                              }}
-                            >
-                              <Button
-                                type="button"
-                                variant="primary"
-                                size="sm"
-                                disabled={!app.canStart}
-                                title={app.canStart ? 'Start' : 'Lookup key not parseable'}
-                              >
-                                Start
-                              </Button>
-                            </Link>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           </div>
           {deleteTargetApplication && (
@@ -581,16 +570,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           <ApplicationPdfPreview
             editable={false}
             allowAttachmentEditing={false}
+            canMail={!isClientUser}
+            canEditPdf={!isClientUser}
           />
         </Route>
         <Route path="/applications/edit">
           <ApplicationPdfPreview
-            editable
+            editable={!isClientUser}
             allowAttachmentEditing={
               this.props.role === Role.Worker
               || this.props.role === Role.Admin
               || this.props.role === Role.Director
             }
+            canMail={!isClientUser}
+            canEditPdf={!isClientUser}
           />
         </Route>
         <Route path="/applications/send">
