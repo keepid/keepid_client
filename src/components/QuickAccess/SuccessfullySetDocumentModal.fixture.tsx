@@ -11,7 +11,6 @@ function SuccessfullySetDocumentModalFixture() {
       'social-security',
       'drivers-license',
       'birth-certificate',
-      'vaccine-card',
     ],
   });
   return (

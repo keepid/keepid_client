@@ -7,6 +7,8 @@ import getServerURL from '../../serverOverride';
 function RecentActivity({ username }) {
   const [activities, setActivities] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const alert = useAlert();
 
   const renderActivitiesCard = (activities) => {
@@ -55,17 +57,32 @@ function RecentActivity({ username }) {
   };
 
   useEffect(() => {
-    fetchRecentActivity();
-  }, []);
+    if (!isCollapsed && !hasFetched) {
+      setHasFetched(true);
+      fetchRecentActivity();
+    }
+  }, [isCollapsed, hasFetched]);
 
   return (
     <div>
-      <p className="tw-pl-10 tw-mt-5 tw-text-2xl tw-font-semibold">
-        Recent Activity
-      </p>
-      <ul className="tw-list-none tw-mb-20">
-        {renderActivitiesCard(activities)}
-      </ul>
+      <button
+        type="button"
+        className="btn btn-link tw-p-0 tw-text-left tw-no-underline hover:tw-no-underline focus:tw-no-underline"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        aria-expanded={!isCollapsed}
+        aria-label={isCollapsed ? 'Expand recent activity' : 'Collapse recent activity'}
+      >
+        <h5 className="card-title tw-mb-0">
+          Recent Activity
+          <span className="tw-ml-2 tw-text-gray-500">{isCollapsed ? '▸' : '▾'}</span>
+        </h5>
+      </button>
+      {!isCollapsed && <hr />}
+      {!isCollapsed && (
+        <ul className="tw-list-none tw-mb-20 tw-mt-4 tw-pl-0">
+          {isLoading ? <li className="tw-text-gray-500">Loading...</li> : renderActivitiesCard(activities)}
+        </ul>
+      )}
     </div>
   );
 }

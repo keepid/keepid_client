@@ -19,9 +19,13 @@ interface PreviewLocationState {
 export default function ApplicationPdfPreview({
   editable = false,
   allowAttachmentEditing = false,
+  canMail = true,
+  canEditPdf = true,
 }: {
   editable?: boolean;
   allowAttachmentEditing?: boolean;
+  canMail?: boolean;
+  canEditPdf?: boolean;
 }) {
   const location = useLocation<PreviewLocationState>();
   const history = useHistory();
@@ -32,12 +36,13 @@ export default function ApplicationPdfPreview({
   const clientUsername = location.state?.clientUsername || '';
   const targetUser = location.state?.targetUser || '';
   const editTargetUsername = targetUser || clientUsername;
-  const canEditAttachments = editable && allowAttachmentEditing;
+  const canUsePdfEditing = editable && canEditPdf;
+  const canEditAttachments = canUsePdfEditing && allowAttachmentEditing;
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isEditMode, setIsEditMode] = useState(editable);
+  const [isEditMode, setIsEditMode] = useState(canUsePdfEditing);
   const [isSavingEdits, setIsSavingEdits] = useState(false);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
@@ -55,10 +60,12 @@ export default function ApplicationPdfPreview({
   };
 
   useEffect(() => {
-    if (editable) {
+    if (canUsePdfEditing) {
       setIsEditMode(true);
+    } else {
+      setIsEditMode(false);
     }
-  }, [editable]);
+  }, [canUsePdfEditing]);
 
   useEffect(() => {
     if (!applicationId) {
@@ -155,12 +162,12 @@ export default function ApplicationPdfPreview({
             )}
           </div>
           <div className="tw-flex tw-items-center tw-gap-2">
-            {applicationId && (
+            {applicationId && canMail && (
               <Button variant="primary" onClick={() => setMailDialogIsOpen(true)}>
                 Mail
               </Button>
             )}
-            {applicationId && !editable && (
+            {applicationId && !editable && canEditPdf && (
               <Link
                 to={{
                   pathname: '/applications/edit',
@@ -175,7 +182,7 @@ export default function ApplicationPdfPreview({
                 <Button variant="primary">Edit PDF</Button>
               </Link>
             )}
-            {applicationId && editable && !isEditMode && (
+            {applicationId && canUsePdfEditing && !isEditMode && (
               <Button
                 variant="primary"
                 onClick={() => setIsEditMode(true)}
@@ -183,7 +190,7 @@ export default function ApplicationPdfPreview({
                 Edit PDF
               </Button>
             )}
-            {applicationId && editable && isEditMode && (
+            {applicationId && canUsePdfEditing && isEditMode && (
               <>
                 <Button
                   variant="success"
@@ -237,7 +244,7 @@ export default function ApplicationPdfPreview({
             clientUsername={editTargetUsername}
             showSaveButton={false}
             showPdfEditControls={false}
-            pdfFormsReadOnly={!editable || !isEditMode}
+            pdfFormsReadOnly={!canUsePdfEditing || !isEditMode}
             canEditAttachments={canEditAttachments}
           />
         )}

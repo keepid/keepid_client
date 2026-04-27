@@ -69,8 +69,7 @@ export const MailModal: React.FC<Props> = ({
   documentName,
 }) => {
   const { username, organization } = useContext(UserContext);
-  const [selectedAddress, setSelectedAddress] = useState<AddressData | null>(null);
-  const [metadataLocked, setMetadataLocked] = useState(false);
+  const [destinationPrefilled, setDestinationPrefilled] = useState(false);
   const [mailHistory, setMailHistory] = useState<MailHistoryEntry[]>([]);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
 
@@ -104,6 +103,7 @@ export const MailModal: React.FC<Props> = ({
 
   const [showInputError, setShowInputError] = useState(false);
   const [editingReturnAddress, setEditingReturnAddress] = useState(false);
+  const [editingDestination, setEditingDestination] = useState(false);
 
   useEffect(() => {
     const fetchReturnAddress = async () => {
@@ -151,8 +151,8 @@ export const MailModal: React.FC<Props> = ({
       if (!response.ok) return;
       const data = await response.json();
       if (data.mailDestinationName || data.mailDestinationOfficeName || data.mailDestinationStreet1) {
-        setSelectedAddress({
-          index: data.mailDestinationNameForCheck || 'DYNAMIC',
+        setManualAddress({
+          index: 'DYNAMIC',
           nameForCheck: data.mailDestinationNameForCheck || '',
           officeName: data.mailDestinationOfficeName || '',
           street1: data.mailDestinationStreet1 || '',
@@ -164,7 +164,9 @@ export const MailModal: React.FC<Props> = ({
           name: data.mailDestinationName || '',
           checkAmount: data.mailDestinationCheckAmount || '0',
         });
-        setMetadataLocked(true);
+        setDestinationPrefilled(true);
+      } else {
+        setDestinationPrefilled(false);
       }
     } catch (err: any) {
       console.error('Error fetching mail info:', err.message);
@@ -210,8 +212,8 @@ export const MailModal: React.FC<Props> = ({
     if (isVisible) {
       setShowInputError(false);
       setEditingReturnAddress(false);
-      setMetadataLocked(false);
-      setSelectedAddress(null);
+      setEditingDestination(false);
+      setDestinationPrefilled(false);
       setManualAddress({
         index: 'DYNAMIC', nameForCheck: '', officeName: '', state: '',
         street1: '', street2: '', city: '', zipcode: '',
@@ -243,11 +245,9 @@ export const MailModal: React.FC<Props> = ({
   );
 
   const mailForm = async () => {
-    const destination = selectedAddress || manualAddress;
+    const destination = manualAddress;
     const requiredDestFields: (keyof AddressData)[] = ['street1', 'city', 'state', 'zipcode'];
-    const isDestValid = selectedAddress
-      ? true
-      : requiredDestFields.every((field) => manualAddress[field] !== '')
+    const isDestValid = requiredDestFields.every((field) => manualAddress[field] !== '')
       && (manualAddress.name !== '' || manualAddress.officeName !== '');
     if (!isDestValid) {
       setShowInputError(true);
@@ -463,28 +463,47 @@ export const MailModal: React.FC<Props> = ({
               <div className="tw-p-4">
                 {renderMailHistory()}
 
-                <p className="tw-text-left tw-text-2xl tw-font-semibold">
-                  {metadataLocked ? 'Mail Destination (from application)' : 'Mail Destination'}
-                </p>
+                <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-1">
+                  <p className="tw-text-left tw-text-2xl tw-font-semibold">
+                    {destinationPrefilled ? 'Mail Destination (from application)' : 'Mail destination'}
+                  </p>
+                  {destinationPrefilled && (
+                    <button
+                      type="button"
+                      className="tw-shrink-0 tw-text-sm tw-text-blue-600 hover:tw-text-blue-800 tw-font-medium"
+                      onClick={() => setEditingDestination(!editingDestination)}
+                    >
+                      {editingDestination ? 'Done' : 'Edit'}
+                    </button>
+                  )}
+                </div>
 
-                {metadataLocked && selectedAddress ? (
+                {!destinationPrefilled && (
+                  <div className="tw-bg-amber-50 tw-border tw-border-amber-300 tw-rounded-md tw-p-4 tw-mt-2 tw-mb-3">
+                    <p className="tw-text-amber-800 tw-text-sm tw-font-medium">
+                      This application cannot be submitted via mail through Keep.id. If you would like to mail it anyway to yourself or a partner for an 81 cent fee, enter the destination address below.
+                    </p>
+                  </div>
+                )}
+
+                {destinationPrefilled && !editingDestination ? (
                   <div className="tw-bg-blue-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-blue-200">
                     <h3 className="tw-text-lg tw-font-semibold tw-mb-2">
-                      {selectedAddress.name} — ${selectedAddress.checkAmount}
+                      {`${manualAddress.name || manualAddress.officeName || 'Recipient'} — $${manualAddress.checkAmount}`}
                     </h3>
                     <div className="tw-text-sm tw-text-gray-700 tw-space-y-1">
-                      {selectedAddress.description && <p>{selectedAddress.description}</p>}
-                      <p>{selectedAddress.street1} {selectedAddress.street2}</p>
-                      <p>{selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipcode}</p>
+                      {manualAddress.description && <p>{manualAddress.description}</p>}
+                      <p>
+                        {manualAddress.street1}
+                        {manualAddress.street2 ? ` ${manualAddress.street2}` : ''}
+                      </p>
+                      <p>
+                        {manualAddress.city}, {manualAddress.state} {manualAddress.zipcode}
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="tw-mt-2">
-                    <div className="tw-bg-amber-50 tw-border tw-border-amber-300 tw-rounded-md tw-p-4 tw-mb-3">
-                      <p className="tw-text-amber-800 tw-text-sm tw-font-medium">
-                        This application cannot be submitted via mail through Keep.id. If you would like to mail it anyway to yourself or a partner for an 81 cent fee, enter the destination address below.
-                      </p>
-                    </div>
                     {renderAddressFields(manualAddress, 'manual', true)}
                   </div>
                 )}

@@ -23,7 +23,7 @@ import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
 import MyDocuments from './components/Documents/MyDocuments';
-import UploadDocs from './components/Documents/UploadDocs';
+import UploadDocumentsPage from './components/Documents/UploadDocumentsPage';
 import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -357,9 +357,12 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Client
                   ) {
                     return (
-                      <UploadDocs
+                      <UploadDocumentsPage
                         userRole={Role.Client}
                         username={clientUsername}
+                        viewerUsername={username}
+                        viewerName={name}
+                        organizationName={organization}
                       />
                     );
                   }
@@ -379,7 +382,15 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
-                    return <UploadDocs userRole={role} username={username} />;
+                    return (
+                      <UploadDocumentsPage
+                        userRole={role}
+                        username={username}
+                        viewerUsername={username}
+                        viewerName={name}
+                        organizationName={organization}
+                      />
+                    );
                   }
                   return renderHome();
                 }}
@@ -401,6 +412,9 @@ class App extends React.Component<{}, State, {}> {
                         viewerRole={role}
                         username={clientUsername}
                         clientName={locState?.clientName}
+                        viewerUsername={username}
+                        viewerName={name}
+                        organizationName={organization}
                       />
                     );
                   }
@@ -417,7 +431,16 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
-                    return <MyDocuments userRole={role} viewerRole={role} username={username} />;
+                    return (
+                      <MyDocuments
+                        userRole={role}
+                        viewerRole={role}
+                        username={username}
+                        viewerUsername={username}
+                        viewerName={name}
+                        organizationName={organization}
+                      />
+                    );
                   }
                   return renderHome();
                 }}

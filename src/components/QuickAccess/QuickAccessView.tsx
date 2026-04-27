@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Button, Image } from 'react-bootstrap';
 import { useIntl } from 'react-intl';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
@@ -11,10 +11,14 @@ import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSet
 import DocumentViewer from '../Documents/DocumentViewer';
 import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
-import { QuickAccessCategory, QuickAccessFile } from './QuickAccess.util';
+import {
+  findMostRecentDocumentForCategory,
+  getIdCategoryForQuickAccessCategory,
+  QuickAccessFile,
+} from './QuickAccess.util';
 
 type Props = {
-  category: QuickAccessCategory;
+  category: string;
 };
 
 export default function QuickAccessView({ category }: Props) {
@@ -26,53 +30,22 @@ export default function QuickAccessView({ category }: Props) {
     useState<QuickAccessFile | null>(null);
 
   useEffect(() => {
-    let idToMatch = null;
-
-    fetch(`${getServerURL()}/get-default-id`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({
-        documentType: category,
-      }),
-    })
-      .then((response) => response.json())
-      .then((x) => {
-        // console.log(
-        //   'Response from server is ',
-        //   x,
-        //   ' for getQuickAccessId of category',
-        //   category,
-        // );
-        idToMatch = x.fileId;
-        // console.log('The idToMatch is', idToMatch);
-
-        fetchDocuments()
-          .then((documents) => {
-            // console.log(
-            //   'fetchDocuments in QuickAccessView returned ',
-            //   documents,
-            // );
-            const doc = documents.find((d) => d.id === idToMatch);
-
-            // console.log('The document that matches is ', doc);
-
-            if (doc != null) {
-              setConfiguredDocument({
-                filename: doc.filename,
-                uploadDate: doc.uploadDate,
-                uploader: doc.uploader,
-                id: doc.id,
-              });
-            }
-          })
-          .catch((e) => {
-            alert.show('Failed to fetch documents.');
-          })
-          .then(() => {
-            setLoading(false);
-          });
+    fetchDocuments()
+      .then((documents) => {
+        const doc = findMostRecentDocumentForCategory(documents, category);
+        setConfiguredDocument(doc);
+      })
+      .catch(() => {
+        alert.show('Failed to fetch documents.');
+      })
+      .then(() => {
+        setLoading(false);
       });
-  }, [category]);
+  }, [alert, category]);
+
+  if (!getIdCategoryForQuickAccessCategory(category)) {
+    return <Redirect to="/" />;
+  }
 
   let content;
 
@@ -128,6 +101,17 @@ export function QuickAccessDocumentViewer({
 
 export function NoDocumentSet({ category }: Props) {
   const intl = useIntl();
+  const idCategory = getIdCategoryForQuickAccessCategory(category);
+  const uploadSearch = new URLSearchParams({
+    mode: 'choose',
+    category: idCategory || '',
+    returnTo: `/quick-access/${category}`,
+  }).toString();
+  const uploadLink = {
+    pathname: '/upload-document',
+    search: `?${uploadSearch}`,
+  };
+
   return (
     <div className="tw-flex tw-flex-col tw-items-center">
       <p className="tw-max-w-2xl tw-text-center tw-mb-4">
@@ -135,7 +119,7 @@ export function NoDocumentSet({ category }: Props) {
           Messages['quick-access.no-document-set.description'],
         )}
       </p>
-      <Link to={`/quick-access/${category}/setup`}>
+      <Link to={uploadLink}>
         <Button>
           {intl.formatMessage(
             Messages['quick-access.no-document-set.button'],

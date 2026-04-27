@@ -7,24 +7,20 @@ export default defineMessages({
   },
   'quick-access.drivers-license.title': {
     id: 'quick-access.drivers-license.title',
-    defaultMessage: "Driver's License",
+    defaultMessage: 'Photo ID',
   },
   'quick-access.birth-certificate.title': {
     id: 'quick-access.birth-certificate.title',
     defaultMessage: 'Birth Certificate',
   },
-  'quick-access.vaccine-card.title': {
-    id: 'quick-access.vaccine-card.title',
-    defaultMessage: 'Vaccine Card',
-  },
   'quick-access.no-document-set.description': {
     id: 'quick-access.no-document-set.description',
     defaultMessage:
-      'You have not set your Quick Access document for this category yet. Start setting one below!',
+      'You do not have a document for this quick access category yet. Scan one now to add it.',
   },
   'quick-access.no-document-set.button': {
     id: 'quick-access.no-document-set.button',
-    defaultMessage: 'Set Default ID',
+    defaultMessage: 'Scan Document',
   },
   'quick-access.setup.title': {
     id: 'quick-access.setup.title',
@@ -33,12 +29,12 @@ export default defineMessages({
   'quick-access.setup.description': {
     id: 'quick-access.setup.description',
     defaultMessage:
-      'Choose 1 document to set as the default ID to quickly access your {categoryTitle}',
+      'Scan or upload a document to quickly access your {categoryTitle}',
   },
   'quick-access.success-modal.title': {
     id: 'quick-access.success-modal.title',
     defaultMessage:
-      'You have successfully set up Quick Access for your {categoryTitle}!',
+      'Your {categoryTitle} is ready in Quick Access!',
   },
   'quick-access.success-modal.button': {
     id: 'quick-access.success-modal.button',

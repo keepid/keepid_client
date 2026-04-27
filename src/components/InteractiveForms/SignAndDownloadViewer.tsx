@@ -696,8 +696,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   /**
    * Builds the bytes that downstream viewers see on Print/Download by delegating the merge +
    * flatten + appearance-normalize pipeline to the server. The server uses the exact same
-   * RenderPacketPdfService that Lob mailing uses, so Print / Download / Mail all produce
-   * byte-identical output for a given application state.
+   * RenderPacketPdfService that Lob mails as-is; Lob uses insert_blank_page for the address sheet.
    *
    * <p>We capture the client-side live state (pdf.js in-memory form widget edits and any
    * embedded signatures that haven't been saved yet) by sending the current main PDF bytes as

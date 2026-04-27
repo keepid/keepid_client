@@ -154,8 +154,8 @@ export async function listApplicationPdfIds(
 
 /**
  * Asks the server to render the full application packet (base PDF + enabled attachments) into a
- * single flattened PDF using the same PDFBox-based pipeline that Lob mailing uses, so Print /
- * Download / Mail all produce byte-identical bytes for a given application state.
+ * single flattened PDF using the same PDFBox-based pipeline as Lob mail upload (Print / Download
+ * match the mailed file; Lob adds the address cover via address_placement=insert_blank_page).
  *
  * When `mainPdfOverride` is provided, those bytes replace the stored application PDF for this
  * render only -- this lets the UI print/download the user's in-progress in-viewer edits (live

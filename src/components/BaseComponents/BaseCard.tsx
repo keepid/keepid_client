@@ -23,6 +23,8 @@ interface Props {
   cardSize?: CardSize;
   cardHeight?: string;
   cardWidth?: string;
+  /** When set, replaces the default horizontal margins on the outer wrapper. */
+  wrapperClassName?: string;
   cardLink?: string;
   cardTitle: string;
   cardText: string;
@@ -42,6 +44,7 @@ interface DefaultProps {
   cardSize?: string;
   cardHeight?: string;
   cardWidth?: string;
+  wrapperClassName?: string;
   cardLink?: string;
   imageElement?: React.ReactElement;
   imageSrc?: any;
@@ -73,6 +76,7 @@ function BaseCard(props: Props): React.ReactElement {
     buttonOnClick?: () => void,
     renderAdditionalContent?: () => any,
   ): React.ReactElement {
+    const isFullWidth = cardWidth === '100%';
     // if there is an image, adjust image corner radius size based on image location
     const cardBorderRadius = 20;
     const buttonBorderRadius = 10;
@@ -94,13 +98,14 @@ function BaseCard(props: Props): React.ReactElement {
         }`}
         style={{
           height: cardHeight,
-          width: 'auto',
+          width: isFullWidth ? '100%' : 'auto',
           borderRadius: cardBorderRadius,
-          maxWidth: cardWidth,
+          maxWidth: isFullWidth ? '100%' : cardWidth,
+          transition: 'box-shadow 0.2s ease-in-out',
         }}
       >
         {imageLoc === CardImageLoc.LEFT || imageLoc === CardImageLoc.RIGHT ? (
-          <Card.Body className="p-0 d-flex flex-row">
+          <Card.Body className="p-0 d-flex flex-row w-100 align-items-stretch">
             {imageElement || (
               <Image
                 className={
@@ -112,6 +117,7 @@ function BaseCard(props: Props): React.ReactElement {
                   height: '100%',
                   width: 'auto',
                   maxWidth: imageSize,
+                  flexShrink: 0,
                   overflow: 'hidden',
                   objectFit: imageObjectFit,
                   borderTopLeftRadius,
@@ -122,7 +128,7 @@ function BaseCard(props: Props): React.ReactElement {
               />
             )}
             <div
-              className={`p-4 d-flex flex-column ${
+              className={`p-4 d-flex flex-column flex-grow-1 min-w-0 ${
                 imageLoc === CardImageLoc.LEFT ? 'order-2' : 'order-1'
               }`}
             >
@@ -201,6 +207,7 @@ function BaseCard(props: Props): React.ReactElement {
     cardTitle,
     cardText,
     cardLink,
+    wrapperClassName,
     imageSrc,
     imageAlt,
     imageElement,
@@ -236,14 +243,18 @@ function BaseCard(props: Props): React.ReactElement {
     cardHeight = props.cardHeight;
     cardWidth = props.cardWidth;
   }
+  const isFullWidth = cardWidth === '100%';
   return (
     <div
-      className="ml-1 mr-1 mt-2 mb-2"
+      className={wrapperClassName ?? 'ml-1 mr-1 mt-2 mb-2'}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
       {cardLink !== undefined ? (
-        <Link to={cardLink} className="no-link-style">
+        <Link
+          to={cardLink}
+          className={`no-link-style${isFullWidth ? ' tw-block tw-w-full' : ''}`}
+        >
           {renderCard(
             cardTitle,
             cardText,
@@ -287,6 +298,7 @@ const defaultProps: DefaultProps = {
   cardSize: undefined,
   cardHeight: undefined,
   cardWidth: undefined,
+  wrapperClassName: undefined,
   cardLink: undefined,
   imageSrc: undefined,
   imageAlt: undefined,
