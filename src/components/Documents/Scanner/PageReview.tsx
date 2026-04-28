@@ -11,7 +11,7 @@ export interface PageReviewProps {
   onPrimary: (page: CapturedPage) => void;
   onSecondary?: (page: CapturedPage) => void;
   onRetake: () => void;
-  onEditCorners: () => void;
+  simplifiedActions?: boolean;
   onCancel: () => void;
 }
 
@@ -29,7 +29,7 @@ export default function PageReview({
   onPrimary,
   onSecondary,
   onRetake,
-  onEditCorners,
+  simplifiedActions = false,
   onCancel,
 }: PageReviewProps) {
   const [current, setCurrent] = useState<CapturedPage>(page);
@@ -64,14 +64,7 @@ export default function PageReview({
           Cancel
         </button>
         <span className="small">{label}</span>
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-light"
-          onClick={onEditCorners}
-          disabled={busy}
-        >
-          Adjust corners
-        </button>
+        <span style={{ width: 74 }} />
       </div>
 
       <div className="p-3 d-flex justify-content-center" style={{ background: '#222' }}>
@@ -83,27 +76,29 @@ export default function PageReview({
       </div>
 
       <div className="p-3 d-flex flex-column gap-3" style={{ background: '#111' }}>
-        <div className="d-flex flex-wrap gap-2 justify-content-center">
-          {FILTERS.map((f) => (
+        {!simplifiedActions && (
+          <div className="d-flex flex-wrap gap-2 justify-content-center">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                className={`btn btn-sm ${current.filter === f.value ? 'btn-light' : 'btn-outline-light'}`}
+                onClick={() => rebuild({ filter: f.value })}
+                disabled={busy || current.filter === f.value}
+              >
+                {f.label}
+              </button>
+            ))}
             <button
-              key={f.value}
               type="button"
-              className={`btn btn-sm ${current.filter === f.value ? 'btn-light' : 'btn-outline-light'}`}
-              onClick={() => rebuild({ filter: f.value })}
-              disabled={busy || current.filter === f.value}
+              className="btn btn-sm btn-outline-light"
+              onClick={() => rebuild({ rotation: (current.rotation + 90) % 360 })}
+              disabled={busy}
             >
-              {f.label}
+              Rotate 90°
             </button>
-          ))}
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-light"
-            onClick={() => rebuild({ rotation: (current.rotation + 90) % 360 })}
-            disabled={busy}
-          >
-            Rotate 90°
-          </button>
-        </div>
+          </div>
+        )}
 
         <div className="d-flex flex-wrap gap-2 justify-content-between">
           <button

@@ -1,9 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import type { CornerPoints } from 'scanic';
 
 import type { ViewfinderCapture } from './CameraViewfinder';
 import CameraViewfinder from './CameraViewfinder';
-import ManualCornerEditor from './ManualCornerEditor';
 import PageReview from './PageReview';
 import PageRoll from './PageRoll';
 import { type ScannerPreset, pageLabel as presetPageLabel } from './scannerPresets';
@@ -12,7 +10,6 @@ import { buildCapturedPage, pagesToPdf } from './scannerUtils';
 
 type Stage =
   | { kind: 'capturing'; index: number }
-  | { kind: 'adjusting'; frame: HTMLCanvasElement; initialCorners: CornerPoints | null; replacingIndex: number | null }
   | { kind: 'reviewing'; page: CapturedPage; replacingIndex: number | null }
   | { kind: 'assembling' }
   | { kind: 'error'; message: string };
@@ -61,7 +58,7 @@ export default function DocumentScanner({
           message:
             err instanceof Error
               ? err.message
-              : 'Could not process that frame. Try adjusting corners manually.',
+              : 'Could not process that frame. Please retake the photo.',
         });
       }
     },
@@ -70,15 +67,6 @@ export default function DocumentScanner({
 
   const handleCapture = useCallback(
     async ({ sourceCanvas, corners }: ViewfinderCapture) => {
-      if (!corners) {
-        setStage({
-          kind: 'adjusting',
-          frame: sourceCanvas,
-          initialCorners: null,
-          replacingIndex: null,
-        });
-        return;
-      }
       await buildPage(sourceCanvas, corners, null);
     },
     [buildPage],
@@ -185,33 +173,6 @@ export default function DocumentScanner({
     setStage({ kind: 'capturing', index: rollSize });
   }, [rollSize]);
 
-  const handleEditCorners = useCallback(() => {
-    if (stage.kind !== 'reviewing') return;
-    setStage({
-      kind: 'adjusting',
-      frame: stage.page.sourceCanvas,
-      initialCorners: stage.page.corners,
-      replacingIndex: stage.replacingIndex,
-    });
-  }, [stage]);
-
-  const handleManualCornersConfirm = useCallback(
-    async (corners: CornerPoints) => {
-      if (stage.kind !== 'adjusting') return;
-      await buildPage(stage.frame, corners, stage.replacingIndex);
-    },
-    [buildPage, stage],
-  );
-
-  const handleManualCornersCancel = useCallback(() => {
-    if (stage.kind !== 'adjusting') return;
-    if (stage.replacingIndex !== null) {
-      setStage({ kind: 'capturing', index: rollSize });
-      return;
-    }
-    setStage({ kind: 'capturing', index: rollSize });
-  }, [rollSize, stage]);
-
   const handleRemovePage = useCallback((index: number) => {
     setPages((prev) => prev.filter((_, i) => i !== index));
   }, []);
@@ -267,9 +228,9 @@ export default function DocumentScanner({
     if (isCard) {
       const capturedSoFar = pages.length + 1;
       if (capturedSoFar >= preset.defaultPages) {
-        return { primary: 'Finish', secondary: undefined };
+        return { primary: 'Upload', secondary: undefined };
       }
-      return { primary: 'Capture back side', secondary: 'Done with just front' };
+      return { primary: 'Add back side', secondary: 'Upload just front' };
     }
     return { primary: 'Done', secondary: 'Add another page' };
   }, [isCard, pages.length, preset.defaultPages, stage]);
@@ -304,17 +265,6 @@ export default function DocumentScanner({
     );
   }
 
-  if (stage.kind === 'adjusting') {
-    return (
-      <ManualCornerEditor
-        sourceCanvas={stage.frame}
-        initialCorners={stage.initialCorners}
-        onConfirm={handleManualCornersConfirm}
-        onCancel={handleManualCornersCancel}
-      />
-    );
-  }
-
   if (stage.kind === 'reviewing') {
     return (
       <div>
@@ -330,7 +280,7 @@ export default function DocumentScanner({
           onPrimary={handleReviewPrimary}
           onSecondary={reviewCtas.secondary ? handleReviewSecondary : undefined}
           onRetake={handleRetake}
-          onEditCorners={handleEditCorners}
+          simplifiedActions={isCard && stage.replacingIndex === null && pages.length === 0}
           onCancel={onCancel}
         />
         <PageRoll

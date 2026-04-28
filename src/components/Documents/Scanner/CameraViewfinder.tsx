@@ -2,14 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { CornerPoints } from 'scanic';
 
 import type { ScannerPreset } from './scannerPresets';
-import { copyFrameToCanvas, detectCorners, quadAreaRatio } from './scannerUtils';
-
-const DETECTION_INTERVAL_MS = 320;
-const MIN_QUAD_COVERAGE = 0.12;
+import { copyFrameToCanvas } from './scannerUtils';
 
 export interface ViewfinderCapture {
   sourceCanvas: HTMLCanvasElement;
-  corners: CornerPoints | null;
+  corners: CornerPoints;
 }
 
 export interface CameraViewfinderProps {
@@ -37,8 +34,6 @@ export default function CameraViewfinder({
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const detectionRef = useRef<number | null>(null);
-  const lastCornersRef = useRef<CornerPoints | null>(null);
 
   const [permission, setPermission] = useState<PermissionState>('pending');
   const [permissionError, setPermissionError] = useState<string>('');
@@ -88,48 +83,38 @@ export default function CameraViewfinder({
     };
   }, [handleStreamFailure]);
 
-  useEffect(() => () => {
-    if (detectionRef.current !== null) {
-      window.clearInterval(detectionRef.current);
-      detectionRef.current = null;
-    }
-  }, []);
-
-  const runDetection = useCallback(async () => {
-    const video = videoRef.current;
+  const redrawGuideOverlay = useCallback(() => {
     const overlay = overlayRef.current;
-    const container = containerRef.current;
-    if (!video || !overlay || !container) return;
-    if (video.videoWidth === 0 || video.videoHeight === 0) return;
-    const scratch = copyFrameToCanvas(video);
-    try {
-      const corners = await detectCorners(scratch);
-      if (!corners) {
-        lastCornersRef.current = null;
-        drawOverlay(overlay, container, video, null, preset);
-        return;
-      }
-      const ratio = quadAreaRatio(corners, scratch.width, scratch.height);
-      const good = ratio >= MIN_QUAD_COVERAGE;
-      lastCornersRef.current = good ? corners : null;
-      drawOverlay(overlay, container, video, good ? corners : null, preset);
-    } catch {
-      lastCornersRef.current = null;
-    }
+    if (!overlay) return;
+    drawOverlay(overlay, preset);
   }, [preset]);
 
   const handleVideoReady = useCallback(() => {
     setVideoReady(true);
-    if (detectionRef.current !== null) return;
-    detectionRef.current = window.setInterval(runDetection, DETECTION_INTERVAL_MS);
-  }, [runDetection]);
+    redrawGuideOverlay();
+  }, [redrawGuideOverlay]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+    redrawGuideOverlay();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', redrawGuideOverlay);
+      return () => window.removeEventListener('resize', redrawGuideOverlay);
+    }
+    const observer = new ResizeObserver(() => redrawGuideOverlay());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [redrawGuideOverlay]);
 
   const handleCapture = useCallback(() => {
     const video = videoRef.current;
-    if (!video || !videoReady) return;
+    const overlay = overlayRef.current;
+    if (!video || !overlay || !videoReady) return;
     const frame = copyFrameToCanvas(video);
-    onCapture({ sourceCanvas: frame, corners: lastCornersRef.current });
-  }, [onCapture, videoReady]);
+    const corners = buildGuideCorners(video, overlay, preset);
+    onCapture({ sourceCanvas: frame, corners });
+  }, [onCapture, preset, videoReady]);
 
   const handleFallbackFile = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,12 +137,12 @@ export default function CameraViewfinder({
         }
         ctx.drawImage(img, 0, 0);
         URL.revokeObjectURL(url);
-        onCapture({ sourceCanvas: canvas, corners: null });
+        onCapture({ sourceCanvas: canvas, corners: centeredGuideCorners(canvas.width, canvas.height, preset) });
       };
       img.onerror = () => URL.revokeObjectURL(url);
       img.src = url;
     },
-    [onCapture],
+    [onCapture, preset],
   );
 
   if (permission === 'denied' || permission === 'unsupported') {
@@ -200,7 +185,7 @@ export default function CameraViewfinder({
     <div
       ref={containerRef}
       className="position-relative bg-dark text-white d-flex flex-column"
-      style={{ minHeight: 420 }}
+      style={{ minHeight: 'clamp(560px, 90svh, 980px)' }}
     >
       <div className="position-absolute top-0 start-0 end-0 p-2 d-flex justify-content-between align-items-center" style={{ zIndex: 3 }}>
         <button
@@ -216,7 +201,10 @@ export default function CameraViewfinder({
         </span>
       </div>
 
-      <div className="position-relative w-100" style={{ aspectRatio: '3 / 4', background: '#000' }}>
+      <div
+        className="position-relative w-100 flex-grow-1"
+        style={{ minHeight: 'clamp(360px, 72svh, 840px)', background: '#000' }}
+      >
         <video
           ref={videoRef}
           autoPlay
@@ -263,9 +251,6 @@ export default function CameraViewfinder({
 
 function drawOverlay(
   overlay: HTMLCanvasElement,
-  container: HTMLElement,
-  video: HTMLVideoElement,
-  corners: CornerPoints | null,
   preset: ScannerPreset,
 ) {
   const rect = overlay.getBoundingClientRect();
@@ -282,29 +267,6 @@ function drawOverlay(
   // Guide rectangle at preset aspect ratio (skip for freeform)
   if (preset.kind !== 'freeform') {
     drawGuideRectangle(ctx, overlay.width, overlay.height, preset);
-  }
-
-  if (corners && video.videoWidth > 0 && video.videoHeight > 0) {
-    const { scaleX, scaleY, offsetX, offsetY } = coverFit(
-      video.videoWidth,
-      video.videoHeight,
-      overlay.width,
-      overlay.height,
-    );
-    ctx.beginPath();
-    const pts = [corners.topLeft, corners.topRight, corners.bottomRight, corners.bottomLeft];
-    pts.forEach((p, i) => {
-      const x = p.x * scaleX + offsetX;
-      const y = p.y * scaleY + offsetY;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.closePath();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'rgba(72, 207, 173, 0.95)';
-    ctx.fillStyle = 'rgba(72, 207, 173, 0.18)';
-    ctx.fill();
-    ctx.stroke();
   }
 }
 
@@ -361,4 +323,88 @@ function coverFit(
     offsetX: (dstW - renderedW) / 2,
     offsetY: (dstH - renderedH) / 2,
   };
+}
+
+function buildGuideCorners(
+  video: HTMLVideoElement,
+  overlay: HTMLCanvasElement,
+  preset: ScannerPreset,
+): CornerPoints {
+  if (preset.kind === 'freeform') {
+    return {
+      topLeft: { x: 0, y: 0 },
+      topRight: { x: video.videoWidth, y: 0 },
+      bottomRight: { x: video.videoWidth, y: video.videoHeight },
+      bottomLeft: { x: 0, y: video.videoHeight },
+    };
+  }
+  const overlayRect = overlay.getBoundingClientRect();
+  const overlayW = overlayRect.width || overlay.width;
+  const overlayH = overlayRect.height || overlay.height;
+  const guide = getGuideBounds(overlayW, overlayH, preset);
+  const { scaleX, scaleY, offsetX, offsetY } = coverFit(
+    video.videoWidth,
+    video.videoHeight,
+    overlayW,
+    overlayH,
+  );
+  const toSource = (x: number, y: number) => ({
+    x: clamp((x - offsetX) / scaleX, 0, video.videoWidth),
+    y: clamp((y - offsetY) / scaleY, 0, video.videoHeight),
+  });
+  return {
+    topLeft: toSource(guide.x, guide.y),
+    topRight: toSource(guide.x + guide.w, guide.y),
+    bottomRight: toSource(guide.x + guide.w, guide.y + guide.h),
+    bottomLeft: toSource(guide.x, guide.y + guide.h),
+  };
+}
+
+function centeredGuideCorners(width: number, height: number, preset: ScannerPreset): CornerPoints {
+  if (preset.kind === 'freeform') {
+    return {
+      topLeft: { x: 0, y: 0 },
+      topRight: { x: width, y: 0 },
+      bottomRight: { x: width, y: height },
+      bottomLeft: { x: 0, y: height },
+    };
+  }
+  const guide = getGuideBounds(width, height, preset);
+  return {
+    topLeft: { x: guide.x, y: guide.y },
+    topRight: { x: guide.x + guide.w, y: guide.y },
+    bottomRight: { x: guide.x + guide.w, y: guide.y + guide.h },
+    bottomLeft: { x: guide.x, y: guide.y + guide.h },
+  };
+}
+
+function getGuideBounds(canvasW: number, canvasH: number, preset: ScannerPreset): {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} {
+  const aspect =
+    preset.orientationHint === 'portrait' ? preset.aspectRatio : preset.aspectRatio;
+  let guideW: number;
+  let guideH: number;
+  const maxW = canvasW * 0.85;
+  const maxH = canvasH * 0.85;
+  if (preset.orientationHint === 'landscape') {
+    guideW = Math.min(maxW, maxH * aspect);
+    guideH = guideW / aspect;
+  } else {
+    guideH = Math.min(maxH, maxW / aspect);
+    guideW = guideH * aspect;
+  }
+  return {
+    x: (canvasW - guideW) / 2,
+    y: (canvasH - guideH) / 2,
+    w: guideW,
+    h: guideH,
+  };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(value, max));
 }
