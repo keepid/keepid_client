@@ -26,12 +26,14 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
   const [frameWidth, setFrameWidth] = useState(560);
   const [numPages, setNumPages] = useState(1);
   const [pageNum, setPageNum] = useState(1);
+  const [loadError, setLoadError] = useState(false);
 
   const fileUrl = useMemo(() => URL.createObjectURL(pdfFile), [pdfFile]);
 
   useEffect(() => {
     setPageNum(1);
     setNumPages(1);
+    setLoadError(false);
   }, [fileUrl]);
 
   useEffect(
@@ -53,6 +55,10 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
       }
     };
     update();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
@@ -64,7 +70,7 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
     }
   }, [pageNum, numPages]);
 
-  const renderedWidth = Math.max(100, frameWidth - 2);
+  const renderedWidth = Math.max(100, frameWidth - 8);
   const pageDevicePixelRatio = typeof window === 'undefined'
     ? 2
     : Math.max(window.devicePixelRatio || 1, 2);
@@ -86,7 +92,11 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
         <div className="keepid-pdf-preview keepid-pdf-edit-locked tw-w-full tw-space-y-4">
           <Document
             file={fileUrl}
-            onLoadSuccess={(pdf) => setNumPages(pdf.numPages)}
+            onLoadSuccess={(pdf) => {
+              setLoadError(false);
+              setNumPages(pdf.numPages);
+            }}
+            onLoadError={() => setLoadError(true)}
             loading={(
               <div className="tw-flex tw-h-64 tw-items-center tw-justify-center tw-text-gray-400">
                 Loading PDF…
@@ -128,7 +138,7 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
                 </button>
                 </div>
               <div className="tw-relative tw-bg-gray-200 tw-px-1 tw-pb-1">
-                <div className="tw-w-full tw-overflow-hidden tw-rounded tw-bg-gray-100">
+                <div className="tw-min-h-[40vh] tw-w-full tw-overflow-hidden tw-rounded tw-bg-gray-100">
                   <Page
                     key={`doc-page-${pageNum}`}
                     pageNumber={pageNum}
@@ -139,14 +149,15 @@ export default function ApplicationStylePdfViewer({ pdfFile }: Props): React.Rea
                     renderForms={false}
                   />
                 </div>
-                <div
-                  className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
-                  title="PDF is read-only."
-                />
               </div>
               </div>
             </div>
           </Document>
+          {loadError && (
+            <div className="tw-py-6 tw-text-center tw-text-sm tw-text-gray-500">
+              Mobile browser PDF rendering failed. Use Download to open the file directly.
+            </div>
+          )}
         </div>
       </div>
     </div>

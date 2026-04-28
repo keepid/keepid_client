@@ -131,12 +131,13 @@ export default function DocumentsInlineUpload({
   }, [collapsible]);
 
   const onQuickPickFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
+    const input = event.currentTarget;
+    const selectedFile = input.files?.[0];
     if (!selectedFile) return;
     if (collapsible) setExpanded(true);
     setFile(selectedFile);
     setMode('submit');
-    event.target.value = '';
+    input.value = '';
   }, [collapsible]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -439,6 +440,10 @@ export default function DocumentsInlineUpload({
     </button>
   ) : null;
 
+  const inlinePanelClassName = mode === 'scanning'
+    ? `w-100 bg-dark overflow-hidden${collapsible ? ' mt-3' : ''}`
+    : `w-100 border rounded p-4 bg-light${collapsible ? ' mt-3' : ''}`;
+
   return (
     <div
       className={collapsible ? 'w-100' : undefined}
@@ -463,7 +468,7 @@ export default function DocumentsInlineUpload({
       />
       {isOpen && (
       <div
-        className={`w-100 border rounded p-4 bg-light${collapsible ? ' mt-3' : ''}`}
+        className={inlinePanelClassName}
       >
         {mode === 'picker' && (
           <div className="d-flex flex-column gap-3">

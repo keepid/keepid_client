@@ -1,5 +1,7 @@
 .keepid-pdf-preview .react-pdf__Page {
   width: 100%;
+  position: relative;
+  margin: 0 auto;
 }
 
 .keepid-pdf-preview .react-pdf__Page canvas {
@@ -12,6 +14,8 @@
 
 .keepid-pdf-preview .react-pdf__Page__textContent,
 .keepid-pdf-preview .react-pdf__Page__annotations {
+  position: absolute;
+  inset: 0;
   width: 100% !important;
   height: 100% !important;
 }
