@@ -586,6 +586,7 @@ class MyDocuments extends Component<Props, State> {
         headerName: shouldUseClientUi ? 'Actions' : '',
         align: 'right',
         width: shouldUseClientUi ? '26%' : '48px',
+        hideOnMobile: true,
         renderCell: (row: any) => (
           shouldUseClientUi ? (
             <div className="tw-flex tw-justify-end tw-gap-2">

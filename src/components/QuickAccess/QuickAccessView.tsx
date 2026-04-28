@@ -8,7 +8,7 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 // @ts-ignore
 import NoDocumentSetImageSvg from '../../static/images/QuickAccess/NoDocumentSetImage.svg';
-import DocumentViewer from '../Documents/DocumentViewer';
+import ApplicationStylePdfViewer from '../Documents/ApplicationStylePdfViewer';
 import { fetchDocuments } from './QuickAccess.api';
 import Messages from './QuickAccess.messages';
 import {
@@ -96,7 +96,7 @@ export function QuickAccessDocumentViewer({
         setFile(new File([blob], doc.filename, { type: 'application/pdf' })));
   }, [doc]);
 
-  return file ? <DocumentViewer pdfFile={file as File} /> : null;
+  return file ? <ApplicationStylePdfViewer pdfFile={file as File} /> : null;
 }
 
 export function NoDocumentSet({ category }: Props) {

@@ -444,7 +444,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           )
         ),
       },
-    ];
+    ].filter((col) => {
+      if (isClientUser && (col.field === 'actions' || col.field === 'uploadDate')) {
+        return false;
+      }
+      return true;
+    });
 
     return (
       <Switch>

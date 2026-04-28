@@ -26,6 +26,7 @@ export interface DataTableColumn<T = any> {
   renderCell?: (row: T) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
   width?: string;
+  hideOnMobile?: boolean;
 }
 
 export interface DataTableProps<T = any> {
@@ -185,6 +186,7 @@ export default function DataTable<T extends Record<string, any>>({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               wordBreak: 'break-word',
+              ...(col.hideOnMobile ? { display: { xs: 'none', md: 'table-cell' } } : {}),
             }}
           >
             {col.renderCell
@@ -240,7 +242,12 @@ export default function DataTable<T extends Record<string, any>>({
                 <TableCell
                   key={col.field}
                   align={col.align || 'left'}
-                  sx={{ fontWeight: 700, fontSize: '0.95rem', ...(col.width ? { width: col.width } : {}) }}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    ...(col.width ? { width: col.width } : {}),
+                    ...(col.hideOnMobile ? { display: { xs: 'none', md: 'table-cell' } } : {}),
+                  }}
                 >
                   {col.sortable ? (
                     <TableSortLabel
