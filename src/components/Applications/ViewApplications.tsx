@@ -24,6 +24,9 @@ interface DocumentInformation {
   status?: string,
   applicationStatus?: string,
   applicationState?: string,
+  clientFirstName?: string,
+  clientLastName?: string,
+  clientName?: string,
 }
 
 interface Props {
@@ -103,13 +106,21 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       .trim();
   };
 
-  getApplicationStatus = (row: DocumentInformation): string =>
-    row.status || row.applicationStatus || row.applicationState || 'Ongoing';
+  getClientDisplayName = (row: DocumentInformation): string => {
+    const fullName = row.clientName?.trim();
+    if (fullName) return fullName;
+    const first = row.clientFirstName?.trim() || '';
+    const last = row.clientLastName?.trim() || '';
+    const composed = `${first} ${last}`.trim();
+    if (composed) return composed;
+    return row.uploader || '-';
+  };
 
   mapDocuments = (documents: DocumentInformation[]): DocumentInformation[] =>
     documents.map((doc) => ({
       ...doc,
       formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
+      clientName: this.getClientDisplayName(doc),
     }));
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
@@ -396,6 +407,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         headerName: 'Application Name',
         renderCell: (row) => this.getApplicationDisplayName(row),
       },
+      ...(isClientUser ? [] : [{
+        field: 'clientName',
+        headerName: 'Client',
+        sortable: true,
+        width: '22%',
+        renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
+      } as DataTableColumn<DocumentInformation>]),
       {
         field: 'uploadDate',
         headerName: isClientUser ? 'Completed' : 'Upload Date',
@@ -403,12 +421,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         sortType: 'date',
         width: '20%',
         renderCell: (row) => row.formattedUploadDate || '-',
-      },
-      {
-        field: 'status',
-        headerName: 'Status',
-        width: '18%',
-        renderCell: (row) => this.getApplicationStatus(row),
       },
       {
         field: 'actions',
