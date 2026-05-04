@@ -28,6 +28,7 @@ import Error from './components/Error';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import Home from './components/Home/index';
+import InstallPromptContainer from './components/InstallPrompt/InstallPromptContainer';
 import IssueReport from './components/IssueReport';
 import AdminDashboard from './components/LandingPages/AdminDashboard';
 import ClientLanding from './components/LandingPages/ClientLanding';
@@ -234,6 +235,11 @@ class App extends React.Component<{}, State, {}> {
                 timeBeforeConsideredSleep={1000 * 60 * 60 * 24 * 30}
               />
             ) : null}
+            {/* PWA install nudge — opens once per login session.
+                Triggered by username change; lib/pwa handles platform + dismissal logic. */}
+            <InstallPromptContainer
+              triggerKey={role !== Role.LoggedOut ? username || null : null}
+            />
             <Switch>
               <Route exact path="/" render={() => <Redirect to="/home" />} />
               <Route path="/our-team">
