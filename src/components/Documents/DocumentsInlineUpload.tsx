@@ -15,11 +15,24 @@ import {
   toE164US,
 } from '../Notifications/pickupNotificationTemplate';
 import { IdCategories } from './IdCategories';
+import DocumentViewer from './DocumentViewer';
 import DocumentScanner from './Scanner/DocumentScanner';
 import { presetFor } from './Scanner/scannerPresets';
 
 const ACCEPT = 'application/pdf,image/jpeg,image/png,image/gif,image/webp';
-type Mode = 'picker' | 'scan-pick-category' | 'scanning' | 'upload-pick-file' | 'submit';
+type Mode = 'picker' | 'scan-pick-category' | 'scanning' | 'upload-pick-file' | 'submit' | 'uploaded-view';
+
+async function parseJsonResponseSafe(response: Response): Promise<any> {
+  const raw = await response.text();
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch (_err) {
+    return {
+      status: response.ok ? 'SUCCESS' : 'ERROR',
+      message: raw || 'Unexpected response format',
+    };
+  }
+}
 
 export interface DocumentsInlineUploadProps {
   targetUser: string;
@@ -41,6 +54,9 @@ export interface DocumentsInlineUploadProps {
   /** Optional starting point for flows that deep-link directly into scanning. */
   initialMode?: Mode;
   initialCategory?: string;
+  initialCustomIdCategory?: string;
+  forceScannerMode?: boolean;
+  phoneUploadToken?: string;
   /**
    * When true, the category is treated as locked for the entire flow: the
    * category selector is hidden, and the upload fires automatically as soon
@@ -73,14 +89,18 @@ export default function DocumentsInlineUpload({
   clientName: clientNameProp,
   initialMode = 'picker',
   initialCategory = '',
+  initialCustomIdCategory = '',
+  forceScannerMode = false,
+  phoneUploadToken,
   lockedCategory = false,
   collapsible = false,
   collapsibleHeaderStart,
 }: DocumentsInlineUploadProps) {
   const detectMobileScannerSupport = useCallback(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
+    if (forceScannerMode) return true;
     return window.matchMedia('(max-width: 991px) and (pointer: coarse)').matches;
-  }, []);
+  }, [forceScannerMode]);
   const [canUseScanner, setCanUseScanner] = useState<boolean>(detectMobileScannerSupport);
   // Compute the initial mode based on the entry point:
   //   - Deep-linked into scan but no category yet → pick category first
@@ -88,6 +108,7 @@ export default function DocumentsInlineUpload({
   //     open the file dropzone directly.
   //   - Otherwise → respect whatever the caller asked for.
   const computeStartingMode = (): Mode => {
+    if (forceScannerMode) return initialCategory ? 'scanning' : 'scan-pick-category';
     if (initialMode === 'scanning' && !initialCategory) return 'scan-pick-category';
     if (collapsible) return 'picker';
     if (initialMode === 'picker' && !canUseScanner) return 'upload-pick-file';
@@ -99,7 +120,7 @@ export default function DocumentsInlineUpload({
   const isOpen = !collapsible || expanded;
   const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] = useState<string>(initialCategory);
-  const [customIdCategory, setCustomIdCategory] = useState<string>('');
+  const [customIdCategory, setCustomIdCategory] = useState<string>(initialCustomIdCategory);
   const [uploading, setUploading] = useState(false);
 
   // Notify flow
@@ -111,6 +132,13 @@ export default function DocumentsInlineUpload({
   const [notifyHydrated, setNotifyHydrated] = useState(false);
   const [sendingNotification, setSendingNotification] = useState(false);
   const [notifyPhoneError, setNotifyPhoneError] = useState('');
+  const [creatingPhoneUpload, setCreatingPhoneUpload] = useState(false);
+  const [phoneUploadModalOpen, setPhoneUploadModalOpen] = useState(false);
+  const [phoneUploadUrl, setPhoneUploadUrl] = useState('');
+  const [phoneUploadExpiresAt, setPhoneUploadExpiresAt] = useState<number | null>(null);
+  const [phoneUploadError, setPhoneUploadError] = useState('');
+  const [phoneUploadStartSeenIds, setPhoneUploadStartSeenIds] = useState<Set<string>>(new Set());
+  const [phoneUploadRefreshTick, setPhoneUploadRefreshTick] = useState(0);
   const notifyHydrateStarted = useRef(false);
   const quickPickFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -148,6 +176,21 @@ export default function DocumentsInlineUpload({
     disabled: uploading || mode !== 'upload-pick-file',
   });
 
+  const fetchCurrentDocumentIds = useCallback(async (): Promise<string[]> => {
+    const response = await fetch(`${getServerURL()}/get-files`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileType: FileType.IDENTIFICATION_PDF,
+        targetUser,
+      }),
+    });
+    const json = await parseJsonResponseSafe(response);
+    const docs = Array.isArray(json?.documents) ? json.documents : [];
+    return docs.map((doc: any) => String(doc.id || '')).filter(Boolean);
+  }, [targetUser]);
+
   useEffect(() => {
     const updateScannerAvailability = () => setCanUseScanner(detectMobileScannerSupport());
     updateScannerAvailability();
@@ -156,6 +199,7 @@ export default function DocumentsInlineUpload({
   }, [detectMobileScannerSupport]);
 
   useEffect(() => {
+    if (forceScannerMode) return;
     if (!isOpen) return;
     if (
       !canUseScanner
@@ -163,7 +207,33 @@ export default function DocumentsInlineUpload({
     ) {
       setMode('upload-pick-file');
     }
-  }, [canUseScanner, isOpen, mode]);
+  }, [canUseScanner, forceScannerMode, isOpen, mode]);
+
+  useEffect(() => {
+    if (!phoneUploadModalOpen) return undefined;
+    const intervalId = window.setInterval(() => {
+      setPhoneUploadRefreshTick((prev) => prev + 1);
+    }, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [phoneUploadModalOpen]);
+
+  useEffect(() => {
+    if (!phoneUploadModalOpen) return undefined;
+    const pollIntervalId = window.setInterval(async () => {
+      try {
+        const latestIds = await fetchCurrentDocumentIds();
+        const hasNew = latestIds.some((id) => !phoneUploadStartSeenIds.has(id));
+        if (hasNew) {
+          setPhoneUploadModalOpen(false);
+          alert.show('Phone upload received.');
+          onUploadComplete();
+        }
+      } catch (_err) {
+        // Polling is best effort; no toast spam.
+      }
+    }, 4000);
+    return () => window.clearInterval(pollIntervalId);
+  }, [alert, fetchCurrentDocumentIds, onUploadComplete, phoneUploadModalOpen, phoneUploadStartSeenIds]);
 
   // Lazy-hydrate the client phone + org address the first time the notify UI
   // becomes relevant (i.e. on a staff viewer opening the uploader). We don't do
@@ -258,18 +328,86 @@ export default function DocumentsInlineUpload({
   };
 
   const notifyPanelPath = `/home/notify-client/${targetUser}`;
+  const isTokenDrivenUpload = !!phoneUploadToken;
+
+  const closeTokenSession = useCallback(async () => {
+    if (!phoneUploadToken) return;
+    try {
+      await fetch(`${getServerURL()}/close-phone-upload-session`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneUploadToken }),
+      });
+      alert.show('Phone upload session closed.');
+    } catch (_err) {
+      alert.show('Unable to close phone upload session.', { type: 'error' });
+    }
+  }, [alert, phoneUploadToken]);
+
+  const createPhoneUploadSession = useCallback(async () => {
+    if (!canNotify) return;
+    if (!category) {
+      alert.show('Choose a category first.');
+      return;
+    }
+    if (isOtherCategory && !trimmedCustomIdCategory) {
+      alert.show('Please specify a custom category for "Other: specify".');
+      return;
+    }
+    setCreatingPhoneUpload(true);
+    setPhoneUploadError('');
+    try {
+      const baselineIds = await fetchCurrentDocumentIds();
+      const response = await fetch(`${getServerURL()}/create-phone-upload-session`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUser,
+          idCategory: category,
+          customIdCategory: isOtherCategory ? trimmedCustomIdCategory : undefined,
+        }),
+      });
+      const json = await parseJsonResponseSafe(response);
+      if (json?.status !== 'SUCCESS' || !json?.mobileUrl) {
+        setPhoneUploadError(json?.message || 'Could not create phone upload session.');
+        return;
+      }
+      setPhoneUploadStartSeenIds(new Set(baselineIds));
+      setPhoneUploadUrl(String(json.mobileUrl));
+      setPhoneUploadExpiresAt(Number(json.expiresAt || 0));
+      setPhoneUploadModalOpen(true);
+    } catch (err) {
+      setPhoneUploadError(`Could not create phone upload session: ${err}`);
+    } finally {
+      setCreatingPhoneUpload(false);
+    }
+  }, [
+    alert,
+    canNotify,
+    category,
+    fetchCurrentDocumentIds,
+    isOtherCategory,
+    targetUser,
+    trimmedCustomIdCategory,
+  ]);
 
   const goToEntryMode = useCallback(() => {
+    if (forceScannerMode) {
+      setMode(category && preset ? 'scanning' : 'scan-pick-category');
+      return;
+    }
     setMode(canUseScanner ? 'picker' : 'upload-pick-file');
-  }, [canUseScanner]);
+  }, [canUseScanner, category, forceScannerMode, preset]);
 
   const resetAll = useCallback(() => {
     setFile(null);
     setCategory('');
-    setCustomIdCategory('');
+    setCustomIdCategory(initialCustomIdCategory);
     goToEntryMode();
     if (collapsible) setExpanded(false);
-  }, [collapsible, goToEntryMode]);
+  }, [collapsible, goToEntryMode, initialCustomIdCategory]);
 
   // Uploads the file and returns whether the upload succeeded. The success
   // toast / reset is intentionally deferred to the caller because the
@@ -296,14 +434,19 @@ export default function DocumentsInlineUpload({
         formData.append('customIdCategory', trimmedCustomIdCategory);
       }
       formData.append('fileType', FileType.IDENTIFICATION_PDF);
-      formData.append('targetUser', targetUser);
+      if (isTokenDrivenUpload && phoneUploadToken) {
+        formData.append('phoneUploadToken', phoneUploadToken);
+      } else {
+        formData.append('targetUser', targetUser);
+      }
 
-      const response = await fetch(`${getServerURL()}/upload-file`, {
+      const endpoint = isTokenDrivenUpload ? '/upload-file-with-token' : '/upload-file';
+      const response = await fetch(`${getServerURL()}${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
       });
-      const responseJSON = await response.json();
+      const responseJSON = await parseJsonResponseSafe(response);
       if (responseJSON?.status === 'SUCCESS') {
         return true;
       }
@@ -315,13 +458,27 @@ export default function DocumentsInlineUpload({
       });
       return false;
     }
-  }, [alert, category, file, isOtherCategory, targetUser, trimmedCustomIdCategory]);
+  }, [
+    alert,
+    category,
+    file,
+    isOtherCategory,
+    isTokenDrivenUpload,
+    phoneUploadToken,
+    targetUser,
+    trimmedCustomIdCategory,
+  ]);
 
   const handleUpload = useCallback(async () => {
     setUploading(true);
     try {
       const ok = await uploadFile();
       if (!ok) return;
+      if (isTokenDrivenUpload) {
+        alert.show('Document uploaded successfully.');
+        setMode('uploaded-view');
+        return;
+      }
       alert.show('Document uploaded successfully.');
       resetAll();
       queueMicrotask(() => {
@@ -330,7 +487,7 @@ export default function DocumentsInlineUpload({
     } finally {
       setUploading(false);
     }
-  }, [alert, onUploadComplete, resetAll, uploadFile]);
+  }, [alert, isTokenDrivenUpload, onUploadComplete, resetAll, uploadFile]);
 
   // Quick Access deep links pre-set the category and don't want the user to
   // confirm it again — as soon as a file is in hand, kick off the upload. We
@@ -571,9 +728,48 @@ export default function DocumentsInlineUpload({
 
         {mode === 'upload-pick-file' && (
           <div className="d-flex flex-column gap-3">
-            <h5 className="mb-0">
-              {lockedCategory && category ? `Add your ${category}` : 'Choose from photos or files'}
-            </h5>
+            {canNotify && !isTokenDrivenUpload && (
+              <div className="border rounded bg-white p-3">
+                <label htmlFor="phone-upload-category" className="form-label fw-semibold">
+                  Send scanner link to phone
+                </label>
+                <select
+                  id="phone-upload-category"
+                  className="form-select mb-2"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="">Select category…</option>
+                  {categoryOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {isOtherCategory && (
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    value={customIdCategory}
+                    onChange={(e) => setCustomIdCategory(e.target.value)}
+                    placeholder="Enter document type"
+                    aria-label="Custom document type"
+                  />
+                )}
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={createPhoneUploadSession}
+                  disabled={creatingPhoneUpload || !category || (isOtherCategory && !trimmedCustomIdCategory)}
+                >
+                  {creatingPhoneUpload ? 'Creating link…' : 'Upload from phone'}
+                </button>
+                {phoneUploadError ? <div className="text-danger small mt-2">{phoneUploadError}</div> : null}
+              </div>
+            )}
+            {canNotify && !isTokenDrivenUpload && (
+              <div className="text-center text-muted fw-semibold text-uppercase small">or</div>
+            )}
             <div
               {...getRootProps()}
               className={`d-flex flex-column align-items-center justify-content-center border border-2 rounded p-4 bg-white ${
@@ -687,10 +883,119 @@ export default function DocumentsInlineUpload({
                   Upload & notify
                 </button>
               )}
+              {isTokenDrivenUpload && (
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-lg fs-5"
+                  onClick={closeTokenSession}
+                  disabled={uploading}
+                >
+                  Done
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {mode === 'uploaded-view' && file && (
+          <div className="d-flex flex-column gap-3">
+            <h5 className="mb-0">Uploaded document</h5>
+            <div className="border rounded bg-light p-3">
+              <div className="small text-muted">Client</div>
+              <div className="fw-semibold mb-2">{clientNameProp || targetUser}</div>
+              <div className="small text-muted">Document type</div>
+              <div className="fw-semibold">{effectiveCategoryLabel || category || 'Uncategorized'}</div>
+            </div>
+            <DocumentViewer pdfFile={file} readOnly />
+            <div className="d-flex flex-wrap gap-2 justify-content-end">
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-lg fs-5"
+                onClick={() => {
+                  setFile(null);
+                  goToEntryMode();
+                }}
+              >
+                Upload another
+              </button>
+              {isTokenDrivenUpload && (
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-lg fs-5"
+                  onClick={closeTokenSession}
+                >
+                  Done
+                </button>
+              )}
             </div>
           </div>
         )}
       </div>
+      )}
+      {phoneUploadModalOpen && (
+        <div
+          className="modal d-block"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="phone-upload-title"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPhoneUploadModalOpen(false);
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title mb-0" id="phone-upload-title">
+                  Upload from phone
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setPhoneUploadModalOpen(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <p className="mb-2">
+                  A text message was sent to your phone with a secure upload link.
+                </p>
+                {phoneUploadExpiresAt ? (
+                  <p className="small text-muted mb-3">
+                    Expires in{' '}
+                    {Math.max(0, Math.floor((phoneUploadExpiresAt - Date.now()) / 1000 / 60))}
+                    {' '}
+                    min
+                  </p>
+                ) : null}
+                <div className="d-flex justify-content-center mb-3">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(phoneUploadUrl)}`}
+                    alt="QR code for phone upload link"
+                    width={220}
+                    height={220}
+                  />
+                </div>
+                <div className="input-group">
+                  <input className="form-control" type="text" readOnly value={phoneUploadUrl} />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(phoneUploadUrl);
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p className="small text-muted mt-3 mb-0">
+                  Waiting for upload... this window auto-refreshes every few seconds.
+                </p>
+                <span className="d-none">{phoneUploadRefreshTick}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       {showNotifyConfirm && canNotify && (
         <div

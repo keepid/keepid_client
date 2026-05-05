@@ -26,13 +26,22 @@ export function getByPath(
   }, obj);
 }
 
-/** Reformat a date string like "01-21-2004" or "2004-01-21" to mm/dd/yyyy. */
-function reformatDateToSlash(raw: unknown): string | undefined {
-  if (typeof raw !== 'string' || !raw) return undefined;
-  const parts = raw.split('-');
-  if (parts.length !== 3) return undefined;
-  if (parts[0].length === 4) return `${parts[1]}/${parts[2]}/${parts[0]}`;
-  return `${parts[0]}/${parts[1]}/${parts[2]}`;
+/**
+ * Normalize common date string shapes to MM/DD/YYYY for autofill/display contexts.
+ * Leaves non-date strings unchanged.
+ */
+export function normalizeDateLikeValue(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+
+  let m = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+  if (m) return `${m[2]}/${m[3]}/${m[1]}`;
+
+  m = trimmed.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+  if (m) return `${m[1]}/${m[2]}/${m[3]}`;
+
+  return value;
 }
 
 function parseBirthDate(raw: unknown): Date | undefined {
@@ -136,7 +145,7 @@ export function resolveDirectiveFromProfiles(
   if (dobMatch) {
     const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const profile = profiles[profileKey];
-    return reformatDateToSlash(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
+    return normalizeDateLikeValue(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
   }
   const ageMatch = directive.trim().match(/^(client|worker|director)\.\$age$/i);
   if (ageMatch) {
@@ -160,16 +169,16 @@ export function resolveDirectiveFromProfiles(
   }
 
   if (lower.startsWith('client.') && profiles.client) {
-    return getByPath(profiles.client, directive.slice(7));
+    return normalizeDateLikeValue(getByPath(profiles.client, directive.slice(7)));
   }
   if (lower.startsWith('worker.') && profiles.worker) {
-    return getByPath(profiles.worker, directive.slice(7));
+    return normalizeDateLikeValue(getByPath(profiles.worker, directive.slice(7)));
   }
   if (lower.startsWith('org.') && profiles.org) {
-    return getByPath(profiles.org, directive.slice(4));
+    return normalizeDateLikeValue(getByPath(profiles.org, directive.slice(4)));
   }
   if (lower.startsWith('director.') && profiles.director) {
-    return getByPath(profiles.director, directive.slice(9));
+    return normalizeDateLikeValue(getByPath(profiles.director, directive.slice(9)));
   }
   if (lower === 'anydate' || lower === 'currentdate') {
     const d = new Date();

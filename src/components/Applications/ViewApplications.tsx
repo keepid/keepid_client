@@ -221,14 +221,31 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   };
 
   componentDidMount() {
+    this.loadFromLocation();
+  }
+
+  componentDidUpdate(prevProps: Props & RouteComponentProps) {
+    if (prevProps.location !== this.props.location) {
+      this.loadFromLocation();
+    }
+  }
+
+  loadFromLocation = () => {
     const { location } = this.props;
+    const params = new URLSearchParams(location.search || '');
+    const forceAll = params.get('view') === 'all';
+    if (forceAll) {
+      this.loadDocuments(undefined, undefined);
+      return;
+    }
+
     const state = location.state as LocationState | undefined;
     const locationClientUsername = state?.clientUsername && state.clientUsername.trim().length > 0
       ? state.clientUsername
       : undefined;
     const locationClientName = state?.clientName;
     this.loadDocuments(locationClientUsername, locationClientName);
-  }
+  };
 
   handleOpenApplication = (row: DocumentInformation) => {
     const {

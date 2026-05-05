@@ -236,6 +236,44 @@ export default function ProfilePage({ targetUsername }: Props) {
       </Helmet>
 
       {isWorkerView && (
+        <div className="tw-mt-3 tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => history.goBack()}
+          >
+            <i className="fas fa-chevron-left tw-mr-1" />
+            Back
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => history.push({
+              pathname: `/my-documents/${targetUsername}`,
+              state: {
+                clientName: displayName || undefined,
+              },
+            })}
+          >
+            Documents
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => history.push({
+              pathname: '/applications',
+              state: {
+                clientUsername: targetUsername,
+                clientName: displayName || undefined,
+              },
+            })}
+          >
+            Applications
+          </button>
+        </div>
+      )}
+
+      {isWorkerView && (
         <div className="card mt-3 mb-3 pl-5 pr-5">
           <div className="card-body">
             <h4 className="card-title tw-mb-0 tw-font-bold">

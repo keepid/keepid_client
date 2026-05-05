@@ -660,13 +660,24 @@ class MyDocuments extends Component<Props, State> {
               <meta name="description" content="Keep.id" />
             </Helmet>
             <div className="jumbotron-fluid mt-5">
-              <button
-                type="button"
-                className="btn btn-primary mt-3 mb-4 mr-2"
-                onClick={() => this.props.history.goBack()}
-              >
-                <i className="fas fa-chevron-left" /> Back
-              </button>
+              <div className="d-flex flex-wrap align-items-center gap-2 mt-3 mb-4">
+                <button
+                  type="button"
+                  className="btn btn-primary mr-2"
+                  onClick={() => this.props.history.goBack()}
+                >
+                  <i className="fas fa-chevron-left" /> Back
+                </button>
+                {this.isStaffViewer() && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => this.props.history.push(`/profile/${username}`)}
+                  >
+                    Profile
+                  </button>
+                )}
+              </div>
               <div className="mb-4">
                 <DocumentsInlineUpload
                   targetUser={username}

@@ -12,12 +12,16 @@
  *    next login.
  *  - Hidden entirely if the app is already installed (display-mode standalone).
  *
- * To trigger the modal, set `triggerKey` to a new value (e.g., username + login
- * timestamp). Each new value reopens the modal as long as the user hasn't
- * already dismissed in this session.
+ * Android-specific: we wait up to ANDROID_EVENT_WAIT_MS for
+ * `beforeinstallprompt` before opening. Chrome only fires that event once its
+ * engagement heuristics are satisfied (typically 2+ visits, 5+ min apart).
+ * If the event never fires in time we skip the modal rather than showing a
+ * disabled Install button.
+ *
+ * iOS has no install event so we open immediately.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { pwaLog } from '../../lib/pwa/logger';
 import { useDismissalMemory } from '../../lib/pwa/useDismissalMemory';
@@ -26,6 +30,9 @@ import AndroidContent from './content/AndroidContent';
 import IOSContent from './content/IOSContent';
 import InstallPromptErrorBoundary from './InstallPromptErrorBoundary';
 import InstallPromptModal from './InstallPromptModal';
+
+/** How long to wait for beforeinstallprompt before giving up for this session. */
+const ANDROID_EVENT_WAIT_MS = 5000;
 
 interface Props {
   /**
@@ -42,32 +49,58 @@ function InstallPromptContainerInner({ triggerKey }: Props) {
   const { dismissedThisSession, markDismissed } = useDismissalMemory();
 
   const [open, setOpen] = useState(false);
-  const [lastSeenTriggerKey, setLastSeenTriggerKey] = useState<string | null>(
-    null,
-  );
+  const [lastSeenTriggerKey, setLastSeenTriggerKey] = useState<string | null>(null);
+  // True while we're waiting for beforeinstallprompt on Android.
+  const [pendingAndroidOpen, setPendingAndroidOpen] = useState(false);
+  const androidTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Called when triggerKey changes (i.e. user just logged in).
   useEffect(() => {
     if (!triggerKey) return;
     if (triggerKey === lastSeenTriggerKey) return;
 
     setLastSeenTriggerKey(triggerKey);
 
-    if (isInstalled) {
-      pwaLog('skipping prompt: already installed');
-      return;
-    }
-    if (dismissedThisSession) {
-      pwaLog('skipping prompt: dismissed this session');
-      return;
-    }
-    if (platform !== 'ios' && platform !== 'android') {
-      pwaLog('skipping prompt: not a mobile platform (', platform, ')');
+    if (isInstalled) { pwaLog('skipping: already installed'); return; }
+    if (dismissedThisSession) { pwaLog('skipping: dismissed this session'); return; }
+    if (platform !== 'ios' && platform !== 'android') { pwaLog('skipping: desktop'); return; }
+
+    if (platform === 'ios') {
+      pwaLog('opening iOS prompt immediately');
+      setOpen(true);
       return;
     }
 
-    pwaLog('opening install prompt for platform:', platform);
+    // Android: open now if we already have the event, otherwise wait.
+    if (canPromptNatively) {
+      pwaLog('opening Android prompt (event already stashed)');
+      setOpen(true);
+    } else {
+      pwaLog('Android: waiting up to', ANDROID_EVENT_WAIT_MS, 'ms for beforeinstallprompt');
+      setPendingAndroidOpen(true);
+    }
+  }, [triggerKey, lastSeenTriggerKey, isInstalled, dismissedThisSession, platform, canPromptNatively]);
+
+  // When the event fires while we're pending, open the modal.
+  useEffect(() => {
+    if (!pendingAndroidOpen || !canPromptNatively) return;
+    pwaLog('beforeinstallprompt arrived while pending — opening Android prompt');
+    setPendingAndroidOpen(false);
+    if (androidTimeoutRef.current) clearTimeout(androidTimeoutRef.current);
     setOpen(true);
-  }, [triggerKey, lastSeenTriggerKey, isInstalled, dismissedThisSession, platform]);
+  }, [pendingAndroidOpen, canPromptNatively]);
+
+  // Timeout: if event never fires, cancel the pending open silently.
+  useEffect(() => {
+    if (!pendingAndroidOpen) return;
+    androidTimeoutRef.current = setTimeout(() => {
+      pwaLog('beforeinstallprompt did not fire within timeout — skipping modal this session');
+      setPendingAndroidOpen(false);
+    }, ANDROID_EVENT_WAIT_MS);
+    return () => {
+      if (androidTimeoutRef.current) clearTimeout(androidTimeoutRef.current);
+    };
+  }, [pendingAndroidOpen]);
 
   const handleDismiss = () => {
     markDismissed();
