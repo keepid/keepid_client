@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { getByPath, isExcludedFromProfileFormSync, resolveDirectiveFromProfiles } from '../../utils/directives';
+import {
+  getByPath,
+  isExcludedFromProfileFormSync,
+  normalizeDateLikeValue,
+  resolveDirectiveFromProfiles,
+} from '../../utils/directives';
 import {
   type GetQuestionsV2Response,
   getInteractiveFormConfig,
@@ -50,6 +55,8 @@ function fillConditionMatches(
 }
 
 function formatDateForPdf(value: unknown): unknown {
+  const normalized = normalizeDateLikeValue(value);
+  if (normalized !== value) return normalized;
   if (value instanceof Date) {
     const mm = String(value.getMonth() + 1).padStart(2, '0');
     const dd = String(value.getDate()).padStart(2, '0');

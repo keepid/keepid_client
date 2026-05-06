@@ -353,6 +353,15 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                path="/phone-upload"
+                render={() => (
+                  <UploadDocumentsPage
+                    userRole={Role.Client}
+                    username=""
+                  />
+                )}
+              />
+              <Route
                 path="/upload-document/:clientUsername"
                 render={(props) => {
                   const { clientUsername } = props.match.params;

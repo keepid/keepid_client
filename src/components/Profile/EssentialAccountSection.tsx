@@ -168,7 +168,9 @@ export default function EssentialAccountSection({
 
   async function savePhoneBookChanges(): Promise<boolean> {
     const isFirstEntry = editedPhoneBook.length === 0;
-    const resolvedLabel = isFirstEntry ? PRIMARY_LABEL : addLabel.trim();
+    // Backend reserves the literal "primary" label on add; when the phone book
+    // is empty it automatically upgrades the first added entry to primary.
+    const resolvedLabel = isFirstEntry ? 'personal' : addLabel.trim();
     if (showAddRow && resolvedLabel && addPhone.trim()) {
       if (!isValidPhoneNumber(addPhone)) {
         alert.show('New phone number is invalid.', { type: 'error' });

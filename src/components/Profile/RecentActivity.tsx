@@ -23,7 +23,7 @@ function RecentActivity({ username }) {
                 {activity.type}
               </p>
               <p className="tw-block tw-mb-0 tw-pl-5 sm:tw-col-span-3">
-                {format(new Date(activity.occurredAt), 'yyyy-MM-dd hh:mm a')}
+                {format(new Date(activity.occurredAt), 'yyyy/MM/dd hh:mm a')}
               </p>
             </div>
           </li>

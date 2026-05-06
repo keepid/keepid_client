@@ -10,6 +10,9 @@ interface NotificationRecord {
   clientPhoneNumber: string;
   message: string;
   sentAt: string;
+  clientEmail?: string;
+  emailSubject?: string;
+  emailBody?: string;
 }
 
 function formatTimestamp(iso: string): string {
@@ -72,24 +75,54 @@ export default function NotificationActivity({
 
   return (
     <div className="tw-px-3 tw-py-2">
-      {notifications.map((n) => (
-        <div
-          key={n._id}
-          className="tw-border tw-border-gray-200 tw-rounded-md tw-p-3 tw-mb-3 tw-bg-white tw-text-left"
-        >
-          <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
-            <span className="tw-text-xs tw-font-medium tw-text-gray-500">
-              Sent by {n.workerUsername}
-            </span>
-            <span className="tw-text-xs tw-text-gray-400">
-              {formatTimestamp(n.sentAt)}
-            </span>
+      {notifications.map((n) => {
+        const hasSms = !!n.message?.trim();
+        const hasEmail = !!n.clientEmail?.trim();
+        return (
+          <div
+            key={n._id}
+            className="tw-border tw-border-gray-200 tw-rounded-md tw-p-3 tw-mb-3 tw-bg-white tw-text-left"
+          >
+            <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
+              <span className="tw-text-xs tw-font-medium tw-text-gray-500">
+                Sent by {n.workerUsername}
+              </span>
+              <span className="tw-text-xs tw-text-gray-400">
+                {formatTimestamp(n.sentAt)}
+              </span>
+            </div>
+
+            {hasSms && (
+              <div className={hasEmail ? 'tw-mb-3' : ''}>
+                <span className="tw-text-xs tw-font-semibold tw-text-gray-400 tw-uppercase tw-tracking-wide">
+                  SMS → {n.clientPhoneNumber}
+                </span>
+                <p className="tw-text-sm tw-text-gray-800 tw-mt-1 tw-mb-0 tw-leading-relaxed tw-whitespace-pre-wrap">
+                  {n.message}
+                </p>
+              </div>
+            )}
+
+            {hasEmail && (
+              <div>
+                <span className="tw-text-xs tw-font-semibold tw-text-gray-400 tw-uppercase tw-tracking-wide">
+                  Email → {n.clientEmail}
+                </span>
+                {n.emailSubject && (
+                  <p className="tw-text-sm tw-font-semibold tw-text-gray-700 tw-mt-1 tw-mb-1">
+                    {n.emailSubject}
+                  </p>
+                )}
+                {n.emailBody && (
+                  <p className="tw-text-sm tw-text-gray-800 tw-mb-0 tw-leading-relaxed tw-whitespace-pre-wrap">
+                    {n.emailBody}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-          <p className="tw-text-sm tw-text-gray-800 tw-mb-0 tw-leading-relaxed tw-whitespace-pre-wrap">
-            {n.message}
-          </p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

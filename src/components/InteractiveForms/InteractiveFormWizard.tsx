@@ -2,7 +2,7 @@ import type { UISchemaElement } from '@jsonforms/core';
 import { JsonForms } from '@jsonforms/react';
 import React, { useCallback, useState } from 'react';
 
-import { resolveDirectiveFromProfiles } from '../../utils/directives';
+import { normalizeDateLikeValue, resolveDirectiveFromProfiles } from '../../utils/directives';
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
@@ -30,7 +30,7 @@ function applyAutoFillFields(
       val = af.value;
     }
     if (val !== undefined && val !== null && val !== '') {
-      merged[af.pdfFieldName] = val;
+      merged[af.pdfFieldName] = normalizeDateLikeValue(val);
     }
   });
   return merged;
