@@ -1,3 +1,4 @@
+import { QRCodeSVG } from 'qrcode.react';
 import React, {
   useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
@@ -1007,12 +1008,7 @@ export default function DocumentsInlineUpload({
                   </p>
                 ) : null}
                 <div className="d-flex justify-content-center mb-3">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(phoneUploadUrl)}`}
-                    alt="QR code for phone upload link"
-                    width={220}
-                    height={220}
-                  />
+                  <QRCodeSVG value={phoneUploadUrl} size={220} />
                 </div>
                 <div className="input-group">
                   <input className="form-control" type="text" readOnly value={phoneUploadUrl} />
