@@ -102,8 +102,8 @@ export interface BuildPickupEmailArgs {
    */
   clientEmail?: string;
   /**
-   * Absolute URL the client should visit to view the document (e.g.
-   * https://keep.id/my-documents). Should already include the protocol; we
+   * Absolute URL the client should visit from the email (e.g.
+   * https://keep.id). Should already include the protocol; we
    * don't construct or validate the URL here.
    */
   documentLink: string;
@@ -176,12 +176,12 @@ export function buildPickupEmailBody({
   return { text, html };
 }
 
-// Builds the absolute URL clients should visit to view the document. Reads
-// window.location.origin so dev (localhost) and prod (keep.id) Just Work
-// without a separate env var on the server.
+// Builds the absolute URL clients should visit from the pickup email.
+// We intentionally route to the homepage/login entry point instead of deep
+// linking to a documents page.
 export function buildClientDocumentsUrl(): string {
   const origin = typeof window !== 'undefined' && window.location?.origin
     ? window.location.origin
     : 'https://keep.id';
-  return `${origin}/my-documents`;
+  return origin;
 }
