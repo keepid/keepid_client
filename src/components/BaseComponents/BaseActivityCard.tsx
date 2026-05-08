@@ -17,9 +17,13 @@ export default function ActivityCard({ activity }: ActivityProps): React.ReactEl
       (new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24),
     );
 
+    // Server emits the id under `_id` (Mongo-shape preserved); fall back
+    // to `id` for any caller that already normalized.
+    // eslint-disable-next-line no-underscore-dangle
+    const activityId = activity._id || activity.id;
     return (
       <div
-        key={activity.id}
+        key={activityId}
         className="activities-card-container flex flex-row justify-between items-center bg-gray-50 rounded-md"
         style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '12px 8px' }} // forces flex row
       >

@@ -99,7 +99,9 @@ class FindOrganization extends Component<Props, State> {
   }
 
   getOrganizations(zipcodeLatLng: number[]) {
-    fetch(`${getServerURL()}/get-all-orgs `, {
+    // The legacy server tolerated a trailing space in this path; the new
+    // Spring server does not. Always send the canonical /get-all-orgs.
+    fetch(`${getServerURL()}/get-all-orgs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -126,7 +128,10 @@ class FindOrganization extends Component<Props, State> {
     const organizationsUpdated: any[] = [];
     organizations.forEach((org) => {
       const orgUpdated = org;
-      const addr = org.address && typeof org.address === 'object' ? org.address : null;
+      // New server emits a structured `orgAddress` object; legacy server
+      // emitted the flat orgStreetAddress/orgCity/... fields. Fall through
+      // to either so the FE keeps working against both.
+      const addr = org.orgAddress && typeof org.orgAddress === 'object' ? org.orgAddress : null;
       const street = addr?.line1 || org.orgStreetAddress || '';
       const city = addr?.city || org.orgCity || '';
       const state = addr?.state || org.orgState || '';
