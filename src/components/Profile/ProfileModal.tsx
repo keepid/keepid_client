@@ -92,6 +92,7 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
 
         fetch(`${getServerURL()}/upload-pfp`, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: formData,
         })

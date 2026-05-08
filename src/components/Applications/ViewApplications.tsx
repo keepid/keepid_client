@@ -180,6 +180,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.setState({ isLoadingDocuments: true, documentsError: null });
     fetch(`${getServerURL()}/get-files`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType: FileType.APPLICATION_PDF,
@@ -277,6 +278,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   handleDownloadApplication = (row: DocumentInformation) => {
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: row.id,
@@ -303,6 +305,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: deleteTargetApplication.id,

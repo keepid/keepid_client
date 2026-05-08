@@ -109,7 +109,10 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
 
 const POSTS_PER_PAGE = 6;
 
-const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, alert }) => {
+// `role` is intentionally not destructured: it used to be sent in the
+// /get-organization-members body, where the new server treats it as a filter.
+// Kept on the Props type for callers' compatibility.
+const WorkerLanding: React.FC<Props> = ({ username, name, organization, alert }) => {
   const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
   // --- UPDATED: State for submitted search ---
@@ -131,6 +134,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     const promises = clientsArray.map((client) => fetch(`${getServerURL()}/load-pfp`, {
       signal,
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         username: client.username,
@@ -169,12 +173,16 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       setCurrentPage(1);
 
       try {
+        // Don't send the actor's `role` here — server-side it would be
+        // misinterpreted as a *filter*, narrowing the result to users with
+        // that role instead of returning every client. listType=clients is
+        // the only filter the FE actually wants. (See server PR #14.)
         const res = await fetch(`${getServerURL()}/get-organization-members`, {
           signal,
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            role,
             listType: 'clients',
             name: submittedSearchName,
           }),
@@ -210,7 +218,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return () => {
       controller.abort();
     };
-  }, [submittedSearchName, role, username, loadProfilePhoto, alert]);
+  }, [submittedSearchName, username, loadProfilePhoto, alert]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -237,6 +245,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
     fetch(`${getServerURL()}/login`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         username: clientUsername,

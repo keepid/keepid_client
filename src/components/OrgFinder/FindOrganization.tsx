@@ -101,6 +101,7 @@ class FindOrganization extends Component<Props, State> {
   getOrganizations(zipcodeLatLng: number[]) {
     fetch(`${getServerURL()}/get-all-orgs `, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         userTypes: [],

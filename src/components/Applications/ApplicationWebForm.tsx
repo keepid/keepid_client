@@ -90,6 +90,7 @@ export default function ApplicationWebForm({
 
     fetch(`${getServerURL()}/get-questions-2`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ applicationId, clientUsername }),
     })

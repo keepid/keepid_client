@@ -146,6 +146,7 @@ export default function ProfilePage({ targetUsername }: Props) {
       try {
         const res = await fetch(`${getServerURL()}/load-pfp`, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ username }),
         });

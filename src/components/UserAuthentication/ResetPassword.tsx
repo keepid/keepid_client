@@ -78,6 +78,7 @@ class ResetPassword extends Component<Props, State> {
     } else {
       fetch(`${getServerURL()}/reset-password/`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           newPassword,

@@ -189,6 +189,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     try {
       const res = await fetch(`${getServerURL()}/get-organization-info`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ orgName: organization }),
       });
@@ -225,11 +226,12 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const fetchWorkers = useCallback(async () => {
     setIsLoadingWorkers(true);
     try {
+      // Don't send caller's `role` — see WorkerLanding.tsx for the rationale.
       const res = await fetch(`${getServerURL()}/get-organization-members`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          role,
           listType: 'members',
           name: searchName,
         }),
@@ -245,7 +247,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     } finally {
       setIsLoadingWorkers(false);
     }
-  }, [role, searchName, alert]);
+  }, [searchName, alert]);
 
   const fetchMailSummary = useCallback(async () => {
     setIsLoadingMailSummary(true);
@@ -276,6 +278,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     try {
       const res = await fetch(`${getServerURL()}/get-files`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
       });
@@ -389,6 +392,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
       const res = await fetch(`${getServerURL()}/upload-file`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: formData,
       });
@@ -420,6 +424,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     try {
       const res = await fetch(`${getServerURL()}/delete-file`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ fileId: deleteTargetDocument.id, fileType: 'ORG_DOCUMENT' }),
       });

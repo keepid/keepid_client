@@ -30,6 +30,7 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
 
     fetch(`${getServerURL()}/microsoftLoginRequest`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         redirectUri: `${getServerURL()}/microsoftLoginResponse`,

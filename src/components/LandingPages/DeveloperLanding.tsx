@@ -132,6 +132,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
     const { searchName } = this.state;
     fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType: FileType.FORM,
@@ -175,6 +176,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/upload-form`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: formData,
     })
@@ -218,6 +220,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,

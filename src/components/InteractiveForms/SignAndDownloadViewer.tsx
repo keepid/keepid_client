@@ -238,6 +238,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       try {
         const res = await fetch(`${getServerURL()}/get-files`, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
         });

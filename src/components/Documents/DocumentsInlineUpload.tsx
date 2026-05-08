@@ -468,6 +468,7 @@ export default function DocumentsInlineUpload({
       const endpoint = isTokenDrivenUpload ? '/upload-file-with-token' : '/upload-file';
       const response = await fetch(`${getServerURL()}${endpoint}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: formData,
       });

@@ -75,6 +75,7 @@ async function fillPdfBlobWithOptions(
   }
   const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: form,
   });
@@ -121,6 +122,7 @@ export async function uploadCompletedPdf(
   form.append('clientUsername', clientUsername);
   const res = await fetch(`${getServerURL()}/upload-completed-pdf-2`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: form,
   });
@@ -177,6 +179,7 @@ export async function renderApplicationPacket(
   }
   const res = await fetch(`${getServerURL()}/render-application-packet`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: form,
   });
@@ -218,6 +221,7 @@ export async function updateApplicationAttachmentPdf(
   form.append('fileId', fileId);
   const res = await fetch(`${getServerURL()}/update-application-attachment-pdf`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: form,
   });

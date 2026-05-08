@@ -51,6 +51,7 @@ const ViewDocument: React.FC<Props> = ({
   useEffect(() => {
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
