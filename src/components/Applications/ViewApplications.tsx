@@ -187,7 +187,15 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         ...(isWorkerView ? { targetUser: targetUsername } : {}),
         annotated: true,
       }),
-    }).then((response) => response.json())
+    }).then((response) => {
+      // /get-files isn't implemented on keepid_server_next yet (slice 9).
+      // Treat 404 as "no applications saved" rather than a hard error so the
+      // page renders the empty state instead of an error banner.
+      if (response.status === 404) {
+        return { status: 'SUCCESS', documents: [] };
+      }
+      return response.json();
+    })
       .then((responseJSON) => {
         const { status } = responseJSON;
         const documents = Array.isArray(responseJSON.documents) ? responseJSON.documents : [];

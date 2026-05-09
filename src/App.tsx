@@ -325,10 +325,6 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
-                path="/find-organizations"
-                render={() => <Redirect to="/home" />}
-              />
-              <Route
                 path="/login"
                 render={() => <Redirect to="/home" />}
               />
