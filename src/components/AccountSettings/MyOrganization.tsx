@@ -392,7 +392,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
       const res = await fetch(`${getServerURL()}/upload-file`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
         credentials: 'include',
         body: formData,
       });

@@ -71,7 +71,7 @@ export default function useGetApplicationRegistry() {
     try {
       const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
         credentials: 'include',
         body: formData,
       });

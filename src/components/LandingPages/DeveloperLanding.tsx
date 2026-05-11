@@ -177,7 +177,7 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/upload-form`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
       credentials: 'include',
       body: formData,
     })

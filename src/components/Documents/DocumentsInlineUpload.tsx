@@ -468,7 +468,7 @@ export default function DocumentsInlineUpload({
       const endpoint = isTokenDrivenUpload ? '/upload-file-with-token' : '/upload-file';
       const response = await fetch(`${getServerURL()}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
         credentials: 'include',
         body: formData,
       });
