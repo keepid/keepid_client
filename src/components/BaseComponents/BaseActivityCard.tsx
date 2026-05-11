@@ -10,7 +10,21 @@ export default function ActivityCard({ activity }: ActivityProps): React.ReactEl
   const { type } = activity;
 
   if (uploaderUsername && type) {
-    const displayType = type.replace('Activity', '');
+    // Map server-emitted activity kinds to a display label.
+    // - Legacy: "UploadActivity", "ViewFileActivity", etc. (old server)
+    // - New:    "UPLOAD_FILE", "VIEW_FILE", etc. (keepid_server_next slice 9+)
+    // After data migration, only the new vocabulary will exist; this
+    // mapper handles both during the cutover window.
+    const displayType = (() => {
+      const NEW_LABEL: Record<string, string> = {
+        UPLOAD_FILE: 'Uploaded',
+        VIEW_FILE: 'Viewed',
+        DOWNLOAD_FILE: 'Downloaded',
+      };
+      if (NEW_LABEL[type]) return NEW_LABEL[type];
+      // Legacy fallback: "UploadActivity" → "Upload"
+      return type.replace('Activity', '');
+    })();
     const newDate = new Date(Date.parse(activity.occurredAt));
     const dateString = newDate.toLocaleDateString();
     const daysDifference = Math.round(
@@ -29,7 +43,7 @@ export default function ActivityCard({ activity }: ActivityProps): React.ReactEl
       >
         {/* Column 1: Activity type */}
         <div style={{ flex: '1', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <h6 className="text-gray-600 font-semibold m-0">{displayType}Activity</h6>
+          <h6 className="text-gray-600 font-semibold m-0">{displayType}</h6>
         </div>
 
         {/* Column 2: Object name */}
