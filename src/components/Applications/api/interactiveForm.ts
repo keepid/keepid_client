@@ -37,7 +37,17 @@ export async function getInteractiveFormConfig(
   // surface a useful message instead of crashing on `response.jsonSchema`.
   const json = (await res.json()) as { error?: string } & GetInteractiveFormConfigResponse;
   if (json && typeof json.error === 'string' && json.error.length > 0) {
-    throw new Error(json.error);
+    // The most common failure for migrated registry entries is the missing
+    // jsonSchema/uiSchema columns (legacy entries didn't have them — they
+    // need to be authored in the developer portal). Replace the raw "No
+    // interactive form config found" string with something a non-engineer
+    // can act on, while leaving other errors (auth, network) untouched.
+    const msg = json.error.toLowerCase().includes('no interactive form config')
+      ? 'This application form has no interactive configuration yet. '
+        + 'A developer can add one in the developer portal '
+        + '(Forms → this template → Interactive Form Builder).'
+      : json.error;
+    throw new Error(msg);
   }
   return json;
 }

@@ -178,46 +178,54 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     }
 
     this.setState({ isLoadingDocuments: true, documentsError: null });
-    fetch(`${getServerURL()}/get-files`, {
+    // /list-applications returns a flat array of ApplicationListItemDto rows
+    // (id, state, title, lookupKey, client*, timestamps, attachmentCount).
+    // Authz lives in the handler: client sees own; same-org staff sees all.
+    // The previous /get-files APPLICATION_PDF call returned [] by design
+    // (FileService treats applications as not-files) — see slice 12 work.
+    fetch(`${getServerURL()}/list-applications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({
-        fileType: FileType.APPLICATION_PDF,
-        ...(isWorkerView ? { targetUser: targetUsername } : {}),
-        annotated: true,
-      }),
-    }).then((response) => {
-      // /get-files isn't implemented on keepid_server_next yet (slice 9).
-      // Treat 404 as "no applications saved" rather than a hard error so the
-      // page renders the empty state instead of an error banner.
-      if (response.status === 404) {
-        return { status: 'SUCCESS', documents: [] };
-      }
-      return response.json();
+      body: JSON.stringify({}),
     })
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        const documents = Array.isArray(responseJSON.documents) ? responseJSON.documents : [];
-        if (status === 'SUCCESS') {
-          let newDocuments: DocumentInformation[] = [];
-          for (let i = 0; i < documents.length; i += 1) {
-            const row = documents[i];
-            row.index = i;
-            newDocuments.push(row);
-          }
-          newDocuments = this.mapDocuments(newDocuments);
-          this.setState({
-            documents: newDocuments,
-            isLoadingDocuments: false,
-            documentsError: null,
-          });
-          return;
+      .then((response) => {
+        if (response.status === 404) {
+          // BE not yet deployed with /list-applications — render empty state
+          // rather than an error banner.
+          return [];
         }
+        return response.json();
+      })
+      .then((responseJSON) => {
+        const items = Array.isArray(responseJSON) ? responseJSON : [];
+        // Map ApplicationListItemDto → DocumentInformation. The FE's table
+        // was originally written against /get-files documents; we map field
+        // names without touching the table itself so the rest of the page
+        // (download, delete, row actions) keeps working.
+        const filteredItems = isWorkerView
+          ? items.filter((item) => item && item.clientUsername === targetUsername)
+          : items;
+        const newDocuments: DocumentInformation[] = filteredItems.map((item, index) => ({
+          id: String(item.id || ''),
+          uploader: String(item.clientUsername || ''),
+          organizationName: '',
+          uploadDate: String(item.updatedAt || item.createdAt || ''),
+          filename: `${String(item.title || 'Application')}.pdf`,
+          applicationDisplayName: String(item.title || 'Application'),
+          applicationState: String(item.state || ''),
+          applicationStatus: String(item.state || ''),
+          status: String(item.state || ''),
+          clientFirstName: String(item.clientFirstName || ''),
+          clientLastName: String(item.clientLastName || ''),
+          // index used by some table internals
+          ...(index !== undefined ? { index } : {}),
+        }));
+        const mapped = this.mapDocuments(newDocuments);
         this.setState({
-          documents: [],
+          documents: mapped,
           isLoadingDocuments: false,
-          documentsError: responseJSON.message || 'Could not load applications.',
+          documentsError: null,
         });
       })
       .catch(() => {
@@ -433,10 +441,29 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
 
+    const stateBadge = (row: DocumentInformation) => {
+      const value = (row.applicationState || row.status || '').toUpperCase();
+      const cls = (() => {
+        switch (value) {
+          case 'MAILED': return 'tw-bg-emerald-100 tw-text-emerald-800';
+          case 'READY_TO_MAIL': return 'tw-bg-amber-100 tw-text-amber-800';
+          case 'DRAFT': return 'tw-bg-slate-100 tw-text-slate-700';
+          case 'CANCELLED': return 'tw-bg-rose-100 tw-text-rose-700';
+          default: return 'tw-bg-slate-100 tw-text-slate-700';
+        }
+      })();
+      const label = value ? value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : '—';
+      return (
+        <span className={`tw-inline-block tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium ${cls}`}>
+          {label}
+        </span>
+      );
+    };
+
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
         field: 'filename',
-        headerName: 'Application Name',
+        headerName: 'Application',
         renderCell: (row) => this.getApplicationDisplayName(row),
       },
       ...(isClientUser ? [] : [{
@@ -447,13 +474,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>]),
       {
+        field: 'applicationState',
+        headerName: 'Status',
+        sortable: true,
+        width: '14%',
+        renderCell: stateBadge,
+      } as DataTableColumn<DocumentInformation>,
+      {
         field: 'uploadDate',
-        headerName: isClientUser ? 'Completed' : 'Upload Date',
+        headerName: isClientUser ? 'Completed' : 'Last Updated',
         sortable: true,
         sortType: 'date',
-        width: '20%',
+        width: '18%',
         renderCell: (row) => row.formattedUploadDate || '-',
-      },
+      } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',
         headerName: isClientUser ? 'Actions' : '',
@@ -487,7 +521,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             <RowActionMenu actions={this.getRowActions(row)} />
           )
         ),
-      },
+      } as DataTableColumn<DocumentInformation>,
     ].filter((col) => {
       if (isClientUser && (col.field === 'actions' || col.field === 'uploadDate')) {
         return false;
@@ -532,18 +566,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               <div className="container tw-mt-8">
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
-                  <Link
-                    to={{
-                      pathname: '/applications/createnew',
-                      state: {
-                        clientUsername: clientUsername || '',
-                        clientName: clientName || '',
-                      },
-                    }}
-                    className="btn btn-primary btn-sm"
-                  >
-                    Open full application form
-                  </Link>
                 </div>
                 {availableApplications.length > 0 ? (
                   <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-3 tw-gap-3 tw-pb-4">
