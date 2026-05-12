@@ -113,7 +113,6 @@ class LoginPage extends Component<Props, State> {
     } else {
       fetch(`${getServerURL()}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           username,

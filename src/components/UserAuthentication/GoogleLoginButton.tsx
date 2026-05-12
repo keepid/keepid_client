@@ -24,7 +24,6 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
   const handleClick = () => {
     fetch(`${getServerURL()}/googleLoginRequest`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         redirectUri: `${getServerURL()}/googleLoginResponse`,

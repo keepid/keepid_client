@@ -42,7 +42,6 @@ function RecentActivity({ username }) {
   const fetchRecentActivity = () => {
     fetch(`${getServerURL()}/get-all-activities`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ username: username.username }),
     })

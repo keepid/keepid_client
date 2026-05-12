@@ -180,22 +180,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.setState({ isLoadingDocuments: true, documentsError: null });
     fetch(`${getServerURL()}/get-files`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType: FileType.APPLICATION_PDF,
         ...(isWorkerView ? { targetUser: targetUsername } : {}),
         annotated: true,
       }),
-    }).then((response) => {
-      // /get-files isn't implemented on keepid_server_next yet (slice 9).
-      // Treat 404 as "no applications saved" rather than a hard error so the
-      // page renders the empty state instead of an error banner.
-      if (response.status === 404) {
-        return { status: 'SUCCESS', documents: [] };
-      }
-      return response.json();
-    })
+    }).then((response) => response.json())
       .then((responseJSON) => {
         const { status } = responseJSON;
         const documents = Array.isArray(responseJSON.documents) ? responseJSON.documents : [];
@@ -231,9 +222,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
   componentDidMount() {
     this.loadFromLocation();
-    if (this.props.role !== Role.Client) {
-      this.loadAvailableApplications();
-    }
   }
 
   componentDidUpdate(prevProps: Props & RouteComponentProps) {
@@ -289,7 +277,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   handleDownloadApplication = (row: DocumentInformation) => {
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: row.id,
@@ -316,7 +303,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: deleteTargetApplication.id,
@@ -425,7 +411,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       renameTarget,
       renameValue,
       isRenaming,
-      availableApplications,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
@@ -528,62 +513,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 onRowClick={this.handleOpenApplication}
               />
             </div>
-            {!isClientUser && (
-              <div className="container tw-mt-8">
-                <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
-                  <h2 className="h5 tw-mb-0">Start a new application</h2>
-                  <Link
-                    to={{
-                      pathname: '/applications/createnew',
-                      state: {
-                        clientUsername: clientUsername || '',
-                        clientName: clientName || '',
-                      },
-                    }}
-                    className="btn btn-primary btn-sm"
-                  >
-                    Open full application form
-                  </Link>
-                </div>
-                {availableApplications.length > 0 ? (
-                  <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-3 tw-gap-3 tw-pb-4">
-                    {availableApplications.map((application) => (
-                      <Link
-                        key={application.lookupKey}
-                        to={{
-                          pathname: '/applications/createnew',
-                          state: {
-                            clientUsername: clientUsername || '',
-                            clientName: clientName || '',
-                            presetApplication: {
-                              lookupKey: application.lookupKey,
-                              type: application.type,
-                              state: application.state,
-                              situation: application.situation,
-                            },
-                            startAtReview: application.canStart,
-                          },
-                        }}
-                        className="tw-block tw-rounded tw-border tw-border-gray-200 tw-bg-white tw-p-3 tw-no-underline hover:tw-border-primary-theme hover:tw-shadow-sm"
-                      >
-                        <div className="tw-text-gray-900 tw-font-medium">
-                          {application.type || 'Application'}
-                        </div>
-                        <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                          {[application.state, application.situation]
-                            .filter((value) => value && value.trim().length > 0)
-                            .join(' - ') || 'Open application form'}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="alert alert-light border">
-                    No quick-start registry options are available. You can still use the full form.
-                  </div>
-                )}
-              </div>
-            )}
           </div>
           {deleteTargetApplication && (
             <div

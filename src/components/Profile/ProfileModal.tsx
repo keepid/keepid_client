@@ -92,7 +92,6 @@ function Modal({ setModalOpen, loadProfilePhoto, username }) {
 
         fetch(`${getServerURL()}/upload-pfp`, {
           method: 'POST',
-          // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
           credentials: 'include',
           body: formData,
         })
