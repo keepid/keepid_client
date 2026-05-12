@@ -568,37 +568,41 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
                 {availableApplications.length > 0 ? (
-                  <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-3 tw-gap-3 tw-pb-4">
+                  <ul className="tw-list-none tw-p-0 tw-m-0 tw-divide-y tw-divide-gray-200 tw-border tw-border-gray-200 tw-rounded tw-bg-white tw-pb-4">
                     {availableApplications.map((application) => (
-                      <Link
-                        key={application.lookupKey}
-                        to={{
-                          pathname: '/applications/createnew',
-                          state: {
-                            clientUsername: clientUsername || '',
-                            clientName: clientName || '',
-                            presetApplication: {
-                              lookupKey: application.lookupKey,
-                              type: application.type,
-                              state: application.state,
-                              situation: application.situation,
+                      <li key={application.lookupKey}>
+                        <Link
+                          to={{
+                            pathname: '/applications/createnew',
+                            state: {
+                              clientUsername: clientUsername || '',
+                              clientName: clientName || '',
+                              presetApplication: {
+                                lookupKey: application.lookupKey,
+                                type: application.type,
+                                state: application.state,
+                                situation: application.situation,
+                              },
+                              startAtReview: application.canStart,
                             },
-                            startAtReview: application.canStart,
-                          },
-                        }}
-                        className="tw-block tw-rounded tw-border tw-border-gray-200 tw-bg-white tw-p-3 tw-no-underline hover:tw-border-primary-theme hover:tw-shadow-sm"
-                      >
-                        <div className="tw-text-gray-900 tw-font-medium">
-                          {application.type || 'Application'}
-                        </div>
-                        <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                          {[application.state, application.situation]
-                            .filter((value) => value && value.trim().length > 0)
-                            .join(' - ') || 'Open application form'}
-                        </div>
-                      </Link>
+                          }}
+                          className="tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3 tw-no-underline hover:tw-bg-gray-50"
+                        >
+                          <div className="tw-flex tw-items-baseline tw-gap-3 tw-min-w-0">
+                            <span className="tw-text-gray-900 tw-font-medium tw-shrink-0">
+                              {application.type || 'Application'}
+                            </span>
+                            <span className="tw-text-sm tw-text-gray-600 tw-truncate">
+                              {[application.state, application.situation]
+                                .filter((value) => value && value.trim().length > 0)
+                                .join(' — ') || 'Open application form'}
+                            </span>
+                          </div>
+                          <i className="fas fa-chevron-right tw-text-gray-400 tw-text-sm tw-ml-3" aria-hidden />
+                        </Link>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 ) : (
                   <div className="alert alert-light border">
                     No quick-start registry options are available. You can still use the full form.
