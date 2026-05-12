@@ -11,6 +11,7 @@ import FileType from '../../static/FileType';
 async function fetchDocumentsCount(): Promise<number> {
   const res = await fetch(`${getServerURL()}/get-files`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ fileType: FileType.IDENTIFICATION_PDF }),
   });
@@ -24,6 +25,7 @@ async function fetchDocumentsCount(): Promise<number> {
 async function fetchApplicationsCount(): Promise<number> {
   const res = await fetch(`${getServerURL()}/get-files`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       fileType: FileType.APPLICATION_PDF,

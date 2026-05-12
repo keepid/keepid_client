@@ -20,7 +20,13 @@ https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/
 ## How to Install the Client
 After cloning, `cd client` and then do npm install
 
+### Pointing at a server
 
+`src/serverOverride.ts` reads `VITE_API_BASE` first, then falls back to
+mode-based defaults. Copy `.env.example` to `.env.local` and set
+`VITE_API_BASE` to your local server's base URL (e.g.
+`http://localhost:7001` for `keepid_server_next`, or `http://localhost:7000`
+for the legacy server).
 
 ## Available Scripts
 

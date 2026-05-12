@@ -160,6 +160,7 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -218,6 +219,7 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -316,6 +318,7 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -405,6 +408,7 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/get-files`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType,

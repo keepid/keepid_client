@@ -279,12 +279,13 @@ export default function ApplicationForm() {
     setSearchingClients(true);
     setSearchError(null);
 
+    // Don't send caller's `role` — see WorkerLanding.tsx for the rationale.
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       signal: controller.signal,
       body: JSON.stringify({
-        role: userRole,
         listType: 'clients',
         name: debouncedClientQuery,
       }),
@@ -355,11 +356,12 @@ export default function ApplicationForm() {
     email: string,
     birthDate: string,
   ) => {
+    // Don't send caller's `role` — see WorkerLanding.tsx for the rationale.
     const response = await fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        role: userRole,
         listType: 'clients',
         name: `${firstname} ${lastname}`,
       }),

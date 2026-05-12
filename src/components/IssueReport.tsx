@@ -201,6 +201,7 @@ class IssueReport extends Component<Props, State> {
     }
     fetch(`${getServerURL()}/submit-issue`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email,
         title,

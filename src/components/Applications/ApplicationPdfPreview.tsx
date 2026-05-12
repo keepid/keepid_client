@@ -79,6 +79,7 @@ export default function ApplicationPdfPreview({
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       signal: controller.signal,
       body: JSON.stringify({

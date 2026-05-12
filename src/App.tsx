@@ -139,6 +139,7 @@ class App extends React.Component<{}, State, {}> {
   componentDidMount() {
     fetch(`${getServerURL()}/authenticate`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     })
       .then((response) => response.json())
@@ -322,10 +323,6 @@ class App extends React.Component<{}, State, {}> {
                   }
                   return renderHome();
                 }}
-              />
-              <Route
-                path="/find-organizations"
-                render={() => <Redirect to="/home" />}
               />
               <Route
                 path="/login"

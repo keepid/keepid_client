@@ -104,12 +104,12 @@ class AdminPanel extends Component<Props, State> {
 
   getAdminWorkers() {
     const { searchName } = this.state;
-    const { role } = this.props;
+    // Don't send caller's `role` — see WorkerLanding.tsx for the rationale.
     fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        role,
         listType: 'members',
         name: searchName,
       }),

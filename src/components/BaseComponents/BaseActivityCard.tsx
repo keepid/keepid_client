@@ -10,22 +10,40 @@ export default function ActivityCard({ activity }: ActivityProps): React.ReactEl
   const { type } = activity;
 
   if (uploaderUsername && type) {
-    const displayType = type.replace('Activity', '');
+    // Map server-emitted activity kinds to a display label.
+    // - Legacy: "UploadActivity", "ViewFileActivity", etc. (old server)
+    // - New:    "UPLOAD_FILE", "VIEW_FILE", etc. (keepid_server_next slice 9+)
+    // After data migration, only the new vocabulary will exist; this
+    // mapper handles both during the cutover window.
+    const displayType = (() => {
+      const NEW_LABEL: Record<string, string> = {
+        UPLOAD_FILE: 'Uploaded',
+        VIEW_FILE: 'Viewed',
+        DOWNLOAD_FILE: 'Downloaded',
+      };
+      if (NEW_LABEL[type]) return NEW_LABEL[type];
+      // Legacy fallback: "UploadActivity" → "Upload"
+      return type.replace('Activity', '');
+    })();
     const newDate = new Date(Date.parse(activity.occurredAt));
     const dateString = newDate.toLocaleDateString();
     const daysDifference = Math.round(
       (new Date().getTime() - newDate.getTime()) / (1000 * 3600 * 24),
     );
 
+    // Server emits the id under `_id` (Mongo-shape preserved); fall back
+    // to `id` for any caller that already normalized.
+    // eslint-disable-next-line no-underscore-dangle
+    const activityId = activity._id || activity.id;
     return (
       <div
-        key={activity.id}
+        key={activityId}
         className="activities-card-container flex flex-row justify-between items-center bg-gray-50 rounded-md"
         style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '12px 8px' }} // forces flex row
       >
         {/* Column 1: Activity type */}
         <div style={{ flex: '1', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <h6 className="text-gray-600 font-semibold m-0">{displayType}Activity</h6>
+          <h6 className="text-gray-600 font-semibold m-0">{displayType}</h6>
         </div>
 
         {/* Column 2: Object name */}

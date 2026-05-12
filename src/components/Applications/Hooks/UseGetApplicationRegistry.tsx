@@ -25,6 +25,7 @@ export default function useGetApplicationRegistry() {
 
     const registryInfo = await fetch(`${getServerURL()}/get-application-registry`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(formData),
     })
@@ -70,6 +71,7 @@ export default function useGetApplicationRegistry() {
     try {
       const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
         method: 'POST',
+        // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
         credentials: 'include',
         body: formData,
       });
@@ -119,6 +121,7 @@ export default function useGetApplicationRegistry() {
     if (isDirty) {
       const registryInfo = await fetch(`${getServerURL()}/get-application-registry`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(formData),
       })
@@ -134,6 +137,7 @@ export default function useGetApplicationRegistry() {
 
       const pdfData = await fetch(`${getServerURL()}/download-file`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ fileType: 'FORM', fileId: registryInfo.blankFormId, targetUser: 'FACE-TO-FACE-ADMIN' }),
       })
