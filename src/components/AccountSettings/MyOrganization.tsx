@@ -109,6 +109,14 @@ interface MailSummaryEntry {
   mailingAddressName: string;
   targetUsername: string;
   trackingEvents: { type: string; name: string; time: number | null; location: string }[];
+  // Per the 2026-05-13 product feedback, the mail summary table now
+  // shows the application's title and the client's name instead of the
+  // mailing-address name. Backend ships these alongside the existing
+  // fields (see MailSendService.projectMailWithContext).
+  applicationType: string;
+  clientFirstName: string;
+  clientLastName: string;
+  clientFullName: string;
 }
 
 interface MailSummaryData {
@@ -898,7 +906,8 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                     <thead className="tw-bg-gray-50">
                       <tr>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Date</th>
-                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Destination</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Application Type</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Client Name</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Mail Cost</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Check Amt</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Status</th>
@@ -911,7 +920,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                             {item.lobCreatedAt ? new Date(item.lobCreatedAt).toLocaleDateString() : '—'}
                           </td>
                           <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
-                            {item.mailingAddressName || '—'}
+                            {item.applicationType || '—'}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            {item.clientFullName || '—'}
                           </td>
                           <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
                             ${(item.costCents / 100).toFixed(2)}
