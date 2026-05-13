@@ -56,7 +56,7 @@ export async function getQuestionsV2(
   applicationId: string,
   clientUsername?: string,
 ): Promise<GetQuestionsV2Response> {
-  const res = await fetch(`${getServerURL()}/get-questions-2`, {
+  const res = await fetch(`${getServerURL()}/get-form-questions`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -90,7 +90,7 @@ async function fillPdfBlobWithOptions(
   if (preview) {
     form.append('preview', 'true');
   }
-  const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
+  const res = await fetch(`${getServerURL()}/fill-pdf`, {
     method: 'POST',
     // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
     credentials: 'include',
@@ -137,7 +137,7 @@ export async function uploadCompletedPdf(
   form.append('applicationId', applicationId);
   form.append('formAnswers', JSON.stringify(formAnswers));
   form.append('clientUsername', clientUsername);
-  const res = await fetch(`${getServerURL()}/upload-completed-pdf-2`, {
+  const res = await fetch(`${getServerURL()}/save-application`, {
     method: 'POST',
     // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
     credentials: 'include',

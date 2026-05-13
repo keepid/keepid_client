@@ -342,7 +342,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     if (!removingUsername) return;
     setIsRemoving(true);
     try {
-      const res = await fetch(`${getServerURL()}/remove-organization-member`, {
+      const res = await fetch(`${getServerURL()}/remove-user`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

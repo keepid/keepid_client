@@ -88,7 +88,7 @@ export default function ApplicationWebForm({
     setLoading(true);
     setError(null);
 
-    fetch(`${getServerURL()}/get-questions-2`, {
+    fetch(`${getServerURL()}/get-form-questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
