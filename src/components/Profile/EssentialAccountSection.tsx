@@ -320,6 +320,17 @@ export default function EssentialAccountSection({
       setAddLabel('');
       setAddPhone('');
       await fetchPhoneBook();
+      // Notify the App-level state holder that the user's profile changed.
+      // App.componentDidMount listens for this event and re-runs
+      // /authenticate, which refreshes App.state.name → which is what
+      // the sidebar Profile Title and other top-level chrome read.
+      // Without this, name edits stay invisible in the sidebar until
+      // the user logs out and back in. Only fire on self-edit; editing
+      // another user (worker editing client) doesn't change the
+      // actor's own display name.
+      if (!targetUsername) {
+        window.dispatchEvent(new Event('keepid:profile-updated'));
+      }
       onSaved?.();
     } catch (e: any) {
       alert.show(`Failed to save: ${e?.message || String(e)}`, { type: 'error' });
