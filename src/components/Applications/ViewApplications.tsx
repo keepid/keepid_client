@@ -321,19 +321,47 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   confirmDeleteApplication = () => {
     const { deleteTargetApplication } = this.state;
     if (!deleteTargetApplication) return;
+    const deletedId = deleteTargetApplication.id;
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        fileId: deleteTargetApplication.id,
+        fileId: deletedId,
         fileType: FileType.APPLICATION_PDF,
         targetUser: deleteTargetApplication.uploader,
       }),
     })
-      .then((response) => response.json())
-      .then(() => {
+      // Tolerate empty / non-JSON bodies — see the matching pattern in
+      // updateApplicationAttachmentPdf. The /delete-file route returns
+      // a JSON envelope on success, but if it ever 4xx-s with an empty
+      // body we want to fall through to the optimistic local prune
+      // and the refetch instead of crashing the handler.
+      .then((response) => response.text().catch(() => ''))
+      .then((text) => {
+        let json: { status?: string } = {};
+        try { if (text) json = JSON.parse(text) as typeof json; } catch { /* ignore */ }
+        // Optimistically prune the deleted row from local state so the
+        // table updates immediately. The subsequent loadDocuments fetch
+        // is the source-of-truth refresh and will reconcile if anything
+        // diverged. Even on a non-SUCCESS response we still close the
+        // modal — the user can re-open if it turns out the row stuck
+        // around (loadDocuments will surface the truth either way).
+        this.setState((prev) => ({
+          deleteTargetApplication: null,
+          documents: prev.documents.filter((d) => d.id !== deletedId),
+        }));
+        if (json.status && json.status !== 'SUCCESS') {
+          // eslint-disable-next-line no-console
+          console.warn('delete-file returned non-success status', json.status);
+        }
+        const { clientUsername, clientName } = this.state;
+        this.loadDocuments(clientUsername, clientName);
+      })
+      .catch(() => {
+        // Network/transport failure — close the modal and re-fetch so
+        // the user sees the truth instead of being stuck on a spinner.
         this.setState({ deleteTargetApplication: null });
         const { clientUsername, clientName } = this.state;
         this.loadDocuments(clientUsername, clientName);
