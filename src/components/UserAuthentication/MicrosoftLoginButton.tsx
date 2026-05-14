@@ -4,12 +4,6 @@ import getServerURL from '../../serverOverride';
 
 const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;
 const tenantId = import.meta.env.VITE_MICROSOFT_TENANT_ID || 'organizations';
-const currentMode = import.meta.env.MODE;
-const originUri = currentMode === 'production'
-  ? 'https://keep.id'
-  : currentMode === 'staging'
-    ? 'https://staged.keep.id'
-    : 'http://localhost:3000';
 
 export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, handleMicrosoftLoginError }) {
   useEffect(() => {
@@ -28,12 +22,18 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
       return;
     }
 
+    // Absolute URLs from the live origin — see GoogleLoginButton for the
+    // detailed rationale. Build-mode-based hardcoded origins broke as
+    // soon as the FE was deployed at a non-canonical URL.
+    const redirectUri = `${window.location.origin}${getServerURL()}/microsoftLoginResponse`;
+    const originUri = window.location.origin;
+
     fetch(`${getServerURL()}/microsoftLoginRequest`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        redirectUri: `${getServerURL()}/microsoftLoginResponse`,
+        redirectUri,
         originUri,
       }),
     })
@@ -47,7 +47,7 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
             `client_id=${clientId}` +
             '&response_type=code' +
             '&scope=openid%20email%20profile' +
-            `&redirect_uri=${getServerURL()}/microsoftLoginResponse` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
             `&state=${state}` +
             '&code_challenge_method=S256' +
             `&code_challenge=${codeChallenge}` +
