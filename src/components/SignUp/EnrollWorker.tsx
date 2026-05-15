@@ -151,10 +151,9 @@ export default function EnrollWorkerPage(): JSX.Element {
           <p className="tw-text-gray-600 tw-mb-6">
             <strong>{values.firstname} {values.lastname}</strong> has been enrolled
             as a <strong>{values.personRole}</strong>.
-            We&apos;ve emailed sign-in instructions to{' '}
-            <strong>{values.email}</strong>. They can click the link in that
-            email to set a password, or sign in directly with Google or
-            Microsoft using their email.
+            We&apos;ve emailed a temporary password to{' '}
+            <strong>{values.email}</strong>. They can sign in with that
+            password, or use Google or Microsoft with their email.
           </p>
           <div className="tw-flex tw-justify-center tw-space-x-4">
             <button
