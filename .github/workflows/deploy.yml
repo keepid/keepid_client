@@ -78,16 +78,23 @@ jobs:
             --project=${{ env.PROJECT_ID }} \
             --format='value(status.url)')
           echo "Service URL: $URL"
+          # Hit the SPA root, not /healthz: Google's frontend
+          # intercepts the literal path "/healthz" on *.run.app
+          # before it reaches the container (likely a reserved
+          # k8s-convention path at the GFE layer), so external
+          # probes there always 404 even though the container's
+          # nginx serves it for Cloud Run's own internal probes.
+          # `/` reaches the container and returns 200 for index.html.
           # Allow up to 90s for the new revision to become serving.
           for i in {1..18}; do
-            if curl -fsS "$URL/healthz" > /dev/null; then
-              echo "healthz OK"
+            if curl -fsS "$URL/" > /dev/null; then
+              echo "root OK"
               exit 0
             fi
             echo "waiting for new revision... ($i/18)"
             sleep 5
           done
-          echo "healthz probe did not pass within 90s" >&2
+          echo "root probe did not pass within 90s" >&2
           gcloud run services logs read ${{ env.SERVICE }} \
             --region=${{ env.REGION }} --project=${{ env.PROJECT_ID }} \
             --limit=50
