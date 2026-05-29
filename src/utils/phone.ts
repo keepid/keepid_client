@@ -16,7 +16,7 @@ export function canonicalizePhone(raw: string | null | undefined): string | null
 }
 
 /**
- * Formats a US phone number as `(XXX) XXX-XXXX` when it can be reduced to
+ * Formats a US phone number as `(+1) XXX-XXX-XXXX` when it can be reduced to
  * 10 canonical digits. Anything we can't parse comes back unchanged so the
  * raw value is at least visible to the user — important during the
  * migration window when legacy rows may still hold non-canonical strings
@@ -26,5 +26,5 @@ export function formatPhoneForDisplay(phone: string | null | undefined): string 
   if (phone == null || phone === '') return '';
   const canonical = canonicalizePhone(phone);
   if (canonical === null) return phone;
-  return `(${canonical.slice(0, 3)}) ${canonical.slice(3, 6)}-${canonical.slice(6)}`;
+  return `(+1) ${canonical.slice(0, 3)}-${canonical.slice(3, 6)}-${canonical.slice(6)}`;
 }

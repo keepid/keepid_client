@@ -174,7 +174,7 @@ const Footer = () => {
           </div>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">Keep.id is proud to be a 501(c)(3) tax-exempt non-profit organization.</p>
           <p className="tw-text-xs tw-text-white tw-text-center my-1">Illustrations by Storyset. Environment: {currentMode}</p>
-          <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; 2025 Keep.id</p>
+          <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; {new Date().getFullYear()} Keep.id</p>
         </div>
       </div>
     </footer>

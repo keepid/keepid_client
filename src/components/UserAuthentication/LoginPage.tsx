@@ -274,7 +274,9 @@ class LoginPage extends Component<Props, State> {
 
     return (
       <div className="form-signin pt-2">
-        {embedded ? null : <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>}
+        <div className="tw-bg-gray-100 tw-rounded-lg tw-py-2 tw-px-4 tw-mb-3 tw-text-center">
+          <h1 className="h4 tw-font-semibold tw-mb-0">Sign In</h1>
+        </div>
         <GoogleLoginButton
           handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
           handleGoogleLoginError={this.handleGoogleLoginError}

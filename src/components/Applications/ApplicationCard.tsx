@@ -44,7 +44,7 @@ export default function SelectApplicationCard({
         tw-rounded-xl tw-shadow-[0px_0px_10px_4px_rgba(0,0,0,0.12)] tw-p-4
         ${defaultState ? 'tw-bg-transparent tw-text-black hover:tw-bg-gray-100 hover:tw-text-black !tw-border-gray-300 hover:!tw-border-gray-500 ' : ''}
         ${disabled ? '!tw-bg-gray-300 tw-text-black !tw-border-gray-500' : ''}
-        ${checked ? '!tw-bg-indigo-100 !tw-border-gray-500 !tw-shadow-[0px_0px_10px_4px_rgba(0,0,0,0.35)]' : ''}`}
+        ${checked ? '!tw-bg-indigo-200 !tw-border-gray-600 !tw-shadow-[0px_0px_12px_5px_rgba(0,0,0,0.4)]' : ''}`}
     >
       <img alt={iconAlt} src={iconSrc} className="tw-my-5 tw-h-28 sm:tw-h-32 tw-w-auto tw-aspect-auto tw-pointer-events-none" />
       <p className={

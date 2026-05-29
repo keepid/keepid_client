@@ -622,7 +622,7 @@ class MyDocuments extends Component<Props, State> {
       },
     ];
     const mostRecentColumns: DataTableColumn[] = allDocumentsColumns.filter(
-      (column) => column.field !== 'uploadDate' && column.field !== 'uploader',
+      (column) => column.field !== 'uploader',
     );
 
     return (
