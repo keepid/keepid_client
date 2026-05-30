@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import ViewDocument from '../Documents/ViewDocument';
@@ -688,7 +689,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
-          <div className="col-9 card-text tw-pt-2">{orgInfo.phone || 'Not set'}</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.phone ? formatPhoneForDisplay(orgInfo.phone) : 'Not set'}</div>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Email</div>
