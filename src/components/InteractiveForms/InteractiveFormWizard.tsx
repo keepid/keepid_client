@@ -8,7 +8,7 @@ import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
 import { extractDirectivesFromUiSchema, useInteractiveForm } from './useInteractiveForm';
 
-function applyAutoFillFields(
+export function applyAutoFillFields(
   pdfFill: Record<string, unknown>,
   autoFillFields: AutoFillField[] | undefined,
   resolvedProfiles: Record<string, unknown> | null | undefined,
