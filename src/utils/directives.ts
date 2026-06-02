@@ -91,6 +91,60 @@ function computePhoneLast7(profile: Record<string, unknown> | undefined): string
   return `${lastSeven.slice(0, 3)}-${lastSeven.slice(3)}`;
 }
 
+/** Full name for a profile scope: prefer structured currentName, else firstName/lastName. */
+function computeFullName(profile: Record<string, unknown> | undefined): string | undefined {
+  if (!profile) return undefined;
+  const part = (path: string) => String(getByPath(profile, path) ?? '').trim();
+  const fromCurrentName = [
+    part('currentName.first'),
+    part('currentName.middle'),
+    part('currentName.last'),
+    part('currentName.suffix'),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  if (fromCurrentName) return fromCurrentName;
+  const fromColumns = [part('firstName'), part('lastName')].filter(Boolean).join(' ').trim();
+  return fromColumns || undefined;
+}
+
+/** Format a full address from an address-prefixed object: "line1, line2, City, ST ZIP". */
+function computeFullAddress(
+  profile: Record<string, unknown> | undefined,
+  prefixes: string[],
+): string | undefined {
+  if (!profile) return undefined;
+  for (const prefix of prefixes) {
+    const at = (key: string) => String(getByPath(profile, `${prefix}.${key}`) ?? '').trim();
+    const line1 = at('line1');
+    const line2 = at('line2');
+    const city = at('city');
+    const state = at('state');
+    const zip = at('zip') || at('zipcode');
+    const cityStateZip = [city, [state, zip].filter(Boolean).join(' ').trim()]
+      .filter(Boolean)
+      .join(', ');
+    const full = [line1, line2, cityStateZip].filter(Boolean).join(', ');
+    if (full) return full;
+  }
+  return undefined;
+}
+
+/** Extract a part (area code / prefix / line number) of the primary phone. */
+function computePhonePart(
+  profile: Record<string, unknown> | undefined,
+  part: 'area' | 'prefix' | 'line',
+): string | undefined {
+  const raw = getByPath(profile, 'phoneBook.0.phoneNumber') ?? getByPath(profile, 'phone');
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const digits = raw.replace(/\D/g, '').slice(-10);
+  if (digits.length < 10) return undefined;
+  if (part === 'area') return digits.slice(0, 3);
+  if (part === 'prefix') return digits.slice(3, 6);
+  return digits.slice(6);
+}
+
 function combineAddressLine1And2(
   profile: Record<string, unknown> | undefined,
   prefix: string,
@@ -163,6 +217,56 @@ export function resolveDirectiveFromProfiles(
     return computePhoneLast7(profiles[profileKey] as Record<string, unknown> | undefined);
   }
 
+  const fullNameMatch = directive.trim().match(/^(client|worker|director)\.\$fullName$/i);
+  if (fullNameMatch) {
+    const profileKey = fullNameMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    return computeFullName(profiles[profileKey] as Record<string, unknown> | undefined);
+  }
+
+  const birthYearMatch = directive.trim().match(/^(client|worker|director)\.\$birthYear$/i);
+  if (birthYearMatch) {
+    const profileKey = birthYearMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
+    return birthDate ? String(birthDate.getFullYear()) : undefined;
+  }
+
+  const birthDayMatch = directive.trim().match(/^(client|worker|director)\.\$birthDay$/i);
+  if (birthDayMatch) {
+    const profileKey = birthDayMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
+    return birthDate ? String(birthDate.getDate()) : undefined;
+  }
+
+  if (/^(client|worker|director|org)\.\$date$/i.test(directive.trim())) {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${mm}/${dd}/${d.getFullYear()}`;
+  }
+
+  const phonePartMatch = directive
+    .trim()
+    .match(/^(client|worker|director)\.\$primaryPhone(AreaCode|TelephonePrefix|LineNumber)$/i);
+  if (phonePartMatch) {
+    const profileKey = phonePartMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    const which = phonePartMatch[2].toLowerCase();
+    const part = which === 'areacode' ? 'area' : which === 'telephoneprefix' ? 'prefix' : 'line';
+    return computePhonePart(profiles[profileKey] as Record<string, unknown> | undefined, part);
+  }
+
+  const fullAddrMatch = directive
+    .trim()
+    .match(/^(client|worker|director|org)\.\$full(PersonalAddress|MailAddress|Address)$/i);
+  if (fullAddrMatch) {
+    const profileKey = fullAddrMatch[1].toLowerCase() as 'client' | 'worker' | 'director' | 'org';
+    const which = fullAddrMatch[2].toLowerCase();
+    const profile = profiles[profileKey] as Record<string, unknown> | undefined;
+    if (which === 'personaladdress') return computeFullAddress(profile, ['personalAddress']);
+    if (which === 'mailaddress') return computeFullAddress(profile, ['mailAddress']);
+    if (profileKey === 'org') return computeFullAddress(profile, ['address', 'orgAddress']);
+    return computeFullAddress(profile, ['personalAddress', 'mailAddress']);
+  }
+
   const addressLine1And2 = resolveAddressLine1And2Directive(directive, profiles);
   if (addressLine1And2 !== undefined) {
     return addressLine1And2;
@@ -175,7 +279,12 @@ export function resolveDirectiveFromProfiles(
     return normalizeDateLikeValue(getByPath(profiles.worker, directive.slice(7)));
   }
   if (lower.startsWith('org.') && profiles.org) {
-    return normalizeDateLikeValue(getByPath(profiles.org, directive.slice(4)));
+    const orgPath = directive.slice(4);
+    const orgAlias: Record<string, string> = {
+      organizationName: 'name',
+      phoneNumber: 'phone',
+    };
+    return normalizeDateLikeValue(getByPath(profiles.org, orgAlias[orgPath] ?? orgPath));
   }
   if (lower.startsWith('director.') && profiles.director) {
     return normalizeDateLikeValue(getByPath(profiles.director, directive.slice(9)));
