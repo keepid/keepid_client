@@ -7,8 +7,12 @@ const validCharacters: string =
     "a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð";
 const emailPattern: RegExp =
     new RegExp("^[" + validCharacters + "0-9_!#$%&’*+=?`{|}~^.-]{1,150}@[a-zA-Z0-9.-]{1,150}$");
-const phoneNumberPattern: RegExp =
-    new RegExp("^(\\+)?\\(?(1)?\\)?(-)?(\\d{10}|(?:\\d{3}-){2}\\d{4}|\\(\\d{3}\\)(-)?\\d{3}-?\\d{4})$");
+// Liberal in what we accept: anything that reduces to 10 digits (with an
+// optional leading +1 or 1) is considered valid. The server's
+// PhoneNumbers#toCanonical applies the same rule, so the FE validator
+// rejecting "(215) 555-1212" while the server accepts it was the older
+// source of the worker-card/profile drift bug.
+const phoneDigitsOnly = (input: string): string => input.replace(/\D/g, "");
 const birthDatePattern: RegExp = new RegExp("^[0-9]{2}-[0-9]{2}-[0-9]{4}$");
 const zipCodePattern: RegExp = new RegExp("^([0-9]{5}(?:-[0-9]{4})?)$");
 const cityPattern: RegExp =
@@ -37,9 +41,10 @@ let isValidEmail = (input: string): boolean => {
 }
 
 let isValidPhoneNumber = (input: string): boolean => {
-    return input !== null
-        && !(input.trim() === "")
-        && phoneNumberPattern.test(input);
+    if (input == null || input.trim() === "") return false;
+    const digits = phoneDigitsOnly(input);
+    const trimmed = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+    return trimmed.length === 10;
 }
 
 let isValidBirthDate = (input: string): boolean => {

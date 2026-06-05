@@ -8,6 +8,8 @@ import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, us
 import { useAlert } from 'react-alert';
 import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
+// eslint-disable-next-line import/no-unresolved -- Vite ?url asset import
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 import getServerURL from '../../serverOverride';
 import {
@@ -21,10 +23,18 @@ import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import { buildOrgAttachmentAutofillAnswers } from './attachmentAutofill';
 import type { SignaturePlacement } from './types';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+// Vite-friendly pdf.js worker resolution. See the `?url` import above.
+//
+// `new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)` works in
+// `npm run dev` (Vite serves the worker from node_modules via the module
+// graph) but is brittle in `npm run build` — Vite's prod rollup does not
+// reliably emit the bare-specifier worker as an asset, so `workerSrc`
+// silently 404s in production. pdf.js then falls back to a "fake worker"
+// mode that can't render and produces no console error, surfacing only
+// as a blank PDF viewer. The `?url` import suffix tells Vite explicitly:
+// copy this file into the build output and give me its hashed asset URL.
+// Resolves identically in dev and prod.
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export interface SignAndDownloadViewerProps {
   fileUrl: string;

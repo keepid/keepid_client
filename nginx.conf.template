@@ -1,0 +1,89 @@
+# Rendered by docker-entrypoint.sh — ${PORT}, ${BACKEND_URL}, and
+# ${BACKEND_HOST} are expanded from the container env before nginx
+# starts.
+#
+# BACKEND_URL must be the bare scheme://host (no trailing slash):
+#   https://keepid-server-next-3olpn4bjhq-uk.a.run.app
+
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip text payloads. Vite already minifies, so gains are modest but
+    # free on the wire.
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        application/xml
+        application/manifest+json
+        image/svg+xml;
+
+    # Hashed assets (Vite emits ?hash in the filename) → cache forever.
+    location /assets/ {
+        access_log off;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    # Service-worker + manifest must NOT be cached, otherwise PWA users
+    # never see new releases.
+    location = /sw.js {
+        add_header Cache-Control "no-store" always;
+        try_files $uri =404;
+    }
+    location = /registerSW.js {
+        add_header Cache-Control "no-store" always;
+        try_files $uri =404;
+    }
+    location = /manifest.webmanifest {
+        add_header Cache-Control "no-store" always;
+        try_files $uri =404;
+    }
+
+    # Reverse proxy: /api/foo → ${BACKEND_URL}/foo
+    # The trailing slash on both proxy_pass and the location is what
+    # strips the /api prefix.
+    location /api/ {
+        proxy_pass ${BACKEND_URL}/;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host ${BACKEND_HOST};
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+
+        # Cloud Run cold start can be slow; let it breathe.
+        proxy_connect_timeout 30s;
+        proxy_send_timeout    60s;
+        proxy_read_timeout    60s;
+
+        # File uploads (documents, application attachments).
+        client_max_body_size 25m;
+
+        # Don't follow upstream redirects — let the browser see them.
+        proxy_redirect off;
+    }
+
+    # SPA fallback: any non-file URL serves index.html so React Router
+    # can take over. Don't cache index.html — must always re-check.
+    location / {
+        add_header Cache-Control "no-cache" always;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Trivial liveness path for Cloud Run's startup/liveness probes.
+    location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+}

@@ -137,6 +137,25 @@ class App extends React.Component<{}, State, {}> {
   }
 
   componentDidMount() {
+    this.refreshAuthFromServer();
+    // Listen for in-app profile updates (e.g. name change in Account
+    // Information). The handler hits /authenticate again so App.state.name
+    // (which the sidebar Profile Title and other top-level chrome read)
+    // stays in sync without a full page reload. Dispatched by
+    // EssentialAccountSection after a successful /update-user-profile
+    // that touched firstName / lastName.
+    window.addEventListener('keepid:profile-updated', this.handleProfileUpdated);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keepid:profile-updated', this.handleProfileUpdated);
+  }
+
+  handleProfileUpdated = () => {
+    this.refreshAuthFromServer();
+  };
+
+  refreshAuthFromServer = () => {
     fetch(`${getServerURL()}/authenticate`, {
       method: 'POST',
       credentials: 'include',
@@ -172,15 +191,20 @@ class App extends React.Component<{}, State, {}> {
           const jsonData = sessionStorage.getItem('mySessionStorageData');
           if (jsonData) {
             const data = JSON.parse(jsonData);
-            if (
-              !(
-                role() === data.role &&
-                username === data.username &&
-                organization === data.organization
-              ) &&
-              data.name === `${firstName} ${lastName}`
-            ) {
+            const serverName = `${firstName} ${lastName}`;
+            const identityMismatch =
+              !(role() === data.role
+                && username === data.username
+                && organization === data.organization);
+            if (identityMismatch && data.name === serverName) {
               this.logOut();
+            } else if (data.name !== serverName) {
+              // Identity matches but the name drifted — happens after
+              // /update-user-profile or /change-account-setting changes
+              // first/last. Sync App.state.name (and sessionStorage) to
+              // the server's truth so the sidebar Profile Title reflects
+              // the new name immediately.
+              this.logIn(role(), username, organization, serverName);
             }
           } else {
             // Server has a valid session but client has no local data.
@@ -188,14 +212,17 @@ class App extends React.Component<{}, State, {}> {
             // server and log in locally instead of destroying the session.
             this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
-        } else {
+        } else if (!this.state || this.state.role === Role.LoggedOut) {
+          // Don't logOut on a refresh-after-edit; only on initial mount
+          // when the user is genuinely not authenticated. The original
+          // mount-time call still hits this path via the early path above.
           this.logOut();
         }
       })
       .catch((e) => {
         console.log('Server is not running: ', e);
       });
-  }
+  };
 
   render() {
     const { role, username, name, organization, autoLogout } = this.state;

@@ -8,6 +8,7 @@ import {
   isValidPhoneNumber,
 } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import { birthDateStringFromIsoDateOnly } from '../SignUp/SignUp.util';
 import type { NameObj, ProfileData } from './ProfilePage';
 
@@ -49,14 +50,6 @@ function accountNameEqual(a: NameObj, b: NameObj): boolean {
     && (a.middle || '') === (b.middle || '')
     && (a.last || '') === (b.last || '')
     && (a.suffix || '') === (b.suffix || '');
-}
-
-function formatPhone(phone: string): string {
-  const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return phone;
 }
 
 export default function EssentialAccountSection({
@@ -320,6 +313,13 @@ export default function EssentialAccountSection({
       setAddLabel('');
       setAddPhone('');
       await fetchPhoneBook();
+      // Notify the App-level state holder that a profile changed.
+      // App listens, re-runs /authenticate, and updates App.state.name
+      // (the source for the sidebar Profile Title) if the actor's own
+      // name drifted. The handler is a no-op when nothing actually
+      // changed, so it's safe to fire on every save — including
+      // cross-user edits where the actor's own profile is unchanged.
+      window.dispatchEvent(new Event('keepid:profile-updated'));
       onSaved?.();
     } catch (e: any) {
       alert.show(`Failed to save: ${e?.message || String(e)}`, { type: 'error' });
@@ -626,7 +626,7 @@ export default function EssentialAccountSection({
                 ) : (
                   phoneBook.map((entry) => (
                     <div key={entry.phoneNumber} className="tw-pt-2 tw-flex tw-items-center tw-gap-2">
-                      <span>{formatPhone(entry.phoneNumber)}</span>
+                      <span>{formatPhoneForDisplay(entry.phoneNumber)}</span>
                       <span className="tw-text-sm tw-text-gray-500">{entry.label}</span>
                     </div>
                   ))

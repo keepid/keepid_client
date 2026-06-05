@@ -8,6 +8,7 @@ import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
 interface Props {
@@ -449,7 +450,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                               </h5>
                             </div>
                             <div className="tw-mb-1">
-                              <h6 className="tw-text-gray-500">{client.phone}</h6>
+                              <h6 className="tw-text-gray-500">{formatPhoneForDisplay(client.phone)}</h6>
                             </div>
                             <div className="tw-mb-1">
                               <h6 className="tw-text-gray-500">

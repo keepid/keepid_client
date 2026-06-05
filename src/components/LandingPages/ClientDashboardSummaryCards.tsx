@@ -22,19 +22,27 @@ async function fetchDocumentsCount(): Promise<number> {
 }
 
 async function fetchApplicationsCount(): Promise<number> {
-  const res = await fetch(`${getServerURL()}/get-files`, {
+  // Applications live in their own table post-slice-12 — /get-files with
+  // fileType=APPLICATION_PDF returns [] by design. /list-applications
+  // is the right endpoint (same one ViewApplications.tsx uses for the
+  // table itself), and the response is a flat array of rows visible to
+  // the caller (client sees own; staff sees the whole org).
+  const res = await fetch(`${getServerURL()}/list-applications`, {
     method: 'POST',
     credentials: 'include',
-    body: JSON.stringify({
-      fileType: FileType.APPLICATION_PDF,
-      annotated: true,
-    }),
+    body: JSON.stringify({}),
   });
+  if (res.status === 404) {
+    // Server hasn't been deployed with /list-applications yet — render
+    // 0 (clickable) instead of erroring out. Matches the resilience
+    // pattern in ViewApplications.loadDocuments.
+    return 0;
+  }
   const json = await res.json();
   if (!res.ok) {
     throw new Error(json?.message || 'Request failed');
   }
-  return Array.isArray(json.documents) ? json.documents.length : 0;
+  return Array.isArray(json) ? json.length : 0;
 }
 
 function countPhrase(count: number, singular: string, plural: string): string {

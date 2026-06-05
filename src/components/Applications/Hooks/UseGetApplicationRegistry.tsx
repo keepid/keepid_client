@@ -54,7 +54,7 @@ export default function useGetApplicationRegistry() {
   };
 
   /**
-   * Calls /fill-pdf-2 with form answers and stores the resulting filled PDF
+   * Calls /fill-pdf with form answers and stores the resulting filled PDF
    * for the preview step.
    */
   const fillPdf = async (
@@ -68,7 +68,7 @@ export default function useGetApplicationRegistry() {
     formData.append('formAnswers', JSON.stringify(formAnswers));
 
     try {
-      const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
+      const res = await fetch(`${getServerURL()}/fill-pdf`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

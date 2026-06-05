@@ -178,37 +178,53 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     }
 
     this.setState({ isLoadingDocuments: true, documentsError: null });
-    fetch(`${getServerURL()}/get-files`, {
+    // /list-applications returns a flat array of ApplicationListItemDto rows
+    // (id, state, title, lookupKey, client*, timestamps, attachmentCount).
+    // Authz lives in the handler: client sees own; same-org staff sees all.
+    // The previous /get-files APPLICATION_PDF call returned [] by design
+    // (FileService treats applications as not-files) — see slice 12 work.
+    fetch(`${getServerURL()}/list-applications`, {
       method: 'POST',
       credentials: 'include',
-      body: JSON.stringify({
-        fileType: FileType.APPLICATION_PDF,
-        ...(isWorkerView ? { targetUser: targetUsername } : {}),
-        annotated: true,
-      }),
-    }).then((response) => response.json())
-      .then((responseJSON) => {
-        const { status } = responseJSON;
-        const documents = Array.isArray(responseJSON.documents) ? responseJSON.documents : [];
-        if (status === 'SUCCESS') {
-          let newDocuments: DocumentInformation[] = [];
-          for (let i = 0; i < documents.length; i += 1) {
-            const row = documents[i];
-            row.index = i;
-            newDocuments.push(row);
-          }
-          newDocuments = this.mapDocuments(newDocuments);
-          this.setState({
-            documents: newDocuments,
-            isLoadingDocuments: false,
-            documentsError: null,
-          });
-          return;
+      body: JSON.stringify({}),
+    })
+      .then((response) => {
+        if (response.status === 404) {
+          // BE not yet deployed with /list-applications — render empty state
+          // rather than an error banner.
+          return [];
         }
+        return response.json();
+      })
+      .then((responseJSON) => {
+        const items = Array.isArray(responseJSON) ? responseJSON : [];
+        // Map ApplicationListItemDto → DocumentInformation. The FE's table
+        // was originally written against /get-files documents; we map field
+        // names without touching the table itself so the rest of the page
+        // (download, delete, row actions) keeps working.
+        const filteredItems = isWorkerView
+          ? items.filter((item) => item && item.clientUsername === targetUsername)
+          : items;
+        const newDocuments: DocumentInformation[] = filteredItems.map((item, index) => ({
+          id: String(item.id || ''),
+          uploader: String(item.clientUsername || ''),
+          organizationName: '',
+          uploadDate: String(item.updatedAt || item.createdAt || ''),
+          filename: `${String(item.title || 'Application')}.pdf`,
+          applicationDisplayName: String(item.title || 'Application'),
+          applicationState: String(item.state || ''),
+          applicationStatus: String(item.state || ''),
+          status: String(item.state || ''),
+          clientFirstName: String(item.clientFirstName || ''),
+          clientLastName: String(item.clientLastName || ''),
+          // index used by some table internals
+          ...(index !== undefined ? { index } : {}),
+        }));
+        const mapped = this.mapDocuments(newDocuments);
         this.setState({
-          documents: [],
+          documents: mapped,
           isLoadingDocuments: false,
-          documentsError: responseJSON.message || 'Could not load applications.',
+          documentsError: null,
         });
       })
       .catch(() => {
@@ -300,18 +316,46 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   confirmDeleteApplication = () => {
     const { deleteTargetApplication } = this.state;
     if (!deleteTargetApplication) return;
+    const deletedId = deleteTargetApplication.id;
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        fileId: deleteTargetApplication.id,
+        fileId: deletedId,
         fileType: FileType.APPLICATION_PDF,
         targetUser: deleteTargetApplication.uploader,
       }),
     })
-      .then((response) => response.json())
-      .then(() => {
+      // Tolerate empty / non-JSON bodies — see the matching pattern in
+      // updateApplicationAttachmentPdf. The /delete-file route returns
+      // a JSON envelope on success, but if it ever 4xx-s with an empty
+      // body we want to fall through to the optimistic local prune
+      // and the refetch instead of crashing the handler.
+      .then((response) => response.text().catch(() => ''))
+      .then((text) => {
+        let json: { status?: string } = {};
+        try { if (text) json = JSON.parse(text) as typeof json; } catch { /* ignore */ }
+        // Optimistically prune the deleted row from local state so the
+        // table updates immediately. The subsequent loadDocuments fetch
+        // is the source-of-truth refresh and will reconcile if anything
+        // diverged. Even on a non-SUCCESS response we still close the
+        // modal — the user can re-open if it turns out the row stuck
+        // around (loadDocuments will surface the truth either way).
+        this.setState((prev) => ({
+          deleteTargetApplication: null,
+          documents: prev.documents.filter((d) => d.id !== deletedId),
+        }));
+        if (json.status && json.status !== 'SUCCESS') {
+          // eslint-disable-next-line no-console
+          console.warn('delete-file returned non-success status', json.status);
+        }
+        const { clientUsername, clientName } = this.state;
+        this.loadDocuments(clientUsername, clientName);
+      })
+      .catch(() => {
+        // Network/transport failure — close the modal and re-fetch so
+        // the user sees the truth instead of being stuck on a spinner.
         this.setState({ deleteTargetApplication: null });
         const { clientUsername, clientName } = this.state;
         this.loadDocuments(clientUsername, clientName);
@@ -411,6 +455,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       renameTarget,
       renameValue,
       isRenaming,
+      availableApplications,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
@@ -418,10 +463,29 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
 
+    const stateBadge = (row: DocumentInformation) => {
+      const value = (row.applicationState || row.status || '').toUpperCase();
+      const cls = (() => {
+        switch (value) {
+          case 'MAILED': return 'tw-bg-emerald-100 tw-text-emerald-800';
+          case 'READY_TO_MAIL': return 'tw-bg-amber-100 tw-text-amber-800';
+          case 'DRAFT': return 'tw-bg-slate-100 tw-text-slate-700';
+          case 'CANCELLED': return 'tw-bg-rose-100 tw-text-rose-700';
+          default: return 'tw-bg-slate-100 tw-text-slate-700';
+        }
+      })();
+      const label = value ? value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : '—';
+      return (
+        <span className={`tw-inline-block tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium ${cls}`}>
+          {label}
+        </span>
+      );
+    };
+
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
         field: 'filename',
-        headerName: 'Application Name',
+        headerName: 'Application',
         renderCell: (row) => this.getApplicationDisplayName(row),
       },
       ...(isClientUser ? [] : [{
@@ -432,13 +496,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>]),
       {
+        field: 'applicationState',
+        headerName: 'Status',
+        sortable: true,
+        width: '14%',
+        renderCell: stateBadge,
+      } as DataTableColumn<DocumentInformation>,
+      {
         field: 'uploadDate',
-        headerName: isClientUser ? 'Completed' : 'Upload Date',
+        headerName: isClientUser ? 'Completed' : 'Last Updated',
         sortable: true,
         sortType: 'date',
-        width: '20%',
+        width: '18%',
         renderCell: (row) => row.formattedUploadDate || '-',
-      },
+      } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',
         headerName: isClientUser ? 'Actions' : '',
@@ -472,7 +543,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             <RowActionMenu actions={this.getRowActions(row)} />
           )
         ),
-      },
+      } as DataTableColumn<DocumentInformation>,
     ].filter((col) => {
       if (isClientUser && (col.field === 'actions' || col.field === 'uploadDate')) {
         return false;
@@ -513,6 +584,54 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 onRowClick={this.handleOpenApplication}
               />
             </div>
+            {!isClientUser && (
+              <div className="container tw-mt-8">
+                <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
+                  <h2 className="h5 tw-mb-0">Start a new application</h2>
+                </div>
+                {availableApplications.length > 0 ? (
+                  <ul className="tw-list-none tw-p-0 tw-m-0 tw-divide-y tw-divide-gray-200 tw-border tw-border-gray-200 tw-rounded tw-bg-white tw-pb-4">
+                    {availableApplications.map((application) => (
+                      <li key={application.lookupKey}>
+                        <Link
+                          to={{
+                            pathname: '/applications/createnew',
+                            state: {
+                              clientUsername: clientUsername || '',
+                              clientName: clientName || '',
+                              presetApplication: {
+                                lookupKey: application.lookupKey,
+                                type: application.type,
+                                state: application.state,
+                                situation: application.situation,
+                              },
+                              startAtReview: application.canStart,
+                            },
+                          }}
+                          className="tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3 tw-no-underline hover:tw-bg-gray-50"
+                        >
+                          <div className="tw-flex tw-items-baseline tw-gap-3 tw-min-w-0">
+                            <span className="tw-text-gray-900 tw-font-medium tw-shrink-0">
+                              {application.type || 'Application'}
+                            </span>
+                            <span className="tw-text-sm tw-text-gray-600 tw-truncate">
+                              {[application.state, application.situation]
+                                .filter((value) => value && value.trim().length > 0)
+                                .join(' — ') || 'Open application form'}
+                            </span>
+                          </div>
+                          <i className="fas fa-chevron-right tw-text-gray-400 tw-text-sm tw-ml-3" aria-hidden />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="alert alert-light border">
+                    No quick-start registry options are available. You can still use the full form.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           {deleteTargetApplication && (
             <div

@@ -78,7 +78,7 @@ function resolveConditionalDirective(
   return match?.use ?? null;
 }
 
-function buildFormAnswers(
+export function buildFormAnswers(
   uiSchema: Record<string, unknown>,
   jsonSchema: Record<string, unknown>,
   data: Record<string, unknown>,

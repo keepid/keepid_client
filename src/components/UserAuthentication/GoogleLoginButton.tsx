@@ -3,12 +3,6 @@ import React, { useEffect } from 'react';
 import getServerURL from '../../serverOverride';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const currentMode = import.meta.env.MODE;
-const originUri = currentMode === 'production'
-  ? 'https://keep.id'
-  : currentMode === 'staging'
-    ? 'https://staged.keep.id'
-    : 'http://localhost:3000';
 
 export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoogleLoginError }) {
   useEffect(() => {
@@ -22,11 +16,23 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
   }, []);
 
   const handleClick = () => {
+    // Build an ABSOLUTE redirect URI. getServerURL() may return a relative
+    // path (e.g. "/api" in the Cloud Run prod build); Google rejects
+    // relative redirect_uri values. Prefixing with window.location.origin
+    // produces the full URL that the browser will navigate to after auth,
+    // which is also what must be registered in the Google OAuth client
+    // console AND in the server's keepid.oauth.allowed-redirect-uris
+    // allowlist. window.location.origin makes this self-correcting across
+    // every host the FE might be served from (keep.id, the Cloud Run
+    // preview URL, localhost, future custom domains).
+    const redirectUri = `${window.location.origin}${getServerURL()}/googleLoginResponse`;
+    const originUri = window.location.origin;
+
     fetch(`${getServerURL()}/googleLoginRequest`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        redirectUri: `${getServerURL()}/googleLoginResponse`,
+        redirectUri,
         originUri,
       }),
     })
@@ -39,7 +45,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           `client_id=${clientId}` +
           '&response_type=code' +
           '&scope=openid%20email%20profile' +
-          `&redirect_uri=${getServerURL()}/googleLoginResponse` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
           `&state=${state}` +
           '&code_challenge_method=S256' +
           `&code_challenge=${codeChallenge}` +
