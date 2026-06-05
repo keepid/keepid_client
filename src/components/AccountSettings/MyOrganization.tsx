@@ -1,15 +1,15 @@
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import ViewDocument from '../Documents/ViewDocument';
@@ -91,6 +91,15 @@ function formatAddress(a: OrgAddress): string {
   return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
 }
 
+// Format a Date as YYYY-MM-DD using local calendar fields. Avoids the UTC skew
+// of toISOString(), which can roll the date back a day for users west of UTC.
+function toLocalISODate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 interface OrgDocument {
   id: string;
   filename: string;
@@ -153,10 +162,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [isLoadingMailSummary, setIsLoadingMailSummary] = useState(false);
   const [mailDateFrom, setMailDateFrom] = useState(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().split('T')[0];
+    d.setDate(1);
+    return toLocalISODate(d);
   });
-  const [mailDateTo, setMailDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [mailDateTo, setMailDateTo] = useState(() => toLocalISODate(new Date()));
 
   const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
@@ -675,7 +684,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
-          <div className="col-9 card-text tw-pt-2">{orgInfo.phone || 'Not set'}</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.phone ? formatPhoneForDisplay(orgInfo.phone) : 'Not set'}</div>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Email</div>

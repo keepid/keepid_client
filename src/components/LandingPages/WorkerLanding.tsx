@@ -121,7 +121,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [clientCredentialsCorrect, setClientCredentialsCorrect] = useState(false);
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortMode, setSortMode] = useState<ClientSortMode>('name-asc');
+  const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
   const [isLoading, setIsLoading] = useState(true);
   const { path, url } = useRouteMatch();
 
@@ -274,8 +274,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return sortedClients.slice(indexOfFirstPost, indexOfLastPost);
   }, [sortedClients, currentPage]);
 
+  const lastPage = Math.max(Math.ceil(sortedClients.length / POSTS_PER_PAGE), 1);
+
   const { pageNumbers, paginationClassName } = useMemo(() => {
-    const lastPage = Math.ceil(sortedClients.length / POSTS_PER_PAGE);
     const pageNumbers: number[] = [];
     for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
@@ -286,15 +287,18 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       const activeClasses = 'tw-bg-twprimary tw-text-white tw-border-blue-600';
       const inactiveClasses = 'tw-bg-white hover:tw-bg-gray-100';
 
-      let classes = `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
-      if (pageNum === 1) classes += ' tw-rounded-l-md';
-      if (pageNum === lastPage) classes += ' tw-rounded-r-md';
-
-      return classes;
+      return `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
     };
 
     return { pageNumbers, paginationClassName };
-  }, [sortedClients.length, currentPage]);
+  }, [lastPage, currentPage]);
+
+  const edgeButtonClassName = (disabled: boolean, side: 'left' | 'right'): string => {
+    const base = `tw-px-3 tw-py-1 tw-border tw-border-gray-300 ${side === 'left' ? 'tw-rounded-l-md' : 'tw-rounded-r-md'}`;
+    return disabled
+      ? `${base} tw-bg-gray-100 tw-text-gray-400 tw-cursor-not-allowed`
+      : `${base} tw-bg-white hover:tw-bg-gray-100 tw-cursor-pointer`;
+  };
 
   const modalRender = () => {
     if (!showClientAuthModal) return null;
@@ -388,11 +392,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
               <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end tw-items-stretch tw-gap-4">
                 <form
-                  className="tw-flex tw-w-full md:tw-w-auto tw-flex-shrink-0"
+                  className="tw-flex tw-w-full md:tw-w-[28rem] tw-flex-shrink-0"
                   onSubmit={handleSearchSubmit}
                 >
                   <input
-                    className="tw-flex-grow tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
+                    className="tw-flex-grow tw-px-4 tw-py-2.5 tw-text-base tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
                     type="text"
                     onChange={(e) => setSearchName(e.target.value)}
                     value={searchName}
@@ -432,7 +436,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                   {sortedClients.length > 0 ? (
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
                       {currentPosts.map((client) => (
-                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+                        <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
                           <Link
                             to={`/profile/${client.username}`}
                             className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
@@ -517,6 +521,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                       {sortedClients.length} Results
                     </div>
                     <div className="tw-flex">
+                      <span
+                        className={edgeButtonClassName(currentPage === 1, 'left')}
+                        onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={(e) => e.key === 'Enter' && currentPage > 1 && setCurrentPage(currentPage - 1)}
+                      >
+                        Previous
+                      </span>
                       {pageNumbers.map((pageNum) => (
                         <span
                           key={pageNum}
@@ -529,6 +542,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                           {pageNum}
                         </span>
                       ))}
+                      <span
+                        className={edgeButtonClassName(currentPage === lastPage, 'right')}
+                        onClick={() => currentPage < lastPage && setCurrentPage(currentPage + 1)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={(e) => e.key === 'Enter' && currentPage < lastPage && setCurrentPage(currentPage + 1)}
+                      >
+                        Next
+                      </span>
                     </div>
                   </>
                 )}
