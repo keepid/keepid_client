@@ -71,6 +71,21 @@ export default function CameraViewfinder({
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        // Request continuous autofocus on the live track. Many mobile devices
+        // default to fixed focus over getUserMedia, which is the root cause of
+        // blurry document scans. focusMode is an "advanced" MediaTrack
+        // constraint applied after the stream starts; it is unsupported on iOS
+        // Safari (which autofocuses anyway) so failures are non-fatal.
+        const [track] = stream.getVideoTracks();
+        const caps = (track?.getCapabilities?.() ?? {}) as Record<string, unknown>;
+        const focusModes = Array.isArray(caps.focusMode) ? (caps.focusMode as string[]) : [];
+        if (track && focusModes.includes('continuous')) {
+          track
+            .applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
+            .catch(() => {
+              /* device kept its default focus mode — acceptable */
+            });
+        }
       })
       .catch(handleStreamFailure);
 
