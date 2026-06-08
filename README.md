@@ -26,6 +26,44 @@ After cloning, `cd client` and then do npm install
 
 In the project directory, you can run:
 
+## Local server-next development
+
+For the server migration stack, run `keepid_server_next`, `keepid_client`,
+and `keepid_devportal` in separate terminals.
+
+```bash
+# terminal 1: server-next
+cd ../keepid_server_next
+docker compose up -d postgres fake-gcs
+./mvnw spring-boot:run
+
+# terminal 2: client
+cd ../keepid_client
+npm start
+
+# terminal 3: developer portal
+cd ../keepid_devportal
+VITE_API_BASE=http://localhost:7001 npm run dev -- --host 127.0.0.1
+```
+
+Open:
+
+- Client: [http://localhost:3000](http://localhost:3000)
+- Developer portal: [http://127.0.0.1:5173](http://127.0.0.1:5173)
+
+The client development build currently talks to `http://localhost:7001`.
+Start `keepid_server_next` on that port unless you are intentionally testing a
+different backend.
+
+Seeded demo users use password `demo-pass`:
+
+| Username | Role |
+| --- | --- |
+| `demo-admin` | Admin |
+| `demo-worker` | Worker |
+| `demo-client` | Client |
+| `demo-developer` | Developer portal |
+
 ### `npm start`
 
 Runs the app in the development mode.<br />
