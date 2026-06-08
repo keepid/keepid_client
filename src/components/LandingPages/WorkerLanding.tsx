@@ -27,6 +27,11 @@ interface TargetClient {
   email?: string;
   birthDate: string;
   photo: string | null;
+  profilePhoto?: {
+    contentType?: string;
+    byteSize?: number;
+    uploadedAt?: string;
+  } | null;
   assignedWorkerUsernames: string[];
   /** ISO or parseable date string from get-organization-members */
   creationDate?: string | null;
@@ -126,10 +131,10 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const { path, url } = useRouteMatch();
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
-    let photos: (string | null)[];
-    let clientsWithPhotos: TargetClient[];
+    const clientsWithPhoto = clientsArray.filter((client) => client.profilePhoto != null);
+    if (clientsWithPhoto.length === 0) return;
 
-    const promises = clientsArray.map((client) => fetch(`${getServerURL()}/load-pfp`, {
+    const promises = clientsWithPhoto.map((client) => fetch(`${getServerURL()}/load-pfp`, {
       signal,
       method: 'POST',
       credentials: 'include',
@@ -140,22 +145,26 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
     try {
       const results = await Promise.all(promises);
-      photos = results.map((blob) => {
+      const photos = results.map((blob) => {
         if (blob.size > 72) {
           return (URL || window.webkitURL).createObjectURL(blob);
         }
         return null;
       });
 
-      clientsWithPhotos = clientsArray.slice();
-      clientsArray.forEach((client, i) => {
-        clientsWithPhotos[i].photo = photos[i];
+      const photosByUsername = new Map<string, string | null>();
+      clientsWithPhoto.forEach((client, i) => {
+        photosByUsername.set(client.username, photos[i]);
       });
-      setClients(clientsWithPhotos);
+      setClients((currentClients) => currentClients.map((client) => (
+        photosByUsername.has(client.username)
+          ? { ...client, photo: photosByUsername.get(client.username) ?? null }
+          : client
+      )));
     } catch (error: any) {
       if (error.toString() !== 'AbortError: The user aborted a request.') {
         alert.show(
-          `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          `Could Not Retrieve Profile Photos. Try again or report this network failure to team keep: ${error}`,
         );
       }
     }
@@ -186,11 +195,14 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
         let filteredPeople: TargetClient[] = [];
         if (status !== 'USER_NOT_FOUND' && Array.isArray(people)) {
-          filteredPeople = people.filter((person: TargetClient) =>
-            matchesClientSearchQuery(person, submittedSearchName));
+          filteredPeople = people
+            .map((person: TargetClient) => ({ ...person, photo: null }))
+            .filter((person: TargetClient) => matchesClientSearchQuery(person, submittedSearchName));
         }
 
         if (filteredPeople.length > 0) {
+          setClients(filteredPeople);
+          setIsLoading(false);
           await loadProfilePhoto(filteredPeople, signal);
         } else {
           setClients([]);
