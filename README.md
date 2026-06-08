@@ -49,7 +49,7 @@ VITE_API_BASE=http://localhost:7001 npm run dev -- --host 127.0.0.1
 Open:
 
 - Client: [http://localhost:3000](http://localhost:3000)
-- Developer portal: [http://127.0.0.1:5173](http://127.0.0.1:5173)
+- Developer portal: [http://localhost:5173](http://localhost:5173)
 
 The client development build currently talks to `http://localhost:7001`.
 Start `keepid_server_next` on that port unless you are intentionally testing a
