@@ -22,7 +22,6 @@ export async function enrollClient(
 ): Promise<{ status: string }> {
   return fetch(`${getServerURL()}/enroll-client`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(data),
   }).then((response) => response.json());
@@ -44,7 +43,6 @@ export async function enrollWorker(
 ): Promise<{ status: string }> {
   return fetch(`${getServerURL()}/enroll-worker`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(data),
   }).then((response) => response.json());
@@ -53,7 +51,6 @@ export async function enrollWorker(
 export async function isUsernameAvailable(username: string): Promise<boolean> {
   return fetch(`${getServerURL()}/username-exists`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       username,
@@ -71,7 +68,6 @@ export async function getAllWorkersFromOrganizationToAssign(
 ): Promise<any[]> {
   return fetch(`${getServerURL()}/get-all-members-by-role`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       role,
@@ -93,7 +89,6 @@ export async function assignWorkerToUser(
 ): Promise<boolean> {
   return fetch(`${getServerURL()}/assign-worker-to-user`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       user,
@@ -153,7 +148,6 @@ async function _createUser({
 
   return fetch(`${getServerURL()}/${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
   }).then((response) => response.json());
@@ -232,7 +226,6 @@ export async function signupOrganization({
 
   return fetch(`${getServerURL()}/organization-signup`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       organizationWebsite: revisedURL,
       organizationName,

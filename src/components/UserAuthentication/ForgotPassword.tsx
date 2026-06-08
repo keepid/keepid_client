@@ -43,7 +43,6 @@ class ForgotPassword extends Component<Props, State> {
     } else {
       fetch(`${getServerURL()}/forgot-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           username,

@@ -160,7 +160,6 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -219,7 +218,6 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -318,7 +316,6 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,
@@ -408,7 +405,6 @@ class MyDocuments extends Component<Props, State> {
 
     fetch(`${getServerURL()}/get-files`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType,
@@ -622,7 +618,7 @@ class MyDocuments extends Component<Props, State> {
       },
     ];
     const mostRecentColumns: DataTableColumn[] = allDocumentsColumns.filter(
-      (column) => column.field !== 'uploadDate' && column.field !== 'uploader',
+      (column) => column.field !== 'uploader',
     );
 
     return (

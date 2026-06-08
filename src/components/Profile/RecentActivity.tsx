@@ -14,8 +14,10 @@ function RecentActivity({ username }) {
   const renderActivitiesCard = (activities) => {
     if (activities.length > 0) {
       // eslint-disable-next-line no-underscore-dangle
-      return activities
-        .slice(0, 5) // only get the first number of elements
+      return [...activities]
+        .sort((a, b) =>
+          new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime())
+        .slice(0, 5) // only get the most recent elements
         .map((activity) => (
           <li className="odd:tw-bg-gray-100">
             <div className="tw-text-md tw-text-gray-700 tw-py-5 sm:tw-grid sm:tw-grid-cols-5">
@@ -42,7 +44,6 @@ function RecentActivity({ username }) {
   const fetchRecentActivity = () => {
     fetch(`${getServerURL()}/get-all-activities`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ username: username.username }),
     })

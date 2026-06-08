@@ -30,7 +30,7 @@ export default function StructuredFormWithRows({
   return (
     <Form onSubmit={onSubmit}>
       {rows.map((r) => (
-        <Row key={`form-row-${r.rowLabel}`} className="text-end">
+        <Row key={`form-row-${r.rowLabel}`} className="text-end align-items-center">
           <p className="col-sm-3 col-form-label tw-mx-2 tw-my-3">{r.rowLabel}</p>
           {r.fields.map((f) => (
             <Col key={`input-${f.name}`}>

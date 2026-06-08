@@ -20,17 +20,49 @@ https://docs.google.com/document/d/1T8B3dqA8e5DC0h6G0Ws0U6hV89QJ4xI-6eIYmAf7ti4/
 ## How to Install the Client
 After cloning, `cd client` and then do npm install
 
-### Pointing at a server
 
-`src/serverOverride.ts` reads `VITE_API_BASE` first, then falls back to
-mode-based defaults. Copy `.env.example` to `.env.local` and set
-`VITE_API_BASE` to your local server's base URL (e.g.
-`http://localhost:7001` for `keepid_server_next`, or `http://localhost:7000`
-for the legacy server).
 
 ## Available Scripts
 
 In the project directory, you can run:
+
+## Local server-next development
+
+For the server migration stack, run `keepid_server_next`, `keepid_client`,
+and `keepid_devportal` in separate terminals.
+
+```bash
+# terminal 1: server-next
+cd ../keepid_server_next
+docker compose up -d postgres fake-gcs
+./mvnw spring-boot:run
+
+# terminal 2: client
+cd ../keepid_client
+npm start
+
+# terminal 3: developer portal
+cd ../keepid_devportal
+VITE_API_BASE=http://localhost:7001 npm run dev -- --host 127.0.0.1
+```
+
+Open:
+
+- Client: [http://localhost:3000](http://localhost:3000)
+- Developer portal: [http://localhost:5173](http://localhost:5173)
+
+The client development build currently talks to `http://localhost:7001`.
+Start `keepid_server_next` on that port unless you are intentionally testing a
+different backend.
+
+Seeded demo users use password `demo-pass`:
+
+| Username | Role |
+| --- | --- |
+| `demo-admin` | Admin |
+| `demo-worker` | Worker |
+| `demo-client` | Client |
+| `demo-developer` | Developer portal |
 
 ### `npm start`
 

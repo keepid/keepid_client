@@ -185,7 +185,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     // (FileService treats applications as not-files) — see slice 12 work.
     fetch(`${getServerURL()}/list-applications`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({}),
     })
@@ -239,9 +238,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
   componentDidMount() {
     this.loadFromLocation();
-    if (this.props.role !== Role.Client) {
-      this.loadAvailableApplications();
-    }
   }
 
   componentDidUpdate(prevProps: Props & RouteComponentProps) {
@@ -297,7 +293,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   handleDownloadApplication = (row: DocumentInformation) => {
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: row.id,
@@ -325,7 +320,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     fetch(`${getServerURL()}/delete-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: deletedId,

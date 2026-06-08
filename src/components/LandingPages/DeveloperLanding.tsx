@@ -130,10 +130,8 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
   getDocuments() {
     const { searchName } = this.state;
-    // Spring rejects the trailing-space URL the legacy Javalin server tolerated.
-    fetch(`${getServerURL()}/get-files`, {
+    fetch(`${getServerURL()}/get-files `, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileType: FileType.FORM,
@@ -177,7 +175,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/upload-form`, {
       method: 'POST',
-      // Content-Type omitted — browser sets multipart/form-data with boundary for FormData bodies
       credentials: 'include',
       body: formData,
     })
@@ -221,7 +218,6 @@ class DeveloperLanding extends Component<Props, State, {}> {
 
     fetch(`${getServerURL()}/download-file`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         fileId: documentId,

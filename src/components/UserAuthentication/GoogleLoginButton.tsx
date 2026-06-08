@@ -30,7 +30,6 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
 
     fetch(`${getServerURL()}/googleLoginRequest`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         redirectUri,
