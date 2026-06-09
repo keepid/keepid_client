@@ -331,6 +331,7 @@ class App extends React.Component<{}, State, {}> {
                         organization={organization}
                         username={username}
                         role={role}
+                        logOut={this.logOut}
                       />
                     );
                   }
