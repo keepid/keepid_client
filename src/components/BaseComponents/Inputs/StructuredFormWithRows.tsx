@@ -17,6 +17,7 @@ type Props = {
   values: Record<string, any>;
   children?: JSX.Element | JSX.Element[];
   labelClassName?: string;
+  rowLabelClassName?: string;
 };
 
 export default function StructuredFormWithRows({
@@ -24,6 +25,7 @@ export default function StructuredFormWithRows({
   rows,
   values,
   labelClassName,
+  rowLabelClassName = 'col-sm-3 col-form-label tw-mx-2 tw-my-3',
   onPropertyChange,
   children,
 }: Props) {
@@ -31,7 +33,7 @@ export default function StructuredFormWithRows({
     <Form onSubmit={onSubmit}>
       {rows.map((r) => (
         <Row key={`form-row-${r.rowLabel}`} className="text-end align-items-center">
-          <p className="col-sm-3 col-form-label tw-mx-2 tw-my-3">{r.rowLabel}</p>
+          <p className={rowLabelClassName}>{r.rowLabel}</p>
           {r.fields.map((f) => (
             <Col key={`input-${f.name}`}>
               <InputFromField
