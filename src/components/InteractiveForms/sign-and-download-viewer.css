@@ -8,8 +8,7 @@
   width: 100% !important;
   height: auto !important;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: auto;
 }
 
 .keepid-pdf-preview .react-pdf__Page__textContent,
@@ -18,6 +17,23 @@
   inset: 0;
   width: 100% !important;
   height: 100% !important;
+}
+
+.keepid-pdf-preview .react-pdf__Page__textContent {
+  z-index: 1;
+}
+
+.keepid-pdf-preview .react-pdf__Page__annotations {
+  z-index: 2;
+}
+
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .react-pdf__Page__textContent {
+  pointer-events: none;
+}
+
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .react-pdf__Page__annotations,
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer :is(input, textarea, select, button) {
+  pointer-events: auto;
 }
 
 .keepid-pdf-preview.keepid-pdf-edit-locked .react-pdf__Page__annotations {
