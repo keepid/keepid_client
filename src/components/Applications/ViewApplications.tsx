@@ -238,6 +238,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
   componentDidMount() {
     this.loadFromLocation();
+    if (this.props.role !== Role.Client) {
+      this.loadAvailableApplications();
+    }
   }
 
   componentDidUpdate(prevProps: Props & RouteComponentProps) {
