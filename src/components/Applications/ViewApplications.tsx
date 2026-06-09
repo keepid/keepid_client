@@ -238,6 +238,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
   componentDidMount() {
     this.loadFromLocation();
+    if (this.props.role !== Role.Client) {
+      this.loadAvailableApplications();
+    }
   }
 
   componentDidUpdate(prevProps: Props & RouteComponentProps) {
@@ -590,7 +593,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
                 {availableApplications.length > 0 ? (
-                  <ul className="tw-list-none tw-p-0 tw-m-0 tw-divide-y tw-divide-gray-200 tw-border tw-border-gray-200 tw-rounded tw-bg-white tw-pb-4">
+                  <ul className="tw-list-none tw-p-0 tw-m-0 tw-space-y-3">
                     {availableApplications.map((application) => (
                       <li key={application.lookupKey}>
                         <Link
@@ -608,7 +611,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                               startAtReview: application.canStart,
                             },
                           }}
-                          className="tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3 tw-no-underline hover:tw-bg-gray-50"
+                          className="tw-flex tw-items-center tw-justify-between tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-shadow-sm tw-no-underline hover:tw-border-twprimary hover:tw-bg-blue-50 hover:tw-shadow-md"
                         >
                           <div className="tw-flex tw-items-baseline tw-gap-3 tw-min-w-0">
                             <span className="tw-text-gray-900 tw-font-medium tw-shrink-0">

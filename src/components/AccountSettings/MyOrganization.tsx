@@ -574,7 +574,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgName"
                 type="text"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.name}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, name: e.target.value })}
               />
@@ -586,14 +586,14 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgAddrLine1"
                 type="text"
-                className="form-control form-purple tw-mb-1"
+                className="form-control form-purple tw-mb-1 tw-py-2"
                 placeholder="Street address"
                 value={editedOrgInfo.address.line1}
                 onChange={(e) => updateAddress('line1', e.target.value)}
               />
               <input
                 type="text"
-                className="form-control form-purple tw-mb-1"
+                className="form-control form-purple tw-mb-1 tw-py-2"
                 placeholder="Apt, suite, etc."
                 value={editedOrgInfo.address.line2}
                 onChange={(e) => updateAddress('line2', e.target.value)}
@@ -601,14 +601,14 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <div className="tw-flex tw-gap-2">
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   placeholder="City"
                   value={editedOrgInfo.address.city}
                   onChange={(e) => updateAddress('city', e.target.value)}
                 />
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   style={{ maxWidth: 100 }}
                   placeholder="State"
                   value={editedOrgInfo.address.state}
@@ -616,7 +616,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 />
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   style={{ maxWidth: 120 }}
                   placeholder="Zip"
                   value={editedOrgInfo.address.zip}
@@ -631,7 +631,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgPhone"
                 type="text"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.phone}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, phone: e.target.value })}
               />
@@ -643,7 +643,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgEmail"
                 type="email"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.email}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, email: e.target.value })}
               />
@@ -654,7 +654,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             <div className="col-9 card-text">
               <select
                 id="designatedDirectorUsername"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.designatedDirectorUsername}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, designatedDirectorUsername: e.target.value })}
               >

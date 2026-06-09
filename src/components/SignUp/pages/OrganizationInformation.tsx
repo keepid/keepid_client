@@ -194,6 +194,7 @@ export default function OrganizationInformation(): JSX.Element {
             onPropertyChange={onPropertyChange}
             values={values || {}}
             labelClassName="d-none"
+            rowLabelClassName="col-sm-3 col-form-label tw-mx-2 tw-my-0 tw-pr-3 tw-self-start tw-pt-2 tw-text-right"
           >
             <div className="d-flex">
               <button

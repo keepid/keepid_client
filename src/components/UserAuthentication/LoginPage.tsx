@@ -273,7 +273,6 @@ class LoginPage extends Component<Props, State> {
 
     return (
       <div className="form-signin pt-2">
-        <h1 className="h4 tw-font-semibold tw-mb-3 tw-text-center">Sign In</h1>
         <GoogleLoginButton
           handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
           handleGoogleLoginError={this.handleGoogleLoginError}
@@ -318,10 +317,10 @@ class LoginPage extends Component<Props, State> {
                 className="w-100 pt-2 font-weight-bold"
               >
                 Password
-                <div className="pass-wrapper form-control form-purple mt-1">
+                <div className="tw-relative tw-mt-1 tw-mb-3.5 tw-flex tw-h-[46px] tw-items-stretch tw-overflow-hidden tw-rounded-[0.35rem] tw-border tw-border-solid tw-border-primary-theme tw-bg-white">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="pass-input"
+                    className="tw-min-w-0 tw-flex-1 tw-border-0 tw-p-2.5 tw-outline-none"
                     id="password"
                     placeholder="password"
                     value={password}
@@ -330,12 +329,12 @@ class LoginPage extends Component<Props, State> {
                   />
                   <button
                     type="button"
-                    className="pass-icon"
+                    className="tw-flex tw-w-11 tw-cursor-pointer tw-items-center tw-justify-center tw-self-stretch tw-rounded-none tw-border-0 tw-border-l tw-border-solid tw-border-primary-theme tw-bg-white tw-p-0"
                     onClick={this.togglePassword}
                   >
                     <img
                       src={showPassword ? SlashEye : EyeIcon}
-                      className="eye-size"
+                      className="tw-h-5 tw-w-5"
                       alt={showPassword ? 'Show' : 'Hide'}
                     />
                   </button>

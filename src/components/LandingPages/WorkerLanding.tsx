@@ -16,6 +16,7 @@ interface Props {
   name: string;
   organization: string;
   role: Role;
+  logOut: () => void;
   alert: any;
 }
 
@@ -78,6 +79,10 @@ function matchesClientSearchQuery(client: TargetClient, query: string): boolean 
   ));
 }
 
+function formatBirthDateForDisplay(value: string): string {
+  return value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3');
+}
+
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
   const next = list.slice();
   switch (mode) {
@@ -115,7 +120,7 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
 
 const POSTS_PER_PAGE = 6;
 
-const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, alert }) => {
+const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, logOut, alert }) => {
   const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
   // --- UPDATED: State for submitted search ---
@@ -193,6 +198,12 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         const responseJSON = await res.json();
         const { people, status } = responseJSON;
 
+        if (status === 'AUTH_FAILURE') {
+          alert.show('Your session expired. Please sign in again.');
+          logOut();
+          return;
+        }
+
         let filteredPeople: TargetClient[] = [];
         if (status !== 'USER_NOT_FOUND' && Array.isArray(people)) {
           filteredPeople = people
@@ -223,7 +234,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return () => {
       controller.abort();
     };
-  }, [submittedSearchName, role, username, loadProfilePhoto, alert]);
+  }, [submittedSearchName, role, username, loadProfilePhoto, logOut, alert]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -466,12 +477,14 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                               </h5>
                             </div>
                             <div className="tw-mb-1">
-                              <h6 className="tw-text-gray-500">{formatPhoneForDisplay(client.phone)}</h6>
+                              <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
+                                {formatPhoneForDisplay(client.phone)}
+                              </p>
                             </div>
                             <div className="tw-mb-1">
-                              <h6 className="tw-text-gray-500">
-                                Birth Date: {client.birthDate}
-                              </h6>
+                              <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
+                                Birth Date: {formatBirthDateForDisplay(client.birthDate)}
+                              </p>
                             </div>
                           </Link>
 

@@ -36,6 +36,10 @@ function birthDateApiToIso(api: string | undefined): string {
   return `${m[3]}-${m[1]}-${m[2]}`;
 }
 
+function birthDateApiToDisplay(api: string | undefined): string {
+  return api?.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3') ?? '';
+}
+
 function initialNameFromProfile(profile: ProfileData): NameObj {
   return {
     first: profile.currentName?.first ?? profile.firstName ?? '',
@@ -493,7 +497,7 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{profile.birthDate || ''}</div>
+              <div className="tw-pt-2">{birthDateApiToDisplay(profile.birthDate)}</div>
             )}
           </div>
         </div>

@@ -381,6 +381,12 @@ class MyDocuments extends Component<Props, State> {
     });
   }
 
+  static getUploaderDisplayName(row: any) {
+    const displayName = typeof row?.uploaderName === 'string' ? row.uploaderName.trim() : '';
+    if (displayName) return displayName;
+    return row?.uploader || '';
+  }
+
   getDocumentData() {
     const { userRole } = this.props;
     this.setState({ currentUserRole: userRole });
@@ -580,6 +586,7 @@ class MyDocuments extends Component<Props, State> {
         headerName: 'Uploaded By',
         align: 'center',
         width: '20%',
+        renderCell: (row: any) => MyDocuments.getUploaderDisplayName(row),
       },
       {
         field: 'actions',
