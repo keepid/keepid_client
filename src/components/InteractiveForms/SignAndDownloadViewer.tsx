@@ -187,8 +187,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const pageDevicePixelRatio = typeof window === 'undefined'
     ? 2
     : Math.max(window.devicePixelRatio || 1, 2);
+  const pdfWidgetsEditable = !pdfFormsReadOnly || (showPdfEditControls && isPdfEditMode);
+  const effectivePdfFormsReadOnly = !pdfWidgetsEditable;
   /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
-  const usePdfJsFormWidgets = !pdfFormsReadOnly;
+  const usePdfJsFormWidgets = pdfWidgetsEditable;
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length === 0 || signedCount === signaturePlacements.length;
@@ -672,7 +674,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }, [combinedViewerDocs, pageNum]);
   const isViewingMainPdf = currentViewerPageMeta.doc.kind === 'main';
   const canEditCurrentAttachment =
-    currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !pdfFormsReadOnly;
+    currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !effectivePdfFormsReadOnly;
 
   const getMainPdfBytes = useCallback(async (): Promise<Uint8Array> => {
     const shouldUseSaveDocument = usePdfJsFormWidgets && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
@@ -856,7 +858,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSaving(true);
     try {
       if (currentViewerPageMeta.doc.kind === 'attachment') {
-        if (!canEditAttachments || pdfFormsReadOnly) {
+        if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
         const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
@@ -895,7 +897,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     getCurrentAttachmentPdfBlob,
     getCurrentPdfBlob,
     onSaveSuccess,
-    pdfFormsReadOnly,
+    effectivePdfFormsReadOnly,
   ]);
 
   const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {
@@ -904,7 +906,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSavingPdfEdits(true);
     try {
       if (currentViewerPageMeta.doc.kind === 'attachment') {
-        if (!canEditAttachments || pdfFormsReadOnly) {
+        if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
         const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
@@ -955,7 +957,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     getCurrentAttachmentPdfBlob,
     getCurrentPdfBlob,
     livePdfUrl,
-    pdfFormsReadOnly,
+    effectivePdfFormsReadOnly,
   ]);
 
   const handleCancelPdfEdits = useCallback(() => {
@@ -1033,7 +1035,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   return (
     <div className={`tw-flex tw-flex-col tw-gap-8 tw-items-start tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS}`}>
       <div
-        className={`keepid-pdf-preview ${pdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${usePdfJsFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
+        className={`keepid-pdf-preview ${effectivePdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${usePdfJsFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
       >
       {allSigned && signaturePlacements.length > 0 && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
@@ -1130,7 +1132,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 Attached pages appended: {totalAttachedPages}
               </div>
             )}
-            {!pdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (
+            {!effectivePdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (
               <div className="tw-px-3 tw-pb-2 tw-text-xs tw-text-amber-700 tw-font-medium">
                 Attachment pages are view-only. Edit fields on the main application pages.
               </div>
@@ -1148,7 +1150,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                   renderForms={usePdfJsFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
                 />
               </div>
-              {pdfFormsReadOnly && (
+              {effectivePdfFormsReadOnly && (
                 <div
                   className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
                   title="PDF is read-only."
@@ -1313,7 +1315,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         </div>
       )}
 
-      {orgDocs.length > 0 && !pdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
+      {orgDocs.length > 0 && !effectivePdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
           <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Attached Organization Documents</h4>
           {!allSigned ? (
