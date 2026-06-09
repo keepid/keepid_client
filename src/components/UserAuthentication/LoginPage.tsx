@@ -317,7 +317,7 @@ class LoginPage extends Component<Props, State> {
                 className="w-100 pt-2 font-weight-bold"
               >
                 Password
-                <div className="tw-relative tw-mt-1 tw-mb-3.5 tw-flex tw-min-h-[calc(1.5em+0.75rem+0.125rem)] tw-items-stretch tw-overflow-hidden tw-rounded-[0.35rem] tw-border tw-border-solid tw-border-primary-theme tw-bg-white">
+                <div className="tw-relative tw-mt-1 tw-mb-3.5 tw-flex tw-h-[46px] tw-items-stretch tw-overflow-hidden tw-rounded-[0.35rem] tw-border tw-border-solid tw-border-primary-theme tw-bg-white">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     className="tw-min-w-0 tw-flex-1 tw-border-0 tw-p-2.5 tw-outline-none"
