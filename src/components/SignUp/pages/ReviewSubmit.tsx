@@ -114,7 +114,7 @@ export default function ReviewSubmit({ onSubmit: onSubmitProp }: Props) {
                     <button type="button" className="transparent-button" onClick={togglePassword}>
                       <img
                         src={showPassword ? SlashEye : EyeIcon}
-                        className="eye-size"
+                        className="tw-h-5 tw-w-5"
                         alt={showPassword ? 'Show' : 'Hide'}
                       />
                     </button>
