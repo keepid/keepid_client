@@ -903,6 +903,8 @@ export default function ApplicationForm() {
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
             postRequirements={builderStateRef.current?.postRequirements}
+            showPdfEditControls
+            pdfFormsReadOnly
             canEditAttachments={canEditAttachments}
           />
         )}
