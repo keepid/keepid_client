@@ -111,7 +111,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [orgDocs, setOrgDocs] = useState<{ id: string; filename: string }[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
   const [stagedDocs, setStagedDocs] = useState<Set<string>>(new Set());
-  const [orgDocsDialogOpen, setOrgDocsDialogOpen] = useState(false);
   const [isAppendingDocs, setIsAppendingDocs] = useState(false);
   const [packetStateLoaded, setPacketStateLoaded] = useState(false);
   const [packetSelectionHydrated, setPacketSelectionHydrated] = useState(false);
@@ -1062,9 +1061,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 setSaveError(null);
                 setPdfEditSavedMessage(null);
                 setIsPdfEditMode(true);
-                if (canEditAttachments && orgDocs.length > 0) {
-                  setOrgDocsDialogOpen(true);
-                }
               }}
               className="tw-px-3 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 tw-transition-colors"
             >
@@ -1304,91 +1300,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 }`}
               >
                 {applying ? 'Embedding...' : 'Embed signature'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {orgDocsDialogOpen && orgDocs.length > 0 && !effectivePdfFormsReadOnly && (
-        <div
-          className="tw-fixed tw-inset-0 tw-z-[1040] tw-flex tw-items-center tw-justify-center tw-p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="keepid-org-docs-title"
-        >
-          <button
-            type="button"
-            className="tw-absolute tw-inset-0 tw-border-0 tw-bg-black/50 tw-p-0"
-            aria-label="Close attached documents"
-            onClick={() => setOrgDocsDialogOpen(false)}
-          />
-          <div className="tw-relative tw-z-10 tw-w-full tw-max-w-lg tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-shadow-xl">
-            <div className="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-gray-200 tw-px-5 tw-py-4">
-              <h3 id="keepid-org-docs-title" className="tw-m-0 tw-text-base tw-font-semibold tw-text-gray-900">
-                Attached Organization Documents
-              </h3>
-              <button
-                type="button"
-                className="tw-border-0 tw-bg-transparent tw-p-1 tw-text-gray-500 hover:tw-text-gray-800"
-                aria-label="Close"
-                onClick={() => setOrgDocsDialogOpen(false)}
-              >
-                <XMarkIcon className="tw-h-5 tw-w-5" aria-hidden />
-              </button>
-            </div>
-            <div className="tw-px-5 tw-py-4">
-              {!allSigned ? (
-                <div className="tw-rounded-lg tw-bg-yellow-50 tw-p-3 tw-text-sm tw-text-yellow-800">
-                  Please complete all signatures before appending additional documents.
-                </div>
-              ) : (
-                <>
-                  <div className="tw-flex tw-flex-col tw-gap-2">
-                    {orgDocs.map((doc) => (
-                      <label key={doc.id} className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-800">
-                        <input
-                          type="checkbox"
-                          checked={stagedDocs.has(doc.id)}
-                          disabled={isAppendingDocs || !packetPersistenceAvailable}
-                          onChange={() => toggleStagedDoc(doc.id)}
-                          className="tw-form-checkbox tw-h-4 tw-w-4 tw-rounded tw-border-gray-300 tw-text-blue-600 disabled:tw-opacity-50"
-                        />
-                        {doc.filename}
-                      </label>
-                    ))}
-                  </div>
-                  {!packetPersistenceAvailable && (
-                    <div className="tw-mt-3 tw-rounded tw-border tw-border-amber-200 tw-bg-amber-50 tw-p-2 tw-text-xs tw-text-amber-700">
-                      Packet persistence is currently unavailable for this application record.
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-            <div className="tw-flex tw-justify-end tw-gap-2 tw-border-t tw-border-gray-200 tw-bg-gray-50 tw-px-5 tw-py-4">
-              <button
-                type="button"
-                onClick={() => setOrgDocsDialogOpen(false)}
-                className="tw-rounded-lg tw-border tw-border-gray-300 tw-bg-white tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  await applyOrgDocs();
-                  setOrgDocsDialogOpen(false);
-                }}
-                disabled={
-                  isAppendingDocs
-                  || !hasAttachmentSelectionChanges
-                  || !packetPersistenceAvailable
-                  || !allSigned
-                }
-                className="tw-rounded-lg tw-border-0 tw-bg-blue-600 tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-text-white hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed"
-              >
-                {isAppendingDocs ? 'Applying changes...' : 'Apply Changes'}
               </button>
             </div>
           </div>
