@@ -128,6 +128,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [isPdfEditMode, setIsPdfEditMode] = useState(startInEditMode);
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
+  const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
   const attachmentPdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
   const hydrationComposeInFlightRef = useRef(false);
@@ -147,15 +148,22 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setInlineSigRestoreUrl(restoreCurrentSignature ? currentSigRef.current : null);
   }, []);
 
+  const handleFrameRef = useCallback((node: HTMLDivElement | null) => {
+    frameRef.current = node;
+    setFrameElement(node);
+  }, []);
+
   useEffect(() => {
-    const el = frameRef.current;
+    const el = frameElement;
     if (!el) return undefined;
-    const updateWidth = () => setFrameWidth(el.clientWidth);
+    const updateWidth = () => {
+      if (el.clientWidth > 0) setFrameWidth(el.clientWidth);
+    };
     updateWidth();
     const ro = new ResizeObserver(updateWidth);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [frameElement]);
 
   useEffect(() => {
     const updateModalPadHeight = () => {
@@ -1105,7 +1113,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       >
         <div className="tw-flex tw-flex-col tw-items-center tw-gap-1">
           <div
-            ref={frameRef}
+            ref={handleFrameRef}
             className={`tw-w-full ${FRAME_MAX_WIDTH_CLASS} tw-rounded-xl tw-border tw-border-gray-200 tw-bg-gray-200 tw-shadow-sm tw-overflow-hidden`}
           >
             <div className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-pt-2 tw-pb-1 tw-text-sm tw-bg-gray-200">

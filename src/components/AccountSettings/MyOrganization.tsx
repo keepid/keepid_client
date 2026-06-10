@@ -105,6 +105,7 @@ interface OrgDocument {
   filename: string;
   uploadDate: string;
   uploader: string;
+  uploaderName?: string;
 }
 
 interface MailSummaryEntry {
@@ -495,11 +496,17 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
   const getDocDisplayFileName = (filename?: string) => (filename || '').replace(/\.pdf$/i, '');
 
-  const handleRowClick = (row: any) => {
+  const getUploaderDisplayName = (row: OrgDocument) => {
+    const displayName = typeof row.uploaderName === 'string' ? row.uploaderName.trim() : '';
+    if (displayName) return displayName;
+    return row.uploader || '';
+  };
+
+  const handleRowClick = (row: OrgDocument) => {
     setCurrentDocumentId(row.id);
     setCurrentDocumentName(row.filename);
     setCurrentUploadDate(row.uploadDate);
-    setCurrentUploader(row.uploader);
+    setCurrentUploader(getUploaderDisplayName(row));
   };
 
   const getRowActions = (row: any): RowAction[] => {
@@ -542,6 +549,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     {
       field: 'uploader',
       headerName: 'Uploaded By',
+      renderCell: (row: OrgDocument) => getUploaderDisplayName(row),
     },
     {
       field: 'uploadDate',
@@ -986,7 +994,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               keyField="id"
               emptyMessage="No organization documents uploaded yet."
               searchPlaceholder="Search documents..."
-              searchFields={['filename', 'uploader', 'uploadDate']}
+              searchFields={['filename', 'uploaderName', 'uploader', 'uploadDate']}
               pageSize={10}
               defaultSortField="uploadDate"
               defaultSortDirection="desc"

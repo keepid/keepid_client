@@ -18,15 +18,21 @@ interface DocumentInformation {
   organizationName: string,
   id: string,
   uploadDate: string,
+  createdDate?: string,
   filename: string,
   applicationDisplayName?: string,
   formattedUploadDate?: string,
+  formattedCreatedDate?: string,
   status?: string,
   applicationStatus?: string,
   applicationState?: string,
   clientFirstName?: string,
   clientLastName?: string,
   clientName?: string,
+  createdByUsername?: string,
+  createdByFirstName?: string,
+  createdByLastName?: string,
+  createdByName?: string,
 }
 
 interface Props {
@@ -116,11 +122,23 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     return row.uploader || '-';
   };
 
+  getUploaderDisplayName = (row: DocumentInformation): string => {
+    const fullName = row.createdByName?.trim();
+    if (fullName) return fullName;
+    const first = row.createdByFirstName?.trim() || '';
+    const last = row.createdByLastName?.trim() || '';
+    const composed = `${first} ${last}`.trim();
+    if (composed) return composed;
+    return row.createdByUsername || row.uploader || '-';
+  };
+
   mapDocuments = (documents: DocumentInformation[]): DocumentInformation[] =>
     documents.map((doc) => ({
       ...doc,
       formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
+      formattedCreatedDate: this.formatUploadDate(doc.createdDate || doc.uploadDate || ''),
       clientName: this.getClientDisplayName(doc),
+      createdByName: this.getUploaderDisplayName(doc),
     }));
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
@@ -210,6 +228,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           uploader: String(item.clientUsername || ''),
           organizationName: '',
           uploadDate: String(item.updatedAt || item.createdAt || ''),
+          createdDate: String(item.createdAt || item.updatedAt || ''),
           filename: `${String(item.title || 'Application')}.pdf`,
           applicationDisplayName: String(item.title || 'Application'),
           applicationState: String(item.state || ''),
@@ -217,6 +236,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           status: String(item.state || ''),
           clientFirstName: String(item.clientFirstName || ''),
           clientLastName: String(item.clientLastName || ''),
+          createdByUsername: String(item.createdByUsername || ''),
+          createdByFirstName: String(item.createdByFirstName || ''),
+          createdByLastName: String(item.createdByLastName || ''),
           // index used by some table internals
           ...(index !== undefined ? { index } : {}),
         }));
@@ -287,6 +309,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             applicationFilename: filename,
             targetUser: uploader,
             clientUsername: clientUsername || '',
+            applicantName: this.getClientDisplayName(row),
+            uploadedByName: this.getUploaderDisplayName(row),
+            createdDate: row.createdDate || '',
+            lastUpdatedDate: row.uploadDate || '',
           },
         });
       },
@@ -466,25 +492,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
 
-    const stateBadge = (row: DocumentInformation) => {
-      const value = (row.applicationState || row.status || '').toUpperCase();
-      const cls = (() => {
-        switch (value) {
-          case 'MAILED': return 'tw-bg-emerald-100 tw-text-emerald-800';
-          case 'READY_TO_MAIL': return 'tw-bg-amber-100 tw-text-amber-800';
-          case 'DRAFT': return 'tw-bg-slate-100 tw-text-slate-700';
-          case 'CANCELLED': return 'tw-bg-rose-100 tw-text-rose-700';
-          default: return 'tw-bg-slate-100 tw-text-slate-700';
-        }
-      })();
-      const label = value ? value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : '—';
-      return (
-        <span className={`tw-inline-block tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium ${cls}`}>
-          {label}
-        </span>
-      );
-    };
-
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
         field: 'filename',
@@ -496,28 +503,24 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         headerName: 'Client',
         sortable: true,
         width: '22%',
+        hideOnMobile: true,
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>]),
       {
-        field: 'applicationState',
-        headerName: 'Status',
-        sortable: true,
-        width: '14%',
-        renderCell: stateBadge,
-      } as DataTableColumn<DocumentInformation>,
-      {
-        field: 'uploadDate',
-        headerName: isClientUser ? 'Completed' : 'Last Updated',
+        field: 'createdDate',
+        headerName: 'Created',
         sortable: true,
         sortType: 'date',
         width: '18%',
-        renderCell: (row) => row.formattedUploadDate || '-',
+        nowrap: true,
+        renderCell: (row) => row.formattedCreatedDate || '-',
       } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',
         headerName: isClientUser ? 'Actions' : '',
         align: 'right',
         width: isClientUser ? '26%' : '48px',
+        hideOnMobile: true,
         renderCell: (row) => (
           isClientUser ? (
             <div className="tw-flex tw-justify-end tw-gap-2">
@@ -582,7 +585,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
                 showSearch={false}
                 pageSize={10}
-                defaultSortField="uploadDate"
+                defaultSortField="createdDate"
                 defaultSortDirection="desc"
                 onRowClick={this.handleOpenApplication}
               />
