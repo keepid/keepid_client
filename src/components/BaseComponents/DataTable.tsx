@@ -26,6 +26,7 @@ export interface DataTableColumn<T = any> {
   renderCell?: (row: T) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
   width?: string;
+  mobileWidth?: string;
   hideOnMobile?: boolean;
   nowrap?: boolean;
 }
@@ -184,6 +185,7 @@ export default function DataTable<T extends Record<string, any>>({
             align={col.align || 'left'}
             sx={{
               fontSize: '0.95rem',
+              ...(col.width ? { width: { xs: col.mobileWidth || col.width, md: col.width } } : {}),
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               wordBreak: col.nowrap ? 'normal' : 'break-word',
@@ -235,7 +237,7 @@ export default function DataTable<T extends Record<string, any>>({
       <TableContainer
         component={Paper}
         elevation={0}
-        sx={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', mb: 2, overflowX: 'hidden' }}
+        sx={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', mb: 2, overflowX: 'auto' }}
       >
         <Table size="medium" sx={{ tableLayout: 'fixed', width: '100%' }}>
           <TableHead>
@@ -247,7 +249,7 @@ export default function DataTable<T extends Record<string, any>>({
                   sx={{
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    ...(col.width ? { width: col.width } : {}),
+                    ...(col.width ? { width: { xs: col.mobileWidth || col.width, md: col.width } } : {}),
                     ...(col.hideOnMobile ? { display: { xs: 'none', md: 'table-cell' } } : {}),
                   }}
                 >
