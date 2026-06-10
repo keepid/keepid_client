@@ -17,9 +17,18 @@ export interface EnrollClientData {
   phonenumber?: string;
 }
 
+export interface EnrollClientResponse {
+  status: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  birthDate?: string;
+}
+
 export async function enrollClient(
   data: EnrollClientData,
-): Promise<{ status: string }> {
+): Promise<EnrollClientResponse> {
   return fetch(`${getServerURL()}/enroll-client`, {
     method: 'POST',
     credentials: 'include',

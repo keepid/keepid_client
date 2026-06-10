@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  type ResolvedProfiles,
   getByPath,
   isExcludedFromProfileFormSync,
   normalizeDateLikeValue,
   resolveDirectiveFromProfiles,
-  type ResolvedProfiles,
 } from './directives';
 
 const profiles: ResolvedProfiles = {
@@ -117,6 +117,28 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneAreaCode', profiles)).toBe('215');
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneTelephonePrefix', profiles)).toBe('555');
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneLineNumber', profiles)).toBe('0199');
+  });
+
+  it('falls back from current-name directives to canonical name columns', () => {
+    const columnOnlyProfiles: ResolvedProfiles = {
+      client: {
+        firstName: 'Flow',
+        lastName: 'Flowcheck',
+      },
+      worker: {
+        firstName: 'Grace',
+        lastName: 'Hopper',
+      },
+      director: {
+        firstName: 'Katherine',
+        lastName: 'Johnson',
+      },
+    };
+
+    expect(resolveDirectiveFromProfiles('client.currentName.first', columnOnlyProfiles)).toBe('Flow');
+    expect(resolveDirectiveFromProfiles('client.currentName.last', columnOnlyProfiles)).toBe('Flowcheck');
+    expect(resolveDirectiveFromProfiles('worker.currentName.first', columnOnlyProfiles)).toBe('Grace');
+    expect(resolveDirectiveFromProfiles('director.currentName.last', columnOnlyProfiles)).toBe('Johnson');
   });
 
   it('supports address and full-address directives', () => {
