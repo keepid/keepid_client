@@ -91,6 +91,24 @@ function computePhoneLast7(profile: Record<string, unknown> | undefined): string
   return `${lastSeven.slice(0, 3)}-${lastSeven.slice(3)}`;
 }
 
+function isBlankValue(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === 'string' && value.trim() === '');
+}
+
+function resolveProfilePath(profile: Record<string, unknown> | undefined, path: string): unknown {
+  const value = getByPath(profile, path);
+  if (!isBlankValue(value)) return value;
+
+  const nameAlias: Record<string, string> = {
+    'currentName.first': 'firstName',
+    'currentName.middle': 'middleName',
+    'currentName.last': 'lastName',
+    'currentName.suffix': 'suffix',
+  };
+  const fallbackPath = nameAlias[path];
+  return fallbackPath ? getByPath(profile, fallbackPath) : value;
+}
+
 /** Full name for a profile scope: prefer structured currentName, else firstName/lastName. */
 function computeFullName(profile: Record<string, unknown> | undefined): string | undefined {
   if (!profile) return undefined;
@@ -115,20 +133,21 @@ function computeFullAddress(
   prefixes: string[],
 ): string | undefined {
   if (!profile) return undefined;
-  for (const prefix of prefixes) {
-    const at = (key: string) => String(getByPath(profile, `${prefix}.${key}`) ?? '').trim();
-    const line1 = at('line1');
-    const line2 = at('line2');
-    const city = at('city');
-    const state = at('state');
-    const zip = at('zip') || at('zipcode');
-    const cityStateZip = [city, [state, zip].filter(Boolean).join(' ').trim()]
-      .filter(Boolean)
-      .join(', ');
-    const full = [line1, line2, cityStateZip].filter(Boolean).join(', ');
-    if (full) return full;
-  }
-  return undefined;
+  return prefixes
+    .map((prefix) => {
+      const at = (key: string) => String(getByPath(profile, `${prefix}.${key}`) ?? '').trim();
+      const line1 = at('line1');
+      const line2 = at('line2');
+      const city = at('city');
+      const state = at('state');
+      const zip = at('zip') || at('zipcode');
+      const cityStateZip = [city, [state, zip].filter(Boolean).join(' ').trim()]
+        .filter(Boolean)
+        .join(', ');
+      const full = [line1, line2, cityStateZip].filter(Boolean).join(', ');
+      return full || undefined;
+    })
+    .find(Boolean);
 }
 
 /** Extract a part (area code / prefix / line number) of the primary phone. */
@@ -250,7 +269,12 @@ export function resolveDirectiveFromProfiles(
   if (phonePartMatch) {
     const profileKey = phonePartMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const which = phonePartMatch[2].toLowerCase();
-    const part = which === 'areacode' ? 'area' : which === 'telephoneprefix' ? 'prefix' : 'line';
+    const phonePartByDirective: Record<string, 'area' | 'prefix' | 'line'> = {
+      areacode: 'area',
+      telephoneprefix: 'prefix',
+      linenumber: 'line',
+    };
+    const part = phonePartByDirective[which];
     return computePhonePart(profiles[profileKey] as Record<string, unknown> | undefined, part);
   }
 
@@ -273,10 +297,10 @@ export function resolveDirectiveFromProfiles(
   }
 
   if (lower.startsWith('client.') && profiles.client) {
-    return normalizeDateLikeValue(getByPath(profiles.client, directive.slice(7)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.client, directive.slice(7)));
   }
   if (lower.startsWith('worker.') && profiles.worker) {
-    return normalizeDateLikeValue(getByPath(profiles.worker, directive.slice(7)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.worker, directive.slice(7)));
   }
   if (lower.startsWith('org.') && profiles.org) {
     const orgPath = directive.slice(4);
@@ -287,7 +311,7 @@ export function resolveDirectiveFromProfiles(
     return normalizeDateLikeValue(getByPath(profiles.org, orgAlias[orgPath] ?? orgPath));
   }
   if (lower.startsWith('director.') && profiles.director) {
-    return normalizeDateLikeValue(getByPath(profiles.director, directive.slice(9)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.director, directive.slice(9)));
   }
   if (lower === 'anydate' || lower === 'currentdate') {
     const d = new Date();
