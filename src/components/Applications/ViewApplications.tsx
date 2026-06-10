@@ -29,6 +29,10 @@ interface DocumentInformation {
   clientFirstName?: string,
   clientLastName?: string,
   clientName?: string,
+  createdByUsername?: string,
+  createdByFirstName?: string,
+  createdByLastName?: string,
+  createdByName?: string,
 }
 
 interface Props {
@@ -118,12 +122,23 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     return row.uploader || '-';
   };
 
+  getUploaderDisplayName = (row: DocumentInformation): string => {
+    const fullName = row.createdByName?.trim();
+    if (fullName) return fullName;
+    const first = row.createdByFirstName?.trim() || '';
+    const last = row.createdByLastName?.trim() || '';
+    const composed = `${first} ${last}`.trim();
+    if (composed) return composed;
+    return row.createdByUsername || row.uploader || '-';
+  };
+
   mapDocuments = (documents: DocumentInformation[]): DocumentInformation[] =>
     documents.map((doc) => ({
       ...doc,
       formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
       formattedCreatedDate: this.formatUploadDate(doc.createdDate || doc.uploadDate || ''),
       clientName: this.getClientDisplayName(doc),
+      createdByName: this.getUploaderDisplayName(doc),
     }));
 
   parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
@@ -221,6 +236,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           status: String(item.state || ''),
           clientFirstName: String(item.clientFirstName || ''),
           clientLastName: String(item.clientLastName || ''),
+          createdByUsername: String(item.createdByUsername || ''),
+          createdByFirstName: String(item.createdByFirstName || ''),
+          createdByLastName: String(item.createdByLastName || ''),
           // index used by some table internals
           ...(index !== undefined ? { index } : {}),
         }));
@@ -291,6 +309,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             applicationFilename: filename,
             targetUser: uploader,
             clientUsername: clientUsername || '',
+            applicantName: this.getClientDisplayName(row),
+            uploadedByName: this.getUploaderDisplayName(row),
+            createdDate: row.createdDate || '',
+            lastUpdatedDate: row.uploadDate || '',
           },
         });
       },
@@ -490,19 +512,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         sortable: true,
         sortType: 'date',
         width: '18%',
-        mobileWidth: '42%',
         nowrap: true,
         renderCell: (row) => row.formattedCreatedDate || '-',
-      } as DataTableColumn<DocumentInformation>,
-      {
-        field: 'uploadDate',
-        headerName: 'Last Updated',
-        sortable: true,
-        sortType: 'date',
-        width: '18%',
-        hideOnMobile: true,
-        nowrap: true,
-        renderCell: (row) => row.formattedUploadDate || '-',
       } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',

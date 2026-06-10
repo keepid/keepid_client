@@ -14,6 +14,10 @@ interface PreviewLocationState {
   applicationFilename?: string;
   clientUsername?: string;
   targetUser?: string;
+  applicantName?: string;
+  uploadedByName?: string;
+  createdDate?: string;
+  lastUpdatedDate?: string;
 }
 
 export default function ApplicationPdfPreview({
@@ -35,6 +39,10 @@ export default function ApplicationPdfPreview({
   const applicationFilename = location.state?.applicationFilename || 'application-preview.pdf';
   const clientUsername = location.state?.clientUsername || '';
   const targetUser = location.state?.targetUser || '';
+  const applicantName = location.state?.applicantName || '';
+  const uploadedByName = location.state?.uploadedByName || targetUser || clientUsername || '';
+  const createdDate = location.state?.createdDate || '';
+  const lastUpdatedDate = location.state?.lastUpdatedDate || '';
   const editTargetUsername = targetUser || clientUsername;
   const canUsePdfEditing = editable && canEditPdf;
   const canEditAttachments = canUsePdfEditing && allowAttachmentEditing;
@@ -55,6 +63,10 @@ export default function ApplicationPdfPreview({
         applicationFilename,
         targetUser,
         clientUsername,
+        applicantName,
+        uploadedByName,
+        createdDate,
+        lastUpdatedDate,
       },
     });
   };
@@ -138,6 +150,23 @@ export default function ApplicationPdfPreview({
   }, [pdfUrl]);
 
   const previewTitle = useMemo(() => applicationFilename.replace(/\.pdf$/i, ''), [applicationFilename]);
+  const formatDate = (rawDate: string): string => {
+    const parsed = new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return rawDate || '-';
+    }
+    return parsed.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+  const details = [
+    { label: 'Applicant', value: applicantName || editTargetUsername || '-' },
+    { label: 'Uploaded by', value: uploadedByName || '-' },
+    { label: 'Created', value: formatDate(createdDate) },
+    { label: 'Last updated', value: formatDate(lastUpdatedDate) },
+  ];
 
   return (
     <div className="tw-w-full tw-pt-10 tw-px-4 sm:tw-px-6 lg:tw-px-8">
@@ -176,6 +205,10 @@ export default function ApplicationPdfPreview({
                     applicationFilename,
                     targetUser,
                     clientUsername,
+                    applicantName,
+                    uploadedByName,
+                    createdDate,
+                    lastUpdatedDate,
                   },
                 }}
               >
@@ -218,6 +251,21 @@ export default function ApplicationPdfPreview({
             )}
           </div>
         </div>
+
+        {applicationId && (
+          <div className="tw-mb-4 tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-3 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-shadow-sm">
+            {details.map((item) => (
+              <div key={item.label} className="tw-min-w-0">
+                <div className="tw-text-xs tw-font-semibold tw-uppercase tw-text-gray-500">
+                  {item.label}
+                </div>
+                <div className="tw-mt-1 tw-truncate tw-text-sm tw-font-medium tw-text-gray-900">
+                  {item.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {loading && (
           <div className="d-flex justify-content-center align-items-center py-5">
