@@ -451,12 +451,23 @@ export default function ApplicationForm() {
         return;
       }
 
-      const createdUser = await tryAutoSelectNewlyCreatedClient(
-        enrollForm.firstname,
-        enrollForm.lastname,
-        enrollForm.email.trim(),
-        enrollForm.birthDate,
-      );
+      let createdUser: ClientSearchResult | null = null;
+      if (response.username) {
+        createdUser = {
+          username: response.username,
+          firstName: response.firstName || enrollForm.firstname,
+          lastName: response.lastName || enrollForm.lastname,
+          email: response.email,
+          birthDate: response.birthDate,
+        };
+      } else {
+        createdUser = await tryAutoSelectNewlyCreatedClient(
+          enrollForm.firstname,
+          enrollForm.lastname,
+          enrollForm.email.trim(),
+          enrollForm.birthDate,
+        );
+      }
       if (!createdUser) {
         setSubmitError('Client enrolled, but automatic selection failed. Please search and select the client.');
         setWhoForMode('existing');
@@ -467,6 +478,7 @@ export default function ApplicationForm() {
       selectExistingClient(createdUser);
       setSubmitError(null);
       setWhoForMode('existing');
+      setPage(whoForNextPage);
     } catch {
       setSubmitError('Could not enroll client. Please try again.');
     } finally {
@@ -476,9 +488,11 @@ export default function ApplicationForm() {
     eulaAgreed,
     enrollForm,
     selectExistingClient,
+    setPage,
     termsAccepted,
     tryAutoSelectNewlyCreatedClient,
     validateEnrollField,
+    whoForNextPage,
     enrollFieldErrors,
   ]);
 
@@ -571,7 +585,7 @@ export default function ApplicationForm() {
   let nextButtonLabel = 'Next';
   if (isWhoForPage) {
     if (whoForMode === 'new') {
-      nextButtonLabel = enrollSubmitting ? 'Creating Client...' : 'Create and Select Client';
+      nextButtonLabel = enrollSubmitting ? 'Creating Client...' : 'Create Client and Continue';
     } else {
       nextButtonLabel = 'Continue';
     }
