@@ -18,9 +18,11 @@ interface DocumentInformation {
   organizationName: string,
   id: string,
   uploadDate: string,
+  createdDate?: string,
   filename: string,
   applicationDisplayName?: string,
   formattedUploadDate?: string,
+  formattedCreatedDate?: string,
   status?: string,
   applicationStatus?: string,
   applicationState?: string,
@@ -120,6 +122,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     documents.map((doc) => ({
       ...doc,
       formattedUploadDate: this.formatUploadDate(doc.uploadDate || ''),
+      formattedCreatedDate: this.formatUploadDate(doc.createdDate || doc.uploadDate || ''),
       clientName: this.getClientDisplayName(doc),
     }));
 
@@ -210,6 +213,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           uploader: String(item.clientUsername || ''),
           organizationName: '',
           uploadDate: String(item.updatedAt || item.createdAt || ''),
+          createdDate: String(item.createdAt || item.updatedAt || ''),
           filename: `${String(item.title || 'Application')}.pdf`,
           applicationDisplayName: String(item.title || 'Application'),
           applicationState: String(item.state || ''),
@@ -466,25 +470,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
 
-    const stateBadge = (row: DocumentInformation) => {
-      const value = (row.applicationState || row.status || '').toUpperCase();
-      const cls = (() => {
-        switch (value) {
-          case 'MAILED': return 'tw-bg-emerald-100 tw-text-emerald-800';
-          case 'READY_TO_MAIL': return 'tw-bg-amber-100 tw-text-amber-800';
-          case 'DRAFT': return 'tw-bg-slate-100 tw-text-slate-700';
-          case 'CANCELLED': return 'tw-bg-rose-100 tw-text-rose-700';
-          default: return 'tw-bg-slate-100 tw-text-slate-700';
-        }
-      })();
-      const label = value ? value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : '—';
-      return (
-        <span className={`tw-inline-block tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium ${cls}`}>
-          {label}
-        </span>
-      );
-    };
-
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
         field: 'filename',
@@ -496,21 +481,26 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         headerName: 'Client',
         sortable: true,
         width: '22%',
+        hideOnMobile: true,
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>]),
       {
-        field: 'applicationState',
-        headerName: 'Status',
+        field: 'createdDate',
+        headerName: 'Created',
         sortable: true,
-        width: '14%',
-        renderCell: stateBadge,
+        sortType: 'date',
+        width: '42%',
+        nowrap: true,
+        renderCell: (row) => row.formattedCreatedDate || '-',
       } as DataTableColumn<DocumentInformation>,
       {
         field: 'uploadDate',
-        headerName: isClientUser ? 'Completed' : 'Last Updated',
+        headerName: 'Last Updated',
         sortable: true,
         sortType: 'date',
         width: '18%',
+        hideOnMobile: true,
+        nowrap: true,
         renderCell: (row) => row.formattedUploadDate || '-',
       } as DataTableColumn<DocumentInformation>,
       {
@@ -518,6 +508,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         headerName: isClientUser ? 'Actions' : '',
         align: 'right',
         width: isClientUser ? '26%' : '48px',
+        hideOnMobile: true,
         renderCell: (row) => (
           isClientUser ? (
             <div className="tw-flex tw-justify-end tw-gap-2">
@@ -582,7 +573,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
                 showSearch={false}
                 pageSize={10}
-                defaultSortField="uploadDate"
+                defaultSortField="createdDate"
                 defaultSortDirection="desc"
                 onRowClick={this.handleOpenApplication}
               />

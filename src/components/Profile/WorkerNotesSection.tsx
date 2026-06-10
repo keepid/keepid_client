@@ -14,6 +14,7 @@ const DEBOUNCE_MS = 1000;
 export default function WorkerNotesSection({ workerNotes, targetUsername }: Props) {
   const [notes, setNotes] = useState(workerNotes ?? '');
   const [saveState, setSaveState] = useState<SaveState>('initial');
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -25,6 +26,13 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
     if (timerRef.current) clearTimeout(timerRef.current);
     abortRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 320)}px`;
+  }, [notes]);
 
   const save = useCallback(async (text: string) => {
     abortRef.current?.abort();
@@ -58,6 +66,8 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const text = e.target.value;
     setNotes(text);
+    setSaveState('saving');
+    abortRef.current?.abort();
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => save(text), DEBOUNCE_MS);
@@ -72,12 +82,13 @@ export default function WorkerNotesSection({ workerNotes, targetUsername }: Prop
         </div>
         <hr />
         <textarea
+          ref={textareaRef}
           className="form-control"
-          rows={6}
+          rows={10}
           value={notes}
           onChange={handleChange}
           placeholder="Add notes about this client..."
-          style={{ resize: 'vertical' }}
+          style={{ resize: 'vertical', minHeight: '12rem', maxHeight: '20rem', overflowY: 'auto' }}
         />
       </div>
     </div>

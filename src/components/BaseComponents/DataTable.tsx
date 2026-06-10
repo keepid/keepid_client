@@ -27,6 +27,7 @@ export interface DataTableColumn<T = any> {
   align?: 'left' | 'center' | 'right';
   width?: string;
   hideOnMobile?: boolean;
+  nowrap?: boolean;
 }
 
 export interface DataTableProps<T = any> {
@@ -185,7 +186,8 @@ export default function DataTable<T extends Record<string, any>>({
               fontSize: '0.95rem',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              wordBreak: 'break-word',
+              wordBreak: col.nowrap ? 'normal' : 'break-word',
+              whiteSpace: col.nowrap ? 'nowrap' : 'normal',
               ...(col.hideOnMobile ? { display: { xs: 'none', md: 'table-cell' } } : {}),
             }}
           >
