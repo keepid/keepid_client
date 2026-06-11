@@ -29,6 +29,7 @@ interface DocumentInformation {
   clientFirstName?: string,
   clientLastName?: string,
   clientName?: string,
+  clientDeleted?: boolean,
   createdByUsername?: string,
   createdByFirstName?: string,
   createdByLastName?: string,
@@ -112,14 +113,19 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       .trim();
   };
 
+  getDeletedClientLabel = (name: string, row: DocumentInformation): string => {
+    if (!row.clientDeleted || name.endsWith(' (deleted)')) return name;
+    return `${name} (deleted)`;
+  };
+
   getClientDisplayName = (row: DocumentInformation): string => {
     const fullName = row.clientName?.trim();
-    if (fullName) return fullName;
+    if (fullName) return this.getDeletedClientLabel(fullName, row);
     const first = row.clientFirstName?.trim() || '';
     const last = row.clientLastName?.trim() || '';
     const composed = `${first} ${last}`.trim();
-    if (composed) return composed;
-    return row.uploader || '-';
+    const name = composed || row.uploader || '-';
+    return this.getDeletedClientLabel(name, row);
   };
 
   getUploaderDisplayName = (row: DocumentInformation): string => {
@@ -236,6 +242,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           status: String(item.state || ''),
           clientFirstName: String(item.clientFirstName || ''),
           clientLastName: String(item.clientLastName || ''),
+          clientDeleted: Boolean(item.clientDeleted),
           createdByUsername: String(item.createdByUsername || ''),
           createdByFirstName: String(item.createdByFirstName || ''),
           createdByLastName: String(item.createdByLastName || ''),
@@ -560,23 +567,50 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="tw-container tw-mx-auto tw-px-4 tw-pt-12">
+          <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
             <Helmet>
               <title>{pageTitle}</title>
               <meta name="description" content="Keep.id" />
             </Helmet>
-            <div className="tw-mb-3">
-              <Link to="/" className="btn btn-outline-secondary">
-                <i className="fas fa-chevron-left me-1" aria-hidden />
+            <div className="tw-mt-3 tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+              <button
+                type="button"
+                className="btn btn-primary mr-2"
+                onClick={() => this.props.history.goBack()}
+              >
+                <i className="fas fa-chevron-left tw-mr-1" aria-hidden />
                 Back
-              </Link>
+              </button>
+              {!isClientUser && clientUsername && (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-primary mr-2"
+                    onClick={() => this.props.history.push(`/profile/${clientUsername}`)}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => this.props.history.push({
+                      pathname: `/my-documents/${clientUsername}`,
+                      state: {
+                        clientName,
+                      },
+                    })}
+                  >
+                    Documents
+                  </button>
+                </>
+              )}
             </div>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
-              <div className="container">
+              <div>
                 <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : pageTitle}</h1>
               </div>
             </div>
-            <div className="container">
+            <div>
               <DataTable
                 columns={columns}
                 data={documents}
@@ -591,7 +625,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               />
             </div>
             {!isClientUser && (
-              <div className="container tw-mt-8">
+              <div className="tw-mt-8">
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>

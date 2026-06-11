@@ -36,6 +36,7 @@ interface State {
   currentDocumentName: string | undefined;
   currentUploadDate: string | undefined;
   currentUploader: string | undefined;
+  currentUploaderName: string | undefined;
   currentUserRole: Role | undefined;
   currentDocumentFileType: FileType | undefined;
   currentDocumentTargetUser: string | undefined;
@@ -95,6 +96,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentName: undefined,
       currentUploadDate: undefined,
       currentUploader: undefined,
+      currentUploaderName: undefined,
       currentUserRole: undefined,
       currentDocumentFileType: undefined,
       currentDocumentTargetUser: undefined,
@@ -121,6 +123,7 @@ class MyDocuments extends Component<Props, State> {
     this.setState({
       currentDocumentId: undefined,
       currentDocumentName: undefined,
+      currentUploaderName: undefined,
       currentDocumentIdCategory: undefined,
       currentDocumentIdCategoryDisplay: undefined,
       currentDocumentCustomIdCategory: undefined,
@@ -277,6 +280,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentName: filename,
       currentUploadDate: uploadDate,
       currentUploader: uploader,
+      currentUploaderName: MyDocuments.getUploaderDisplayName(row),
       currentDocumentFileType: fileType,
       currentDocumentTargetUser: targetUser,
       currentDocumentIdCategory: idCategory,
@@ -377,7 +381,6 @@ class MyDocuments extends Component<Props, State> {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      timeZone: 'UTC',
     });
   }
 
@@ -531,6 +534,7 @@ class MyDocuments extends Component<Props, State> {
       documentData,
       currentUploadDate,
       currentUploader,
+      currentUploaderName,
       currentDocumentTargetUser,
       currentDocumentFileType,
       currentDocumentIdCategory,
@@ -639,6 +643,7 @@ class MyDocuments extends Component<Props, State> {
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
               documentUploader={currentUploader}
+              documentUploaderName={currentUploaderName}
               targetUser={currentDocumentTargetUser}
               fileType={currentDocumentFileType}
               idCategory={currentDocumentIdCategory}
@@ -661,7 +666,7 @@ class MyDocuments extends Component<Props, State> {
               resetDocumentId={this.resetDocumentId}
             />
           ) : (
-            <div className="container">
+            <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
             <Helmet>
               <title>{this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}</title>
               <meta name="description" content="Keep.id" />
@@ -678,10 +683,25 @@ class MyDocuments extends Component<Props, State> {
                 {this.isStaffViewer() && (
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary mr-2"
                     onClick={() => this.props.history.push(`/profile/${username}`)}
                   >
                     Profile
+                  </button>
+                )}
+                {this.isStaffViewer() && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => this.props.history.push({
+                      pathname: '/applications',
+                      state: {
+                        clientUsername: username,
+                        clientName: this.props.clientName,
+                      },
+                    })}
+                  >
+                    Applications
                   </button>
                 )}
               </div>

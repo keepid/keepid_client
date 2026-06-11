@@ -389,9 +389,21 @@ export default function ApplicationWebForm({
       '$primaryphoneareacode',
       '$primaryphonetelephoneprefix',
       '$primaryphonelinenumber',
+      '$primaryphonelast7',
+      '$primaryphonelastseven',
+      '$primaryphonenumber',
+      '$primaryphonelocalnumber',
+      '$phonelast7',
+      '$phonelastseven',
       'primaryphoneareacode',
       'primaryphonetelephoneprefix',
       'primaryphonelinenumber',
+      'primaryphonelast7',
+      'primaryphonelastseven',
+      'primaryphonenumber',
+      'primaryphonelocalnumber',
+      'phonelast7',
+      'phonelastseven',
     ]).has(clientDirective);
     if (isComputedPhonePartDirective) return false;
 

@@ -16,6 +16,7 @@ interface Props {
   documentName: string;
   documentDate: string;
   documentUploader: string;
+  documentUploaderName?: string;
   targetUser: string;
   fileType: FileType;
   idCategory?: string;
@@ -35,6 +36,7 @@ const ViewDocument: React.FC<Props> = ({
   documentName,
   documentDate,
   documentUploader,
+  documentUploaderName,
   targetUser,
   fileType,
   idCategory,
@@ -77,11 +79,6 @@ const ViewDocument: React.FC<Props> = ({
       });
   }, [alert, documentId, documentName, userRole, targetUser]);
 
-  let fileName = '';
-  if (pdfFile) {
-    fileName = pdfFile.name.replace(/\.pdf$/i, '');
-  }
-
   const documentTypeLabel = (() => {
     const custom = (customIdCategory || '').trim();
     if (custom) return custom;
@@ -102,9 +99,24 @@ const ViewDocument: React.FC<Props> = ({
     || viewerRole === Role.Admin
     || viewerRole === Role.Director;
 
+  const uploadedAtLabel = (() => {
+    if (!documentDate) return '';
+    const parsed = new Date(documentDate);
+    if (Number.isNaN(parsed.getTime())) return documentDate;
+    return parsed.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  })();
+
+  const uploadedByLabel = (documentUploaderName || '').trim() || documentUploader;
+
   return (
     <div className="tw-w-full tw-pt-12 sm:tw-pt-16 tw-pb-14 tw-px-4 sm:tw-px-6 lg:tw-px-8">
-      <div className="tw-mx-auto tw-w-full tw-max-w-4xl">
+      <div className="tw-mx-auto tw-w-full tw-max-w-5xl">
         <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
         <PrimaryButton onClick={resetDocumentId}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.75" stroke="currentColor" className="tw-w-5 tw-h-5 tw-pr-1 tw-inline tw-align-middle tw-pt-[2px]">
@@ -144,18 +156,15 @@ const ViewDocument: React.FC<Props> = ({
         </div>
 
         {pdfFile ? (
-        <>
           <div className="tw-mt-10 tw-flex tw-flex-col tw-gap-4 lg:tw-mt-12 lg:tw-flex-row lg:tw-items-start lg:tw-justify-between">
             <h1 className="tw-mb-0 tw-text-left tw-text-4xl tw-font-semibold tw-text-gray-900 sm:tw-text-5xl">
               {documentTypeLabel}
             </h1>
             <div className="tw-flex tw-shrink-0 tw-flex-col tw-gap-1 tw-text-sm tw-text-gray-600 lg:tw-items-end lg:tw-text-right lg:tw-text-base">
-              <div>Uploaded on: {documentDate}</div>
-              <div>Uploaded by: {documentUploader}</div>
+              {uploadedAtLabel && <div>Uploaded {uploadedAtLabel}</div>}
+              {uploadedByLabel && <div>Uploaded by {uploadedByLabel}</div>}
             </div>
           </div>
-          <h2 className="tw-mt-3 tw-text-xl tw-font-medium tw-text-gray-800 lg:tw-mt-4">{fileName}</h2>
-        </>
         ) : null}
         {pdfFile ? (
           <div className="tw-mt-10 lg:tw-mt-12">

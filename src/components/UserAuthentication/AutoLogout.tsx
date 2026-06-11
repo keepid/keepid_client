@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useIdleTimer } from 'react-idle-timer';
 import { useHistory } from 'react-router-dom';
 
 import DeviceSleepDetect from './DeviceSleepDetect';
@@ -21,8 +20,13 @@ interface Props {
 function AutoLogout(props: Props): React.ReactElement {
   const [showModal, setShowModal] = useState(false);
   const history = useHistory();
+  const warnTimerRef = useRef<number | undefined>(undefined);
+  const logoutTimerRef = useRef<number | undefined>(undefined);
+  const hasLoggedOutRef = useRef(false);
 
   const handleLogout = (): void => {
+    if (hasLoggedOutRef.current) return;
+    hasLoggedOutRef.current = true;
     props.logOut();
     history.push('/login');
   };
@@ -37,27 +41,67 @@ function AutoLogout(props: Props): React.ReactElement {
     setShowModal(false);
   };
 
-  const onPrompt = (): void => {
-    setShowModal(true);
+  const clearTimers = (): void => {
+    if (warnTimerRef.current) window.clearTimeout(warnTimerRef.current);
+    if (logoutTimerRef.current) window.clearTimeout(logoutTimerRef.current);
+    warnTimerRef.current = undefined;
+    logoutTimerRef.current = undefined;
   };
 
-  const { activate } = useIdleTimer({
-    name: 'IdleTimerWarn',
-    events: ['mousemove', 'keydown', 'touchmove', 'mousedown', 'mousewheel'],
-    throttle: 1000,
-    eventsThrottle: 1000,
-    element: document,
-    onIdle: handleLogout, // will be called when the complete timeout expires
-    onActive, // will be called when the idlestate switches to active
-    onPrompt, // will be called when the timeUntilWarn time expires
-    timeout: props.timeUntilWarn + props.timeFromWarnToLogout,
-    promptBeforeIdle: props.timeFromWarnToLogout,
-    stopOnIdle: true,
-  });
+  const scheduleTimers = (): void => {
+    clearTimers();
+    warnTimerRef.current = window.setTimeout(() => {
+      setShowModal(true);
+    }, props.timeUntilWarn);
+    logoutTimerRef.current = window.setTimeout(() => {
+      handleAutoLogout();
+    }, props.timeUntilWarn + props.timeFromWarnToLogout);
+  };
+
+  useEffect(() => {
+    hasLoggedOutRef.current = false;
+    scheduleTimers();
+
+    const handleActivity = (): void => {
+      if (hasLoggedOutRef.current) return;
+      onActive();
+      scheduleTimers();
+    };
+
+    const handleVisibilityChange = (): void => {
+      if (document.visibilityState === 'visible') {
+        handleActivity();
+      }
+    };
+
+    const events: Array<keyof WindowEventMap> = [
+      'mousemove',
+      'keydown',
+      'touchstart',
+      'touchmove',
+      'mousedown',
+      'wheel',
+      'scroll',
+      'focus',
+    ];
+
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, handleActivity, { capture: true, passive: true });
+    });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearTimers();
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, handleActivity, { capture: true } as EventListenerOptions);
+      });
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [props.timeUntilWarn, props.timeFromWarnToLogout]);
 
   const onStillHere = (): void => {
     setShowModal(false);
-    activate();
+    scheduleTimers();
   };
 
   return (

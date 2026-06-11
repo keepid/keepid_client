@@ -382,8 +382,9 @@ export default function ProfilePage({ targetUsername }: Props) {
               <div className="card-body">
                 <h5 className="card-title tw-text-red-700">Danger Zone</h5>
                 <p className="tw-text-sm tw-text-gray-600 tw-mb-3">
-                  Removing this client will permanently delete their account and all associated data
-                  including documents, applications, and activity history. This action cannot be undone.
+                  Removing this client deactivates their account and may remove client-owned contact
+                  information or documents. Applications completed for this client are retained in
+                  application history.
                 </p>
                 <button
                   type="button"
@@ -421,7 +422,8 @@ export default function ProfilePage({ targetUsername }: Props) {
                 <p className="tw-text-gray-600 tw-mb-4">
                   Are you sure you want to permanently remove{' '}
                   <span className="tw-font-semibold">{displayName}</span>?
-                  All of their documents, applications, and activity history will be deleted.
+                  Their account will be deactivated, but completed applications for this client will
+                  remain in application history and appear with the client marked as deleted.
                   This action cannot be undone.
                 </p>
                 <div className="tw-flex tw-justify-end tw-gap-3">
