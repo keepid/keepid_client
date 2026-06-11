@@ -211,6 +211,10 @@ export default function ApplicationForm() {
   const whoForInputClassName =
     'tw-w-full tw-min-h-[3rem] tw-px-4 tw-py-3 tw-border-2 tw-border-gray-300 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-lg';
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
     if (isReviewPage || isWebFormPage) {

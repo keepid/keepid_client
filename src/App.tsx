@@ -84,7 +84,7 @@ class App extends React.Component<{}, State, {}> {
         username: data.username,
         name: data.name,
         organization: data.organization,
-        autoLogout: logout,
+        autoLogout: typeof logout === 'boolean' ? logout : Boolean(logout?.autoLogout),
       };
     } else {
       this.state = {
@@ -106,8 +106,7 @@ class App extends React.Component<{}, State, {}> {
     this.setState({
       autoLogout: logout,
     });
-    const obj = { autoLogout: this.state.autoLogout };
-    sessionStorage.setItem('autoLogout', JSON.stringify(obj));
+    sessionStorage.setItem('autoLogout', JSON.stringify(logout));
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -212,10 +211,9 @@ class App extends React.Component<{}, State, {}> {
             // server and log in locally instead of destroying the session.
             this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
-        } else if (!this.state || this.state.role === Role.LoggedOut) {
-          // Don't logOut on a refresh-after-edit; only on initial mount
-          // when the user is genuinely not authenticated. The original
-          // mount-time call still hits this path via the early path above.
+        } else if (this.state.role !== Role.LoggedOut) {
+          this.logOut();
+        } else {
           this.logOut();
         }
       })
