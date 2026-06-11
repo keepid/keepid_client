@@ -112,6 +112,10 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('worker.$fullName', profiles)).toBe('Grace Hopper');
     expect(resolveDirectiveFromProfiles('director.$fullName', profiles)).toBe('Katherine G Johnson');
     expect(resolveDirectiveFromProfiles('client.$phoneLast7', profiles)).toBe('555-0199');
+    expect(resolveDirectiveFromProfiles('client.$phoneLastSeven', profiles)).toBe('555-0199');
+    expect(resolveDirectiveFromProfiles('client.$primaryPhoneLast7', profiles)).toBe('555-0199');
+    expect(resolveDirectiveFromProfiles('client.$primaryPhoneNumber', profiles)).toBe('555-0199');
+    expect(resolveDirectiveFromProfiles('client.primaryPhoneLocalNumber', profiles)).toBe('555-0199');
     expect(resolveDirectiveFromProfiles('worker.$phoneLast7', profiles)).toBe('555-0102');
     expect(resolveDirectiveFromProfiles('director.$phoneLast7', profiles)).toBe('555-0103');
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneAreaCode', profiles)).toBe('215');

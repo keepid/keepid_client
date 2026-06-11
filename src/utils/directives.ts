@@ -230,7 +230,9 @@ export function resolveDirectiveFromProfiles(
     const profileKey = monthNumberMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeBirthMonthNumber(profiles[profileKey] as Record<string, unknown> | undefined);
   }
-  const phoneLast7Match = directive.trim().match(/^(client|worker|director)\.\$phoneLast7$/i);
+  const phoneLast7Match = directive
+    .trim()
+    .match(/^(client|worker|director)\.\$?(phoneLast7|phoneLastSeven|primaryPhoneLast7|primaryPhoneLastSeven|primaryPhoneNumber|primaryPhoneLocalNumber)$/i);
   if (phoneLast7Match) {
     const profileKey = phoneLast7Match[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computePhoneLast7(profiles[profileKey] as Record<string, unknown> | undefined);
