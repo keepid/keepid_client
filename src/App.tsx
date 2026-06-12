@@ -41,7 +41,6 @@ import EnrollWorkerPage from './components/SignUp/EnrollWorker';
 import SignUpRouter, {
   paths as SignUpRouterPaths,
 } from './components/SignUp/SignUp.router';
-import AutoLogout from './components/UserAuthentication/AutoLogout';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
@@ -57,7 +56,6 @@ interface State {
   username: string;
   name: string;
   organization: string;
-  autoLogout: boolean;
 }
 
 interface ContextInterface {
@@ -75,16 +73,13 @@ class App extends React.Component<{}, State, {}> {
 
     // set the original state based on session storage
     const jsonData = sessionStorage.getItem('mySessionStorageData');
-    const jsonLogout = sessionStorage.getItem('autoLogout');
-    if (jsonData && jsonLogout) {
+    if (jsonData) {
       const data = JSON.parse(jsonData);
-      const logout = JSON.parse(jsonLogout);
       this.state = {
         role: data.role,
         username: data.username,
         name: data.name,
         organization: data.organization,
-        autoLogout: typeof logout === 'boolean' ? logout : Boolean(logout?.autoLogout),
       };
     } else {
       this.state = {
@@ -92,21 +87,10 @@ class App extends React.Component<{}, State, {}> {
         username: '',
         name: '',
         organization: '',
-        autoLogout: false,
       };
     }
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
-    this.setAutoLogout = this.setAutoLogout.bind(this);
-  }
-
-  // this function is needed to tell the home page that the user was logged out automatically
-  // or remove that notification
-  setAutoLogout(logout: boolean) {
-    this.setState({
-      autoLogout: logout,
-    });
-    sessionStorage.setItem('autoLogout', JSON.stringify(logout));
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -223,14 +207,12 @@ class App extends React.Component<{}, State, {}> {
   };
 
   render() {
-    const { role, username, name, organization, autoLogout } = this.state;
+    const { role, username, name, organization } = this.state;
     const renderHome = () => (
       <Home
         logIn={this.logIn}
         logOut={this.logOut}
         role={role}
-        autoLogout={autoLogout}
-        setAutoLogout={this.setAutoLogout}
       />
     );
     return (
@@ -251,15 +233,6 @@ class App extends React.Component<{}, State, {}> {
               logOut={this.logOut}
               role={role}
             />
-            {role !== Role.LoggedOut ? (
-              <AutoLogout
-                logOut={this.logOut}
-                setAutoLogout={this.setAutoLogout}
-                timeUntilWarn={1000 * 60 * 60}
-                timeFromWarnToLogout={1000 * 60 * 15}
-                timeBeforeConsideredSleep={1000 * 60 * 60 * 24 * 30}
-              />
-            ) : null}
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
             <InstallPromptContainer

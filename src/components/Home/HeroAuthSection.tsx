@@ -1,7 +1,7 @@
 import React from 'react';
 
-import Role from '../../static/Role';
 import HomepageGraphic from '../../static/images/homepage_graphic.svg';
+import Role from '../../static/Role';
 import LoginPage from '../UserAuthentication/LoginPage';
 
 interface HeroAuthSectionProps {
@@ -15,8 +15,6 @@ interface HeroAuthSectionProps {
   ) => void;
   logOut?: () => void;
   role?: Role;
-  autoLogout?: boolean;
-  setAutoLogout?: (logout: boolean) => void;
 }
 
 function HeroAuthSection({
@@ -25,8 +23,6 @@ function HeroAuthSection({
   logIn,
   logOut,
   role,
-  autoLogout,
-  setAutoLogout,
 }: HeroAuthSectionProps) {
   return (
     <div className="tw-w-full tw-my-auto">
@@ -57,14 +53,12 @@ function HeroAuthSection({
           </div>
 
           <div className="tw-flex tw-items-start tw-justify-center tw-pt-4 md:tw-pt-0 md:tw-col-span-2">
-            {logIn && logOut && role !== undefined && autoLogout !== undefined && setAutoLogout ? (
+            {logIn && logOut && role !== undefined ? (
               <LoginPage
                 isLoggedIn={role !== Role.LoggedOut}
                 logIn={logIn}
                 logOut={logOut}
                 role={role}
-                autoLogout={autoLogout}
-                setAutoLogout={setAutoLogout}
                 embedded
               />
             ) : null}

@@ -36,11 +36,9 @@ interface HomeProps {
   ) => void;
   logOut?: () => void;
   role?: Role;
-  autoLogout?: boolean;
-  setAutoLogout?: (logout: boolean) => void;
 }
 
-function Home({ logIn, logOut, role, autoLogout, setAutoLogout }: HomeProps) {
+function Home({ logIn, logOut, role }: HomeProps) {
   const intl = useIntl();
 
   useEffect(() => {
@@ -78,8 +76,6 @@ function Home({ logIn, logOut, role, autoLogout, setAutoLogout }: HomeProps) {
         logIn={logIn}
         logOut={logOut}
         role={role}
-        autoLogout={autoLogout}
-        setAutoLogout={setAutoLogout}
       />
 
       <IntroText />
