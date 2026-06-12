@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { buildOAuthRedirectUri } from './oauthRedirect';
 
 const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;
 const tenantId = import.meta.env.VITE_MICROSOFT_TENANT_ID || 'organizations';
@@ -22,10 +23,7 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
       return;
     }
 
-    // Absolute URLs from the live origin — see GoogleLoginButton for the
-    // detailed rationale. Build-mode-based hardcoded origins broke as
-    // soon as the FE was deployed at a non-canonical URL.
-    const redirectUri = `${window.location.origin}${getServerURL()}/microsoftLoginResponse`;
+    const redirectUri = buildOAuthRedirectUri(getServerURL(), '/microsoftLoginResponse');
     const originUri = window.location.origin;
 
     fetch(`${getServerURL()}/microsoftLoginRequest`, {

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { buildOAuthRedirectUri } from './oauthRedirect';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -16,16 +17,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
   }, []);
 
   const handleClick = () => {
-    // Build an ABSOLUTE redirect URI. getServerURL() may return a relative
-    // path (e.g. "/api" in the Cloud Run prod build); Google rejects
-    // relative redirect_uri values. Prefixing with window.location.origin
-    // produces the full URL that the browser will navigate to after auth,
-    // which is also what must be registered in the Google OAuth client
-    // console AND in the server's keepid.oauth.allowed-redirect-uris
-    // allowlist. window.location.origin makes this self-correcting across
-    // every host the FE might be served from (keep.id, the Cloud Run
-    // preview URL, localhost, future custom domains).
-    const redirectUri = `${window.location.origin}${getServerURL()}/googleLoginResponse`;
+    const redirectUri = buildOAuthRedirectUri(getServerURL(), '/googleLoginResponse');
     const originUri = window.location.origin;
 
     fetch(`${getServerURL()}/googleLoginRequest`, {
