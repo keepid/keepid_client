@@ -46,6 +46,7 @@ import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+import { installSessionExpiryInterceptor, SESSION_EXPIRED_EVENT } from './utils/sessionExpiry';
 
 window.onload = () => {
   ReactGA.initialize('AW-391118279');
@@ -136,6 +137,7 @@ class App extends React.Component<{}, State, {}> {
   }
 
   componentDidMount() {
+    installSessionExpiryInterceptor();
     this.refreshAuthFromServer();
     // Listen for in-app profile updates (e.g. name change in Account
     // Information). The handler hits /authenticate again so App.state.name
@@ -144,14 +146,25 @@ class App extends React.Component<{}, State, {}> {
     // EssentialAccountSection after a successful /update-user-profile
     // that touched firstName / lastName.
     window.addEventListener('keepid:profile-updated', this.handleProfileUpdated);
+    window.addEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
   }
 
   componentWillUnmount() {
     window.removeEventListener('keepid:profile-updated', this.handleProfileUpdated);
+    window.removeEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
   }
 
   handleProfileUpdated = () => {
     this.refreshAuthFromServer();
+  };
+
+  handleSessionExpired = () => {
+    if (this.state.role === Role.LoggedOut) return;
+    this.logOut();
+    this.setAutoLogout(true);
+    if (window.location.pathname !== '/login') {
+      window.location.assign('/login');
+    }
   };
 
   refreshAuthFromServer = () => {
@@ -212,7 +225,7 @@ class App extends React.Component<{}, State, {}> {
             this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
         } else if (this.state.role !== Role.LoggedOut) {
-          this.logOut();
+          this.handleSessionExpired();
         } else {
           this.logOut();
         }
