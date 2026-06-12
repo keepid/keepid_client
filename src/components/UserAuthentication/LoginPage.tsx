@@ -36,8 +36,6 @@ interface Props {
   isLoggedIn: boolean;
   role: Role;
   alert: any;
-  autoLogout: boolean; // whether or not the user was logged out automatically
-  setAutoLogout: (boolean) => void; // stop showing the logged out automatically banner once user navigates away from the page
   embedded?: boolean;
 }
 
@@ -58,11 +56,6 @@ class LoginPage extends Component<Props, State> {
       showPassword: false,
       showManualLogin: false,
     };
-  }
-
-  componentWillUnmount() {
-    const { setAutoLogout } = this.props;
-    setAutoLogout(false);
   }
 
   // RECAPTCHA CODE
@@ -392,16 +385,11 @@ class LoginPage extends Component<Props, State> {
   };
 
   render() {
-    const { autoLogout, embedded = false } = this.props;
+    const { embedded = false } = this.props;
 
     if (embedded) {
       return (
         <div className="tw-w-full tw-max-w-lg tw-px-3 md:tw-px-4 tw-py-2">
-          {autoLogout ? (
-            <div className="alert alert-warning" role="alert">
-              You were automatically logged out and redirected to this page.
-            </div>
-          ) : null}
           {this.renderAuthCard(true)}
           <ReCAPTCHA
             theme="dark"
@@ -419,11 +407,6 @@ class LoginPage extends Component<Props, State> {
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        {autoLogout ? (
-          <div className="alert alert-warning" role="alert">
-            You were automatically logged out and redirected to this page.
-          </div>
-        ) : null}
         <div className="tw-container tw-mx-auto tw-max-w-5xl tw-px-4">
           <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-12 tw-py-12 lg:tw-py-20 tw-min-h-[70vh] tw-items-center">
             <div className="tw-hidden md:tw-flex tw-flex-col tw-items-center tw-justify-center">
