@@ -392,6 +392,7 @@ export default function DocumentsInlineUpload({
           targetUser,
           idCategory: category,
           customIdCategory: isOtherCategory ? trimmedCustomIdCategory : undefined,
+          clientOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
         }),
       });
       const json = await parseJsonResponseSafe(response);
