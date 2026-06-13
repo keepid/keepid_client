@@ -199,7 +199,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
         const { people, status } = responseJSON;
 
         if (status === 'AUTH_FAILURE') {
-          alert.show('Your session expired. Please sign in again.');
+          alert.show('Please sign in again to continue.');
           logOut();
           return;
         }

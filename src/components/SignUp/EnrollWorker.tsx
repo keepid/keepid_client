@@ -125,7 +125,7 @@ export default function EnrollWorkerPage(): JSX.Element {
       } else if (response.status === 'EMAIL_ALREADY_EXISTS') {
         alert.error('A user with this email already exists.');
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
-        alert.error('Your session has expired. Please log in again.');
+        alert.error('Please sign in again to continue.');
       } else if (response.status === 'INVALID_PARAMETER') {
         alert.error('Invalid role selected. Please choose Worker or Admin.');
       } else {
