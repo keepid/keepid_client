@@ -134,7 +134,7 @@ export default function EnrollClientPage(): JSX.Element {
       } else if (response.status === 'CLIENT_ENROLL_CLIENT') {
         alert.error('Only workers, admins, or directors can enroll clients.');
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
-        alert.error('Your session has expired. Please log in again.');
+        alert.error('Please sign in again to continue.');
       } else {
         alert.error(`Enrollment failed: ${response.status}`);
       }
