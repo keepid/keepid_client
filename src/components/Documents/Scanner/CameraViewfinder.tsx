@@ -20,6 +20,7 @@ export interface CameraViewfinderProps {
 }
 
 type PermissionState = 'pending' | 'granted' | 'denied' | 'unsupported';
+type FocusRange = { min: number; max: number; step: number };
 
 export default function CameraViewfinder({
   preset,
@@ -38,6 +39,10 @@ export default function CameraViewfinder({
   const [permission, setPermission] = useState<PermissionState>('pending');
   const [permissionError, setPermissionError] = useState<string>('');
   const [videoReady, setVideoReady] = useState(false);
+  const [focusModes, setFocusModes] = useState<string[]>([]);
+  const [focusRange, setFocusRange] = useState<FocusRange | null>(null);
+  const [focusValue, setFocusValue] = useState<number | null>(null);
+  const [focusMode, setFocusMode] = useState<'continuous' | 'manual' | 'none'>('none');
 
   const handleStreamFailure = useCallback((err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -78,13 +83,43 @@ export default function CameraViewfinder({
         // Safari (which autofocuses anyway) so failures are non-fatal.
         const [track] = stream.getVideoTracks();
         const caps = (track?.getCapabilities?.() ?? {}) as Record<string, unknown>;
-        const focusModes = Array.isArray(caps.focusMode) ? (caps.focusMode as string[]) : [];
-        if (track && focusModes.includes('continuous')) {
+        const supportedFocusModes = Array.isArray(caps.focusMode) ? (caps.focusMode as string[]) : [];
+        const focusDistance = caps.focusDistance as
+          | { min?: number; max?: number; step?: number }
+          | undefined;
+        setFocusModes(supportedFocusModes);
+        if (
+          focusDistance
+          && typeof focusDistance.min === 'number'
+          && typeof focusDistance.max === 'number'
+          && focusDistance.max > focusDistance.min
+        ) {
+          const settings = track?.getSettings?.() as Record<string, unknown> | undefined;
+          const current =
+            typeof settings?.focusDistance === 'number'
+              ? settings.focusDistance
+              : (focusDistance.min + focusDistance.max) / 2;
+          setFocusRange({
+            min: focusDistance.min,
+            max: focusDistance.max,
+            step: typeof focusDistance.step === 'number' && focusDistance.step > 0
+              ? focusDistance.step
+              : 0.1,
+          });
+          setFocusValue(current);
+        } else {
+          setFocusRange(null);
+          setFocusValue(null);
+        }
+        if (track && supportedFocusModes.includes('continuous')) {
           track
             .applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
+            .then(() => setFocusMode('continuous'))
             .catch(() => {
               /* device kept its default focus mode — acceptable */
             });
+        } else {
+          setFocusMode('none');
         }
       })
       .catch(handleStreamFailure);
@@ -131,6 +166,36 @@ export default function CameraViewfinder({
     onCapture({ sourceCanvas: frame, corners });
   }, [onCapture, preset, videoReady]);
 
+  const applyContinuousFocus = useCallback(() => {
+    const [track] = streamRef.current?.getVideoTracks() ?? [];
+    if (!track || !focusModes.includes('continuous')) return;
+    track
+      .applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
+      .then(() => setFocusMode('continuous'))
+      .catch((err) => {
+        setPermissionError(err instanceof Error ? err.message : String(err));
+      });
+  }, [focusModes]);
+
+  const applyManualFocus = useCallback((value: number) => {
+    const [track] = streamRef.current?.getVideoTracks() ?? [];
+    if (!track || !focusRange) return;
+    setFocusValue(value);
+    track
+      .applyConstraints({
+        advanced: [
+          {
+            focusMode: focusModes.includes('manual') ? 'manual' : undefined,
+            focusDistance: value,
+          } as MediaTrackConstraintSet,
+        ],
+      })
+      .then(() => setFocusMode('manual'))
+      .catch((err) => {
+        setPermissionError(err instanceof Error ? err.message : String(err));
+      });
+  }, [focusModes, focusRange]);
+
   const handleFallbackFile = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const input = event.currentTarget;
@@ -139,23 +204,27 @@ export default function CameraViewfinder({
       // eslint-disable-next-line no-param-reassign
       input.value = '';
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        onCapture({ sourceCanvas: canvas, corners: centeredGuideCorners(canvas.width, canvas.height, preset) });
-      };
-      img.onerror = () => URL.revokeObjectURL(url);
-      img.src = url;
+      if ('createImageBitmap' in window) {
+        createImageBitmap(file, { imageOrientation: 'from-image' })
+          .then((bitmap) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(bitmap, 0, 0);
+            bitmap.close();
+            onCapture({
+              sourceCanvas: canvas,
+              corners: centeredGuideCorners(canvas.width, canvas.height, preset),
+            });
+          })
+          .catch(() => {
+            loadFallbackImage(file, onCapture, preset);
+          });
+        return;
+      }
+      loadFallbackImage(file, onCapture, preset);
     },
     [onCapture, preset],
   );
@@ -227,7 +296,7 @@ export default function CameraViewfinder({
           muted
           onLoadedMetadata={handleVideoReady}
           className="w-100 h-100 position-absolute top-0 start-0"
-          style={{ objectFit: 'cover' }}
+          style={{ objectFit: 'contain' }}
         />
         <canvas
           ref={overlayRef}
@@ -237,6 +306,38 @@ export default function CameraViewfinder({
         {!videoReady && (
           <div className="position-absolute top-50 start-50 translate-middle text-white">
             Starting camera…
+          </div>
+        )}
+        {focusRange && focusValue !== null && (
+          <div
+            className="position-absolute start-50 translate-middle-x bg-dark bg-opacity-75 text-white rounded px-3 py-2"
+            style={{ bottom: 12, zIndex: 3, width: 'min(92%, 420px)' }}
+          >
+            <div className="d-flex align-items-center gap-2">
+              <label className="small mb-0 text-nowrap" htmlFor="scanner-focus-distance">
+                Focus
+              </label>
+              <input
+                id="scanner-focus-distance"
+                type="range"
+                className="form-range flex-grow-1"
+                min={focusRange.min}
+                max={focusRange.max}
+                step={focusRange.step}
+                value={focusValue}
+                onChange={(event) => applyManualFocus(Number(event.currentTarget.value))}
+                aria-label="Camera focus distance"
+              />
+              {focusModes.includes('continuous') && (
+                <button
+                  type="button"
+                  className={`btn btn-sm ${focusMode === 'continuous' ? 'btn-light' : 'btn-outline-light'}`}
+                  onClick={applyContinuousFocus}
+                >
+                  Auto
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -262,6 +363,33 @@ export default function CameraViewfinder({
       </div>
     </div>
   );
+}
+
+function loadFallbackImage(
+  file: File,
+  onCapture: (capture: ViewfinderCapture) => void,
+  preset: ScannerPreset,
+) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      return;
+    }
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    onCapture({
+      sourceCanvas: canvas,
+      corners: centeredGuideCorners(canvas.width, canvas.height, preset),
+    });
+  };
+  img.onerror = () => URL.revokeObjectURL(url);
+  img.src = url;
 }
 
 function drawOverlay(
@@ -295,9 +423,8 @@ function drawGuideRectangle(
     preset.orientationHint === 'portrait' ? preset.aspectRatio : preset.aspectRatio;
   let guideW: number;
   let guideH: number;
-  // Guide should fit within 80% of the canvas.
-  const maxW = canvasW * 0.85;
-  const maxH = canvasH * 0.85;
+  const maxW = canvasW * (preset.kind === 'letter' ? 0.94 : 0.85);
+  const maxH = canvasH * (preset.kind === 'letter' ? 0.94 : 0.85);
   if (preset.orientationHint === 'landscape') {
     guideW = Math.min(maxW, maxH * aspect);
     guideH = guideW / aspect;
@@ -315,20 +442,20 @@ function drawGuideRectangle(
   ctx.restore();
 }
 
-function coverFit(
+function containFit(
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number,
 ): { scaleX: number; scaleY: number; offsetX: number; offsetY: number } {
-  // Video is drawn with object-fit: cover, so mirror that math for overlay pts.
+  // Video is drawn with object-fit: contain, so mirror that math for overlay pts.
   const srcRatio = srcW / srcH;
   const dstRatio = dstW / dstH;
   let scale: number;
   if (srcRatio > dstRatio) {
-    scale = dstH / srcH;
-  } else {
     scale = dstW / srcW;
+  } else {
+    scale = dstH / srcH;
   }
   const renderedW = srcW * scale;
   const renderedH = srcH * scale;
@@ -357,7 +484,7 @@ function buildGuideCorners(
   const overlayW = overlayRect.width || overlay.width;
   const overlayH = overlayRect.height || overlay.height;
   const guide = getGuideBounds(overlayW, overlayH, preset);
-  const { scaleX, scaleY, offsetX, offsetY } = coverFit(
+  const { scaleX, scaleY, offsetX, offsetY } = containFit(
     video.videoWidth,
     video.videoHeight,
     overlayW,
@@ -403,8 +530,8 @@ function getGuideBounds(canvasW: number, canvasH: number, preset: ScannerPreset)
     preset.orientationHint === 'portrait' ? preset.aspectRatio : preset.aspectRatio;
   let guideW: number;
   let guideH: number;
-  const maxW = canvasW * 0.85;
-  const maxH = canvasH * 0.85;
+  const maxW = canvasW * (preset.kind === 'letter' ? 0.94 : 0.85);
+  const maxH = canvasH * (preset.kind === 'letter' ? 0.94 : 0.85);
   if (preset.orientationHint === 'landscape') {
     guideW = Math.min(maxW, maxH * aspect);
     guideH = guideW / aspect;
