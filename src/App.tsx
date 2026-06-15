@@ -22,6 +22,8 @@ import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
+import CallsPage from './components/Communications/CallsPage';
+import MessageBoard from './components/Communications/MessageBoard';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocumentsPage from './components/Documents/UploadDocumentsPage';
 import Error from './components/Error';
@@ -494,6 +496,46 @@ class App extends React.Component<{}, State, {}> {
                         username={username}
                         role={role}
                       />
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/communications/calls"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/communications/message-board-preview"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return (
+                      <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
+                        <MessageBoard
+                          username="demo-client"
+                          clientName="Maria Rivera"
+                          phone="+12155550142"
+                        />
+                      </div>
                     );
                   }
                   if (role === Role.LoggedOut) {

@@ -10,13 +10,13 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import MessageBoard from '../Communications/MessageBoard';
 import AccountSettingsSection from './AccountSettingsSection';
 import EssentialAccountSection from './EssentialAccountSection';
 import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
 import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
-import WorkerNotesSection from './WorkerNotesSection';
 
 type Props = {
   targetUsername?: string;
@@ -346,9 +346,10 @@ export default function ProfilePage({ targetUsername }: Props) {
           />
 
           {isWorkerView && profile.username && (
-            <WorkerNotesSection
-              workerNotes={profile.workerNotes}
-              targetUsername={targetUsername!}
+            <MessageBoard
+              username={profile.username}
+              clientName={displayName}
+              phone={profile.phone}
             />
           )}
 

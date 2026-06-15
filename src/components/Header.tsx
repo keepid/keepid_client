@@ -114,6 +114,9 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
                 <NavLink to="/applications?view=all">Applications</NavLink>
               )}
+              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+                <NavLink to="/communications/calls">Calls</NavLink>
+              )}
 
               <NavLink to="/profile">{role === Role.Client ? 'My Profile' : 'Profile'}</NavLink>
 
@@ -126,19 +129,17 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               </div>
             </>
           ) : (
-            <>
-              <a
-                href="https://team.keep.id"
-                className="tw-block tw-py-2 tw-px-4
+            <a
+              href="https://team.keep.id"
+              className="tw-block tw-py-2 tw-px-4
                 tw-text-secondary-text-color
                 hover:tw-text-white
                 visited:tw-text-secondary-text-color
                 focus:tw-text-white
                 active:tw-text-white"
-              >
-                About
-              </a>
-            </>
+            >
+              About
+            </a>
           )}
         </div>
       </div>
@@ -164,6 +165,11 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
                   <NavLink to="/applications?view=all">Applications</NavLink>
                 </li>
               )}
+              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+                <li>
+                  <NavLink to="/communications/calls">Calls</NavLink>
+                </li>
+              )}
               <li>
                 <NavLink to="/profile">{role === Role.Client ? 'My Profile' : 'Profile'}</NavLink>
               </li>
@@ -177,16 +183,14 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               </li>
             </>
           ) : (
-            <>
-              <li>
-                <a
-                  href="https://team.keep.id"
-                  className="tw-block tw-py-2 tw-px-4 tw-text-secondary-text-color tw-hover:tw-text-white tw-visited:tw-text-white"
-                >
-                  About
-                </a>
-              </li>
-            </>
+            <li>
+              <a
+                href="https://team.keep.id"
+                className="tw-block tw-py-2 tw-px-4 tw-text-secondary-text-color tw-hover:tw-text-white tw-visited:tw-text-white"
+              >
+                About
+              </a>
+            </li>
           )}
         </ul>
       </div>
