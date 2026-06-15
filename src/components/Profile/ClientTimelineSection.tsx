@@ -21,9 +21,33 @@ type TimelineEntry = {
   title: string;
   body: string;
   source: string;
+  editable?: boolean;
+  workerNoteIndex?: number;
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
+
+type WorkerNoteEntry = {
+  id: string;
+  occurredAt: string;
+  body: string;
+  migrated?: boolean;
+};
+
+function PencilIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+      <path
+        d="M13.7 3.3a1.4 1.4 0 0 1 2 0l1 1a1.4 1.4 0 0 1 0 2l-8.8 8.8-3.2.9.9-3.2 8.1-9.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
+}
 
 function dateKey(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -57,6 +81,41 @@ function sourceLabel(item: MessageBoardItem) {
   }
 }
 
+function parseWorkerNotes(notes?: string): WorkerNoteEntry[] {
+  const value = notes?.trim();
+  if (!value) return [];
+
+  return value
+    .split(/\n{2,}(?=\[[^\]]+\])/)
+    .map((block, index) => {
+      const trimmed = block.trim();
+      const match = trimmed.match(/^\[([^\]]+)]\s*\n?([\s\S]*)$/);
+      if (match) {
+        const parsed = new Date(match[1]);
+        return {
+          id: `worker-note-${index}-${match[1]}`,
+          occurredAt: Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString(),
+          body: match[2].trim(),
+          migrated: false,
+        };
+      }
+      return {
+        id: `worker-note-${index}-legacy`,
+        occurredAt: new Date().toISOString(),
+        body: trimmed,
+        migrated: true,
+      };
+    })
+    .filter((entry) => entry.body);
+}
+
+function serializeWorkerNotes(entries: WorkerNoteEntry[]) {
+  return entries
+    .filter((entry) => entry.body.trim())
+    .map((entry) => `[${dateKey(entry.occurredAt)} ${timeLabel(entry.occurredAt)}]\n${entry.body.trim()}`)
+    .join('\n\n');
+}
+
 function titleLabel(item: MessageBoardItem) {
   if (item.type === 'voicemail') return 'Voicemail transcript';
   if (item.type === 'note') return 'Communication note';
@@ -77,8 +136,10 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
 export default function ClientTimelineSection({ username, workerNotes, onSaved }: Props) {
   const alert = useAlert();
   const [communicationItems, setCommunicationItems] = useState<MessageBoardItem[]>([]);
-  const [localWorkerNotes, setLocalWorkerNotes] = useState<TimelineEntry[]>([]);
+  const [workerNoteEntries, setWorkerNoteEntries] = useState<WorkerNoteEntry[]>([]);
   const [draft, setDraft] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState('');
+  const [editDraft, setEditDraft] = useState('');
   const [saveState, setSaveState] = useState<SaveState>('idle');
 
   useEffect(() => {
@@ -96,7 +157,9 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
   }, [username]);
 
   useEffect(() => {
-    setLocalWorkerNotes([]);
+    setWorkerNoteEntries(parseWorkerNotes(workerNotes));
+    setEditingNoteId('');
+    setEditDraft('');
   }, [workerNotes, username]);
 
   const timeline = useMemo(() => {
@@ -104,22 +167,22 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
       .filter((item) => item.type !== 'scheduled')
       .map(toTimelineItem);
 
-    if (workerNotes?.trim()) {
+    workerNoteEntries.forEach((entry, index) => {
       entries.push({
-        id: 'legacy-worker-notes',
-        occurredAt: new Date().toISOString(),
-        title: 'Migrated worker notes',
-        body: workerNotes.trim(),
+        id: entry.id,
+        occurredAt: entry.occurredAt,
+        title: entry.migrated ? 'Migrated worker notes' : 'Worker note',
+        body: entry.body,
         source: 'Profile',
+        editable: true,
+        workerNoteIndex: index,
       });
-    }
-
-    entries.push(...localWorkerNotes);
+    });
 
     return entries.sort((a, b) => (
       new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
     ));
-  }, [communicationItems, localWorkerNotes, workerNotes]);
+  }, [communicationItems, workerNoteEntries]);
 
   const groupedTimeline = useMemo(() => {
     const groups = new Map<string, TimelineEntry[]>();
@@ -130,39 +193,56 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
     return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
   }, [timeline]);
 
-  async function handleAddWorkerNote() {
-    const body = draft.trim();
-    if (!body) return;
-
-    const occurredAt = new Date().toISOString();
-    const noteBlock = `[${dateKey(occurredAt)} ${timeLabel(occurredAt)}]\n${body}`;
-    const nextWorkerNotes = [workerNotes?.trim(), noteBlock].filter(Boolean).join('\n\n');
-
+  async function saveWorkerNotes(nextEntries: WorkerNoteEntry[]) {
     setSaveState('saving');
     try {
       const res = await fetch(`${getServerURL()}/save-worker-notes`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, workerNotes: nextWorkerNotes }),
+        body: JSON.stringify({ username, workerNotes: serializeWorkerNotes(nextEntries) }),
       });
       const data = await res.json();
       if (data.status !== 'SUCCESS') {
         throw new Error(data.message || data.status || 'Failed to save worker note');
       }
-      setLocalWorkerNotes((current) => [{
-        id: `worker-note-${Date.now()}`,
-        occurredAt,
-        title: 'Worker note',
-        body,
-        source: 'Profile',
-      }, ...current]);
-      setDraft('');
+      setWorkerNoteEntries(nextEntries);
       setSaveState('saved');
       onSaved?.();
+      return true;
     } catch (error: any) {
       setSaveState('idle');
       alert.show(`Failed to save worker note: ${error?.message || String(error)}`, { type: 'error' });
+      return false;
+    }
+  }
+
+  async function handleAddWorkerNote() {
+    const body = draft.trim();
+    if (!body) return;
+
+    const nextEntries = [{
+      id: `worker-note-${Date.now()}`,
+      occurredAt: new Date().toISOString(),
+      body,
+      migrated: false,
+    }, ...workerNoteEntries];
+
+    const saved = await saveWorkerNotes(nextEntries);
+    if (saved) {
+      setDraft('');
+    }
+  }
+
+  async function handleSaveEdit(item: TimelineEntry) {
+    if (item.workerNoteIndex == null || !editDraft.trim()) return;
+    const nextEntries = workerNoteEntries.map((entry, index) => (
+      index === item.workerNoteIndex ? { ...entry, body: editDraft.trim() } : entry
+    ));
+    const saved = await saveWorkerNotes(nextEntries);
+    if (saved) {
+      setEditingNoteId('');
+      setEditDraft('');
     }
   }
 
@@ -191,9 +271,46 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
                     <div>
                       <div className="timeline-entry-top">
                         <strong>{item.title}</strong>
-                        <span>{timeLabel(item.occurredAt)}</span>
+                        <span>
+                          {timeLabel(item.occurredAt)}
+                          {item.editable && (
+                            <button
+                              type="button"
+                              className="timeline-edit-button"
+                              onClick={() => {
+                                setEditingNoteId(item.id);
+                                setEditDraft(item.body);
+                                setSaveState('idle');
+                              }}
+                              aria-label="Edit worker note"
+                            >
+                              <PencilIcon />
+                            </button>
+                          )}
+                        </span>
                       </div>
-                      <p>{item.body}</p>
+                      {editingNoteId === item.id ? (
+                        <div className="timeline-edit-form">
+                          <textarea
+                            value={editDraft}
+                            onChange={(event) => setEditDraft(event.target.value)}
+                            rows={3}
+                          />
+                          <div>
+                            <button type="button" className="btn btn-outline-secondary" onClick={() => setEditingNoteId('')}>Cancel</button>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              disabled={!editDraft.trim() || saveState === 'saving'}
+                              onClick={() => handleSaveEdit(item)}
+                            >
+                              {saveState === 'saving' ? 'Saving...' : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p>{item.body}</p>
+                      )}
                       <small>{item.source}</small>
                     </div>
                   </article>

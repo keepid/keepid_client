@@ -12,6 +12,21 @@ import {
   sendMessage,
 } from './communicationsApi';
 
+function PencilIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+      <path
+        d="M13.7 3.3a1.4 1.4 0 0 1 2 0l1 1a1.4 1.4 0 0 1 0 2l-8.8 8.8-3.2.9.9-3.2 8.1-9.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
+}
+
 const now = Date.now();
 
 const demoConversations: Conversation[] = [
@@ -152,8 +167,9 @@ export default function CallsPage() {
   const [items, setItems] = useState<MessageBoardItem[]>([]);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
-  const [sendAt, setSendAt] = useState('');
-  const [isScheduling, setIsScheduling] = useState(false);
+  const [scheduleBody, setScheduleBody] = useState('');
+  const [scheduleSendAt, setScheduleSendAt] = useState('');
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
   const [usingDemo, setUsingDemo] = useState(false);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
@@ -165,6 +181,7 @@ export default function CallsPage() {
 
   const visibleItems = useMemo(() => orderedItems(items).filter((item) => item.type !== 'scheduled'), [items]);
   const scheduledItems = useMemo(() => orderedItems(items).filter((item) => item.type === 'scheduled'), [items]);
+  const scheduledItem = scheduledItems[0];
 
   async function loadConversations() {
     try {
@@ -222,41 +239,68 @@ export default function CallsPage() {
     ));
   }, [conversations, search]);
 
-  async function handleSend(schedule: boolean) {
-    if (!selected || !message.trim()) return;
+  useEffect(() => {
+    setIsScheduleModalOpen(false);
+    setScheduleBody('');
+    setScheduleSendAt('');
+  }, [selected?.username]);
+
+  function defaultScheduleTime() {
+    const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    tomorrow.setHours(9, 0, 0, 0);
+    return localInputValue(tomorrow);
+  }
+
+  function localDateTimeValue(value?: string) {
+    if (!value) return defaultScheduleTime();
+    return localInputValue(new Date(value));
+  }
+
+  function localInputValue(date: Date) {
+    const offset = date.getTimezoneOffset() * 60 * 1000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  }
+
+  async function handleSend(schedule: boolean, scheduledBody = message, scheduledSendAt = '') {
+    if (!selected || !scheduledBody.trim()) return;
     if (usingDemo) {
       const item: MessageBoardItem = {
         type: schedule ? 'scheduled' : 'message',
-        sourceId: `local-message-${Date.now()}`,
-        occurredAt: schedule && sendAt ? new Date(sendAt).toISOString() : new Date().toISOString(),
+        sourceId: schedule ? 'local-scheduled-message' : `local-message-${Date.now()}`,
+        occurredAt: schedule && scheduledSendAt ? new Date(scheduledSendAt).toISOString() : new Date().toISOString(),
         title: schedule ? 'Scheduled SMS' : 'Demo Worker',
-        body: message,
+        body: scheduledBody,
         status: schedule ? 'pending' : 'queued',
         metadata: schedule ? selected.phone : 'outbound',
       };
-      setItems((current) => [item, ...current]);
+      setItems((current) => schedule
+        ? [item, ...current.filter((existing) => existing.type !== 'scheduled')]
+        : [item, ...current]);
     } else if (schedule) {
-      await scheduleMessage(selected.username, message, new Date(sendAt).toISOString(), selected.phone);
+      await scheduleMessage(selected.username, scheduledBody, new Date(scheduledSendAt).toISOString(), selected.phone);
       await loadThread(selected.username);
     } else {
       await sendMessage(selected.username, message, selected.phone);
       await loadThread(selected.username);
     }
-    setMessage('');
-    setSendAt('');
-    setIsScheduling(false);
+    if (!schedule) setMessage('');
   }
 
   function handleScheduleClick() {
-    if (!message.trim()) return;
-    if (!isScheduling) {
-      const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
-      tomorrow.setHours(9, 0, 0, 0);
-      setSendAt(tomorrow.toISOString().slice(0, 16));
-      setIsScheduling(true);
-      return;
-    }
-    handleSend(true);
+    const body = scheduledItem?.body || message;
+    if (!body?.trim()) return;
+    setScheduleBody(body);
+    setScheduleSendAt(localDateTimeValue(scheduledItem?.occurredAt));
+    setIsScheduleModalOpen(true);
+  }
+
+  async function handleSaveSchedule() {
+    if (!scheduleBody.trim() || !scheduleSendAt) return;
+    await handleSend(true, scheduleBody, scheduleSendAt);
+    setMessage('');
+    setScheduleBody('');
+    setScheduleSendAt('');
+    setIsScheduleModalOpen(false);
   }
 
   return (
@@ -338,52 +382,76 @@ export default function CallsPage() {
             </div>
 
             <footer className="chat-composer">
-              {(scheduledItems.length > 0 || (isScheduling && message.trim())) && (
+              {scheduledItem && (
                 <div className="scheduled-stack">
-                  {isScheduling && message.trim() && (
-                    <section className="scheduled-preview">
-                      <div>
-                        <strong>Schedule send</strong>
-                        <p>{message}</p>
-                      </div>
-                      <label>
-                        Send at
-                        <input
-                          type="datetime-local"
-                          value={sendAt}
-                          onChange={(event) => setSendAt(event.target.value)}
-                          aria-label="Schedule send time"
-                        />
-                      </label>
-                    </section>
-                  )}
-                  {scheduledItems.map((item) => (
-                    <section key={`${item.type}-${item.sourceId}`} className="scheduled-preview existing">
-                      <div>
-                        <strong>Scheduled SMS</strong>
-                        <p>{item.body}</p>
-                      </div>
-                      <span>{formatTime(item.occurredAt)}</span>
-                    </section>
-                  ))}
+                  <section className="scheduled-preview existing">
+                    <div>
+                      <strong>Scheduled SMS</strong>
+                      <p>{scheduledItem.body}</p>
+                    </div>
+                    <div className="scheduled-preview-actions">
+                      <span>{formatTime(scheduledItem.occurredAt)}</span>
+                      <button type="button" onClick={handleScheduleClick} aria-label="Edit scheduled SMS">
+                        <PencilIcon />
+                      </button>
+                    </div>
+                  </section>
                 </div>
               )}
               <textarea
                 value={message}
-                onChange={(event) => {
-                  setMessage(event.target.value);
-                  if (!event.target.value.trim()) setIsScheduling(false);
-                }}
+                onChange={(event) => setMessage(event.target.value)}
                 placeholder="Write a freeform message"
                 rows={2}
               />
               <div className="composer-row composer-actions">
                 <button type="button" disabled={!message.trim()} onClick={() => handleSend(false)}>Send</button>
-                <button type="button" disabled={!message.trim()} onClick={handleScheduleClick}>
-                  {isScheduling ? 'Schedule send' : 'Schedule'}
+                <button type="button" disabled={!message.trim() && !scheduledItem} onClick={handleScheduleClick}>
+                  Schedule send
                 </button>
               </div>
             </footer>
+
+            {isScheduleModalOpen && (
+              <div className="schedule-modal-backdrop" role="presentation">
+                <section className="schedule-modal" aria-label="Schedule SMS">
+                  <button
+                    type="button"
+                    className="call-close"
+                    onClick={() => setIsScheduleModalOpen(false)}
+                    aria-label="Close schedule modal"
+                  >
+                    ×
+                  </button>
+                  <div>
+                    <p className="communications-kicker">Schedule send</p>
+                    <h2>{scheduledItem ? 'Edit scheduled SMS' : 'Schedule SMS'}</h2>
+                  </div>
+                  <label>
+                    Message
+                    <textarea
+                      value={scheduleBody}
+                      onChange={(event) => setScheduleBody(event.target.value)}
+                      rows={4}
+                    />
+                  </label>
+                  <label>
+                    Send at
+                    <input
+                      type="datetime-local"
+                      value={scheduleSendAt}
+                      onChange={(event) => setScheduleSendAt(event.target.value)}
+                    />
+                  </label>
+                  <div className="schedule-modal-actions">
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => setIsScheduleModalOpen(false)}>Cancel</button>
+                    <button type="button" className="btn btn-primary" disabled={!scheduleBody.trim() || !scheduleSendAt} onClick={handleSaveSchedule}>
+                      Save schedule
+                    </button>
+                  </div>
+                </section>
+              </div>
+            )}
 
             {isCalling && (
               <div className="call-modal-backdrop" role="presentation">

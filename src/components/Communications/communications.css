@@ -322,6 +322,83 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.scheduled-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scheduled-preview-actions button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #f0b429;
+  border-radius: 999px;
+  padding: 0;
+  background: #fff;
+  color: #8a5f00;
+}
+
+.scheduled-preview-actions button svg,
+.timeline-edit-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.schedule-modal-backdrop {
+  position: fixed;
+  z-index: 75;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 42, 67, 0.45);
+}
+
+.schedule-modal {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: min(520px, 100%);
+  border-radius: 14px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(16, 42, 67, 0.35);
+}
+
+.schedule-modal h2 {
+  margin: 0;
+}
+
+.schedule-modal label {
+  display: grid;
+  gap: 6px;
+  color: #334e68;
+  font-weight: 700;
+}
+
+.schedule-modal textarea,
+.schedule-modal input[type="datetime-local"] {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #102a43;
+  font-weight: 400;
+}
+
+.schedule-modal textarea {
+  resize: vertical;
+}
+
+.schedule-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .chat-composer textarea {
   resize: vertical;
 }
@@ -575,6 +652,44 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: baseline;
+}
+
+.timeline-entry-top span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-edit-button {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #bcccdc;
+  border-radius: 999px;
+  padding: 0;
+  background: #fff;
+  color: #2f80ed;
+  font-size: 14px;
+}
+
+.timeline-edit-form {
+  display: grid;
+  gap: 8px;
+}
+
+.timeline-edit-form textarea {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+.timeline-edit-form div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .timeline-entry strong,
