@@ -1,66 +1,119 @@
 import './communications.css';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import {
-  CallLog,
-  CallsReport,
-  formatDuration,
-  getCalls,
-  updateCallStatus,
+  addClientNote,
+  Conversation,
+  getConversations,
+  getMessageBoard,
+  MessageBoardItem,
+  scheduleMessage,
+  sendMessage,
 } from './communicationsApi';
 
-const emptyReport: CallsReport = {
-  totalCalls: 0,
-  attachedCalls: 0,
-  unmatchedCalls: 0,
-  callsWithNotes: 0,
-  totalDurationSeconds: 0,
-  voicemailTranscripts: 0,
-};
+const now = Date.now();
 
-const demoCalls: CallLog[] = [
+const demoConversations: Conversation[] = [
   {
-    id: 'demo-1',
-    direction: 'inbound',
-    fromPhone: '+12155550142',
-    toPhone: '+12155550000',
-    startedAt: new Date().toISOString(),
-    durationSeconds: 372,
-    status: 'unmatched',
-    attachedClientName: '',
-    noteCount: 1,
-    latestNote: 'Asked what documents to bring before coming in.',
-  },
-  {
-    id: 'demo-2',
-    direction: 'inbound',
-    fromPhone: '+12155550988',
-    toPhone: '+12155550000',
-    startedAt: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-    durationSeconds: 64,
-    status: 'attached',
-    attachedClientName: 'Maria R.',
+    clientId: 'demo-maria',
+    username: 'maria-rivera',
+    displayName: 'Maria Rivera',
+    phone: '+12155550142',
+    lastActivityAt: new Date(now - 1000 * 60 * 8).toISOString(),
+    lastActivityType: 'message',
+    lastPreview: 'I found my birth certificate and can bring it tomorrow morning.',
+    messageCount: 3,
+    callCount: 2,
     noteCount: 2,
-    latestNote: 'Confirmed appointment and proof of address.',
-    voicemailTranscript: 'Hi, this is Maria. I found my birth certificate and can bring it tomorrow.',
+    scheduledCount: 1,
   },
   {
-    id: 'demo-3',
-    direction: 'outbound',
-    fromPhone: '+12155550000',
-    toPhone: '+18009324600',
-    startedAt: new Date(Date.now() - 1000 * 60 * 160).toISOString(),
-    durationSeconds: 2530,
-    status: 'resolved',
-    attachedClientName: '',
+    clientId: 'demo-james',
+    username: 'james-carter',
+    displayName: 'James Carter',
+    phone: '+12155550988',
+    lastActivityAt: new Date(now - 1000 * 60 * 52).toISOString(),
+    lastActivityType: 'voicemail',
+    lastPreview: 'Voicemail transcribed: I am outside and can come back after lunch.',
+    messageCount: 1,
+    callCount: 3,
     noteCount: 1,
-    latestNote: 'PennDOT queue call while enrolling client.',
+    scheduledCount: 0,
+  },
+  {
+    clientId: 'demo-ana',
+    username: 'ana-lopez',
+    displayName: 'Ana Lopez',
+    phone: '+12155550019',
+    lastActivityAt: new Date(now - 1000 * 60 * 60 * 4).toISOString(),
+    lastActivityType: 'scheduled',
+    lastPreview: 'Reminder scheduled for tomorrow morning.',
+    messageCount: 2,
+    callCount: 1,
+    noteCount: 0,
+    scheduledCount: 1,
   },
 ];
 
-function formatDate(value: string) {
+const demoItems: MessageBoardItem[] = [
+  {
+    type: 'message',
+    sourceId: 'demo-inbound',
+    occurredAt: new Date(now - 1000 * 60 * 8).toISOString(),
+    title: 'Client message',
+    body: 'I found my birth certificate and can bring it tomorrow morning.',
+    status: 'received',
+    metadata: 'inbound',
+  },
+  {
+    type: 'message',
+    sourceId: 'demo-outbound',
+    occurredAt: new Date(now - 1000 * 60 * 24).toISOString(),
+    title: 'Worker message',
+    body: 'Great. Please bring the birth certificate and proof of address.',
+    status: 'delivered',
+    metadata: 'outbound',
+  },
+  {
+    type: 'voicemail',
+    sourceId: 'demo-voicemail',
+    occurredAt: new Date(now - 1000 * 60 * 46).toISOString(),
+    title: 'Voicemail transcript',
+    body: 'Hi, this is Maria. I found my birth certificate and can bring it tomorrow.',
+    status: 'transcribed',
+    metadata: '+12155550142',
+  },
+  {
+    type: 'call',
+    sourceId: 'demo-call',
+    occurredAt: new Date(now - 1000 * 60 * 60).toISOString(),
+    title: 'Inbound call, 6m 12s',
+    body: 'Asked what documents to bring before coming in.',
+    status: 'attached',
+    metadata: '+12155550142',
+  },
+  {
+    type: 'note',
+    sourceId: 'demo-note',
+    occurredAt: new Date(now - 1000 * 60 * 64).toISOString(),
+    title: 'Call note',
+    body: 'Client sounded ready to come in tomorrow; asked to keep appointment flexible.',
+    status: '',
+  },
+  {
+    type: 'scheduled',
+    sourceId: 'demo-scheduled',
+    occurredAt: new Date(now + 1000 * 60 * 60 * 18).toISOString(),
+    title: 'Scheduled SMS',
+    body: 'Reminder: please bring proof of address tomorrow.',
+    status: 'pending',
+    metadata: '+12155550142',
+  },
+];
+
+function formatTime(value?: string) {
+  if (!value) return '';
   return new Intl.DateTimeFormat(undefined, {
     month: 'short',
     day: 'numeric',
@@ -70,7 +123,7 @@ function formatDate(value: string) {
 }
 
 function phone(value?: string) {
-  if (!value) return 'Unknown';
+  if (!value) return '';
   const digits = value.replace(/\D/g, '');
   if (digits.length === 11 && digits.startsWith('1')) {
     return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
@@ -78,199 +131,254 @@ function phone(value?: string) {
   return value;
 }
 
-export default function CallsPage() {
-  const history = useHistory();
-  const [calls, setCalls] = useState<CallLog[]>([]);
-  const [report, setReport] = useState<CallsReport>(emptyReport);
-  const [status, setStatus] = useState('all');
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<CallLog | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [usingDemo, setUsingDemo] = useState(false);
+function itemSide(item: MessageBoardItem) {
+  if (item.type === 'message') return item.metadata === 'inbound' ? 'left' : 'right';
+  return 'center';
+}
 
-  async function load() {
-    setIsLoading(true);
+export default function CallsPage() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedUsername, setSelectedUsername] = useState('');
+  const [items, setItems] = useState<MessageBoardItem[]>([]);
+  const [search, setSearch] = useState('');
+  const [message, setMessage] = useState('');
+  const [note, setNote] = useState('');
+  const [noteCallId, setNoteCallId] = useState('');
+  const [sendAt, setSendAt] = useState('');
+  const [usingDemo, setUsingDemo] = useState(false);
+  const [isLoadingThread, setIsLoadingThread] = useState(false);
+
+  const selected = useMemo(
+    () => conversations.find((conversation) => conversation.username === selectedUsername) || conversations[0],
+    [conversations, selectedUsername],
+  );
+
+  async function loadConversations() {
     try {
-      const data = await getCalls(status, search);
-      if (data.status === 'SUCCESS' && data.calls.length > 0) {
-        setCalls(data.calls);
-        setReport(data.report);
+      const data = await getConversations(search);
+      if (data.status === 'SUCCESS' && data.conversations.length > 0) {
+        setConversations(data.conversations);
+        setSelectedUsername((current) => current || data.conversations[0].username);
         setUsingDemo(false);
       } else {
-        setCalls(demoCalls);
-        setReport({
-          totalCalls: 3,
-          attachedCalls: 1,
-          unmatchedCalls: 1,
-          callsWithNotes: 3,
-          totalDurationSeconds: 2966,
-          voicemailTranscripts: 1,
-        });
+        setConversations(demoConversations);
+        setSelectedUsername((current) => current || demoConversations[0].username);
         setUsingDemo(true);
       }
     } catch {
-      setCalls(demoCalls);
-      setReport({
-        totalCalls: 3,
-        attachedCalls: 1,
-        unmatchedCalls: 1,
-        callsWithNotes: 3,
-        totalDurationSeconds: 2966,
-        voicemailTranscripts: 1,
-      });
+      setConversations(demoConversations);
+      setSelectedUsername((current) => current || demoConversations[0].username);
+      setUsingDemo(true);
+    }
+  }
+
+  async function loadThread(username: string) {
+    setIsLoadingThread(true);
+    try {
+      const data = await getMessageBoard(username);
+      if (data.status === 'SUCCESS' && data.items.length > 0) {
+        setItems(data.items);
+        setUsingDemo(false);
+      } else {
+        setItems(demoItems);
+        setUsingDemo(true);
+      }
+    } catch {
+      setItems(demoItems);
       setUsingDemo(true);
     } finally {
-      setIsLoading(false);
+      setIsLoadingThread(false);
     }
   }
 
   useEffect(() => {
-    load();
-  }, [status]);
+    loadConversations();
+  }, []);
+
+  useEffect(() => {
+    if (selected?.username) loadThread(selected.username);
+  }, [selected?.username]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return calls;
-    return calls.filter((call) => (
-      call.fromPhone?.toLowerCase().includes(q)
-      || call.toPhone?.toLowerCase().includes(q)
-      || call.attachedClientName?.toLowerCase().includes(q)
-      || call.latestNote?.toLowerCase().includes(q)
+    if (!q) return conversations;
+    return conversations.filter((conversation) => (
+      conversation.displayName.toLowerCase().includes(q)
+      || conversation.username.toLowerCase().includes(q)
+      || conversation.phone?.toLowerCase().includes(q)
+      || conversation.lastPreview?.toLowerCase().includes(q)
     ));
-  }, [calls, search]);
+  }, [conversations, search]);
 
-  async function mark(call: CallLog, nextStatus: string) {
+  async function handleSend(schedule: boolean) {
+    if (!selected || !message.trim()) return;
     if (usingDemo) {
-      setCalls((current) => current.map((c) => (c.id === call.id ? { ...c, status: nextStatus as CallLog['status'] } : c)));
-      setSelected((current) => (current && current.id === call.id ? { ...current, status: nextStatus as CallLog['status'] } : current));
-      return;
+      const item: MessageBoardItem = {
+        type: schedule ? 'scheduled' : 'message',
+        sourceId: `local-message-${Date.now()}`,
+        occurredAt: schedule && sendAt ? new Date(sendAt).toISOString() : new Date().toISOString(),
+        title: schedule ? 'Scheduled SMS' : 'Worker message',
+        body: message,
+        status: schedule ? 'pending' : 'queued',
+        metadata: schedule ? selected.phone : 'outbound',
+      };
+      setItems((current) => [item, ...current]);
+    } else if (schedule) {
+      await scheduleMessage(selected.username, message, new Date(sendAt).toISOString(), selected.phone);
+      await loadThread(selected.username);
+    } else {
+      await sendMessage(selected.username, message, selected.phone);
+      await loadThread(selected.username);
     }
-    await updateCallStatus(call.id, nextStatus);
-    await load();
+    setMessage('');
+    setSendAt('');
+  }
+
+  async function handleNote() {
+    if (!selected || !note.trim()) return;
+    if (usingDemo) {
+      setItems((current) => [{
+        type: 'note',
+        sourceId: `local-note-${Date.now()}`,
+        occurredAt: new Date().toISOString(),
+        title: noteCallId ? 'Call note' : 'Note',
+        body: note,
+        status: '',
+      }, ...current]);
+    } else {
+      await addClientNote(selected.username, note, noteCallId || undefined);
+      await loadThread(selected.username);
+    }
+    setNote('');
+    setNoteCallId('');
   }
 
   return (
-    <main className="communications-page">
-      <section className="communications-heading">
-        <div>
-          <p className="communications-kicker">Organization communications</p>
-          <h1>Calls</h1>
-          <p>Hotline activity from Twilio, with call length, notes, callback context, and client attachment.</p>
+    <main className="communications-shell">
+      <aside className="conversation-list" aria-label="Conversation contacts">
+        <div className="conversation-list-header">
+          <div>
+            <p className="communications-kicker">Communications</p>
+            <h1>Inbox</h1>
+          </div>
+          {usingDemo && <span className="communications-pill">Vision data</span>}
         </div>
-        {usingDemo && <span className="communications-pill">Vision demo data</span>}
-      </section>
-
-      <section className="report-grid" aria-label="Call reporting summary">
-        <Metric label="Total calls" value={report.totalCalls} />
-        <Metric label="Unmatched" value={report.unmatchedCalls} />
-        <Metric label="Attached" value={report.attachedCalls} />
-        <Metric label="With notes" value={report.callsWithNotes} />
-        <Metric label="Voicemails" value={report.voicemailTranscripts} />
-        <Metric label="Call time" value={formatDuration(report.totalDurationSeconds)} />
-      </section>
-
-      <section className="communications-toolbar">
         <input
+          className="conversation-search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search phone, client, or note"
+          onChange={(event) => setSearch(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') loadConversations();
+          }}
+          placeholder="Search contacts or messages"
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="all">All calls</option>
-          <option value="unmatched">Unmatched</option>
-          <option value="attached">Attached</option>
-          <option value="resolved">Resolved</option>
-          <option value="ignored">Ignored</option>
-        </select>
-        <button type="button" onClick={load}>Refresh</button>
-      </section>
-
-      <section className="calls-layout">
-        <div className="calls-table-wrap">
-          <table className="calls-table">
-            <thead>
-              <tr>
-                <th>Call time</th>
-                <th>Number</th>
-                <th>Dir</th>
-                <th>Length</th>
-                <th>Client</th>
-                <th>Notes</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((call) => (
-                <tr key={call.id} onClick={() => setSelected(call)}>
-                  <td>{formatDate(call.startedAt)}</td>
-                  <td>{phone(call.direction === 'inbound' ? call.fromPhone : call.toPhone)}</td>
-                  <td>{call.direction === 'inbound' ? 'In' : 'Out'}</td>
-                  <td>{formatDuration(call.durationSeconds)}</td>
-                  <td>{call.attachedClientName || 'Unmatched'}</td>
-                  <td>{call.noteCount}</td>
-                  <td><span className={`status-chip ${call.status}`}>{call.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {isLoading && <p className="communications-muted">Loading calls...</p>}
+        <div className="contact-scroll">
+          {filtered.map((conversation) => (
+            <button
+              type="button"
+              key={conversation.username}
+              className={`contact-row ${selected?.username === conversation.username ? 'active' : ''}`}
+              onClick={() => setSelectedUsername(conversation.username)}
+            >
+              <span className="contact-avatar">{conversation.displayName.charAt(0).toUpperCase()}</span>
+              <span className="contact-main">
+                <strong>{conversation.displayName}</strong>
+                <small>{conversation.lastPreview || 'No recent activity'}</small>
+              </span>
+              <span className="contact-meta">
+                <small>{formatTime(conversation.lastActivityAt)}</small>
+                <span>{conversation.callCount} calls</span>
+              </span>
+            </button>
+          ))}
         </div>
+      </aside>
 
-        <aside className="call-detail">
-          {selected ? (
-            <>
-              <div className="call-detail-header">
-                <div>
-                  <p>{selected.direction === 'inbound' ? 'Inbound call' : 'Outbound call'}</p>
-                  <h2>{phone(selected.direction === 'inbound' ? selected.fromPhone : selected.toPhone)}</h2>
-                </div>
-                <span className={`status-chip ${selected.status}`}>{selected.status}</span>
+      <section className="chat-panel" aria-label="Selected conversation">
+        {selected ? (
+          <>
+            <header className="chat-header">
+              <div>
+                <h2>{selected.displayName}</h2>
+                <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
               </div>
-              <dl>
-                <div><dt>Started</dt><dd>{formatDate(selected.startedAt)}</dd></div>
-                <div><dt>Length</dt><dd>{formatDuration(selected.durationSeconds)}</dd></div>
-                <div><dt>Client</dt><dd>{selected.attachedClientName || 'Not attached yet'}</dd></div>
-              </dl>
-              {selected.latestNote && (
-                <div className="detail-block">
-                  <strong>Latest note</strong>
-                  <p>{selected.latestNote}</p>
-                </div>
-              )}
-              {selected.voicemailTranscript && (
-                <div className="detail-block transcript">
-                  <strong>Voicemail transcript</strong>
-                  <p>{selected.voicemailTranscript}</p>
-                </div>
-              )}
-              <div className="detail-actions">
-                <a className="btn btn-primary" href={`tel:${selected.direction === 'inbound' ? selected.fromPhone : selected.toPhone}`}>Call back</a>
-                {selected.attachedClientName && (
-                  <button type="button" className="btn btn-outline-primary" onClick={() => history.push('/profile')}>
-                    Open message board
-                  </button>
-                )}
-                <button type="button" className="btn btn-outline-secondary" onClick={() => mark(selected, 'resolved')}>Mark resolved</button>
-                <button type="button" className="btn btn-outline-secondary" onClick={() => mark(selected, 'ignored')}>Ignore</button>
+              <div className="chat-actions">
+                <a className="btn btn-primary" href={selected.phone ? `tel:${selected.phone}` : undefined}>Call</a>
+                <button type="button" className="btn btn-outline-secondary" onClick={loadConversations}>Refresh</button>
               </div>
-            </>
-          ) : (
-            <div className="empty-detail">
-              <h2>Select a call</h2>
-              <p>Review notes, voicemail transcripts, callback actions, and client attachment state.</p>
+            </header>
+
+            <div className="chat-scroll">
+              {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
+              {[...items].reverse().map((item) => {
+                const side = itemSide(item);
+                return (
+                  <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
+                    <div className="chat-bubble">
+                      <div className="chat-item-top">
+                        <strong>{item.title}</strong>
+                        <span>{formatTime(item.occurredAt)}</span>
+                      </div>
+                      {item.body && <p>{item.body}</p>}
+                      {item.type === 'call' && (
+                        <div className="inline-note">
+                          <input
+                            value={noteCallId === item.sourceId ? note : ''}
+                            onFocus={() => setNoteCallId(item.sourceId)}
+                            onChange={(event) => {
+                              setNoteCallId(item.sourceId);
+                              setNote(event.target.value);
+                            }}
+                            placeholder="Add note to this call"
+                          />
+                          <button type="button" onClick={handleNote}>Save</button>
+                        </div>
+                      )}
+                      {item.status && <small>{item.status}</small>}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          )}
-        </aside>
+
+            <footer className="chat-composer">
+              <div className="note-strip">
+                <input
+                  value={noteCallId ? '' : note}
+                  onFocus={() => setNoteCallId('')}
+                  onChange={(event) => {
+                    setNoteCallId('');
+                    setNote(event.target.value);
+                  }}
+                  placeholder="Add a dated note to this conversation"
+                />
+                <button type="button" onClick={handleNote}>Add note</button>
+              </div>
+              <textarea
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="Write a freeform message"
+                rows={3}
+              />
+              <div className="composer-row">
+                <input
+                  type="datetime-local"
+                  value={sendAt}
+                  onChange={(event) => setSendAt(event.target.value)}
+                  aria-label="Schedule send time"
+                />
+                <button type="button" disabled={!message.trim()} onClick={() => handleSend(false)}>Send</button>
+                <button type="button" disabled={!message.trim() || !sendAt} onClick={() => handleSend(true)}>Schedule</button>
+              </div>
+            </footer>
+          </>
+        ) : (
+          <div className="empty-chat">
+            <h2>Select a contact</h2>
+            <p>Recent messages, calls, voicemail transcripts, scheduled messages, and notes will appear here.</p>
+          </div>
+        )}
       </section>
     </main>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   );
 }

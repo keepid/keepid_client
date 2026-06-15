@@ -505,6 +505,23 @@ class App extends React.Component<{}, State, {}> {
                 }}
               />
               <Route
+                exact
+                path="/communications"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
                 path="/communications/calls"
                 render={() => {
                   if (

@@ -34,6 +34,20 @@ export type ClientNote = {
   createdAt: string;
 };
 
+export type Conversation = {
+  clientId: string;
+  username: string;
+  displayName: string;
+  phone?: string;
+  lastActivityAt?: string;
+  lastActivityType?: 'call' | 'voicemail' | 'note' | 'message' | 'scheduled' | string;
+  lastPreview?: string;
+  messageCount: number;
+  callCount: number;
+  noteCount: number;
+  scheduledCount: number;
+};
+
 export type MessageBoardItem = {
   type: 'call' | 'voicemail' | 'note' | 'message' | 'scheduled' | 'system';
   occurredAt?: string;
@@ -60,6 +74,12 @@ export type MessageBoardResponse = {
   notes: ClientNote[];
 };
 
+export type ConversationsResponse = {
+  status: string;
+  message?: string;
+  conversations: Conversation[];
+};
+
 async function jsonFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${getServerURL()}${path}`, {
     credentials: 'include',
@@ -75,6 +95,12 @@ export function getCalls(status = 'all', search = '') {
   if (status) params.set('status', status);
   if (search) params.set('search', search);
   return jsonFetch<CallsResponse>(`/api/communications/calls?${params.toString()}`);
+}
+
+export function getConversations(search = '') {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  return jsonFetch<ConversationsResponse>(`/api/communications/conversations?${params.toString()}`);
 }
 
 export function attachCall(callId: string, clientId: string) {

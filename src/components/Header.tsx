@@ -115,7 +115,7 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
                 <NavLink to="/applications?view=all">Applications</NavLink>
               )}
               {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
-                <NavLink to="/communications/calls">Calls</NavLink>
+                <NavLink to="/communications">Communications</NavLink>
               )}
 
               <NavLink to="/profile">{role === Role.Client ? 'My Profile' : 'Profile'}</NavLink>
@@ -167,7 +167,7 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
               )}
               {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
                 <li>
-                  <NavLink to="/communications/calls">Calls</NavLink>
+                  <NavLink to="/communications">Communications</NavLink>
                 </li>
               )}
               <li>

@@ -2,10 +2,11 @@
 
 This branch adds:
 
-- A top-nav **Calls** page for hotline call records and reporting.
+- A top-nav **Communications** workspace with contacts on the left and a chat-style conversation on the right.
+- Contacts are sorted by most recent message, call, voicemail, note, or scheduled message history and can be searched from the left rail.
 - A client **Message Board** on worker/admin client profile views.
-- Freeform send-now and scheduled-message composer UI.
-- Voicemail transcript and call-link timeline items.
+- Freeform send-now, scheduled-message, call, and note controls in the chat composer.
+- Voicemail transcript and call timeline items directly inside the chat thread.
 
 ## Local Run
 
@@ -40,10 +41,10 @@ Use the worker/admin view for the communications surfaces.
 
 ## Screens To Review
 
-Calls page:
+Communications workspace:
 
 ```text
-http://localhost:3000/communications/calls
+http://localhost:3000/communications
 ```
 
 Client profile message board:
