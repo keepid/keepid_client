@@ -176,6 +176,8 @@ export default function CallsPage() {
   const [note, setNote] = useState('');
   const [noteCallId, setNoteCallId] = useState('');
   const [sendAt, setSendAt] = useState('');
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
   const [usingDemo, setUsingDemo] = useState(false);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
 
@@ -183,6 +185,9 @@ export default function CallsPage() {
     () => conversations.find((conversation) => conversation.username === selectedUsername) || conversations[0],
     [conversations, selectedUsername],
   );
+
+  const visibleItems = useMemo(() => orderedItems(items).filter((item) => item.type !== 'scheduled'), [items]);
+  const scheduledItems = useMemo(() => orderedItems(items).filter((item) => item.type === 'scheduled'), [items]);
 
   async function loadConversations() {
     try {
@@ -263,6 +268,19 @@ export default function CallsPage() {
     }
     setMessage('');
     setSendAt('');
+    setIsScheduling(false);
+  }
+
+  function handleScheduleClick() {
+    if (!message.trim()) return;
+    if (!isScheduling) {
+      const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      tomorrow.setHours(9, 0, 0, 0);
+      setSendAt(tomorrow.toISOString().slice(0, 16));
+      setIsScheduling(true);
+      return;
+    }
+    handleSend(true);
   }
 
   async function handleNote() {
@@ -345,14 +363,14 @@ export default function CallsPage() {
                 </div>
               </div>
               <div className="chat-actions">
-                <a className="btn btn-primary" href={selected.phone ? `tel:${selected.phone}` : undefined}>Call</a>
+                <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
                 <button type="button" className="btn btn-outline-secondary" onClick={loadConversations}>Refresh</button>
               </div>
             </header>
 
             <div className="chat-scroll">
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
-              {orderedItems(items).map((item) => {
+              {visibleItems.map((item) => {
                 const side = itemSide(item);
                 const title = item.type === 'voicemail' ? 'Voicemail' : item.title;
                 return (
@@ -385,6 +403,36 @@ export default function CallsPage() {
             </div>
 
             <footer className="chat-composer">
+              {(scheduledItems.length > 0 || (isScheduling && message.trim())) && (
+                <div className="scheduled-stack">
+                  {isScheduling && message.trim() && (
+                    <section className="scheduled-preview">
+                      <div>
+                        <strong>Schedule send</strong>
+                        <p>{message}</p>
+                      </div>
+                      <label>
+                        Send at
+                        <input
+                          type="datetime-local"
+                          value={sendAt}
+                          onChange={(event) => setSendAt(event.target.value)}
+                          aria-label="Schedule send time"
+                        />
+                      </label>
+                    </section>
+                  )}
+                  {scheduledItems.map((item) => (
+                    <section key={`${item.type}-${item.sourceId}`} className="scheduled-preview existing">
+                      <div>
+                        <strong>Scheduled SMS</strong>
+                        <p>{item.body}</p>
+                      </div>
+                      <span>{formatTime(item.occurredAt)}</span>
+                    </section>
+                  ))}
+                </div>
+              )}
               <div className="note-strip">
                 <input
                   value={noteCallId ? '' : note}
@@ -399,21 +447,44 @@ export default function CallsPage() {
               </div>
               <textarea
                 value={message}
-                onChange={(event) => setMessage(event.target.value)}
+                onChange={(event) => {
+                  setMessage(event.target.value);
+                  if (!event.target.value.trim()) setIsScheduling(false);
+                }}
                 placeholder="Write a freeform message"
-                rows={3}
+                rows={2}
               />
-              <div className="composer-row">
-                <input
-                  type="datetime-local"
-                  value={sendAt}
-                  onChange={(event) => setSendAt(event.target.value)}
-                  aria-label="Schedule send time"
-                />
+              <div className="composer-row composer-actions">
                 <button type="button" disabled={!message.trim()} onClick={() => handleSend(false)}>Send</button>
-                <button type="button" disabled={!message.trim() || !sendAt} onClick={() => handleSend(true)}>Schedule</button>
+                <button type="button" disabled={!message.trim()} onClick={handleScheduleClick}>
+                  {isScheduling ? 'Schedule send' : 'Schedule'}
+                </button>
               </div>
             </footer>
+
+            {isCalling && (
+              <div className="call-modal-backdrop" role="presentation">
+                <section className="call-modal" aria-label="Active call">
+                  <button type="button" className="call-close" onClick={() => setIsCalling(false)} aria-label="Close call modal">
+                    ×
+                  </button>
+                  <div className="call-modal-header">
+                    <span className="contact-avatar large">{selected.displayName.charAt(0).toUpperCase()}</span>
+                    <div>
+                      <p className="communications-kicker">Calling</p>
+                      <h2>{selected.displayName}</h2>
+                      <strong>{phone(selected.phone)}</strong>
+                    </div>
+                    <span className="call-timer">00:42</span>
+                  </div>
+                  <textarea className="call-notes" placeholder="Take call notes while you talk..." defaultValue="Client is asking whether a shelter letter can count as proof of address." />
+                  <div className="call-controls">
+                    <button type="button">Mute</button>
+                    <button type="button" className="end-call" onClick={() => setIsCalling(false)}>End</button>
+                  </div>
+                </section>
+              </div>
+            )}
           </>
         ) : (
           <div className="empty-chat">

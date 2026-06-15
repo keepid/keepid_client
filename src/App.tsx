@@ -24,6 +24,7 @@ import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
 import CallsPage from './components/Communications/CallsPage';
 import MessageBoard from './components/Communications/MessageBoard';
+import ProfileNotesPreview from './components/Communications/ProfileNotesPreview';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocumentsPage from './components/Documents/UploadDocumentsPage';
 import Error from './components/Error';
@@ -554,6 +555,22 @@ class App extends React.Component<{}, State, {}> {
                         />
                       </div>
                     );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/communications/profile-notes-preview"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <ProfileNotesPreview />;
                   }
                   if (role === Role.LoggedOut) {
                     return renderHome();
