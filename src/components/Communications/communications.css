@@ -110,6 +110,47 @@
   white-space: nowrap;
 }
 
+.phone-health-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.phone-health-row small {
+  color: #627d98;
+}
+
+.phone-health {
+  display: inline-flex !important;
+  align-items: center;
+  width: fit-content;
+  min-height: 20px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #edf2f7;
+  color: #334e68;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.phone-health.reachable,
+.phone-health.valid {
+  background: #e3f8ed;
+  color: #1f7a4d;
+}
+
+.phone-health.inactive {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.phone-health.invalid {
+  background: #ffe3e3;
+  color: #9b1c1c;
+}
+
 .chat-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -183,7 +224,6 @@
 }
 
 .chat-item.call .chat-bubble,
-.chat-item.voicemail .chat-bubble,
 .chat-item.note .chat-bubble,
 .chat-item.scheduled .chat-bubble {
   max-width: min(760px, 92%);
@@ -192,19 +232,33 @@
 }
 
 .chat-item.call .chat-bubble {
-  border-left: 4px solid #38a169;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #486581;
 }
 
-.chat-item.voicemail .chat-bubble {
-  border-left: 4px solid #6b46c1;
+.chat-item.voicemail.left .chat-bubble {
+  background: #fff;
+  color: #102a43;
+}
+
+.chat-item.voicemail.right .chat-bubble {
+  border-color: #2f80ed;
+  background: #2f80ed;
+  color: #fff;
 }
 
 .chat-item.note .chat-bubble {
-  border-left: 4px solid #2f80ed;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #486581;
 }
 
 .chat-item.scheduled .chat-bubble {
-  border-left: 4px solid #f0b429;
+  border: 1px dashed #f0b429;
+  background: #fffaf0;
 }
 
 .chat-item-top {

@@ -27,6 +27,9 @@ const demoConversations: Conversation[] = [
     callCount: 2,
     noteCount: 2,
     scheduledCount: 1,
+    phoneHealthStatus: 'reachable',
+    phoneHealthCheckedAt: new Date(now - 1000 * 60 * 30).toISOString(),
+    phoneHealthDetail: 'mobile · T-Mobile',
   },
   {
     clientId: 'demo-james',
@@ -40,6 +43,9 @@ const demoConversations: Conversation[] = [
     callCount: 3,
     noteCount: 1,
     scheduledCount: 0,
+    phoneHealthStatus: 'inactive',
+    phoneHealthCheckedAt: new Date(now - 1000 * 60 * 60 * 8).toISOString(),
+    phoneHealthDetail: 'mobile · unknown carrier',
   },
   {
     clientId: 'demo-ana',
@@ -53,6 +59,7 @@ const demoConversations: Conversation[] = [
     callCount: 1,
     noteCount: 0,
     scheduledCount: 1,
+    phoneHealthStatus: 'unknown',
   },
 ];
 
@@ -82,7 +89,7 @@ const demoItems: MessageBoardItem[] = [
     title: 'Voicemail transcript',
     body: 'Hi, this is Maria. I found my birth certificate and can bring it tomorrow.',
     status: 'transcribed',
-    metadata: '+12155550142',
+    metadata: 'inbound',
   },
   {
     type: 'call',
@@ -132,8 +139,32 @@ function phone(value?: string) {
 }
 
 function itemSide(item: MessageBoardItem) {
-  if (item.type === 'message') return item.metadata === 'inbound' ? 'left' : 'right';
+  if (item.type === 'message' || item.type === 'voicemail') return item.metadata === 'outbound' ? 'right' : 'left';
   return 'center';
+}
+
+function phoneHealthLabel(status?: string) {
+  switch (status) {
+    case 'reachable':
+      return 'Reachable';
+    case 'valid':
+      return 'Valid';
+    case 'inactive':
+      return 'Inactive';
+    case 'invalid':
+      return 'Invalid';
+    default:
+      return 'Unknown';
+  }
+}
+
+function orderedItems(itemsToOrder: MessageBoardItem[]) {
+  const timestamp = (item: MessageBoardItem) => new Date(item.occurredAt || item.noteDate || 0).getTime();
+  return [...itemsToOrder].sort((a, b) => {
+    if (a.type === 'scheduled' && b.type !== 'scheduled') return 1;
+    if (a.type !== 'scheduled' && b.type === 'scheduled') return -1;
+    return timestamp(a) - timestamp(b);
+  });
 }
 
 export default function CallsPage() {
@@ -287,7 +318,9 @@ export default function CallsPage() {
               </span>
               <span className="contact-meta">
                 <small>{formatTime(conversation.lastActivityAt)}</small>
-                <span>{conversation.callCount} calls</span>
+                <span className={`phone-health ${conversation.phoneHealthStatus || 'unknown'}`}>
+                  {phoneHealthLabel(conversation.phoneHealthStatus)}
+                </span>
               </span>
             </button>
           ))}
@@ -301,6 +334,15 @@ export default function CallsPage() {
               <div>
                 <h2>{selected.displayName}</h2>
                 <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
+                <div className="phone-health-row">
+                  <span className={`phone-health ${selected.phoneHealthStatus || 'unknown'}`}>
+                    {phoneHealthLabel(selected.phoneHealthStatus)}
+                  </span>
+                  <small>
+                    {selected.phoneHealthDetail || 'Phone health not checked yet'}
+                    {selected.phoneHealthCheckedAt ? ` · checked ${formatTime(selected.phoneHealthCheckedAt)}` : ''}
+                  </small>
+                </div>
               </div>
               <div className="chat-actions">
                 <a className="btn btn-primary" href={selected.phone ? `tel:${selected.phone}` : undefined}>Call</a>
@@ -310,13 +352,14 @@ export default function CallsPage() {
 
             <div className="chat-scroll">
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
-              {[...items].reverse().map((item) => {
+              {orderedItems(items).map((item) => {
                 const side = itemSide(item);
+                const title = item.type === 'voicemail' ? 'Voicemail' : item.title;
                 return (
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
                       <div className="chat-item-top">
-                        <strong>{item.title}</strong>
+                        <strong>{title}</strong>
                         <span>{formatTime(item.occurredAt)}</span>
                       </div>
                       {item.body && <p>{item.body}</p>}
