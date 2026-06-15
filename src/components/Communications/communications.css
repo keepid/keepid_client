@@ -36,6 +36,21 @@
   line-height: 1.15;
 }
 
+.conversation-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #2f80ed;
+  border-radius: 50%;
+  background: #2f80ed;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .conversation-search {
   width: calc(100% - 36px);
   margin: 0 18px 14px;
@@ -108,47 +123,6 @@
   font-size: 11px;
   text-align: right;
   white-space: nowrap;
-}
-
-.phone-health-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.phone-health-row small {
-  color: #627d98;
-}
-
-.phone-health {
-  display: inline-flex !important;
-  align-items: center;
-  width: fit-content;
-  min-height: 20px;
-  border-radius: 999px;
-  padding: 2px 8px;
-  background: #edf2f7;
-  color: #334e68;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.phone-health.reachable,
-.phone-health.valid {
-  background: #e3f8ed;
-  color: #1f7a4d;
-}
-
-.phone-health.inactive {
-  background: #fff4d6;
-  color: #8a5a00;
-}
-
-.phone-health.invalid {
-  background: #ffe3e3;
-  color: #9b1c1c;
 }
 
 .chat-panel {
@@ -283,15 +257,6 @@
   margin: 0 0 4px;
 }
 
-.inline-note {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.inline-note input,
-.note-strip input,
 .chat-composer textarea,
 .scheduled-preview input[type="datetime-local"] {
   width: 100%;
@@ -302,8 +267,6 @@
   color: #102a43;
 }
 
-.inline-note button,
-.note-strip button,
 .chat-composer button {
   border: 1px solid #2f80ed;
   border-radius: 8px;
@@ -357,12 +320,6 @@
 
 .scheduled-preview.existing {
   grid-template-columns: minmax(0, 1fr) auto;
-}
-
-.note-strip {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
 }
 
 .chat-composer textarea {
@@ -444,12 +401,29 @@
   font-weight: 800;
 }
 
+.call-notes-wrap,
+.call-volume {
+  display: grid;
+  gap: 6px;
+  color: #334e68;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .call-notes {
   min-height: 96px;
   border: 1px solid #bcccdc;
   border-radius: 10px;
   padding: 10px 12px;
   resize: vertical;
+  color: #102a43;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.call-volume input {
+  width: 100%;
+  accent-color: #2f80ed;
 }
 
 .call-controls {
@@ -506,6 +480,10 @@
   margin-top: 16px;
   padding: 18px;
   background: #fff;
+}
+
+.client-profile-timeline {
+  margin-bottom: 16px;
 }
 
 .client-timeline {
@@ -616,6 +594,56 @@
   margin-top: 3px;
   font-size: 12px;
   font-weight: 800;
+}
+
+.timeline-composer {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  border-top: 1px solid #e6eef5;
+  padding-top: 14px;
+}
+
+.timeline-composer label {
+  margin: 0;
+  color: #334e68;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.timeline-composer textarea {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #102a43;
+  resize: vertical;
+}
+
+.timeline-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.timeline-composer-actions span {
+  color: #627d98;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.timeline-composer-actions button {
+  border: 1px solid #2f80ed;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: #2f80ed;
+  color: #fff;
+  font-weight: 800;
+}
+
+.timeline-composer-actions button:disabled {
+  opacity: 0.55;
 }
 
 .communications-heading,
@@ -1000,8 +1028,6 @@
     max-width: 94%;
   }
 
-  .note-strip,
-  .inline-note,
   .scheduled-preview {
     grid-template-columns: 1fr;
   }

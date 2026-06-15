@@ -46,9 +46,6 @@ export type Conversation = {
   callCount: number;
   noteCount: number;
   scheduledCount: number;
-  phoneHealthStatus?: 'reachable' | 'valid' | 'unknown' | 'inactive' | 'invalid' | string;
-  phoneHealthCheckedAt?: string;
-  phoneHealthDetail?: string;
 };
 
 export type MessageBoardItem = {

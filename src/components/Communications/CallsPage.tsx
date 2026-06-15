@@ -1,9 +1,9 @@
 import './communications.css';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import {
-  addClientNote,
   Conversation,
   getConversations,
   getMessageBoard,
@@ -27,9 +27,6 @@ const demoConversations: Conversation[] = [
     callCount: 2,
     noteCount: 2,
     scheduledCount: 1,
-    phoneHealthStatus: 'reachable',
-    phoneHealthCheckedAt: new Date(now - 1000 * 60 * 30).toISOString(),
-    phoneHealthDetail: 'mobile · T-Mobile',
   },
   {
     clientId: 'demo-james',
@@ -43,9 +40,6 @@ const demoConversations: Conversation[] = [
     callCount: 3,
     noteCount: 1,
     scheduledCount: 0,
-    phoneHealthStatus: 'inactive',
-    phoneHealthCheckedAt: new Date(now - 1000 * 60 * 60 * 8).toISOString(),
-    phoneHealthDetail: 'mobile · unknown carrier',
   },
   {
     clientId: 'demo-ana',
@@ -59,7 +53,6 @@ const demoConversations: Conversation[] = [
     callCount: 1,
     noteCount: 0,
     scheduledCount: 1,
-    phoneHealthStatus: 'unknown',
   },
 ];
 
@@ -77,7 +70,7 @@ const demoItems: MessageBoardItem[] = [
     type: 'message',
     sourceId: 'demo-outbound',
     occurredAt: new Date(now - 1000 * 60 * 24).toISOString(),
-    title: 'Worker message',
+    title: 'Aisha Patel',
     body: 'Great. Please bring the birth certificate and proof of address.',
     status: 'delivered',
     metadata: 'outbound',
@@ -143,21 +136,6 @@ function itemSide(item: MessageBoardItem) {
   return 'center';
 }
 
-function phoneHealthLabel(status?: string) {
-  switch (status) {
-    case 'reachable':
-      return 'Reachable';
-    case 'valid':
-      return 'Valid';
-    case 'inactive':
-      return 'Inactive';
-    case 'invalid':
-      return 'Invalid';
-    default:
-      return 'Unknown';
-  }
-}
-
 function orderedItems(itemsToOrder: MessageBoardItem[]) {
   const timestamp = (item: MessageBoardItem) => new Date(item.occurredAt || item.noteDate || 0).getTime();
   return [...itemsToOrder].sort((a, b) => {
@@ -168,13 +146,12 @@ function orderedItems(itemsToOrder: MessageBoardItem[]) {
 }
 
 export default function CallsPage() {
+  const history = useHistory();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUsername, setSelectedUsername] = useState('');
   const [items, setItems] = useState<MessageBoardItem[]>([]);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
-  const [note, setNote] = useState('');
-  const [noteCallId, setNoteCallId] = useState('');
   const [sendAt, setSendAt] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
@@ -242,7 +219,6 @@ export default function CallsPage() {
       conversation.displayName.toLowerCase().includes(q)
       || conversation.username.toLowerCase().includes(q)
       || conversation.phone?.toLowerCase().includes(q)
-      || conversation.lastPreview?.toLowerCase().includes(q)
     ));
   }, [conversations, search]);
 
@@ -253,7 +229,7 @@ export default function CallsPage() {
         type: schedule ? 'scheduled' : 'message',
         sourceId: `local-message-${Date.now()}`,
         occurredAt: schedule && sendAt ? new Date(sendAt).toISOString() : new Date().toISOString(),
-        title: schedule ? 'Scheduled SMS' : 'Worker message',
+        title: schedule ? 'Scheduled SMS' : 'Demo Worker',
         body: message,
         status: schedule ? 'pending' : 'queued',
         metadata: schedule ? selected.phone : 'outbound',
@@ -283,34 +259,19 @@ export default function CallsPage() {
     handleSend(true);
   }
 
-  async function handleNote() {
-    if (!selected || !note.trim()) return;
-    if (usingDemo) {
-      setItems((current) => [{
-        type: 'note',
-        sourceId: `local-note-${Date.now()}`,
-        occurredAt: new Date().toISOString(),
-        title: noteCallId ? 'Call note' : 'Note',
-        body: note,
-        status: '',
-      }, ...current]);
-    } else {
-      await addClientNote(selected.username, note, noteCallId || undefined);
-      await loadThread(selected.username);
-    }
-    setNote('');
-    setNoteCallId('');
-  }
-
   return (
     <main className="communications-shell">
       <aside className="conversation-list" aria-label="Conversation contacts">
         <div className="conversation-list-header">
-          <div>
-            <p className="communications-kicker">Communications</p>
-            <h1>Inbox</h1>
-          </div>
-          {usingDemo && <span className="communications-pill">Vision data</span>}
+          <h1>Clients</h1>
+          <button
+            type="button"
+            className="conversation-add"
+            onClick={() => history.push('/enroll-client')}
+            aria-label="Enroll client"
+          >
+            +
+          </button>
         </div>
         <input
           className="conversation-search"
@@ -319,7 +280,7 @@ export default function CallsPage() {
           onKeyDown={(event) => {
             if (event.key === 'Enter') loadConversations();
           }}
-          placeholder="Search contacts or messages"
+          placeholder="Search clients"
         />
         <div className="contact-scroll">
           {filtered.map((conversation) => (
@@ -336,9 +297,6 @@ export default function CallsPage() {
               </span>
               <span className="contact-meta">
                 <small>{formatTime(conversation.lastActivityAt)}</small>
-                <span className={`phone-health ${conversation.phoneHealthStatus || 'unknown'}`}>
-                  {phoneHealthLabel(conversation.phoneHealthStatus)}
-                </span>
               </span>
             </button>
           ))}
@@ -352,15 +310,6 @@ export default function CallsPage() {
               <div>
                 <h2>{selected.displayName}</h2>
                 <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
-                <div className="phone-health-row">
-                  <span className={`phone-health ${selected.phoneHealthStatus || 'unknown'}`}>
-                    {phoneHealthLabel(selected.phoneHealthStatus)}
-                  </span>
-                  <small>
-                    {selected.phoneHealthDetail || 'Phone health not checked yet'}
-                    {selected.phoneHealthCheckedAt ? ` · checked ${formatTime(selected.phoneHealthCheckedAt)}` : ''}
-                  </small>
-                </div>
               </div>
               <div className="chat-actions">
                 <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
@@ -381,20 +330,6 @@ export default function CallsPage() {
                         <span>{formatTime(item.occurredAt)}</span>
                       </div>
                       {item.body && <p>{item.body}</p>}
-                      {item.type === 'call' && (
-                        <div className="inline-note">
-                          <input
-                            value={noteCallId === item.sourceId ? note : ''}
-                            onFocus={() => setNoteCallId(item.sourceId)}
-                            onChange={(event) => {
-                              setNoteCallId(item.sourceId);
-                              setNote(event.target.value);
-                            }}
-                            placeholder="Add note to this call"
-                          />
-                          <button type="button" onClick={handleNote}>Save</button>
-                        </div>
-                      )}
                       {item.status && <small>{item.status}</small>}
                     </div>
                   </article>
@@ -433,18 +368,6 @@ export default function CallsPage() {
                   ))}
                 </div>
               )}
-              <div className="note-strip">
-                <input
-                  value={noteCallId ? '' : note}
-                  onFocus={() => setNoteCallId('')}
-                  onChange={(event) => {
-                    setNoteCallId('');
-                    setNote(event.target.value);
-                  }}
-                  placeholder="Add a dated note to this conversation"
-                />
-                <button type="button" onClick={handleNote}>Add note</button>
-              </div>
               <textarea
                 value={message}
                 onChange={(event) => {
@@ -477,7 +400,14 @@ export default function CallsPage() {
                     </div>
                     <span className="call-timer">00:42</span>
                   </div>
-                  <textarea className="call-notes" placeholder="Take call notes while you talk..." defaultValue="Client is asking whether a shelter letter can count as proof of address." />
+                  <label className="call-notes-wrap">
+                    Call notes
+                    <textarea className="call-notes" placeholder="Take call notes while you talk..." defaultValue="Client is asking whether a shelter letter can count as proof of address." />
+                  </label>
+                  <label className="call-volume">
+                    Volume
+                    <input type="range" min="0" max="100" defaultValue="72" aria-label="Call volume" />
+                  </label>
                   <div className="call-controls">
                     <button type="button">Mute</button>
                     <button type="button" className="end-call" onClick={() => setIsCalling(false)}>End</button>

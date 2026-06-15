@@ -10,8 +10,8 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
-import MessageBoard from '../Communications/MessageBoard';
 import AccountSettingsSection from './AccountSettingsSection';
+import ClientTimelineSection from './ClientTimelineSection';
 import EssentialAccountSection from './EssentialAccountSection';
 import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
@@ -346,10 +346,10 @@ export default function ProfilePage({ targetUsername }: Props) {
           />
 
           {isWorkerView && profile.username && (
-            <MessageBoard
+            <ClientTimelineSection
               username={profile.username}
-              clientName={displayName}
-              phone={profile.phone}
+              workerNotes={profile.workerNotes}
+              onSaved={() => fetchProfile()}
             />
           )}
 
