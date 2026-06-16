@@ -35,8 +35,8 @@ export type ClientNote = {
 };
 
 export type Conversation = {
-  clientId: string;
-  username: string;
+  clientId?: string;
+  username?: string;
   displayName: string;
   phone?: string;
   lastActivityAt?: string;

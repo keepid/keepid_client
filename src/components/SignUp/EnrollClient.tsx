@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { enrollClient } from './SignUp.api';
 import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
@@ -25,6 +25,8 @@ interface EnrollClientFormValues {
 
 export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
+  const location = useLocation();
+  const initialPhone = new URLSearchParams(location.search).get('phone') || '';
   const [values, setValues] = useState<EnrollClientFormValues>({
     firstname: '',
     middlename: '',
@@ -32,7 +34,7 @@ export default function EnrollClientPage(): JSX.Element {
     suffix: '',
     birthDate: '',
     email: '',
-    phonenumber: '',
+    phonenumber: initialPhone,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);

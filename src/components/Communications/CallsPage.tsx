@@ -160,6 +160,21 @@ function orderedItems(itemsToOrder: MessageBoardItem[]) {
   });
 }
 
+function conversationKey(conversation?: Conversation) {
+  if (!conversation) return '';
+  return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
+}
+
+function openSelectedClient(conversation: Conversation, history: ReturnType<typeof useHistory>) {
+  if (conversation.username) {
+    history.push(`/profile/${encodeURIComponent(conversation.username)}`);
+    return;
+  }
+  const params = new URLSearchParams();
+  if (conversation.phone) params.set('phone', conversation.phone);
+  history.push(`/enroll-client${params.toString() ? `?${params.toString()}` : ''}`);
+}
+
 export default function CallsPage() {
   const history = useHistory();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -175,7 +190,7 @@ export default function CallsPage() {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
 
   const selected = useMemo(
-    () => conversations.find((conversation) => conversation.username === selectedUsername) || conversations[0],
+    () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
     [conversations, selectedUsername],
   );
 
@@ -188,16 +203,16 @@ export default function CallsPage() {
       const data = await getConversations(search);
       if (data.status === 'SUCCESS' && data.conversations.length > 0) {
         setConversations(data.conversations);
-        setSelectedUsername((current) => current || data.conversations[0].username);
+        setSelectedUsername((current) => current || conversationKey(data.conversations[0]));
         setUsingDemo(false);
       } else {
         setConversations(demoConversations);
-        setSelectedUsername((current) => current || demoConversations[0].username);
+        setSelectedUsername((current) => current || conversationKey(demoConversations[0]));
         setUsingDemo(true);
       }
     } catch {
       setConversations(demoConversations);
-      setSelectedUsername((current) => current || demoConversations[0].username);
+      setSelectedUsername((current) => current || conversationKey(demoConversations[0]));
       setUsingDemo(true);
     }
   }
@@ -226,7 +241,11 @@ export default function CallsPage() {
   }, []);
 
   useEffect(() => {
-    if (selected?.username) loadThread(selected.username);
+    if (selected?.username) {
+      loadThread(selected.username);
+    } else if (selected) {
+      setItems([]);
+    }
   }, [selected?.username]);
 
   const filtered = useMemo(() => {
@@ -234,7 +253,7 @@ export default function CallsPage() {
     if (!q) return conversations;
     return conversations.filter((conversation) => (
       conversation.displayName.toLowerCase().includes(q)
-      || conversation.username.toLowerCase().includes(q)
+      || (conversation.username || '').toLowerCase().includes(q)
       || conversation.phone?.toLowerCase().includes(q)
     ));
   }, [conversations, search]);
@@ -262,7 +281,7 @@ export default function CallsPage() {
   }
 
   async function handleSend(schedule: boolean, scheduledBody = message, scheduledSendAt = '') {
-    if (!selected || !scheduledBody.trim()) return;
+    if (!selected?.username || !scheduledBody.trim()) return;
     if (usingDemo) {
       const item: MessageBoardItem = {
         type: schedule ? 'scheduled' : 'message',
@@ -287,6 +306,7 @@ export default function CallsPage() {
   }
 
   function handleScheduleClick() {
+    if (!selected?.username) return;
     const body = scheduledItem?.body || message;
     if (!body?.trim()) return;
     setScheduleBody(body);
@@ -295,7 +315,7 @@ export default function CallsPage() {
   }
 
   async function handleSaveSchedule() {
-    if (!scheduleBody.trim() || !scheduleSendAt) return;
+    if (!selected?.username || !scheduleBody.trim() || !scheduleSendAt) return;
     await handleSend(true, scheduleBody, scheduleSendAt);
     setMessage('');
     setScheduleBody('');
@@ -330,9 +350,9 @@ export default function CallsPage() {
           {filtered.map((conversation) => (
             <button
               type="button"
-              key={conversation.username}
-              className={`contact-row ${selected?.username === conversation.username ? 'active' : ''}`}
-              onClick={() => setSelectedUsername(conversation.username)}
+              key={conversationKey(conversation)}
+              className={`contact-row ${conversationKey(selected) === conversationKey(conversation) ? 'active' : ''}`}
+              onClick={() => setSelectedUsername(conversationKey(conversation))}
             >
               <span className="contact-avatar">{conversation.displayName.charAt(0).toUpperCase()}</span>
               <span className="contact-main">
@@ -356,6 +376,9 @@ export default function CallsPage() {
                 <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
               </div>
               <div className="chat-actions">
+                <button type="button" className="btn btn-outline-secondary" onClick={() => openSelectedClient(selected, history)}>
+                  {selected.username ? 'Profile' : 'Enroll'}
+                </button>
                 <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
                 <button type="button" className="btn btn-outline-secondary" onClick={loadConversations}>Refresh</button>
               </div>
@@ -405,8 +428,8 @@ export default function CallsPage() {
                 rows={2}
               />
               <div className="composer-row composer-actions">
-                <button type="button" disabled={!message.trim()} onClick={() => handleSend(false)}>Send</button>
-                <button type="button" disabled={!message.trim() && !scheduledItem} onClick={handleScheduleClick}>
+                <button type="button" disabled={!selected.username || !message.trim()} onClick={() => handleSend(false)}>Send</button>
+                <button type="button" disabled={!selected.username || (!message.trim() && !scheduledItem)} onClick={handleScheduleClick}>
                   Schedule send
                 </button>
               </div>
