@@ -11,12 +11,12 @@ import { useHistory } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
 import AccountSettingsSection from './AccountSettingsSection';
+import ClientTimelineSection from './ClientTimelineSection';
 import EssentialAccountSection from './EssentialAccountSection';
 import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
 import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
-import WorkerNotesSection from './WorkerNotesSection';
 
 type Props = {
   targetUsername?: string;
@@ -346,9 +346,10 @@ export default function ProfilePage({ targetUsername }: Props) {
           />
 
           {isWorkerView && profile.username && (
-            <WorkerNotesSection
+            <ClientTimelineSection
+              username={profile.username}
               workerNotes={profile.workerNotes}
-              targetUsername={targetUsername!}
+              onSaved={() => fetchProfile()}
             />
           )}
 
