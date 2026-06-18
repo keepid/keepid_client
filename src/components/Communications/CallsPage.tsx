@@ -27,106 +27,6 @@ function PencilIcon() {
   );
 }
 
-const now = Date.now();
-
-const demoConversations: Conversation[] = [
-  {
-    clientId: 'demo-maria',
-    username: 'maria-rivera',
-    displayName: 'Maria Rivera',
-    phone: '+12155550142',
-    lastActivityAt: new Date(now - 1000 * 60 * 8).toISOString(),
-    lastActivityType: 'message',
-    lastPreview: 'I found my birth certificate and can bring it tomorrow morning.',
-    messageCount: 3,
-    callCount: 2,
-    noteCount: 2,
-    scheduledCount: 1,
-  },
-  {
-    clientId: 'demo-james',
-    username: 'james-carter',
-    displayName: 'James Carter',
-    phone: '+12155550988',
-    lastActivityAt: new Date(now - 1000 * 60 * 52).toISOString(),
-    lastActivityType: 'voicemail',
-    lastPreview: 'Voicemail transcribed: I am outside and can come back after lunch.',
-    messageCount: 1,
-    callCount: 3,
-    noteCount: 1,
-    scheduledCount: 0,
-  },
-  {
-    clientId: 'demo-ana',
-    username: 'ana-lopez',
-    displayName: 'Ana Lopez',
-    phone: '+12155550019',
-    lastActivityAt: new Date(now - 1000 * 60 * 60 * 4).toISOString(),
-    lastActivityType: 'scheduled',
-    lastPreview: 'Reminder scheduled for tomorrow morning.',
-    messageCount: 2,
-    callCount: 1,
-    noteCount: 0,
-    scheduledCount: 1,
-  },
-];
-
-const demoItems: MessageBoardItem[] = [
-  {
-    type: 'message',
-    sourceId: 'demo-inbound',
-    occurredAt: new Date(now - 1000 * 60 * 8).toISOString(),
-    title: 'Client message',
-    body: 'I found my birth certificate and can bring it tomorrow morning.',
-    status: 'received',
-    metadata: 'inbound',
-  },
-  {
-    type: 'message',
-    sourceId: 'demo-outbound',
-    occurredAt: new Date(now - 1000 * 60 * 24).toISOString(),
-    title: 'Aisha Patel',
-    body: 'Great. Please bring the birth certificate and proof of address.',
-    status: 'delivered',
-    metadata: 'outbound',
-  },
-  {
-    type: 'voicemail',
-    sourceId: 'demo-voicemail',
-    occurredAt: new Date(now - 1000 * 60 * 46).toISOString(),
-    title: 'Voicemail transcript',
-    body: 'Hi, this is Maria. I found my birth certificate and can bring it tomorrow.',
-    status: 'transcribed',
-    metadata: 'inbound',
-  },
-  {
-    type: 'call',
-    sourceId: 'demo-call',
-    occurredAt: new Date(now - 1000 * 60 * 60).toISOString(),
-    title: 'Inbound call, 6m 12s',
-    body: 'Asked what documents to bring before coming in.',
-    status: 'attached',
-    metadata: '+12155550142',
-  },
-  {
-    type: 'note',
-    sourceId: 'demo-note',
-    occurredAt: new Date(now - 1000 * 60 * 64).toISOString(),
-    title: 'Call note',
-    body: 'Client sounded ready to come in tomorrow; asked to keep appointment flexible.',
-    status: '',
-  },
-  {
-    type: 'scheduled',
-    sourceId: 'demo-scheduled',
-    occurredAt: new Date(now + 1000 * 60 * 60 * 18).toISOString(),
-    title: 'Scheduled SMS',
-    body: 'Reminder: please bring proof of address tomorrow.',
-    status: 'pending',
-    metadata: '+12155550142',
-  },
-];
-
 function formatTime(value?: string) {
   if (!value) return '';
   return new Intl.DateTimeFormat(undefined, {
@@ -186,8 +86,9 @@ export default function CallsPage() {
   const [scheduleSendAt, setScheduleSendAt] = useState('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
-  const [usingDemo, setUsingDemo] = useState(false);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
+  const [conversationError, setConversationError] = useState('');
+  const [threadError, setThreadError] = useState('');
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
@@ -201,19 +102,21 @@ export default function CallsPage() {
   async function loadConversations() {
     try {
       const data = await getConversations(search);
-      if (data.status === 'SUCCESS' && data.conversations.length > 0) {
-        setConversations(data.conversations);
-        setSelectedUsername((current) => current || conversationKey(data.conversations[0]));
-        setUsingDemo(false);
-      } else {
-        setConversations(demoConversations);
-        setSelectedUsername((current) => current || conversationKey(demoConversations[0]));
-        setUsingDemo(true);
+      if (data.status !== 'SUCCESS') {
+        throw new Error(data.message || data.status);
       }
-    } catch {
-      setConversations(demoConversations);
-      setSelectedUsername((current) => current || conversationKey(demoConversations[0]));
-      setUsingDemo(true);
+      setConversations(data.conversations);
+      setSelectedUsername((current) => {
+        if (current && data.conversations.some((conversation) => conversationKey(conversation) === current)) {
+          return current;
+        }
+        return conversationKey(data.conversations[0]);
+      });
+      setConversationError('');
+    } catch (error) {
+      setConversations([]);
+      setSelectedUsername('');
+      setConversationError(error instanceof Error ? error.message : 'Could not load conversations.');
     }
   }
 
@@ -221,16 +124,14 @@ export default function CallsPage() {
     setIsLoadingThread(true);
     try {
       const data = await getMessageBoard(username);
-      if (data.status === 'SUCCESS' && data.items.length > 0) {
-        setItems(data.items);
-        setUsingDemo(false);
-      } else {
-        setItems(demoItems);
-        setUsingDemo(true);
+      if (data.status !== 'SUCCESS') {
+        throw new Error(data.message || data.status);
       }
-    } catch {
-      setItems(demoItems);
-      setUsingDemo(true);
+      setItems(data.items);
+      setThreadError('');
+    } catch (error) {
+      setItems([]);
+      setThreadError(error instanceof Error ? error.message : 'Could not load this conversation.');
     } finally {
       setIsLoadingThread(false);
     }
@@ -245,6 +146,7 @@ export default function CallsPage() {
       loadThread(selected.username);
     } else if (selected) {
       setItems([]);
+      setThreadError('');
     }
   }, [selected?.username]);
 
@@ -282,20 +184,7 @@ export default function CallsPage() {
 
   async function handleSend(schedule: boolean, scheduledBody = message, scheduledSendAt = '') {
     if (!selected?.username || !scheduledBody.trim()) return;
-    if (usingDemo) {
-      const item: MessageBoardItem = {
-        type: schedule ? 'scheduled' : 'message',
-        sourceId: schedule ? 'local-scheduled-message' : `local-message-${Date.now()}`,
-        occurredAt: schedule && scheduledSendAt ? new Date(scheduledSendAt).toISOString() : new Date().toISOString(),
-        title: schedule ? 'Scheduled SMS' : 'Demo Worker',
-        body: scheduledBody,
-        status: schedule ? 'pending' : 'queued',
-        metadata: schedule ? selected.phone : 'outbound',
-      };
-      setItems((current) => schedule
-        ? [item, ...current.filter((existing) => existing.type !== 'scheduled')]
-        : [item, ...current]);
-    } else if (schedule) {
+    if (schedule) {
       await scheduleMessage(selected.username, scheduledBody, new Date(scheduledSendAt).toISOString(), selected.phone);
       await loadThread(selected.username);
     } else {
@@ -347,6 +236,10 @@ export default function CallsPage() {
           placeholder="Search clients"
         />
         <div className="contact-scroll">
+          {conversationError && <p className="communications-muted">{conversationError}</p>}
+          {!conversationError && filtered.length === 0 && (
+            <p className="communications-muted">No clients found.</p>
+          )}
           {filtered.map((conversation) => (
             <button
               type="button"
@@ -386,6 +279,10 @@ export default function CallsPage() {
 
             <div className="chat-scroll">
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
+              {threadError && <p className="communications-muted">{threadError}</p>}
+              {!isLoadingThread && !threadError && visibleItems.length === 0 && (
+                <p className="communications-muted">No messages, calls, or notes yet.</p>
+              )}
               {visibleItems.map((item) => {
                 const side = itemSide(item);
                 const title = item.type === 'voicemail' ? 'Voicemail' : item.title;
