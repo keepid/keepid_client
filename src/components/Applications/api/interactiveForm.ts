@@ -148,6 +148,71 @@ export async function uploadCompletedPdf(
   return json;
 }
 
+export interface ApplicationCreateResult {
+  status: string;
+  applicationId?: string;
+  fileId?: string;
+}
+
+export async function createUploadedApplication(
+  file: File,
+  applicationName: string,
+  clientUsername = '',
+): Promise<ApplicationCreateResult> {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  form.append('applicationName', applicationName);
+  form.append('clientUsername', clientUsername);
+  const res = await fetch(`${getServerURL()}/create-uploaded-application`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS') {
+    throw new Error(json.message || json.error || res.statusText);
+  }
+  return json;
+}
+
+export async function createApplicationFromDocument(
+  sourceDocumentId: string,
+  applicationName: string,
+  clientUsername = '',
+): Promise<ApplicationCreateResult> {
+  const res = await fetch(`${getServerURL()}/create-application-from-document`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sourceDocumentId, applicationName, clientUsername }),
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS') {
+    throw new Error(json.message || json.error || res.statusText);
+  }
+  return json;
+}
+
+export interface OrgDocumentOption {
+  id: string;
+  filename: string;
+  uploadDate?: string;
+}
+
+export async function listOrgDocuments(): Promise<OrgDocumentOption[]> {
+  const res = await fetch(`${getServerURL()}/get-files`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS' || !Array.isArray(json?.documents)) {
+    throw new Error(json?.message || json?.error || res.statusText);
+  }
+  return json.documents;
+}
+
 export async function listApplicationPdfIds(
   clientUsername = '',
 ): Promise<string[]> {
