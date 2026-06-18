@@ -127,6 +127,11 @@ export function getMessageBoard(username: string) {
   return jsonFetch<MessageBoardResponse>(`/api/client-profiles/${encodeURIComponent(username)}/message-board`);
 }
 
+export function getMessageBoardByPhone(phone: string) {
+  const params = new URLSearchParams({ phone });
+  return jsonFetch<MessageBoardResponse>(`/api/communications/message-board?${params.toString()}`);
+}
+
 export function addClientNote(username: string, body: string, callLogId?: string) {
   return jsonFetch<MessageBoardResponse>(`/api/client-profiles/${encodeURIComponent(username)}/notes`, {
     method: 'POST',
