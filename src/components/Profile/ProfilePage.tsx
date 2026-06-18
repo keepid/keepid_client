@@ -64,6 +64,7 @@ export type ProfileData = {
   motherName?: NameObj;
   fatherName?: NameObj;
   workerNotes?: string;
+  experiencingHomelessness?: boolean;
 };
 
 export default function ProfilePage({ targetUsername }: Props) {

@@ -21,6 +21,7 @@ interface EnrollClientFormValues {
   birthDate: string;
   email: string;
   phonenumber: string;
+  experiencingHomelessness: boolean;
 }
 
 export default function EnrollClientPage(): JSX.Element {
@@ -35,6 +36,7 @@ export default function EnrollClientPage(): JSX.Element {
     birthDate: '',
     email: '',
     phonenumber: initialPhone,
+    experiencingHomelessness: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
@@ -44,8 +46,13 @@ export default function EnrollClientPage(): JSX.Element {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    const nextValue = type === 'checkbox' ? checked : value;
+    const uppercasedNameValue = ['firstname', 'middlename', 'lastname', 'suffix'].includes(name)
+      && typeof nextValue === 'string'
+      ? nextValue.toUpperCase()
+      : nextValue;
+    setValues((prev) => ({ ...prev, [name]: uppercasedNameValue }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -124,6 +131,7 @@ export default function EnrollClientPage(): JSX.Element {
         birthDate: birthDateString,
         email: emailTrimmed,
         phonenumber: values.phonenumber,
+        experiencingHomelessness: values.experiencingHomelessness,
       });
 
       if (response.status === 'ENROLL_SUCCESS') {
@@ -188,6 +196,7 @@ export default function EnrollClientPage(): JSX.Element {
                   birthDate: '',
                   email: '',
                   phonenumber: '',
+                  experiencingHomelessness: false,
                 });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
@@ -362,6 +371,20 @@ export default function EnrollClientPage(): JSX.Element {
                 {fieldErrors.phonenumber && (
                   <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
                 )}
+              </div>
+
+              <div className="tw-flex tw-items-start tw-rounded-md tw-border tw-border-gray-200 tw-bg-gray-50 tw-p-3">
+                <input
+                  type="checkbox"
+                  id="experiencingHomelessness"
+                  name="experiencingHomelessness"
+                  className="tw-h-4 tw-w-4 tw-mt-0.5 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={values.experiencingHomelessness}
+                  onChange={onChange}
+                />
+                <label htmlFor="experiencingHomelessness" className="tw-ml-2 tw-text-sm tw-text-gray-700">
+                  By clicking this box I verify that I am experiencing homelessness
+                </label>
               </div>
             </div>
 

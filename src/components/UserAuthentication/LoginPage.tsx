@@ -21,6 +21,7 @@ interface State {
   recaptchaPayload: string;
   showPassword: boolean;
   showManualLogin: boolean;
+  loginError: string;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -55,6 +56,7 @@ class LoginPage extends Component<Props, State> {
       recaptchaPayload: '',
       showPassword: false,
       showManualLogin: false,
+      loginError: '',
     };
   }
 
@@ -86,11 +88,11 @@ class LoginPage extends Component<Props, State> {
   };
 
   handleChangePassword = (event: any) => {
-    this.setState({ password: event.target.value });
+    this.setState({ password: event.target.value, loginError: '' });
   };
 
   handleChangeUsername = (event: any) => {
-    this.setState({ username: event.target.value });
+    this.setState({ username: event.target.value, loginError: '' });
   };
 
   handleLogin = (): void => {
@@ -101,7 +103,7 @@ class LoginPage extends Component<Props, State> {
       const { alert } = this.props;
       alert.show('Please enter your email or username and password');
       this.clearInput();
-      this.setState({ buttonState: '' });
+      this.setState({ buttonState: '', loginError: 'Please enter your email or username and password.' });
       this.resetRecaptcha();
     } else {
       fetch(`${getServerURL()}/login`, {
@@ -142,23 +144,24 @@ class LoginPage extends Component<Props, State> {
           } else if (status === 'AUTH_FAILURE') {
             alert.show('Incorrect email or password');
             this.clearInput();
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Incorrect email or password.' });
             this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
             alert.show('Incorrect email or password');
             this.clearInput();
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Incorrect email or password.' });
             this.resetRecaptcha();
           } else {
             alert.show('Server Failure: Please Try Again');
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Server failure. Please try again.' });
             this.resetRecaptcha();
           }
         })
         .catch(() => {
-          const { alert } = this.props;
-          alert.show('Network Failure: Check Server Connection.');
-          this.setState({ buttonState: '' });
+          this.setState({
+            buttonState: '',
+            loginError: 'No internet connection. Please check your connection and try again.',
+          });
           this.resetRecaptcha();
         });
     }
@@ -262,6 +265,7 @@ class LoginPage extends Component<Props, State> {
       buttonState,
       showPassword,
       showManualLogin,
+      loginError,
     } = this.state;
 
     return (
@@ -280,7 +284,7 @@ class LoginPage extends Component<Props, State> {
             <button
               type="button"
               className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer tw-underline"
-              onClick={() => this.setState({ showManualLogin: true })}
+              onClick={() => this.setState({ showManualLogin: true, loginError: '' })}
             >
               Click here for email and password login
             </button>
@@ -334,6 +338,14 @@ class LoginPage extends Component<Props, State> {
                 </div>
               </label>
               <div className="pt-3">
+                {loginError && (
+                  <div
+                    className="tw-mb-3 tw-rounded tw-border tw-border-red-200 tw-bg-red-50 tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-red-700"
+                    role="alert"
+                  >
+                    {loginError}
+                  </div>
+                )}
                 <div className="pb-2">
                   <Button
                     type="submit"
