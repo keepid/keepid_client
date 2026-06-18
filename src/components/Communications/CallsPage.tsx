@@ -1,5 +1,6 @@
 import './communications.css';
 
+import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -7,6 +8,7 @@ import {
   Conversation,
   getConversations,
   getMessageBoard,
+  getMessageBoardByPhone,
   MessageBoardItem,
   scheduleMessage,
   sendMessage,
@@ -120,10 +122,12 @@ export default function CallsPage() {
     }
   }
 
-  async function loadThread(username: string) {
+  async function loadThread(conversation: Conversation) {
     setIsLoadingThread(true);
     try {
-      const data = await getMessageBoard(username);
+      const data = conversation.username
+        ? await getMessageBoard(conversation.username)
+        : await getMessageBoardByPhone(conversation.phone || '');
       if (data.status !== 'SUCCESS') {
         throw new Error(data.message || data.status);
       }
@@ -142,13 +146,13 @@ export default function CallsPage() {
   }, []);
 
   useEffect(() => {
-    if (selected?.username) {
-      loadThread(selected.username);
+    if (selected?.username || selected?.phone) {
+      loadThread(selected);
     } else if (selected) {
       setItems([]);
       setThreadError('');
     }
-  }, [selected?.username]);
+  }, [selected?.username, selected?.phone]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -375,30 +379,35 @@ export default function CallsPage() {
 
             {isCalling && (
               <div className="call-modal-backdrop" role="presentation">
-                <section className="call-modal" aria-label="Active call">
+                <section className="call-modal" aria-label="Phone dialer">
                   <button type="button" className="call-close" onClick={() => setIsCalling(false)} aria-label="Close call modal">
                     ×
                   </button>
                   <div className="call-modal-header">
                     <span className="contact-avatar large">{selected.displayName.charAt(0).toUpperCase()}</span>
                     <div>
-                      <p className="communications-kicker">Calling</p>
+                      <p className="communications-kicker">Phone dialer</p>
                       <h2>{selected.displayName}</h2>
-                      <strong>{phone(selected.phone)}</strong>
                     </div>
-                    <span className="call-timer">00:42</span>
                   </div>
-                  <label className="call-notes-wrap">
-                    Call notes
-                    <textarea className="call-notes" placeholder="Take call notes while you talk..." defaultValue="Client is asking whether a shelter letter can count as proof of address." />
+                  <label className="call-number-wrap">
+                    Phone number
+                    <input className="call-number-input" value={phone(selected.phone)} readOnly />
                   </label>
-                  <label className="call-volume">
-                    Volume
-                    <input type="range" min="0" max="100" defaultValue="72" aria-label="Call volume" />
+                  <label className="call-notes-wrap">
+                    Notes
+                    <textarea className="call-notes" placeholder="Add notes during or after the call..." />
                   </label>
                   <div className="call-controls">
-                    <button type="button">Mute</button>
-                    <button type="button" className="end-call" onClick={() => setIsCalling(false)}>End</button>
+                    <button type="button" onClick={() => setIsCalling(false)}>Cancel</button>
+                    <a
+                      className={`call-start ${selected.phone ? '' : 'disabled'}`}
+                      href={selected.phone ? `tel:${selected.phone}` : undefined}
+                      aria-label={selected.phone ? `Call ${phone(selected.phone)}` : 'No phone number available'}
+                    >
+                      <LocalPhoneOutlinedIcon fontSize="small" />
+                      Call
+                    </a>
                   </div>
                 </section>
               </div>

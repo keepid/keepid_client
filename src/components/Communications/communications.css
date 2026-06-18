@@ -469,7 +469,7 @@ body:has(.communications-shell),
 
 .call-modal-header {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 14px;
   align-items: center;
 }
@@ -489,19 +489,25 @@ body:has(.communications-shell),
   color: #52616f;
 }
 
-.call-timer {
-  color: #102a43;
-  font-size: 22px;
-  font-weight: 800;
-}
-
-.call-notes-wrap,
-.call-volume {
+.call-number-wrap,
+.call-notes-wrap {
   display: grid;
   gap: 6px;
   color: #334e68;
   font-size: 13px;
   font-weight: 800;
+}
+
+.call-number-input {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  color: #102a43;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .call-notes {
@@ -515,30 +521,35 @@ body:has(.communications-shell),
   font-weight: 400;
 }
 
-.call-volume input {
-  width: 100%;
-  accent-color: #2f80ed;
-}
-
 .call-controls {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.call-controls button {
+.call-controls button,
+.call-controls a {
   border: 1px solid #bcccdc;
   border-radius: 999px;
   padding: 10px 18px;
   background: #fff;
   color: #102a43;
   font-weight: 800;
+  text-decoration: none;
 }
 
-.call-controls .end-call {
-  border-color: #e53e3e;
-  background: #e53e3e;
+.call-controls .call-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-color: #2f80ed;
+  background: #2f80ed;
   color: #fff;
+}
+
+.call-controls .call-start.disabled {
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .profile-notes-preview {
