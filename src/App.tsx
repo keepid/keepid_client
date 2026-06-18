@@ -654,7 +654,11 @@ class App extends React.Component<{}, State, {}> {
               </Route>
             </Switch>
           </div>
-          <Footer />
+          <Route
+            render={({ location }) => (
+              location.pathname.startsWith('/communications') ? null : <Footer />
+            )}
+          />
         </div>
         </UserContext.Provider>
       </Router>
