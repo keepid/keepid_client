@@ -16,45 +16,6 @@ type Props = {
   phone?: string;
 };
 
-const demoItems: MessageBoardItem[] = [
-  {
-    type: 'call',
-    sourceId: 'demo-call',
-    occurredAt: new Date().toISOString(),
-    title: 'Inbound call, 6m 12s',
-    body: 'Asked what documents to bring before coming in.',
-    status: 'attached',
-    metadata: '+12155550142',
-  },
-  {
-    type: 'voicemail',
-    sourceId: 'demo-voicemail',
-    occurredAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    title: 'Voicemail transcript',
-    body: 'Hi, I found my birth certificate and can bring it tomorrow morning.',
-    status: 'transcribed',
-    metadata: '+12155550142',
-  },
-  {
-    type: 'message',
-    sourceId: 'demo-message',
-    occurredAt: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-    title: 'Worker message',
-    body: 'Great. Please bring the birth certificate and proof of address.',
-    status: 'delivered',
-    metadata: 'outbound',
-  },
-  {
-    type: 'scheduled',
-    sourceId: 'demo-scheduled',
-    occurredAt: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
-    title: 'Scheduled SMS',
-    body: 'Reminder: please bring proof of address tomorrow.',
-    status: 'pending',
-    metadata: '+12155550142',
-  },
-];
-
 function formatDate(value?: string) {
   if (!value) return '';
   return new Intl.DateTimeFormat(undefined, {
@@ -70,22 +31,20 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
   const [body, setBody] = useState('');
   const [note, setNote] = useState('');
   const [sendAt, setSendAt] = useState('');
-  const [usingDemo, setUsingDemo] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   async function load() {
     try {
       const data = await getMessageBoard(username);
-      if (data.status === 'SUCCESS' && data.items.length > 0) {
-        setItems(data.items);
-        setUsingDemo(false);
-      } else {
-        setItems(demoItems);
-        setUsingDemo(true);
+      if (data.status !== 'SUCCESS') {
+        throw new Error(data.message || data.status);
       }
-    } catch {
-      setItems(demoItems);
-      setUsingDemo(true);
+      setItems(data.items);
+      setLoadError('');
+    } catch (error) {
+      setItems([]);
+      setLoadError(error instanceof Error ? error.message : 'Could not load message board.');
     }
   }
 
@@ -104,18 +63,7 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
     if (!body.trim()) return;
     setIsSending(true);
     try {
-      if (usingDemo) {
-        const item: MessageBoardItem = {
-          type: schedule ? 'scheduled' : 'message',
-          sourceId: `local-${Date.now()}`,
-          occurredAt: schedule && sendAt ? new Date(sendAt).toISOString() : new Date().toISOString(),
-          title: schedule ? 'Scheduled SMS' : 'Worker message',
-          body,
-          status: schedule ? 'pending' : 'queued',
-          metadata: phone,
-        };
-        setItems((current) => [item, ...current]);
-      } else if (schedule) {
+      if (schedule) {
         await scheduleMessage(username, body, new Date(sendAt).toISOString(), phone);
         await load();
       } else {
@@ -131,19 +79,8 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
 
   async function handleNote() {
     if (!note.trim()) return;
-    if (usingDemo) {
-      setItems((current) => [{
-        type: 'note',
-        sourceId: `note-${Date.now()}`,
-        occurredAt: new Date().toISOString(),
-        title: 'Note',
-        body: note,
-        status: '',
-      }, ...current]);
-    } else {
-      await addClientNote(username, note);
-      await load();
-    }
+    await addClientNote(username, note);
+    await load();
     setNote('');
   }
 
@@ -156,7 +93,6 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
             <h5 className="card-title tw-mb-0">Message Board</h5>
             <p>{clientName || username} {phone ? `• ${phone}` : ''}</p>
           </div>
-          {usingDemo && <span className="communications-pill">Vision demo data</span>}
         </div>
 
         <div className="message-actions">
@@ -198,6 +134,10 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
         </div>
 
         <div className="timeline">
+          {loadError && <p className="communications-muted">{loadError}</p>}
+          {!loadError && items.length === 0 && (
+            <p className="communications-muted">No messages, calls, or notes yet.</p>
+          )}
           {Object.entries(grouped).map(([date, dateItems]) => (
             <div key={date} className="timeline-day">
               <h6>{date}</h6>
