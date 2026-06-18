@@ -117,7 +117,7 @@ function CopyButton({
   return (
     <button
       type="button"
-      className="btn btn-outline-dark btn-sm tw-ml-2 tw-px-2 tw-py-1"
+      className="tw-ml-2 tw-border-0 tw-bg-transparent tw-p-0 tw-text-gray-400 tw-opacity-0 tw-transition-opacity hover:tw-text-gray-600 group-hover:tw-opacity-100 focus:tw-opacity-100"
       title={`Copy ${label}`}
       aria-label={`Copy ${label}`}
       onClick={() => onCopy(label, value)}
@@ -522,6 +522,7 @@ export default function EssentialAccountSection({
   }
 
   const mailingAddressDisplay = formatAddress(profile.mailAddress);
+  const homelessStatus = profile.experiencingHomelessness ? 'Yes' : 'No';
 
   return (
     <div className="card mt-3 mb-3 pl-5 pr-5">
@@ -591,7 +592,7 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-flex tw-items-center tw-pt-2">
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
                 <span>{name}</span>
                 <CopyButton label="Name" value={name} hidden={isEditing} onCopy={copyToClipboard} />
               </div>
@@ -617,7 +618,7 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-flex tw-items-center tw-pt-2">
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
                 <span>{birthDateApiToDisplay(profile.birthDate)}</span>
                 <CopyButton
                   label="Birth date"
@@ -655,7 +656,7 @@ export default function EssentialAccountSection({
                 )}
               </div>
             ) : (
-              <div className="tw-flex tw-items-baseline">
+              <div className="tw-group tw-flex tw-items-baseline">
                 <div className="tw-pt-2">{email}</div>
                 <CopyButton label="Email" value={email} hidden={isEditing} onCopy={copyToClipboard} />
                 {targetUsername && hasEmail && (
@@ -725,7 +726,7 @@ export default function EssentialAccountSection({
                 />
               </div>
             ) : (
-              <div className="tw-flex tw-items-start tw-pt-2">
+              <div className="tw-group tw-flex tw-items-start tw-pt-2">
                 <span className="tw-whitespace-pre-line">
                   {mailingAddressDisplay || 'No mailing address saved'}
                 </span>
@@ -737,6 +738,14 @@ export default function EssentialAccountSection({
                 />
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Homelessness */}
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Experiencing Homelessness</div>
+          <div className="col-9 card-text">
+            <div className="tw-pt-2">{homelessStatus}</div>
           </div>
         </div>
 
@@ -825,7 +834,7 @@ export default function EssentialAccountSection({
                   <div className="tw-pt-2 tw-text-gray-400">No phone numbers saved</div>
                 ) : (
                   phoneBook.map((entry) => (
-                    <div key={entry.phoneNumber} className="tw-pt-2 tw-flex tw-items-center tw-gap-2">
+                    <div key={entry.phoneNumber} className="tw-group tw-pt-2 tw-flex tw-items-center tw-gap-2">
                       <span>{formatPhoneForDisplay(entry.phoneNumber)}</span>
                       <span className="tw-text-sm tw-text-gray-500">{entry.label}</span>
                       <CopyButton

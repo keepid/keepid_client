@@ -24,6 +24,19 @@ interface EnrollClientFormValues {
   experiencingHomelessness: boolean;
 }
 
+const NAME_FIELD_NAMES = new Set(['firstname', 'middlename', 'lastname']);
+
+function titleCaseName(value: string): string {
+  return value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_, prefix: string, letter: string) => (
+    `${prefix}${letter.toUpperCase()}`
+  ));
+}
+
+function formatNameInput(name: string, value: string): string {
+  if (NAME_FIELD_NAMES.has(name)) return titleCaseName(value);
+  return value;
+}
+
 export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
   const location = useLocation();
@@ -48,11 +61,10 @@ export default function EnrollClientPage(): JSX.Element {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     const nextValue = type === 'checkbox' ? checked : value;
-    const uppercasedNameValue = ['firstname', 'middlename', 'lastname', 'suffix'].includes(name)
-      && typeof nextValue === 'string'
-      ? nextValue.toUpperCase()
+    const formattedValue = typeof nextValue === 'string'
+      ? formatNameInput(name, nextValue)
       : nextValue;
-    setValues((prev) => ({ ...prev, [name]: uppercasedNameValue }));
+    setValues((prev) => ({ ...prev, [name]: formattedValue }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -104,6 +116,19 @@ export default function EnrollClientPage(): JSX.Element {
       return;
     }
     setAgreementError('');
+
+    const nameErrors: Record<string, string> = {
+      firstname: validateFirstname(values.firstname),
+      lastname: validateLastname(values.lastname),
+      middlename: values.middlename.trim() ? validateFirstname(values.middlename) : '',
+      suffix: values.suffix.trim() ? validateLastname(values.suffix) : '',
+    };
+    const hasNameErrors = Object.values(nameErrors).some(Boolean);
+    if (hasNameErrors) {
+      setFieldErrors((prev) => ({ ...prev, ...nameErrors }));
+      alert.error('Please enter valid name fields.');
+      return;
+    }
 
     const emailTrimmed = values.email.trim();
     if (emailTrimmed !== '') {

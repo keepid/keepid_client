@@ -338,14 +338,6 @@ class LoginPage extends Component<Props, State> {
                 </div>
               </label>
               <div className="pt-3">
-                {loginError && (
-                  <div
-                    className="tw-mb-3 tw-rounded tw-border tw-border-red-200 tw-bg-red-50 tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-red-700"
-                    role="alert"
-                  >
-                    {loginError}
-                  </div>
-                )}
                 <div className="pb-2">
                   <Button
                     type="submit"
@@ -363,6 +355,11 @@ class LoginPage extends Component<Props, State> {
                     <div className="ld ld-ring ld-spin" />
                   </Button>
                 </div>
+                {loginError && (
+                  <p className="tw-mt-1 tw-text-xs tw-font-medium tw-text-red-600" role="alert">
+                    {loginError}
+                  </p>
+                )}
               </div>
               <div className="pb-3">
                 <Link to="/forgot-password" className="text-decoration-none">
