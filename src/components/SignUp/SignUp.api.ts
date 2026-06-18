@@ -15,6 +15,7 @@ export interface EnrollClientData {
   /** Omit or leave empty when the client has no email. */
   email?: string;
   phonenumber?: string;
+  experiencingHomelessness?: boolean;
 }
 
 export interface EnrollClientResponse {

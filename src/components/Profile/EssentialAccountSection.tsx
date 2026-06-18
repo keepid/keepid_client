@@ -10,7 +10,7 @@ import {
 import getServerURL from '../../serverOverride';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import { birthDateStringFromIsoDateOnly } from '../SignUp/SignUp.util';
-import type { NameObj, ProfileData } from './ProfilePage';
+import type { AddressObj, NameObj, ProfileData } from './ProfilePage';
 
 type PhoneBookEntry = {
   label: string;
@@ -56,6 +56,77 @@ function accountNameEqual(a: NameObj, b: NameObj): boolean {
     && (a.suffix || '') === (b.suffix || '');
 }
 
+function initialAddressFromProfile(profile: ProfileData): AddressObj {
+  return {
+    line1: profile.mailAddress?.line1 ?? '',
+    line2: profile.mailAddress?.line2 ?? '',
+    city: profile.mailAddress?.city ?? '',
+    state: profile.mailAddress?.state ?? '',
+    zip: profile.mailAddress?.zip ?? '',
+    county: profile.mailAddress?.county ?? '',
+  };
+}
+
+function cleanAddress(address: AddressObj): AddressObj {
+  return {
+    line1: (address.line1 || '').trim(),
+    line2: (address.line2 || '').trim(),
+    city: (address.city || '').trim(),
+    state: (address.state || '').trim(),
+    zip: (address.zip || '').trim(),
+    county: (address.county || '').trim(),
+  };
+}
+
+function addressEqual(a: AddressObj, b: AddressObj): boolean {
+  const ca = cleanAddress(a);
+  const cb = cleanAddress(b);
+  return (ca.line1 || '') === (cb.line1 || '')
+    && (ca.line2 || '') === (cb.line2 || '')
+    && (ca.city || '') === (cb.city || '')
+    && (ca.state || '') === (cb.state || '')
+    && (ca.zip || '') === (cb.zip || '')
+    && (ca.county || '') === (cb.county || '');
+}
+
+function addressIsEmpty(address: AddressObj): boolean {
+  const cleaned = cleanAddress(address);
+  return !cleaned.line1 && !cleaned.line2 && !cleaned.city && !cleaned.state && !cleaned.zip && !cleaned.county;
+}
+
+function formatAddress(address: AddressObj | undefined): string {
+  if (!address) return '';
+  const street = [address.line1, address.line2].filter(Boolean).join(', ');
+  const cityStateZip = [address.city, address.state, address.zip].filter(Boolean).join(', ');
+  const county = address.county ? `${address.county} County` : '';
+  return [street, cityStateZip, county].filter(Boolean).join('\n');
+}
+
+function CopyButton({
+  label,
+  value,
+  hidden,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  hidden: boolean;
+  onCopy: (label: string, value: string) => void;
+}) {
+  if (!value.trim() || hidden) return null;
+  return (
+    <button
+      type="button"
+      className="tw-ml-2 tw-border-0 tw-bg-transparent tw-p-0 tw-text-gray-400 tw-opacity-0 tw-transition-opacity hover:tw-text-gray-600 group-hover:tw-opacity-100 focus:tw-opacity-100"
+      title={`Copy ${label}`}
+      aria-label={`Copy ${label}`}
+      onClick={() => onCopy(label, value)}
+    >
+      <i className="far fa-copy" aria-hidden="true" />
+    </button>
+  );
+}
+
 export default function EssentialAccountSection({
   profile,
   targetUsername,
@@ -73,6 +144,7 @@ export default function EssentialAccountSection({
   } | null>(null);
   const [editName, setEditName] = useState<NameObj>(initialNameFromProfile(profile));
   const [editBirthIso, setEditBirthIso] = useState('');
+  const [editMailAddress, setEditMailAddress] = useState<AddressObj>(initialAddressFromProfile(profile));
 
   const initialEmail = profile.email || '';
   const [email, setEmail] = useState(initialEmail);
@@ -138,8 +210,12 @@ export default function EssentialAccountSection({
   }, [canEditBirthDate, identitySnapshot, editBirthIso]);
 
   const identityDirty = nameDirty || birthDirty;
+  const mailingAddressDirty = useMemo(
+    () => !addressEqual(editMailAddress, initialAddressFromProfile(profile)),
+    [editMailAddress, profile],
+  );
 
-  const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty;
+  const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
 
   const name = useMemo(() => {
     const parts = [
@@ -280,6 +356,28 @@ export default function EssentialAccountSection({
     return true;
   }
 
+  async function saveMailingAddress(): Promise<boolean> {
+    if (!mailingAddressDirty) return true;
+    const cleaned = cleanAddress(editMailAddress);
+    const payload: Record<string, unknown> = {
+      mailAddress: addressIsEmpty(cleaned) ? {} : cleaned,
+    };
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save mailing address: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
   async function saveEmail(): Promise<boolean> {
     if (!emailDirty) return true;
     const payload: Record<string, any> = { email };
@@ -304,6 +402,7 @@ export default function EssentialAccountSection({
     try {
       if (!(await saveIdentity())) return;
       if (!(await saveEmail())) return;
+      if (!(await saveMailingAddress())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
       if (phoneBookDirty || hasNewEntry) {
@@ -362,6 +461,7 @@ export default function EssentialAccountSection({
   function beginEdit() {
     setEmail(initialEmail);
     setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
@@ -387,6 +487,7 @@ export default function EssentialAccountSection({
     if (isDirty && !window.confirm('Discard unsaved changes?')) return;
     setEmail(initialEmail);
     setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
@@ -405,6 +506,23 @@ export default function EssentialAccountSection({
   function removeEditedEntry(index: number) {
     setEditedPhoneBook((prev) => prev.filter((_, i) => i !== index));
   }
+
+  function updateMailAddress(field: keyof AddressObj, value: string) {
+    setEditMailAddress((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function copyToClipboard(label: string, value: string) {
+    if (!value.trim()) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      alert.show(`${label} copied`);
+    } catch {
+      alert.show(`Could not copy ${label.toLowerCase()}.`, { type: 'error' });
+    }
+  }
+
+  const mailingAddressDisplay = formatAddress(profile.mailAddress);
+  const homelessStatus = profile.experiencingHomelessness ? 'Yes' : 'No';
 
   return (
     <div className="card mt-3 mb-3 pl-5 pr-5">
@@ -474,7 +592,10 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{name}</div>
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
+                <span>{name}</span>
+                <CopyButton label="Name" value={name} hidden={isEditing} onCopy={copyToClipboard} />
+              </div>
             )}
           </div>
         </div>
@@ -497,7 +618,15 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{birthDateApiToDisplay(profile.birthDate)}</div>
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
+                <span>{birthDateApiToDisplay(profile.birthDate)}</span>
+                <CopyButton
+                  label="Birth date"
+                  value={birthDateApiToDisplay(profile.birthDate)}
+                  hidden={isEditing}
+                  onCopy={copyToClipboard}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -527,8 +656,9 @@ export default function EssentialAccountSection({
                 )}
               </div>
             ) : (
-              <div className="tw-flex tw-items-baseline">
+              <div className="tw-group tw-flex tw-items-baseline">
                 <div className="tw-pt-2">{email}</div>
+                <CopyButton label="Email" value={email} hidden={isEditing} onCopy={copyToClipboard} />
                 {targetUsername && hasEmail && (
                   <button
                     type="button"
@@ -541,6 +671,81 @@ export default function EssentialAccountSection({
                 )}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Mailing Address */}
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Mailing Address</div>
+          <div className="col-9 card-text">
+            {isEditing ? (
+              <div className="tw-space-y-2 tw-pt-1">
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="Street address"
+                  value={editMailAddress.line1 || ''}
+                  onChange={(e) => updateMailAddress('line1', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="Apartment, suite, unit"
+                  value={editMailAddress.line2 || ''}
+                  onChange={(e) => updateMailAddress('line2', e.target.value)}
+                />
+                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-2">
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="City"
+                    value={editMailAddress.city || ''}
+                    onChange={(e) => updateMailAddress('city', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="State"
+                    value={editMailAddress.state || ''}
+                    onChange={(e) => updateMailAddress('state', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="ZIP"
+                    value={editMailAddress.zip || ''}
+                    onChange={(e) => updateMailAddress('zip', e.target.value)}
+                  />
+                </div>
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="County"
+                  value={editMailAddress.county || ''}
+                  onChange={(e) => updateMailAddress('county', e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="tw-group tw-flex tw-items-start tw-pt-2">
+                <span className="tw-whitespace-pre-line">
+                  {mailingAddressDisplay || 'No mailing address saved'}
+                </span>
+                <CopyButton
+                  label="Mailing address"
+                  value={mailingAddressDisplay}
+                  hidden={isEditing}
+                  onCopy={copyToClipboard}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Homelessness */}
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Experiencing Homelessness</div>
+          <div className="col-9 card-text">
+            <div className="tw-pt-2">{homelessStatus}</div>
           </div>
         </div>
 
@@ -629,9 +834,15 @@ export default function EssentialAccountSection({
                   <div className="tw-pt-2 tw-text-gray-400">No phone numbers saved</div>
                 ) : (
                   phoneBook.map((entry) => (
-                    <div key={entry.phoneNumber} className="tw-pt-2 tw-flex tw-items-center tw-gap-2">
+                    <div key={entry.phoneNumber} className="tw-group tw-pt-2 tw-flex tw-items-center tw-gap-2">
                       <span>{formatPhoneForDisplay(entry.phoneNumber)}</span>
                       <span className="tw-text-sm tw-text-gray-500">{entry.label}</span>
+                      <CopyButton
+                        label={`${entry.label} phone`}
+                        value={formatPhoneForDisplay(entry.phoneNumber)}
+                        hidden={isEditing}
+                        onCopy={copyToClipboard}
+                      />
                     </div>
                   ))
                 )}
