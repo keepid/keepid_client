@@ -489,12 +489,25 @@ body:has(.communications-shell),
   color: #52616f;
 }
 
+.call-number-wrap,
 .call-notes-wrap {
   display: grid;
   gap: 6px;
   color: #334e68;
   font-size: 13px;
   font-weight: 800;
+}
+
+.call-number-input {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  color: #102a43;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .call-notes {
@@ -526,6 +539,9 @@ body:has(.communications-shell),
 }
 
 .call-controls .call-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border-color: #2f80ed;
   background: #2f80ed;
   color: #fff;

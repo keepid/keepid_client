@@ -1,5 +1,6 @@
 import './communications.css';
 
+import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -378,25 +379,33 @@ export default function CallsPage() {
 
             {isCalling && (
               <div className="call-modal-backdrop" role="presentation">
-                <section className="call-modal" aria-label="Call client">
+                <section className="call-modal" aria-label="Phone dialer">
                   <button type="button" className="call-close" onClick={() => setIsCalling(false)} aria-label="Close call modal">
                     ×
                   </button>
                   <div className="call-modal-header">
                     <span className="contact-avatar large">{selected.displayName.charAt(0).toUpperCase()}</span>
                     <div>
-                      <p className="communications-kicker">Call client</p>
+                      <p className="communications-kicker">Phone dialer</p>
                       <h2>{selected.displayName}</h2>
-                      <strong>{phone(selected.phone)}</strong>
                     </div>
                   </div>
+                  <label className="call-number-wrap">
+                    Phone number
+                    <input className="call-number-input" value={phone(selected.phone)} readOnly />
+                  </label>
                   <label className="call-notes-wrap">
                     Notes
                     <textarea className="call-notes" placeholder="Add notes during or after the call..." />
                   </label>
                   <div className="call-controls">
                     <button type="button" onClick={() => setIsCalling(false)}>Cancel</button>
-                    <a className={`call-start ${selected.phone ? '' : 'disabled'}`} href={selected.phone ? `tel:${selected.phone}` : undefined}>
+                    <a
+                      className={`call-start ${selected.phone ? '' : 'disabled'}`}
+                      href={selected.phone ? `tel:${selected.phone}` : undefined}
+                      aria-label={selected.phone ? `Call ${phone(selected.phone)}` : 'No phone number available'}
+                    >
+                      <LocalPhoneOutlinedIcon fontSize="small" />
                       Call
                     </a>
                   </div>
