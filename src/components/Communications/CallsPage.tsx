@@ -45,6 +45,9 @@ function phone(value?: string) {
   if (digits.length === 11 && digits.startsWith('1')) {
     return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
   }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
   return value;
 }
 
@@ -190,10 +193,12 @@ export default function CallsPage() {
     if (!selected?.username || !scheduledBody.trim()) return;
     if (schedule) {
       await scheduleMessage(selected.username, scheduledBody, new Date(scheduledSendAt).toISOString(), selected.phone);
-      await loadThread(selected.username);
+      await loadThread(selected);
+      await loadConversations();
     } else {
       await sendMessage(selected.username, message, selected.phone);
-      await loadThread(selected.username);
+      await loadThread(selected);
+      await loadConversations();
     }
     if (!schedule) setMessage('');
   }
