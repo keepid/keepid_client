@@ -144,6 +144,19 @@ interface OrganizationReportResponse {
   reportText?: string;
 }
 
+interface TwilioBackfillBreakdownRow {
+  label?: string;
+  type?: string;
+  direction?: string;
+  matchStatus?: string;
+  scanned?: number;
+  existing?: number;
+  inserted?: number;
+  updated?: number;
+  skipped?: number;
+  count?: number;
+}
+
 interface TwilioBackfillResponse {
   status: string;
   message?: string;
@@ -156,6 +169,8 @@ interface TwilioBackfillResponse {
   existingMessages: number;
   updatedMessages: number;
   skippedMessages: number;
+  breakdownRows?: TwilioBackfillBreakdownRow[];
+  summaryRows?: TwilioBackfillBreakdownRow[];
 }
 
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
@@ -193,14 +208,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [reportShowClientNames, setReportShowClientNames] = useState(false);
   const [reportText, setReportText] = useState('');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [backfillDateFrom, setBackfillDateFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return toLocalISODate(d);
-  });
-  const [backfillDateTo, setBackfillDateTo] = useState(() => toLocalISODate(new Date()));
-  const [backfillPhoneNumber, setBackfillPhoneNumber] = useState('');
-  const [backfillMaxMessages, setBackfillMaxMessages] = useState('2000');
+  const [backfillDate, setBackfillDate] = useState(() => toLocalISODate(new Date()));
   const [backfillResult, setBackfillResult] = useState<TwilioBackfillResponse | null>(null);
   const [lastSuccessfulDryRunKey, setLastSuccessfulDryRunKey] = useState('');
   const [isBackfilling, setIsBackfilling] = useState(false);
@@ -223,12 +231,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const canEditOrganization = role === Role.Admin;
   const backfillRequestKey = useMemo(
     () => JSON.stringify({
-      fromDate: backfillDateFrom,
-      toDate: backfillDateTo,
-      phoneNumber: backfillPhoneNumber.trim(),
-      maxMessages: Number(backfillMaxMessages) || null,
+      date: backfillDate,
+      maxMessages: 1000,
     }),
-    [backfillDateFrom, backfillDateTo, backfillPhoneNumber, backfillMaxMessages],
+    [backfillDate],
   );
 
   const adminMembers = useMemo(
@@ -468,11 +474,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fromDate: backfillDateFrom,
-          toDate: backfillDateTo,
+          fromDate: backfillDate,
+          toDate: backfillDate,
           dryRun,
-          phoneNumber: backfillPhoneNumber.trim() || undefined,
-          maxMessages: Number(backfillMaxMessages) || undefined,
+          maxMessages: 1000,
         }),
       });
       const data = await res.json() as TwilioBackfillResponse;
@@ -894,82 +899,34 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
   const renderTwilioBackfillContent = () => {
     const canImportBackfill = lastSuccessfulDryRunKey === backfillRequestKey;
-    const resultRows = backfillResult
+    const detailedRows = backfillResult ? backfillResult.breakdownRows || backfillResult.summaryRows || [] : [];
+    const aggregateRows = backfillResult
       ? [
         ['Scanned', backfillResult.scannedMessages],
         ['Matched to clients', backfillResult.matchedMessages],
-        ['Unmatched', backfillResult.unmatchedMessages],
-        ['Inserted', backfillResult.insertedMessages],
+        ['Unmatched numbers', backfillResult.unmatchedMessages],
+        [backfillResult.dryRun ? 'Would import' : 'Imported', backfillResult.insertedMessages],
         ['Already existed', backfillResult.existingMessages],
         ['Status updated', backfillResult.updatedMessages],
         ['Skipped', backfillResult.skippedMessages],
-      ]
+      ].filter(([, value]) => Number(value) > 0)
       : [];
 
     return (
       <div className="tw-space-y-4">
-        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-[1fr_auto_1fr] tw-gap-3 md:tw-items-end">
+        <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end md:tw-justify-between tw-gap-3">
           <div>
-            <label htmlFor="twilioBackfillDateFrom" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              Start date
+            <label htmlFor="twilioBackfillDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+              Date
             </label>
             <input
-              id="twilioBackfillDateFrom"
+              id="twilioBackfillDate"
               type="date"
               className="form-control form-purple"
-              value={backfillDateFrom}
-              onChange={(e) => setBackfillDateFrom(e.target.value)}
+              value={backfillDate}
+              onChange={(e) => setBackfillDate(e.target.value)}
             />
           </div>
-          <span className="tw-hidden md:tw-block tw-text-gray-500 tw-pb-2">to</span>
-          <div>
-            <label htmlFor="twilioBackfillDateTo" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              End date
-            </label>
-            <input
-              id="twilioBackfillDateTo"
-              type="date"
-              className="form-control form-purple"
-              value={backfillDateTo}
-              onChange={(e) => setBackfillDateTo(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-[2fr_1fr] tw-gap-3">
-          <div>
-            <label htmlFor="twilioBackfillPhoneNumber" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              Twilio number
-            </label>
-            <input
-              id="twilioBackfillPhoneNumber"
-              type="tel"
-              className="form-control form-purple"
-              value={backfillPhoneNumber}
-              onChange={(e) => setBackfillPhoneNumber(e.target.value)}
-              placeholder="Use configured hotline"
-            />
-          </div>
-          <div>
-            <label htmlFor="twilioBackfillMaxMessages" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              Max messages
-            </label>
-            <input
-              id="twilioBackfillMaxMessages"
-              type="number"
-              min="1"
-              max="10000"
-              className="form-control form-purple"
-              value={backfillMaxMessages}
-              onChange={(e) => setBackfillMaxMessages(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-gap-3">
-          <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
-            Dry run first to see what Twilio will import. Existing messages are matched by Twilio SID and skipped.
-          </p>
           <div className="tw-flex tw-gap-2">
             <button
               type="button"
@@ -977,7 +934,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               onClick={() => handleTwilioBackfill(true)}
               disabled={isBackfilling}
             >
-              {isBackfilling ? 'Running...' : 'Dry Run'}
+              {isBackfilling ? 'Running...' : 'Dry run'}
             </button>
             <button
               type="button"
@@ -985,7 +942,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               onClick={() => handleTwilioBackfill(false)}
               disabled={isBackfilling || !canImportBackfill}
             >
-              Import Messages
+              Update
             </button>
           </div>
         </div>
@@ -1000,14 +957,51 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 {backfillResult.phoneNumber ? `Number: ${formatPhoneForDisplay(backfillResult.phoneNumber)}` : backfillResult.status}
               </div>
             </div>
-            <div className="tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-2">
-              {resultRows.map(([label, value]) => (
-                <div key={label} className="tw-bg-white tw-rounded tw-p-2">
-                  <div className="tw-text-xs tw-text-gray-500">{label}</div>
-                  <div className="tw-text-lg tw-font-semibold tw-text-gray-900">{value}</div>
-                </div>
-              ))}
-            </div>
+            {detailedRows.length > 0 ? (
+              <div className="table-responsive">
+                <table className="table table-sm tw-bg-white tw-mb-0">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Direction</th>
+                      <th>Number match</th>
+                      <th className="text-right">Scanned</th>
+                      <th className="text-right">Existing</th>
+                      <th className="text-right">{backfillResult.dryRun ? 'Would import' : 'Imported'}</th>
+                      <th className="text-right">Updated</th>
+                      <th className="text-right">Skipped</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailedRows.map((row) => (
+                      <tr key={`${row.label || row.type || 'row'}-${row.direction || 'all'}-${row.matchStatus || 'all'}`}>
+                        <td>{row.label || row.type || 'Messages'}</td>
+                        <td>{row.direction || 'All'}</td>
+                        <td>{row.matchStatus || 'All'}</td>
+                        <td className="text-right">{row.scanned ?? row.count ?? 0}</td>
+                        <td className="text-right">{row.existing ?? 0}</td>
+                        <td className="text-right">{row.inserted ?? 0}</td>
+                        <td className="text-right">{row.updated ?? 0}</td>
+                        <td className="text-right">{row.skipped ?? 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-sm tw-bg-white tw-mb-0">
+                  <tbody>
+                    {aggregateRows.map(([label, value]) => (
+                      <tr key={label}>
+                        <td>{label}</td>
+                        <td className="text-right tw-font-semibold">{value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             {backfillResult.message && (
               <p className="tw-text-sm tw-text-gray-500 tw-mt-3 tw-mb-0">{backfillResult.message}</p>
             )}

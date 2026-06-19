@@ -38,7 +38,7 @@ body:has(.communications-shell),
 
 .conversation-list-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 22px 18px 12px;
@@ -60,9 +60,12 @@ body:has(.communications-shell),
   border-radius: 50%;
   background: #2f80ed;
   color: #fff;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
+  padding: 0;
+  line-height: 0;
+}
+
+.conversation-add svg {
+  display: block;
 }
 
 .conversation-search {
@@ -172,8 +175,28 @@ body:has(.communications-shell),
 .chat-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.chat-icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #486581;
+  padding: 0;
+}
+
+.chat-icon-action:hover,
+.chat-icon-action:focus-visible {
+  background: #edf4ff;
+  color: #102a43;
 }
 
 .chat-scroll {

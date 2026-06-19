@@ -1,6 +1,8 @@
 import './communications.css';
 
+import AddIcon from '@mui/icons-material/Add';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -68,6 +70,14 @@ function orderedItems(itemsToOrder: MessageBoardItem[]) {
 function conversationKey(conversation?: Conversation) {
   if (!conversation) return '';
   return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
+}
+
+function itemTitle(item: MessageBoardItem, conversation: Conversation) {
+  if (item.type === 'message' && item.metadata !== 'outbound') return conversation.displayName;
+  if (item.type === 'voicemail') {
+    return item.metadata === 'outbound' ? 'Keep.id voicemail transcript' : `${conversation.displayName} voicemail transcript`;
+  }
+  return item.title;
 }
 
 function openSelectedClient(conversation: Conversation, history: ReturnType<typeof useHistory>) {
@@ -232,7 +242,7 @@ export default function CallsPage() {
             onClick={() => history.push('/enroll-client')}
             aria-label="Enroll client"
           >
-            +
+            <AddIcon fontSize="small" />
           </button>
         </div>
         <input
@@ -282,7 +292,14 @@ export default function CallsPage() {
                   {selected.username ? 'Profile' : 'Enroll'}
                 </button>
                 <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
-                <button type="button" className="btn btn-outline-secondary" onClick={loadConversations}>Refresh</button>
+                <button
+                  type="button"
+                  className="chat-icon-action"
+                  onClick={loadConversations}
+                  aria-label="Refresh conversations"
+                >
+                  <RefreshOutlinedIcon fontSize="small" />
+                </button>
               </div>
             </header>
 
@@ -294,7 +311,7 @@ export default function CallsPage() {
               )}
               {visibleItems.map((item) => {
                 const side = itemSide(item);
-                const title = item.type === 'voicemail' ? 'Voicemail' : item.title;
+                const title = itemTitle(item, selected);
                 return (
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
