@@ -5,7 +5,7 @@ import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import type { Call } from '@twilio/voice-sdk';
 import { Device } from '@twilio/voice-sdk';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
@@ -78,12 +78,22 @@ function conversationKey(conversation?: Conversation) {
   return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
 }
 
+function conversationLabel(conversation: Conversation) {
+  if (!conversation.username && conversation.phone) return phone(conversation.phone);
+  return conversation.displayName;
+}
+
 function itemTitle(item: MessageBoardItem, conversation: Conversation) {
-  if (item.type === 'message' && item.metadata !== 'outbound') return conversation.displayName;
+  const label = conversationLabel(conversation);
+  if (item.type === 'message' && item.metadata !== 'outbound') return label;
   if (item.type === 'voicemail') {
-    return item.metadata === 'outbound' ? 'Keep.id voicemail transcript' : `${conversation.displayName} voicemail transcript`;
+    return item.metadata === 'outbound' ? 'Keep.id voicemail transcript' : `${label} voicemail transcript`;
   }
   return item.title;
+}
+
+function conversationInitial(conversation: Conversation) {
+  return conversationLabel(conversation).replace(/\W/g, '').charAt(0).toUpperCase() || '?';
 }
 
 function callStatusText(status: BrowserCallStatus) {
@@ -133,6 +143,7 @@ export default function CallsPage() {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [conversationError, setConversationError] = useState('');
   const [threadError, setThreadError] = useState('');
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const voiceDeviceRef = React.useRef<Device | null>(null);
   const activeCallRef = React.useRef<Call | null>(null);
 
@@ -185,6 +196,13 @@ export default function CallsPage() {
     }
   }
 
+  async function handleRefreshConversation() {
+    await loadConversations();
+    if (selected?.username || selected?.phone) {
+      await loadThread(selected);
+    }
+  }
+
   useEffect(() => {
     loadConversations();
   }, []);
@@ -198,11 +216,21 @@ export default function CallsPage() {
     }
   }, [selected?.username, selected?.phone]);
 
+  useEffect(() => {
+    if (isLoadingThread) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      const scrollEl = chatScrollRef.current;
+      if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [conversationKey(selected), isLoadingThread, visibleItems.length]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return conversations;
     return conversations.filter((conversation) => (
-      conversation.displayName.toLowerCase().includes(q)
+      conversationLabel(conversation).toLowerCase().includes(q)
+      || conversation.displayName.toLowerCase().includes(q)
       || (conversation.username || '').toLowerCase().includes(q)
       || conversation.phone?.toLowerCase().includes(q)
     ));
@@ -418,23 +446,26 @@ export default function CallsPage() {
           {!conversationError && filtered.length === 0 && (
             <p className="communications-muted">No clients found.</p>
           )}
-          {filtered.map((conversation) => (
-            <button
-              type="button"
-              key={conversationKey(conversation)}
-              className={`contact-row ${conversationKey(selected) === conversationKey(conversation) ? 'active' : ''}`}
-              onClick={() => setSelectedUsername(conversationKey(conversation))}
-            >
-              <span className="contact-avatar">{conversation.displayName.charAt(0).toUpperCase()}</span>
-              <span className="contact-main">
-                <strong>{conversation.displayName}</strong>
-                <small>{conversation.lastPreview || 'No recent activity'}</small>
-              </span>
-              <span className="contact-meta">
-                <small>{formatTime(conversation.lastActivityAt)}</small>
-              </span>
-            </button>
-          ))}
+          {filtered.map((conversation) => {
+            const label = conversationLabel(conversation);
+            return (
+              <button
+                type="button"
+                key={conversationKey(conversation)}
+                className={`contact-row ${conversationKey(selected) === conversationKey(conversation) ? 'active' : ''}`}
+                onClick={() => setSelectedUsername(conversationKey(conversation))}
+              >
+                <span className="contact-avatar">{conversationInitial(conversation)}</span>
+                <span className="contact-main">
+                  <strong>{label}</strong>
+                  <small>{conversation.lastPreview || 'No recent activity'}</small>
+                </span>
+                <span className="contact-meta">
+                  <small>{formatTime(conversation.lastActivityAt)}</small>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </aside>
 
@@ -443,7 +474,7 @@ export default function CallsPage() {
           <>
             <header className="chat-header">
               <div>
-                <h2>{selected.displayName}</h2>
+                <h2>{conversationLabel(selected)}</h2>
                 <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
               </div>
               <div className="chat-actions">
@@ -454,7 +485,7 @@ export default function CallsPage() {
                 <button
                   type="button"
                   className="chat-icon-action"
-                  onClick={loadConversations}
+                  onClick={handleRefreshConversation}
                   aria-label="Refresh conversations"
                 >
                   <RefreshOutlinedIcon fontSize="small" />
@@ -462,7 +493,7 @@ export default function CallsPage() {
               </div>
             </header>
 
-            <div className="chat-scroll">
+            <div className="chat-scroll" ref={chatScrollRef}>
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
               {threadError && <p className="communications-muted">{threadError}</p>}
               {!isLoadingThread && !threadError && visibleItems.length === 0 && (
@@ -565,10 +596,10 @@ export default function CallsPage() {
                     ×
                   </button>
                   <div className="call-modal-header">
-                    <span className="contact-avatar large">{selected.displayName.charAt(0).toUpperCase()}</span>
+                    <span className="contact-avatar large">{conversationInitial(selected)}</span>
                     <div>
                       <p className="communications-kicker">Phone dialer</p>
-                      <h2>{selected.displayName}</h2>
+                      <h2>{conversationLabel(selected)}</h2>
                     </div>
                   </div>
                   <label className="call-number-wrap">
