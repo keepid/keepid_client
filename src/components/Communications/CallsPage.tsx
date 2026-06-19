@@ -3,7 +3,7 @@ import './communications.css';
 import AddIcon from '@mui/icons-material/Add';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
@@ -104,6 +104,7 @@ export default function CallsPage() {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [conversationError, setConversationError] = useState('');
   const [threadError, setThreadError] = useState('');
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
@@ -154,6 +155,13 @@ export default function CallsPage() {
     }
   }
 
+  async function handleRefreshConversation() {
+    await loadConversations();
+    if (selected?.username || selected?.phone) {
+      await loadThread(selected);
+    }
+  }
+
   useEffect(() => {
     loadConversations();
   }, []);
@@ -166,6 +174,15 @@ export default function CallsPage() {
       setThreadError('');
     }
   }, [selected?.username, selected?.phone]);
+
+  useEffect(() => {
+    if (isLoadingThread) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      const scrollEl = chatScrollRef.current;
+      if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [conversationKey(selected), isLoadingThread, visibleItems.length]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -295,7 +312,7 @@ export default function CallsPage() {
                 <button
                   type="button"
                   className="chat-icon-action"
-                  onClick={loadConversations}
+                  onClick={handleRefreshConversation}
                   aria-label="Refresh conversations"
                 >
                   <RefreshOutlinedIcon fontSize="small" />
@@ -303,7 +320,7 @@ export default function CallsPage() {
               </div>
             </header>
 
-            <div className="chat-scroll">
+            <div className="chat-scroll" ref={chatScrollRef}>
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
               {threadError && <p className="communications-muted">{threadError}</p>}
               {!isLoadingThread && !threadError && visibleItems.length === 0 && (
