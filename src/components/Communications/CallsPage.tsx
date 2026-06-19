@@ -398,16 +398,20 @@ export default function CallsPage() {
                     Notes
                     <textarea className="call-notes" placeholder="Add notes during or after the call..." />
                   </label>
+                  <p className="call-help">
+                    Twilio calling from the Keep.id hotline is not enabled yet.
+                  </p>
                   <div className="call-controls">
                     <button type="button" onClick={() => setIsCalling(false)}>Cancel</button>
-                    <a
-                      className={`call-start ${selected.phone ? '' : 'disabled'}`}
-                      href={selected.phone ? `tel:${selected.phone}` : undefined}
-                      aria-label={selected.phone ? `Call ${phone(selected.phone)}` : 'No phone number available'}
+                    <button
+                      type="button"
+                      className="call-start disabled"
+                      disabled
+                      aria-label="Twilio calling is not enabled yet"
                     >
                       <LocalPhoneOutlinedIcon fontSize="small" />
-                      Call
-                    </a>
+                      Call via Keep.id
+                    </button>
                   </div>
                 </section>
               </div>

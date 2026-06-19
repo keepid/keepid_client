@@ -96,7 +96,7 @@ export default function MessageBoard({ username, clientName, phone }: Props) {
         </div>
 
         <div className="message-actions">
-          <a className="btn btn-primary" href={phone ? `tel:${phone}` : undefined}>Call</a>
+          <button className="btn btn-primary" type="button" disabled>Call via Keep.id</button>
         </div>
 
         <div className="message-composer">

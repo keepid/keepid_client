@@ -527,6 +527,12 @@ body:has(.communications-shell),
   gap: 10px;
 }
 
+.call-help {
+  margin: -4px 0 0;
+  color: #627d98;
+  font-size: 13px;
+}
+
 .call-controls button,
 .call-controls a {
   border: 1px solid #bcccdc;
@@ -547,9 +553,10 @@ body:has(.communications-shell),
   color: #fff;
 }
 
-.call-controls .call-start.disabled {
-  pointer-events: none;
+.call-controls .call-start.disabled,
+.call-controls .call-start:disabled {
   opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .profile-notes-preview {
