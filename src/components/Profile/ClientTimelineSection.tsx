@@ -7,6 +7,7 @@ import getServerURL from '../../serverOverride';
 import {
   getMessageBoard,
   MessageBoardItem,
+  updateClientNote,
 } from '../Communications/communicationsApi';
 
 type Props = {
@@ -23,6 +24,7 @@ type TimelineEntry = {
   source: string;
   editable?: boolean;
   workerNoteIndex?: number;
+  communicationNoteId?: string;
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
@@ -130,6 +132,8 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
     title: titleLabel(item),
     body: item.body || item.status || '',
     source: sourceLabel(item),
+    editable: item.type === 'note',
+    communicationNoteId: item.type === 'note' ? item.sourceId : undefined,
   };
 }
 
@@ -180,7 +184,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
     });
 
     return entries.sort((a, b) => (
-      new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
+      new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
     ));
   }, [communicationItems, workerNoteEntries]);
 
@@ -235,7 +239,26 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
   }
 
   async function handleSaveEdit(item: TimelineEntry) {
-    if (item.workerNoteIndex == null || !editDraft.trim()) return;
+    if (!editDraft.trim()) return;
+    if (item.communicationNoteId) {
+      setSaveState('saving');
+      try {
+        const data = await updateClientNote(username, item.communicationNoteId, editDraft.trim());
+        if (data.status !== 'SUCCESS') {
+          throw new Error(data.message || data.status || 'Failed to save communication note');
+        }
+        setCommunicationItems(data.items);
+        setEditingNoteId('');
+        setEditDraft('');
+        setSaveState('saved');
+        return;
+      } catch (error: any) {
+        setSaveState('idle');
+        alert.show(`Failed to save communication note: ${error?.message || String(error)}`, { type: 'error' });
+        return;
+      }
+    }
+    if (item.workerNoteIndex == null) return;
     const nextEntries = workerNoteEntries.map((entry, index) => (
       index === item.workerNoteIndex ? { ...entry, body: editDraft.trim() } : entry
     ));
@@ -282,7 +305,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
                                 setEditDraft(item.body);
                                 setSaveState('idle');
                               }}
-                              aria-label="Edit worker note"
+                              aria-label={item.communicationNoteId ? 'Edit communication note' : 'Edit worker note'}
                             >
                               <PencilIcon />
                             </button>

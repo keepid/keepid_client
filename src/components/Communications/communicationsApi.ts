@@ -147,6 +147,16 @@ export function addClientNote(username: string, body: string, callLogId?: string
   });
 }
 
+export function updateClientNote(username: string, noteId: string, body: string) {
+  return jsonFetch<MessageBoardResponse>(
+    `/api/client-profiles/${encodeURIComponent(username)}/notes/${encodeURIComponent(noteId)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ body }),
+    },
+  );
+}
+
 export function sendMessage(username: string, body: string, toPhone?: string) {
   return jsonFetch<MessageBoardResponse>(`/api/client-profiles/${encodeURIComponent(username)}/messages`, {
     method: 'POST',

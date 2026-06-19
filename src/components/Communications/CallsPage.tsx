@@ -19,6 +19,7 @@ import {
   MessageBoardItem,
   scheduleMessage,
   sendMessage,
+  updateClientNote,
 } from './communicationsApi';
 
 type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
@@ -150,6 +151,9 @@ export default function CallsPage() {
   const [callNoteDraft, setCallNoteDraft] = useState('');
   const [callNoteSaveError, setCallNoteSaveError] = useState('');
   const [isSavingCallNote, setIsSavingCallNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState('');
+  const [editNoteDraft, setEditNoteDraft] = useState('');
+  const [isSavingEditedNote, setIsSavingEditedNote] = useState(false);
   const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
@@ -400,6 +404,23 @@ export default function CallsPage() {
     }
   }
 
+  async function handleSaveEditedNote() {
+    if (!selected?.username || !editingNoteId || !editNoteDraft.trim()) return;
+    setIsSavingEditedNote(true);
+    try {
+      const data = await updateClientNote(selected.username, editingNoteId, editNoteDraft.trim());
+      if (data.status !== 'SUCCESS') {
+        throw new Error(data.message || data.status);
+      }
+      setItems(data.items);
+      setEditingNoteId('');
+      setEditNoteDraft('');
+      await loadConversations();
+    } finally {
+      setIsSavingEditedNote(false);
+    }
+  }
+
   async function refreshSelectedConversation() {
     if (selected?.username || selected?.phone) {
       await loadThread(selected);
@@ -587,9 +608,54 @@ export default function CallsPage() {
                     <div className="chat-bubble">
                       <div className="chat-item-top">
                         <strong>{title}</strong>
-                        <span>{formatTime(item.occurredAt)}</span>
+                        <span>
+                          {formatTime(item.occurredAt)}
+                          {item.type === 'note' && selected.username && (
+                            <button
+                              type="button"
+                              className="timeline-edit-button"
+                              onClick={() => {
+                                setEditingNoteId(item.sourceId);
+                                setEditNoteDraft(item.body || '');
+                              }}
+                              aria-label="Edit communication note"
+                            >
+                              <PencilIcon />
+                            </button>
+                          )}
+                        </span>
                       </div>
-                      {item.body && <p>{item.body}</p>}
+                      {editingNoteId === item.sourceId ? (
+                        <div className="timeline-edit-form">
+                          <textarea
+                            value={editNoteDraft}
+                            onChange={(event) => setEditNoteDraft(event.target.value)}
+                            rows={3}
+                          />
+                          <div>
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary"
+                              onClick={() => {
+                                setEditingNoteId('');
+                                setEditNoteDraft('');
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              disabled={!editNoteDraft.trim() || isSavingEditedNote}
+                              onClick={handleSaveEditedNote}
+                            >
+                              {isSavingEditedNote ? 'Saving...' : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        item.body && <p>{item.body}</p>
+                      )}
                       {item.status && item.type !== 'call' && item.type !== 'voicemail' && <small>{item.status}</small>}
                     </div>
                   </article>
