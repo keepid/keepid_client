@@ -544,6 +544,13 @@ body:has(.communications-shell),
   font-weight: 400;
 }
 
+.call-note-error {
+  margin: -4px 0 0;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .call-controls {
   display: flex;
   justify-content: flex-end;
