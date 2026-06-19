@@ -80,6 +80,14 @@ export type ConversationsResponse = {
   conversations: Conversation[];
 };
 
+export type TwilioVoiceTokenResponse = {
+  status: string;
+  message?: string;
+  token?: string;
+  identity?: string;
+  expiresInSeconds: number;
+};
+
 async function jsonFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${getServerURL()}${path}`, {
     credentials: 'include',
@@ -151,6 +159,10 @@ export function scheduleMessage(username: string, body: string, sendAt: string, 
     method: 'POST',
     body: JSON.stringify({ body, sendAt, toPhone }),
   });
+}
+
+export function getTwilioVoiceToken() {
+  return jsonFetch<TwilioVoiceTokenResponse>('/api/communications/voice/token');
 }
 
 export function formatDuration(seconds?: number) {

@@ -22,6 +22,7 @@
     "@nivo/pie": "^0.70.1",
     "@react-oauth/google": "^0.12.1",
     "@tailwindcss/typography": "^0.5.19",
+    "@twilio/voice-sdk": "^2.18.3",
     "@types/jest": "^27.4.1",
     "@types/node": "^12.12.42",
     "@types/react": "^18.0.5",
