@@ -22,6 +22,9 @@ import {
 
 type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
 
+const CONVERSATION_POLL_MS = 25000;
+const THREAD_POLL_MS = 12000;
+
 function PencilIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
@@ -156,7 +159,7 @@ export default function CallsPage() {
   const scheduledItems = useMemo(() => orderedItems(items).filter((item) => item.type === 'scheduled'), [items]);
   const scheduledItem = scheduledItems[0];
 
-  async function loadConversations() {
+  async function loadConversations(options: { silent?: boolean } = {}) {
     try {
       const data = await getConversations(search);
       if (data.status !== 'SUCCESS') {
@@ -171,14 +174,16 @@ export default function CallsPage() {
       });
       setConversationError('');
     } catch (error) {
-      setConversations([]);
-      setSelectedUsername('');
-      setConversationError(error instanceof Error ? error.message : 'Could not load conversations.');
+      if (!options.silent) {
+        setConversations([]);
+        setSelectedUsername('');
+        setConversationError(error instanceof Error ? error.message : 'Could not load conversations.');
+      }
     }
   }
 
-  async function loadThread(conversation: Conversation) {
-    setIsLoadingThread(true);
+  async function loadThread(conversation: Conversation, options: { silent?: boolean } = {}) {
+    if (!options.silent) setIsLoadingThread(true);
     try {
       const data = conversation.username
         ? await getMessageBoard(conversation.username)
@@ -189,10 +194,12 @@ export default function CallsPage() {
       setItems(data.items);
       setThreadError('');
     } catch (error) {
-      setItems([]);
-      setThreadError(error instanceof Error ? error.message : 'Could not load this conversation.');
+      if (!options.silent) {
+        setItems([]);
+        setThreadError(error instanceof Error ? error.message : 'Could not load this conversation.');
+      }
     } finally {
-      setIsLoadingThread(false);
+      if (!options.silent) setIsLoadingThread(false);
     }
   }
 
@@ -215,6 +222,46 @@ export default function CallsPage() {
       setThreadError('');
     }
   }, [selected?.username, selected?.phone]);
+
+  useEffect(() => {
+    let stopped = false;
+
+    async function refreshConversationList() {
+      if (stopped || document.hidden) return;
+      await loadConversations({ silent: true });
+    }
+
+    async function refreshActiveThread() {
+      if (stopped || document.hidden) return;
+      const current = selected;
+      if (current?.username || current?.phone) {
+        await loadThread(current, { silent: true });
+      }
+    }
+
+    async function refreshCommunications() {
+      await refreshConversationList();
+      await refreshActiveThread();
+    }
+
+    const conversationInterval = window.setInterval(refreshConversationList, CONVERSATION_POLL_MS);
+    const threadInterval = window.setInterval(refreshActiveThread, THREAD_POLL_MS);
+    const handleFocus = () => {
+      refreshCommunications();
+    };
+    const handleVisibilityChange = () => {
+      if (!document.hidden) refreshCommunications();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      stopped = true;
+      window.clearInterval(conversationInterval);
+      window.clearInterval(threadInterval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [selected?.username, selected?.phone, search]);
 
   useEffect(() => {
     if (isLoadingThread) return undefined;
