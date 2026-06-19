@@ -259,7 +259,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
       {groupedTimeline.length > 0 ? (
         <div className="client-timeline">
           {groupedTimeline.map((group, index) => (
-            <details key={group.date} className="timeline-day" open={index < 2}>
+            <details key={group.date} className="timeline-day" open={index === groupedTimeline.length - 1}>
               <summary>
                 <span>{group.date}</span>
                 <small>{group.items.length} entries</small>

@@ -9,6 +9,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
+  addClientNote,
   Conversation,
   formatDuration,
   getConversations,
@@ -92,11 +93,10 @@ function conversationLabel(conversation: Conversation) {
   return conversation.displayName;
 }
 
-function itemTitle(item: MessageBoardItem, conversation: Conversation) {
-  const label = conversationLabel(conversation);
-  if (item.type === 'message' && item.metadata !== 'outbound') return label;
+function itemTitle(item: MessageBoardItem) {
+  if (item.type === 'message') return 'SMS message';
   if (item.type === 'voicemail') {
-    return item.metadata === 'outbound' ? 'Keep.id voicemail transcript' : `${label} voicemail transcript`;
+    return 'Voice Mail Transcript';
   }
   return item.title;
 }
@@ -147,6 +147,9 @@ export default function CallsPage() {
   const [browserCallStatus, setBrowserCallStatus] = useState<BrowserCallStatus>('idle');
   const [browserCallError, setBrowserCallError] = useState('');
   const [isMuted, setIsMuted] = useState(false);
+  const [callNoteDraft, setCallNoteDraft] = useState('');
+  const [callNoteSaveError, setCallNoteSaveError] = useState('');
+  const [isSavingCallNote, setIsSavingCallNote] = useState(false);
   const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
@@ -371,6 +374,30 @@ export default function CallsPage() {
     voiceDeviceRef.current = null;
     setIsCalling(false);
     resetBrowserCallState();
+    setCallNoteSaveError('');
+  }
+
+  async function saveCallNoteAndClose() {
+    if (!selected?.username) {
+      setCallNoteSaveError('Enroll or attach this phone number before saving notes.');
+      return;
+    }
+    const note = callNoteDraft.trim();
+    setIsSavingCallNote(true);
+    setCallNoteSaveError('');
+    try {
+      if (note) {
+        await addClientNote(selected.username, note);
+        setCallNoteDraft('');
+      }
+      closeCallModal();
+      await loadThread(selected);
+      await loadConversations();
+    } catch (error) {
+      setCallNoteSaveError(error instanceof Error ? error.message : 'Could not save this note.');
+    } finally {
+      setIsSavingCallNote(false);
+    }
   }
 
   async function refreshSelectedConversation() {
@@ -554,7 +581,7 @@ export default function CallsPage() {
               )}
               {visibleItems.map((item) => {
                 const side = itemSide(item);
-                const title = itemTitle(item, selected);
+                const title = itemTitle(item);
                 return (
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
@@ -563,7 +590,7 @@ export default function CallsPage() {
                         <span>{formatTime(item.occurredAt)}</span>
                       </div>
                       {item.body && <p>{item.body}</p>}
-                      {item.status && <small>{item.status}</small>}
+                      {item.status && item.type !== 'call' && item.type !== 'voicemail' && <small>{item.status}</small>}
                     </div>
                   </article>
                 );
@@ -661,16 +688,29 @@ export default function CallsPage() {
                   </label>
                   <label className="call-notes-wrap">
                     Notes
-                    <textarea className="call-notes" placeholder="Add notes during or after the call..." />
+                    <textarea
+                      className="call-notes"
+                      value={callNoteDraft}
+                      onChange={(event) => {
+                        setCallNoteDraft(event.target.value);
+                        setCallNoteSaveError('');
+                      }}
+                      placeholder="Add notes during or after the call..."
+                    />
                   </label>
+                  {callNoteSaveError && <p className="call-note-error">{callNoteSaveError}</p>}
                   <div className={`call-status ${browserCallStatus}`}>
                     <strong>{callStatusText(browserCallStatus)}</strong>
                     {browserCallStatus === 'in-call' && <span>{formatDuration(elapsedSeconds)}</span>}
                     {browserCallError && <p>{browserCallError}</p>}
                   </div>
                   <div className="call-controls">
-                    <button type="button" onClick={closeCallModal}>
-                      {browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? 'Close modal' : 'Cancel'}
+                    <button
+                      type="button"
+                      onClick={saveCallNoteAndClose}
+                      disabled={isSavingCallNote}
+                    >
+                      {isSavingCallNote ? 'Saving...' : 'Save and close'}
                     </button>
                     <button
                       type="button"
