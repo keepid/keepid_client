@@ -766,7 +766,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     </div>
                     {availableApplications.length > 0 ? (
                       <div className="tw-mt-3 tw-space-y-2">
-                        {availableApplications.slice(0, 4).map((application) => (
+                        {availableApplications.map((application) => (
                           <Link
                             key={application.lookupKey}
                             to={{
