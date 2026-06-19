@@ -81,8 +81,14 @@ function conversationKey(conversation?: Conversation) {
   return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
 }
 
+function isUnknownCallerLabel(value?: string) {
+  return (value || '').trim().toLowerCase() === 'unknown caller';
+}
+
 function conversationLabel(conversation: Conversation) {
-  if (!conversation.username && conversation.phone) return phone(conversation.phone);
+  if (conversation.phone && (!conversation.username || isUnknownCallerLabel(conversation.displayName))) {
+    return phone(conversation.phone);
+  }
   return conversation.displayName;
 }
 
