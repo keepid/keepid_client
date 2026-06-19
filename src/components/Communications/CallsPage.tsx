@@ -1,6 +1,8 @@
 import './communications.css';
 
+import AddIcon from '@mui/icons-material/Add';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -45,6 +47,9 @@ function phone(value?: string) {
   if (digits.length === 11 && digits.startsWith('1')) {
     return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
   }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
   return value;
 }
 
@@ -65,6 +70,14 @@ function orderedItems(itemsToOrder: MessageBoardItem[]) {
 function conversationKey(conversation?: Conversation) {
   if (!conversation) return '';
   return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
+}
+
+function itemTitle(item: MessageBoardItem, conversation: Conversation) {
+  if (item.type === 'message' && item.metadata !== 'outbound') return conversation.displayName;
+  if (item.type === 'voicemail') {
+    return item.metadata === 'outbound' ? 'Keep.id voicemail transcript' : `${conversation.displayName} voicemail transcript`;
+  }
+  return item.title;
 }
 
 function openSelectedClient(conversation: Conversation, history: ReturnType<typeof useHistory>) {
@@ -190,10 +203,12 @@ export default function CallsPage() {
     if (!selected?.username || !scheduledBody.trim()) return;
     if (schedule) {
       await scheduleMessage(selected.username, scheduledBody, new Date(scheduledSendAt).toISOString(), selected.phone);
-      await loadThread(selected.username);
+      await loadThread(selected);
+      await loadConversations();
     } else {
       await sendMessage(selected.username, message, selected.phone);
-      await loadThread(selected.username);
+      await loadThread(selected);
+      await loadConversations();
     }
     if (!schedule) setMessage('');
   }
@@ -227,7 +242,7 @@ export default function CallsPage() {
             onClick={() => history.push('/enroll-client')}
             aria-label="Enroll client"
           >
-            +
+            <AddIcon fontSize="small" />
           </button>
         </div>
         <input
@@ -277,7 +292,14 @@ export default function CallsPage() {
                   {selected.username ? 'Profile' : 'Enroll'}
                 </button>
                 <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
-                <button type="button" className="btn btn-outline-secondary" onClick={loadConversations}>Refresh</button>
+                <button
+                  type="button"
+                  className="chat-icon-action"
+                  onClick={loadConversations}
+                  aria-label="Refresh conversations"
+                >
+                  <RefreshOutlinedIcon fontSize="small" />
+                </button>
               </div>
             </header>
 
@@ -289,7 +311,7 @@ export default function CallsPage() {
               )}
               {visibleItems.map((item) => {
                 const side = itemSide(item);
-                const title = item.type === 'voicemail' ? 'Voicemail' : item.title;
+                const title = itemTitle(item, selected);
                 return (
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
@@ -398,16 +420,20 @@ export default function CallsPage() {
                     Notes
                     <textarea className="call-notes" placeholder="Add notes during or after the call..." />
                   </label>
+                  <p className="call-help">
+                    Twilio calling from the Keep.id hotline is not enabled yet.
+                  </p>
                   <div className="call-controls">
                     <button type="button" onClick={() => setIsCalling(false)}>Cancel</button>
-                    <a
-                      className={`call-start ${selected.phone ? '' : 'disabled'}`}
-                      href={selected.phone ? `tel:${selected.phone}` : undefined}
-                      aria-label={selected.phone ? `Call ${phone(selected.phone)}` : 'No phone number available'}
+                    <button
+                      type="button"
+                      className="call-start disabled"
+                      disabled
+                      aria-label="Twilio calling is not enabled yet"
                     >
                       <LocalPhoneOutlinedIcon fontSize="small" />
-                      Call
-                    </a>
+                      Call via Keep.id
+                    </button>
                   </div>
                 </section>
               </div>
