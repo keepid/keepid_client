@@ -556,6 +556,46 @@ body:has(.communications-shell),
   font-size: 13px;
 }
 
+.call-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  color: #334e68;
+}
+
+.call-status strong {
+  font-size: 14px;
+}
+
+.call-status span {
+  color: #102a43;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-status p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.call-status.in-call {
+  border-color: #7bc47f;
+  background: #f1fbf2;
+}
+
+.call-status.error {
+  border-color: #f0b8b8;
+  background: #fff5f5;
+}
+
 .call-controls button,
 .call-controls a {
   border: 1px solid #bcccdc;
@@ -574,6 +614,16 @@ body:has(.communications-shell),
   border-color: #2f80ed;
   background: #2f80ed;
   color: #fff;
+}
+
+.call-controls .call-start.danger {
+  border-color: #d64545;
+  background: #d64545;
+}
+
+.call-controls .call-mute:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .call-controls .call-start.disabled,

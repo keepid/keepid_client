@@ -3,18 +3,24 @@ import './communications.css';
 import AddIcon from '@mui/icons-material/Add';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import type { Call } from '@twilio/voice-sdk';
+import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
   Conversation,
+  formatDuration,
   getConversations,
   getMessageBoard,
   getMessageBoardByPhone,
+  getTwilioVoiceToken,
   MessageBoardItem,
   scheduleMessage,
   sendMessage,
 } from './communicationsApi';
+
+type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
 
 function PencilIcon() {
   return (
@@ -80,6 +86,24 @@ function itemTitle(item: MessageBoardItem, conversation: Conversation) {
   return item.title;
 }
 
+function callStatusText(status: BrowserCallStatus) {
+  switch (status) {
+    case 'connecting':
+      return 'Connecting through Keep.id...';
+    case 'ringing':
+      return 'Ringing...';
+    case 'in-call':
+      return 'In call';
+    case 'ended':
+      return 'Call ended';
+    case 'error':
+      return 'Call could not connect';
+    case 'idle':
+    default:
+      return 'Ready to call from the Keep.id hotline.';
+  }
+}
+
 function openSelectedClient(conversation: Conversation, history: ReturnType<typeof useHistory>) {
   if (conversation.username) {
     history.push(`/profile/${encodeURIComponent(conversation.username)}`);
@@ -101,9 +125,16 @@ export default function CallsPage() {
   const [scheduleSendAt, setScheduleSendAt] = useState('');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
+  const [browserCallStatus, setBrowserCallStatus] = useState<BrowserCallStatus>('idle');
+  const [browserCallError, setBrowserCallError] = useState('');
+  const [isMuted, setIsMuted] = useState(false);
+  const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [conversationError, setConversationError] = useState('');
   const [threadError, setThreadError] = useState('');
+  const voiceDeviceRef = React.useRef<Device | null>(null);
+  const activeCallRef = React.useRef<Call | null>(null);
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
@@ -183,6 +214,19 @@ export default function CallsPage() {
     setScheduleSendAt('');
   }, [selected?.username]);
 
+  useEffect(() => {
+    if (browserCallStatus !== 'in-call' || !callStartedAt) return undefined;
+    const interval = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - callStartedAt) / 1000));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [browserCallStatus, callStartedAt]);
+
+  useEffect(() => () => {
+    activeCallRef.current?.disconnect();
+    voiceDeviceRef.current?.destroy();
+  }, []);
+
   function defaultScheduleTime() {
     const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
     tomorrow.setHours(9, 0, 0, 0);
@@ -229,6 +273,121 @@ export default function CallsPage() {
     setScheduleBody('');
     setScheduleSendAt('');
     setIsScheduleModalOpen(false);
+  }
+
+  function resetBrowserCallState() {
+    setBrowserCallStatus('idle');
+    setBrowserCallError('');
+    setIsMuted(false);
+    setCallStartedAt(null);
+    setElapsedSeconds(0);
+  }
+
+  function closeCallModal() {
+    activeCallRef.current?.disconnect();
+    activeCallRef.current = null;
+    voiceDeviceRef.current?.destroy();
+    voiceDeviceRef.current = null;
+    setIsCalling(false);
+    resetBrowserCallState();
+  }
+
+  async function refreshSelectedConversation() {
+    if (selected?.username || selected?.phone) {
+      await loadThread(selected);
+      await loadConversations();
+    }
+  }
+
+  async function startBrowserCall() {
+    if (!selected?.phone || browserCallStatus === 'connecting' || browserCallStatus === 'ringing' || browserCallStatus === 'in-call') return;
+    setBrowserCallError('');
+    setBrowserCallStatus('connecting');
+    setElapsedSeconds(0);
+    setCallStartedAt(null);
+    try {
+      if (!Device.isSupported) {
+        throw new Error('This browser does not support Twilio Voice calling.');
+      }
+      const tokenResponse = await getTwilioVoiceToken();
+      if (tokenResponse.status !== 'SUCCESS' || !tokenResponse.token) {
+        throw new Error(tokenResponse.message || tokenResponse.status || 'Twilio Voice is not configured.');
+      }
+      voiceDeviceRef.current?.destroy();
+      const device = new Device(tokenResponse.token);
+      voiceDeviceRef.current = device;
+      device.on('error', (error: Error) => {
+        setBrowserCallError(error.message || 'Twilio Voice connection failed.');
+        setBrowserCallStatus('error');
+      });
+      await device.register();
+      const call = await device.connect({ params: { To: selected.phone } });
+      activeCallRef.current = call;
+      setBrowserCallStatus('ringing');
+      call.on('accept', () => {
+        setBrowserCallStatus('in-call');
+        setBrowserCallError('');
+        setCallStartedAt(Date.now());
+        setElapsedSeconds(0);
+      });
+      call.on('disconnect', () => {
+        activeCallRef.current = null;
+        setBrowserCallStatus('ended');
+        setCallStartedAt(null);
+        setIsMuted(false);
+        refreshSelectedConversation();
+      });
+      call.on('cancel', () => {
+        activeCallRef.current = null;
+        setBrowserCallStatus('ended');
+        setCallStartedAt(null);
+        setIsMuted(false);
+      });
+      call.on('reject', () => {
+        activeCallRef.current = null;
+        setBrowserCallStatus('ended');
+        setCallStartedAt(null);
+        setIsMuted(false);
+      });
+      call.on('error', (error: Error) => {
+        activeCallRef.current = null;
+        setBrowserCallError(error.message || 'Twilio Voice call failed.');
+        setBrowserCallStatus('error');
+        setCallStartedAt(null);
+        setIsMuted(false);
+      });
+      call.on('reconnecting', () => {
+        setBrowserCallStatus('connecting');
+      });
+      call.on('reconnected', () => {
+        setBrowserCallStatus('in-call');
+      });
+    } catch (error) {
+      activeCallRef.current = null;
+      voiceDeviceRef.current?.destroy();
+      voiceDeviceRef.current = null;
+      setBrowserCallError(error instanceof Error ? error.message : 'Could not start the browser call.');
+      setBrowserCallStatus('error');
+      setCallStartedAt(null);
+      setIsMuted(false);
+    }
+  }
+
+  function toggleMute() {
+    const call = activeCallRef.current;
+    if (!call || browserCallStatus !== 'in-call') return;
+    const nextMuted = !isMuted;
+    call.mute(nextMuted);
+    setIsMuted(nextMuted);
+  }
+
+  function hangUpCall() {
+    activeCallRef.current?.disconnect();
+    activeCallRef.current = null;
+    voiceDeviceRef.current?.disconnectAll();
+    setBrowserCallStatus('ended');
+    setCallStartedAt(null);
+    setIsMuted(false);
   }
 
   return (
@@ -402,7 +561,7 @@ export default function CallsPage() {
             {isCalling && (
               <div className="call-modal-backdrop" role="presentation">
                 <section className="call-modal" aria-label="Phone dialer">
-                  <button type="button" className="call-close" onClick={() => setIsCalling(false)} aria-label="Close call modal">
+                  <button type="button" className="call-close" onClick={closeCallModal} aria-label="Close call modal">
                     ×
                   </button>
                   <div className="call-modal-header">
@@ -420,19 +579,31 @@ export default function CallsPage() {
                     Notes
                     <textarea className="call-notes" placeholder="Add notes during or after the call..." />
                   </label>
-                  <p className="call-help">
-                    Twilio calling from the Keep.id hotline is not enabled yet.
-                  </p>
+                  <div className={`call-status ${browserCallStatus}`}>
+                    <strong>{callStatusText(browserCallStatus)}</strong>
+                    {browserCallStatus === 'in-call' && <span>{formatDuration(elapsedSeconds)}</span>}
+                    {browserCallError && <p>{browserCallError}</p>}
+                  </div>
                   <div className="call-controls">
-                    <button type="button" onClick={() => setIsCalling(false)}>Cancel</button>
+                    <button type="button" onClick={closeCallModal}>
+                      {browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? 'Close modal' : 'Cancel'}
+                    </button>
                     <button
                       type="button"
-                      className="call-start disabled"
-                      disabled
-                      aria-label="Twilio calling is not enabled yet"
+                      className="call-mute"
+                      disabled={browserCallStatus !== 'in-call'}
+                      onClick={toggleMute}
+                    >
+                      {isMuted ? 'Unmute' : 'Mute'}
+                    </button>
+                    <button
+                      type="button"
+                      className={`call-start ${browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? 'danger' : ''}`}
+                      disabled={!selected.phone || browserCallStatus === 'connecting'}
+                      onClick={browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? hangUpCall : startBrowserCall}
                     >
                       <LocalPhoneOutlinedIcon fontSize="small" />
-                      Call via Keep.id
+                      {browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? 'Hang up' : 'Call via Keep.id'}
                     </button>
                   </div>
                 </section>
