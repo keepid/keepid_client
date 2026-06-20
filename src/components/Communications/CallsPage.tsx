@@ -391,7 +391,7 @@ export default function CallsPage() {
     setCallNoteSaveError('');
     try {
       if (note) {
-        await addClientNote(selected.username, note);
+        await addClientNote(selected.username, note, undefined, true);
         setCallNoteDraft('');
       }
       closeCallModal();

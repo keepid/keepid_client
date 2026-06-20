@@ -126,7 +126,7 @@ function titleLabel(item: MessageBoardItem) {
 }
 
 function shouldShowSource(item: MessageBoardItem) {
-  return item.type === 'message' || item.type === 'scheduled';
+  return item.type === 'scheduled';
 }
 
 function bodyLabel(item: MessageBoardItem) {
@@ -179,7 +179,7 @@ function groupNearbyMessages(items: MessageBoardItem[]) {
     return {
       ...first,
       sourceId: first.sourceId,
-      body: group.map((item) => item.body).filter(Boolean).join('\n\n'),
+      body: group.map((item) => item.body).filter(Boolean).join(' '),
       status: `${group.length} messages`,
       occurredAt: first.occurredAt,
     };

@@ -140,10 +140,10 @@ export function getMessageBoardByPhone(phone: string) {
   return jsonFetch<MessageBoardResponse>(`/api/communications/message-board?${params.toString()}`);
 }
 
-export function addClientNote(username: string, body: string, callLogId?: string) {
+export function addClientNote(username: string, body: string, callLogId?: string, attachToLatestCall = false) {
   return jsonFetch<MessageBoardResponse>(`/api/client-profiles/${encodeURIComponent(username)}/notes`, {
     method: 'POST',
-    body: JSON.stringify({ body, callLogId }),
+    body: JSON.stringify({ body, callLogId, attachToLatestCall }),
   });
 }
 
