@@ -21,7 +21,7 @@ type TimelineEntry = {
   occurredAt: string;
   title: string;
   body: string;
-  source: string;
+  source?: string;
   editable?: boolean;
   workerNoteIndex?: number;
   communicationNoteId?: string;
@@ -121,7 +121,17 @@ function serializeWorkerNotes(entries: WorkerNoteEntry[]) {
 function titleLabel(item: MessageBoardItem) {
   if (item.type === 'voicemail') return 'Voicemail transcript';
   if (item.type === 'note') return 'Communication note';
+  if (item.type === 'message') return item.status?.includes('messages') ? 'SMS messages' : 'SMS message';
   return item.title;
+}
+
+function shouldShowSource(item: MessageBoardItem) {
+  return item.type === 'message' || item.type === 'scheduled';
+}
+
+function bodyLabel(item: MessageBoardItem) {
+  if (item.type === 'call' || item.type === 'voicemail') return item.body || '';
+  return item.body || item.status || '';
 }
 
 function toTimelineItem(item: MessageBoardItem): TimelineEntry {
@@ -130,11 +140,50 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
     id: `${item.type}-${item.sourceId}`,
     occurredAt,
     title: titleLabel(item),
-    body: item.body || item.status || '',
-    source: sourceLabel(item),
+    body: bodyLabel(item),
+    source: shouldShowSource(item) ? sourceLabel(item) : undefined,
     editable: item.type === 'note',
     communicationNoteId: item.type === 'note' ? item.sourceId : undefined,
   };
+}
+
+function groupNearbyMessages(items: MessageBoardItem[]) {
+  const groups: MessageBoardItem[][] = [];
+  const sorted = [...items].sort((a, b) => {
+    const aTime = new Date(a.occurredAt || a.noteDate || 0).getTime();
+    const bTime = new Date(b.occurredAt || b.noteDate || 0).getTime();
+    return aTime - bTime;
+  });
+
+  sorted.forEach((item) => {
+    const lastGroup = groups[groups.length - 1];
+    const lastItem = lastGroup?.[lastGroup.length - 1];
+    const itemTime = new Date(item.occurredAt || item.noteDate || 0).getTime();
+    const lastTime = new Date(lastItem?.occurredAt || lastItem?.noteDate || 0).getTime();
+    const canGroup = lastItem
+      && item.type === 'message'
+      && lastItem.type === 'message'
+      && item.metadata === lastItem.metadata
+      && Math.abs(itemTime - lastTime) <= 2 * 60 * 1000;
+
+    if (canGroup) {
+      lastGroup.push(item);
+    } else {
+      groups.push([item]);
+    }
+  });
+
+  return groups.map((group) => {
+    if (group.length === 1) return group[0];
+    const first = group[0];
+    return {
+      ...first,
+      sourceId: first.sourceId,
+      body: group.map((item) => item.body).filter(Boolean).join('\n\n'),
+      status: `${group.length} messages`,
+      occurredAt: first.occurredAt,
+    };
+  });
 }
 
 export default function ClientTimelineSection({ username, workerNotes, onSaved }: Props) {
@@ -167,7 +216,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
   }, [workerNotes, username]);
 
   const timeline = useMemo(() => {
-    const entries = communicationItems
+    const entries = groupNearbyMessages(communicationItems)
       .filter((item) => item.type !== 'scheduled')
       .map(toTimelineItem);
 
@@ -334,7 +383,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
                       ) : (
                         <p>{item.body}</p>
                       )}
-                      <small>{item.source}</small>
+                      {item.source && <small>{item.source}</small>}
                     </div>
                   </article>
                 ))}

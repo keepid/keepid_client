@@ -819,6 +819,10 @@ body:has(.communications-shell),
   color: #52616f;
 }
 
+.timeline-entry p {
+  white-space: pre-wrap;
+}
+
 .timeline-entry small {
   display: block;
   margin-top: 3px;
