@@ -486,12 +486,12 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         if (dryRun) {
           setLastSuccessfulDryRunKey(backfillRequestKey);
         }
-        alert.show(dryRun ? 'Twilio dry run complete.' : 'Twilio messages imported.');
+        alert.show(dryRun ? 'Twilio SMS dry run complete.' : 'Twilio SMS imported.');
       } else {
-        alert.show(`Twilio backfill failed: ${data.message || data.status}`, { type: 'error' });
+        alert.show(`Twilio SMS backfill failed: ${data.message || data.status}`, { type: 'error' });
       }
     } catch (error) {
-      alert.show(`Twilio backfill failed: ${error}`, { type: 'error' });
+      alert.show(`Twilio SMS backfill failed: ${error}`, { type: 'error' });
     } finally {
       setIsBackfilling(false);
     }
@@ -917,7 +917,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end md:tw-justify-between tw-gap-3">
           <div>
             <label htmlFor="twilioBackfillDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              Date
+              SMS date
             </label>
             <input
               id="twilioBackfillDate"
@@ -942,7 +942,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               onClick={() => handleTwilioBackfill(false)}
               disabled={isBackfilling || !canImportBackfill}
             >
-              Update
+              Import SMS
             </button>
           </div>
         </div>
@@ -1169,9 +1169,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 <div className="card-body">
                   <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-2 tw-mb-4">
                     <div>
-                      <h5 className="card-title tw-mb-1">Twilio Message Backfill</h5>
+                      <h5 className="card-title tw-mb-1">Twilio SMS Backfill</h5>
                       <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
-                        Recover historical SMS into Communications from Twilio without duplicating existing messages.
+                        Recover historical SMS from Twilio. Calls, voicemail, and hotline report cleanup use the server repair script.
                       </p>
                     </div>
                   </div>
