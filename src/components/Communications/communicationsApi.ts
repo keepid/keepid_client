@@ -14,6 +14,10 @@ export type CallLog = {
   noteCount: number;
   latestNote?: string;
   voicemailTranscript?: string;
+  voicemailRecordingUrl?: string;
+  callTranscript?: string;
+  callRecordingUrl?: string;
+  transcriptionSid?: string;
 };
 
 export type CallsReport = {
@@ -57,6 +61,7 @@ export type MessageBoardItem = {
   body?: string;
   status?: string;
   metadata?: string;
+  recordingUrl?: string;
 };
 
 export type CallsResponse = {
@@ -173,6 +178,10 @@ export function scheduleMessage(username: string, body: string, sendAt: string, 
 
 export function getTwilioVoiceToken() {
   return jsonFetch<TwilioVoiceTokenResponse>('/api/communications/voice/token');
+}
+
+export function getCallRecordingPlaybackUrl(callId: string) {
+  return `${getServerURL()}/api/communications/calls/${encodeURIComponent(callId)}/recording`;
 }
 
 export function formatDuration(seconds?: number) {
