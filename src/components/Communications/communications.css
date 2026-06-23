@@ -823,6 +823,28 @@ body:has(.communications-shell),
   white-space: pre-wrap;
 }
 
+.recording-player {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.recording-player audio {
+  width: min(100%, 360px);
+  height: 36px;
+}
+
+.recording-player a {
+  color: #2f80ed;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.recording-player a:hover {
+  text-decoration: underline;
+}
+
 .timeline-entry small {
   display: block;
   margin-top: 3px;

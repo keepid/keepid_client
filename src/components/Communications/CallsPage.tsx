@@ -12,6 +12,7 @@ import {
   addClientNote,
   Conversation,
   formatDuration,
+  getCallRecordingPlaybackUrl,
   getConversations,
   getMessageBoard,
   getMessageBoardByPhone,
@@ -100,6 +101,11 @@ function itemTitle(item: MessageBoardItem) {
     return 'Voice Mail Transcript';
   }
   return item.title;
+}
+
+function recordingPlaybackUrl(item: MessageBoardItem) {
+  if (!item.recordingUrl || (item.type !== 'call' && item.type !== 'voicemail')) return '';
+  return getCallRecordingPlaybackUrl(item.sourceId);
 }
 
 function conversationInitial(conversation: Conversation) {
@@ -603,6 +609,7 @@ export default function CallsPage() {
               {visibleItems.map((item) => {
                 const side = itemSide(item);
                 const title = itemTitle(item);
+                const recordingUrl = recordingPlaybackUrl(item);
                 return (
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
@@ -655,6 +662,15 @@ export default function CallsPage() {
                         </div>
                       ) : (
                         item.body && <p>{item.body}</p>
+                      )}
+                      {recordingUrl && (
+                        <div className="recording-player">
+                          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                          <audio controls preload="none" src={recordingUrl}>
+                            Recording playback is not supported in this browser.
+                          </audio>
+                          <a href={recordingUrl} target="_blank" rel="noreferrer">Open recording</a>
+                        </div>
                       )}
                       {item.status && item.type !== 'call' && item.type !== 'voicemail' && <small>{item.status}</small>}
                     </div>

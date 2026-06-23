@@ -5,6 +5,7 @@ import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
 import {
+  getCallRecordingPlaybackUrl,
   getMessageBoard,
   MessageBoardItem,
   updateClientNote,
@@ -25,6 +26,7 @@ type TimelineEntry = {
   editable?: boolean;
   workerNoteIndex?: number;
   communicationNoteId?: string;
+  recordingUrl?: string;
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
@@ -144,6 +146,9 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
     source: shouldShowSource(item) ? sourceLabel(item) : undefined,
     editable: item.type === 'note',
     communicationNoteId: item.type === 'note' ? item.sourceId : undefined,
+    recordingUrl: item.recordingUrl && (item.type === 'call' || item.type === 'voicemail')
+      ? getCallRecordingPlaybackUrl(item.sourceId)
+      : undefined,
   };
 }
 
@@ -382,6 +387,15 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
                         </div>
                       ) : (
                         <p>{item.body}</p>
+                      )}
+                      {item.recordingUrl && (
+                        <div className="recording-player">
+                          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                          <audio controls preload="none" src={item.recordingUrl}>
+                            Recording playback is not supported in this browser.
+                          </audio>
+                          <a href={item.recordingUrl} target="_blank" rel="noreferrer">Open recording</a>
+                        </div>
                       )}
                       {item.source && <small>{item.source}</small>}
                     </div>
