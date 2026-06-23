@@ -144,35 +144,6 @@ interface OrganizationReportResponse {
   reportText?: string;
 }
 
-interface TwilioBackfillBreakdownRow {
-  label?: string;
-  type?: string;
-  direction?: string;
-  matchStatus?: string;
-  scanned?: number;
-  existing?: number;
-  inserted?: number;
-  updated?: number;
-  skipped?: number;
-  count?: number;
-}
-
-interface TwilioBackfillResponse {
-  status: string;
-  message?: string;
-  dryRun: boolean;
-  phoneNumber?: string;
-  scannedMessages: number;
-  matchedMessages: number;
-  unmatchedMessages: number;
-  insertedMessages: number;
-  existingMessages: number;
-  updatedMessages: number;
-  skippedMessages: number;
-  breakdownRows?: TwilioBackfillBreakdownRow[];
-  summaryRows?: TwilioBackfillBreakdownRow[];
-}
-
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
   const [orgInfo, setOrgInfo] = useState<OrgInfo>({
     name: '',
@@ -208,10 +179,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [reportShowClientNames, setReportShowClientNames] = useState(false);
   const [reportText, setReportText] = useState('');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [backfillDate, setBackfillDate] = useState(() => toLocalISODate(new Date()));
-  const [backfillResult, setBackfillResult] = useState<TwilioBackfillResponse | null>(null);
-  const [lastSuccessfulDryRunKey, setLastSuccessfulDryRunKey] = useState('');
-  const [isBackfilling, setIsBackfilling] = useState(false);
 
   const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
@@ -229,13 +196,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
   const canManageMembers = role === Role.Director || role === Role.Admin;
   const canEditOrganization = role === Role.Admin;
-  const backfillRequestKey = useMemo(
-    () => JSON.stringify({
-      date: backfillDate,
-      maxMessages: 1000,
-    }),
-    [backfillDate],
-  );
 
   const adminMembers = useMemo(
     () => workers.filter((worker) => worker.privilegeLevel === 'Admin'),
@@ -463,37 +423,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       alert.show('Report copied.');
     } catch {
       alert.show('Unable to copy report automatically. Select the text and copy it manually.', { type: 'error' });
-    }
-  };
-
-  const handleTwilioBackfill = async (dryRun: boolean) => {
-    setIsBackfilling(true);
-    try {
-      const res = await fetch(`${getServerURL()}/api/admin/communications/backfill/twilio`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromDate: backfillDate,
-          toDate: backfillDate,
-          dryRun,
-          maxMessages: 1000,
-        }),
-      });
-      const data = await res.json() as TwilioBackfillResponse;
-      setBackfillResult(data);
-      if (data.status === 'SUCCESS') {
-        if (dryRun) {
-          setLastSuccessfulDryRunKey(backfillRequestKey);
-        }
-        alert.show(dryRun ? 'Twilio SMS dry run complete.' : 'Twilio SMS imported.');
-      } else {
-        alert.show(`Twilio SMS backfill failed: ${data.message || data.status}`, { type: 'error' });
-      }
-    } catch (error) {
-      alert.show(`Twilio SMS backfill failed: ${error}`, { type: 'error' });
-    } finally {
-      setIsBackfilling(false);
     }
   };
 
@@ -897,120 +826,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     </div>
   );
 
-  const renderTwilioBackfillContent = () => {
-    const canImportBackfill = lastSuccessfulDryRunKey === backfillRequestKey;
-    const detailedRows = backfillResult ? backfillResult.breakdownRows || backfillResult.summaryRows || [] : [];
-    const aggregateRows = backfillResult
-      ? [
-        ['Scanned', backfillResult.scannedMessages],
-        ['Matched to clients', backfillResult.matchedMessages],
-        ['Unmatched numbers', backfillResult.unmatchedMessages],
-        [backfillResult.dryRun ? 'Would import' : 'Imported', backfillResult.insertedMessages],
-        ['Already existed', backfillResult.existingMessages],
-        ['Status updated', backfillResult.updatedMessages],
-        ['Skipped', backfillResult.skippedMessages],
-      ].filter(([, value]) => Number(value) > 0)
-      : [];
-
-    return (
-      <div className="tw-space-y-4">
-        <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end md:tw-justify-between tw-gap-3">
-          <div>
-            <label htmlFor="twilioBackfillDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-              SMS date
-            </label>
-            <input
-              id="twilioBackfillDate"
-              type="date"
-              className="form-control form-purple"
-              value={backfillDate}
-              onChange={(e) => setBackfillDate(e.target.value)}
-            />
-          </div>
-          <div className="tw-flex tw-gap-2">
-            <button
-              type="button"
-              className="btn btn-outline-dark"
-              onClick={() => handleTwilioBackfill(true)}
-              disabled={isBackfilling}
-            >
-              {isBackfilling ? 'Running...' : 'Dry run'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => handleTwilioBackfill(false)}
-              disabled={isBackfilling || !canImportBackfill}
-            >
-              Import SMS
-            </button>
-          </div>
-        </div>
-
-        {backfillResult && (
-          <div className="tw-rounded tw-border tw-border-gray-200 tw-bg-gray-50 tw-p-3">
-            <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-gap-1 tw-mb-3">
-              <div className="tw-font-semibold tw-text-gray-900">
-                {backfillResult.dryRun ? 'Dry run result' : 'Import result'}
-              </div>
-              <div className="tw-text-sm tw-text-gray-500">
-                {backfillResult.phoneNumber ? `Number: ${formatPhoneForDisplay(backfillResult.phoneNumber)}` : backfillResult.status}
-              </div>
-            </div>
-            {detailedRows.length > 0 ? (
-              <div className="table-responsive">
-                <table className="table table-sm tw-bg-white tw-mb-0">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Direction</th>
-                      <th>Number match</th>
-                      <th className="text-right">Scanned</th>
-                      <th className="text-right">Existing</th>
-                      <th className="text-right">{backfillResult.dryRun ? 'Would import' : 'Imported'}</th>
-                      <th className="text-right">Updated</th>
-                      <th className="text-right">Skipped</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {detailedRows.map((row) => (
-                      <tr key={`${row.label || row.type || 'row'}-${row.direction || 'all'}-${row.matchStatus || 'all'}`}>
-                        <td>{row.label || row.type || 'Messages'}</td>
-                        <td>{row.direction || 'All'}</td>
-                        <td>{row.matchStatus || 'All'}</td>
-                        <td className="text-right">{row.scanned ?? row.count ?? 0}</td>
-                        <td className="text-right">{row.existing ?? 0}</td>
-                        <td className="text-right">{row.inserted ?? 0}</td>
-                        <td className="text-right">{row.updated ?? 0}</td>
-                        <td className="text-right">{row.skipped ?? 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-sm tw-bg-white tw-mb-0">
-                  <tbody>
-                    {aggregateRows.map(([label, value]) => (
-                      <tr key={label}>
-                        <td>{label}</td>
-                        <td className="text-right tw-font-semibold">{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {backfillResult.message && (
-              <p className="tw-text-sm tw-text-gray-500 tw-mt-3 tw-mb-0">{backfillResult.message}</p>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const renderWorkerListContent = () => {
     if (isLoadingWorkers) {
       return <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading workers...</p>;
@@ -1150,35 +965,19 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           </div>
 
           {canEditOrganization && (
-            <>
-              <div className="card mt-3 mb-3 pl-5 pr-5">
-                <div className="card-body">
-                  <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-2 tw-mb-4">
-                    <div>
-                      <h5 className="card-title tw-mb-1">Generate Report</h5>
-                      <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
-                        Create a copy-ready activity summary for a date or date range.
-                      </p>
-                    </div>
+            <div className="card mt-3 mb-3 pl-5 pr-5">
+              <div className="card-body">
+                <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-2 tw-mb-4">
+                  <div>
+                    <h5 className="card-title tw-mb-1">Generate Report</h5>
+                    <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
+                      Create a copy-ready activity summary for a date or date range.
+                    </p>
                   </div>
-                  {renderReportContent()}
                 </div>
+                {renderReportContent()}
               </div>
-
-              <div className="card mt-3 mb-3 pl-5 pr-5">
-                <div className="card-body">
-                  <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-2 tw-mb-4">
-                    <div>
-                      <h5 className="card-title tw-mb-1">Twilio SMS Backfill</h5>
-                      <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
-                        Recover historical SMS from Twilio. Calls, voicemail, and hotline report cleanup use the server repair script.
-                      </p>
-                    </div>
-                  </div>
-                  {renderTwilioBackfillContent()}
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           <div className="card mt-3 mb-3 pl-5 pr-5">
