@@ -970,76 +970,80 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
-                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-3">
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Fill a form</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Start from a supported Keep.id application.
-                    </div>
+                <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
+                  <div className="tw-font-semibold tw-text-gray-900">Application forms</div>
+                  <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
+                    Choose a supported Keep.id form or add a PDF for an application that is not available yet.
+                  </div>
+                  <div className="tw-mt-3 tw-divide-y tw-divide-gray-100 tw-rounded-md tw-border tw-border-gray-200 tw-overflow-hidden">
                     {availableApplications.length > 0 ? (
-                      <div className="tw-mt-3 tw-space-y-2">
-                        {availableApplications.map((application) => (
-                          <Link
-                            key={application.lookupKey}
-                            to={{
-                              pathname: '/applications/createnew',
-                              state: {
-                                clientUsername: clientUsername || '',
-                                clientName: clientName || '',
-                                presetApplication: {
-                                  lookupKey: application.lookupKey,
-                                  type: application.type,
-                                  state: application.state,
-                                  situation: application.situation,
-                                },
-                                startAtReview: application.canStart,
+                      availableApplications.map((application) => (
+                        <Link
+                          key={application.lookupKey}
+                          to={{
+                            pathname: '/applications/createnew',
+                            state: {
+                              clientUsername: clientUsername || '',
+                              clientName: clientName || '',
+                              presetApplication: {
+                                lookupKey: application.lookupKey,
+                                type: application.type,
+                                state: application.state,
+                                situation: application.situation,
                               },
-                            }}
-                            className="tw-flex tw-items-center tw-justify-between tw-rounded tw-border tw-border-gray-200 tw-px-3 tw-py-2 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
-                          >
-                            <span className="tw-truncate">
-                              {[application.type, application.state, application.situation]
-                                .filter((value) => value && value.trim().length > 0)
-                                .join(' — ') || 'Application form'}
-                            </span>
-                            <i className="fas fa-chevron-right tw-text-gray-400 tw-text-xs tw-ml-2" aria-hidden />
-                          </Link>
-                        ))}
-                      </div>
+                              startAtReview: application.canStart,
+                            },
+                          }}
+                          className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
+                        >
+                          <span className="tw-truncate">
+                            {[application.type, application.state, application.situation]
+                              .filter((value) => value && value.trim().length > 0)
+                              .join(' — ') || 'Application form'}
+                          </span>
+                          <i className="fas fa-chevron-right tw-text-gray-400 tw-text-xs tw-ml-2" aria-hidden />
+                        </Link>
+                      ))
                     ) : (
-                      <div className="tw-mt-3 tw-text-sm tw-text-gray-500">
+                      <div className="tw-px-3 tw-py-3 tw-text-sm tw-text-gray-500">
                         No supported forms are available.
                       </div>
                     )}
-                  </div>
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Upload PDF</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Add a completed or outside application PDF.
-                    </div>
                     <button
                       type="button"
-                      className="btn btn-outline-primary btn-sm tw-mt-3"
+                      className="tw-flex tw-w-full tw-items-center tw-gap-3 tw-border-0 tw-bg-white tw-px-3 tw-py-3 tw-text-left hover:tw-bg-blue-50"
                       onClick={this.openUploadModal}
                     >
-                      Upload application
+                      <span className="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-50 tw-text-twprimary">
+                        <i className="fas fa-plus" aria-hidden />
+                      </span>
+                      <span className="tw-min-w-0">
+                        <span className="tw-block tw-font-semibold tw-text-gray-900">Upload missing application PDF</span>
+                        <span className="tw-block tw-text-sm tw-text-gray-600">
+                          Add a completed or outside application when Keep.id does not have the form.
+                        </span>
+                      </span>
                     </button>
-                  </div>
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Use org document</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Copy an organization PDF as the application base.
-                    </div>
                     <button
                       type="button"
-                      className="btn btn-outline-primary btn-sm tw-mt-3"
+                      className="tw-flex tw-w-full tw-items-center tw-gap-3 tw-border-0 tw-bg-white tw-px-3 tw-py-3 tw-text-left hover:tw-bg-blue-50 disabled:tw-cursor-not-allowed disabled:tw-opacity-60"
                       onClick={this.openOrgModal}
                       disabled={isLoadingOrgDocuments || orgDocuments.length === 0}
                     >
-                      {isLoadingOrgDocuments ? 'Loading documents...' : 'Choose document'}
+                      <span className="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-gray-100 tw-text-gray-600">
+                        <i className="fas fa-file-pdf" aria-hidden />
+                      </span>
+                      <span className="tw-min-w-0">
+                        <span className="tw-block tw-font-semibold tw-text-gray-900">Use organization document</span>
+                        <span className="tw-block tw-text-sm tw-text-gray-600">
+                          {isLoadingOrgDocuments
+                            ? 'Loading organization documents...'
+                            : 'Copy an organization PDF as the application base.'}
+                        </span>
+                      </span>
                     </button>
                     {!isLoadingOrgDocuments && orgDocuments.length === 0 && (
-                      <div className="tw-mt-2 tw-text-xs tw-text-gray-500">
+                      <div className="tw-px-3 tw-py-2 tw-text-xs tw-text-gray-500 tw-bg-gray-50">
                         No organization documents available.
                       </div>
                     )}

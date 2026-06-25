@@ -1,5 +1,6 @@
 import '../InteractiveForms/form-preview.css';
 
+import AddIcon from '@mui/icons-material/Add';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 import { flushSync } from 'react-dom';
@@ -22,6 +23,7 @@ import {
   validatePhonenumber,
 } from '../SignUp/SignUp.validators';
 import {
+  createUploadedApplication,
   fillPdfBlob,
   listApplicationPdfIds,
   updateProfileFromDirectives,
@@ -98,6 +100,121 @@ function getOptionLabel(pageName: 'type' | 'person', value: string): string | nu
   const pageConfig = applicationFormPages.find((entry) => entry.pageName === pageName);
   const option = pageConfig?.options.find((entry) => entry.value === value);
   return option?.titleText ?? null;
+}
+
+function UploadApplicationCard({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="toggle-button tw-border-2 tw-min-h-[300px] tw-min-w-[16rem] sm:tw-min-w-[18rem] tw-flex tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-shadow-[0px_0px_10px_4px_rgba(0,0,0,0.12)] tw-p-4 tw-bg-transparent tw-text-black hover:tw-bg-gray-100 hover:tw-text-black !tw-border-dashed !tw-border-gray-300 hover:!tw-border-gray-500"
+    >
+      <span className="tw-flex tw-h-28 tw-w-28 sm:tw-h-32 sm:tw-w-32 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-50 tw-text-twprimary tw-my-5">
+        <AddIcon sx={{ fontSize: 72 }} />
+      </span>
+      <span className="tw-text-xl sm:tw-text-2xl tw-font-bold tw-mb-2 tw-text-black">
+        Upload a PDF
+      </span>
+      <span className="tw-text-base sm:tw-text-lg tw-text-gray-700 tw-leading-snug">
+        Use this for an application form Keep.id does not have yet.
+      </span>
+    </button>
+  );
+}
+
+function UploadApplicationPanel({
+  applicationName,
+  file,
+  submitting,
+  error,
+  targetClientLabel,
+  onApplicationNameChange,
+  onFileChange,
+  onCancel,
+  onSubmit,
+}: {
+  applicationName: string;
+  file: File | null;
+  submitting: boolean;
+  error: string | null;
+  targetClientLabel: string;
+  onApplicationNameChange: (value: string) => void;
+  onFileChange: (file: File | null) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-6 sm:tw-p-8 tw-shadow-sm tw-w-full tw-max-w-3xl tw-mx-auto">
+      <div className="tw-flex tw-items-start tw-gap-4 tw-mb-5">
+        <span className="tw-flex tw-h-14 tw-w-14 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-50 tw-text-twprimary">
+          <AddIcon fontSize="large" />
+        </span>
+        <div>
+          <h3 className="tw-text-2xl tw-font-semibold tw-text-gray-900 tw-mb-1">
+            Upload an application PDF
+          </h3>
+          <p className="tw-text-base tw-text-gray-600 tw-mb-0">
+            Add a completed or outside application when the form is not available in Keep.id.
+          </p>
+        </div>
+      </div>
+
+      {targetClientLabel && (
+        <Alert variant="info" className="tw-mb-4">
+          Creating this application for <strong>{targetClientLabel}</strong>.
+        </Alert>
+      )}
+
+      {error && (
+        <Alert variant="danger" className="tw-mb-4">
+          {error}
+        </Alert>
+      )}
+
+      <Form.Group controlId="uploadApplicationName">
+        <Form.Label>Application name</Form.Label>
+        <Form.Control
+          type="text"
+          value={applicationName}
+          onChange={(event) => onApplicationNameChange(event.target.value)}
+          disabled={submitting}
+          placeholder="e.g. Housing Assistance Application"
+        />
+      </Form.Group>
+
+      <Form.Group controlId="uploadApplicationFile" className="tw-mt-4">
+        <Form.Label>PDF file</Form.Label>
+        <Form.Control
+          type="file"
+          accept="application/pdf,.pdf"
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => onFileChange(event.target.files?.[0] || null)}
+          disabled={submitting}
+        />
+        {file && (
+          <div className="tw-text-sm tw-text-gray-600 tw-mt-2">{file.name}</div>
+        )}
+      </Form.Group>
+
+      <div className="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3 tw-mt-6">
+        <Button
+          type="button"
+          variant="outline-secondary"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          Back to application choices
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          onClick={onSubmit}
+          disabled={submitting || !applicationName.trim() || !file}
+        >
+          {submitting ? 'Uploading...' : 'Create application'}
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 interface ClientSearchResult {
@@ -186,6 +303,11 @@ export default function ApplicationForm() {
   const [applicationAvailability, setApplicationAvailability] = useState<
     { type: string; state: string; situation: string; lookupKey: string }[]
   >([]);
+  const [uploadMode, setUploadMode] = useState(false);
+  const [uploadApplicationName, setUploadApplicationName] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadSubmitting, setUploadSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [filledPdfUrl, setFilledPdfUrl] = useState<string | null>(null);
   const [persistedApplicationId, setPersistedApplicationId] = useState<string | null>(null);
   const [wizardFormOutput, setWizardFormOutput] = useState<Record<string, unknown> | null>(null);
@@ -207,6 +329,10 @@ export default function ApplicationForm() {
   const isReviewPage = formContent[page].pageName === 'review';
   const isWebFormPage = formContent[page].pageName === 'webForm';
   const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
+  const isTypePage = formContent[page].pageName === 'type';
+  const isStatePage = formContent[page].pageName === 'state';
+  const isSituationPage = formContent[page].pageName === 'situation';
+  const canUploadFromCurrentPage = isTypePage || isStatePage || isSituationPage;
   const targetClientResolved = targetClientUsername.trim().length > 0;
   const whoForInputClassName =
     'tw-w-full tw-min-h-[3rem] tw-px-4 tw-py-3 tw-border-2 tw-border-gray-300 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-lg';
@@ -214,6 +340,12 @@ export default function ApplicationForm() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [page]);
+
+  useEffect(() => {
+    if (!canUploadFromCurrentPage && uploadMode) {
+      setUploadMode(false);
+    }
+  }, [canUploadFromCurrentPage, uploadMode]);
 
   // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
@@ -565,6 +697,65 @@ export default function ApplicationForm() {
     history.push('/applications');
   }, [filledPdfUrl, history]);
 
+  const resetUploadForm = useCallback(() => {
+    setUploadMode(false);
+    setUploadApplicationName('');
+    setUploadFile(null);
+    setUploadError(null);
+    setUploadSubmitting(false);
+  }, []);
+
+  const handleUploadedApplicationSubmit = useCallback(async () => {
+    const trimmedApplicationName = uploadApplicationName.trim();
+    if (shouldShowWhoForStep && !targetClientResolved) {
+      setUploadError('Choose the client this application is for before uploading.');
+      return;
+    }
+    if (!trimmedApplicationName || !uploadFile) {
+      setUploadError('Enter an application name and choose a PDF.');
+      return;
+    }
+
+    setUploadSubmitting(true);
+    setUploadError(null);
+    try {
+      const result = await createUploadedApplication(
+        uploadFile,
+        trimmedApplicationName,
+        targetClientUsername,
+      );
+      const applicationId = result.applicationId || result.fileId;
+      if (!applicationId) {
+        throw new Error('Server did not return an application id.');
+      }
+
+      disablePrompt();
+      history.push({
+        pathname: '/applications/preview',
+        state: {
+          applicationId,
+          applicationFilename: `${trimmedApplicationName}.pdf`,
+          targetUser: targetClientUsername,
+          clientUsername: targetClientUsername,
+          applicantName: targetClientName || targetClientUsername || '',
+          createdDate: new Date().toISOString(),
+          lastUpdatedDate: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Could not upload application.');
+      setUploadSubmitting(false);
+    }
+  }, [
+    history,
+    shouldShowWhoForStep,
+    targetClientName,
+    targetClientResolved,
+    targetClientUsername,
+    uploadApplicationName,
+    uploadFile,
+  ]);
+
   useEffect(() => () => {
     if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
   }, [filledPdfUrl]);
@@ -625,7 +816,7 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        {isWhoForPage ? (
+        {isWhoForPage && (
           <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full [&_.form-label]:tw-text-lg [&_.form-check-label]:tw-text-base [&_.form-check-input]:tw-mt-1 [&_.form-check-input]:tw-scale-125 [&_small]:tw-text-base">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
@@ -867,11 +1058,33 @@ export default function ApplicationForm() {
               </>
             )}
           </div>
-        ) : (
+        )}
+
+        {!isWhoForPage && uploadMode && (
+          <UploadApplicationPanel
+            applicationName={uploadApplicationName}
+            file={uploadFile}
+            submitting={uploadSubmitting}
+            error={uploadError}
+            targetClientLabel={targetClientName || targetClientUsername}
+            onApplicationNameChange={(value) => {
+              setUploadApplicationName(value);
+              setUploadError(null);
+            }}
+            onFileChange={(selectedFile) => {
+              setUploadFile(selectedFile);
+              setUploadError(null);
+            }}
+            onCancel={resetUploadForm}
+            onSubmit={handleUploadedApplicationSubmit}
+          />
+        )}
+
+        {!isWhoForPage && !uploadMode && (
           <Form
-            className="form tw-grid tw-gap-6 tw-justify-center tw-grid-cols-2"
+            className="form tw-grid tw-gap-6 tw-justify-stretch tw-grid-cols-1 md:tw-grid-cols-2"
             style={{
-              gridTemplateColumns: formContent[page].cols && `repeat(${formContent[page].cols}, minmax(0, 1fr))`,
+              gridTemplateColumns: formContent[page].cols && 'repeat(auto-fit, minmax(16rem, 1fr))',
               gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
             }}
             onClick={clickHandler}
@@ -892,6 +1105,14 @@ export default function ApplicationForm() {
                     disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
                   />
                 ))}
+            {canUploadFromCurrentPage && (
+              <UploadApplicationCard
+                onClick={() => {
+                  setUploadMode(true);
+                  setUploadError(null);
+                }}
+              />
+            )}
           </Form>
         )}
 
