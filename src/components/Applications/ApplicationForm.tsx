@@ -107,16 +107,18 @@ function UploadApplicationCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="toggle-button tw-border-2 tw-min-h-[300px] tw-min-w-[16rem] sm:tw-min-w-[18rem] tw-flex tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-shadow-[0px_0px_10px_4px_rgba(0,0,0,0.12)] tw-p-4 tw-bg-transparent tw-text-black hover:tw-bg-gray-100 hover:tw-text-black !tw-border-dashed !tw-border-gray-300 hover:!tw-border-gray-500"
+      className="toggle-button tw-border tw-min-h-[8.5rem] tw-w-full tw-flex tw-items-center tw-gap-4 tw-rounded-lg tw-p-5 tw-text-left tw-shadow-sm tw-transition-all tw-bg-white tw-text-gray-900 hover:tw-bg-blue-50 hover:tw-text-gray-900 !tw-border-gray-200 hover:!tw-border-blue-300 hover:tw-shadow-md"
     >
-      <span className="tw-flex tw-h-28 tw-w-28 sm:tw-h-32 sm:tw-w-32 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-50 tw-text-twprimary tw-my-5">
-        <AddIcon sx={{ fontSize: 72 }} />
+      <span className="tw-flex tw-h-16 tw-w-16 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-blue-100 tw-bg-blue-50 tw-text-twprimary">
+        <AddIcon fontSize="large" />
       </span>
-      <span className="tw-text-xl sm:tw-text-2xl tw-font-bold tw-mb-2 tw-text-black">
-        Upload a PDF
-      </span>
-      <span className="tw-text-base sm:tw-text-lg tw-text-gray-700 tw-leading-snug">
-        Use this for an application form Keep.id does not have yet.
+      <span className="tw-min-w-0 tw-flex-1">
+        <span className="tw-block tw-text-lg tw-font-semibold tw-leading-snug tw-text-gray-900">
+          PDF application
+        </span>
+        <span className="tw-mt-1 tw-block tw-text-sm tw-text-gray-600 tw-leading-snug">
+          Upload a PDF when Keep.id does not have the form yet.
+        </span>
       </span>
     </button>
   );
@@ -1082,9 +1084,9 @@ export default function ApplicationForm() {
 
         {!isWhoForPage && !uploadMode && (
           <Form
-            className="form tw-grid tw-gap-6 tw-justify-stretch tw-grid-cols-1 md:tw-grid-cols-2"
+            className="form tw-grid tw-gap-4 tw-justify-stretch tw-grid-cols-1 md:tw-grid-cols-2"
             style={{
-              gridTemplateColumns: formContent[page].cols && 'repeat(auto-fit, minmax(16rem, 1fr))',
+              gridTemplateColumns: formContent[page].cols && 'repeat(auto-fit, minmax(15rem, 1fr))',
               gridTemplateRows: formContent[page].rows && `repeat(${formContent[page].rows}, minmax(0, 1fr))`,
             }}
             onClick={clickHandler}

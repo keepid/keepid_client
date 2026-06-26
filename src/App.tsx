@@ -21,6 +21,7 @@ import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
+import CreateApplicationFromDocument from './components/Applications/CreateApplicationFromDocument';
 import ViewApplications from './components/Applications/ViewApplications';
 import CallsPage from './components/Communications/CallsPage';
 import MessageBoard from './components/Communications/MessageBoard';
@@ -459,6 +460,28 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   return renderHome();
+                }}
+              />
+              <Route
+                path="/applications/create-from-document"
+                render={() => {
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Worker ||
+                    role === Role.Developer
+                  ) {
+                    return (
+                      <CreateApplicationFromDocument
+                        userRole={role}
+                        viewerName={name}
+                        viewerUsername={username}
+                      />
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  return <Redirect to="/error" />;
                 }}
               />
               <Route
