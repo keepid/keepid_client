@@ -10,17 +10,18 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
     clientUsername?: string;
     clientName?: string;
     presetApplication?: {
-      lookupKey: string;
-      type: string;
-      state: string;
-      situation: string;
+      applicationId: string;
+      label: string;
+      state?: string;
+      idType?: string;
+      housingStatus?: string;
     };
     startAtReview?: boolean;
   }>();
   const clientUsername = location.state?.clientUsername || '';
   const clientName = location.state?.clientName || '';
   const preset = location.state?.presetApplication;
-  const startAtReview = Boolean(location.state?.startAtReview && preset);
+  const startAtReview = Boolean(location.state?.startAtReview && preset?.applicationId);
   const shouldShowWhoForStep = userRole === Role.Worker
     || userRole === Role.Admin
     || userRole === Role.Director;
@@ -45,9 +46,11 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
       initialDataOverride={
         preset
           ? {
-            type: preset.type,
-            state: preset.state,
-            situation: preset.situation,
+            applicationId: preset.applicationId,
+            label: preset.label,
+            state: preset.state ?? '',
+            idType: preset.idType ?? '',
+            housingStatus: preset.housingStatus ?? '',
             person: 'MYSELF',
           }
           : undefined

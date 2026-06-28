@@ -36,8 +36,12 @@ export function useApplicationFormContext() {
 export type ApplicationType = 'SS' | 'PIDL' | 'BC' | 'VR'
 
 const initialData = {
+  applicationId: '',
+  label: '',
   type: '',
   state: '',
+  idType: '',
+  housingStatus: '',
   situation: '',
   person: '',
   org: '',

@@ -70,11 +70,11 @@ interface State {
   renameValue: string,
   isRenaming: boolean,
   availableApplications: {
-    lookupKey: string;
-    type: string;
+    applicationId: string;
+    label: string;
     state: string;
-    situation: string;
-    canStart: boolean;
+    idType: string;
+    housingStatus: string;
   }[],
   orgDocuments: OrgDocumentOption[],
   isLoadingOrgDocuments: boolean,
@@ -307,21 +307,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     });
   };
 
-  parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
-    const parseWithDelimiter = (delimiter: string) => {
-      const first = lookupKey.indexOf(delimiter);
-      const second = lookupKey.indexOf(delimiter, first + 1);
-      if (first < 0 || second < 0) return null;
-      return {
-        type: lookupKey.substring(0, first),
-        state: lookupKey.substring(first + 1, second),
-        situation: lookupKey.substring(second + 1),
-      };
-    };
-
-    return parseWithDelimiter('$') || parseWithDelimiter('#');
-  };
-
   loadAvailableApplications = () => {
     fetch(`${getServerURL()}/get-available-application-options`, {
       method: 'GET',
@@ -334,18 +319,14 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           return;
         }
         const parsed = items
-          .filter((x) => x && x.lookupKey)
-          .map((x) => {
-            const lookupKey = String(x.lookupKey);
-            const split = this.parseLookupKey(lookupKey);
-            return {
-              lookupKey,
-              type: split?.type || String(x.type || ''),
-              state: split?.state || String(x.state || ''),
-              situation: split?.situation || String(x.situation || ''),
-              canStart: Boolean(split?.type && split?.state && split?.situation),
-            };
-          });
+          .filter((x) => x && x.applicationId && x.label)
+          .map((x) => ({
+            applicationId: String(x.applicationId),
+            label: String(x.label),
+            state: x.state == null ? '' : String(x.state),
+            idType: x.idType == null ? '' : String(x.idType),
+            housingStatus: x.housingStatus == null ? '' : String(x.housingStatus),
+          }));
         this.setState({ availableApplications: parsed });
       })
       .catch(() => {
@@ -374,7 +355,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     this.setState({ isLoadingDocuments: true, documentsError: null });
     // /list-applications returns a flat array of ApplicationListItemDto rows
-    // (id, state, title, lookupKey, client*, timestamps, attachmentCount).
+    // (id, state, title, client*, timestamps, attachmentCount).
     // Authz lives in the handler: client sees own; same-org staff sees all.
     // The previous /get-files APPLICATION_PDF call returned [] by design
     // (FileService treats applications as not-files) — see slice 12 work.
@@ -980,27 +961,37 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                       <div className="tw-mt-3 tw-space-y-2">
                         {availableApplications.map((application) => (
                           <Link
-                            key={application.lookupKey}
+                            key={application.applicationId}
                             to={{
                               pathname: '/applications/createnew',
                               state: {
                                 clientUsername: clientUsername || '',
                                 clientName: clientName || '',
                                 presetApplication: {
-                                  lookupKey: application.lookupKey,
-                                  type: application.type,
+                                  applicationId: application.applicationId,
+                                  label: application.label,
                                   state: application.state,
-                                  situation: application.situation,
+                                  idType: application.idType,
+                                  housingStatus: application.housingStatus,
                                 },
-                                startAtReview: application.canStart,
+                                startAtReview: true,
                               },
                             }}
                             className="tw-flex tw-items-center tw-justify-between tw-rounded tw-border tw-border-gray-200 tw-px-3 tw-py-2 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
                           >
-                            <span className="tw-truncate">
-                              {[application.type, application.state, application.situation]
+                            <span className="tw-min-w-0">
+                              <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
+                                {application.label}
+                              </span>
+                              {[application.state, application.idType, application.housingStatus]
                                 .filter((value) => value && value.trim().length > 0)
-                                .join(' — ') || 'Application form'}
+                                .join(' - ') && (
+                                <span className="tw-block tw-truncate tw-text-xs tw-text-gray-500">
+                                  {[application.state, application.idType, application.housingStatus]
+                                    .filter((value) => value && value.trim().length > 0)
+                                    .join(' - ')}
+                                </span>
+                              )}
                             </span>
                             <i className="fas fa-chevron-right tw-text-gray-400 tw-text-xs tw-ml-2" aria-hidden />
                           </Link>

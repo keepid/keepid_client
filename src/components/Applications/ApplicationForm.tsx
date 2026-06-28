@@ -30,7 +30,7 @@ import {
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
-import { ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import { ApplicationFormData, ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
 function WebFormPageContent({
@@ -141,6 +141,7 @@ export default function ApplicationForm() {
     page,
     setPage,
     data,
+    setData,
     isDirty,
     setIsDirty,
     handleChange,
@@ -183,9 +184,7 @@ export default function ApplicationForm() {
   const [enrollFieldErrors, setEnrollFieldErrors] = useState<Record<string, string>>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [applicationAvailability, setApplicationAvailability] = useState<
-    { type: string; state: string; situation: string; lookupKey: string }[]
-  >([]);
+  const [applicationAvailability, setApplicationAvailability] = useState<Partial<ApplicationFormData>[]>([]);
   const [filledPdfUrl, setFilledPdfUrl] = useState<string | null>(null);
   const [persistedApplicationId, setPersistedApplicationId] = useState<string | null>(null);
   const [wizardFormOutput, setWizardFormOutput] = useState<Record<string, unknown> | null>(null);
@@ -208,6 +207,7 @@ export default function ApplicationForm() {
   const isWebFormPage = formContent[page].pageName === 'webForm';
   const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
   const targetClientResolved = targetClientUsername.trim().length > 0;
+  const hasCatalogApplicationSelection = data.applicationId.trim().length > 0;
   const whoForInputClassName =
     'tw-w-full tw-min-h-[3rem] tw-px-4 tw-py-3 tw-border-2 tw-border-gray-300 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-lg';
 
@@ -217,10 +217,10 @@ export default function ApplicationForm() {
 
   // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
-    if (isReviewPage || isWebFormPage) {
+    if ((isReviewPage || isWebFormPage) && hasCatalogApplicationSelection) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isReviewPage, isWebFormPage, data, isDirty]);
+  }, [isReviewPage, isWebFormPage, hasCatalogApplicationSelection, data, isDirty]);
 
   useEffect(() => {
     setAvailabilityLoading(true);
@@ -238,12 +238,13 @@ export default function ApplicationForm() {
         }
         setApplicationAvailability(
           items
-            .filter((x) => x && x.type && x.state && x.situation)
+            .filter((x) => x && x.applicationId && x.label)
             .map((x) => ({
-              type: String(x.type),
-              state: String(x.state),
-              situation: String(x.situation),
-              lookupKey: String(x.lookupKey || `${x.type}$${x.state}$${x.situation}`),
+              applicationId: String(x.applicationId),
+              label: String(x.label),
+              state: x.state == null ? '' : String(x.state),
+              idType: x.idType == null ? '' : String(x.idType),
+              housingStatus: x.housingStatus == null ? '' : String(x.housingStatus),
             })),
         );
       })
@@ -576,13 +577,44 @@ export default function ApplicationForm() {
   };
 
   const availableApplications = filterAvailableApplications(data, applicationAvailability);
-
   const dataAttr = formContent[page].dataAttr;
-  const applicationTypeLabel = getOptionLabel('type', data.type) ?? 'your';
+  const applicationSelectionOptions = availableApplications.filter(
+    (application) => application.applicationId && application.label,
+  );
+  const isCatalogSelectionStep = isReviewPage && !hasCatalogApplicationSelection;
+  const catalogHasConstraintFor = (attr: keyof ApplicationFormData) =>
+    attr !== 'person' && availableApplications.some((application) => {
+      const value = application[attr];
+      return typeof value === 'string' && value.trim().length > 0;
+    });
+  const isLegacyOptionDisabled = (attr: keyof ApplicationFormData, value: string) =>
+    catalogHasConstraintFor(attr)
+    && !availableApplications.some((application) => application[attr] === value);
+  const selectCatalogApplication = useCallback(
+    (application: Partial<ApplicationFormData>) => {
+      if (!application.applicationId || !application.label) return;
+      setData((prevData) => ({
+        ...prevData,
+        applicationId: application.applicationId || '',
+        label: application.label || '',
+        state: application.state || '',
+        idType: application.idType || '',
+        housingStatus: application.housingStatus || '',
+      }));
+      setIsDirty(true);
+      setSubmitError(null);
+    },
+    [setData, setIsDirty],
+  );
+  const applicationTypeLabel = data.label || getOptionLabel('type', data.type) || 'your';
   const targetPersonLabel = targetClientName || targetClientUsername || clientName || clientUsername || getOptionLabel('person', data.person) || 'you';
-  const pageTitle = isWebFormPage
-    ? `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`
-    : formContent[page].title(data.type);
+  let pageTitle = formContent[page].title(data.type);
+  if (isCatalogSelectionStep) {
+    pageTitle = 'Choose an application';
+  }
+  if (isWebFormPage) {
+    pageTitle = `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`;
+  }
   const canContinueWhoFor = !shouldShowWhoForStep || targetClientResolved;
   const canEditAttachments =
     userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director;
@@ -625,7 +657,7 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        {isWhoForPage ? (
+        {isWhoForPage && (
           <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full [&_.form-label]:tw-text-lg [&_.form-check-label]:tw-text-base [&_.form-check-input]:tw-mt-1 [&_.form-check-input]:tw-scale-125 [&_small]:tw-text-base">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
@@ -867,7 +899,57 @@ export default function ApplicationForm() {
               </>
             )}
           </div>
-        ) : (
+        )}
+
+        {!isWhoForPage && isCatalogSelectionStep && (
+          <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full">
+            {availabilityLoading && (
+              <div className="d-flex justify-content-center py-5">
+                <Spinner animation="border" />
+              </div>
+            )}
+            {!availabilityLoading && applicationSelectionOptions.length === 0 && (
+              <Alert variant="warning" className="tw-mb-0">
+                No matching applications are available.
+              </Alert>
+            )}
+            {!availabilityLoading && applicationSelectionOptions.length > 0 && (
+              <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
+                {applicationSelectionOptions.map((application) => {
+                  const metadata = [
+                    application.state,
+                    application.idType,
+                    application.housingStatus,
+                  ]
+                    .filter((value) => value && value.trim().length > 0)
+                    .join(' - ');
+                  return (
+                    <button
+                      key={application.applicationId}
+                      type="button"
+                      onClick={() => selectCatalogApplication(application)}
+                      className="tw-text-left tw-rounded-lg tw-border-2 tw-border-gray-200 tw-bg-white tw-p-4 hover:tw-border-twprimary hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+                    >
+                      <span className="tw-block tw-text-lg tw-font-semibold tw-text-gray-900">
+                        {application.label}
+                      </span>
+                      {metadata && (
+                        <span className="tw-block tw-text-sm tw-text-gray-600 tw-mt-1">
+                          {metadata}
+                        </span>
+                      )}
+                      <span className="tw-block tw-font-mono tw-text-xs tw-text-gray-500 tw-mt-3">
+                        {application.applicationId}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isWhoForPage && !isCatalogSelectionStep && (
           <Form
             className="form tw-grid tw-gap-6 tw-justify-center tw-grid-cols-2"
             style={{
@@ -889,13 +971,19 @@ export default function ApplicationForm() {
                     checked={data[dataAttr] === option.value}
                     name={dataAttr}
                     value={option.value}
-                    disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
+                    disabled={isLegacyOptionDisabled(dataAttr, option.value)}
                   />
                 ))}
           </Form>
         )}
 
-        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} clientName={targetClientName || targetClientUsername} />}
+        {isReviewPage && hasCatalogApplicationSelection && (
+          <ApplicationReviewPage
+            data={data}
+            blankFormId={blankFormId}
+            clientName={targetClientName || targetClientUsername}
+          />
+        )}
 
         {isWebFormPage && (
           <WebFormPageContent
@@ -964,6 +1052,7 @@ export default function ApplicationForm() {
             disabled={
               (isWhoForPage && whoForMode === 'existing' && !canContinueWhoFor)
               || (isWhoForPage && whoForMode === 'new' && enrollSubmitting)
+              || (isReviewPage && !hasCatalogApplicationSelection)
             }
             className={`${isReviewPage || isWhoForPage ? ' ' : 'tw-hidden '}`}
           >
