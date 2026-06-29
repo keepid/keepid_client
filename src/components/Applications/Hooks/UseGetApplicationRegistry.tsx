@@ -11,8 +11,8 @@ export default function useGetApplicationRegistry() {
 
   /**
    * Fetches the application registry to get the blankFormId for the selected
-   * application type/state/situation/person. Call this when entering the
-   * webForm step so the form component has an applicationId to use.
+   * generated applicationId. Call this when entering the webForm step so the
+   * form component has the registry row UUID to use.
    */
   const fetchRegistry = async (
     formData: ApplicationFormData,

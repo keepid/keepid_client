@@ -56,6 +56,14 @@ interface Props {
   role: Role,
 }
 
+interface AvailableApplication {
+  applicationId: string;
+  label: string;
+  state: string;
+  idType: string;
+  housingStatus: string;
+}
+
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
@@ -69,13 +77,7 @@ interface State {
   renameTarget: DocumentInformation | null,
   renameValue: string,
   isRenaming: boolean,
-  availableApplications: {
-    lookupKey: string;
-    type: string;
-    state: string;
-    situation: string;
-    canStart: boolean;
-  }[],
+  availableApplications: AvailableApplication[],
   orgDocuments: OrgDocumentOption[],
   isLoadingOrgDocuments: boolean,
   uploadModalOpen: boolean,
@@ -307,21 +309,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     });
   };
 
-  parseLookupKey = (lookupKey: string): { type: string; state: string; situation: string } | null => {
-    const parseWithDelimiter = (delimiter: string) => {
-      const first = lookupKey.indexOf(delimiter);
-      const second = lookupKey.indexOf(delimiter, first + 1);
-      if (first < 0 || second < 0) return null;
-      return {
-        type: lookupKey.substring(0, first),
-        state: lookupKey.substring(first + 1, second),
-        situation: lookupKey.substring(second + 1),
-      };
-    };
-
-    return parseWithDelimiter('$') || parseWithDelimiter('#');
-  };
-
   loadAvailableApplications = () => {
     fetch(`${getServerURL()}/get-available-application-options`, {
       method: 'GET',
@@ -334,18 +321,14 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           return;
         }
         const parsed = items
-          .filter((x) => x && x.lookupKey)
-          .map((x) => {
-            const lookupKey = String(x.lookupKey);
-            const split = this.parseLookupKey(lookupKey);
-            return {
-              lookupKey,
-              type: split?.type || String(x.type || ''),
-              state: split?.state || String(x.state || ''),
-              situation: split?.situation || String(x.situation || ''),
-              canStart: Boolean(split?.type && split?.state && split?.situation),
-            };
-          });
+          .filter((x) => x && x.applicationId && x.label)
+          .map((x) => ({
+            applicationId: String(x.applicationId),
+            label: String(x.label),
+            state: x.state == null ? '' : String(x.state),
+            idType: x.idType == null ? '' : String(x.idType),
+            housingStatus: x.housingStatus == null ? '' : String(x.housingStatus),
+          }));
         this.setState({ availableApplications: parsed });
       })
       .catch(() => {
@@ -374,7 +357,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     this.setState({ isLoadingDocuments: true, documentsError: null });
     // /list-applications returns a flat array of ApplicationListItemDto rows
-    // (id, state, title, lookupKey, client*, timestamps, attachmentCount).
+    // (id, state, title, client*, timestamps, attachmentCount).
     // Authz lives in the handler: client sees own; same-org staff sees all.
     // The previous /get-files APPLICATION_PDF call returned [] by design
     // (FileService treats applications as not-files) — see slice 12 work.
@@ -970,79 +953,67 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
-                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-3">
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Fill a form</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Start from a supported Keep.id application.
+                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
+                  {availableApplications.length > 0 ? (
+                    availableApplications.map((application) => (
+                      <Link
+                        key={application.applicationId}
+                        to={{
+                          pathname: '/applications/createnew',
+                          state: {
+                            clientUsername: clientUsername || '',
+                            clientName: clientName || '',
+                            presetApplication: {
+                              applicationId: application.applicationId,
+                              label: application.label,
+                              state: application.state,
+                              idType: application.idType,
+                              housingStatus: application.housingStatus,
+                            },
+                            startAtReview: true,
+                          },
+                        }}
+                        className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-4 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
+                      >
+                        <span className="tw-min-w-0">
+                          <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
+                            {application.label}
+                          </span>
+                        </span>
+                        <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                          <span className="tw-hidden sm:tw-inline">Start</span>
+                        </span>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="tw-border-b tw-border-gray-200 tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
+                      No supported forms are available.
                     </div>
-                    {availableApplications.length > 0 ? (
-                      <div className="tw-mt-3 tw-space-y-2">
-                        {availableApplications.map((application) => (
-                          <Link
-                            key={application.lookupKey}
-                            to={{
-                              pathname: '/applications/createnew',
-                              state: {
-                                clientUsername: clientUsername || '',
-                                clientName: clientName || '',
-                                presetApplication: {
-                                  lookupKey: application.lookupKey,
-                                  type: application.type,
-                                  state: application.state,
-                                  situation: application.situation,
-                                },
-                                startAtReview: application.canStart,
-                              },
-                            }}
-                            className="tw-flex tw-items-center tw-justify-between tw-rounded tw-border tw-border-gray-200 tw-px-3 tw-py-2 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
-                          >
-                            <span className="tw-truncate">
-                              {[application.type, application.state, application.situation]
-                                .filter((value) => value && value.trim().length > 0)
-                                .join(' — ') || 'Application form'}
-                            </span>
-                            <i className="fas fa-chevron-right tw-text-gray-400 tw-text-xs tw-ml-2" aria-hidden />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="tw-mt-3 tw-text-sm tw-text-gray-500">
-                        No supported forms are available.
-                      </div>
-                    )}
-                  </div>
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Upload PDF</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Add a completed or outside application PDF.
-                    </div>
+                  )}
+                  <div className="tw-border-b tw-border-gray-200 tw-bg-white">
                     <button
                       type="button"
-                      className="btn btn-outline-primary btn-sm tw-mt-3"
+                      className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
                       onClick={this.openUploadModal}
                     >
-                      Upload application
+                      <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
+                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                        <span className="tw-hidden sm:tw-inline">Upload</span>
+                      </span>
                     </button>
                   </div>
-                  <div className="tw-border tw-border-gray-200 tw-bg-white tw-rounded-md tw-p-4">
-                    <div className="tw-font-semibold tw-text-gray-900">Use org document</div>
-                    <div className="tw-text-sm tw-text-gray-600 tw-mt-1">
-                      Copy an organization PDF as the application base.
-                    </div>
+                  <div className="tw-bg-white">
                     <button
                       type="button"
-                      className="btn btn-outline-primary btn-sm tw-mt-3"
+                      className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 disabled:tw-cursor-not-allowed disabled:tw-opacity-60 disabled:hover:tw-bg-transparent"
                       onClick={this.openOrgModal}
                       disabled={isLoadingOrgDocuments || orgDocuments.length === 0}
                     >
-                      {isLoadingOrgDocuments ? 'Loading documents...' : 'Choose document'}
+                      <span className="tw-font-medium tw-text-gray-900">Use org document</span>
+                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                        <span className="tw-hidden sm:tw-inline">Choose</span>
+                      </span>
                     </button>
-                    {!isLoadingOrgDocuments && orgDocuments.length === 0 && (
-                      <div className="tw-mt-2 tw-text-xs tw-text-gray-500">
-                        No organization documents available.
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

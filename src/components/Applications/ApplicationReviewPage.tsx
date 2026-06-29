@@ -10,6 +10,7 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
   const emphasis = 'tw-font-bold';
   const [builderState, setBuilderState] = React.useState<BuilderState | null>(null);
   const [loadingConfig, setLoadingConfig] = React.useState(false);
+  const hasCatalogLabel = data.label.trim().length > 0;
 
   React.useEffect(() => {
     if (!blankFormId) return;
@@ -99,7 +100,7 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
     return (
       <div className="tw-mx-auto tw-max-w-[800px] tw-pb-12">
         <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">
-          Fill out {appType} application for {clientName}
+          Fill out {hasCatalogLabel ? data.label : `${appType} application`} for {clientName}
         </h2>
         <div className="tw-prose tw-prose-lg tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
           <ReactMarkdown>{builderState.preRequirements}</ReactMarkdown>
@@ -111,8 +112,13 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
   return (
     <div className="tw-mx-auto tw-bg-gray-100 tw-rounded-2xl tw-py-12 tw-px-20 tw-max-w-[1000px] tw-border-4 tw-border-gray-700">
       <ul className="tw-text-2xl tw-flex tw-flex-col tw-gap-4 tw-p-0 tw-m-0 tw-list-outside tw-pl-4">
-        <li>You want an application for a <span className={emphasis}>{appType}</span>.</li>
-        { data.state !== 'FED' && (<li>This application is for the state of <span className={emphasis}>{data.state}</span>.</li>)}
+        <li>
+          You want to fill out{' '}
+          <span className={emphasis}>{hasCatalogLabel ? data.label : appType}</span>.
+        </li>
+        {data.state && (<li>This application is for the state of <span className={emphasis}>{data.state}</span>.</li>)}
+        {data.idType && (<li>ID type: <span className={emphasis}>{data.idType}</span>.</li>)}
+        {data.housingStatus && (<li>Housing status: <span className={emphasis}>{data.housingStatus}</span>.</li>)}
         <li>You are applying on behalf of <span className={emphasis}>{person}</span>.</li>
         { situation && situation }
       </ul>
