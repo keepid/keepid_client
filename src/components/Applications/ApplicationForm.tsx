@@ -600,6 +600,7 @@ export default function ApplicationForm() {
         state: application.state || '',
         idType: application.idType || '',
         housingStatus: application.housingStatus || '',
+        person: prevData.person || 'MYSELF',
       }));
       setIsDirty(true);
       setSubmitError(null);
@@ -618,6 +619,7 @@ export default function ApplicationForm() {
   const canContinueWhoFor = !shouldShowWhoForStep || targetClientResolved;
   const canEditAttachments =
     userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director;
+  const showPrimaryStepperButton = isWhoForPage || (isReviewPage && !isCatalogSelectionStep);
   let nextButtonLabel = 'Next';
   if (isWhoForPage) {
     if (whoForMode === 'new') {
@@ -902,7 +904,7 @@ export default function ApplicationForm() {
         )}
 
         {!isWhoForPage && isCatalogSelectionStep && (
-          <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full">
+          <div className="tw-w-full">
             {availabilityLoading && (
               <div className="d-flex justify-content-center py-5">
                 <Spinner animation="border" />
@@ -914,16 +916,19 @@ export default function ApplicationForm() {
               </Alert>
             )}
             {!availabilityLoading && applicationSelectionOptions.length > 0 && (
-              <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
+              <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                 {applicationSelectionOptions.map((application) => (
                   <button
                     key={application.applicationId}
                     type="button"
                     onClick={() => selectCatalogApplication(application)}
-                    className="tw-text-left tw-rounded-lg tw-border-2 tw-border-gray-200 tw-bg-white tw-p-4 hover:tw-border-twprimary hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+                    className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 last:tw-border-b-0"
                   >
-                    <span className="tw-block tw-text-lg tw-font-semibold tw-text-gray-900">
+                    <span className="tw-block tw-min-w-0 tw-truncate tw-font-medium tw-text-gray-900">
                       {application.label}
+                    </span>
+                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                      <span className="tw-hidden sm:tw-inline">Start</span>
                     </span>
                   </button>
                 ))}
@@ -1035,9 +1040,8 @@ export default function ApplicationForm() {
             disabled={
               (isWhoForPage && whoForMode === 'existing' && !canContinueWhoFor)
               || (isWhoForPage && whoForMode === 'new' && enrollSubmitting)
-              || (isReviewPage && !hasCatalogApplicationSelection)
             }
-            className={`${isReviewPage || isWhoForPage ? ' ' : 'tw-hidden '}`}
+            className={`${showPrimaryStepperButton ? ' ' : 'tw-hidden '}`}
           >
             {nextButtonLabel}
           </Button>

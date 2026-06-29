@@ -982,7 +982,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                         </span>
                         <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
                           <span className="tw-hidden sm:tw-inline">Start</span>
-                          <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
                         </span>
                       </Link>
                     ))
@@ -1000,7 +999,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                       <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
                       <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
                         <span className="tw-hidden sm:tw-inline">Upload</span>
-                        <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
                       </span>
                     </button>
                   </div>
@@ -1014,7 +1012,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                       <span className="tw-font-medium tw-text-gray-900">Use org document</span>
                       <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
                         <span className="tw-hidden sm:tw-inline">Choose</span>
-                        <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
                       </span>
                     </button>
                   </div>

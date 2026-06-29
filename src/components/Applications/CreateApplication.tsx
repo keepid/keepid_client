@@ -28,7 +28,7 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
   const whoForPageIndex = formContent.findIndex((p) => p.pageName === 'whoFor');
   const typePageIndex = formContent.findIndex((p) => p.pageName === 'type');
   const reviewPageIndex = formContent.findIndex((p) => p.pageName === 'review');
-  const postWhoForPage = startAtReview && reviewPageIndex >= 0
+  const postWhoForPage = reviewPageIndex >= 0
     ? reviewPageIndex
     : typePageIndex;
   const initialPage = shouldShowWhoForStep && whoForPageIndex >= 0
