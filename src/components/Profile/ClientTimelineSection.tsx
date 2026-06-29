@@ -19,7 +19,7 @@ type Props = {
 
 type TimelineEntry = {
   id: string;
-  occurredAt: string;
+  occurredAt?: string;
   title: string;
   body: string;
   source?: string;
@@ -33,10 +33,12 @@ type SaveState = 'idle' | 'saving' | 'saved';
 
 type WorkerNoteEntry = {
   id: string;
-  occurredAt: string;
+  occurredAt?: string;
   body: string;
   migrated?: boolean;
 };
+
+const UNDATED_LABEL = 'Undated notes';
 
 function PencilIcon() {
   return (
@@ -53,19 +55,41 @@ function PencilIcon() {
   );
 }
 
-function dateKey(value: string) {
+function parseTimelineDate(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+
+  const dateOnly = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnly) {
+    const [, year, month, day] = dateOnly;
+    return new Date(Number(year), Number(month) - 1, Number(day), 12);
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function dateKey(value?: string) {
+  const parsed = parseTimelineDate(value);
+  if (!parsed) return UNDATED_LABEL;
   return new Intl.DateTimeFormat(undefined, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-  }).format(new Date(value));
+  }).format(parsed);
 }
 
-function timeLabel(value: string) {
+function timeLabel(value?: string) {
+  const parsed = parseTimelineDate(value);
+  if (!parsed) return '';
   return new Intl.DateTimeFormat(undefined, {
     hour: 'numeric',
     minute: '2-digit',
-  }).format(new Date(value));
+  }).format(parsed);
+}
+
+function timelineTime(value?: string) {
+  return parseTimelineDate(value)?.getTime() ?? Number.NEGATIVE_INFINITY;
 }
 
 function sourceLabel(item: MessageBoardItem) {
@@ -95,17 +119,16 @@ function parseWorkerNotes(notes?: string): WorkerNoteEntry[] {
       const trimmed = block.trim();
       const match = trimmed.match(/^\[([^\]]+)]\s*\n?([\s\S]*)$/);
       if (match) {
-        const parsed = new Date(match[1]);
+        const parsed = parseTimelineDate(match[1]);
         return {
           id: `worker-note-${index}-${match[1]}`,
-          occurredAt: Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString(),
+          occurredAt: parsed?.toISOString(),
           body: match[2].trim(),
-          migrated: false,
+          migrated: !parsed,
         };
       }
       return {
         id: `worker-note-${index}-legacy`,
-        occurredAt: new Date().toISOString(),
         body: trimmed,
         migrated: true,
       };
@@ -116,7 +139,11 @@ function parseWorkerNotes(notes?: string): WorkerNoteEntry[] {
 function serializeWorkerNotes(entries: WorkerNoteEntry[]) {
   return entries
     .filter((entry) => entry.body.trim())
-    .map((entry) => `[${dateKey(entry.occurredAt)} ${timeLabel(entry.occurredAt)}]\n${entry.body.trim()}`)
+    .map((entry) => (
+      entry.occurredAt
+        ? `[${dateKey(entry.occurredAt)} ${timeLabel(entry.occurredAt)}]\n${entry.body.trim()}`
+        : entry.body.trim()
+    ))
     .join('\n\n');
 }
 
@@ -137,7 +164,7 @@ function bodyLabel(item: MessageBoardItem) {
 }
 
 function toTimelineItem(item: MessageBoardItem): TimelineEntry {
-  const occurredAt = item.occurredAt || item.noteDate || new Date().toISOString();
+  const occurredAt = item.occurredAt || item.noteDate;
   return {
     id: `${item.type}-${item.sourceId}`,
     occurredAt,
@@ -155,20 +182,22 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
 function groupNearbyMessages(items: MessageBoardItem[]) {
   const groups: MessageBoardItem[][] = [];
   const sorted = [...items].sort((a, b) => {
-    const aTime = new Date(a.occurredAt || a.noteDate || 0).getTime();
-    const bTime = new Date(b.occurredAt || b.noteDate || 0).getTime();
+    const aTime = timelineTime(a.occurredAt || a.noteDate);
+    const bTime = timelineTime(b.occurredAt || b.noteDate);
     return aTime - bTime;
   });
 
   sorted.forEach((item) => {
     const lastGroup = groups[groups.length - 1];
     const lastItem = lastGroup?.[lastGroup.length - 1];
-    const itemTime = new Date(item.occurredAt || item.noteDate || 0).getTime();
-    const lastTime = new Date(lastItem?.occurredAt || lastItem?.noteDate || 0).getTime();
+    const itemTime = timelineTime(item.occurredAt || item.noteDate);
+    const lastTime = timelineTime(lastItem?.occurredAt || lastItem?.noteDate);
     const canGroup = lastItem
       && item.type === 'message'
       && lastItem.type === 'message'
       && item.metadata === lastItem.metadata
+      && itemTime !== Number.NEGATIVE_INFINITY
+      && lastTime !== Number.NEGATIVE_INFINITY
       && Math.abs(itemTime - lastTime) <= 2 * 60 * 1000;
 
     if (canGroup) {
@@ -231,14 +260,13 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
         occurredAt: entry.occurredAt,
         title: entry.migrated ? 'Migrated worker notes' : 'Worker note',
         body: entry.body,
-        source: 'Profile',
         editable: true,
         workerNoteIndex: index,
       });
     });
 
     return entries.sort((a, b) => (
-      new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+      timelineTime(a.occurredAt) - timelineTime(b.occurredAt)
     ));
   }, [communicationItems, workerNoteEntries]);
 

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { applyAutoFillFields } from './InteractiveFormWizard';
-import { buildFormAnswers } from './useInteractiveForm';
-import type { AutoFillField } from './types';
 import type { ResolvedProfiles } from '../../utils/directives';
+import { applyAutoFillFields } from './InteractiveFormWizard';
+import type { AutoFillField } from './types';
+import { buildFormAnswers, extractDirectivesFromUiSchema } from './useInteractiveForm';
 
 const resolvedProfiles: ResolvedProfiles = {
   client: {
@@ -17,6 +17,7 @@ const resolvedProfiles: ResolvedProfiles = {
       state: 'PA',
       zip: '19104',
     },
+    motherName: { first: 'Anne', last: 'Byron', maiden: 'Milbanke' },
   },
   worker: {
     currentName: { first: 'Grace', last: 'Hopper' },
@@ -148,7 +149,7 @@ describe('interactive form PDF fill directives', () => {
       fixedDirectorBirthYear: '1918',
       fixedClientPhoneArea: '215',
       fixedLiteral: 'Static outcome',
-      fixedCheckbox: 'Choice2',
+      fixedCheckbox: 'true',
     });
   });
 
@@ -160,5 +161,58 @@ describe('interactive form PDF fill directives', () => {
         resolvedProfiles as Record<string, unknown>,
       ),
     ).toEqual({ existing: 'keep me' });
+  });
+
+  it('fills mother maiden targets from motherName.maiden even when legacy config points at motherName.last', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          label: "Mother's maiden name",
+          scope: '#/properties/motherMaiden',
+          options: { pdfField: 'mother_maiden_name', directive: 'client.motherName.last' },
+        },
+        {
+          type: 'Control',
+          label: "Mother's current last name",
+          scope: '#/properties/motherLast',
+          options: { pdfField: 'mother_last_name', directive: 'client.motherName.last' },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, {}, resolvedProfiles)).toEqual({
+      mother_maiden_name: 'Milbanke',
+      mother_last_name: 'Byron',
+    });
+  });
+
+  it('fills hidden mother maiden PDF fields from motherName.maiden', () => {
+    expect(
+      applyAutoFillFields(
+        {},
+        [{ pdfFieldName: 'mother_maiden_name', valueSource: 'directive', value: 'client.motherName.last' }],
+        resolvedProfiles as Record<string, unknown>,
+      ),
+    ).toEqual({ mother_maiden_name: 'Milbanke' });
+  });
+
+  it('syncs mother maiden answers back to motherName.maiden for legacy motherName.last directives', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          label: "Mother's maiden name",
+          scope: '#/properties/motherMaiden',
+          options: { directive: 'client.motherName.last' },
+        },
+      ],
+    };
+
+    expect(extractDirectivesFromUiSchema(uiSchema, { motherMaiden: 'Milbanke' })).toEqual({
+      'client.motherName.maiden': 'Milbanke',
+    });
   });
 });

@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   type ResolvedProfiles,
+  canonicalDirectiveForTarget,
   getByPath,
   isExcludedFromProfileFormSync,
   normalizeDateLikeValue,
   resolveDirectiveFromProfiles,
+  resolveDirectiveFromProfilesForTarget,
 } from './directives';
 
 const profiles: ResolvedProfiles = {
@@ -14,7 +16,12 @@ const profiles: ResolvedProfiles = {
     firstName: 'Ada',
     lastName: 'Lovelace',
     fatherName: { first: 'Lord', middle: 'Noel', last: 'Byron' },
-    motherName: { first: 'Anne', middle: 'Isabella', last: 'Milbanke' },
+    motherName: {
+      first: 'Anne',
+      middle: 'Isabella',
+      last: 'Byron',
+      maiden: 'Milbanke',
+    },
     birthDate: '1815-12-10',
     email: 'ada@example.org',
     sex: 'F',
@@ -71,9 +78,28 @@ describe('directive resolution', () => {
     expect(getByPath({ 'currentName.first': 'Flat', currentName: { first: 'Nested' } }, 'currentName.first')).toBe('Flat');
     expect(resolveDirectiveFromProfiles('client.currentName.first', profiles)).toBe('Ada');
     expect(resolveDirectiveFromProfiles('client.fatherName.middle', profiles)).toBe('Noel');
-    expect(resolveDirectiveFromProfiles('client.motherName.last', profiles)).toBe('Milbanke');
+    expect(resolveDirectiveFromProfiles('client.motherName.last', profiles)).toBe('Byron');
+    expect(resolveDirectiveFromProfiles('client.motherName.maiden', profiles)).toBe('Milbanke');
+    expect(resolveDirectiveFromProfiles('dummy:client.motherName.maiden', profiles)).toBe('Milbanke');
     expect(resolveDirectiveFromProfiles('worker.currentName.last', profiles)).toBe('Hopper');
     expect(resolveDirectiveFromProfiles('director.email', profiles)).toBe('kj@example.org');
+  });
+
+  it('does not use mother married last name for mother maiden targets', () => {
+    expect(canonicalDirectiveForTarget('client.motherName.last', "Mother's maiden name"))
+      .toBe('client.motherName.maiden');
+    expect(canonicalDirectiveForTarget('dummy:client.motherName.last', 'Mother maiden last'))
+      .toBe('dummy:client.motherName.maiden');
+    expect(resolveDirectiveFromProfilesForTarget(
+      'client.motherName.last',
+      profiles,
+      "Mother's Maiden Name",
+    )).toBe('Milbanke');
+    expect(resolveDirectiveFromProfilesForTarget(
+      'client.motherName.last',
+      profiles,
+      "Mother's current last name",
+    )).toBe('Byron');
   });
 
   it('normalizes date-like direct values', () => {

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import {
+  canonicalDirectiveForTarget,
   getByPath,
   isExcludedFromProfileFormSync,
   normalizeDateLikeValue,
-  resolveDirectiveFromProfiles,
+  resolveDirectiveFromProfilesForTarget,
 } from '../../utils/directives';
 import {
   type GetQuestionsV2Response,
@@ -78,6 +79,12 @@ function resolveConditionalDirective(
   return match?.use ?? null;
 }
 
+function targetText(...values: unknown[]): string {
+  return values
+    .filter((value): value is string => typeof value === 'string' && value.trim() !== '')
+    .join(' ');
+}
+
 export function buildFormAnswers(
   uiSchema: Record<string, unknown>,
   jsonSchema: Record<string, unknown>,
@@ -114,9 +121,10 @@ export function buildFormAnswers(
         const pdfField = options.pdfField as string;
         let value: unknown = getPropValue(scope);
         const directive = options.directive;
+        const targetName = targetText(element.label, pdfField);
         if (directive != null && resolvedProfiles) {
           if (typeof directive === 'string') {
-            const resolved = resolveDirectiveFromProfiles(directive, resolvedProfiles);
+            const resolved = resolveDirectiveFromProfilesForTarget(directive, resolvedProfiles, targetName);
             if (resolved !== undefined) value = resolved;
           } else if (Array.isArray(directive)) {
             const useDirective = resolveConditionalDirective(
@@ -124,7 +132,7 @@ export function buildFormAnswers(
               data,
             );
             if (useDirective) {
-              const resolved = resolveDirectiveFromProfiles(useDirective, resolvedProfiles);
+              const resolved = resolveDirectiveFromProfilesForTarget(useDirective, resolvedProfiles, targetName);
               if (resolved !== undefined) value = resolved;
             }
           }
@@ -167,14 +175,22 @@ export function buildFormAnswers(
               if (explicitFill === ON_PLACEHOLDER) return;
               fillVal = explicitFill;
             } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+              fillVal = resolveDirectiveFromProfilesForTarget(
+                m.directive as string,
+                resolvedProfiles,
+                targetText(element.label, pdfField),
+              );
             } else {
               return;
             }
           } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
             fillVal = explicitFill;
           } else if (m.directive && resolvedProfiles) {
-            fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+            fillVal = resolveDirectiveFromProfilesForTarget(
+              m.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            );
           } else {
             fillVal = currentVal;
           }
@@ -191,7 +207,11 @@ export function buildFormAnswers(
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
           const fillVal = cf.fillValue ?? (resolvedProfiles && cf.directive
-            ? resolveDirectiveFromProfiles(cf.directive as string, resolvedProfiles)
+            ? resolveDirectiveFromProfilesForTarget(
+              cf.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            )
             : baseValue);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
             out[pdfField] = formatDateForPdf(fillVal);
@@ -231,14 +251,22 @@ export function buildFormAnswers(
                 if (explicitFill === ON_PLACEHOLDER) return;
                 fillVal = explicitFill;
               } else if (m.directive && resolvedProfiles) {
-                fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+                fillVal = resolveDirectiveFromProfilesForTarget(
+                  m.directive as string,
+                  resolvedProfiles,
+                  targetText(element.label, pdfField),
+                );
               } else {
                 return;
               }
             } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
               fillVal = explicitFill;
             } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+              fillVal = resolveDirectiveFromProfilesForTarget(
+                m.directive as string,
+                resolvedProfiles,
+                targetText(element.label, pdfField),
+              );
             } else {
               fillVal = val;
             }
@@ -254,7 +282,11 @@ export function buildFormAnswers(
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
           const fillVal = cf.fillValue ?? (cf.directive && resolvedProfiles
-            ? resolveDirectiveFromProfiles(cf.directive as string, resolvedProfiles) : baseValue);
+            ? resolveDirectiveFromProfilesForTarget(
+              cf.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            ) : baseValue);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
             out[pdfField] = formatDateForPdf(fillVal);
           }
@@ -317,14 +349,22 @@ function buildInitialData(
       const directive = options?.directive;
       if (directive != null && resolvedProfiles) {
         if (typeof directive === 'string') {
-          value = resolveDirectiveFromProfiles(directive, resolvedProfiles);
+          value = resolveDirectiveFromProfilesForTarget(
+            directive,
+            resolvedProfiles,
+            targetText(element.label, scope),
+          );
         } else if (Array.isArray(directive)) {
           const useDirective = resolveConditionalDirective(
             directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
             out,
           );
           if (useDirective) {
-            value = resolveDirectiveFromProfiles(useDirective, resolvedProfiles);
+            value = resolveDirectiveFromProfilesForTarget(
+              useDirective,
+              resolvedProfiles,
+              targetText(element.label, scope),
+            );
           }
         }
       }
@@ -456,16 +496,20 @@ export function extractDirectivesFromUiSchema(
         const value = getPropValue(scope);
         if (value !== undefined && value !== null && value !== '') {
           if (typeof directive === 'string') {
-            if (!isExcludedFromProfileFormSync(directive)) {
-              directivesMap[directive] = value;
+            const profileDirective = canonicalDirectiveForTarget(directive, targetText(element.label, scope));
+            if (!isExcludedFromProfileFormSync(profileDirective)) {
+              directivesMap[profileDirective] = value;
             }
           } else if (Array.isArray(directive)) {
             const useDirective = resolveConditionalDirective(
               directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
               data,
             );
-            if (useDirective && !isExcludedFromProfileFormSync(useDirective)) {
-              directivesMap[useDirective] = value;
+            const profileDirective = useDirective
+              ? canonicalDirectiveForTarget(useDirective, targetText(element.label, scope))
+              : null;
+            if (profileDirective && !isExcludedFromProfileFormSync(profileDirective)) {
+              directivesMap[profileDirective] = value;
             }
           }
         }
