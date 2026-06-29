@@ -18,9 +18,7 @@ export function applyAutoFillFields(
   autoFillFields.forEach((af) => {
     if (!af.pdfFieldName) return;
     if (af.fieldType === 'checkbox') {
-      // Optional override for non-standard encodings: allow explicit token
-      // (e.g. Choice2-...) instead of generic "true".
-      merged[af.pdfFieldName] = af.value && af.value.trim() !== '' ? af.value : 'true';
+      merged[af.pdfFieldName] = 'true';
       return;
     }
     let val: unknown;

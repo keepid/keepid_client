@@ -149,7 +149,7 @@ describe('interactive form PDF fill directives', () => {
       fixedDirectorBirthYear: '1918',
       fixedClientPhoneArea: '215',
       fixedLiteral: 'Static outcome',
-      fixedCheckbox: 'Choice2',
+      fixedCheckbox: 'true',
     });
   });
 
