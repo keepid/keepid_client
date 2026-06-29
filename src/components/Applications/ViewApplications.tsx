@@ -18,6 +18,8 @@ import {
   OrgDocumentOption,
 } from './api/interactiveForm';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
+import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
+import { applicationSelectorListIcon } from './applicationSelector/placeholderFlow';
 
 interface DocumentInformation {
   uploader: string,
@@ -954,6 +956,36 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
                 <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
+                  <Link
+                    to={{
+                      pathname: '/applications/selector',
+                      state: {
+                        clientUsername: clientUsername || '',
+                        clientName: clientName || '',
+                      },
+                    }}
+                    className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline hover:tw-bg-blue-100"
+                  >
+                    <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
+                      <img
+                        src={applicationSelectorListIcon}
+                        alt=""
+                        aria-hidden="true"
+                        className="tw-h-9 tw-w-9 tw-shrink-0"
+                      />
+                      <span className="tw-min-w-0">
+                        <span className="tw-block tw-truncate tw-font-semibold tw-text-gray-900">
+                          Application Selector
+                        </span>
+                        <span className="tw-block tw-truncate tw-text-xs tw-text-gray-600">
+                          Guided questions, placeholder components, and outcome instructions
+                        </span>
+                      </span>
+                    </span>
+                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
+                      <span className="tw-hidden sm:tw-inline">Start</span>
+                    </span>
+                  </Link>
                   {availableApplications.length > 0 ? (
                     availableApplications.map((application) => (
                       <Link
@@ -1230,6 +1262,18 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 </div>
               </div>
             </div>
+          )}
+        </Route>
+        <Route path="/applications/selector">
+          {isClientUser ? (
+            <Redirect to="/applications" />
+          ) : (
+            <ApplicationSelectorFlow
+              availableApplications={availableApplications}
+              clientUsername={clientUsername}
+              clientName={clientName}
+              onOpenUpload={this.openUploadModal}
+            />
           )}
         </Route>
         <Route path="/applications/preview">
