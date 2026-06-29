@@ -41,11 +41,8 @@
 }
 
 /*
- * pdf.js sizes widget text from PDF rect height / DA; shallow rects yield unreadably small inputs.
- * When HTML widgets are active, enforce a minimum readable size (inline fontSize still uses --total-scale-factor).
+ * Keep PDF widget typography under pdf.js control. The annotation layer derives
+ * text sizing from the PDF field appearance/default appearance and page scale;
+ * app-level font-size/line-height overrides can double-scale text and clip it
+ * inside fixed PDF field rectangles.
  */
-.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer .textWidgetAnnotation :is(input, textarea),
-.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer .choiceWidgetAnnotation select {
-  font-size: max(calc(11px * var(--total-scale-factor)), 13px) !important;
-  line-height: 1.25 !important;
-}
