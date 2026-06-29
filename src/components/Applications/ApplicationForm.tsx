@@ -915,35 +915,18 @@ export default function ApplicationForm() {
             )}
             {!availabilityLoading && applicationSelectionOptions.length > 0 && (
               <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-3">
-                {applicationSelectionOptions.map((application) => {
-                  const metadata = [
-                    application.state,
-                    application.idType,
-                    application.housingStatus,
-                  ]
-                    .filter((value) => value && value.trim().length > 0)
-                    .join(' - ');
-                  return (
-                    <button
-                      key={application.applicationId}
-                      type="button"
-                      onClick={() => selectCatalogApplication(application)}
-                      className="tw-text-left tw-rounded-lg tw-border-2 tw-border-gray-200 tw-bg-white tw-p-4 hover:tw-border-twprimary hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
-                    >
-                      <span className="tw-block tw-text-lg tw-font-semibold tw-text-gray-900">
-                        {application.label}
-                      </span>
-                      {metadata && (
-                        <span className="tw-block tw-text-sm tw-text-gray-600 tw-mt-1">
-                          {metadata}
-                        </span>
-                      )}
-                      <span className="tw-block tw-font-mono tw-text-xs tw-text-gray-500 tw-mt-3">
-                        {application.applicationId}
-                      </span>
-                    </button>
-                  );
-                })}
+                {applicationSelectionOptions.map((application) => (
+                  <button
+                    key={application.applicationId}
+                    type="button"
+                    onClick={() => selectCatalogApplication(application)}
+                    className="tw-text-left tw-rounded-lg tw-border-2 tw-border-gray-200 tw-bg-white tw-p-4 hover:tw-border-twprimary hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+                  >
+                    <span className="tw-block tw-text-lg tw-font-semibold tw-text-gray-900">
+                      {application.label}
+                    </span>
+                  </button>
+                ))}
               </div>
             )}
           </div>

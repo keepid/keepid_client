@@ -729,11 +729,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     ];
   };
 
-  applicationMetadata = (application: AvailableApplication) =>
-    [application.state, application.idType, application.housingStatus]
-      .filter((value) => value && value.trim().length > 0)
-      .join(' - ');
-
   renderModalClientPicker = (disabled: boolean) => {
     const {
       modalClientUsername,
@@ -960,94 +955,63 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 </div>
                 <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                   {availableApplications.length > 0 ? (
-                    availableApplications.map((application) => {
-                      const metadata = this.applicationMetadata(application);
-                      return (
-                        <Link
-                          key={application.applicationId}
-                          to={{
-                            pathname: '/applications/createnew',
-                            state: {
-                              clientUsername: clientUsername || '',
-                              clientName: clientName || '',
-                              presetApplication: {
-                                applicationId: application.applicationId,
-                                label: application.label,
-                                state: application.state,
-                                idType: application.idType,
-                                housingStatus: application.housingStatus,
-                              },
-                              startAtReview: true,
+                    availableApplications.map((application) => (
+                      <Link
+                        key={application.applicationId}
+                        to={{
+                          pathname: '/applications/createnew',
+                          state: {
+                            clientUsername: clientUsername || '',
+                            clientName: clientName || '',
+                            presetApplication: {
+                              applicationId: application.applicationId,
+                              label: application.label,
+                              state: application.state,
+                              idType: application.idType,
+                              housingStatus: application.housingStatus,
                             },
-                          }}
-                          className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-4 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
-                        >
-                          <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                            <span className="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-50 tw-text-twprimary">
-                              <i className="fas fa-file-alt" aria-hidden />
-                            </span>
-                            <span className="tw-min-w-0">
-                              <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
-                                {application.label}
-                              </span>
-                              {metadata && (
-                                <span className="tw-block tw-truncate tw-text-xs tw-text-gray-500">
-                                  {metadata}
-                                </span>
-                              )}
-                            </span>
+                            startAtReview: true,
+                          },
+                        }}
+                        className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-4 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
+                      >
+                        <span className="tw-min-w-0">
+                          <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
+                            {application.label}
                           </span>
-                          <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
-                            <span className="tw-hidden sm:tw-inline">Start</span>
-                            <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
-                          </span>
-                        </Link>
-                      );
-                    })
+                        </span>
+                        <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                          <span className="tw-hidden sm:tw-inline">Start</span>
+                          <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
+                        </span>
+                      </Link>
+                    ))
                   ) : (
                     <div className="tw-border-b tw-border-gray-200 tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
                       No supported forms are available.
                     </div>
                   )}
-                  <div className="tw-border-b tw-border-gray-200 tw-bg-gray-50">
+                  <div className="tw-border-b tw-border-gray-200 tw-bg-white">
                     <button
                       type="button"
                       className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
                       onClick={this.openUploadModal}
                     >
-                      <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                        <span className="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-white tw-text-twprimary tw-ring-1 tw-ring-gray-200">
-                          <i className="fas fa-upload" aria-hidden />
-                        </span>
-                        <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
-                      </span>
+                      <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
                       <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
                         <span className="tw-hidden sm:tw-inline">Upload</span>
                         <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
                       </span>
                     </button>
                   </div>
-                  <div className="tw-bg-gray-50">
+                  <div className="tw-bg-white">
                     <button
                       type="button"
                       className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 disabled:tw-cursor-not-allowed disabled:tw-opacity-60 disabled:hover:tw-bg-transparent"
                       onClick={this.openOrgModal}
                       disabled={isLoadingOrgDocuments || orgDocuments.length === 0}
                     >
-                      <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                        <span className="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-white tw-text-twprimary tw-ring-1 tw-ring-gray-200">
-                          <i className="fas fa-folder-open" aria-hidden />
-                        </span>
-                        <span className="tw-min-w-0">
-                          <span className="tw-block tw-font-medium tw-text-gray-900">Use org document</span>
-                          {isLoadingOrgDocuments && (
-                            <span className="tw-block tw-text-xs tw-text-gray-500">Loading documents...</span>
-                          )}
-                          {!isLoadingOrgDocuments && orgDocuments.length === 0 && (
-                            <span className="tw-block tw-text-xs tw-text-gray-500">No organization documents available.</span>
-                          )}
-                        </span>
-                      </span>
+                      <span className="tw-font-medium tw-text-gray-900">Use org document</span>
                       <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
                         <span className="tw-hidden sm:tw-inline">Choose</span>
                         <i className="fas fa-chevron-right tw-text-xs" aria-hidden />
