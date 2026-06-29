@@ -95,6 +95,14 @@ function isBlankValue(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim() === '');
 }
 
+function stripDirectiveNamespace(directive: string): string {
+  const trimmed = directive.trim();
+  const lastColon = trimmed.lastIndexOf(':');
+  return lastColon >= 0 && lastColon + 1 < trimmed.length
+    ? trimmed.slice(lastColon + 1)
+    : trimmed;
+}
+
 function resolveProfilePath(profile: Record<string, unknown> | undefined, path: string): unknown {
   const value = getByPath(profile, path);
   if (!isBlankValue(value)) return value;
@@ -107,6 +115,30 @@ function resolveProfilePath(profile: Record<string, unknown> | undefined, path: 
   };
   const fallbackPath = nameAlias[path];
   return fallbackPath ? getByPath(profile, fallbackPath) : value;
+}
+
+function isMotherMaidenTarget(targetName: unknown): boolean {
+  if (typeof targetName !== 'string') return false;
+  const normalized = targetName.toLowerCase();
+  return normalized.includes('mother') && normalized.includes('maiden');
+}
+
+function isMotherLastDirective(directive: string): boolean {
+  return /^(client\.)?motherName\.last$/i.test(directive);
+}
+
+export function canonicalDirectiveForTarget(directiveKey: string, targetName?: unknown): string {
+  const trimmed = directiveKey.trim();
+  const lastColon = trimmed.lastIndexOf(':');
+  const namespace = lastColon >= 0 && lastColon + 1 < trimmed.length
+    ? trimmed.slice(0, lastColon + 1)
+    : '';
+  const directive = namespace ? trimmed.slice(lastColon + 1) : trimmed;
+
+  if (isMotherMaidenTarget(targetName) && isMotherLastDirective(directive)) {
+    return `${namespace}${directive.toLowerCase().startsWith('client.') ? 'client.' : ''}motherName.maiden`;
+  }
+  return trimmed;
 }
 
 /** Full name for a profile scope: prefer structured currentName, else firstName/lastName. */
@@ -212,61 +244,60 @@ export function resolveDirectiveFromProfiles(
   profiles: ResolvedProfiles | null | undefined,
 ): unknown {
   if (!profiles) return undefined;
-  const lower = directive.trim().toLowerCase();
+  const normalizedDirective = stripDirectiveNamespace(directive);
+  const lower = normalizedDirective.toLowerCase();
 
-  const dobMatch = directive.trim().match(/^(client|worker|director)\.\$dob_mm\/dd\/yyyy$/i);
+  const dobMatch = normalizedDirective.match(/^(client|worker|director)\.\$dob_mm\/dd\/yyyy$/i);
   if (dobMatch) {
     const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const profile = profiles[profileKey];
     return normalizeDateLikeValue(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
   }
-  const ageMatch = directive.trim().match(/^(client|worker|director)\.\$age$/i);
+  const ageMatch = normalizedDirective.match(/^(client|worker|director)\.\$age$/i);
   if (ageMatch) {
     const profileKey = ageMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeAgeFromBirthDate(profiles[profileKey] as Record<string, unknown> | undefined);
   }
-  const monthNumberMatch = directive.trim().match(/^(client|worker|director)\.\$(birthMonth|dobMonthNumber)$/i);
+  const monthNumberMatch = normalizedDirective.match(/^(client|worker|director)\.\$(birthMonth|dobMonthNumber)$/i);
   if (monthNumberMatch) {
     const profileKey = monthNumberMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeBirthMonthNumber(profiles[profileKey] as Record<string, unknown> | undefined);
   }
-  const phoneLast7Match = directive
-    .trim()
+  const phoneLast7Match = normalizedDirective
     .match(/^(client|worker|director)\.\$?(phoneLast7|phoneLastSeven|primaryPhoneLast7|primaryPhoneLastSeven|primaryPhoneNumber|primaryPhoneLocalNumber)$/i);
   if (phoneLast7Match) {
     const profileKey = phoneLast7Match[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computePhoneLast7(profiles[profileKey] as Record<string, unknown> | undefined);
   }
 
-  const fullNameMatch = directive.trim().match(/^(client|worker|director)\.\$fullName$/i);
+  const fullNameMatch = normalizedDirective.match(/^(client|worker|director)\.\$fullName$/i);
   if (fullNameMatch) {
     const profileKey = fullNameMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeFullName(profiles[profileKey] as Record<string, unknown> | undefined);
   }
 
-  const birthYearMatch = directive.trim().match(/^(client|worker|director)\.\$birthYear$/i);
+  const birthYearMatch = normalizedDirective.match(/^(client|worker|director)\.\$birthYear$/i);
   if (birthYearMatch) {
     const profileKey = birthYearMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
     return birthDate ? String(birthDate.getFullYear()) : undefined;
   }
 
-  const birthDayMatch = directive.trim().match(/^(client|worker|director)\.\$birthDay$/i);
+  const birthDayMatch = normalizedDirective.match(/^(client|worker|director)\.\$birthDay$/i);
   if (birthDayMatch) {
     const profileKey = birthDayMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
     return birthDate ? String(birthDate.getDate()) : undefined;
   }
 
-  if (/^(client|worker|director|org)\.\$date$/i.test(directive.trim())) {
+  if (/^(client|worker|director|org)\.\$date$/i.test(normalizedDirective)) {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${mm}/${dd}/${d.getFullYear()}`;
   }
 
-  const phonePartMatch = directive
-    .trim()
+  const phonePartMatch = normalizedDirective
     .match(/^(client|worker|director)\.\$primaryPhone(AreaCode|TelephonePrefix|LineNumber)$/i);
   if (phonePartMatch) {
     const profileKey = phonePartMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
@@ -280,8 +311,7 @@ export function resolveDirectiveFromProfiles(
     return computePhonePart(profiles[profileKey] as Record<string, unknown> | undefined, part);
   }
 
-  const fullAddrMatch = directive
-    .trim()
+  const fullAddrMatch = normalizedDirective
     .match(/^(client|worker|director|org)\.\$full(PersonalAddress|MailAddress|Address)$/i);
   if (fullAddrMatch) {
     const profileKey = fullAddrMatch[1].toLowerCase() as 'client' | 'worker' | 'director' | 'org';
@@ -293,19 +323,19 @@ export function resolveDirectiveFromProfiles(
     return computeFullAddress(profile, ['personalAddress', 'mailAddress']);
   }
 
-  const addressLine1And2 = resolveAddressLine1And2Directive(directive, profiles);
+  const addressLine1And2 = resolveAddressLine1And2Directive(normalizedDirective, profiles);
   if (addressLine1And2 !== undefined) {
     return addressLine1And2;
   }
 
   if (lower.startsWith('client.') && profiles.client) {
-    return normalizeDateLikeValue(resolveProfilePath(profiles.client, directive.slice(7)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.client, normalizedDirective.slice(7)));
   }
   if (lower.startsWith('worker.') && profiles.worker) {
-    return normalizeDateLikeValue(resolveProfilePath(profiles.worker, directive.slice(7)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.worker, normalizedDirective.slice(7)));
   }
   if (lower.startsWith('org.') && profiles.org) {
-    const orgPath = directive.slice(4);
+    const orgPath = normalizedDirective.slice(4);
     const orgAlias: Record<string, string> = {
       organizationName: 'name',
       phoneNumber: 'phone',
@@ -313,7 +343,7 @@ export function resolveDirectiveFromProfiles(
     return normalizeDateLikeValue(getByPath(profiles.org, orgAlias[orgPath] ?? orgPath));
   }
   if (lower.startsWith('director.') && profiles.director) {
-    return normalizeDateLikeValue(resolveProfilePath(profiles.director, directive.slice(9)));
+    return normalizeDateLikeValue(resolveProfilePath(profiles.director, normalizedDirective.slice(9)));
   }
   if (lower === 'anydate' || lower === 'currentdate') {
     const d = new Date();
@@ -323,6 +353,14 @@ export function resolveDirectiveFromProfiles(
     return `${mm}/${dd}/${yyyy}`;
   }
   return undefined;
+}
+
+export function resolveDirectiveFromProfilesForTarget(
+  directive: string,
+  profiles: ResolvedProfiles | null | undefined,
+  targetName?: unknown,
+): unknown {
+  return resolveDirectiveFromProfiles(canonicalDirectiveForTarget(directive, targetName), profiles);
 }
 
 const NAME_HISTORY_DIRECTIVE_RE = /^nameHistory\.\d+\.(first|middle|last|suffix|maiden)$/;

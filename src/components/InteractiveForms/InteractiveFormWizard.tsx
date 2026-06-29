@@ -2,7 +2,7 @@ import type { UISchemaElement } from '@jsonforms/core';
 import { JsonForms } from '@jsonforms/react';
 import React, { useCallback, useState } from 'react';
 
-import { normalizeDateLikeValue, resolveDirectiveFromProfiles } from '../../utils/directives';
+import { normalizeDateLikeValue, resolveDirectiveFromProfilesForTarget } from '../../utils/directives';
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
@@ -25,7 +25,7 @@ export function applyAutoFillFields(
     }
     let val: unknown;
     if (af.valueSource === 'directive' && af.value) {
-      val = resolveDirectiveFromProfiles(af.value, resolvedProfiles as never);
+      val = resolveDirectiveFromProfilesForTarget(af.value, resolvedProfiles as never, af.pdfFieldName);
     } else if (af.valueSource === 'literal') {
       val = af.value;
     }

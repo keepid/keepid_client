@@ -231,7 +231,6 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
         occurredAt: entry.occurredAt,
         title: entry.migrated ? 'Migrated worker notes' : 'Worker note',
         body: entry.body,
-        source: 'Profile',
         editable: true,
         workerNoteIndex: index,
       });
