@@ -197,8 +197,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     : Math.max(window.devicePixelRatio || 1, 2);
   const pdfWidgetsEditable = !pdfFormsReadOnly || (showPdfEditControls && isPdfEditMode);
   const effectivePdfFormsReadOnly = !pdfWidgetsEditable;
-  /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
-  const usePdfJsFormWidgets = pdfWidgetsEditable;
+  /*
+   * Keep pdf.js form widgets visible for the preview even in read-only mode.
+   * The widgets read the AcroForm values with pdf.js' own sizing, while the
+   * read-only overlay below prevents edits outside explicit edit mode.
+   */
+  const renderPdfFormWidgets = true;
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length === 0 || signedCount === signaturePlacements.length;
@@ -353,7 +357,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setApplying(true);
     try {
       let pdfBytes: ArrayBuffer | Uint8Array;
-      if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
+      if (pdfWidgetsEditable && pdfDocRef.current?.saveDocument) {
         pdfBytes = await pdfDocRef.current.saveDocument();
       } else {
         pdfBytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
@@ -404,7 +408,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setApplying(false);
     }
-  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, usePdfJsFormWidgets]);
+  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, pdfWidgetsEditable]);
 
   const toggleStagedDoc = useCallback((docId: string) => {
     setStagedDocs((prev) => {
@@ -685,7 +689,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !effectivePdfFormsReadOnly;
 
   const getMainPdfBytes = useCallback(async (): Promise<Uint8Array> => {
-    const shouldUseSaveDocument = usePdfJsFormWidgets && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
+    const shouldUseSaveDocument = pdfWidgetsEditable && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
     if (shouldUseSaveDocument && pdfDocRef.current?.saveDocument) {
       try {
         return await pdfDocRef.current.saveDocument();
@@ -696,7 +700,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     const res = await fetch(livePdfUrl);
     const buffer = await res.arrayBuffer();
     return new Uint8Array(buffer);
-  }, [livePdfUrl, numPages, pageNum, usePdfJsFormWidgets]);
+  }, [livePdfUrl, numPages, pageNum, pdfWidgetsEditable]);
 
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     const bytes = await getMainPdfBytes();
@@ -704,14 +708,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }, [getMainPdfBytes]);
 
   const getCurrentAttachmentPdfBlob = useCallback(async (): Promise<Blob> => {
-    if (attachmentPdfDocRef.current?.saveDocument && usePdfJsFormWidgets) {
+    if (attachmentPdfDocRef.current?.saveDocument && canEditCurrentAttachment) {
       const bytes = await attachmentPdfDocRef.current.saveDocument();
       return toPdfBlob(bytes);
     }
     const response = await fetch(currentViewerPageMeta.doc.url);
     const bytes = await response.arrayBuffer();
     return new Blob([bytes], { type: 'application/pdf' });
-  }, [currentViewerPageMeta.doc.url, usePdfJsFormWidgets]);
+  }, [canEditCurrentAttachment, currentViewerPageMeta.doc.url]);
 
   /**
    * Builds the bytes that downstream viewers see on Print/Download by delegating the merge +
@@ -1043,7 +1047,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   return (
     <div className={`tw-flex tw-flex-col tw-gap-8 tw-items-start tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS}`}>
       <div
-        className={`keepid-pdf-preview ${effectivePdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${usePdfJsFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
+        className={`keepid-pdf-preview ${effectivePdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${renderPdfFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
       >
       {allSigned && signaturePlacements.length > 0 && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
@@ -1155,7 +1159,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                   devicePixelRatio={pageDevicePixelRatio}
                   renderAnnotationLayer
                   renderTextLayer
-                  renderForms={usePdfJsFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
+                  renderForms={renderPdfFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
                 />
               </div>
               {effectivePdfFormsReadOnly && (
