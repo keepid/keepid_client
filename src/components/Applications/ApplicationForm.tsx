@@ -641,7 +641,7 @@ export default function ApplicationForm() {
           isWhoForPage ? 'tw-max-w-7xl' : 'tw-max-w-6xl'
         }`}
       >
-        {!isReviewPage && (
+        {(!isReviewPage || isCatalogSelectionStep) && (
           <>
             <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
               <h2 className="tw-text-3xl tw-font-semibold tw-m-0">{pageTitle}</h2>
