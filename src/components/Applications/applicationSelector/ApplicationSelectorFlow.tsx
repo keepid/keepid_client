@@ -17,14 +17,14 @@ interface Props {
   availableApplications: RegistryApplicationOption[];
   clientUsername?: string;
   clientName?: string;
-  onOpenUpload: () => void;
+  onUploadPdf: (file: File, outcome: ApplicationSelectorOutcome) => Promise<void>;
 }
 
 const ApplicationSelectorFlow = ({
   availableApplications,
   clientUsername,
   clientName,
-  onOpenUpload,
+  onUploadPdf,
 }: Props) => {
   const history = useHistory();
   const [flow, setFlow] = useState<ApplicationSelectorFlowDefinition>(placeholderApplicationSelectorFlow);
@@ -32,6 +32,10 @@ const ApplicationSelectorFlow = ({
   const [stepIndex, setStepIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isDraggingPdf, setIsDraggingPdf] = useState(false);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -76,6 +80,8 @@ const ApplicationSelectorFlow = ({
       ...previousAnswers,
       [question.id]: option.value,
     }));
+    setUploadFile(null);
+    setUploadError(null);
     setStepIndex((previousStepIndex) => Math.min(previousStepIndex + 1, flow.questions.length));
   };
 
@@ -90,11 +96,6 @@ const ApplicationSelectorFlow = ({
       return;
     }
     setStepIndex((previousStepIndex) => Math.max(previousStepIndex - 1, 0));
-  };
-
-  const openUploadFromOutcome = () => {
-    onOpenUpload();
-    goBackToApplications();
   };
 
   const getPresetApplication = (selectedOutcome: ApplicationSelectorOutcome) => {
@@ -126,86 +127,22 @@ const ApplicationSelectorFlow = ({
   };
 
   const renderIncludedComponent = (componentName: string) => {
-    if (componentName === 'clientNotebox') {
+    if (componentName === 'blueBox') {
       return (
         <div
           key={componentName}
-          className="tw-rounded-md tw-border tw-border-blue-300 tw-bg-blue-100 tw-p-4 tw-shadow-sm"
-        >
-          <div className="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-start">
-            <div className="tw-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-bg-blue-600 tw-text-sm tw-font-semibold tw-text-white">
-              CN
-            </div>
-            <div className="tw-min-w-0 tw-flex-1">
-              <h3 className="tw-mb-1 tw-text-base tw-font-semibold tw-text-blue-950">
-                Client notebox
-              </h3>
-              <p className="tw-mb-3 tw-text-sm tw-text-blue-950">
-                Placeholder component box for profile-linked notes.
-              </p>
-              <textarea
-                className="form-control tw-min-h-24 tw-border-blue-200 tw-bg-white"
-                placeholder="Temporary note placeholder"
-                aria-label="Client notebox placeholder"
-              />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (componentName === 'clientAgeInput') {
-      return (
-        <div
-          key={componentName}
-          className="tw-rounded-md tw-border tw-border-blue-300 tw-bg-blue-100 tw-p-4"
-        >
-          <label htmlFor="client-age-placeholder" className="tw-mb-2 tw-block tw-text-sm tw-font-semibold tw-text-blue-950">
-            Client age
-          </label>
-          <input
-            id="client-age-placeholder"
-            type="number"
-            className="form-control tw-max-w-40 tw-border-blue-200"
-            min="0"
-            placeholder="Age"
-          />
-        </div>
+          className="tw-h-36 tw-rounded-md tw-bg-blue-500"
+          aria-label="Blue placeholder box"
+        />
       );
     }
 
     return (
       <div
         key={componentName}
-        className="tw-rounded-md tw-border tw-border-blue-300 tw-bg-blue-100 tw-p-4 tw-text-sm tw-font-medium tw-text-blue-950"
-      >
-        {componentName}
-      </div>
-    );
-  };
-
-  const renderProgress = () => {
-    const progressItems = [...flow.questions.map((question) => question.title), 'Outcome'];
-    return (
-      <div className="tw-mb-6 tw-grid tw-gap-2 sm:tw-grid-cols-4">
-        {progressItems.map((label, index) => {
-          const isActive = index === stepIndex || (isOutcomeStep && index === progressItems.length - 1);
-          const isComplete = index < stepIndex;
-          return (
-            <div
-              key={label}
-              className={[
-                'tw-rounded-md tw-border tw-px-3 tw-py-2 tw-text-xs tw-font-semibold',
-                isActive ? 'tw-border-blue-500 tw-bg-blue-50 tw-text-blue-900' : '',
-                isComplete ? 'tw-border-green-200 tw-bg-green-50 tw-text-green-800' : '',
-                !isActive && !isComplete ? 'tw-border-gray-200 tw-bg-white tw-text-gray-500' : '',
-              ].join(' ')}
-            >
-              {label}
-            </div>
-          );
-        })}
-      </div>
+        className="tw-h-36 tw-rounded-md tw-bg-blue-500"
+        aria-label={`${componentName} placeholder box`}
+      />
     );
   };
 
@@ -290,6 +227,82 @@ const ApplicationSelectorFlow = ({
     );
   };
 
+  const handlePdfSelection = (file?: File | null) => {
+    if (!file) return;
+    setUploadFile(file);
+    setUploadError(null);
+  };
+
+  const handlePdfDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDraggingPdf(false);
+    handlePdfSelection(event.dataTransfer.files?.[0]);
+  };
+
+  const uploadOutcomePdf = async (selectedOutcome: ApplicationSelectorOutcome) => {
+    if (!uploadFile) {
+      setUploadError('Choose a PDF to upload.');
+      return;
+    }
+    setIsUploadingPdf(true);
+    setUploadError(null);
+    try {
+      await onUploadPdf(uploadFile, selectedOutcome);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Could not upload PDF.');
+      setIsUploadingPdf(false);
+    }
+  };
+
+  const renderPdfDropBox = (selectedOutcome: ApplicationSelectorOutcome) => (
+    <div className="tw-mt-6">
+      <label
+        htmlFor="application-selector-pdf-upload"
+        className={[
+          'tw-flex tw-min-h-44 tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-rounded-md tw-border-2 tw-border-dashed tw-p-6 tw-text-center tw-transition',
+          isDraggingPdf ? 'tw-border-blue-600 tw-bg-blue-100' : 'tw-border-blue-300 tw-bg-blue-50',
+        ].join(' ')}
+        onDragEnter={(event) => {
+          event.preventDefault();
+          setIsDraggingPdf(true);
+        }}
+        onDragOver={(event) => event.preventDefault()}
+        onDragLeave={() => setIsDraggingPdf(false)}
+        onDrop={handlePdfDrop}
+      >
+        <span className="tw-text-base tw-font-semibold tw-text-blue-950">
+          {uploadFile ? uploadFile.name : 'Drop PDF here'}
+        </span>
+        <span className="tw-mt-2 tw-text-sm tw-text-blue-900">
+          or choose a file
+        </span>
+        <input
+          id="application-selector-pdf-upload"
+          type="file"
+          accept="application/pdf,.pdf"
+          className="tw-sr-only"
+          onChange={(event) => handlePdfSelection(event.target.files?.[0])}
+        />
+      </label>
+      {uploadError && (
+        <div className="alert alert-danger py-2 tw-mt-3">{uploadError}</div>
+      )}
+      <div className="tw-mt-4 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
+        <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
+          Back
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => uploadOutcomePdf(selectedOutcome)}
+          disabled={isUploadingPdf || !uploadFile}
+        >
+          {isUploadingPdf ? 'Uploading...' : selectedOutcome.uploadLabel || 'Upload PDF'}
+        </button>
+      </div>
+    </div>
+  );
+
   const renderOutcome = () => {
     if (!outcome) {
       return (
@@ -314,23 +327,16 @@ const ApplicationSelectorFlow = ({
       <div>
         <div className="tw-mb-5">
           <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-900">{outcome.title}</h2>
-          {outcome.applicationId ? (
-            <p className="tw-mt-2 tw-text-sm tw-text-gray-600">
-              This outcome starts an annotated form from the application registry.
-            </p>
-          ) : (
-            <p className="tw-mt-2 tw-text-sm tw-text-gray-600">
-              This outcome collects a completed PDF because no annotated form is mapped.
-            </p>
-          )}
         </div>
-        <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
-          <ol className="tw-mb-0 tw-space-y-2 tw-pl-5 tw-text-sm tw-leading-6 tw-text-gray-700">
-            {(outcome.instructions || []).map((instruction) => (
-              <li key={instruction}>{instruction}</li>
-            ))}
-          </ol>
-        </div>
+        {(outcome.instructions || []).length > 0 && (
+          <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
+            <ol className="tw-mb-0 tw-space-y-2 tw-pl-5 tw-text-sm tw-leading-6 tw-text-gray-700">
+              {(outcome.instructions || []).map((instruction) => (
+                <li key={instruction}>{instruction}</li>
+              ))}
+            </ol>
+          </div>
+        )}
         {(outcome.includeComponents || []).length > 0 && (
           <div className="tw-mt-4 tw-grid tw-gap-4">
             {outcome.includeComponents.map(renderIncludedComponent)}
@@ -350,26 +356,7 @@ const ApplicationSelectorFlow = ({
             </button>
           </div>
         ) : (
-          <div className="tw-mt-6 tw-rounded-md tw-border tw-border-dashed tw-border-blue-300 tw-bg-blue-50 tw-p-4">
-            <div className="tw-flex tw-flex-col tw-gap-4 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
-              <div>
-                <h3 className="tw-mb-1 tw-text-base tw-font-semibold tw-text-blue-950">
-                  Upload PDF
-                </h3>
-                <p className="tw-mb-0 tw-text-sm tw-text-blue-900">
-                  Create an application from a completed PDF for this outcome.
-                </p>
-              </div>
-              <button type="button" className="btn btn-primary" onClick={openUploadFromOutcome}>
-                {outcome.uploadLabel || 'Upload PDF'}
-              </button>
-            </div>
-            <div className="tw-mt-4">
-              <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-                Back
-              </button>
-            </div>
-          </div>
+          renderPdfDropBox(outcome)
         )}
       </div>
     );
@@ -394,7 +381,6 @@ const ApplicationSelectorFlow = ({
           <div className="alert alert-warning py-2 tw-mt-3">{loadError}</div>
         )}
       </div>
-      {renderProgress()}
       {isLoading ? (
         <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4 tw-text-sm tw-text-gray-600">
           Loading selector...
