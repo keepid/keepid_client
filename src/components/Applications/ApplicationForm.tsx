@@ -972,7 +972,6 @@ export default function ApplicationForm({
         {isReviewPage && hasCatalogApplicationSelection && (
           <ApplicationReviewPage
             data={data}
-            blankFormId={blankFormId}
             clientName={targetClientName || targetClientUsername}
             instructionsMarkdownOverride={selectorInstructionsMarkdown}
           />
@@ -1001,7 +1000,6 @@ export default function ApplicationForm({
             formAnswers={wizardFormOutput}
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
-            postRequirements={builderStateRef.current?.postRequirements}
             showPdfEditControls
             pdfFormsReadOnly
             canEditAttachments={canEditAttachments}

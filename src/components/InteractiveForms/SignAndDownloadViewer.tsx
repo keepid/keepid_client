@@ -4,12 +4,11 @@ import './sign-and-download-viewer.css';
 
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { PDFDocument } from 'pdf-lib';
-import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { useAlert } from 'react-alert';
-import ReactMarkdown from 'react-markdown';
-import { Document, Page, pdfjs } from 'react-pdf';
 // eslint-disable-next-line import/no-unresolved -- Vite ?url asset import
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useAlert } from 'react-alert';
+import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
 import {
@@ -44,7 +43,6 @@ export interface SignAndDownloadViewerProps {
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
   onSaveSuccess?: () => void;
-  postRequirements?: string;
   showSaveButton?: boolean;
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
@@ -75,7 +73,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   formAnswers,
   clientUsername = '',
   onSaveSuccess,
-  postRequirements,
   showSaveButton = true,
   showPdfEditControls = false,
   pdfFormsReadOnly = false,
@@ -463,36 +460,34 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 setPacketPersistenceAvailable(false);
               }
               attachmentFailures.push(id);
-              continue;
-            }
+            } else {
+              const attachedFileId = typeof attachData?.attachedFileId === 'string'
+                ? attachData.attachedFileId
+                : undefined;
+              if (!attachedFileId) {
+                attachmentFailures.push(id);
+              } else {
+                nextCloneMap.set(id, attachedFileId);
 
-            const attachedFileId = typeof attachData?.attachedFileId === 'string'
-              ? attachData.attachedFileId
-              : undefined;
-            if (!attachedFileId) {
-              attachmentFailures.push(id);
-              continue;
-            }
-            nextCloneMap.set(id, attachedFileId);
-
-            const hasAutofillAnswers = !!attachmentAutofillAnswers
-              && Object.keys(attachmentAutofillAnswers).length > 0;
-            if (!canResolveAutofill || !hasAutofillAnswers) {
-              attachedWithoutAutofill.push(id);
-              continue;
-            }
-
-            try {
-              /* eslint-disable-next-line no-await-in-loop */
-              const filledAttachmentBlob = await fillAttachmentPdfBlob(
-                attachedFileId,
-                attachmentAutofillAnswers,
-                clientUsername,
-              );
-              /* eslint-disable-next-line no-await-in-loop */
-              await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
-            } catch {
-              attachedWithoutAutofill.push(id);
+                const hasAutofillAnswers = !!attachmentAutofillAnswers
+                  && Object.keys(attachmentAutofillAnswers).length > 0;
+                if (!canResolveAutofill || !hasAutofillAnswers) {
+                  attachedWithoutAutofill.push(id);
+                } else {
+                  try {
+                    /* eslint-disable-next-line no-await-in-loop */
+                    const filledAttachmentBlob = await fillAttachmentPdfBlob(
+                      attachedFileId,
+                      attachmentAutofillAnswers,
+                      clientUsername,
+                    );
+                    /* eslint-disable-next-line no-await-in-loop */
+                    await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
+                  } catch {
+                    attachedWithoutAutofill.push(id);
+                  }
+                }
+              }
             }
           }
 
@@ -1314,15 +1309,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 {applying ? 'Embedding...' : 'Embed signature'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {postRequirements && (
-        <div className="tw-bg-white tw-rounded-xl tw-border tw-border-gray-200 tw-p-6 tw-shadow-sm tw-mt-2">
-          <h3 className="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4 tw-pb-4 tw-border-b tw-border-gray-100">Post Application Instructions</h3>
-          <div className="tw-prose tw-prose-sm tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
-            <ReactMarkdown>{postRequirements}</ReactMarkdown>
           </div>
         </div>
       )}

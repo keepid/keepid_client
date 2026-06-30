@@ -1,43 +1,19 @@
 import React from 'react';
-import { Spinner } from 'react-bootstrap';
 import ReactMarkdown from 'react-markdown';
 
-import type { BuilderState } from '../InteractiveForms/types';
-import { getInteractiveFormConfig } from './api/interactiveForm';
 import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
 export default function ApplicationReviewPage({
   data,
-  blankFormId,
   clientName,
   instructionsMarkdownOverride = '',
 }: {
   data: ApplicationFormData;
-  blankFormId: string | null;
   clientName: string;
   instructionsMarkdownOverride?: string;
 }) {
   const emphasis = 'tw-font-bold';
-  const [builderState, setBuilderState] = React.useState<BuilderState | null>(null);
-  const [loadingConfig, setLoadingConfig] = React.useState(false);
   const hasCatalogLabel = data.label.trim().length > 0;
-
-  React.useEffect(() => {
-    if (!blankFormId) return;
-    setLoadingConfig(true);
-    getInteractiveFormConfig(blankFormId)
-      .then((cfg) => {
-        if (cfg.builderState) {
-          let bs = cfg.builderState;
-          if (typeof bs === 'string') {
-            try { bs = JSON.parse(bs); } catch (e) { /* ignore */ }
-          }
-          setBuilderState(bs as unknown as BuilderState);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoadingConfig(false));
-  }, [blankFormId]);
 
   let appType: string;
 
@@ -98,15 +74,7 @@ export default function ApplicationReviewPage({
     situation = <li>This {appType} appplication is for those who have <span className={emphasis}>abused substances</span>.</li>;
   }
 
-  if (loadingConfig) {
-    return (
-      <div className="d-flex justify-content-center py-5">
-        <Spinner animation="border" />
-      </div>
-    );
-  }
-
-  const instructionsMarkdown = instructionsMarkdownOverride || builderState?.preRequirements || '';
+  const instructionsMarkdown = instructionsMarkdownOverride;
 
   if (instructionsMarkdown) {
     return (
