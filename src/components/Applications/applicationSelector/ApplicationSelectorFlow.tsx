@@ -9,6 +9,7 @@ import {
 import {
   getNextRenderableStepIndex,
   getPreviousRenderableStepIndex,
+  getRenderableStepNumber,
 } from './flowLogic';
 import { resolveApplicationSelectorOutcome } from './outcomeResolver';
 import { placeholderApplicationSelectorFlow } from './placeholderFlow';
@@ -88,6 +89,7 @@ const ApplicationSelectorFlow = ({
     () => resolveApplicationSelectorOutcome(flow, answers),
     [answers, flow],
   );
+  const currentStepNumber = getRenderableStepNumber(flow, answers, stepIndex, profileAnswers);
 
   const goBackToApplications = () => {
     history.push({
@@ -421,6 +423,9 @@ const ApplicationSelectorFlow = ({
         </div>
       ) : (
         <div className="tw-py-2">
+          <div className="tw-mb-3 tw-text-sm tw-font-semibold tw-uppercase tw-text-gray-500">
+            Step {currentStepNumber}
+          </div>
           {isOutcomeStep ? renderOutcome() : currentQuestion && renderQuestion(currentQuestion)}
         </div>
       )}

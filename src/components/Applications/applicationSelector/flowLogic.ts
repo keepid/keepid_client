@@ -71,6 +71,26 @@ export const getPreviousRenderableStepIndex = (
   return null;
 };
 
+export const getRenderableStepNumber = (
+  flow: ApplicationSelectorFlowDefinition,
+  answers: ApplicationSelectorAnswers,
+  stepIndex: number,
+  profileAnswers: ApplicationSelectorAnswers,
+): number => {
+  const lastQuestionIndex = Math.min(stepIndex, flow.questions.length - 1);
+  let renderableQuestionCount = 0;
+
+  for (let i = 0; i <= lastQuestionIndex; i += 1) {
+    if (isQuestionRenderable(flow.questions[i], answers, profileAnswers)) {
+      renderableQuestionCount += 1;
+    }
+  }
+
+  return stepIndex >= flow.questions.length
+    ? renderableQuestionCount + 1
+    : Math.max(renderableQuestionCount, 1);
+};
+
 export const resolveProfileAnswerForQuestion = (
   question: ApplicationSelectorQuestion,
   profiles: ResolvedProfiles | null | undefined,

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildProfileAnswers, getNextRenderableStepIndex } from './flowLogic';
+import {
+  buildProfileAnswers,
+  getNextRenderableStepIndex,
+  getRenderableStepNumber,
+} from './flowLogic';
 import { resolveApplicationSelectorOutcome } from './outcomeResolver';
 import { placeholderApplicationSelectorFlow } from './placeholderFlow';
 import type { ApplicationSelectorFlowDefinition } from './types';
@@ -150,5 +154,10 @@ describe('application selector outcome resolver', () => {
 
     expect(profileAnswers).toEqual({ experiencingHomelessness: 'true' });
     expect(getNextRenderableStepIndex(profileFlow, profileAnswers, 0, profileAnswers)).toBe(1);
+    expect(getRenderableStepNumber(profileFlow, profileAnswers, 1, profileAnswers)).toBe(1);
+    expect(getRenderableStepNumber(profileFlow, {
+      ...profileAnswers,
+      birthState: 'PA',
+    }, profileFlow.questions.length, profileAnswers)).toBe(2);
   });
 });
