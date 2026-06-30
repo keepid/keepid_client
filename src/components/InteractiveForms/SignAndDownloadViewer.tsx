@@ -198,10 +198,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const pdfWidgetsEditable = !pdfFormsReadOnly || (showPdfEditControls && isPdfEditMode);
   const effectivePdfFormsReadOnly = !pdfWidgetsEditable;
   /*
-   * Render pdf.js form widgets only while the PDF is editable. Read-only
-   * preview should show the PDF's own rendered appearance, not HTML inputs.
+   * Keep pdf.js in charge of AcroForm widget layout in both edit and
+   * read-only preview. The PDF's saved appearance streams can be stale or
+   * vertically clipped; pdf.js reads the current form values directly.
    */
-  const renderPdfFormWidgets = pdfWidgetsEditable;
+  const renderPdfFormWidgets = true;
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length === 0 || signedCount === signaturePlacements.length;
