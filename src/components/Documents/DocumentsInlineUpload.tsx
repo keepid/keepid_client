@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import Role from '../../static/Role';
+import { canUseClientNotifications } from '../../utils/featureAccess';
 import {
   buildPickupMessage,
   EMPTY_ORG_ADDRESS,
@@ -46,8 +48,9 @@ export interface DocumentsInlineUploadProps {
    * client in the same gesture as uploading. These are optional because the
    * component is also used by clients uploading for themselves, in which case
    * no notification UI is appropriate.
-   */
+  */
   viewerUsername?: string;
+  viewerRole?: Role;
   viewerName?: string;
   organizationName?: string;
   /** Optional client display name, used to pre-fill the templated message. */
@@ -85,6 +88,7 @@ export default function DocumentsInlineUpload({
   alert,
   onUploadComplete,
   viewerUsername,
+  viewerRole,
   viewerName,
   organizationName,
   clientName: clientNameProp,
@@ -125,7 +129,9 @@ export default function DocumentsInlineUpload({
   const [uploading, setUploading] = useState(false);
 
   // Notify flow
-  const canNotify = !!viewerUsername && viewerUsername !== targetUser;
+  const canNotify = !!viewerUsername
+    && viewerUsername !== targetUser
+    && canUseClientNotifications(viewerRole, organizationName);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const [clientDisplayName, setClientDisplayName] = useState<string>(clientNameProp || '');
   const [clientPhone, setClientPhone] = useState<string>('');

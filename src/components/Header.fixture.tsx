@@ -32,6 +32,7 @@ function HeaderFixture({ isLoggedIn, role }: Props) {
       logOut={console.log}
       isLoggedIn={isLoggedIn}
       role={role}
+      organization="Team Keep"
       alert={alert}
     />
   );

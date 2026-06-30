@@ -10,6 +10,7 @@ import DocumentsInlineUpload from './DocumentsInlineUpload';
 interface Props {
   alert: { show: (msg: string, opts?: { type?: string }) => void };
   userRole: Role;
+  viewerRole?: Role;
   username: string;
   viewerUsername?: string;
   viewerName?: string;
@@ -32,6 +33,7 @@ async function parseJsonResponseSafe(response: Response): Promise<any> {
 function UploadDocumentsPage({
   alert,
   userRole,
+  viewerRole,
   username,
   viewerUsername,
   viewerName,
@@ -170,6 +172,7 @@ function UploadDocumentsPage({
             if (returnTo) history.push(returnTo);
           }}
           viewerUsername={viewerUsername}
+          viewerRole={viewerRole}
           viewerName={viewerName}
           organizationName={organizationName}
           clientName={phoneUploadContext?.targetClientDisplayName || clientName}

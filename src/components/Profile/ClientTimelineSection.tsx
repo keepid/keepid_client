@@ -14,6 +14,7 @@ import {
 type Props = {
   username: string;
   workerNotes?: string;
+  showCommunicationHistory?: boolean;
   onSaved?: () => void;
 };
 
@@ -220,7 +221,12 @@ function groupNearbyMessages(items: MessageBoardItem[]) {
   });
 }
 
-export default function ClientTimelineSection({ username, workerNotes, onSaved }: Props) {
+export default function ClientTimelineSection({
+  username,
+  workerNotes,
+  showCommunicationHistory = true,
+  onSaved,
+}: Props) {
   const alert = useAlert();
   const [communicationItems, setCommunicationItems] = useState<MessageBoardItem[]>([]);
   const [workerNoteEntries, setWorkerNoteEntries] = useState<WorkerNoteEntry[]>([]);
@@ -230,6 +236,10 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
   const [saveState, setSaveState] = useState<SaveState>('idle');
 
   useEffect(() => {
+    if (!showCommunicationHistory) {
+      setCommunicationItems([]);
+      return undefined;
+    }
     let cancelled = false;
     getMessageBoard(username)
       .then((data) => {
@@ -241,7 +251,7 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
         if (!cancelled) setCommunicationItems([]);
       });
     return () => { cancelled = true; };
-  }, [username]);
+  }, [username, showCommunicationHistory]);
 
   useEffect(() => {
     setWorkerNoteEntries(parseWorkerNotes(workerNotes));
@@ -356,8 +366,12 @@ export default function ClientTimelineSection({ username, workerNotes, onSaved }
       <div className="message-board-header">
         <div>
           <p className="communications-kicker">Client timeline</p>
-          <h2>Notes & Communication History</h2>
-          <p>Worker notes, call notes, messages, and voicemail transcripts are grouped by date.</p>
+          <h2>{showCommunicationHistory ? 'Notes & Communication History' : 'Notes'}</h2>
+          <p>
+            {showCommunicationHistory
+              ? 'Worker notes, call notes, messages, and voicemail transcripts are grouped by date.'
+              : 'Worker notes are grouped by date.'}
+          </p>
         </div>
       </div>
 

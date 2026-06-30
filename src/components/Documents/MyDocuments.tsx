@@ -10,6 +10,7 @@ import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { canUseApplications, canUseClientNotifications } from '../../utils/featureAccess';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import DocumentsInlineUpload from './DocumentsInlineUpload';
@@ -498,7 +499,11 @@ class MyDocuments extends Component<Props, State> {
       });
     }
 
-    if (this.props.userRole === Role.Client && this.isStaffViewer()) {
+    if (
+      this.props.userRole === Role.Client
+      && this.isStaffViewer()
+      && canUseClientNotifications(this.props.viewerRole, this.props.organizationName)
+    ) {
       actions.push({
         label: 'Notify',
         icon: <MessageOutlinedIcon fontSize="small" />,
@@ -631,6 +636,10 @@ class MyDocuments extends Component<Props, State> {
     const mostRecentColumns: DataTableColumn[] = allDocumentsColumns.filter(
       (column) => column.field !== 'uploader',
     );
+    const canAccessApplications = canUseApplications(
+      this.props.viewerRole || this.props.userRole,
+      this.props.organizationName,
+    );
 
     return (
       <Switch>
@@ -639,6 +648,7 @@ class MyDocuments extends Component<Props, State> {
             <ViewDocument
               userRole={currentUserRole}
               viewerRole={this.props.viewerRole}
+              organizationName={this.props.organizationName}
               documentId={currentDocumentId}
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
@@ -689,7 +699,7 @@ class MyDocuments extends Component<Props, State> {
                     Profile
                   </button>
                 )}
-                {this.isStaffViewer() && (
+                {this.isStaffViewer() && canAccessApplications && (
                   <button
                     type="button"
                     className="btn btn-primary"
@@ -717,6 +727,7 @@ class MyDocuments extends Component<Props, State> {
                     </h1>
                   )}
                   viewerUsername={this.isStaffViewer() ? this.props.viewerUsername : undefined}
+                  viewerRole={this.isStaffViewer() ? this.props.viewerRole : undefined}
                   viewerName={this.isStaffViewer() ? this.props.viewerName : undefined}
                   organizationName={this.isStaffViewer() ? this.props.organizationName : undefined}
                   clientName={this.props.clientName}

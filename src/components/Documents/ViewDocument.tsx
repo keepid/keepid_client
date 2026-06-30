@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { canUseClientNotifications } from '../../utils/featureAccess';
 import { PrimaryButton, PrimaryButtonSolid } from '../BaseComponents/Button';
 import ApplicationStylePdfViewer from './ApplicationStylePdfViewer';
 
@@ -24,6 +25,7 @@ interface Props {
   customIdCategory?: string;
   clientName?: string;
   viewerRole?: Role;
+  organizationName?: string;
   onDownloadCurrentDocument: () => void;
   onRequestDeleteCurrentDocument: () => void;
   resetDocumentId: ()=> void;
@@ -44,6 +46,7 @@ const ViewDocument: React.FC<Props> = ({
   customIdCategory,
   clientName,
   viewerRole,
+  organizationName,
   onDownloadCurrentDocument,
   onRequestDeleteCurrentDocument,
   resetDocumentId,
@@ -98,6 +101,7 @@ const ViewDocument: React.FC<Props> = ({
   const isStaffViewer = viewerRole === Role.Worker
     || viewerRole === Role.Admin
     || viewerRole === Role.Director;
+  const canNotify = isStaffViewer && canUseClientNotifications(viewerRole, organizationName);
 
   const uploadedAtLabel = (() => {
     if (!documentDate) return '';
@@ -129,7 +133,7 @@ const ViewDocument: React.FC<Props> = ({
           <PrimaryButtonSolid onClick={onDownloadCurrentDocument}>
             Download
           </PrimaryButtonSolid>
-          {isStaffViewer && (
+          {canNotify && (
             <Link
               to={{
                 pathname: `/home/notify-client/${targetUser}`,

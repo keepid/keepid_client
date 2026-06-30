@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import Logo from '../static/images/logo.svg';
 import Role from '../static/Role';
+import { canUseApplications, canUseCommunications } from '../utils/featureAccess';
 import Logout from './UserAuthentication/Logout';
 
 const logoSize = 40;
@@ -18,14 +19,18 @@ interface Props {
   logOut: () => void;
   isLoggedIn: boolean;
   role: Role;
+  organization: string;
   alert: any;
 }
 
 interface State {}
 
 // We extend React.Component with Props & State
-function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
+function Header({ logIn, logOut, isLoggedIn, role, organization, alert }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const isStaffUser = role === Role.Admin || role === Role.Director || role === Role.Worker;
+  const showApplicationsLink = isStaffUser && canUseApplications(role, organization);
+  const showCommunicationsLink = canUseCommunications(role, organization);
 
   // Updated NavLink
   const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
@@ -107,14 +112,14 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
           {isLoggedIn ? (
             <>
               <NavLink to="/">
-                {role === Role.Admin || role === Role.Director || role === Role.Worker
+                {isStaffUser
                   ? 'My Clients'
                   : 'Home'}
               </NavLink>
-              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+              {showApplicationsLink && (
                 <NavLink to="/applications?view=all">Applications</NavLink>
               )}
-              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+              {showCommunicationsLink && (
                 <NavLink to="/communications">Communications</NavLink>
               )}
 
@@ -155,17 +160,17 @@ function Header({ logIn, logOut, isLoggedIn, role, alert }: Props) {
             <>
               <li>
                 <NavLink to="/">
-                  {role === Role.Admin || role === Role.Director || role === Role.Worker
+                  {isStaffUser
                     ? 'My Clients'
                     : 'Home'}
                 </NavLink>
               </li>
-              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+              {showApplicationsLink && (
                 <li>
                   <NavLink to="/applications?view=all">Applications</NavLink>
                 </li>
               )}
-              {(role === Role.Admin || role === Role.Director || role === Role.Worker) && (
+              {showCommunicationsLink && (
                 <li>
                   <NavLink to="/communications">Communications</NavLink>
                 </li>
