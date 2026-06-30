@@ -454,7 +454,22 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     if (availableApplications.length === 0) return null;
 
     return (
-      <div className="tw-border-b tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
+      <div className="tw-border-b tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-4">
+        <div className="tw-mb-3 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
+          <span className="tw-text-sm tw-font-semibold tw-text-gray-900">Filters</span>
+          <span className="tw-flex tw-items-center tw-gap-3 tw-text-xs tw-text-gray-500">
+            Showing {filteredApplications.length} of {availableApplications.length}
+            {hasFilters && (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={this.clearApplicationFilters}
+              >
+                Reset
+              </button>
+            )}
+          </span>
+        </div>
         <div className="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-3">
           <label htmlFor="application-housing-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
             Housing
@@ -502,20 +517,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             </select>
           </label>
         </div>
-        <div className="tw-mt-2 tw-flex tw-items-center tw-justify-between tw-gap-3 tw-text-xs tw-text-gray-500">
-          <span>
-            Showing {filteredApplications.length} of {availableApplications.length}
-          </span>
-          {hasFilters && (
-            <button
-              type="button"
-              className="tw-border-0 tw-bg-transparent tw-p-0 tw-font-medium tw-text-twprimary hover:tw-underline"
-              onClick={this.clearApplicationFilters}
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
       </div>
     );
   };
@@ -545,7 +546,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               startAtReview: true,
             },
           }}
-          className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-4 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
+          className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-sm tw-no-underline last:tw-border-b-0 hover:tw-bg-blue-50"
         >
           <span className="tw-min-w-0">
             <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
@@ -561,14 +562,14 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     if (availableApplications.length > 0) {
       return (
-        <div className="tw-border-b tw-border-gray-200 tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
+        <div className="tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
           No supported forms match these filters.
         </div>
       );
     }
 
     return (
-      <div className="tw-border-b tw-border-gray-200 tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
+      <div className="tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
         No supported forms are available.
       </div>
     );
@@ -1225,42 +1226,40 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
-                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
-                  {clientUsername && (
-                    <Link
-                      to={{
-                        pathname: '/applications/selector',
-                        state: {
-                          clientUsername,
-                          clientName: clientName || '',
-                        },
-                      }}
-                      className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline hover:tw-bg-blue-100"
-                    >
-                      <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                        <img
-                          src={
-                            applicationSelectorFlowDefinition.listImageUrl
-                            || '/SelectApplicationForm/pennsylvania.svg'
-                          }
-                          alt=""
-                          aria-hidden="true"
-                          className="tw-h-9 tw-w-9 tw-shrink-0"
-                        />
-                        <span className="tw-min-w-0">
-                          <span className="tw-block tw-truncate tw-font-semibold tw-text-gray-900">
-                            Application Selector
-                          </span>
-                          <span className="tw-block tw-truncate tw-text-xs tw-text-gray-600">
-                            Guided application selection
-                          </span>
-                        </span>
+                {clientUsername && (
+                  <Link
+                    to={{
+                      pathname: '/applications/selector',
+                      state: {
+                        clientUsername,
+                        clientName: clientName || '',
+                      },
+                    }}
+                    className="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-blue-100 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline tw-shadow-sm hover:tw-bg-blue-100"
+                  >
+                    <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
+                      <img
+                        src={
+                          applicationSelectorFlowDefinition.listImageUrl
+                          || '/SelectApplicationForm/pennsylvania.svg'
+                        }
+                        alt=""
+                        aria-hidden="true"
+                        className="tw-h-10 tw-w-10 tw-shrink-0"
+                      />
+                      <span className="tw-block tw-min-w-0 tw-truncate tw-font-semibold tw-text-gray-900">
+                        Application Selector
                       </span>
-                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
-                        <span className="tw-hidden sm:tw-inline">Start</span>
-                      </span>
-                    </Link>
-                  )}
+                    </span>
+                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
+                      <span className="tw-hidden sm:tw-inline">Start</span>
+                    </span>
+                  </Link>
+                )}
+                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-shadow-sm">
+                  <div className="tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3">
+                    <h3 className="tw-mb-0 tw-text-sm tw-font-semibold tw-text-gray-900">Available forms</h3>
+                  </div>
                   {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
                   {this.renderAvailableApplicationRows(
                     availableApplications,
@@ -1268,6 +1267,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     clientUsername,
                     clientName,
                   )}
+                </div>
+                <div className="tw-mt-3 tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                   <div className="tw-border-b tw-border-gray-200 tw-bg-white">
                     <button
                       type="button"
