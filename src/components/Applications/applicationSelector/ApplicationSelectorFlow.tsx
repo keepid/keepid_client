@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
-import { loadApplicationSelectorFlow } from './flowApi';
+import {
+  loadApplicationSelectorFlow,
+  loadApplicationSelectorProfileAnswers,
+} from './flowApi';
+import {
+  getNextRenderableStepIndex,
+  getPreviousRenderableStepIndex,
+} from './flowLogic';
 import { resolveApplicationSelectorOutcome } from './outcomeResolver';
 import { placeholderApplicationSelectorFlow } from './placeholderFlow';
 import type {
@@ -29,6 +37,7 @@ const ApplicationSelectorFlow = ({
   const history = useHistory();
   const [flow, setFlow] = useState<ApplicationSelectorFlowDefinition>(placeholderApplicationSelectorFlow);
   const [answers, setAnswers] = useState<ApplicationSelectorAnswers>({});
+  const [profileAnswers, setProfileAnswers] = useState<ApplicationSelectorAnswers>({});
   const [stepIndex, setStepIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -39,24 +48,39 @@ const ApplicationSelectorFlow = ({
 
   useEffect(() => {
     let isActive = true;
-    loadApplicationSelectorFlow()
-      .then((loadedFlow) => {
-        if (!isActive) return;
-        setFlow(loadedFlow);
-        setLoadError(null);
-      })
+    const loadFlow = async () => {
+      const loadedFlow = await loadApplicationSelectorFlow();
+      const loadedProfileAnswers = await loadApplicationSelectorProfileAnswers(loadedFlow, clientUsername)
+        .catch(() => ({}));
+      if (!isActive) return;
+      setFlow(loadedFlow);
+      setProfileAnswers(loadedProfileAnswers);
+      setAnswers(loadedProfileAnswers);
+      setStepIndex(getNextRenderableStepIndex(loadedFlow, loadedProfileAnswers, 0, loadedProfileAnswers));
+      setLoadError(null);
+      setIsLoading(false);
+    };
+
+    loadFlow()
       .catch(() => {
         if (!isActive) return;
+        const fallbackAnswers: ApplicationSelectorAnswers = {};
         setFlow(placeholderApplicationSelectorFlow);
+        setProfileAnswers(fallbackAnswers);
+        setAnswers(fallbackAnswers);
+        setStepIndex(getNextRenderableStepIndex(
+          placeholderApplicationSelectorFlow,
+          fallbackAnswers,
+          0,
+          fallbackAnswers,
+        ));
         setLoadError('Using the local placeholder selector flow.');
-      })
-      .finally(() => {
-        if (isActive) setIsLoading(false);
+        setIsLoading(false);
       });
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [clientUsername]);
 
   const currentQuestion = flow.questions[stepIndex];
   const isOutcomeStep = stepIndex >= flow.questions.length;
@@ -75,27 +99,38 @@ const ApplicationSelectorFlow = ({
     });
   };
 
+  const goToNextStep = (nextAnswers: ApplicationSelectorAnswers = answers) => {
+    setStepIndex(getNextRenderableStepIndex(flow, nextAnswers, stepIndex + 1, profileAnswers));
+  };
+
   const handleAnswer = (question: ApplicationSelectorQuestion, option: ApplicationSelectorOption) => {
-    setAnswers((previousAnswers) => ({
-      ...previousAnswers,
+    const nextAnswers = {
+      ...answers,
       [question.id]: option.value,
-    }));
+    };
+    setAnswers(nextAnswers);
     setUploadFile(null);
     setUploadError(null);
-    setStepIndex((previousStepIndex) => Math.min(previousStepIndex + 1, flow.questions.length));
+    goToNextStep(nextAnswers);
   };
 
   const startOver = () => {
-    setAnswers({});
-    setStepIndex(0);
+    setAnswers(profileAnswers);
+    setStepIndex(getNextRenderableStepIndex(flow, profileAnswers, 0, profileAnswers));
   };
 
   const goToPreviousStep = () => {
-    if (stepIndex === 0) {
+    const previousStepIndex = getPreviousRenderableStepIndex(
+      flow,
+      answers,
+      stepIndex >= flow.questions.length ? flow.questions.length - 1 : stepIndex - 1,
+      profileAnswers,
+    );
+    if (previousStepIndex === null) {
       goBackToApplications();
       return;
     }
-    setStepIndex((previousStepIndex) => Math.max(previousStepIndex - 1, 0));
+    setStepIndex(previousStepIndex);
   };
 
   const getPresetApplication = (selectedOutcome: ApplicationSelectorOutcome) => {
@@ -122,6 +157,7 @@ const ApplicationSelectorFlow = ({
         clientName: clientName || '',
         presetApplication: getPresetApplication(selectedOutcome),
         startAtReview: true,
+        selectorInstructionsMarkdown: selectedOutcome.instructionsMarkdown || '',
       },
     });
   };
@@ -166,7 +202,7 @@ const ApplicationSelectorFlow = ({
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => setStepIndex(flow.questions.length)}
+              onClick={() => goToNextStep()}
             >
               Continue
             </button>
@@ -196,9 +232,9 @@ const ApplicationSelectorFlow = ({
                 ].join(' ')}
                 onClick={() => handleAnswer(question, option)}
               >
-                {option.iconSvgUrl && (
+                {option.imageUrl && (
                   <img
-                    src={option.iconSvgUrl}
+                    src={option.imageUrl}
                     alt=""
                     className="tw-h-28 tw-w-36 tw-max-w-full tw-shrink-0 tw-object-contain"
                     aria-hidden="true"
@@ -328,13 +364,11 @@ const ApplicationSelectorFlow = ({
         <div className="tw-mb-5">
           <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-900">{outcome.title}</h2>
         </div>
-        {(outcome.instructions || []).length > 0 && (
+        {outcome.instructionsMarkdown && (
           <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
-            <ol className="tw-mb-0 tw-space-y-2 tw-pl-5 tw-text-sm tw-leading-6 tw-text-gray-700">
-              {(outcome.instructions || []).map((instruction) => (
-                <li key={instruction}>{instruction}</li>
-              ))}
-            </ol>
+            <div className="tw-prose tw-prose-sm tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
+              <ReactMarkdown>{outcome.instructionsMarkdown}</ReactMarkdown>
+            </div>
           </div>
         )}
         {(outcome.includeComponents || []).length > 0 && (

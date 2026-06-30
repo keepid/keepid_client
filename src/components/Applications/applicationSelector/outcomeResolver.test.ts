@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildProfileAnswers, getNextRenderableStepIndex } from './flowLogic';
 import { resolveApplicationSelectorOutcome } from './outcomeResolver';
 import { placeholderApplicationSelectorFlow } from './placeholderFlow';
+import type { ApplicationSelectorFlowDefinition } from './types';
 
 describe('application selector outcome resolver', () => {
   it('maps a complete answer set to one annotated-form outcome', () => {
@@ -46,5 +48,107 @@ describe('application selector outcome resolver', () => {
     expect(resolveApplicationSelectorOutcome(flowWithBroadOutcomeFirst, {
       birthState: 'PA',
     })?.id).toBe('pa-birth-certificate-annotated');
+  });
+
+  it('only requires conditional answers when their showWhen checks match', () => {
+    const conditionalFlow: ApplicationSelectorFlowDefinition = {
+      ...placeholderApplicationSelectorFlow,
+      questions: [
+        {
+          id: 'birthState',
+          title: 'Birth state',
+          description: '',
+          type: 'singleChoice',
+          answerSource: null,
+          showWhen: [],
+          includeComponents: [],
+          options: [
+            { value: 'PA', label: 'Pennsylvania' },
+          ],
+        },
+        {
+          id: 'hasShelterLetter',
+          title: 'Does the client have a shelter letter?',
+          description: '',
+          type: 'singleChoice',
+          answerSource: null,
+          showWhen: [{ questionId: 'birthState', value: 'PA' }],
+          includeComponents: [],
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+      ],
+      outcomes: [
+        {
+          id: 'pa-with-letter',
+          title: 'PA with shelter letter',
+          applicationId: 'dc0f',
+          applicationLabel: 'Directive Coverage Test',
+          uploadLabel: null,
+          instructionsMarkdown: '1. Start the application.',
+          matches: [
+            { questionId: 'birthState', value: 'PA' },
+            { questionId: 'hasShelterLetter', value: 'yes' },
+          ],
+          includeComponents: [],
+        },
+      ],
+    };
+
+    expect(resolveApplicationSelectorOutcome(conditionalFlow, {
+      birthState: 'PA',
+    })).toBeNull();
+
+    expect(resolveApplicationSelectorOutcome(conditionalFlow, {
+      birthState: 'PA',
+      hasShelterLetter: 'yes',
+    })?.id).toBe('pa-with-letter');
+  });
+
+  it('uses profile answer sources as hidden answers', () => {
+    const profileFlow: ApplicationSelectorFlowDefinition = {
+      ...placeholderApplicationSelectorFlow,
+      questions: [
+        {
+          id: 'experiencingHomelessness',
+          title: 'Are you experiencing homelessness?',
+          description: '',
+          type: 'singleChoice',
+          answerSource: {
+            type: 'profile',
+            field: 'client.experiencingHomelessness',
+          },
+          showWhen: [],
+          includeComponents: [],
+          options: [
+            { value: 'true', label: 'Yes' },
+            { value: 'false', label: 'No' },
+          ],
+        },
+        {
+          id: 'birthState',
+          title: 'Birth state',
+          description: '',
+          type: 'singleChoice',
+          answerSource: null,
+          showWhen: [],
+          includeComponents: [],
+          options: [
+            { value: 'PA', label: 'Pennsylvania' },
+          ],
+        },
+      ],
+    };
+
+    const profileAnswers = buildProfileAnswers(profileFlow, {
+      client: {
+        experiencingHomelessness: true,
+      },
+    });
+
+    expect(profileAnswers).toEqual({ experiencingHomelessness: 'true' });
+    expect(getNextRenderableStepIndex(profileFlow, profileAnswers, 0, profileAnswers)).toBe(1);
   });
 });

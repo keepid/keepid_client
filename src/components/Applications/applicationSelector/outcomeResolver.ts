@@ -1,3 +1,4 @@
+import { getActiveAnswerQuestionIds } from './flowLogic';
 import type {
   ApplicationSelectorAnswers,
   ApplicationSelectorFlowDefinition,
@@ -6,15 +7,15 @@ import type {
 
 export const getAnswerQuestionIds = (
   flow: ApplicationSelectorFlowDefinition,
-): string[] => flow.questions
-  .filter((question) => question.type === 'singleChoice')
-  .map((question) => question.id);
+  answers: ApplicationSelectorAnswers = {},
+): string[] => getActiveAnswerQuestionIds(flow, answers);
 
 export const resolveApplicationSelectorOutcome = (
   flow: ApplicationSelectorFlowDefinition,
   answers: ApplicationSelectorAnswers,
 ): ApplicationSelectorOutcome | null => {
-  const answerQuestionIds = getAnswerQuestionIds(flow);
+  const answerQuestionIds = getAnswerQuestionIds(flow, answers);
+  const answerQuestionIdSet = new Set(answerQuestionIds);
   const completedAnswerIds = answerQuestionIds.filter((questionId) => answers[questionId]);
 
   if (completedAnswerIds.length !== answerQuestionIds.length) {
@@ -26,6 +27,8 @@ export const resolveApplicationSelectorOutcome = (
       return false;
     }
 
-    return outcome.matches.every((match) => answers[match.questionId] === match.value);
+    return outcome.matches.every(
+      (match) => answerQuestionIdSet.has(match.questionId) && answers[match.questionId] === match.value,
+    );
   }) || null;
 };

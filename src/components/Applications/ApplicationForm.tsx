@@ -135,7 +135,11 @@ function matchesClientSearchQuery(client: ClientSearchResult, query: string): bo
   ));
 }
 
-export default function ApplicationForm() {
+export default function ApplicationForm({
+  selectorInstructionsMarkdown = '',
+}: {
+  selectorInstructionsMarkdown?: string;
+}) {
   const {
     formContent,
     page,
@@ -970,6 +974,7 @@ export default function ApplicationForm() {
             data={data}
             blankFormId={blankFormId}
             clientName={targetClientName || targetClientUsername}
+            instructionsMarkdownOverride={selectorInstructionsMarkdown}
           />
         )}
 

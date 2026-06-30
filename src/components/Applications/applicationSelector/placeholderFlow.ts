@@ -20,10 +20,10 @@ const annotatedOutcome = (
   applicationId: DIRECTIVE_COVERAGE_APPLICATION_ID,
   applicationLabel: 'Directive Coverage Test',
   uploadLabel: null,
-  instructions: [
-    'Start the application.',
-    'Save the application when it is complete.',
-  ],
+  instructionsMarkdown: [
+    '1. Start the application.',
+    '2. Save the application when it is complete.',
+  ].join('\n'),
   matches: exactMatches(birthState),
   includeComponents: [],
 });
@@ -38,7 +38,7 @@ const uploadOutcome = (
   applicationId: null,
   applicationLabel: null,
   uploadLabel: 'Upload PDF',
-  instructions: ['Upload the completed PDF.'],
+  instructionsMarkdown: '1. Upload the completed PDF.',
   matches: exactMatches(birthState),
   includeComponents: [],
 });
@@ -53,25 +53,27 @@ export const placeholderApplicationSelectorFlow: ApplicationSelectorFlowDefiniti
       title: 'What state was the client born in?',
       description: '',
       type: 'singleChoice',
+      answerSource: null,
+      showWhen: [],
       includeComponents: [],
       options: [
         {
           value: 'PA',
           label: 'Pennsylvania',
           description: '',
-          iconSvgUrl: stateImageUrl('pennsylvania'),
+          imageUrl: stateImageUrl('pennsylvania'),
         },
         {
           value: 'NJ',
           label: 'New Jersey',
           description: '',
-          iconSvgUrl: stateImageUrl('new-jersey'),
+          imageUrl: stateImageUrl('new-jersey'),
         },
         {
           value: 'NY',
           label: 'New York',
           description: '',
-          iconSvgUrl: stateImageUrl('new-york-state'),
+          imageUrl: stateImageUrl('new-york-state'),
         },
       ],
     },
@@ -80,6 +82,8 @@ export const placeholderApplicationSelectorFlow: ApplicationSelectorFlowDefiniti
       title: 'Placeholder component',
       description: '',
       type: 'componentPage',
+      answerSource: null,
+      showWhen: [],
       includeComponents: ['blueBox'],
       options: [],
     },

@@ -2,7 +2,12 @@ export interface ApplicationSelectorOption {
   value: string;
   label: string;
   description?: string | null;
-  iconSvgUrl?: string | null;
+  imageUrl?: string | null;
+}
+
+export interface ApplicationSelectorAnswerSource {
+  type: 'profile';
+  field: string;
 }
 
 export interface ApplicationSelectorQuestion {
@@ -10,6 +15,8 @@ export interface ApplicationSelectorQuestion {
   title: string;
   description?: string | null;
   type: 'singleChoice' | 'componentPage';
+  answerSource?: ApplicationSelectorAnswerSource | null;
+  showWhen: ApplicationSelectorAnswerMatch[];
   options: ApplicationSelectorOption[];
   includeComponents: string[];
 }
@@ -25,7 +32,7 @@ export interface ApplicationSelectorOutcome {
   applicationId?: string | null;
   applicationLabel?: string | null;
   uploadLabel?: string | null;
-  instructions: string[];
+  instructionsMarkdown?: string | null;
   matches: ApplicationSelectorAnswerMatch[];
   includeComponents: string[];
 }
