@@ -19,7 +19,7 @@ import {
 } from './api/interactiveForm';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
-import { applicationSelectorListIcon } from './applicationSelector/placeholderFlow';
+import { applicationSelectorFlowDefinition } from './applicationSelector/flowApi';
 import type { ApplicationSelectorOutcome } from './applicationSelector/types';
 
 interface DocumentInformation {
@@ -67,6 +67,8 @@ interface AvailableApplication {
   housingStatus: string;
 }
 
+type ApplicationFilterKey = 'state' | 'idType' | 'housingStatus';
+
 interface State {
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
@@ -81,6 +83,10 @@ interface State {
   renameValue: string,
   isRenaming: boolean,
   availableApplications: AvailableApplication[],
+  applicationStateFilter: string,
+  applicationIdTypeFilter: string,
+  applicationHousingStatusFilter: string,
+  applicationHousingStatusFilterTouched: boolean,
   orgDocuments: OrgDocumentOption[],
   isLoadingOrgDocuments: boolean,
   uploadModalOpen: boolean,
@@ -124,6 +130,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       renameValue: '',
       isRenaming: false,
       availableApplications: [],
+      applicationStateFilter: '',
+      applicationIdTypeFilter: '',
+      applicationHousingStatusFilter: '',
+      applicationHousingStatusFilterTouched: false,
       orgDocuments: [],
       isLoadingOrgDocuments: false,
       uploadModalOpen: false,
@@ -339,6 +349,232 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
+  getProfileHousingStatus = (profile: Record<string, unknown>): string => {
+    const raw = profile.experiencingHomelessness;
+    if (raw === true || String(raw).toLowerCase() === 'true') return 'Homeless';
+    if (raw === false || String(raw).toLowerCase() === 'false') return 'Housed';
+    return '';
+  };
+
+  loadClientHousingStatus = (clientUsername?: string) => {
+    if (!clientUsername) return;
+
+    fetch(`${getServerURL()}/get-user-info`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: clientUsername }),
+    })
+      .then((response) => response.json())
+      .then((profile) => {
+        if (this.state.clientUsername !== clientUsername) return;
+        if (this.state.applicationHousingStatusFilterTouched) return;
+        if (!profile || profile.status !== 'SUCCESS') return;
+        const housingStatus = this.getProfileHousingStatus(profile);
+        if (!housingStatus) return;
+        this.setState({ applicationHousingStatusFilter: housingStatus });
+      })
+      .catch(() => {
+        // Best-effort default only; leave filters user-controlled if profile lookup fails.
+      });
+  };
+
+  getApplicationFilterOptions = (
+    field: ApplicationFilterKey,
+    preferredOrder: string[],
+  ): string[] => {
+    const values = new Set(
+      this.state.availableApplications
+        .map((application) => application[field].trim())
+        .filter((value) => value.length > 0),
+    );
+    return [
+      ...preferredOrder.filter((value) => values.delete(value)),
+      ...Array.from(values).sort((a, b) => a.localeCompare(b)),
+    ];
+  };
+
+  matchesApplicationFilter = (
+    value: string,
+    filter: string,
+    includeBroadMatches = false,
+  ): boolean => {
+    if (!filter) return true;
+    const normalizedValue = value.trim();
+    if (includeBroadMatches && !normalizedValue) return true;
+    return normalizedValue === filter;
+  };
+
+  getFilteredAvailableApplications = (): AvailableApplication[] => {
+    const {
+      availableApplications,
+      applicationStateFilter,
+      applicationIdTypeFilter,
+      applicationHousingStatusFilter,
+    } = this.state;
+
+    return availableApplications.filter((application) => (
+      this.matchesApplicationFilter(application.state, applicationStateFilter, true)
+      && this.matchesApplicationFilter(application.idType, applicationIdTypeFilter)
+      && this.matchesApplicationFilter(application.housingStatus, applicationHousingStatusFilter, true)
+    ));
+  };
+
+  clearApplicationFilters = () => {
+    this.setState({
+      applicationStateFilter: '',
+      applicationIdTypeFilter: '',
+      applicationHousingStatusFilter: '',
+      applicationHousingStatusFilterTouched: true,
+    });
+  };
+
+  renderApplicationFilters = (
+    availableApplications: AvailableApplication[],
+    filteredApplications: AvailableApplication[],
+  ) => {
+    const {
+      applicationStateFilter,
+      applicationIdTypeFilter,
+      applicationHousingStatusFilter,
+    } = this.state;
+    const stateOptions = this.getApplicationFilterOptions('state', ['PA', 'NJ', 'NY']);
+    const idTypeOptions = this.getApplicationFilterOptions('idType', [
+      'Birth Certificate',
+      'Photo ID',
+      'Social Security Card',
+    ]);
+    const housingStatusOptions = this.getApplicationFilterOptions('housingStatus', ['Homeless', 'Housed']);
+    const hasFilters = Boolean(
+      applicationStateFilter
+      || applicationIdTypeFilter
+      || applicationHousingStatusFilter,
+    );
+
+    if (availableApplications.length === 0) return null;
+
+    return (
+      <div className="tw-border-b tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-4">
+        <div className="tw-mb-3 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
+          <span className="tw-text-sm tw-font-semibold tw-text-gray-900">Filters</span>
+          <span className="tw-flex tw-items-center tw-gap-3 tw-text-xs tw-text-gray-500">
+            Showing {filteredApplications.length} of {availableApplications.length}
+            {hasFilters && (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={this.clearApplicationFilters}
+              >
+                Reset
+              </button>
+            )}
+          </span>
+        </div>
+        <div className="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-3">
+          <label htmlFor="application-housing-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
+            Housing
+            <select
+              id="application-housing-filter"
+              className="form-control form-control-sm tw-mt-1"
+              value={applicationHousingStatusFilter}
+              onChange={(e) => this.setState({
+                applicationHousingStatusFilter: e.target.value,
+                applicationHousingStatusFilterTouched: true,
+              })}
+            >
+              <option value="">All housing</option>
+              {housingStatusOptions.map((value) => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="application-state-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
+            State
+            <select
+              id="application-state-filter"
+              className="form-control form-control-sm tw-mt-1"
+              value={applicationStateFilter}
+              onChange={(e) => this.setState({ applicationStateFilter: e.target.value })}
+            >
+              <option value="">All states</option>
+              {stateOptions.map((value) => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="application-id-type-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
+            ID type
+            <select
+              id="application-id-type-filter"
+              className="form-control form-control-sm tw-mt-1"
+              value={applicationIdTypeFilter}
+              onChange={(e) => this.setState({ applicationIdTypeFilter: e.target.value })}
+            >
+              <option value="">All ID types</option>
+              {idTypeOptions.map((value) => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+    );
+  };
+
+  renderAvailableApplicationRows = (
+    availableApplications: AvailableApplication[],
+    filteredApplications: AvailableApplication[],
+    clientUsername?: string,
+    clientName?: string,
+  ) => {
+    if (filteredApplications.length > 0) {
+      return filteredApplications.map((application) => (
+        <Link
+          key={application.applicationId}
+          to={{
+            pathname: '/applications/createnew',
+            state: {
+              clientUsername: clientUsername || '',
+              clientName: clientName || '',
+              presetApplication: {
+                applicationId: application.applicationId,
+                label: application.label,
+                state: application.state,
+                idType: application.idType,
+                housingStatus: application.housingStatus,
+              },
+              startAtReview: true,
+            },
+          }}
+          className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-sm tw-no-underline last:tw-border-b-0 hover:tw-bg-blue-50"
+        >
+          <span className="tw-min-w-0">
+            <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
+              {application.label}
+            </span>
+          </span>
+          <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+            <span className="tw-hidden sm:tw-inline">Start</span>
+          </span>
+        </Link>
+      ));
+    }
+
+    if (availableApplications.length > 0) {
+      return (
+        <div className="tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
+          No supported forms match these filters.
+        </div>
+      );
+    }
+
+    return (
+      <div className="tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
+        No supported forms are available.
+      </div>
+    );
+  };
+
   loadOrgDocuments = () => {
     this.setState({ isLoadingOrgDocuments: true });
     listOrgDocuments()
@@ -352,13 +588,28 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
   loadDocuments = (targetUsername?: string, targetName?: string) => {
     const isWorkerView = Boolean(targetUsername && targetUsername.trim().length > 0);
-    if (isWorkerView) {
-      this.setState({ clientUsername: targetUsername, clientName: targetName });
-    } else {
-      this.setState({ clientUsername: undefined, clientName: undefined });
-    }
+    const previousClientUsername = this.state.clientUsername;
+    const nextClientUsername = isWorkerView ? targetUsername : undefined;
+    const clientChanged = previousClientUsername !== nextClientUsername;
+    const clientFilterReset = clientChanged
+      ? {
+        applicationHousingStatusFilter: '',
+        applicationHousingStatusFilterTouched: false,
+      }
+      : {};
 
-    this.setState({ isLoadingDocuments: true, documentsError: null });
+    this.setState({
+      clientUsername: nextClientUsername,
+      clientName: isWorkerView ? targetName : undefined,
+      ...clientFilterReset,
+      isLoadingDocuments: true,
+      documentsError: null,
+    }, () => {
+      if (clientChanged && nextClientUsername) {
+        this.loadClientHousingStatus(nextClientUsername);
+      }
+    });
+
     // /list-applications returns a flat array of ApplicationListItemDto rows
     // (id, state, title, client*, timestamps, attachmentCount).
     // Authz lives in the handler: client sees own; same-org staff sees all.
@@ -843,6 +1094,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
+    const filteredAvailableApplications = this.getFilteredAvailableApplications();
 
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
@@ -974,75 +1226,49 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
                   <h2 className="h5 tw-mb-0">Start a new application</h2>
                 </div>
-                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
-                  {clientUsername && (
-                    <Link
-                      to={{
-                        pathname: '/applications/selector',
-                        state: {
-                          clientUsername,
-                          clientName: clientName || '',
-                        },
-                      }}
-                      className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline hover:tw-bg-blue-100"
-                    >
-                      <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                        <img
-                          src={applicationSelectorListIcon}
-                          alt=""
-                          aria-hidden="true"
-                          className="tw-h-9 tw-w-9 tw-shrink-0"
-                        />
-                        <span className="tw-min-w-0">
-                          <span className="tw-block tw-truncate tw-font-semibold tw-text-gray-900">
-                            Application Selector
-                          </span>
-                          <span className="tw-block tw-truncate tw-text-xs tw-text-gray-600">
-                            Guided application selection
-                          </span>
-                        </span>
+                {clientUsername && (
+                  <Link
+                    to={{
+                      pathname: '/applications/selector',
+                      state: {
+                        clientUsername,
+                        clientName: clientName || '',
+                      },
+                    }}
+                    className="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-blue-100 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline tw-shadow-sm hover:tw-bg-blue-100"
+                  >
+                    <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
+                      <img
+                        src={
+                          applicationSelectorFlowDefinition.listImageUrl
+                          || '/SelectApplicationForm/pennsylvania.svg'
+                        }
+                        alt=""
+                        aria-hidden="true"
+                        className="tw-h-10 tw-w-10 tw-shrink-0"
+                      />
+                      <span className="tw-block tw-min-w-0 tw-truncate tw-font-semibold tw-text-gray-900">
+                        Application Selector
                       </span>
-                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
-                        <span className="tw-hidden sm:tw-inline">Start</span>
-                      </span>
-                    </Link>
+                    </span>
+                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
+                      <span className="tw-hidden sm:tw-inline">Start</span>
+                    </span>
+                  </Link>
+                )}
+                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-shadow-sm">
+                  <div className="tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3">
+                    <h3 className="tw-mb-0 tw-text-sm tw-font-semibold tw-text-gray-900">Available forms</h3>
+                  </div>
+                  {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
+                  {this.renderAvailableApplicationRows(
+                    availableApplications,
+                    filteredAvailableApplications,
+                    clientUsername,
+                    clientName,
                   )}
-                  {availableApplications.length > 0 ? (
-                    availableApplications.map((application) => (
-                      <Link
-                        key={application.applicationId}
-                        to={{
-                          pathname: '/applications/createnew',
-                          state: {
-                            clientUsername: clientUsername || '',
-                            clientName: clientName || '',
-                            presetApplication: {
-                              applicationId: application.applicationId,
-                              label: application.label,
-                              state: application.state,
-                              idType: application.idType,
-                              housingStatus: application.housingStatus,
-                            },
-                            startAtReview: true,
-                          },
-                        }}
-                        className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-4 tw-py-3 tw-text-sm tw-no-underline hover:tw-bg-blue-50"
-                      >
-                        <span className="tw-min-w-0">
-                          <span className="tw-block tw-truncate tw-font-medium tw-text-gray-900">
-                            {application.label}
-                          </span>
-                        </span>
-                        <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
-                          <span className="tw-hidden sm:tw-inline">Start</span>
-                        </span>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="tw-border-b tw-border-gray-200 tw-px-4 tw-py-4 tw-text-sm tw-text-gray-500">
-                      No supported forms are available.
-                    </div>
-                  )}
+                </div>
+                <div className="tw-mt-3 tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                   <div className="tw-border-b tw-border-gray-200 tw-bg-white">
                     <button
                       type="button"

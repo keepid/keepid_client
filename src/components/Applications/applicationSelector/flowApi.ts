@@ -1,27 +1,13 @@
 import getServerURL from '../../../serverOverride';
 import type { ResolvedProfiles } from '../../../utils/directives';
+import applicationSelectorFlowData from './applicationSelectorFlow.json';
 import { buildProfileAnswers } from './flowLogic';
-import { placeholderApplicationSelectorFlow } from './placeholderFlow';
 import type { ApplicationSelectorAnswers, ApplicationSelectorFlowDefinition } from './types';
 
-export const loadApplicationSelectorFlow = async (): Promise<ApplicationSelectorFlowDefinition> => {
-  try {
-    const response = await fetch(`${getServerURL()}/get-application-selector-flow`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    if (!response.ok) {
-      return placeholderApplicationSelectorFlow;
-    }
-    const flow = await response.json();
-    if (!flow || !Array.isArray(flow.questions) || !Array.isArray(flow.outcomes)) {
-      return placeholderApplicationSelectorFlow;
-    }
-    return flow;
-  } catch {
-    return placeholderApplicationSelectorFlow;
-  }
-};
+export const applicationSelectorFlowDefinition =
+  applicationSelectorFlowData as ApplicationSelectorFlowDefinition;
+
+export const loadApplicationSelectorFlow = async (): Promise<ApplicationSelectorFlowDefinition> => applicationSelectorFlowDefinition;
 
 export const loadApplicationSelectorProfileAnswers = async (
   flow: ApplicationSelectorFlowDefinition,

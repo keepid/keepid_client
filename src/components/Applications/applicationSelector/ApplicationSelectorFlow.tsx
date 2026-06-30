@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
 import {
+  applicationSelectorFlowDefinition,
   loadApplicationSelectorFlow,
   loadApplicationSelectorProfileAnswers,
 } from './flowApi';
@@ -12,7 +13,6 @@ import {
   getRenderableStepNumber,
 } from './flowLogic';
 import { resolveApplicationSelectorOutcome } from './outcomeResolver';
-import { placeholderApplicationSelectorFlow } from './placeholderFlow';
 import type {
   ApplicationSelectorAnswers,
   ApplicationSelectorFlowDefinition,
@@ -36,7 +36,7 @@ const ApplicationSelectorFlow = ({
   onUploadPdf,
 }: Props) => {
   const history = useHistory();
-  const [flow, setFlow] = useState<ApplicationSelectorFlowDefinition>(placeholderApplicationSelectorFlow);
+  const [flow, setFlow] = useState<ApplicationSelectorFlowDefinition>(applicationSelectorFlowDefinition);
   const [answers, setAnswers] = useState<ApplicationSelectorAnswers>({});
   const [profileAnswers, setProfileAnswers] = useState<ApplicationSelectorAnswers>({});
   const [stepIndex, setStepIndex] = useState(0);
@@ -66,16 +66,16 @@ const ApplicationSelectorFlow = ({
       .catch(() => {
         if (!isActive) return;
         const fallbackAnswers: ApplicationSelectorAnswers = {};
-        setFlow(placeholderApplicationSelectorFlow);
+        setFlow(applicationSelectorFlowDefinition);
         setProfileAnswers(fallbackAnswers);
         setAnswers(fallbackAnswers);
         setStepIndex(getNextRenderableStepIndex(
-          placeholderApplicationSelectorFlow,
+          applicationSelectorFlowDefinition,
           fallbackAnswers,
           0,
           fallbackAnswers,
         ));
-        setLoadError('Using the local placeholder selector flow.');
+        setLoadError('Could not load client profile answers.');
         setIsLoading(false);
       });
     return () => {
@@ -347,7 +347,7 @@ const ApplicationSelectorFlow = ({
         <div className="tw-rounded-md tw-border tw-border-yellow-200 tw-bg-yellow-50 tw-p-4">
           <h2 className="tw-text-xl tw-font-semibold tw-text-yellow-950">No matching outcome</h2>
           <p className="tw-mt-2 tw-text-sm tw-text-yellow-900">
-            This answer combination is not listed in the placeholder flow.
+            This answer combination is not listed in the selector flow.
           </p>
           <div className="tw-mt-4 tw-flex tw-flex-wrap tw-gap-3">
             <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
