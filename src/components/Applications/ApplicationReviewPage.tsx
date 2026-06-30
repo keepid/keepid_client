@@ -6,7 +6,17 @@ import type { BuilderState } from '../InteractiveForms/types';
 import { getInteractiveFormConfig } from './api/interactiveForm';
 import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
-export default function ApplicationReviewPage({ data, blankFormId, clientName }: { data: ApplicationFormData; blankFormId: string | null; clientName: string }) {
+export default function ApplicationReviewPage({
+  data,
+  blankFormId,
+  clientName,
+  instructionsMarkdownOverride = '',
+}: {
+  data: ApplicationFormData;
+  blankFormId: string | null;
+  clientName: string;
+  instructionsMarkdownOverride?: string;
+}) {
   const emphasis = 'tw-font-bold';
   const [builderState, setBuilderState] = React.useState<BuilderState | null>(null);
   const [loadingConfig, setLoadingConfig] = React.useState(false);
@@ -96,14 +106,16 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
     );
   }
 
-  if (builderState && builderState.preRequirements) {
+  const instructionsMarkdown = instructionsMarkdownOverride || builderState?.preRequirements || '';
+
+  if (instructionsMarkdown) {
     return (
       <div className="tw-mx-auto tw-max-w-[800px] tw-pb-12">
         <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">
           Fill out {hasCatalogLabel ? data.label : `${appType} application`} for {clientName}
         </h2>
         <div className="tw-prose tw-prose-lg tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
-          <ReactMarkdown>{builderState.preRequirements}</ReactMarkdown>
+          <ReactMarkdown>{instructionsMarkdown}</ReactMarkdown>
         </div>
       </div>
     );
