@@ -10,14 +10,37 @@ import { placeholderApplicationSelectorFlow } from './placeholderFlow';
 import type { ApplicationSelectorFlowDefinition } from './types';
 
 describe('application selector outcome resolver', () => {
-  it('maps a complete answer set to one annotated-form outcome', () => {
+  it('maps social security card to the seeded annotated application', () => {
     expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'socialSecurityCard',
+    })?.applicationId).toBe('bba3');
+  });
+
+  it('maps Pennsylvania homeless birth certificate to the seeded annotated application', () => {
+    const outcome = resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'birthCertificate',
       birthState: 'PA',
-    })?.id).toBe('pa-birth-certificate-annotated');
+      birthCertificateHomelessness: 'true',
+    });
+
+    expect(outcome?.id).toBe('pa-homeless-birth-certificate');
+    expect(outcome?.applicationId).toBe('2e68');
+  });
+
+  it('maps Pennsylvania housed birth certificate to the seeded annotated application', () => {
+    const outcome = resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'birthCertificate',
+      birthState: 'PA',
+      birthCertificateHomelessness: 'false',
+    });
+
+    expect(outcome?.id).toBe('pa-housed-birth-certificate');
+    expect(outcome?.applicationId).toBe('742e');
   });
 
   it('maps a complete answer set to one upload-only outcome', () => {
     const outcome = resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'birthCertificate',
       birthState: 'NJ',
     });
 
@@ -25,15 +48,37 @@ describe('application selector outcome resolver', () => {
     expect(outcome?.applicationId).toBeNull();
   });
 
-  it('does not resolve before all branching answers are present', () => {
-    expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {})).toBeNull();
+  it('maps qualifying Pennsylvania photo ID paths to the PennDOT letter application', () => {
+    expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'photoId',
+      photoIdState: 'PA',
+      photoIdHomelessness: 'true',
+      hadPreviousPaPhotoId: 'no',
+    })?.applicationId).toBe('ccc6');
+
+    expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'photoId',
+      photoIdState: 'PA',
+      photoIdHomelessness: 'true',
+      hadPreviousPaPhotoId: 'yes',
+      previousPaPhotoIdExpired: 'yes',
+    })?.applicationId).toBe('ccc6');
   });
 
-  it('ignores component-only values when matching outcomes', () => {
+  it('does not resolve before all branching answers are present', () => {
     expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'birthCertificate',
       birthState: 'PA',
+    })).toBeNull();
+  });
+
+  it('ignores non-question values when matching outcomes', () => {
+    expect(resolveApplicationSelectorOutcome(placeholderApplicationSelectorFlow, {
+      idType: 'birthCertificate',
+      birthState: 'PA',
+      birthCertificateHomelessness: 'true',
       blueBox: 'This component value is outside the branch logic.',
-    })?.id).toBe('pa-birth-certificate-annotated');
+    })?.id).toBe('pa-homeless-birth-certificate');
   });
 
   it('requires exact matches rather than priority fallback matches', () => {
@@ -50,8 +95,10 @@ describe('application selector outcome resolver', () => {
     };
 
     expect(resolveApplicationSelectorOutcome(flowWithBroadOutcomeFirst, {
+      idType: 'birthCertificate',
       birthState: 'PA',
-    })?.id).toBe('pa-birth-certificate-annotated');
+      birthCertificateHomelessness: 'true',
+    })?.id).toBe('pa-homeless-birth-certificate');
   });
 
   it('only requires conditional answers when their showWhen checks match', () => {
