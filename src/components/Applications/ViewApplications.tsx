@@ -19,7 +19,7 @@ import {
 } from './api/interactiveForm';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
-import { applicationSelectorListIcon } from './applicationSelector/placeholderFlow';
+import { applicationSelectorFlowDefinition } from './applicationSelector/flowApi';
 import type { ApplicationSelectorOutcome } from './applicationSelector/types';
 
 interface DocumentInformation {
@@ -988,7 +988,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     >
                       <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
                         <img
-                          src={applicationSelectorListIcon}
+                          src={
+                            applicationSelectorFlowDefinition.listImageUrl
+                            || '/SelectApplicationForm/pennsylvania.svg'
+                          }
                           alt=""
                           aria-hidden="true"
                           className="tw-h-9 tw-w-9 tw-shrink-0"

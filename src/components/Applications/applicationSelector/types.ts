@@ -41,6 +41,7 @@ export interface ApplicationSelectorFlowDefinition {
   id: string;
   title: string;
   description?: string | null;
+  listImageUrl?: string | null;
   questions: ApplicationSelectorQuestion[];
   outcomes: ApplicationSelectorOutcome[];
 }
