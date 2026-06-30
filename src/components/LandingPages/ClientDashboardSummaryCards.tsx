@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import Role from '../../static/Role';
+import { canUseApplications } from '../../utils/featureAccess';
 
 async function fetchDocumentsCount(): Promise<number> {
   const res = await fetch(`${getServerURL()}/get-files`, {
@@ -118,7 +120,16 @@ type CountLoadState =
   | { status: 'ready'; count: number }
   | { status: 'error' };
 
-export default function ClientDashboardSummaryCards(): React.ReactElement {
+interface Props {
+  role: Role;
+  organization: string;
+}
+
+export default function ClientDashboardSummaryCards({
+  role,
+  organization,
+}: Props): React.ReactElement {
+  const canAccessApplications = canUseApplications(role, organization);
   const [documents, setDocuments] = useState<CountLoadState>({ status: 'loading' });
   const [applications, setApplications] = useState<CountLoadState>({
     status: 'loading',
@@ -127,29 +138,27 @@ export default function ClientDashboardSummaryCards(): React.ReactElement {
   useEffect(() => {
     let cancelled = false;
     setDocuments({ status: 'loading' });
-    setApplications({ status: 'loading' });
-    Promise.allSettled([fetchDocumentsCount(), fetchApplicationsCount()]).then(
-      (results) => {
-        if (cancelled) {
-          return;
-        }
-        const [docResult, appResult] = results;
-        if (docResult.status === 'fulfilled') {
-          setDocuments({ status: 'ready', count: docResult.value });
-        } else {
-          setDocuments({ status: 'error' });
-        }
-        if (appResult.status === 'fulfilled') {
-          setApplications({ status: 'ready', count: appResult.value });
-        } else {
-          setApplications({ status: 'error' });
-        }
-      },
-    );
+    fetchDocumentsCount()
+      .then((count) => {
+        if (!cancelled) setDocuments({ status: 'ready', count });
+      })
+      .catch(() => {
+        if (!cancelled) setDocuments({ status: 'error' });
+      });
+    if (canAccessApplications) {
+      setApplications({ status: 'loading' });
+      fetchApplicationsCount()
+        .then((count) => {
+          if (!cancelled) setApplications({ status: 'ready', count });
+        })
+        .catch(() => {
+          if (!cancelled) setApplications({ status: 'error' });
+        });
+    }
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [canAccessApplications]);
 
   const docSummary =
     documents.status === 'ready'
@@ -162,7 +171,7 @@ export default function ClientDashboardSummaryCards(): React.ReactElement {
 
   return (
     <div className="tw-mt-5 tw-w-full">
-      <div className="tw-grid tw-grid-cols-1 tw-gap-6 lg:tw-grid-cols-2 lg:tw-gap-8">
+      <div className={`tw-grid tw-grid-cols-1 tw-gap-6 ${canAccessApplications ? 'lg:tw-grid-cols-2 lg:tw-gap-8' : ''}`}>
         <div className="tw-min-w-0">
           <SummaryCard
             to="/my-documents"
@@ -173,21 +182,23 @@ export default function ClientDashboardSummaryCards(): React.ReactElement {
             icon={<DocumentTextIcon className="tw-h-11 tw-w-11" strokeWidth={1.5} />}
           />
         </div>
-        <div className="tw-min-w-0">
-          <SummaryCard
-            to="/applications"
-            title="Applications"
-            summaryLine={appSummary}
-            summaryLoading={applications.status === 'loading'}
-            summaryError={applications.status === 'error'}
-            icon={(
-              <ClipboardDocumentListIcon
-                className="tw-h-11 tw-w-11"
-                strokeWidth={1.5}
-              />
-            )}
-          />
-        </div>
+        {canAccessApplications && (
+          <div className="tw-min-w-0">
+            <SummaryCard
+              to="/applications"
+              title="Applications"
+              summaryLine={appSummary}
+              summaryLoading={applications.status === 'loading'}
+              summaryError={applications.status === 'error'}
+              icon={(
+                <ClipboardDocumentListIcon
+                  className="tw-h-11 tw-w-11"
+                  strokeWidth={1.5}
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import { canUseApplications, canUseCommunications } from '../../utils/featureAccess';
 import AccountSettingsSection from './AccountSettingsSection';
 import ClientTimelineSection from './ClientTimelineSection';
 import EssentialAccountSection from './EssentialAccountSection';
@@ -78,15 +79,25 @@ export default function ProfilePage({ targetUsername }: Props) {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const currentUserRole = useMemo(() => {
+  const currentUserSession = useMemo(() => {
     try {
       const raw = sessionStorage.getItem('mySessionStorageData');
-      if (raw) return JSON.parse(raw).role as string;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          role: parsed.role as Role,
+          organization: parsed.organization as string,
+        };
+      }
     } catch { /* ignore */ }
-    return '';
+    return { role: '', organization: '' };
   }, []);
+  const currentUserRole = currentUserSession.role;
+  const currentUserOrganization = currentUserSession.organization;
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
+  const canAccessApplications = canUseApplications(currentUserRole, currentUserOrganization);
+  const canAccessCommunicationHistory = canUseCommunications(currentUserRole, currentUserOrganization);
 
   const canEditClientIdentityFields = useMemo(
     () =>
@@ -258,19 +269,21 @@ export default function ProfilePage({ targetUsername }: Props) {
           >
             Documents
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => history.push({
-              pathname: '/applications',
-              state: {
-                clientUsername: targetUsername,
-                clientName: displayName || undefined,
-              },
-            })}
-          >
-            Applications
-          </button>
+          {canAccessApplications && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => history.push({
+                pathname: '/applications',
+                state: {
+                  clientUsername: targetUsername,
+                  clientName: displayName || undefined,
+                },
+              })}
+            >
+              Applications
+            </button>
+          )}
         </div>
       )}
 
@@ -350,6 +363,7 @@ export default function ProfilePage({ targetUsername }: Props) {
             <ClientTimelineSection
               username={profile.username}
               workerNotes={profile.workerNotes}
+              showCommunicationHistory={canAccessCommunicationHistory}
               onSaved={() => fetchProfile()}
             />
           )}

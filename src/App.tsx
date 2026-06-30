@@ -47,6 +47,7 @@ import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+import { canUseApplications, canUseCommunications } from './utils/featureAccess';
 
 window.onload = () => {
   ReactGA.initialize('AW-391118279');
@@ -210,6 +211,8 @@ class App extends React.Component<{}, State, {}> {
 
   render() {
     const { role, username, name, organization } = this.state;
+    const canAccessApplications = canUseApplications(role, organization);
+    const canAccessCommunications = canUseCommunications(role, organization);
     const renderHome = () => (
       <Home
         logIn={this.logIn}
@@ -234,6 +237,7 @@ class App extends React.Component<{}, State, {}> {
               logIn={this.logIn}
               logOut={this.logOut}
               role={role}
+              organization={organization}
             />
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
@@ -309,7 +313,14 @@ class App extends React.Component<{}, State, {}> {
                     );
                   }
                   if (role === Role.Client) {
-                    return <ClientLanding name={name} username={username} />;
+                    return (
+                      <ClientLanding
+                        name={name}
+                        username={username}
+                        role={role}
+                        organization={organization}
+                      />
+                    );
                   }
                   if (role === Role.Developer) {
                     return (
@@ -376,6 +387,7 @@ class App extends React.Component<{}, State, {}> {
                       <UploadDocumentsPage
                         userRole={Role.Client}
                         username={clientUsername}
+                        viewerRole={role}
                         viewerUsername={username}
                         viewerName={name}
                         organizationName={organization}
@@ -401,6 +413,7 @@ class App extends React.Component<{}, State, {}> {
                     return (
                       <UploadDocumentsPage
                         userRole={role}
+                        viewerRole={role}
                         username={username}
                         viewerUsername={username}
                         viewerName={name}
@@ -470,6 +483,9 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
+                    if (!canAccessApplications) {
+                      return <Redirect to="/home" />;
+                    }
                     return (
                       <CreateApplication userRole={role} />
                     );
@@ -482,13 +498,16 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/applications"
-                render={({ location }) => {
+                render={() => {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
+                    if (!canAccessApplications) {
+                      return <Redirect to="/home" />;
+                    }
                     return (
                       <ViewApplications
                         name={name}
@@ -508,15 +527,18 @@ class App extends React.Component<{}, State, {}> {
                 exact
                 path="/communications"
                 render={() => {
+                  if (canAccessCommunications) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
                   if (
                     role === Role.Admin ||
                     role === Role.Director ||
                     role === Role.Worker
                   ) {
-                    return <CallsPage />;
-                  }
-                  if (role === Role.LoggedOut) {
-                    return renderHome();
+                    return <Redirect to="/home" />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -524,15 +546,18 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/communications/calls"
                 render={() => {
+                  if (canAccessCommunications) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
                   if (
                     role === Role.Admin ||
                     role === Role.Director ||
                     role === Role.Worker
                   ) {
-                    return <CallsPage />;
-                  }
-                  if (role === Role.LoggedOut) {
-                    return renderHome();
+                    return <Redirect to="/home" />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -540,11 +565,7 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/communications/message-board-preview"
                 render={() => {
-                  if (
-                    role === Role.Admin ||
-                    role === Role.Director ||
-                    role === Role.Worker
-                  ) {
+                  if (canAccessCommunications) {
                     return (
                       <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
                         <MessageBoard
@@ -557,6 +578,13 @@ class App extends React.Component<{}, State, {}> {
                   }
                   if (role === Role.LoggedOut) {
                     return renderHome();
+                  }
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <Redirect to="/home" />;
                   }
                   return <Redirect to="/error" />;
                 }}

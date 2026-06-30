@@ -8,6 +8,7 @@ import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { canUseApplications, canUseClientNotifications } from '../../utils/featureAccess';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
@@ -134,6 +135,8 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
   const [isLoading, setIsLoading] = useState(true);
   const { path, url } = useRouteMatch();
+  const canAccessApplications = canUseApplications(role, organization);
+  const canAccessNotifications = canUseClientNotifications(role, organization);
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
     const clientsWithPhoto = clientsArray.filter((client) => client.profilePhoto != null);
@@ -498,24 +501,28 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                               >
                                 Documents
                               </Link>
-                              <Link
-                                to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
-                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                              >
-                                  Apply
-                              </Link>
-                              <Link
-                                to={{
-                                  pathname: `${url}/notify-client/${client.username}`,
-                                  state: {
-                                    clientName: `${client.firstName} ${client.lastName}`.trim(),
-                                    clientPhone: client.phone,
-                                  },
-                                }}
-                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                              >
-                                  Notify
-                              </Link>
+                              {canAccessApplications && (
+                                <Link
+                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
+                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                                >
+                                    Apply
+                                </Link>
+                              )}
+                              {canAccessNotifications && (
+                                <Link
+                                  to={{
+                                    pathname: `${url}/notify-client/${client.username}`,
+                                    state: {
+                                      clientName: `${client.firstName} ${client.lastName}`.trim(),
+                                      clientPhone: client.phone,
+                                    },
+                                  }}
+                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                                >
+                                    Notify
+                                </Link>
+                              )}
                           </div>
 
                           {showClientAuthModal && modalRender()}
@@ -586,6 +593,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
         <Route
           path={`${path}/notify-client/:clientUsername`}
           render={(props) => {
+            if (!canAccessNotifications) {
+              return <Redirect to={path} />;
+            }
             const { clientUsername } = props.match.params;
             const client = clients.find((client) => client.username === clientUsername);
             const routeState = props.location.state as
