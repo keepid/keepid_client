@@ -191,7 +191,7 @@ const ApplicationSelectorFlow = ({
                 key={option.value}
                 type="button"
                 className={[
-                  'tw-flex tw-h-full tw-min-h-40 tw-w-full tw-items-start tw-gap-4 tw-rounded-md tw-border tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition hover:tw-border-blue-400 hover:tw-bg-blue-50',
+                  'tw-flex tw-h-full tw-min-h-52 tw-w-full tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-md tw-border tw-bg-white tw-p-5 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-400 hover:tw-bg-blue-50',
                   isSelected ? 'tw-border-blue-500 tw-ring-2 tw-ring-blue-200' : 'tw-border-gray-200',
                 ].join(' ')}
                 onClick={() => handleAnswer(question, option)}
@@ -200,7 +200,7 @@ const ApplicationSelectorFlow = ({
                   <img
                     src={option.iconSvgUrl}
                     alt=""
-                    className="tw-h-10 tw-w-10 tw-shrink-0"
+                    className="tw-h-28 tw-w-36 tw-max-w-full tw-shrink-0 tw-object-contain"
                     aria-hidden="true"
                   />
                 )}

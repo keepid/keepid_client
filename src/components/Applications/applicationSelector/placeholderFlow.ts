@@ -2,14 +2,9 @@ import type { ApplicationSelectorFlowDefinition, ApplicationSelectorOutcome } fr
 
 const DIRECTIVE_COVERAGE_APPLICATION_ID = 'dc0f';
 
-const svgDataUri = (svg: string): string =>
-  `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
+const stateImageUrl = (state: string): string => `/SelectApplicationForm/${state}.svg`;
 
-const stateIcon = svgDataUri(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#445FEB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-`);
-
-export const applicationSelectorListIcon = stateIcon;
+export const applicationSelectorListIcon = stateImageUrl('pennsylvania');
 
 const exactMatches = (birthState: string) => [
   { questionId: 'birthState', value: birthState },
@@ -64,19 +59,19 @@ export const placeholderApplicationSelectorFlow: ApplicationSelectorFlowDefiniti
           value: 'PA',
           label: 'Pennsylvania',
           description: '',
-          iconSvgUrl: stateIcon,
+          iconSvgUrl: stateImageUrl('pennsylvania'),
         },
         {
           value: 'NJ',
           label: 'New Jersey',
           description: '',
-          iconSvgUrl: stateIcon,
+          iconSvgUrl: stateImageUrl('new-jersey'),
         },
         {
           value: 'NY',
           label: 'New York',
           description: '',
-          iconSvgUrl: stateIcon,
+          iconSvgUrl: stateImageUrl('new-york-state'),
         },
       ],
     },

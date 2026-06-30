@@ -22,6 +22,7 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
   const clientName = location.state?.clientName || '';
   const preset = location.state?.presetApplication;
   const startAtReview = Boolean(location.state?.startAtReview && preset?.applicationId);
+  const hasPresetClient = clientUsername.trim().length > 0;
   const shouldShowWhoForStep = userRole === Role.Worker
     || userRole === Role.Admin
     || userRole === Role.Director;
@@ -31,9 +32,12 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
   const postWhoForPage = reviewPageIndex >= 0
     ? reviewPageIndex
     : typePageIndex;
-  const initialPage = shouldShowWhoForStep && whoForPageIndex >= 0
-    ? whoForPageIndex
-    : postWhoForPage;
+  let initialPage = postWhoForPage;
+  if (!startAtReview || !hasPresetClient) {
+    initialPage = shouldShowWhoForStep && whoForPageIndex >= 0
+      ? whoForPageIndex
+      : postWhoForPage;
+  }
 
   return (
     <ApplicationFormProvider
