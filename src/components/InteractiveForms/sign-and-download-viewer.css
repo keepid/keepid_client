@@ -40,6 +40,24 @@
   pointer-events: none;
 }
 
+.keepid-pdf-preview.keepid-pdf-edit-locked.keepid-pdf-form-widgets-active
+  .annotationLayer
+  :is(.textWidgetAnnotation, .choiceWidgetAnnotation)
+  :is(input, textarea, select) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  caret-color: transparent;
+}
+
+.keepid-pdf-preview.keepid-pdf-edit-locked.keepid-pdf-form-widgets-active
+  .annotationLayer
+  .choiceWidgetAnnotation
+  select {
+  appearance: none;
+}
+
 /*
  * Keep PDF widget typography under pdf.js control. The annotation layer derives
  * text sizing from the PDF field appearance/default appearance and page scale;
