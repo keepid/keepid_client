@@ -17,6 +17,11 @@ type PhoneBookEntry = {
   phoneNumber: string;
 };
 
+type EditablePhoneBookEntry = PhoneBookEntry & {
+  originalPhoneNumber: string;
+  rowKey: string;
+};
+
 const PRIMARY_LABEL = 'primary';
 
 type Props = {
@@ -102,6 +107,14 @@ function formatAddress(address: AddressObj | undefined): string {
   return [street, cityStateZip, county].filter(Boolean).join('\n');
 }
 
+function editablePhoneBookFrom(entries: PhoneBookEntry[]): EditablePhoneBookEntry[] {
+  return entries.map((entry, index) => ({
+    ...entry,
+    originalPhoneNumber: entry.phoneNumber,
+    rowKey: `${index}-${entry.label}-${entry.phoneNumber}`,
+  }));
+}
+
 function CopyButton({
   label,
   value,
@@ -152,7 +165,7 @@ export default function EssentialAccountSection({
 
   const [phoneBook, setPhoneBook] = useState<PhoneBookEntry[]>([]);
   const [phoneBookLoading, setPhoneBookLoading] = useState(true);
-  const [editedPhoneBook, setEditedPhoneBook] = useState<PhoneBookEntry[]>([]);
+  const [editedPhoneBook, setEditedPhoneBook] = useState<EditablePhoneBookEntry[]>([]);
   const [addLabel, setAddLabel] = useState('');
   const [addPhone, setAddPhone] = useState('');
   const [showAddRow, setShowAddRow] = useState(false);
@@ -178,7 +191,7 @@ export default function EssentialAccountSection({
       const json = await res.json();
       if (json.status === 'SUCCESS' && Array.isArray(json.phoneBook)) {
         setPhoneBook(json.phoneBook);
-        setEditedPhoneBook(json.phoneBook.map((e: PhoneBookEntry) => ({ ...e })));
+        setEditedPhoneBook(editablePhoneBookFrom(json.phoneBook));
       }
     } catch {
       // silent
@@ -193,9 +206,11 @@ export default function EssentialAccountSection({
 
   const phoneBookDirty = useMemo(() => {
     if (editedPhoneBook.length !== phoneBook.length) return true;
-    return editedPhoneBook.some((e, i) => {
-      const orig = phoneBook[i];
-      return e.label !== orig.label || e.phoneNumber !== orig.phoneNumber;
+    return editedPhoneBook.some((entry) => {
+      const orig = phoneBook.find((phoneBookEntry) => (
+        phoneBookEntry.phoneNumber === entry.originalPhoneNumber
+      ));
+      return !orig || entry.label !== orig.label || entry.phoneNumber !== orig.phoneNumber;
     });
   }, [editedPhoneBook, phoneBook]);
 
@@ -260,8 +275,12 @@ export default function EssentialAccountSection({
     }
 
     const edits = editedPhoneBook
-      .map((edited, i) => ({ edited, orig: phoneBook[i] }))
-      .filter(({ edited, orig }) => {
+      .map((edited) => ({
+        edited,
+        orig: phoneBook.find((entry) => entry.phoneNumber === edited.originalPhoneNumber),
+      }))
+      .filter((change): change is { edited: EditablePhoneBookEntry; orig: PhoneBookEntry } => {
+        const { edited, orig } = change;
         if (!orig) return false;
         return edited.label !== orig.label || edited.phoneNumber !== orig.phoneNumber;
       });
@@ -288,9 +307,9 @@ export default function EssentialAccountSection({
       }
     }
 
-    const editedPhones = new Set(editedPhoneBook.map((e) => e.phoneNumber));
+    const editedOriginalPhones = new Set(editedPhoneBook.map((e) => e.originalPhoneNumber));
     const deletions = phoneBook.filter(
-      (orig) => !editedPhones.has(orig.phoneNumber) && orig.label.toLowerCase() !== PRIMARY_LABEL,
+      (orig) => !editedOriginalPhones.has(orig.phoneNumber) && orig.label.toLowerCase() !== PRIMARY_LABEL,
     );
 
     // eslint-disable-next-line no-restricted-syntax
@@ -460,7 +479,7 @@ export default function EssentialAccountSection({
 
   function beginEdit() {
     setEmail(initialEmail);
-    setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
@@ -486,7 +505,7 @@ export default function EssentialAccountSection({
   function cancelEdit() {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return;
     setEmail(initialEmail);
-    setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
@@ -761,7 +780,7 @@ export default function EssentialAccountSection({
                 {editedPhoneBook.map((entry, i) => {
                   const isPrimary = entry.label.toLowerCase() === PRIMARY_LABEL;
                   return (
-                    <div key={`${entry.phoneNumber}-${entry.label}`} className="tw-flex tw-items-center tw-gap-2">
+                    <div key={entry.rowKey} className="tw-flex tw-items-center tw-gap-2">
                       {isPrimary ? (
                         <span className="form-control form-purple tw-bg-gray-100 tw-text-gray-500" style={{ maxWidth: 160 }}>
                           {entry.label}
