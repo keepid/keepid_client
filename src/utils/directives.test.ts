@@ -81,6 +81,12 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.motherName.last', profiles)).toBe('Byron');
     expect(resolveDirectiveFromProfiles('client.motherName.maiden', profiles)).toBe('Milbanke');
     expect(resolveDirectiveFromProfiles('dummy:client.motherName.maiden', profiles)).toBe('Milbanke');
+    expect(resolveDirectiveFromProfiles('client.mother.name.maiden', profiles)).toBe('Milbanke');
+    expect(resolveDirectiveFromProfiles('client.motherLastName', profiles)).toBe('Byron');
+    expect(resolveDirectiveFromProfiles('client.father.name.last', profiles)).toBe('Byron');
+    expect(resolveDirectiveFromProfiles('client.fatherFirstName', profiles)).toBe('Lord');
+    expect(resolveDirectiveFromProfiles('client.emailAddress', profiles)).toBe('ada@example.org');
+    expect(resolveDirectiveFromProfiles('client.genderAssignedAtBirth', profiles)).toBe('F');
     expect(resolveDirectiveFromProfiles('worker.currentName.last', profiles)).toBe('Hopper');
     expect(resolveDirectiveFromProfiles('director.email', profiles)).toBe('kj@example.org');
   });
@@ -92,6 +98,11 @@ describe('directive resolution', () => {
       .toBe('dummy:client.motherName.maiden');
     expect(resolveDirectiveFromProfilesForTarget(
       'client.motherName.last',
+      profiles,
+      "Mother's Maiden Name",
+    )).toBe('Milbanke');
+    expect(resolveDirectiveFromProfilesForTarget(
+      'client.mother.name.last',
       profiles,
       "Mother's Maiden Name",
     )).toBe('Milbanke');

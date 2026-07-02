@@ -289,6 +289,31 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
+  it('syncs parent-name alias directives back to canonical profile paths', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          label: "Mother's maiden name",
+          scope: '#/properties/motherMaiden',
+          options: { directive: 'client.mother.name.last' },
+        },
+        {
+          type: 'Control',
+          label: "Father's last name",
+          scope: '#/properties/fatherLast',
+          options: { directive: 'client.father.name.last' },
+        },
+      ],
+    };
+
+    expect(extractDirectivesFromUiSchema(uiSchema, { motherMaiden: 'Milbanke', fatherLast: 'Byron' })).toEqual({
+      'client.motherName.maiden': 'Milbanke',
+      'client.fatherName.last': 'Byron',
+    });
+  });
+
   it('syncs title-cased free-text answers back to profile directives', () => {
     const uiSchema = {
       type: 'VerticalLayout',
