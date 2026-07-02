@@ -9,6 +9,7 @@ import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import {
@@ -214,7 +215,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     }));
 
   getClientSearchDisplayName = (client: ClientSearchResult): string =>
-    `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
+    `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email || 'Client';
 
   resetModalClientPicker = () => {
     const { clientUsername, clientName } = this.state;
@@ -246,31 +247,41 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       return;
     }
 
+    const searchQueries = getClientSearchCandidateQueries(trimmedQuery);
+
     this.setState({ modalClientSearching: true });
-    fetch(`${getServerURL()}/get-organization-members`, {
+    Promise.all(searchQueries.map((name) => fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
         role: this.props.role,
         listType: 'clients',
-        name: trimmedQuery,
+        name,
       }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
+    }).then((response) => response.json())))
+      .then((responses) => {
         const latestQuery = this.state.modalClientQuery.trim();
         if (latestQuery !== trimmedQuery) return;
-        if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
-          this.setState({
-            modalClientResults: responseJSON.people.slice(0, 25),
-            modalClientSearching: false,
-          });
-          return;
-        }
+        const peopleByUsername = new Map<string, ClientSearchResult>();
+        let hasSearchError = false;
+
+        responses.forEach((responseJSON) => {
+          if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
+            responseJSON.people.forEach((client: ClientSearchResult) => {
+              if (client.username) peopleByUsername.set(client.username, client);
+            });
+          } else if (responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND') {
+            hasSearchError = true;
+          }
+        });
+
+        const filtered = Array.from(peopleByUsername.values())
+          .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, trimmedQuery))
+          .slice(0, 25);
         this.setState({
-          modalClientResults: [],
+          modalClientResults: filtered,
           modalClientSearching: false,
-          modalClientError: responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND'
+          modalClientError: hasSearchError && filtered.length === 0
             ? 'Could not load client search results.'
             : null,
         });
@@ -1041,6 +1052,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           <div className="tw-border tw-rounded tw-mt-2 tw-divide-y tw-divide-gray-200 tw-max-h-56 tw-overflow-y-auto">
             {modalClientResults.map((client) => {
               const displayName = this.getClientSearchDisplayName(client);
+              const secondaryLabel = client.email?.trim();
               return (
                 <button
                   key={client.username}
@@ -1050,7 +1062,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   disabled={disabled}
                 >
                   <div className="tw-font-semibold">{displayName}</div>
-                  <div className="tw-text-sm tw-text-gray-500">{client.username}</div>
+                  {secondaryLabel && (
+                    <div className="tw-text-sm tw-text-gray-500">{secondaryLabel}</div>
+                  )}
                 </button>
               );
             })}
