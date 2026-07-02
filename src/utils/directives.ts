@@ -103,6 +103,42 @@ function stripDirectiveNamespace(directive: string): string {
     : trimmed;
 }
 
+function splitDirectiveNamespace(directive: string): { namespace: string; path: string } {
+  const trimmed = directive.trim();
+  const lastColon = trimmed.lastIndexOf(':');
+  if (lastColon >= 0 && lastColon + 1 < trimmed.length) {
+    return { namespace: trimmed.slice(0, lastColon + 1), path: trimmed.slice(lastColon + 1) };
+  }
+  return { namespace: '', path: trimmed };
+}
+
+const DIRECTIVE_ALIASES: Record<string, string> = {
+  emailAddress: 'email',
+  genderAssignedAtBirth: 'sex',
+  motherFirstName: 'motherName.first',
+  motherMiddleName: 'motherName.middle',
+  motherLastName: 'motherName.last',
+  motherMaidenName: 'motherName.maiden',
+  fatherFirstName: 'fatherName.first',
+  fatherMiddleName: 'fatherName.middle',
+  fatherLastName: 'fatherName.last',
+  fatherMaidenName: 'fatherName.maiden',
+};
+
+function normalizeDirectiveAlias(path: string): string {
+  const scopeMatch = path.match(/^(client|worker|director|org)\.(.+)$/i);
+  const scope = scopeMatch?.[1].toLowerCase();
+  const localPath = scopeMatch?.[2] ?? path;
+  const aliasedPath = DIRECTIVE_ALIASES[localPath] ?? localPath;
+  const parentNameAlias = aliasedPath.match(/^(mother|father)(?:Name|\.name)?\.(first|middle|last|suffix|maiden)$/i);
+  if (parentNameAlias) {
+    const root = parentNameAlias[1].toLowerCase() === 'father' ? 'fatherName' : 'motherName';
+    const normalized = `${root}.${parentNameAlias[2].toLowerCase()}`;
+    return scope ? `${scope}.${normalized}` : normalized;
+  }
+  return scope ? `${scope}.${aliasedPath}` : aliasedPath;
+}
+
 function resolveProfilePath(profile: Record<string, unknown> | undefined, path: string): unknown {
   const value = getByPath(profile, path);
   if (!isBlankValue(value)) return value;
@@ -128,17 +164,13 @@ function isMotherLastDirective(directive: string): boolean {
 }
 
 export function canonicalDirectiveForTarget(directiveKey: string, targetName?: unknown): string {
-  const trimmed = directiveKey.trim();
-  const lastColon = trimmed.lastIndexOf(':');
-  const namespace = lastColon >= 0 && lastColon + 1 < trimmed.length
-    ? trimmed.slice(0, lastColon + 1)
-    : '';
-  const directive = namespace ? trimmed.slice(lastColon + 1) : trimmed;
+  const { namespace, path } = splitDirectiveNamespace(directiveKey);
+  const directive = normalizeDirectiveAlias(path);
 
   if (isMotherMaidenTarget(targetName) && isMotherLastDirective(directive)) {
     return `${namespace}${directive.toLowerCase().startsWith('client.') ? 'client.' : ''}motherName.maiden`;
   }
-  return trimmed;
+  return `${namespace}${directive}`;
 }
 
 /** Full name for a profile scope: prefer structured currentName, else firstName/lastName. */
@@ -244,7 +276,7 @@ export function resolveDirectiveFromProfiles(
   profiles: ResolvedProfiles | null | undefined,
 ): unknown {
   if (!profiles) return undefined;
-  const normalizedDirective = stripDirectiveNamespace(directive);
+  const normalizedDirective = stripDirectiveNamespace(canonicalDirectiveForTarget(directive));
   const lower = normalizedDirective.toLowerCase();
 
   const dobMatch = normalizedDirective.match(/^(client|worker|director)\.\$dob_mm\/dd\/yyyy$/i);
@@ -370,11 +402,7 @@ const NAME_HISTORY_DIRECTIVE_RE = /^nameHistory\.\d+\.(first|middle|last|suffix|
  * UpdateProfileFromFormService#isExcludedFromInteractiveFormSync).
  */
 export function isExcludedFromProfileFormSync(directiveKey: string): boolean {
-  let d = directiveKey.trim();
-  const lastColon = d.lastIndexOf(':');
-  if (lastColon >= 0 && lastColon + 1 < d.length) {
-    d = d.slice(lastColon + 1);
-  }
+  let d = stripDirectiveNamespace(canonicalDirectiveForTarget(directiveKey));
   if (d.startsWith('client.')) {
     d = d.slice('client.'.length);
   }
