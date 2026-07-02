@@ -18,7 +18,7 @@ export function applyAutoFillFields(
   autoFillFields.forEach((af) => {
     if (!af.pdfFieldName) return;
     if (af.fieldType === 'checkbox') {
-      merged[af.pdfFieldName] = 'true';
+      merged[af.pdfFieldName] = typeof af.value === 'string' && af.value.trim() !== '' ? af.value : 'true';
       return;
     }
     let val: unknown;

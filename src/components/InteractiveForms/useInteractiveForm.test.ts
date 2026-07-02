@@ -140,6 +140,7 @@ describe('interactive form PDF fill directives', () => {
       { pdfFieldName: 'fixedClientPhoneArea', valueSource: 'directive', value: 'client.$primaryPhoneAreaCode' },
       { pdfFieldName: 'fixedLiteral', valueSource: 'literal', value: 'Static outcome' },
       { pdfFieldName: 'fixedCheckbox', valueSource: 'literal', value: 'Choice2', fieldType: 'checkbox' },
+      { pdfFieldName: 'fixedDefaultCheckbox', valueSource: 'literal', value: '', fieldType: 'checkbox' },
     ];
 
     expect(applyAutoFillFields(baseFill, autoFillFields, resolvedProfiles as Record<string, unknown>)).toEqual({
@@ -149,7 +150,8 @@ describe('interactive form PDF fill directives', () => {
       fixedDirectorBirthYear: '1918',
       fixedClientPhoneArea: '215',
       fixedLiteral: 'Static outcome',
-      fixedCheckbox: 'true',
+      fixedCheckbox: 'Choice2',
+      fixedDefaultCheckbox: 'true',
     });
   });
 
