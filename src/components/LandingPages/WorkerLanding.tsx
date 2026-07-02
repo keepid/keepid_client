@@ -8,6 +8,7 @@ import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
 import { canUseApplications, canUseClientNotifications } from '../../utils/featureAccess';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
@@ -50,34 +51,6 @@ function creationTimeMs(client: TargetClient): number | null {
   if (raw == null || raw === '') return null;
   const t = new Date(raw).getTime();
   return Number.isNaN(t) ? null : t;
-}
-
-function normalizeSearchText(value: string): string {
-  return value.trim().toLowerCase();
-}
-
-function matchesClientSearchQuery(client: TargetClient, query: string): boolean {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return true;
-
-  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return true;
-
-  const first = normalizeSearchText(client.firstName || '');
-  const last = normalizeSearchText(client.lastName || '');
-  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
-  const username = normalizeSearchText(client.username || '');
-  const phone = normalizeSearchText(client.phone || '');
-  const email = normalizeSearchText(client.email || '');
-
-  return tokens.every((token) => (
-    first.includes(token)
-    || last.includes(token)
-    || full.includes(token)
-    || username.includes(token)
-    || phone.includes(token)
-    || email.includes(token)
-  ));
 }
 
 function formatBirthDateForDisplay(value: string): string {
@@ -187,32 +160,39 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
       setCurrentPage(1);
 
       try {
-        const res = await fetch(`${getServerURL()}/get-organization-members`, {
-          signal,
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify({
-            role,
-            listType: 'clients',
-            name: submittedSearchName,
-          }),
-        });
+        const searchQueries = getClientSearchCandidateQueries(submittedSearchName, true);
+        const responses = await Promise.all(searchQueries.map(async (name) => {
+          const res = await fetch(`${getServerURL()}/get-organization-members`, {
+            signal,
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify({
+              role,
+              listType: 'clients',
+              name,
+            }),
+          });
+          return res.json();
+        }));
 
-        const responseJSON = await res.json();
-        const { people, status } = responseJSON;
-
-        if (status === 'AUTH_FAILURE') {
+        if (responses.some((responseJSON) => responseJSON.status === 'AUTH_FAILURE')) {
           alert.show('Please sign in again to continue.');
           logOut();
           return;
         }
 
-        let filteredPeople: TargetClient[] = [];
-        if (status !== 'USER_NOT_FOUND' && Array.isArray(people)) {
-          filteredPeople = people
-            .map((person: TargetClient) => ({ ...person, photo: null }))
-            .filter((person: TargetClient) => matchesClientSearchQuery(person, submittedSearchName));
-        }
+        const peopleByUsername = new Map<string, TargetClient>();
+        responses.forEach((responseJSON) => {
+          if (responseJSON.status !== 'USER_NOT_FOUND' && Array.isArray(responseJSON.people)) {
+            responseJSON.people.forEach((person: TargetClient) => {
+              if (person.username) peopleByUsername.set(person.username, person);
+            });
+          }
+        });
+
+        const filteredPeople = Array.from(peopleByUsername.values())
+          .map((person: TargetClient) => ({ ...person, photo: null }))
+          .filter((person: TargetClient) => matchesClientSearchQuery(person, submittedSearchName));
 
         if (filteredPeople.length > 0) {
           setClients(filteredPeople);

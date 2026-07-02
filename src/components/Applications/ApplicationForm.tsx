@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
 import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
@@ -110,29 +111,8 @@ interface ClientSearchResult {
 
 const MAX_CLIENT_RESULTS = 25;
 
-function normalizeSearchText(value: string): string {
-  return value.trim().toLowerCase();
-}
-
-function matchesClientSearchQuery(client: ClientSearchResult, query: string): boolean {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return false;
-  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return false;
-
-  const first = normalizeSearchText(client.firstName || '');
-  const last = normalizeSearchText(client.lastName || '');
-  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
-  const username = normalizeSearchText(client.username || '');
-  const email = normalizeSearchText(client.email || '');
-
-  return tokens.every((token) => (
-    first.includes(token)
-    || last.includes(token)
-    || full.includes(token)
-    || username.includes(token)
-    || email.includes(token)
-  ));
+function getClientSearchDisplayName(client: ClientSearchResult): string {
+  return `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email || 'Client';
 }
 
 export default function ApplicationForm({
@@ -288,28 +268,38 @@ export default function ApplicationForm({
     setSearchingClients(true);
     setSearchError(null);
 
-    fetch(`${getServerURL()}/get-organization-members`, {
+    const searchQueries = getClientSearchCandidateQueries(debouncedClientQuery);
+
+    Promise.all(searchQueries.map((name) => fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       signal: controller.signal,
       body: JSON.stringify({
         role: userRole,
         listType: 'clients',
-        name: debouncedClientQuery,
+        name,
       }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
+    }).then((response) => response.json())))
+      .then((responses) => {
         if (clientSearchRequestIdRef.current !== requestId) return;
-        if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
-          const filtered = responseJSON.people
-            .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, debouncedClientQuery))
-            .slice(0, MAX_CLIENT_RESULTS);
-          setSearchResults(filtered);
-          return;
-        }
-        setSearchResults([]);
-        if (responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND') {
+        const peopleByUsername = new Map<string, ClientSearchResult>();
+        let hasSearchError = false;
+
+        responses.forEach((responseJSON) => {
+          if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
+            responseJSON.people.forEach((client: ClientSearchResult) => {
+              if (client.username) peopleByUsername.set(client.username, client);
+            });
+          } else if (responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND') {
+            hasSearchError = true;
+          }
+        });
+
+        const filtered = Array.from(peopleByUsername.values())
+          .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, debouncedClientQuery))
+          .slice(0, MAX_CLIENT_RESULTS);
+        setSearchResults(filtered);
+        if (hasSearchError && filtered.length === 0) {
           setSearchError('Could not load client search results.');
         }
       })
@@ -403,7 +393,7 @@ export default function ApplicationForm({
   }, []);
 
   const selectExistingClient = useCallback((client: ClientSearchResult) => {
-    const resolvedName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
+    const resolvedName = getClientSearchDisplayName(client);
     setTargetClientUsername(client.username);
     setTargetClientName(resolvedName);
     setClientQuery(resolvedName);
@@ -735,7 +725,8 @@ export default function ApplicationForm({
                     {showClientResults && searchResults.length > 0 && (
                       <div className="tw-border-2 tw-rounded-lg tw-mt-3 tw-divide-y tw-divide-gray-200 tw-max-h-80 tw-overflow-y-auto">
                         {searchResults.map((client) => {
-                          const displayName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
+                          const displayName = getClientSearchDisplayName(client);
+                          const secondaryLabel = client.email?.trim();
                           return (
                             <button
                               key={client.username}
@@ -744,7 +735,9 @@ export default function ApplicationForm({
                               className="tw-w-full tw-text-left tw-px-5 tw-py-4 hover:tw-bg-gray-50 tw-border-0 tw-bg-white"
                             >
                               <div className="tw-font-semibold tw-text-lg">{displayName}</div>
-                              <div className="tw-text-sm tw-text-gray-500">{client.username}</div>
+                              {secondaryLabel && (
+                                <div className="tw-text-sm tw-text-gray-500">{secondaryLabel}</div>
+                              )}
                             </button>
                           );
                         })}
