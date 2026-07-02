@@ -6,7 +6,7 @@ import { normalizeDateLikeValue, resolveDirectiveFromProfilesForTarget } from '.
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
-import { extractDirectivesFromUiSchema, useInteractiveForm } from './useInteractiveForm';
+import { extractDirectivesFromUiSchema, normalizeTextFieldValues, useInteractiveForm } from './useInteractiveForm';
 
 export function applyAutoFillFields(
   pdfFill: Record<string, unknown>,
@@ -75,16 +75,16 @@ export default function InteractiveFormWizard({
   React.useEffect(() => {
     if (!loading && uiSchema && resolvedProfiles) {
       if (initialData && Object.keys(initialData).length > 0 && !hasAppliedInitialData.current) {
-        setData(initialData);
+        setData(normalizeTextFieldValues(initialData, jsonSchema));
         hasAppliedInitialData.current = true;
       } else if (!initialData || Object.keys(initialData).length === 0) {
         if (lastApplicationId.current !== applicationId) {
           lastApplicationId.current = applicationId;
-          setData(getInitialData());
+          setData(normalizeTextFieldValues(getInitialData(), jsonSchema));
         }
       }
     }
-  }, [loading, uiSchema, resolvedProfiles, getInitialData, applicationId, initialData]);
+  }, [loading, uiSchema, resolvedProfiles, getInitialData, applicationId, initialData, jsonSchema]);
   const effectiveOutputFields = outputFields ?? builderState?.outputFields;
   const effectiveAutoFillFields = autoFillFields ?? builderState?.autoFillFields;
 
@@ -96,13 +96,15 @@ export default function InteractiveFormWizard({
   }, [data, getFormAnswers, jsonSchema, uiSchema, onDebugUpdate, effectiveAutoFillFields, resolvedProfiles]);
 
   const requestSubmit = useCallback(() => {
-    const baseFill = getFormAnswers(data);
+    const normalizedData = normalizeTextFieldValues(data, jsonSchema);
+    if (normalizedData !== data) setData(normalizedData);
+    const baseFill = getFormAnswers(normalizedData);
     const pdfFill = applyAutoFillFields(baseFill, effectiveAutoFillFields, resolvedProfiles);
-    const metadata = computeMetadata(effectiveOutputFields, data, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
-    const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, data) : {};
+    const metadata = computeMetadata(effectiveOutputFields, normalizedData, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
+    const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, normalizedData, jsonSchema) : {};
     const formOutput = { ...pdfFill, metadata };
-    onSubmit(pdfFill, formOutput, data, profileUpdates);
-  }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema]);
+    onSubmit(pdfFill, formOutput, normalizedData, profileUpdates);
+  }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);
 
   if (loading) {
     return (
@@ -138,7 +140,7 @@ export default function InteractiveFormWizard({
           renderers={interactiveFormRenderers}
           cells={interactiveFormCells}
           onChange={({ data: newData }) => {
-            if (newData != null) setData(newData);
+            if (newData != null) setData(normalizeTextFieldValues(newData, jsonSchema));
           }}
         />
       </div>

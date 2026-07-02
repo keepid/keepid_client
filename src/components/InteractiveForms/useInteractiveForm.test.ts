@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ResolvedProfiles } from '../../utils/directives';
 import { applyAutoFillFields } from './InteractiveFormWizard';
 import type { AutoFillField } from './types';
-import { buildFormAnswers, extractDirectivesFromUiSchema } from './useInteractiveForm';
+import { buildFormAnswers, extractDirectivesFromUiSchema, normalizeTextFieldValues } from './useInteractiveForm';
 
 const resolvedProfiles: ResolvedProfiles = {
   client: {
@@ -53,6 +53,10 @@ const jsonSchema = {
     dateQuestion: { type: 'string' },
     literalCheckbox: { type: 'boolean' },
     choice: { type: 'string' },
+    firstName: { type: 'string' },
+    streetAddress: { type: 'string' },
+    emailAddress: { type: 'string', format: 'email' },
+    appointmentDate: { type: 'string', format: 'date' },
   },
 };
 
@@ -101,6 +105,73 @@ describe('interactive form PDF fill directives', () => {
     });
 
     vi.useRealTimers();
+  });
+
+  it('title-cases free-text renderer answers while preserving email, date, and choice values', () => {
+    expect(
+      normalizeTextFieldValues(
+        {
+          firstName: 'daniel',
+          streetAddress: '1030 douglas street apt 2b',
+          emailAddress: 'daniel@example.com',
+          appointmentDate: '2026-07-02',
+          choice: 'replacement',
+        },
+        {
+          ...jsonSchema,
+          properties: {
+            ...jsonSchema.properties,
+            choice: { type: 'string', enum: ['replacement', 'original'] },
+          },
+        },
+      ),
+    ).toEqual({
+      firstName: 'Daniel',
+      streetAddress: '1030 Douglas Street Apt 2B',
+      emailAddress: 'daniel@example.com',
+      appointmentDate: '2026-07-02',
+      choice: 'replacement',
+    });
+  });
+
+  it('sends title-cased free-text answers to PDF fill fields', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: { pdfField: 'first_name' },
+        },
+        {
+          type: 'Control',
+          scope: '#/properties/streetAddress',
+          options: { pdfField: 'address_line_1' },
+        },
+        {
+          type: 'Control',
+          scope: '#/properties/emailAddress',
+          options: { pdfField: 'email' },
+        },
+      ],
+    };
+
+    expect(
+      buildFormAnswers(
+        uiSchema,
+        jsonSchema,
+        {
+          firstName: 'daniel',
+          streetAddress: '1030 douglas street',
+          emailAddress: 'daniel@example.com',
+        },
+        resolvedProfiles,
+      ),
+    ).toEqual({
+      first_name: 'Daniel',
+      address_line_1: '1030 Douglas Street',
+      email: 'daniel@example.com',
+    });
   });
 
   it('preserves fixed literal outcomes for boolean and option annotations', () => {
@@ -215,6 +286,37 @@ describe('interactive form PDF fill directives', () => {
 
     expect(extractDirectivesFromUiSchema(uiSchema, { motherMaiden: 'Milbanke' })).toEqual({
       'client.motherName.maiden': 'Milbanke',
+    });
+  });
+
+  it('syncs title-cased free-text answers back to profile directives', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          label: 'Street address',
+          scope: '#/properties/streetAddress',
+          options: { directive: 'client.personalAddress.line1' },
+        },
+        {
+          type: 'Control',
+          label: 'Email',
+          scope: '#/properties/emailAddress',
+          options: { directive: 'client.email' },
+        },
+      ],
+    };
+
+    expect(
+      extractDirectivesFromUiSchema(
+        uiSchema,
+        { streetAddress: '1030 douglas street', emailAddress: 'daniel@example.com' },
+        jsonSchema,
+      ),
+    ).toEqual({
+      'client.personalAddress.line1': '1030 Douglas Street',
+      'client.email': 'daniel@example.com',
     });
   });
 });
