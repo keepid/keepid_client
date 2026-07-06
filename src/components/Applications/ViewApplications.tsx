@@ -428,68 +428,64 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     if (availableApplications.length === 0) return null;
 
     return (
-      <div className="tw-border-b tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-4">
-        <div className="tw-mb-3 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
-          <span className="tw-text-sm tw-font-semibold tw-text-gray-900">Filters</span>
-          <span className="tw-flex tw-items-center tw-gap-3 tw-text-xs tw-text-gray-500">
-            Showing {filteredApplications.length} of {availableApplications.length}
-            {hasFilters && (
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-secondary"
-                onClick={this.clearApplicationFilters}
+      <div className="tw-mb-3 tw-bg-blue-50 tw-px-4 tw-py-3">
+        <div className="tw-flex tw-flex-col tw-gap-3 lg:tw-flex-row lg:tw-items-end">
+          <div className="tw-grid tw-flex-1 tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-3">
+            <label htmlFor="application-housing-filter" className="tw-text-xs tw-font-semibold tw-text-blue-900">
+              <span className="tw-block">Housing</span>
+              <select
+                id="application-housing-filter"
+                className="form-control form-control-sm tw-mt-1"
+                value={applicationHousingStatusFilter}
+                onChange={(e) => this.setState({
+                  applicationHousingStatusFilter: e.target.value,
+                  applicationHousingStatusFilterTouched: true,
+                })}
               >
-                Reset
-              </button>
-            )}
-          </span>
-        </div>
-        <div className="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-3">
-          <label htmlFor="application-housing-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
-            Housing
-            <select
-              id="application-housing-filter"
-              className="form-control form-control-sm tw-mt-1"
-              value={applicationHousingStatusFilter}
-              onChange={(e) => this.setState({
-                applicationHousingStatusFilter: e.target.value,
-                applicationHousingStatusFilterTouched: true,
-              })}
+                <option value="">All housing</option>
+                {housingStatusOptions.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor="application-state-filter" className="tw-text-xs tw-font-semibold tw-text-blue-900">
+              <span className="tw-block">State</span>
+              <select
+                id="application-state-filter"
+                className="form-control form-control-sm tw-mt-1"
+                value={applicationStateFilter}
+                onChange={(e) => this.setState({ applicationStateFilter: e.target.value })}
+              >
+                <option value="">All states</option>
+                {stateOptions.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor="application-id-type-filter" className="tw-text-xs tw-font-semibold tw-text-blue-900">
+              <span className="tw-block">ID type</span>
+              <select
+                id="application-id-type-filter"
+                className="form-control form-control-sm tw-mt-1"
+                value={applicationIdTypeFilter}
+                onChange={(e) => this.setState({ applicationIdTypeFilter: e.target.value })}
+              >
+                <option value="">All ID types</option>
+                {idTypeOptions.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {hasFilters && (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary tw-self-start lg:tw-self-auto"
+              onClick={this.clearApplicationFilters}
             >
-              <option value="">All housing</option>
-              {housingStatusOptions.map((value) => (
-                <option key={value} value={value}>{value}</option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="application-state-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
-            State
-            <select
-              id="application-state-filter"
-              className="form-control form-control-sm tw-mt-1"
-              value={applicationStateFilter}
-              onChange={(e) => this.setState({ applicationStateFilter: e.target.value })}
-            >
-              <option value="">All states</option>
-              {stateOptions.map((value) => (
-                <option key={value} value={value}>{value}</option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="application-id-type-filter" className="tw-text-xs tw-font-semibold tw-text-gray-700">
-            ID type
-            <select
-              id="application-id-type-filter"
-              className="form-control form-control-sm tw-mt-1"
-              value={applicationIdTypeFilter}
-              onChange={(e) => this.setState({ applicationIdTypeFilter: e.target.value })}
-            >
-              <option value="">All ID types</option>
-              {idTypeOptions.map((value) => (
-                <option key={value} value={value}>{value}</option>
-              ))}
-            </select>
-          </label>
+              Reset
+            </button>
+          )}
         </div>
       </div>
     );
@@ -1177,17 +1173,24 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     </span>
                   </Link>
                 )}
-                <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-shadow-sm">
-                  <div className="tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3">
+                <div>
+                  <div className="tw-mb-2 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
                     <h3 className="tw-mb-0 tw-text-sm tw-font-semibold tw-text-gray-900">Available forms</h3>
+                    {availableApplications.length > 0 && (
+                      <span className="tw-text-xs tw-font-medium tw-text-gray-500">
+                        Showing {filteredAvailableApplications.length} of {availableApplications.length}
+                      </span>
+                    )}
                   </div>
                   {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
-                  {this.renderAvailableApplicationRows(
-                    availableApplications,
-                    filteredAvailableApplications,
-                    clientUsername,
-                    clientName,
-                  )}
+                  <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
+                    {this.renderAvailableApplicationRows(
+                      availableApplications,
+                      filteredAvailableApplications,
+                      clientUsername,
+                      clientName,
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"
