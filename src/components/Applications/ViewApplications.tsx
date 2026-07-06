@@ -13,10 +13,7 @@ import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../..
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import {
-  createApplicationFromDocument,
   createUploadedApplication,
-  listOrgDocuments,
-  OrgDocumentOption,
 } from './api/interactiveForm';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
@@ -88,8 +85,6 @@ interface State {
   applicationIdTypeFilter: string,
   applicationHousingStatusFilter: string,
   applicationHousingStatusFilterTouched: boolean,
-  orgDocuments: OrgDocumentOption[],
-  isLoadingOrgDocuments: boolean,
   uploadModalOpen: boolean,
   uploadApplicationName: string,
   uploadFile: File | null,
@@ -102,11 +97,6 @@ interface State {
   modalClientSearching: boolean,
   modalClientError: string | null,
   modalClientResultsOpen: boolean,
-  orgModalOpen: boolean,
-  orgApplicationName: string,
-  orgSourceDocumentId: string,
-  orgSubmitting: boolean,
-  orgError: string | null,
 }
 
 interface LocationState {
@@ -135,8 +125,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       applicationIdTypeFilter: '',
       applicationHousingStatusFilter: '',
       applicationHousingStatusFilterTouched: false,
-      orgDocuments: [],
-      isLoadingOrgDocuments: false,
       uploadModalOpen: false,
       uploadApplicationName: '',
       uploadFile: null,
@@ -149,11 +137,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       modalClientSearching: false,
       modalClientError: null,
       modalClientResultsOpen: false,
-      orgModalOpen: false,
-      orgApplicationName: '',
-      orgSourceDocumentId: '',
-      orgSubmitting: false,
-      orgError: null,
     };
   }
 
@@ -311,26 +294,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   openUploadModal = () => {
     this.resetModalClientPicker();
     this.setState({ uploadModalOpen: true, uploadError: null });
-  };
-
-  openOrgModal = () => {
-    this.resetModalClientPicker();
-    this.setState({ orgModalOpen: true, orgError: null });
-  };
-
-  getOrgDocumentApplicationName = (doc: OrgDocumentOption): string =>
-    doc.filename
-      .replace(/\.pdf$/i, '')
-      .replace(/[_-]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-  handleOrgDocumentSelection = (sourceDocumentId: string) => {
-    const selected = this.state.orgDocuments.find((doc) => doc.id === sourceDocumentId);
-    this.setState({
-      orgSourceDocumentId: sourceDocumentId,
-      orgApplicationName: selected ? this.getOrgDocumentApplicationName(selected) : '',
-    });
   };
 
   loadAvailableApplications = () => {
@@ -586,17 +549,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     );
   };
 
-  loadOrgDocuments = () => {
-    this.setState({ isLoadingOrgDocuments: true });
-    listOrgDocuments()
-      .then((orgDocuments) => {
-        this.setState({ orgDocuments, isLoadingOrgDocuments: false });
-      })
-      .catch(() => {
-        this.setState({ orgDocuments: [], isLoadingOrgDocuments: false });
-      });
-  };
-
   loadDocuments = (targetUsername?: string, targetName?: string) => {
     const isWorkerView = Boolean(targetUsername && targetUsername.trim().length > 0);
     const previousClientUsername = this.state.clientUsername;
@@ -688,7 +640,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.loadFromLocation();
     if (this.props.role !== Role.Client) {
       this.loadAvailableApplications();
-      this.loadOrgDocuments();
     }
   }
 
@@ -938,43 +889,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
-  handleCreateFromOrgDocument = () => {
-    const {
-      orgApplicationName,
-      orgSourceDocumentId,
-      modalClientUsername,
-      modalClientName,
-    } = this.state;
-    if (!modalClientUsername) {
-      this.setState({ orgError: 'Choose the client this application is for.' });
-      return;
-    }
-    if (!orgApplicationName.trim() || !orgSourceDocumentId) {
-      this.setState({ orgError: 'Enter an application name and choose an org document.' });
-      return;
-    }
-    this.setState({ orgSubmitting: true, orgError: null });
-    createApplicationFromDocument(orgSourceDocumentId, orgApplicationName.trim(), modalClientUsername)
-      .then((result) => {
-        const applicationId = result.applicationId || result.fileId;
-        if (!applicationId) throw new Error('Server did not return an application id.');
-        const name = orgApplicationName.trim();
-        this.setState({
-          orgModalOpen: false,
-          orgApplicationName: '',
-          orgSourceDocumentId: '',
-          orgSubmitting: false,
-        });
-        this.navigateToCreatedApplication(applicationId, name, modalClientUsername, modalClientName);
-      })
-      .catch((error) => {
-        this.setState({
-          orgSubmitting: false,
-          orgError: error instanceof Error ? error.message : 'Could not create application.',
-        });
-      });
-  };
-
   getRowActions = (row: DocumentInformation): RowAction[] => {
     if (this.props.role === Role.Client) {
       return [
@@ -1089,19 +1003,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       renameValue,
       isRenaming,
       availableApplications,
-      orgDocuments,
-      isLoadingOrgDocuments,
       uploadModalOpen,
       uploadApplicationName,
       uploadFile,
       uploadSubmitting,
       uploadError,
       modalClientUsername,
-      orgModalOpen,
-      orgApplicationName,
-      orgSourceDocumentId,
-      orgSubmitting,
-      orgError,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
@@ -1282,33 +1189,16 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     clientName,
                   )}
                 </div>
-                <div className="tw-mt-3 tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
-                  <div className="tw-border-b tw-border-gray-200 tw-bg-white">
-                    <button
-                      type="button"
-                      className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
-                      onClick={this.openUploadModal}
-                    >
-                      <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
-                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
-                        <span className="tw-hidden sm:tw-inline">Upload</span>
-                      </span>
-                    </button>
-                  </div>
-                  <div className="tw-bg-white">
-                    <button
-                      type="button"
-                      className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 disabled:tw-cursor-not-allowed disabled:tw-opacity-60 disabled:hover:tw-bg-transparent"
-                      onClick={this.openOrgModal}
-                      disabled={isLoadingOrgDocuments || orgDocuments.length === 0}
-                    >
-                      <span className="tw-font-medium tw-text-gray-900">Use org document</span>
-                      <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
-                        <span className="tw-hidden sm:tw-inline">Choose</span>
-                      </span>
-                    </button>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  className="tw-mt-3 tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-shadow-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+                  onClick={this.openUploadModal}
+                >
+                  <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
+                  <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                    <span className="tw-hidden sm:tw-inline">Upload</span>
+                  </span>
+                </button>
               </div>
             )}
           </div>
@@ -1371,69 +1261,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     disabled={uploadSubmitting || !modalClientUsername || !uploadApplicationName.trim() || !uploadFile}
                   >
                     {uploadSubmitting ? 'Uploading...' : 'Create application'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {orgModalOpen && (
-            <div
-              className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
-              onClick={() => { if (!orgSubmitting) this.setState({ orgModalOpen: false }); }}
-              role="presentation"
-            >
-              <div
-                className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
-                onClick={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-4">
-                  Create From Org Document
-                </h5>
-                {orgError && <div className="alert alert-danger py-2">{orgError}</div>}
-                {this.renderModalClientPicker(orgSubmitting)}
-                <label htmlFor="org-document-source" className="form-label fw-semibold">
-                  Organization document
-                </label>
-                <select
-                  id="org-document-source"
-                  className="form-control"
-                  value={orgSourceDocumentId}
-                  onChange={(e) => this.handleOrgDocumentSelection(e.target.value)}
-                  disabled={orgSubmitting}
-                >
-                  <option value="">Choose a document...</option>
-                  {orgDocuments.map((doc) => (
-                    <option key={doc.id} value={doc.id}>{doc.filename}</option>
-                  ))}
-                </select>
-                <label htmlFor="org-application-name" className="form-label fw-semibold tw-mt-3">
-                  Application name
-                </label>
-                <input
-                  id="org-application-name"
-                  type="text"
-                  className="form-control"
-                  value={orgApplicationName}
-                  onChange={(e) => this.setState({ orgApplicationName: e.target.value })}
-                  disabled={orgSubmitting}
-                />
-                <div className="tw-flex tw-justify-end tw-gap-3 tw-mt-4">
-                  <button
-                    type="button"
-                    className="btn btn-outline-dark"
-                    onClick={() => this.setState({ orgModalOpen: false })}
-                    disabled={orgSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={this.handleCreateFromOrgDocument}
-                    disabled={orgSubmitting || !modalClientUsername || !orgApplicationName.trim() || !orgSourceDocumentId}
-                  >
-                    {orgSubmitting ? 'Creating...' : 'Create application'}
                   </button>
                 </div>
               </div>

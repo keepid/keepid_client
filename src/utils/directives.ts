@@ -38,8 +38,8 @@ export function normalizeDateLikeValue(value: unknown): unknown {
   let m = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
   if (m) return `${m[2]}/${m[3]}/${m[1]}`;
 
-  m = trimmed.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
-  if (m) return `${m[1]}/${m[2]}/${m[3]}`;
+  m = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (m) return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
 
   return value;
 }
@@ -55,12 +55,31 @@ function parseBirthDate(raw: unknown): Date | undefined {
     return Number.isNaN(d.getTime()) ? undefined : d;
   }
   // mm-dd-yyyy or mm/dd/yyyy
-  m = v.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+  m = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (m) {
     const d = new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
     return Number.isNaN(d.getTime()) ? undefined : d;
   }
   return undefined;
+}
+
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+function formatMonthDayYear(date: Date): string {
+  return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 function computeAgeFromBirthDate(profile: Record<string, unknown> | undefined): string | undefined {
@@ -113,6 +132,8 @@ function splitDirectiveNamespace(directive: string): { namespace: string; path: 
 }
 
 const DIRECTIVE_ALIASES: Record<string, string> = {
+  dob: 'birthDate',
+  dateOfBirth: 'birthDate',
   emailAddress: 'email',
   genderAssignedAtBirth: 'sex',
   motherFirstName: 'motherName.first',
@@ -284,6 +305,13 @@ export function resolveDirectiveFromProfiles(
     const profileKey = dobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const profile = profiles[profileKey];
     return normalizeDateLikeValue(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
+  }
+  const longDobMatch = normalizedDirective
+    .match(/^(client|worker|director)\.\$(dob_month_day_year|dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i);
+  if (longDobMatch) {
+    const profileKey = longDobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
+    const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
+    return birthDate ? formatMonthDayYear(birthDate) : undefined;
   }
   const ageMatch = normalizedDirective.match(/^(client|worker|director)\.\$age$/i);
   if (ageMatch) {

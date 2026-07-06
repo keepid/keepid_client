@@ -116,14 +116,25 @@ describe('directive resolution', () => {
   it('normalizes date-like direct values', () => {
     expect(normalizeDateLikeValue('2024-01-31')).toBe('01/31/2024');
     expect(normalizeDateLikeValue('01-31-2024')).toBe('01/31/2024');
+    expect(normalizeDateLikeValue('1/2/2024')).toBe('01/02/2024');
     expect(resolveDirectiveFromProfiles('client.birthDate', profiles)).toBe('12/10/1815');
+    expect(resolveDirectiveFromProfiles('client.dob', profiles)).toBe('12/10/1815');
+    expect(resolveDirectiveFromProfiles('client.dateOfBirth', profiles)).toBe('12/10/1815');
     expect(resolveDirectiveFromProfiles('org.creationDate', profiles)).toBe('01/31/2024');
   });
 
   it('supports computed birth date directives', () => {
+    const singleDigitDobProfiles: ResolvedProfiles = {
+      client: { birthDate: '6/2/2001' },
+    };
+
     expect(resolveDirectiveFromProfiles('client.$dob_mm/dd/yyyy', profiles)).toBe('12/10/1815');
     expect(resolveDirectiveFromProfiles('worker.$dob_mm/dd/yyyy', profiles)).toBe('12/09/1906');
     expect(resolveDirectiveFromProfiles('director.$dob_mm/dd/yyyy', profiles)).toBe('08/26/1918');
+    expect(resolveDirectiveFromProfiles('client.$dob_month_day_year', profiles)).toBe('December 10, 1815');
+    expect(resolveDirectiveFromProfiles('worker.$dob_month_day_year', profiles)).toBe('December 9, 1906');
+    expect(resolveDirectiveFromProfiles('director.$dob_month_day_year', profiles)).toBe('August 26, 1918');
+    expect(resolveDirectiveFromProfiles('client.$dob_month_day_year', singleDigitDobProfiles)).toBe('June 2, 2001');
     expect(resolveDirectiveFromProfiles('client.$birthYear', profiles)).toBe('1815');
     expect(resolveDirectiveFromProfiles('client.$birthMonth', profiles)).toBe('12');
     expect(resolveDirectiveFromProfiles('client.$dobMonthNumber', profiles)).toBe('12');
