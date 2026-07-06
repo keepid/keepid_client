@@ -33,6 +33,16 @@ export function birthDateStringFromIsoDateOnly(value: string): string | undefine
   return d === undefined ? undefined : birthDateStringConverter(d);
 }
 
+export function isAtLeastAge(birthDate: Date, years: number, asOf = new Date()): boolean {
+  const birthCalendarDate = new Date(
+    birthDate.getFullYear(),
+    birthDate.getMonth(),
+    birthDate.getDate(),
+  );
+  const cutoff = new Date(asOf.getFullYear() - years, asOf.getMonth(), asOf.getDate());
+  return birthCalendarDate.getTime() <= cutoff.getTime();
+}
+
 const urlPattern: RegExp = /^(http:www.)|(https:www.)|(http:(.*)|https:)(.*)$/;
 
 export const formatUrl = (url: string): string => {

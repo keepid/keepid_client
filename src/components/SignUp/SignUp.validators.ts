@@ -15,7 +15,9 @@ import {
   isValidZipCode,
 } from '../../lib/Validations/Validations';
 import { isUsernameAvailable } from './SignUp.api';
-import { birthDateStringConverter } from './SignUp.util';
+import { birthDateStringConverter, isAtLeastAge } from './SignUp.util';
+
+export const MIN_SIGNUP_AGE = 18;
 
 export const validateFirstname = (firstname: string): string => {
   if (!isValidFirstName(firstname)) {
@@ -34,6 +36,9 @@ export const validateLastname = (lastname: string): string => {
 export const validateBirthdate = (birthDate: Date): string => {
   if (!isValidBirthDate(birthDateStringConverter(birthDate))) {
     return 'Invalid birth date';
+  }
+  if (!isAtLeastAge(birthDate, MIN_SIGNUP_AGE)) {
+    return 'Must be at least 18 years old';
   }
   return '';
 };

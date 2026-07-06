@@ -1,13 +1,8 @@
-import jwtDecode from 'jwt-decode';
 import React, { useState } from 'react';
-import { useAlert } from 'react-alert';
-import { Redirect, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 
-import Role, { canAuthRoleCreateRole, roleFromString } from '../../static/Role';
+import Role from '../../static/Role';
 import CompleteSignupFlow from './CompleteSignupFlow';
-import InviteSignupFlow from './InviteSignupFlow';
-import InviteSignupJWT from './InviteSignupJWT';
-import PersonSignupFlow from './PersonSignupFlow';
 import SignUpContext, {
   AccountInformationProperties,
   AssignWorkerProperties,
@@ -58,7 +53,6 @@ export function useSignupStageContext(): SignupStageContextInterface {
 }
 
 function SignUpRouter({ role }: SignUpRouterProps) {
-  const alert = useAlert();
   const [accountInformation, setAccountInformation] =
     useState<AccountInformationProperties>({
       birthDate: undefined,
@@ -89,8 +83,6 @@ function SignUpRouter({ role }: SignUpRouterProps) {
 
   const signUpStageStateContext = useSignupStageContext();
 
-  const [personRole, setPersonRole] = useState<Role | undefined>();
-
   return (
     <SignUpContext.Provider
       value={{
@@ -120,7 +112,7 @@ function SignUpRouter({ role }: SignUpRouterProps) {
 
         signUpStageStateContext,
         authRole: role,
-        personRole,
+        personRole: undefined,
       }}
     >
       <Route path="/signup-branch">
@@ -129,52 +121,6 @@ function SignUpRouter({ role }: SignUpRouterProps) {
       <Route path="/organization-signup">
         <CompleteSignupFlow />
       </Route>
-      <Route
-        path="/person-signup/:roleString"
-        render={(props) => {
-          const personRoleFromParams = roleFromString(
-            props.match.params.roleString,
-          );
-
-          if (personRoleFromParams === Role.Worker || personRoleFromParams === Role.Admin) {
-            return <Redirect to="/enroll-worker" />;
-          }
-
-          if (personRoleFromParams !== personRole) {
-            setPersonRole(personRoleFromParams);
-          }
-
-          if (canAuthRoleCreateRole(role, personRoleFromParams)) {
-            return <PersonSignupFlow />;
-          }
-          alert.error(`A ${role} cannot sign up a new ${personRoleFromParams}`);
-          return <Redirect to="/error" />;
-        }}
-      />
-      <Route
-        path="/create-user/:jwt"
-        render={(props) => {
-          const { jwt } = props.match.params;
-          try {
-            const decoded = jwtDecode(jwt);
-            const currentTime = Date.now() / 1000;
-            if (decoded.exp > currentTime) {
-              return (
-                <InviteSignupFlow
-                  orgName={decoded.organization}
-                  personRole={decoded.role}
-                  inviteJwt={jwt}
-                />
-              );
-            }
-          } catch (err) {
-            return <Redirect to="/error" />;
-          }
-          return <Redirect to="/error" />;
-        }}
-      >
-        <InviteSignupJWT />
-      </Route>
     </SignUpContext.Provider>
   );
 }
@@ -182,8 +128,6 @@ function SignUpRouter({ role }: SignUpRouterProps) {
 export const paths = [
   '/signup-branch',
   '/organization-signup',
-  '/person-signup/:roleString',
-  '/create-user/:jwt',
 ];
 
 export default SignUpRouter;

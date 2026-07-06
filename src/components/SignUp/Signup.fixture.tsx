@@ -32,7 +32,7 @@ export default function SignupFixture() {
   });
 
   const [path] = useValue('URL Path', {
-    defaultValue: '/person-signup/client',
+    defaultValue: '/organization-signup',
   });
 
   useEffect(() => {

@@ -162,6 +162,8 @@ export default function EssentialAccountSection({
   const initialEmail = profile.email || '';
   const [email, setEmail] = useState(initialEmail);
   const hasEmail = email.trim() !== '';
+  const initialExperiencingHomelessness = Boolean(profile.experiencingHomelessness);
+  const [experiencingHomelessness, setExperiencingHomelessness] = useState(initialExperiencingHomelessness);
 
   const [phoneBook, setPhoneBook] = useState<PhoneBookEntry[]>([]);
   const [phoneBookLoading, setPhoneBookLoading] = useState(true);
@@ -203,6 +205,7 @@ export default function EssentialAccountSection({
   useEffect(() => { fetchPhoneBook(); }, [fetchPhoneBook]);
 
   const emailDirty = email !== initialEmail;
+  const homelessnessDirty = experiencingHomelessness !== initialExperiencingHomelessness;
 
   const phoneBookDirty = useMemo(() => {
     if (editedPhoneBook.length !== phoneBook.length) return true;
@@ -230,7 +233,7 @@ export default function EssentialAccountSection({
     [editMailAddress, profile],
   );
 
-  const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
+  const isDirty = emailDirty || homelessnessDirty || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
 
   const name = useMemo(() => {
     const parts = [
@@ -397,6 +400,25 @@ export default function EssentialAccountSection({
     return true;
   }
 
+  async function saveHomelessness(): Promise<boolean> {
+    if (!homelessnessDirty) return true;
+    const payload: Record<string, unknown> = { experiencingHomelessness };
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save homelessness status: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
   async function saveEmail(): Promise<boolean> {
     if (!emailDirty) return true;
     const payload: Record<string, any> = { email };
@@ -422,6 +444,7 @@ export default function EssentialAccountSection({
       if (!(await saveIdentity())) return;
       if (!(await saveEmail())) return;
       if (!(await saveMailingAddress())) return;
+      if (!(await saveHomelessness())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
       if (phoneBookDirty || hasNewEntry) {
@@ -479,6 +502,7 @@ export default function EssentialAccountSection({
 
   function beginEdit() {
     setEmail(initialEmail);
+    setExperiencingHomelessness(initialExperiencingHomelessness);
     setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
@@ -505,6 +529,7 @@ export default function EssentialAccountSection({
   function cancelEdit() {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return;
     setEmail(initialEmail);
+    setExperiencingHomelessness(initialExperiencingHomelessness);
     setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
@@ -764,7 +789,20 @@ export default function EssentialAccountSection({
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Experiencing Homelessness</div>
           <div className="col-9 card-text">
-            <div className="tw-pt-2">{homelessStatus}</div>
+            {isEditing ? (
+              <label className="tw-inline-flex tw-items-center tw-gap-2 tw-pt-2 tw-text-sm tw-text-gray-700" htmlFor="experiencingHomelessness">
+                <input
+                  id="experiencingHomelessness"
+                  type="checkbox"
+                  className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={experiencingHomelessness}
+                  onChange={(e) => setExperiencingHomelessness(e.target.checked)}
+                />
+                Experiencing homelessness
+              </label>
+            ) : (
+              <div className="tw-pt-2">{homelessStatus}</div>
+            )}
           </div>
         </div>
 

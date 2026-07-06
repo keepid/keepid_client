@@ -40,9 +40,7 @@ import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import EnrollClientPage from './components/SignUp/EnrollClient';
 import EnrollWorkerPage from './components/SignUp/EnrollWorker';
-import SignUpRouter, {
-  paths as SignUpRouterPaths,
-} from './components/SignUp/SignUp.router';
+import SignUpRouter from './components/SignUp/SignUp.router';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';

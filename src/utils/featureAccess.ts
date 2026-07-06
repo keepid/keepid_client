@@ -17,6 +17,10 @@ export function isAdminRole(role: RoleLike): boolean {
   return role === Role.Admin || role === Role.Director;
 }
 
+export function isStaffRole(role: RoleLike): boolean {
+  return role === Role.Worker || isAdminRole(role);
+}
+
 function isSignedInRole(role: RoleLike): boolean {
   return !!role && role !== Role.LoggedOut;
 }
@@ -26,9 +30,9 @@ export function canUseApplications(role: RoleLike, organization?: string | null)
 }
 
 export function canUseCommunications(role: RoleLike, organization?: string | null): boolean {
-  return isAdminRole(role) && isTeamKeepOrganization(organization);
+  return isStaffRole(role) && isTeamKeepOrganization(organization);
 }
 
 export function canUseClientNotifications(role: RoleLike, organization?: string | null): boolean {
-  return canUseCommunications(role, organization);
+  return isAdminRole(role) && isTeamKeepOrganization(organization);
 }
