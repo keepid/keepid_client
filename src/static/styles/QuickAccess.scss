@@ -5,17 +5,14 @@
 
 .quick-access-card {
 	background: #ffffff;
-	border: 1px solid #9ca3af;
+	border: 0.0625rem solid #9ca3af;
 	box-shadow: 0 0.125rem 0.5rem rgba(33, 37, 41, 0.08);
 	border-radius: 0.625rem;
 	min-width: 20%;
 	margin: 0;
-	transition:
-		box-shadow 0.22s ease-out,
-		transform 0.22s ease-out,
-		border-color 0.22s ease-out;
+	transition: box-shadow 0.22s ease-out, transform 0.22s ease-out, border-color 0.22s ease-out;
 
-	@media (max-width: 639.98px) {
+	@media (max-width: 40rem) {
 		margin-top: 0.125rem;
 		margin-bottom: 0.125rem;
 	}
@@ -36,11 +33,9 @@
 .quick-access-card:hover,
 .quick-access-card:focus-within,
 .quick-access-card:active {
-	transform: translateY(-4px);
+	transform: translateY(-0.25rem);
 	border-color: #6b7280;
-	box-shadow:
-		0 0.875rem 2rem rgba(33, 37, 41, 0.16),
-		0 0.35rem 0.65rem rgba(33, 37, 41, 0.1);
+	box-shadow: 0 0.875rem 2rem rgba(33, 37, 41, 0.16), 0 0.35rem 0.65rem rgba(33, 37, 41, 0.1);
 }
 
 .quick-access-card-body {
