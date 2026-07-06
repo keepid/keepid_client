@@ -429,6 +429,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     return (
       <div className="tw-mb-3 tw-bg-blue-50 tw-px-4 tw-py-3">
+        <div className="tw-mb-2 tw-flex tw-justify-end">
+          <span className="tw-text-xs tw-font-medium tw-text-gray-500">
+            Showing {filteredApplications.length} of {availableApplications.length}
+          </span>
+        </div>
         <div className="tw-flex tw-flex-col tw-gap-3 lg:tw-flex-row lg:tw-items-end">
           <div className="tw-grid tw-flex-1 tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-3">
             <label htmlFor="application-housing-filter" className="tw-text-xs tw-font-semibold tw-text-blue-900">
@@ -1174,14 +1179,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   </Link>
                 )}
                 <div>
-                  <div className="tw-mb-2 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
-                    <h3 className="tw-mb-0 tw-text-sm tw-font-semibold tw-text-gray-900">Available forms</h3>
-                    {availableApplications.length > 0 && (
-                      <span className="tw-text-xs tw-font-medium tw-text-gray-500">
-                        Showing {filteredAvailableApplications.length} of {availableApplications.length}
-                      </span>
-                    )}
-                  </div>
                   {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
                   <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                     {this.renderAvailableApplicationRows(
