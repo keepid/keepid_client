@@ -5,6 +5,148 @@ export interface ResolvedProfiles {
   director?: Record<string, unknown>;
 }
 
+export type DirectiveHealthStatus = 'supported' | 'deprecated' | 'sentinel' | 'unknown';
+
+export interface DirectiveCatalogItem {
+  directive: string;
+  label?: string;
+}
+
+export interface DirectiveCatalogGroup {
+  label: string;
+  items: DirectiveCatalogItem[];
+  defaultOpen?: boolean;
+}
+
+export interface DirectiveCatalogColumn {
+  title: string;
+  groups: DirectiveCatalogGroup[];
+}
+
+export interface DirectiveHealth {
+  status: DirectiveHealthStatus;
+  directive: string;
+  replacement?: string;
+  message?: string;
+}
+
+export const DIRECTIVE_CATALOG_COLUMNS: DirectiveCatalogColumn[] = [
+  {
+    title: 'Computed',
+    groups: [
+      {
+        label: 'Dates & Age',
+        defaultOpen: true,
+        items: [
+          { directive: 'currentDate', label: 'Current date' },
+          { directive: 'client.$age', label: 'Client age' },
+          { directive: 'client.$birthYear', label: 'Client birth year' },
+          { directive: 'client.$birthMonth', label: 'Client birth month number' },
+          { directive: 'client.$birthDay', label: 'Client birth day' },
+          { directive: 'client.$dob_mm/dd/yyyy', label: 'Client DOB, 06/02/2001' },
+          { directive: 'client.$dob_month_day_year', label: 'Client DOB, June 2, 2001' },
+          { directive: 'worker.$age', label: 'Worker age' },
+          { directive: 'worker.$birthYear', label: 'Worker birth year' },
+          { directive: 'worker.$birthMonth', label: 'Worker birth month number' },
+          { directive: 'worker.$birthDay', label: 'Worker birth day' },
+          { directive: 'worker.$dob_mm/dd/yyyy', label: 'Worker DOB, 06/02/2001' },
+          { directive: 'worker.$dob_month_day_year', label: 'Worker DOB, June 2, 2001' },
+          { directive: 'director.$age', label: 'Director age' },
+          { directive: 'director.$birthYear', label: 'Director birth year' },
+          { directive: 'director.$birthMonth', label: 'Director birth month number' },
+          { directive: 'director.$birthDay', label: 'Director birth day' },
+          { directive: 'director.$dob_mm/dd/yyyy', label: 'Director DOB, 06/02/2001' },
+          { directive: 'director.$dob_month_day_year', label: 'Director DOB, June 2, 2001' },
+        ],
+      },
+      {
+        label: 'Phone',
+        items: [
+          { directive: 'client.$primaryPhoneLast7', label: 'Client phone last 7' },
+          { directive: 'worker.$phoneLast7', label: 'Worker phone last 7' },
+          { directive: 'director.$phoneLast7', label: 'Director phone last 7' },
+        ],
+      },
+      { label: 'Full Names', items: ['client.$fullName', 'worker.$fullName', 'director.$fullName'].map((directive) => ({ directive })) },
+      {
+        label: 'Phone Parts',
+        items: [
+          { directive: 'client.$primaryPhoneAreaCode', label: 'Client phone area code' },
+          { directive: 'client.$primaryPhoneTelephonePrefix', label: 'Client phone prefix' },
+          { directive: 'client.$primaryPhoneLineNumber', label: 'Client phone line number' },
+          { directive: 'worker.$primaryPhoneAreaCode', label: 'Worker phone area code' },
+          { directive: 'worker.$primaryPhoneTelephonePrefix', label: 'Worker phone prefix' },
+          { directive: 'worker.$primaryPhoneLineNumber', label: 'Worker phone line number' },
+          { directive: 'director.$primaryPhoneAreaCode', label: 'Director phone area code' },
+          { directive: 'director.$primaryPhoneTelephonePrefix', label: 'Director phone prefix' },
+          { directive: 'director.$primaryPhoneLineNumber', label: 'Director phone line number' },
+        ],
+      },
+      {
+        label: 'Addresses',
+        items: [
+          { directive: 'client.$fullAddress', label: 'Client full address' },
+          { directive: 'client.$fullPersonalAddress', label: 'Client full personal address' },
+          { directive: 'client.$fullMailAddress', label: 'Client full mail address' },
+          { directive: 'worker.$fullAddress', label: 'Worker full address' },
+          { directive: 'worker.$fullPersonalAddress', label: 'Worker full personal address' },
+          { directive: 'worker.$fullMailAddress', label: 'Worker full mail address' },
+          { directive: 'director.$fullAddress', label: 'Director full address' },
+          { directive: 'director.$fullPersonalAddress', label: 'Director full personal address' },
+          { directive: 'director.$fullMailAddress', label: 'Director full mail address' },
+          { directive: 'org.$fullAddress', label: 'Org full address' },
+          { directive: 'client.personalAddress.$line1And2', label: 'Client personal line 1 + 2' },
+          { directive: 'client.mailAddress.$line1And2', label: 'Client mail line 1 + 2' },
+          { directive: 'worker.personalAddress.$line1And2', label: 'Worker personal line 1 + 2' },
+          { directive: 'worker.mailAddress.$line1And2', label: 'Worker mail line 1 + 2' },
+          { directive: 'director.personalAddress.$line1And2', label: 'Director personal line 1 + 2' },
+          { directive: 'director.mailAddress.$line1And2', label: 'Director mail line 1 + 2' },
+          { directive: 'org.address.$line1And2', label: 'Org address line 1 + 2' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Client',
+    groups: [
+      { label: 'Name', items: ['client.currentName.first', 'client.currentName.middle', 'client.currentName.last', 'client.currentName.suffix'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Father Name', items: ['client.fatherName.first', 'client.fatherName.middle', 'client.fatherName.last', 'client.fatherName.suffix', 'client.fatherName.maiden'].map((directive) => ({ directive })) },
+      { label: 'Mother Name', items: ['client.motherName.first', 'client.motherName.middle', 'client.motherName.last', 'client.motherName.suffix', 'client.motherName.maiden'].map((directive) => ({ directive })) },
+      { label: 'Basic Info', items: ['client.birthDate', 'client.email', 'client.sex', 'client.phoneBook.0.phoneNumber'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Personal Address', items: ['client.personalAddress.line1', 'client.personalAddress.line2', 'client.personalAddress.city', 'client.personalAddress.state', 'client.personalAddress.zip'].map((directive) => ({ directive })) },
+      { label: 'Mail Address', items: ['client.mailAddress.line1', 'client.mailAddress.city', 'client.mailAddress.state', 'client.mailAddress.zip'].map((directive) => ({ directive })) },
+    ],
+  },
+  {
+    title: 'Worker',
+    groups: [
+      { label: 'Name', items: ['worker.currentName.first', 'worker.currentName.middle', 'worker.currentName.last', 'worker.currentName.suffix'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Basic Info', items: ['worker.birthDate', 'worker.phoneBook.0.phoneNumber'].map((directive) => ({ directive })), defaultOpen: true },
+    ],
+  },
+  {
+    title: 'Director',
+    groups: [
+      { label: 'Name', items: ['director.currentName.first', 'director.currentName.middle', 'director.currentName.last', 'director.currentName.suffix'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Basic Info', items: ['director.birthDate', 'director.email', 'director.phoneBook.0.phoneNumber'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Address', items: ['director.personalAddress.line1', 'director.personalAddress.line2', 'director.personalAddress.city', 'director.personalAddress.state', 'director.personalAddress.zip'].map((directive) => ({ directive })) },
+    ],
+  },
+  {
+    title: 'Org',
+    groups: [
+      { label: 'Org Info', items: ['org.organizationName', 'org.email', 'org.phoneNumber'].map((directive) => ({ directive })), defaultOpen: true },
+      { label: 'Org Address', items: ['org.address.line1', 'org.address.line2', 'org.address.city', 'org.address.state', 'org.address.zip', 'org.address.county', 'org.creationDate'].map((directive) => ({ directive })) },
+    ],
+  },
+];
+
+export const SUPPORTED_DIRECTIVES = DIRECTIVE_CATALOG_COLUMNS.flatMap((column) => (
+  column.groups.flatMap((group) => group.items.map((item) => item.directive))
+));
+
+const SUPPORTED_DIRECTIVE_KEYS = new Set(SUPPORTED_DIRECTIVES.map((directive) => directive.toLowerCase()));
+
 /**
  * Get value by dot path. Handles both:
  * - Nested: obj.currentName.first
@@ -120,6 +262,87 @@ function stripDirectiveNamespace(directive: string): string {
   return lastColon >= 0 && lastColon + 1 < trimmed.length
     ? trimmed.slice(lastColon + 1)
     : trimmed;
+}
+
+function scopedReplacement(directive: string, replacementLocalPath: string): string | null {
+  const match = directive.match(/^(client|worker|director|org)\..+$/i);
+  if (!match) return null;
+  return `${match[1].toLowerCase()}.${replacementLocalPath}`;
+}
+
+function replacementForDeprecatedDirective(directive: string): string | null {
+  const lower = directive.toLowerCase();
+  if (lower === 'anydate') return 'currentDate';
+  if (/^(client|worker|director|org)\.\$date$/i.test(directive)) return 'currentDate';
+  if (lower === 'client.$phonelast7') return 'client.$primaryPhoneLast7';
+  if (lower === 'org.name') return 'org.organizationName';
+  if (lower === 'org.phone') return 'org.phoneNumber';
+  if (/^(client|worker|director)\.\$?dobMonthNumber$/i.test(directive)) return scopedReplacement(directive, '$birthMonth');
+  if (/^(client|worker|director)\.\$?phoneLastSeven$/i.test(directive)) return scopedReplacement(directive, '$phoneLast7');
+  if (/^(client|worker|director)\.\$?primaryPhoneLastSeven$/i.test(directive)) {
+    const scope = directive.match(/^(client|worker|director)\./i)?.[1].toLowerCase();
+    return `${scope}.${scope === 'client' ? '$primaryPhoneLast7' : '$phoneLast7'}`;
+  }
+  if (/^(client|worker|director)\.\$?(primaryPhoneNumber|primaryPhoneLocalNumber)$/i.test(directive)) {
+    const scope = directive.match(/^(client|worker|director)\./i)?.[1].toLowerCase();
+    return `${scope}.${scope === 'client' ? '$primaryPhoneLast7' : '$phoneLast7'}`;
+  }
+  if (/^(client|worker|director)\.\$?(dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i.test(directive)) {
+    return scopedReplacement(directive, '$dob_month_day_year');
+  }
+  if (/^(client|worker|director)\.(dob|dateOfBirth)$/i.test(directive)) return scopedReplacement(directive, 'birthDate');
+  const line1And2 = directive.match(
+    /^(?:(client|worker|director|org)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1(?:\+2|And2)$/i,
+  );
+  if (line1And2) {
+    const scope = line1And2[1]?.toLowerCase();
+    const addressKey = line1And2[2]?.toLowerCase();
+    const clientAddress = addressKey === 'mailaddress' ? 'mailAddress' : 'personalAddress';
+    if (!scope) {
+      if (addressKey === 'orgaddress') return 'org.address.$line1And2';
+      return `client.${clientAddress}.$line1And2`;
+    }
+    if (scope === 'org') return 'org.address.$line1And2';
+    if (scope === 'director') return 'director.personalAddress.$line1And2';
+    return `${scope}.${clientAddress}.$line1And2`;
+  }
+
+  const normalized = normalizeDirectiveAlias(directive);
+  if (normalized.toLowerCase() !== lower && SUPPORTED_DIRECTIVE_KEYS.has(normalized.toLowerCase())) {
+    return normalized;
+  }
+  return null;
+}
+
+export function getDirectiveHealth(rawDirective: string | null | undefined): DirectiveHealth {
+  const directive = rawDirective?.trim() ?? '';
+  if (!directive) return { status: 'supported', directive };
+  const stripped = stripDirectiveNamespace(directive);
+  const lower = stripped.toLowerCase();
+  if (stripped === 'signature' || stripped.startsWith('+') || stripped.startsWith('-')) {
+    return {
+      status: 'sentinel',
+      directive: stripped,
+      message: 'This is not a value directive. Use the signature/field-link tools instead.',
+    };
+  }
+  if (SUPPORTED_DIRECTIVE_KEYS.has(lower)) return { status: 'supported', directive: stripped };
+
+  const replacement = replacementForDeprecatedDirective(stripped);
+  if (replacement) {
+    return {
+      status: 'deprecated',
+      directive: stripped,
+      replacement,
+      message: `Deprecated directive. Replace with ${replacement}.`,
+    };
+  }
+
+  return {
+    status: 'unknown',
+    directive: stripped,
+    message: 'Unknown directive. It will not auto-fill unless the resolver knows this exact path.',
+  };
 }
 
 function splitDirectiveNamespace(directive: string): { namespace: string; path: string } {
@@ -266,7 +489,7 @@ function resolveAddressLine1And2Directive(
   profiles: ResolvedProfiles,
 ): string | undefined {
   const match = directive.trim().match(
-    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1\+2$/i,
+    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1(?:\+2|And2)$/i,
   );
   if (!match) return undefined;
 

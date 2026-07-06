@@ -4,6 +4,7 @@ import {
   type ResolvedProfiles,
   canonicalDirectiveForTarget,
   getByPath,
+  getDirectiveHealth,
   isExcludedFromProfileFormSync,
   normalizeDateLikeValue,
   resolveDirectiveFromProfiles,
@@ -201,7 +202,9 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.$fullMailAddress', profiles)).toBe('PO Box 42, Pittsburgh, PA 15213');
     expect(resolveDirectiveFromProfiles('org.$fullAddress', profiles)).toBe('100 Main St, Floor 2, Philadelphia, PA 19107');
     expect(resolveDirectiveFromProfiles('address.$line1+2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
+    expect(resolveDirectiveFromProfiles('client.personalAddress.$line1And2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
     expect(resolveDirectiveFromProfiles('org.address.$line1+2', profiles)).toBe('100 Main St, Floor 2');
+    expect(resolveDirectiveFromProfiles('org.address.$line1And2', profiles)).toBe('100 Main St, Floor 2');
   });
 
   it('supports legacy org directive aliases', () => {
@@ -215,6 +218,44 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('signature', profiles)).toBeUndefined();
     expect(resolveDirectiveFromProfiles('+<fieldId>', profiles)).toBeUndefined();
     expect(resolveDirectiveFromProfiles('-<fieldId>', profiles)).toBeUndefined();
+  });
+
+  it('labels deprecated and unknown directives for cleanup', () => {
+    expect(getDirectiveHealth('currentDate')).toEqual({ status: 'supported', directive: 'currentDate' });
+    expect(getDirectiveHealth('anyDate')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'currentDate',
+    });
+    expect(getDirectiveHealth('client.$date')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'currentDate',
+    });
+    expect(getDirectiveHealth('client.$dobMonthNumber')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.$birthMonth',
+    });
+    expect(getDirectiveHealth('client.$primaryPhoneNumber')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.$primaryPhoneLast7',
+    });
+    expect(getDirectiveHealth('client.$primaryPhoneLastSeven')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.$primaryPhoneLast7',
+    });
+    expect(getDirectiveHealth('org.name')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'org.organizationName',
+    });
+    expect(getDirectiveHealth('address.$line1+2')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.personalAddress.$line1And2',
+    });
+    expect(getDirectiveHealth('address.$line1And2')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.personalAddress.$line1And2',
+    });
+    expect(getDirectiveHealth('signature')).toMatchObject({ status: 'sentinel' });
+    expect(getDirectiveHealth('client.nope')).toMatchObject({ status: 'unknown' });
   });
 
   it('excludes legal-name and birth-date directives from profile sync', () => {
