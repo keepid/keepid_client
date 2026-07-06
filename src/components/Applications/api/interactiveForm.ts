@@ -32,14 +32,31 @@ export async function getInteractiveFormConfig(
     const text = await res.text();
     throw new Error(text || res.statusText);
   }
-  return res.json();
+  // The new server returns 200 + `{ error: "..." }` on failure (the legacy
+  // server returned 400/404). Surface the error message so callers can
+  // surface a useful message instead of crashing on `response.jsonSchema`.
+  const json = (await res.json()) as { error?: string } & GetInteractiveFormConfigResponse;
+  if (json && typeof json.error === 'string' && json.error.length > 0) {
+    // The most common failure for migrated registry entries is the missing
+    // jsonSchema/uiSchema columns (legacy entries didn't have them — they
+    // need to be authored in the developer portal). Replace the raw "No
+    // interactive form config found" string with something a non-engineer
+    // can act on, while leaving other errors (auth, network) untouched.
+    const msg = json.error.toLowerCase().includes('no interactive form config')
+      ? 'This application form has no interactive configuration yet. '
+        + 'A developer can add one in the developer portal '
+        + '(Forms → this template → Interactive Form Builder).'
+      : json.error;
+    throw new Error(msg);
+  }
+  return json;
 }
 
 export async function getQuestionsV2(
   applicationId: string,
   clientUsername?: string,
 ): Promise<GetQuestionsV2Response> {
-  const res = await fetch(`${getServerURL()}/get-questions-2`, {
+  const res = await fetch(`${getServerURL()}/get-form-questions`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -73,7 +90,7 @@ async function fillPdfBlobWithOptions(
   if (preview) {
     form.append('preview', 'true');
   }
-  const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
+  const res = await fetch(`${getServerURL()}/fill-pdf`, {
     method: 'POST',
     credentials: 'include',
     body: form,
@@ -119,7 +136,34 @@ export async function uploadCompletedPdf(
   form.append('applicationId', applicationId);
   form.append('formAnswers', JSON.stringify(formAnswers));
   form.append('clientUsername', clientUsername);
-  const res = await fetch(`${getServerURL()}/upload-completed-pdf-2`, {
+  const res = await fetch(`${getServerURL()}/save-application`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  const json = await res.json();
+  if (!res.ok || json?.status !== 'SUCCESS') {
+    throw new Error(json.message || json.error || res.statusText);
+  }
+  return json;
+}
+
+export interface ApplicationCreateResult {
+  status: string;
+  applicationId?: string;
+  fileId?: string;
+}
+
+export async function createUploadedApplication(
+  file: File,
+  applicationName: string,
+  clientUsername = '',
+): Promise<ApplicationCreateResult> {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  form.append('applicationName', applicationName);
+  form.append('clientUsername', clientUsername);
+  const res = await fetch(`${getServerURL()}/create-uploaded-application`, {
     method: 'POST',
     credentials: 'include',
     body: form,

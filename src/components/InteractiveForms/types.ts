@@ -49,8 +49,6 @@ export interface BuilderState {
   outputFields?: OutputFieldDefinition[];
   autoFillFields?: AutoFillField[];
   signaturePlacements?: SignaturePlacement[];
-  preRequirements?: string;
-  postRequirements?: string;
 }
 
 export type { ResolvedProfiles };

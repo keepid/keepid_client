@@ -92,7 +92,7 @@ function InstallPromptContainerInner({ triggerKey }: Props) {
 
   // Timeout: if event never fires, cancel the pending open silently.
   useEffect(() => {
-    if (!pendingAndroidOpen) return;
+    if (!pendingAndroidOpen) return undefined;
     androidTimeoutRef.current = setTimeout(() => {
       pwaLog('beforeinstallprompt did not fire within timeout — skipping modal this session');
       setPendingAndroidOpen(false);

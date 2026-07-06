@@ -88,7 +88,7 @@ export default function ApplicationWebForm({
     setLoading(true);
     setError(null);
 
-    fetch(`${getServerURL()}/get-questions-2`, {
+    fetch(`${getServerURL()}/get-form-questions`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({ applicationId, clientUsername }),
@@ -389,9 +389,21 @@ export default function ApplicationWebForm({
       '$primaryphoneareacode',
       '$primaryphonetelephoneprefix',
       '$primaryphonelinenumber',
+      '$primaryphonelast7',
+      '$primaryphonelastseven',
+      '$primaryphonenumber',
+      '$primaryphonelocalnumber',
+      '$phonelast7',
+      '$phonelastseven',
       'primaryphoneareacode',
       'primaryphonetelephoneprefix',
       'primaryphonelinenumber',
+      'primaryphonelast7',
+      'primaryphonelastseven',
+      'primaryphonenumber',
+      'primaryphonelocalnumber',
+      'phonelast7',
+      'phonelastseven',
     ]).has(clientDirective);
     if (isComputedPhonePartDirective) return false;
 

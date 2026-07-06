@@ -3,6 +3,7 @@ import { useAlert } from 'react-alert';
 
 import { isValidPhoneNumber } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 type PhoneBookEntry = {
   label: string;
@@ -262,7 +263,7 @@ export default function PhoneBookManager({ targetUsername, onPhoneBookChanged }:
                         </span>
                       )}
                       <div className="tw-text-sm tw-text-gray-500">
-                        {formatPhone(entry.phoneNumber)}
+                        {formatPhoneForDisplay(entry.phoneNumber)}
                       </div>
                     </div>
                     <div className="tw-flex tw-gap-1 tw-flex-shrink-0">
@@ -344,12 +345,4 @@ export default function PhoneBookManager({ targetUsername, onPhoneBookChanged }:
       </div>
     </div>
   );
-}
-
-function formatPhone(phone: string): string {
-  const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return phone;
 }

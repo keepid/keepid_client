@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
 import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
@@ -30,7 +31,7 @@ import {
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
-import { ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
+import { ApplicationFormData, ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
 function WebFormPageContent({
@@ -110,37 +111,21 @@ interface ClientSearchResult {
 
 const MAX_CLIENT_RESULTS = 25;
 
-function normalizeSearchText(value: string): string {
-  return value.trim().toLowerCase();
+function getClientSearchDisplayName(client: ClientSearchResult): string {
+  return `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email || 'Client';
 }
 
-function matchesClientSearchQuery(client: ClientSearchResult, query: string): boolean {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return false;
-  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return false;
-
-  const first = normalizeSearchText(client.firstName || '');
-  const last = normalizeSearchText(client.lastName || '');
-  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
-  const username = normalizeSearchText(client.username || '');
-  const email = normalizeSearchText(client.email || '');
-
-  return tokens.every((token) => (
-    first.includes(token)
-    || last.includes(token)
-    || full.includes(token)
-    || username.includes(token)
-    || email.includes(token)
-  ));
-}
-
-export default function ApplicationForm() {
+export default function ApplicationForm({
+  selectorInstructionsMarkdown = '',
+}: {
+  selectorInstructionsMarkdown?: string;
+}) {
   const {
     formContent,
     page,
     setPage,
     data,
+    setData,
     isDirty,
     setIsDirty,
     handleChange,
@@ -183,9 +168,7 @@ export default function ApplicationForm() {
   const [enrollFieldErrors, setEnrollFieldErrors] = useState<Record<string, string>>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [applicationAvailability, setApplicationAvailability] = useState<
-    { type: string; state: string; situation: string; lookupKey: string }[]
-  >([]);
+  const [applicationAvailability, setApplicationAvailability] = useState<Partial<ApplicationFormData>[]>([]);
   const [filledPdfUrl, setFilledPdfUrl] = useState<string | null>(null);
   const [persistedApplicationId, setPersistedApplicationId] = useState<string | null>(null);
   const [wizardFormOutput, setWizardFormOutput] = useState<Record<string, unknown> | null>(null);
@@ -208,15 +191,20 @@ export default function ApplicationForm() {
   const isWebFormPage = formContent[page].pageName === 'webForm';
   const isSignAndDownloadPage = formContent[page].pageName === 'signAndDownload';
   const targetClientResolved = targetClientUsername.trim().length > 0;
+  const hasCatalogApplicationSelection = data.applicationId.trim().length > 0;
   const whoForInputClassName =
     'tw-w-full tw-min-h-[3rem] tw-px-4 tw-py-3 tw-border-2 tw-border-gray-300 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-text-lg';
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   // Fetch registry info (blankFormId) when entering the review step (or webForm step if skipping review)
   useEffect(() => {
-    if (isReviewPage || isWebFormPage) {
+    if ((isReviewPage || isWebFormPage) && hasCatalogApplicationSelection) {
       fetchRegistry(data, isDirty, setIsDirty);
     }
-  }, [isReviewPage, isWebFormPage, data, isDirty]);
+  }, [isReviewPage, isWebFormPage, hasCatalogApplicationSelection, data, isDirty]);
 
   useEffect(() => {
     setAvailabilityLoading(true);
@@ -234,12 +222,13 @@ export default function ApplicationForm() {
         }
         setApplicationAvailability(
           items
-            .filter((x) => x && x.type && x.state && x.situation)
+            .filter((x) => x && x.applicationId && x.label)
             .map((x) => ({
-              type: String(x.type),
-              state: String(x.state),
-              situation: String(x.situation),
-              lookupKey: String(x.lookupKey || `${x.type}$${x.state}$${x.situation}`),
+              applicationId: String(x.applicationId),
+              label: String(x.label),
+              state: x.state == null ? '' : String(x.state),
+              idType: x.idType == null ? '' : String(x.idType),
+              housingStatus: x.housingStatus == null ? '' : String(x.housingStatus),
             })),
         );
       })
@@ -279,28 +268,38 @@ export default function ApplicationForm() {
     setSearchingClients(true);
     setSearchError(null);
 
-    fetch(`${getServerURL()}/get-organization-members`, {
+    const searchQueries = getClientSearchCandidateQueries(debouncedClientQuery);
+
+    Promise.all(searchQueries.map((name) => fetch(`${getServerURL()}/get-organization-members`, {
       method: 'POST',
       credentials: 'include',
       signal: controller.signal,
       body: JSON.stringify({
         role: userRole,
         listType: 'clients',
-        name: debouncedClientQuery,
+        name,
       }),
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => {
+    }).then((response) => response.json())))
+      .then((responses) => {
         if (clientSearchRequestIdRef.current !== requestId) return;
-        if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
-          const filtered = responseJSON.people
-            .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, debouncedClientQuery))
-            .slice(0, MAX_CLIENT_RESULTS);
-          setSearchResults(filtered);
-          return;
-        }
-        setSearchResults([]);
-        if (responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND') {
+        const peopleByUsername = new Map<string, ClientSearchResult>();
+        let hasSearchError = false;
+
+        responses.forEach((responseJSON) => {
+          if (responseJSON.status === 'SUCCESS' && Array.isArray(responseJSON.people)) {
+            responseJSON.people.forEach((client: ClientSearchResult) => {
+              if (client.username) peopleByUsername.set(client.username, client);
+            });
+          } else if (responseJSON.status && responseJSON.status !== 'USER_NOT_FOUND') {
+            hasSearchError = true;
+          }
+        });
+
+        const filtered = Array.from(peopleByUsername.values())
+          .filter((client: ClientSearchResult) => matchesClientSearchQuery(client, debouncedClientQuery))
+          .slice(0, MAX_CLIENT_RESULTS);
+        setSearchResults(filtered);
+        if (hasSearchError && filtered.length === 0) {
           setSearchError('Could not load client search results.');
         }
       })
@@ -394,7 +393,7 @@ export default function ApplicationForm() {
   }, []);
 
   const selectExistingClient = useCallback((client: ClientSearchResult) => {
-    const resolvedName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
+    const resolvedName = getClientSearchDisplayName(client);
     setTargetClientUsername(client.username);
     setTargetClientName(resolvedName);
     setClientQuery(resolvedName);
@@ -451,12 +450,23 @@ export default function ApplicationForm() {
         return;
       }
 
-      const createdUser = await tryAutoSelectNewlyCreatedClient(
-        enrollForm.firstname,
-        enrollForm.lastname,
-        enrollForm.email.trim(),
-        enrollForm.birthDate,
-      );
+      let createdUser: ClientSearchResult | null = null;
+      if (response.username) {
+        createdUser = {
+          username: response.username,
+          firstName: response.firstName || enrollForm.firstname,
+          lastName: response.lastName || enrollForm.lastname,
+          email: response.email,
+          birthDate: response.birthDate,
+        };
+      } else {
+        createdUser = await tryAutoSelectNewlyCreatedClient(
+          enrollForm.firstname,
+          enrollForm.lastname,
+          enrollForm.email.trim(),
+          enrollForm.birthDate,
+        );
+      }
       if (!createdUser) {
         setSubmitError('Client enrolled, but automatic selection failed. Please search and select the client.');
         setWhoForMode('existing');
@@ -467,6 +477,7 @@ export default function ApplicationForm() {
       selectExistingClient(createdUser);
       setSubmitError(null);
       setWhoForMode('existing');
+      setPage(whoForNextPage);
     } catch {
       setSubmitError('Could not enroll client. Please try again.');
     } finally {
@@ -476,9 +487,11 @@ export default function ApplicationForm() {
     eulaAgreed,
     enrollForm,
     selectExistingClient,
+    setPage,
     termsAccepted,
     tryAutoSelectNewlyCreatedClient,
     validateEnrollField,
+    whoForNextPage,
     enrollFieldErrors,
   ]);
 
@@ -558,20 +571,53 @@ export default function ApplicationForm() {
   };
 
   const availableApplications = filterAvailableApplications(data, applicationAvailability);
-
   const dataAttr = formContent[page].dataAttr;
-  const applicationTypeLabel = getOptionLabel('type', data.type) ?? 'your';
+  const applicationSelectionOptions = availableApplications.filter(
+    (application) => application.applicationId && application.label,
+  );
+  const isCatalogSelectionStep = isReviewPage && !hasCatalogApplicationSelection;
+  const catalogHasConstraintFor = (attr: keyof ApplicationFormData) =>
+    attr !== 'person' && availableApplications.some((application) => {
+      const value = application[attr];
+      return typeof value === 'string' && value.trim().length > 0;
+    });
+  const isLegacyOptionDisabled = (attr: keyof ApplicationFormData, value: string) =>
+    catalogHasConstraintFor(attr)
+    && !availableApplications.some((application) => application[attr] === value);
+  const selectCatalogApplication = useCallback(
+    (application: Partial<ApplicationFormData>) => {
+      if (!application.applicationId || !application.label) return;
+      setData((prevData) => ({
+        ...prevData,
+        applicationId: application.applicationId || '',
+        label: application.label || '',
+        state: application.state || '',
+        idType: application.idType || '',
+        housingStatus: application.housingStatus || '',
+        person: prevData.person || 'MYSELF',
+      }));
+      setIsDirty(true);
+      setSubmitError(null);
+    },
+    [setData, setIsDirty],
+  );
+  const applicationTypeLabel = data.label || getOptionLabel('type', data.type) || 'your';
   const targetPersonLabel = targetClientName || targetClientUsername || clientName || clientUsername || getOptionLabel('person', data.person) || 'you';
-  const pageTitle = isWebFormPage
-    ? `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`
-    : formContent[page].title(data.type);
+  let pageTitle = formContent[page].title(data.type);
+  if (isCatalogSelectionStep) {
+    pageTitle = 'Choose an application';
+  }
+  if (isWebFormPage) {
+    pageTitle = `Fill out ${applicationTypeLabel} application for ${targetPersonLabel}`;
+  }
   const canContinueWhoFor = !shouldShowWhoForStep || targetClientResolved;
   const canEditAttachments =
     userRole === Role.Worker || userRole === Role.Admin || userRole === Role.Director;
+  const showPrimaryStepperButton = isWhoForPage || (isReviewPage && !isCatalogSelectionStep);
   let nextButtonLabel = 'Next';
   if (isWhoForPage) {
     if (whoForMode === 'new') {
-      nextButtonLabel = enrollSubmitting ? 'Creating Client...' : 'Create and Select Client';
+      nextButtonLabel = enrollSubmitting ? 'Creating Client...' : 'Create Client and Continue';
     } else {
       nextButtonLabel = 'Continue';
     }
@@ -591,7 +637,7 @@ export default function ApplicationForm() {
           isWhoForPage ? 'tw-max-w-7xl' : 'tw-max-w-6xl'
         }`}
       >
-        {!isReviewPage && (
+        {(!isReviewPage || isCatalogSelectionStep) && (
           <>
             <div className={`tw-flex tw-justify-between tw-items-end ${isWebFormPage ? 'tw-mb-6' : 'tw-mb-1'}`}>
               <h2 className="tw-text-3xl tw-font-semibold tw-m-0">{pageTitle}</h2>
@@ -607,7 +653,7 @@ export default function ApplicationForm() {
           </Alert>
         )}
 
-        {isWhoForPage ? (
+        {isWhoForPage && (
           <div className="tw-bg-white tw-border-2 tw-border-gray-200 tw-rounded-xl tw-p-8 tw-shadow-sm tw-w-full [&_.form-label]:tw-text-lg [&_.form-check-label]:tw-text-base [&_.form-check-input]:tw-mt-1 [&_.form-check-input]:tw-scale-125 [&_small]:tw-text-base">
             {!shouldShowWhoForStep ? (
               <Alert variant="info" className="tw-mb-0">
@@ -679,7 +725,8 @@ export default function ApplicationForm() {
                     {showClientResults && searchResults.length > 0 && (
                       <div className="tw-border-2 tw-rounded-lg tw-mt-3 tw-divide-y tw-divide-gray-200 tw-max-h-80 tw-overflow-y-auto">
                         {searchResults.map((client) => {
-                          const displayName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.username;
+                          const displayName = getClientSearchDisplayName(client);
+                          const secondaryLabel = client.email?.trim();
                           return (
                             <button
                               key={client.username}
@@ -688,7 +735,9 @@ export default function ApplicationForm() {
                               className="tw-w-full tw-text-left tw-px-5 tw-py-4 hover:tw-bg-gray-50 tw-border-0 tw-bg-white"
                             >
                               <div className="tw-font-semibold tw-text-lg">{displayName}</div>
-                              <div className="tw-text-sm tw-text-gray-500">{client.username}</div>
+                              {secondaryLabel && (
+                                <div className="tw-text-sm tw-text-gray-500">{secondaryLabel}</div>
+                              )}
                             </button>
                           );
                         })}
@@ -849,7 +898,43 @@ export default function ApplicationForm() {
               </>
             )}
           </div>
-        ) : (
+        )}
+
+        {!isWhoForPage && isCatalogSelectionStep && (
+          <div className="tw-w-full">
+            {availabilityLoading && (
+              <div className="d-flex justify-content-center py-5">
+                <Spinner animation="border" />
+              </div>
+            )}
+            {!availabilityLoading && applicationSelectionOptions.length === 0 && (
+              <Alert variant="warning" className="tw-mb-0">
+                No matching applications are available.
+              </Alert>
+            )}
+            {!availabilityLoading && applicationSelectionOptions.length > 0 && (
+              <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
+                {applicationSelectionOptions.map((application) => (
+                  <button
+                    key={application.applicationId}
+                    type="button"
+                    onClick={() => selectCatalogApplication(application)}
+                    className="tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-border-0 tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 last:tw-border-b-0"
+                  >
+                    <span className="tw-block tw-min-w-0 tw-truncate tw-font-medium tw-text-gray-900">
+                      {application.label}
+                    </span>
+                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
+                      <span className="tw-hidden sm:tw-inline">Start</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isWhoForPage && !isCatalogSelectionStep && (
           <Form
             className="form tw-grid tw-gap-6 tw-justify-center tw-grid-cols-2"
             style={{
@@ -871,13 +956,19 @@ export default function ApplicationForm() {
                     checked={data[dataAttr] === option.value}
                     name={dataAttr}
                     value={option.value}
-                    disabled={dataAttr !== 'person' && !(availableApplications.some((a) => a[dataAttr] === option.value))}
+                    disabled={isLegacyOptionDisabled(dataAttr, option.value)}
                   />
                 ))}
           </Form>
         )}
 
-        {isReviewPage && <ApplicationReviewPage data={data} blankFormId={blankFormId} clientName={targetClientName || targetClientUsername} />}
+        {isReviewPage && hasCatalogApplicationSelection && (
+          <ApplicationReviewPage
+            data={data}
+            clientName={targetClientName || targetClientUsername}
+            instructionsMarkdownOverride={selectorInstructionsMarkdown}
+          />
+        )}
 
         {isWebFormPage && (
           <WebFormPageContent
@@ -902,7 +993,8 @@ export default function ApplicationForm() {
             formAnswers={wizardFormOutput}
             clientUsername={targetClientUsername}
             onSaveSuccess={handleSaveSuccess}
-            postRequirements={builderStateRef.current?.postRequirements}
+            showPdfEditControls
+            pdfFormsReadOnly
             canEditAttachments={canEditAttachments}
           />
         )}
@@ -945,7 +1037,7 @@ export default function ApplicationForm() {
               (isWhoForPage && whoForMode === 'existing' && !canContinueWhoFor)
               || (isWhoForPage && whoForMode === 'new' && enrollSubmitting)
             }
-            className={`${isReviewPage || isWhoForPage ? ' ' : 'tw-hidden '}`}
+            className={`${showPrimaryStepperButton ? ' ' : 'tw-hidden '}`}
           >
             {nextButtonLabel}
           </Button>

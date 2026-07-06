@@ -22,6 +22,8 @@ import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import MyOrganization from './components/AccountSettings/MyOrganization';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
+import CallsPage from './components/Communications/CallsPage';
+import MessageBoard from './components/Communications/MessageBoard';
 import MyDocuments from './components/Documents/MyDocuments';
 import UploadDocumentsPage from './components/Documents/UploadDocumentsPage';
 import Error from './components/Error';
@@ -38,14 +40,12 @@ import ProfilePage from './components/Profile/ProfilePage';
 import QuickAccessRouter from './components/QuickAccess/QuickAccess.router';
 import EnrollClientPage from './components/SignUp/EnrollClient';
 import EnrollWorkerPage from './components/SignUp/EnrollWorker';
-import SignUpRouter, {
-  paths as SignUpRouterPaths,
-} from './components/SignUp/SignUp.router';
-import AutoLogout from './components/UserAuthentication/AutoLogout';
+import SignUpRouter from './components/SignUp/SignUp.router';
 import ForgotPassword from './components/UserAuthentication/ForgotPassword';
 import ResetPassword from './components/UserAuthentication/ResetPassword';
 import getServerURL from './serverOverride';
 import Role from './static/Role';
+import { canUseApplications, canUseCommunications } from './utils/featureAccess';
 
 window.onload = () => {
   ReactGA.initialize('AW-391118279');
@@ -57,7 +57,6 @@ interface State {
   username: string;
   name: string;
   organization: string;
-  autoLogout: boolean;
 }
 
 interface ContextInterface {
@@ -75,16 +74,13 @@ class App extends React.Component<{}, State, {}> {
 
     // set the original state based on session storage
     const jsonData = sessionStorage.getItem('mySessionStorageData');
-    const jsonLogout = sessionStorage.getItem('autoLogout');
-    if (jsonData && jsonLogout) {
+    if (jsonData) {
       const data = JSON.parse(jsonData);
-      const logout = JSON.parse(jsonLogout);
       this.state = {
         role: data.role,
         username: data.username,
         name: data.name,
         organization: data.organization,
-        autoLogout: logout,
       };
     } else {
       this.state = {
@@ -92,22 +88,10 @@ class App extends React.Component<{}, State, {}> {
         username: '',
         name: '',
         organization: '',
-        autoLogout: false,
       };
     }
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
-    this.setAutoLogout = this.setAutoLogout.bind(this);
-  }
-
-  // this function is needed to tell the home page that the user was logged out automatically
-  // or remove that notification
-  setAutoLogout(logout: boolean) {
-    this.setState({
-      autoLogout: logout,
-    });
-    const obj = { autoLogout: this.state.autoLogout };
-    sessionStorage.setItem('autoLogout', JSON.stringify(obj));
   }
 
   logIn(role: Role, username: string, organization: string, name: string) {
@@ -137,6 +121,25 @@ class App extends React.Component<{}, State, {}> {
   }
 
   componentDidMount() {
+    this.refreshAuthFromServer();
+    // Listen for in-app profile updates (e.g. name change in Account
+    // Information). The handler hits /authenticate again so App.state.name
+    // (which the sidebar Profile Title and other top-level chrome read)
+    // stays in sync without a full page reload. Dispatched by
+    // EssentialAccountSection after a successful /update-user-profile
+    // that touched firstName / lastName.
+    window.addEventListener('keepid:profile-updated', this.handleProfileUpdated);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keepid:profile-updated', this.handleProfileUpdated);
+  }
+
+  handleProfileUpdated = () => {
+    this.refreshAuthFromServer();
+  };
+
+  refreshAuthFromServer = () => {
     fetch(`${getServerURL()}/authenticate`, {
       method: 'POST',
       credentials: 'include',
@@ -172,15 +175,20 @@ class App extends React.Component<{}, State, {}> {
           const jsonData = sessionStorage.getItem('mySessionStorageData');
           if (jsonData) {
             const data = JSON.parse(jsonData);
-            if (
-              !(
-                role() === data.role &&
-                username === data.username &&
-                organization === data.organization
-              ) &&
-              data.name === `${firstName} ${lastName}`
-            ) {
+            const serverName = `${firstName} ${lastName}`;
+            const identityMismatch =
+              !(role() === data.role
+                && username === data.username
+                && organization === data.organization);
+            if (identityMismatch && data.name === serverName) {
               this.logOut();
+            } else if (data.name !== serverName) {
+              // Identity matches but the name drifted — happens after
+              // /update-user-profile or /change-account-setting changes
+              // first/last. Sync App.state.name (and sessionStorage) to
+              // the server's truth so the sidebar Profile Title reflects
+              // the new name immediately.
+              this.logIn(role(), username, organization, serverName);
             }
           } else {
             // Server has a valid session but client has no local data.
@@ -188,6 +196,8 @@ class App extends React.Component<{}, State, {}> {
             // server and log in locally instead of destroying the session.
             this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
+        } else if (this.state.role !== Role.LoggedOut) {
+          this.logOut();
         } else {
           this.logOut();
         }
@@ -195,17 +205,17 @@ class App extends React.Component<{}, State, {}> {
       .catch((e) => {
         console.log('Server is not running: ', e);
       });
-  }
+  };
 
   render() {
-    const { role, username, name, organization, autoLogout } = this.state;
+    const { role, username, name, organization } = this.state;
+    const canAccessApplications = canUseApplications(role, organization);
+    const canAccessCommunications = canUseCommunications(role, organization);
     const renderHome = () => (
       <Home
         logIn={this.logIn}
         logOut={this.logOut}
         role={role}
-        autoLogout={autoLogout}
-        setAutoLogout={this.setAutoLogout}
       />
     );
     return (
@@ -225,16 +235,8 @@ class App extends React.Component<{}, State, {}> {
               logIn={this.logIn}
               logOut={this.logOut}
               role={role}
+              organization={organization}
             />
-            {role !== Role.LoggedOut ? (
-              <AutoLogout
-                logOut={this.logOut}
-                setAutoLogout={this.setAutoLogout}
-                timeUntilWarn={1000 * 60 * 60}
-                timeFromWarnToLogout={1000 * 60 * 15}
-                timeBeforeConsideredSleep={1000 * 60 * 60 * 24 * 30}
-              />
-            ) : null}
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
             <InstallPromptContainer
@@ -304,11 +306,19 @@ class App extends React.Component<{}, State, {}> {
                         organization={organization}
                         username={username}
                         role={role}
+                        logOut={this.logOut}
                       />
                     );
                   }
                   if (role === Role.Client) {
-                    return <ClientLanding name={name} username={username} />;
+                    return (
+                      <ClientLanding
+                        name={name}
+                        username={username}
+                        role={role}
+                        organization={organization}
+                      />
+                    );
                   }
                   if (role === Role.Developer) {
                     return (
@@ -375,6 +385,7 @@ class App extends React.Component<{}, State, {}> {
                       <UploadDocumentsPage
                         userRole={Role.Client}
                         username={clientUsername}
+                        viewerRole={role}
                         viewerUsername={username}
                         viewerName={name}
                         organizationName={organization}
@@ -400,6 +411,7 @@ class App extends React.Component<{}, State, {}> {
                     return (
                       <UploadDocumentsPage
                         userRole={role}
+                        viewerRole={role}
                         username={username}
                         viewerUsername={username}
                         viewerName={name}
@@ -469,6 +481,9 @@ class App extends React.Component<{}, State, {}> {
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
+                    if (!canAccessApplications) {
+                      return <Redirect to="/home" />;
+                    }
                     return (
                       <CreateApplication userRole={role} />
                     );
@@ -481,13 +496,16 @@ class App extends React.Component<{}, State, {}> {
               />
               <Route
                 path="/applications"
-                render={({ location }) => {
+                render={() => {
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
+                    if (!canAccessApplications) {
+                      return <Redirect to="/home" />;
+                    }
                     return (
                       <ViewApplications
                         name={name}
@@ -499,6 +517,72 @@ class App extends React.Component<{}, State, {}> {
                   }
                   if (role === Role.LoggedOut) {
                     return renderHome();
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                exact
+                path="/communications"
+                render={() => {
+                  if (canAccessCommunications) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <Redirect to="/home" />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/communications/calls"
+                render={() => {
+                  if (canAccessCommunications) {
+                    return <CallsPage />;
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <Redirect to="/home" />;
+                  }
+                  return <Redirect to="/error" />;
+                }}
+              />
+              <Route
+                path="/communications/message-board-preview"
+                render={() => {
+                  if (canAccessCommunications) {
+                    return (
+                      <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
+                        <MessageBoard
+                          username="demo-client"
+                          clientName="Maria Rivera"
+                          phone="+12155550142"
+                        />
+                      </div>
+                    );
+                  }
+                  if (role === Role.LoggedOut) {
+                    return renderHome();
+                  }
+                  if (
+                    role === Role.Admin ||
+                    role === Role.Director ||
+                    role === Role.Worker
+                  ) {
+                    return <Redirect to="/home" />;
                   }
                   return <Redirect to="/error" />;
                 }}
@@ -596,7 +680,11 @@ class App extends React.Component<{}, State, {}> {
               </Route>
             </Switch>
           </div>
-          <Footer />
+          <Route
+            render={({ location }) => (
+              location.pathname.startsWith('/communications') ? null : <Footer />
+            )}
+          />
         </div>
         </UserContext.Provider>
       </Router>

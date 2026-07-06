@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import {
+  canonicalDirectiveForTarget,
   getByPath,
   isExcludedFromProfileFormSync,
   normalizeDateLikeValue,
-  resolveDirectiveFromProfiles,
+  resolveDirectiveFromProfilesForTarget,
 } from '../../utils/directives';
 import {
   type GetQuestionsV2Response,
@@ -70,6 +71,84 @@ function formatDateForPdf(value: unknown): unknown {
   return value;
 }
 
+const NON_TITLE_CASE_FORMATS = new Set(['date', 'date-time', 'email', 'time', 'uri', 'url', 'uuid']);
+
+function getScopePath(scope: string): string {
+  return scope.replace('#/properties/', '').replace(/\//g, '.');
+}
+
+function getSchemaForPath(
+  jsonSchema: Record<string, unknown> | null | undefined,
+  propPath: string,
+): Record<string, unknown> | undefined {
+  const props = jsonSchema?.properties as Record<string, unknown> | undefined;
+  const direct = props?.[propPath];
+  if (direct && typeof direct === 'object') return direct as Record<string, unknown>;
+  return propPath.split('.').reduce<Record<string, unknown> | undefined>((schema, part) => {
+    const nestedProps = schema?.properties as Record<string, unknown> | undefined;
+    const next = nestedProps?.[part];
+    return next && typeof next === 'object' ? next as Record<string, unknown> : undefined;
+  }, jsonSchema);
+}
+
+function isTitleCaseTextSchema(schema: Record<string, unknown> | undefined): boolean {
+  if (!schema) return false;
+  if (schema.type !== 'string') return false;
+  if (Array.isArray(schema.enum)) return false;
+  const format = typeof schema.format === 'string' ? schema.format.toLowerCase() : '';
+  return !NON_TITLE_CASE_FORMATS.has(format);
+}
+
+function shouldSkipTitleCaseValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (!/\p{L}/u.test(trimmed)) return true;
+  if (trimmed.includes('@')) return true;
+  if (/^(?:https?:\/\/|www\.)/i.test(trimmed)) return true;
+  if (trimmed.includes('_')) return true;
+  return false;
+}
+
+export function titleCaseTextFieldValue(value: string): string {
+  if (shouldSkipTitleCaseValue(value)) return value;
+  return value.replace(/\p{L}[\p{L}'-]*/gu, (word) => (
+    word
+      .toLocaleLowerCase()
+      .replace(/(^|['-])(\p{L})/gu, (_match, prefix: string, letter: string) => (
+        `${prefix}${letter.toLocaleUpperCase()}`
+      ))
+  ));
+}
+
+function formatTextValue(value: unknown, shouldTitleCase: boolean): unknown {
+  if (!shouldTitleCase || typeof value !== 'string') return value;
+  return titleCaseTextFieldValue(value);
+}
+
+function formatValueForPdf(value: unknown, shouldTitleCase: boolean): unknown {
+  return formatTextValue(formatDateForPdf(value), shouldTitleCase);
+}
+
+export function normalizeTextFieldValues(
+  data: Record<string, unknown>,
+  jsonSchema: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  const props = jsonSchema?.properties as Record<string, unknown> | undefined;
+  if (!props) return data;
+
+  let next: Record<string, unknown> | null = null;
+  Object.entries(props).forEach(([key, schema]) => {
+    if (!isTitleCaseTextSchema(schema as Record<string, unknown> | undefined)) return;
+    const current = data[key];
+    if (typeof current !== 'string') return;
+    const formatted = titleCaseTextFieldValue(current);
+    if (formatted === current) return;
+    if (!next) next = { ...data };
+    next[key] = formatted;
+  });
+  return next ?? data;
+}
+
 function resolveConditionalDirective(
   directiveArray: Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
   data: Record<string, unknown>,
@@ -78,7 +157,13 @@ function resolveConditionalDirective(
   return match?.use ?? null;
 }
 
-function buildFormAnswers(
+function targetText(...values: unknown[]): string {
+  return values
+    .filter((value): value is string => typeof value === 'string' && value.trim() !== '')
+    .join(' ');
+}
+
+export function buildFormAnswers(
   uiSchema: Record<string, unknown>,
   jsonSchema: Record<string, unknown>,
   data: Record<string, unknown>,
@@ -88,14 +173,15 @@ function buildFormAnswers(
   const ON_PLACEHOLDER = 'On';
 
   function getPropValue(scope: string): unknown {
-    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
-    return getByPath(data, propPath);
+    return getByPath(data, getScopePath(scope));
   }
 
   function isBooleanScope(scope: string): boolean {
-    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
-    const props = (jsonSchema.properties as Record<string, { type?: unknown }> | undefined) ?? {};
-    return props[propPath]?.type === 'boolean';
+    return getSchemaForPath(jsonSchema, getScopePath(scope))?.type === 'boolean';
+  }
+
+  function isTitleCaseTextScope(scope: string): boolean {
+    return isTitleCaseTextSchema(getSchemaForPath(jsonSchema, getScopePath(scope)));
   }
 
   function processElement(element: Record<string, unknown>) {
@@ -114,9 +200,10 @@ function buildFormAnswers(
         const pdfField = options.pdfField as string;
         let value: unknown = getPropValue(scope);
         const directive = options.directive;
+        const targetName = targetText(element.label, pdfField);
         if (directive != null && resolvedProfiles) {
           if (typeof directive === 'string') {
-            const resolved = resolveDirectiveFromProfiles(directive, resolvedProfiles);
+            const resolved = resolveDirectiveFromProfilesForTarget(directive, resolvedProfiles, targetName);
             if (resolved !== undefined) value = resolved;
           } else if (Array.isArray(directive)) {
             const useDirective = resolveConditionalDirective(
@@ -124,7 +211,7 @@ function buildFormAnswers(
               data,
             );
             if (useDirective) {
-              const resolved = resolveDirectiveFromProfiles(useDirective, resolvedProfiles);
+              const resolved = resolveDirectiveFromProfilesForTarget(useDirective, resolvedProfiles, targetName);
               if (resolved !== undefined) value = resolved;
             }
           }
@@ -139,8 +226,9 @@ function buildFormAnswers(
             out[pdfField] = token;
           }
         } else if (value !== undefined && value !== null && value !== '') {
-          if (options.fillValue !== undefined && options.fillValue !== null) value = options.fillValue;
-          out[pdfField] = formatDateForPdf(value);
+          const hasExplicitFill = options.fillValue !== undefined && options.fillValue !== null;
+          if (hasExplicitFill) value = options.fillValue;
+          out[pdfField] = formatValueForPdf(value, isTitleCaseTextScope(scope) && !hasExplicitFill);
         }
       }
 
@@ -167,14 +255,22 @@ function buildFormAnswers(
               if (explicitFill === ON_PLACEHOLDER) return;
               fillVal = explicitFill;
             } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+              fillVal = resolveDirectiveFromProfilesForTarget(
+                m.directive as string,
+                resolvedProfiles,
+                targetText(element.label, pdfField),
+              );
             } else {
               return;
             }
           } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
             fillVal = explicitFill;
           } else if (m.directive && resolvedProfiles) {
-            fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+            fillVal = resolveDirectiveFromProfilesForTarget(
+              m.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            );
           } else {
             fillVal = currentVal;
           }
@@ -191,10 +287,15 @@ function buildFormAnswers(
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
           const fillVal = cf.fillValue ?? (resolvedProfiles && cf.directive
-            ? resolveDirectiveFromProfiles(cf.directive as string, resolvedProfiles)
+            ? resolveDirectiveFromProfilesForTarget(
+              cf.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            )
             : baseValue);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
-            out[pdfField] = formatDateForPdf(fillVal);
+            const usesBaseValue = cf.fillValue === undefined && !(resolvedProfiles && cf.directive);
+            out[pdfField] = formatValueForPdf(fillVal, usesBaseValue && isTitleCaseTextScope(scope));
           }
         });
       }
@@ -231,14 +332,22 @@ function buildFormAnswers(
                 if (explicitFill === ON_PLACEHOLDER) return;
                 fillVal = explicitFill;
               } else if (m.directive && resolvedProfiles) {
-                fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+                fillVal = resolveDirectiveFromProfilesForTarget(
+                  m.directive as string,
+                  resolvedProfiles,
+                  targetText(element.label, pdfField),
+                );
               } else {
                 return;
               }
             } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
               fillVal = explicitFill;
             } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfiles(m.directive as string, resolvedProfiles);
+              fillVal = resolveDirectiveFromProfilesForTarget(
+                m.directive as string,
+                resolvedProfiles,
+                targetText(element.label, pdfField),
+              );
             } else {
               fillVal = val;
             }
@@ -254,9 +363,14 @@ function buildFormAnswers(
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
           const fillVal = cf.fillValue ?? (cf.directive && resolvedProfiles
-            ? resolveDirectiveFromProfiles(cf.directive as string, resolvedProfiles) : baseValue);
+            ? resolveDirectiveFromProfilesForTarget(
+              cf.directive as string,
+              resolvedProfiles,
+              targetText(element.label, pdfField),
+            ) : baseValue);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
-            out[pdfField] = formatDateForPdf(fillVal);
+            const usesBaseValue = cf.fillValue === undefined && !(cf.directive && resolvedProfiles);
+            out[pdfField] = formatValueForPdf(fillVal, usesBaseValue && isTitleCaseTextScope(firstScope));
           }
         });
       }
@@ -317,14 +431,22 @@ function buildInitialData(
       const directive = options?.directive;
       if (directive != null && resolvedProfiles) {
         if (typeof directive === 'string') {
-          value = resolveDirectiveFromProfiles(directive, resolvedProfiles);
+          value = resolveDirectiveFromProfilesForTarget(
+            directive,
+            resolvedProfiles,
+            targetText(element.label, scope),
+          );
         } else if (Array.isArray(directive)) {
           const useDirective = resolveConditionalDirective(
             directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
             out,
           );
           if (useDirective) {
-            value = resolveDirectiveFromProfiles(useDirective, resolvedProfiles);
+            value = resolveDirectiveFromProfilesForTarget(
+              useDirective,
+              resolvedProfiles,
+              targetText(element.label, scope),
+            );
           }
         }
       }
@@ -436,12 +558,16 @@ export function useInteractiveForm({
 export function extractDirectivesFromUiSchema(
   uiSchema: Record<string, unknown>,
   data: Record<string, unknown>,
+  jsonSchema?: Record<string, unknown> | null,
 ): Record<string, unknown> {
   const directivesMap: Record<string, unknown> = {};
 
   function getPropValue(scope: string): unknown {
-    const propPath = scope.replace('#/properties/', '').replace(/\//g, '.');
-    return getByPath(data, propPath);
+    return getByPath(data, getScopePath(scope));
+  }
+
+  function isTitleCaseTextScope(scope: string): boolean {
+    return isTitleCaseTextSchema(getSchemaForPath(jsonSchema, getScopePath(scope)));
   }
 
   function processElement(element: Record<string, unknown>) {
@@ -455,17 +581,22 @@ export function extractDirectivesFromUiSchema(
       if (scope && directive != null) {
         const value = getPropValue(scope);
         if (value !== undefined && value !== null && value !== '') {
+          const formattedValue = formatTextValue(value, isTitleCaseTextScope(scope));
           if (typeof directive === 'string') {
-            if (!isExcludedFromProfileFormSync(directive)) {
-              directivesMap[directive] = value;
+            const profileDirective = canonicalDirectiveForTarget(directive, targetText(element.label, scope));
+            if (!isExcludedFromProfileFormSync(profileDirective)) {
+              directivesMap[profileDirective] = formattedValue;
             }
           } else if (Array.isArray(directive)) {
             const useDirective = resolveConditionalDirective(
               directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
               data,
             );
-            if (useDirective && !isExcludedFromProfileFormSync(useDirective)) {
-              directivesMap[useDirective] = value;
+            const profileDirective = useDirective
+              ? canonicalDirectiveForTarget(useDirective, targetText(element.label, scope))
+              : null;
+            if (profileDirective && !isExcludedFromProfileFormSync(profileDirective)) {
+              directivesMap[profileDirective] = formattedValue;
             }
           }
         }

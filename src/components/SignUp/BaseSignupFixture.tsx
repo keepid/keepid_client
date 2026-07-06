@@ -38,12 +38,12 @@ export function setupMockServer() {
     }),
   );
   worker.use(
-    rest.post(`${getServerURL()}/create-user`, (req, res, ctx) => {
+    rest.post(`${getServerURL()}/enroll-client`, (req, res, ctx) => {
       const reqBody =
         typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
       // eslint-disable-next-line no-console
-      console.log('Creating user with body:', reqBody);
+      console.log('Enrolling client with body:', reqBody);
 
       return res(ctx.json({ status: 'ENROLL_SUCCESS' }));
     }),

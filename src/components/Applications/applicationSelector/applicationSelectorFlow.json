@@ -1,0 +1,502 @@
+{
+  "id": "application-selector",
+  "title": "Application Selector",
+  "description": "",
+  "listImageUrl": "/SelectApplicationForm/pennsylvania.svg",
+  "questions": [
+    {
+      "id": "idType",
+      "title": "What type of ID does the client need?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": null,
+      "showWhen": [],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "birthCertificate",
+          "label": "Birth Certificate",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/birth-cert.svg"
+        },
+        {
+          "value": "photoId",
+          "label": "Photo ID",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/drivers-license.svg"
+        },
+        {
+          "value": "socialSecurityCard",
+          "label": "Social Security Card",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/social-sec-card.svg"
+        }
+      ]
+    },
+    {
+      "id": "birthState",
+      "title": "What state was the client born in?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": null,
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "PA",
+          "label": "Pennsylvania",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/pennsylvania.svg"
+        },
+        {
+          "value": "NJ",
+          "label": "New Jersey",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/new-jersey.svg"
+        },
+        {
+          "value": "NY",
+          "label": "New York",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/new-york-state.svg"
+        }
+      ]
+    },
+    {
+      "id": "birthCertificateHomelessness",
+      "title": "Is the client experiencing homelessness?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": {
+        "type": "profile",
+        "field": "client.experiencingHomelessness"
+      },
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        },
+        {
+          "questionId": "birthState",
+          "value": "PA"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "true",
+          "label": "Yes",
+          "description": "",
+          "imageUrl": null
+        },
+        {
+          "value": "false",
+          "label": "No",
+          "description": "",
+          "imageUrl": null
+        }
+      ]
+    },
+    {
+      "id": "photoIdState",
+      "title": "What state is the photo ID for?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": null,
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "PA",
+          "label": "Pennsylvania",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/pennsylvania.svg"
+        },
+        {
+          "value": "NJ",
+          "label": "New Jersey",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/new-jersey.svg"
+        },
+        {
+          "value": "NY",
+          "label": "New York",
+          "description": "",
+          "imageUrl": "/SelectApplicationForm/new-york-state.svg"
+        }
+      ]
+    },
+    {
+      "id": "photoIdHomelessness",
+      "title": "Is the client experiencing homelessness?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": {
+        "type": "profile",
+        "field": "client.experiencingHomelessness"
+      },
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "true",
+          "label": "Yes",
+          "description": "",
+          "imageUrl": null
+        },
+        {
+          "value": "false",
+          "label": "No",
+          "description": "",
+          "imageUrl": null
+        }
+      ]
+    },
+    {
+      "id": "hadPreviousPaPhotoId",
+      "title": "Did the client have a previous PA photo ID?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": null,
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "true"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "no",
+          "label": "No",
+          "description": "",
+          "imageUrl": null
+        },
+        {
+          "value": "yes",
+          "label": "Yes",
+          "description": "",
+          "imageUrl": null
+        }
+      ]
+    },
+    {
+      "id": "previousPaPhotoIdExpired",
+      "title": "Has the previous PA photo ID expired?",
+      "description": "",
+      "type": "singleChoice",
+      "answerSource": null,
+      "showWhen": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "true"
+        },
+        {
+          "questionId": "hadPreviousPaPhotoId",
+          "value": "yes"
+        }
+      ],
+      "includeComponents": [],
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "description": "",
+          "imageUrl": null
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "description": "",
+          "imageUrl": null
+        }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "social-security-card",
+      "title": "Social Security Card",
+      "applicationId": "bba3",
+      "applicationLabel": "Social Security Card",
+      "uploadLabel": null,
+      "instructionsMarkdown": "1. Start the Social Security Card application.\n2. Save the application when it is complete.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "socialSecurityCard"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "pa-homeless-birth-certificate",
+      "title": "PA Homeless Birth Certificate",
+      "applicationId": "2e68",
+      "applicationLabel": "PA Homeless Birth Certificate",
+      "uploadLabel": null,
+      "instructionsMarkdown": "1. Start the PA Homeless Birth Certificate application.\n2. Save the application when it is complete.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        },
+        {
+          "questionId": "birthState",
+          "value": "PA"
+        },
+        {
+          "questionId": "birthCertificateHomelessness",
+          "value": "true"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "pa-housed-birth-certificate",
+      "title": "PA Housed Birth Certificate",
+      "applicationId": "742e",
+      "applicationLabel": "PA Housed Birth Certificate",
+      "uploadLabel": null,
+      "instructionsMarkdown": "1. Start the PA Housed Birth Certificate application.\n2. Save the application when it is complete.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        },
+        {
+          "questionId": "birthState",
+          "value": "PA"
+        },
+        {
+          "questionId": "birthCertificateHomelessness",
+          "value": "false"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "nj-birth-certificate-upload",
+      "title": "New Jersey birth certificate",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        },
+        {
+          "questionId": "birthState",
+          "value": "NJ"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "ny-birth-certificate-upload",
+      "title": "New York birth certificate",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "birthCertificate"
+        },
+        {
+          "questionId": "birthState",
+          "value": "NY"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "penndot-photo-id-homeless-letter-no-previous-id",
+      "title": "PennDOT Photo ID Homeless Letter",
+      "applicationId": "ccc6",
+      "applicationLabel": "PennDOT Photo ID Homeless Letter",
+      "uploadLabel": null,
+      "instructionsMarkdown": "1. Fill out the PennDOT Photo ID Homeless Letter.\n2. Print it out.\n3. Direct the client to the nearest PennDOT center.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "true"
+        },
+        {
+          "questionId": "hadPreviousPaPhotoId",
+          "value": "no"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "penndot-photo-id-homeless-letter-expired-id",
+      "title": "PennDOT Photo ID Homeless Letter",
+      "applicationId": "ccc6",
+      "applicationLabel": "PennDOT Photo ID Homeless Letter",
+      "uploadLabel": null,
+      "instructionsMarkdown": "1. Fill out the PennDOT Photo ID Homeless Letter.\n2. Print it out.\n3. Direct the client to the nearest PennDOT center.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "true"
+        },
+        {
+          "questionId": "hadPreviousPaPhotoId",
+          "value": "yes"
+        },
+        {
+          "questionId": "previousPaPhotoIdExpired",
+          "value": "yes"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "pa-photo-id-current-upload",
+      "title": "Pennsylvania photo ID",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "true"
+        },
+        {
+          "questionId": "hadPreviousPaPhotoId",
+          "value": "yes"
+        },
+        {
+          "questionId": "previousPaPhotoIdExpired",
+          "value": "no"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "pa-photo-id-housed-upload",
+      "title": "Pennsylvania photo ID",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "PA"
+        },
+        {
+          "questionId": "photoIdHomelessness",
+          "value": "false"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "nj-photo-id-upload",
+      "title": "New Jersey photo ID",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "NJ"
+        }
+      ],
+      "includeComponents": []
+    },
+    {
+      "id": "ny-photo-id-upload",
+      "title": "New York photo ID",
+      "applicationId": null,
+      "applicationLabel": null,
+      "uploadLabel": "Upload PDF",
+      "instructionsMarkdown": "1. Look up the application PDF.\n2. Fill it out.\n3. Upload the completed PDF here.",
+      "matches": [
+        {
+          "questionId": "idType",
+          "value": "photoId"
+        },
+        {
+          "questionId": "photoIdState",
+          "value": "NY"
+        }
+      ],
+      "includeComponents": []
+    }
+  ]
+}

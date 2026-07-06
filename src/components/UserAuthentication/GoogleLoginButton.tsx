@@ -1,14 +1,9 @@
 import React, { useEffect } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { buildOAuthRedirectUri } from './oauthRedirect';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const currentMode = import.meta.env.MODE;
-const originUri = currentMode === 'production'
-  ? 'https://keep.id'
-  : currentMode === 'staging'
-    ? 'https://staged.keep.id'
-    : 'http://localhost:3000';
 
 export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoogleLoginError }) {
   useEffect(() => {
@@ -22,11 +17,14 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
   }, []);
 
   const handleClick = () => {
+    const redirectUri = buildOAuthRedirectUri(getServerURL(), '/googleLoginResponse');
+    const originUri = window.location.origin;
+
     fetch(`${getServerURL()}/googleLoginRequest`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        redirectUri: `${getServerURL()}/googleLoginResponse`,
+        redirectUri,
         originUri,
       }),
     })
@@ -39,7 +37,7 @@ export default function GoogleLoginButton({ handleGoogleLoginSuccess, handleGoog
           `client_id=${clientId}` +
           '&response_type=code' +
           '&scope=openid%20email%20profile' +
-          `&redirect_uri=${getServerURL()}/googleLoginResponse` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
           `&state=${state}` +
           '&code_challenge_method=S256' +
           `&code_challenge=${codeChallenge}` +

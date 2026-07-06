@@ -8,8 +8,7 @@
   width: 100% !important;
   height: auto !important;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: auto;
 }
 
 .keepid-pdf-preview .react-pdf__Page__textContent,
@@ -20,16 +19,48 @@
   height: 100% !important;
 }
 
+.keepid-pdf-preview .react-pdf__Page__textContent {
+  z-index: 1;
+}
+
+.keepid-pdf-preview .react-pdf__Page__annotations {
+  z-index: 2;
+}
+
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .react-pdf__Page__textContent {
+  pointer-events: none;
+}
+
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .react-pdf__Page__annotations,
+.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer :is(input, textarea, select, button) {
+  pointer-events: auto;
+}
+
 .keepid-pdf-preview.keepid-pdf-edit-locked .react-pdf__Page__annotations {
   pointer-events: none;
 }
 
-/*
- * pdf.js sizes widget text from PDF rect height / DA; shallow rects yield unreadably small inputs.
- * When HTML widgets are active, enforce a minimum readable size (inline fontSize still uses --total-scale-factor).
- */
-.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer .textWidgetAnnotation :is(input, textarea),
-.keepid-pdf-preview.keepid-pdf-form-widgets-active .annotationLayer .choiceWidgetAnnotation select {
-  font-size: max(calc(11px * var(--total-scale-factor)), 13px) !important;
-  line-height: 1.25 !important;
+.keepid-pdf-preview.keepid-pdf-edit-locked.keepid-pdf-form-widgets-active
+  .annotationLayer
+  :is(.textWidgetAnnotation, .choiceWidgetAnnotation)
+  :is(input, textarea, select) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  caret-color: transparent;
 }
+
+.keepid-pdf-preview.keepid-pdf-edit-locked.keepid-pdf-form-widgets-active
+  .annotationLayer
+  .choiceWidgetAnnotation
+  select {
+  appearance: none;
+}
+
+/*
+ * Keep PDF widget typography under pdf.js control. The annotation layer derives
+ * text sizing from the PDF field appearance/default appearance and page scale;
+ * app-level font-size/line-height overrides can double-scale text and clip it
+ * inside fixed PDF field rectangles.
+ */

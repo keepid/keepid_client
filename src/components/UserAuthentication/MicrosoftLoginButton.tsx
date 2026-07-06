@@ -1,15 +1,10 @@
 import React, { useEffect } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { buildOAuthRedirectUri } from './oauthRedirect';
 
 const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;
 const tenantId = import.meta.env.VITE_MICROSOFT_TENANT_ID || 'organizations';
-const currentMode = import.meta.env.MODE;
-const originUri = currentMode === 'production'
-  ? 'https://keep.id'
-  : currentMode === 'staging'
-    ? 'https://staged.keep.id'
-    : 'http://localhost:3000';
 
 export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, handleMicrosoftLoginError }) {
   useEffect(() => {
@@ -28,11 +23,14 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
       return;
     }
 
+    const redirectUri = buildOAuthRedirectUri(getServerURL(), '/microsoftLoginResponse');
+    const originUri = window.location.origin;
+
     fetch(`${getServerURL()}/microsoftLoginRequest`, {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify({
-        redirectUri: `${getServerURL()}/microsoftLoginResponse`,
+        redirectUri,
         originUri,
       }),
     })
@@ -46,7 +44,7 @@ export default function MicrosoftLoginButton({ handleMicrosoftLoginSuccess, hand
             `client_id=${clientId}` +
             '&response_type=code' +
             '&scope=openid%20email%20profile' +
-            `&redirect_uri=${getServerURL()}/microsoftLoginResponse` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
             `&state=${state}` +
             '&code_challenge_method=S256' +
             `&code_challenge=${codeChallenge}` +

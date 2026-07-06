@@ -91,6 +91,15 @@ export default function EnrollWorkerPage(): JSX.Element {
       alert.error('Please enter a valid birth date.');
       return;
     }
+    const parsedBirthDate = localDateFromIsoDateOnly(values.birthDate);
+    const birthDateError = parsedBirthDate === undefined
+      ? 'Invalid birth date'
+      : validateBirthdate(parsedBirthDate);
+    if (birthDateError) {
+      setFieldErrors((prev) => ({ ...prev, birthDate: birthDateError }));
+      alert.error(birthDateError);
+      return;
+    }
 
     if (!eulaAgreed || !termsAccepted) {
       setAgreementError('You must agree to the EULA and Terms and Conditions before submitting.');
@@ -125,9 +134,9 @@ export default function EnrollWorkerPage(): JSX.Element {
       } else if (response.status === 'EMAIL_ALREADY_EXISTS') {
         alert.error('A user with this email already exists.');
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
-        alert.error('Your session has expired. Please log in again.');
+        alert.error('Please sign in again to continue.');
       } else if (response.status === 'INVALID_PARAMETER') {
-        alert.error('Invalid role selected. Please choose Worker or Admin.');
+        alert.error(response.message || 'Please check the enrollment fields and try again.');
       } else {
         alert.error(`Enrollment failed: ${response.status}`);
       }
@@ -151,8 +160,9 @@ export default function EnrollWorkerPage(): JSX.Element {
           <p className="tw-text-gray-600 tw-mb-6">
             <strong>{values.firstname} {values.lastname}</strong> has been enrolled
             as a <strong>{values.personRole}</strong>.
-            They can log in via Google OAuth using <strong>{values.email}</strong>,
-            or set a password using Forgot Password on the login page.
+            We&apos;ve emailed a temporary password to{' '}
+            <strong>{values.email}</strong>. They can sign in with that
+            password, or use Google or Microsoft with their email.
           </p>
           <div className="tw-flex tw-justify-center tw-space-x-4">
             <button

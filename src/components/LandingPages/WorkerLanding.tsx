@@ -8,6 +8,9 @@ import getServerURL from '../../serverOverride';
 import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
+import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
+import { canUseApplications, canUseClientNotifications, canUseCommunications } from '../../utils/featureAccess';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
 interface Props {
@@ -15,6 +18,7 @@ interface Props {
   name: string;
   organization: string;
   role: Role;
+  logOut: () => void;
   alert: any;
 }
 
@@ -26,6 +30,11 @@ interface TargetClient {
   email?: string;
   birthDate: string;
   photo: string | null;
+  profilePhoto?: {
+    contentType?: string;
+    byteSize?: number;
+    uploadedAt?: string;
+  } | null;
   assignedWorkerUsernames: string[];
   /** ISO or parseable date string from get-organization-members */
   creationDate?: string | null;
@@ -44,32 +53,14 @@ function creationTimeMs(client: TargetClient): number | null {
   return Number.isNaN(t) ? null : t;
 }
 
-function normalizeSearchText(value: string): string {
-  return value.trim().toLowerCase();
+function formatBirthDateForDisplay(value: string): string {
+  return value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3');
 }
 
-function matchesClientSearchQuery(client: TargetClient, query: string): boolean {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return true;
-
-  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return true;
-
-  const first = normalizeSearchText(client.firstName || '');
-  const last = normalizeSearchText(client.lastName || '');
-  const full = normalizeSearchText(`${client.firstName || ''} ${client.lastName || ''}`);
-  const username = normalizeSearchText(client.username || '');
-  const phone = normalizeSearchText(client.phone || '');
-  const email = normalizeSearchText(client.email || '');
-
-  return tokens.every((token) => (
-    first.includes(token)
-    || last.includes(token)
-    || full.includes(token)
-    || username.includes(token)
-    || phone.includes(token)
-    || email.includes(token)
-  ));
+function hasPhoneNumberOnRecord(value?: string): boolean {
+  const digits = (value || '').replace(/\D/g, '');
+  const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  return normalized.length === 10;
 }
 
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
@@ -109,7 +100,7 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
 
 const POSTS_PER_PAGE = 6;
 
-const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, alert }) => {
+const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, logOut, alert }) => {
   const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
   // --- UPDATED: State for submitted search ---
@@ -120,15 +111,18 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
   const [clientCredentialsCorrect, setClientCredentialsCorrect] = useState(false);
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortMode, setSortMode] = useState<ClientSortMode>('name-asc');
+  const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
   const [isLoading, setIsLoading] = useState(true);
-  const { path, url } = useRouteMatch();
+  const { path } = useRouteMatch();
+  const canAccessApplications = canUseApplications(role, organization);
+  const canAccessCommunications = canUseCommunications(role, organization);
+  const canAccessNotifications = canUseClientNotifications(role, organization);
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
-    let photos: (string | null)[];
-    let clientsWithPhotos: TargetClient[];
+    const clientsWithPhoto = clientsArray.filter((client) => client.profilePhoto != null);
+    if (clientsWithPhoto.length === 0) return;
 
-    const promises = clientsArray.map((client) => fetch(`${getServerURL()}/load-pfp`, {
+    const promises = clientsWithPhoto.map((client) => fetch(`${getServerURL()}/load-pfp`, {
       signal,
       method: 'POST',
       credentials: 'include',
@@ -139,22 +133,26 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
     try {
       const results = await Promise.all(promises);
-      photos = results.map((blob) => {
+      const photos = results.map((blob) => {
         if (blob.size > 72) {
           return (URL || window.webkitURL).createObjectURL(blob);
         }
         return null;
       });
 
-      clientsWithPhotos = clientsArray.slice();
-      clientsArray.forEach((client, i) => {
-        clientsWithPhotos[i].photo = photos[i];
+      const photosByUsername = new Map<string, string | null>();
+      clientsWithPhoto.forEach((client, i) => {
+        photosByUsername.set(client.username, photos[i]);
       });
-      setClients(clientsWithPhotos);
+      setClients((currentClients) => currentClients.map((client) => (
+        photosByUsername.has(client.username)
+          ? { ...client, photo: photosByUsername.get(client.username) ?? null }
+          : client
+      )));
     } catch (error: any) {
       if (error.toString() !== 'AbortError: The user aborted a request.') {
         alert.show(
-          `Could Not Retrieve Activities. Try again or report this network failure to team keep: ${error}`,
+          `Could Not Retrieve Profile Photos. Try again or report this network failure to team keep: ${error}`,
         );
       }
     }
@@ -169,27 +167,43 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       setCurrentPage(1);
 
       try {
-        const res = await fetch(`${getServerURL()}/get-organization-members`, {
-          signal,
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify({
-            role,
-            listType: 'clients',
-            name: submittedSearchName,
-          }),
-        });
+        const searchQueries = getClientSearchCandidateQueries(submittedSearchName, true);
+        const responses = await Promise.all(searchQueries.map(async (name) => {
+          const res = await fetch(`${getServerURL()}/get-organization-members`, {
+            signal,
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify({
+              role,
+              listType: 'clients',
+              name,
+            }),
+          });
+          return res.json();
+        }));
 
-        const responseJSON = await res.json();
-        const { people, status } = responseJSON;
-
-        let filteredPeople: TargetClient[] = [];
-        if (status !== 'USER_NOT_FOUND' && Array.isArray(people)) {
-          filteredPeople = people.filter((person: TargetClient) =>
-            matchesClientSearchQuery(person, submittedSearchName));
+        if (responses.some((responseJSON) => responseJSON.status === 'AUTH_FAILURE')) {
+          alert.show('Please sign in again to continue.');
+          logOut();
+          return;
         }
 
+        const peopleByUsername = new Map<string, TargetClient>();
+        responses.forEach((responseJSON) => {
+          if (responseJSON.status !== 'USER_NOT_FOUND' && Array.isArray(responseJSON.people)) {
+            responseJSON.people.forEach((person: TargetClient) => {
+              if (person.username) peopleByUsername.set(person.username, person);
+            });
+          }
+        });
+
+        const filteredPeople = Array.from(peopleByUsername.values())
+          .map((person: TargetClient) => ({ ...person, photo: null }))
+          .filter((person: TargetClient) => matchesClientSearchQuery(person, submittedSearchName));
+
         if (filteredPeople.length > 0) {
+          setClients(filteredPeople);
+          setIsLoading(false);
           await loadProfilePhoto(filteredPeople, signal);
         } else {
           setClients([]);
@@ -210,7 +224,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return () => {
       controller.abort();
     };
-  }, [submittedSearchName, role, username, loadProfilePhoto, alert]);
+  }, [submittedSearchName, role, username, loadProfilePhoto, logOut, alert]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -273,8 +287,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
     return sortedClients.slice(indexOfFirstPost, indexOfLastPost);
   }, [sortedClients, currentPage]);
 
+  const lastPage = Math.max(Math.ceil(sortedClients.length / POSTS_PER_PAGE), 1);
+
   const { pageNumbers, paginationClassName } = useMemo(() => {
-    const lastPage = Math.ceil(sortedClients.length / POSTS_PER_PAGE);
     const pageNumbers: number[] = [];
     for (let i = 1; i <= lastPage; i += 1) {
       pageNumbers.push(i);
@@ -285,15 +300,18 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
       const activeClasses = 'tw-bg-twprimary tw-text-white tw-border-blue-600';
       const inactiveClasses = 'tw-bg-white hover:tw-bg-gray-100';
 
-      let classes = `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
-      if (pageNum === 1) classes += ' tw-rounded-l-md';
-      if (pageNum === lastPage) classes += ' tw-rounded-r-md';
-
-      return classes;
+      return `${baseClasses} ${pageNum === currentPage ? activeClasses : inactiveClasses}`;
     };
 
     return { pageNumbers, paginationClassName };
-  }, [sortedClients.length, currentPage]);
+  }, [lastPage, currentPage]);
+
+  const edgeButtonClassName = (disabled: boolean, side: 'left' | 'right'): string => {
+    const base = `tw-px-3 tw-py-1 tw-border tw-border-gray-300 ${side === 'left' ? 'tw-rounded-l-md' : 'tw-rounded-r-md'}`;
+    return disabled
+      ? `${base} tw-bg-gray-100 tw-text-gray-400 tw-cursor-not-allowed`
+      : `${base} tw-bg-white hover:tw-bg-gray-100 tw-cursor-pointer`;
+  };
 
   const modalRender = () => {
     if (!showClientAuthModal) return null;
@@ -387,11 +405,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
 
               <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end tw-items-stretch tw-gap-4">
                 <form
-                  className="tw-flex tw-w-full md:tw-w-auto tw-flex-shrink-0"
+                  className="tw-flex tw-w-full md:tw-w-[28rem] tw-flex-shrink-0"
                   onSubmit={handleSearchSubmit}
                 >
                   <input
-                    className="tw-flex-grow tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
+                    className="tw-flex-grow tw-px-4 tw-py-2.5 tw-text-base tw-border tw-border-gray-300 tw-rounded-l-md focus:tw-ring-blue-500 focus:tw-border-blue-500"
                     type="text"
                     onChange={(e) => setSearchName(e.target.value)}
                     value={searchName}
@@ -430,67 +448,90 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                 <div>
                   {sortedClients.length > 0 ? (
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
-                      {currentPosts.map((client) => (
-                        <div key={client.username} className="tw-bg-white tw-shadow-lg tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
-                          <Link
-                            to={`/profile/${client.username}`}
-                            className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
-                          >
-                            <div className="tw-flex tw-items-center tw-mb-3">
-                              {client.photo ? (
-                                <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                              ) : (
-                                <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                              )}
-                            </div>
-                            <div className="tw-mb-1">
-                              <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
-                                {client.firstName} {client.lastName}
-                              </h5>
-                            </div>
-                            <div className="tw-mb-1">
-                              <h6 className="tw-text-gray-500">{client.phone}</h6>
-                            </div>
-                            <div className="tw-mb-1">
-                              <h6 className="tw-text-gray-500">
-                                Birth Date: {client.birthDate}
-                              </h6>
-                            </div>
-                          </Link>
+                      {currentPosts.map((client) => {
+                        const clientName = `${client.firstName} ${client.lastName}`.trim();
+                        const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
+                        return (
+                          <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+                            <Link
+                              to={`/profile/${client.username}`}
+                              className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
+                            >
+                              <div className="tw-flex tw-items-center tw-mb-3">
+                                {client.photo ? (
+                                  <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                                ) : (
+                                  <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                                )}
+                              </div>
+                              <div className="tw-mb-1">
+                                <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
+                                  {client.firstName} {client.lastName}
+                                </h5>
+                              </div>
+                              <div className="tw-mb-1">
+                                <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
+                                  {formatPhoneForDisplay(client.phone)}
+                                </p>
+                              </div>
+                              <div className="tw-mb-1">
+                                <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
+                                  Birth Date: {formatBirthDateForDisplay(client.birthDate)}
+                                </p>
+                              </div>
+                            </Link>
 
-                          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
+                            <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
                               <Link
                                 to={{
                                   pathname: `/my-documents/${client.username}`,
-                                  state: { clientName: `${client.firstName} ${client.lastName}`.trim() },
+                                  state: { clientName },
                                 }}
                                 className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none"
                               >
                                 Documents
                               </Link>
-                              <Link
-                                to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
-                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                              >
-                                  Apply
-                              </Link>
-                              <Link
-                                to={{
-                                  pathname: `${url}/notify-client/${client.username}`,
-                                  state: {
-                                    clientName: `${client.firstName} ${client.lastName}`.trim(),
-                                    clientPhone: client.phone,
-                                  },
-                                }}
-                                className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                              >
-                                  Notify
-                              </Link>
-                          </div>
+                              {canAccessApplications && (
+                                <Link
+                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
+                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                                >
+                                    Applications
+                                </Link>
+                              )}
+                              {canAccessCommunications && canOpenCommunications && (
+                                <Link
+                                  to={{
+                                    pathname: '/communications',
+                                    search: `?client=${encodeURIComponent(client.username)}`,
+                                    state: {
+                                      clientUsername: client.username,
+                                      clientName,
+                                      clientPhone: client.phone,
+                                    },
+                                  }}
+                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
+                                >
+                                    Communications
+                                </Link>
+                              )}
+                              {canAccessCommunications && !canOpenCommunications && (
+                                <button
+                                  type="button"
+                                  className="tw-inline-flex tw-items-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed"
+                                  disabled
+                                  title="Add a phone number before opening communications"
+                                  aria-label={`Communications unavailable for ${clientName || client.username}; no phone number on record`}
+                                >
+                                  Communications
+                                </button>
+                              )}
+                            </div>
 
-                          {showClientAuthModal && modalRender()}
-                        </div>
-                      ))}
+                            {showClientAuthModal && modalRender()}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="tw-text-center tw-py-12">
@@ -516,6 +557,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                       {sortedClients.length} Results
                     </div>
                     <div className="tw-flex">
+                      <span
+                        className={edgeButtonClassName(currentPage === 1, 'left')}
+                        onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={(e) => e.key === 'Enter' && currentPage > 1 && setCurrentPage(currentPage - 1)}
+                      >
+                        Previous
+                      </span>
                       {pageNumbers.map((pageNum) => (
                         <span
                           key={pageNum}
@@ -528,6 +578,15 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
                           {pageNum}
                         </span>
                       ))}
+                      <span
+                        className={edgeButtonClassName(currentPage === lastPage, 'right')}
+                        onClick={() => currentPage < lastPage && setCurrentPage(currentPage + 1)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={(e) => e.key === 'Enter' && currentPage < lastPage && setCurrentPage(currentPage + 1)}
+                      >
+                        Next
+                      </span>
                     </div>
                   </>
                 )}
@@ -538,6 +597,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, al
         <Route
           path={`${path}/notify-client/:clientUsername`}
           render={(props) => {
+            if (!canAccessNotifications) {
+              return <Redirect to={path} />;
+            }
             const { clientUsername } = props.match.params;
             const client = clients.find((client) => client.username === clientUsername);
             const routeState = props.location.state as

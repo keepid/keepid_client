@@ -1,32 +1,19 @@
 import React from 'react';
-import { Spinner } from 'react-bootstrap';
 import ReactMarkdown from 'react-markdown';
 
-import type { BuilderState } from '../InteractiveForms/types';
-import { getInteractiveFormConfig } from './api/interactiveForm';
 import { ApplicationFormData } from './Hooks/ApplicationFormHook';
 
-export default function ApplicationReviewPage({ data, blankFormId, clientName }: { data: ApplicationFormData; blankFormId: string | null; clientName: string }) {
+export default function ApplicationReviewPage({
+  data,
+  clientName,
+  instructionsMarkdownOverride = '',
+}: {
+  data: ApplicationFormData;
+  clientName: string;
+  instructionsMarkdownOverride?: string;
+}) {
   const emphasis = 'tw-font-bold';
-  const [builderState, setBuilderState] = React.useState<BuilderState | null>(null);
-  const [loadingConfig, setLoadingConfig] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!blankFormId) return;
-    setLoadingConfig(true);
-    getInteractiveFormConfig(blankFormId)
-      .then((cfg) => {
-        if (cfg.builderState) {
-          let bs = cfg.builderState;
-          if (typeof bs === 'string') {
-            try { bs = JSON.parse(bs); } catch (e) { /* ignore */ }
-          }
-          setBuilderState(bs as unknown as BuilderState);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoadingConfig(false));
-  }, [blankFormId]);
+  const hasCatalogLabel = data.label.trim().length > 0;
 
   let appType: string;
 
@@ -87,22 +74,16 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
     situation = <li>This {appType} appplication is for those who have <span className={emphasis}>abused substances</span>.</li>;
   }
 
-  if (loadingConfig) {
-    return (
-      <div className="d-flex justify-content-center py-5">
-        <Spinner animation="border" />
-      </div>
-    );
-  }
+  const instructionsMarkdown = instructionsMarkdownOverride;
 
-  if (builderState && builderState.preRequirements) {
+  if (instructionsMarkdown) {
     return (
       <div className="tw-mx-auto tw-max-w-[800px] tw-pb-12">
         <h2 className="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6 tw-pb-4 tw-border-b tw-border-gray-100">
-          Fill out {appType} application for {clientName}
+          Fill out {hasCatalogLabel ? data.label : `${appType} application`} for {clientName}
         </h2>
         <div className="tw-prose tw-prose-lg tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
-          <ReactMarkdown>{builderState.preRequirements}</ReactMarkdown>
+          <ReactMarkdown>{instructionsMarkdown}</ReactMarkdown>
         </div>
       </div>
     );
@@ -111,8 +92,13 @@ export default function ApplicationReviewPage({ data, blankFormId, clientName }:
   return (
     <div className="tw-mx-auto tw-bg-gray-100 tw-rounded-2xl tw-py-12 tw-px-20 tw-max-w-[1000px] tw-border-4 tw-border-gray-700">
       <ul className="tw-text-2xl tw-flex tw-flex-col tw-gap-4 tw-p-0 tw-m-0 tw-list-outside tw-pl-4">
-        <li>You want an application for a <span className={emphasis}>{appType}</span>.</li>
-        { data.state !== 'FED' && (<li>This application is for the state of <span className={emphasis}>{data.state}</span>.</li>)}
+        <li>
+          You want to fill out{' '}
+          <span className={emphasis}>{hasCatalogLabel ? data.label : appType}</span>.
+        </li>
+        {data.state && (<li>This application is for the state of <span className={emphasis}>{data.state}</span>.</li>)}
+        {data.idType && (<li>ID type: <span className={emphasis}>{data.idType}</span>.</li>)}
+        {data.housingStatus && (<li>Housing status: <span className={emphasis}>{data.housingStatus}</span>.</li>)}
         <li>You are applying on behalf of <span className={emphasis}>{person}</span>.</li>
         { situation && situation }
       </ul>

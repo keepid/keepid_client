@@ -1,15 +1,16 @@
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import ViewDocument from '../Documents/ViewDocument';
@@ -91,11 +92,21 @@ function formatAddress(a: OrgAddress): string {
   return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
 }
 
+// Format a Date as YYYY-MM-DD using local calendar fields. Avoids the UTC skew
+// of toISOString(), which can roll the date back a day for users west of UTC.
+function toLocalISODate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 interface OrgDocument {
   id: string;
   filename: string;
   uploadDate: string;
   uploader: string;
+  uploaderName?: string;
 }
 
 interface MailSummaryEntry {
@@ -109,6 +120,14 @@ interface MailSummaryEntry {
   mailingAddressName: string;
   targetUsername: string;
   trackingEvents: { type: string; name: string; time: number | null; location: string }[];
+  // Per the 2026-05-13 product feedback, the mail summary table now
+  // shows the application's title and the client's name instead of the
+  // mailing-address name. Backend ships these alongside the existing
+  // fields (see MailSendService.projectMailWithContext).
+  applicationType: string;
+  clientFirstName: string;
+  clientLastName: string;
+  clientFullName: string;
 }
 
 interface MailSummaryData {
@@ -117,6 +136,12 @@ interface MailSummaryData {
   totalChecks: number;
   totalMailingCostCents: number;
   totalCheckAmount: string;
+}
+
+interface OrganizationReportResponse {
+  status: string;
+  message?: string;
+  reportText?: string;
 }
 
 const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) => {
@@ -145,10 +170,15 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [isLoadingMailSummary, setIsLoadingMailSummary] = useState(false);
   const [mailDateFrom, setMailDateFrom] = useState(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().split('T')[0];
+    d.setDate(1);
+    return toLocalISODate(d);
   });
-  const [mailDateTo, setMailDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+  const [mailDateTo, setMailDateTo] = useState(() => toLocalISODate(new Date()));
+  const [reportDateFrom, setReportDateFrom] = useState(() => toLocalISODate(new Date()));
+  const [reportDateTo, setReportDateTo] = useState(() => toLocalISODate(new Date()));
+  const [reportShowClientNames, setReportShowClientNames] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
@@ -339,7 +369,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     if (!removingUsername) return;
     setIsRemoving(true);
     try {
-      const res = await fetch(`${getServerURL()}/remove-organization-member`, {
+      const res = await fetch(`${getServerURL()}/remove-user`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -357,6 +387,42 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       alert.show(`Failed to remove member: ${error}`, { type: 'error' });
     } finally {
       setIsRemoving(false);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      const res = await fetch(`${getServerURL()}/get-organization-report`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromDate: reportDateFrom,
+          toDate: reportDateTo,
+          showClientNames: reportShowClientNames,
+        }),
+      });
+      const data = await res.json() as OrganizationReportResponse;
+      if (data.status === 'SUCCESS') {
+        setReportText(data.reportText || '');
+      } else {
+        alert.show(`Failed to generate report: ${data.message || data.status}`, { type: 'error' });
+      }
+    } catch (error) {
+      alert.show(`Failed to generate report: ${error}`, { type: 'error' });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
+  const handleCopyReport = async () => {
+    if (!reportText.trim()) return;
+    try {
+      await navigator.clipboard.writeText(reportText);
+      alert.show('Report copied.');
+    } catch {
+      alert.show('Unable to copy report automatically. Select the text and copy it manually.', { type: 'error' });
     }
   };
 
@@ -478,11 +544,17 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
   const getDocDisplayFileName = (filename?: string) => (filename || '').replace(/\.pdf$/i, '');
 
-  const handleRowClick = (row: any) => {
+  const getUploaderDisplayName = (row: OrgDocument) => {
+    const displayName = typeof row.uploaderName === 'string' ? row.uploaderName.trim() : '';
+    if (displayName) return displayName;
+    return row.uploader || '';
+  };
+
+  const handleRowClick = (row: OrgDocument) => {
     setCurrentDocumentId(row.id);
     setCurrentDocumentName(row.filename);
     setCurrentUploadDate(row.uploadDate);
-    setCurrentUploader(row.uploader);
+    setCurrentUploader(getUploaderDisplayName(row));
   };
 
   const getRowActions = (row: any): RowAction[] => {
@@ -525,6 +597,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     {
       field: 'uploader',
       headerName: 'Uploaded By',
+      renderCell: (row: OrgDocument) => getUploaderDisplayName(row),
     },
     {
       field: 'uploadDate',
@@ -557,7 +630,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgName"
                 type="text"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.name}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, name: e.target.value })}
               />
@@ -569,14 +642,14 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgAddrLine1"
                 type="text"
-                className="form-control form-purple tw-mb-1"
+                className="form-control form-purple tw-mb-1 tw-py-2"
                 placeholder="Street address"
                 value={editedOrgInfo.address.line1}
                 onChange={(e) => updateAddress('line1', e.target.value)}
               />
               <input
                 type="text"
-                className="form-control form-purple tw-mb-1"
+                className="form-control form-purple tw-mb-1 tw-py-2"
                 placeholder="Apt, suite, etc."
                 value={editedOrgInfo.address.line2}
                 onChange={(e) => updateAddress('line2', e.target.value)}
@@ -584,14 +657,14 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <div className="tw-flex tw-gap-2">
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   placeholder="City"
                   value={editedOrgInfo.address.city}
                   onChange={(e) => updateAddress('city', e.target.value)}
                 />
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   style={{ maxWidth: 100 }}
                   placeholder="State"
                   value={editedOrgInfo.address.state}
@@ -599,7 +672,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 />
                 <input
                   type="text"
-                  className="form-control form-purple"
+                  className="form-control form-purple tw-py-2"
                   style={{ maxWidth: 120 }}
                   placeholder="Zip"
                   value={editedOrgInfo.address.zip}
@@ -614,7 +687,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgPhone"
                 type="text"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.phone}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, phone: e.target.value })}
               />
@@ -626,7 +699,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <input
                 id="orgEmail"
                 type="email"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.email}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, email: e.target.value })}
               />
@@ -637,7 +710,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             <div className="col-9 card-text">
               <select
                 id="designatedDirectorUsername"
-                className="form-control form-purple"
+                className="form-control form-purple tw-py-2"
                 value={editedOrgInfo.designatedDirectorUsername}
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, designatedDirectorUsername: e.target.value })}
               >
@@ -667,7 +740,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
-          <div className="col-9 card-text tw-pt-2">{orgInfo.phone || 'Not set'}</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.phone ? formatPhoneForDisplay(orgInfo.phone) : 'Not set'}</div>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Email</div>
@@ -680,6 +753,78 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       </>
     );
   };
+
+  const renderReportContent = () => (
+    <div className="tw-space-y-4">
+      <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-[1fr_auto_1fr] tw-gap-3 md:tw-items-end">
+        <div>
+          <label htmlFor="reportDateFrom" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+            Start date
+          </label>
+          <input
+            id="reportDateFrom"
+            type="date"
+            className="form-control form-purple"
+            value={reportDateFrom}
+            onChange={(e) => setReportDateFrom(e.target.value)}
+          />
+        </div>
+        <span className="tw-hidden md:tw-block tw-text-gray-500 tw-pb-2">to</span>
+        <div>
+          <label htmlFor="reportDateTo" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+            End date
+          </label>
+          <input
+            id="reportDateTo"
+            type="date"
+            className="form-control form-purple"
+            value={reportDateTo}
+            onChange={(e) => setReportDateTo(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-gap-3">
+        <label htmlFor="reportShowClientNames" className="tw-inline-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-700 tw-mb-0">
+          <input
+            id="reportShowClientNames"
+            type="checkbox"
+            className="tw-h-4 tw-w-4"
+            checked={reportShowClientNames}
+            onChange={(e) => setReportShowClientNames(e.target.checked)}
+          />
+          Show client names and detail
+        </label>
+        <div className="tw-flex tw-gap-2">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport}
+          >
+            {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-dark tw-inline-flex tw-items-center tw-gap-2"
+            onClick={handleCopyReport}
+            disabled={!reportText.trim()}
+          >
+            <ContentCopyOutlinedIcon fontSize="small" />
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <textarea
+        className="form-control form-purple tw-font-mono tw-text-sm tw-leading-6"
+        rows={reportText ? 14 : 7}
+        value={reportText}
+        onChange={(e) => setReportText(e.target.value)}
+        placeholder="Generate a report to preview copy-ready text here."
+      />
+    </div>
+  );
 
   const renderWorkerListContent = () => {
     if (isLoadingWorkers) {
@@ -819,6 +964,22 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             </div>
           </div>
 
+          {canEditOrganization && (
+            <div className="card mt-3 mb-3 pl-5 pr-5">
+              <div className="card-body">
+                <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-2 tw-mb-4">
+                  <div>
+                    <h5 className="card-title tw-mb-1">Generate Report</h5>
+                    <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
+                      Create a copy-ready activity summary for a date or date range.
+                    </p>
+                  </div>
+                </div>
+                {renderReportContent()}
+              </div>
+            </div>
+          )}
+
           <div className="card mt-3 mb-3 pl-5 pr-5">
             <div className="card-body">
               <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
@@ -893,7 +1054,8 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                     <thead className="tw-bg-gray-50">
                       <tr>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Date</th>
-                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Destination</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Application Type</th>
+                        <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Client Name</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Mail Cost</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Check Amt</th>
                         <th className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase">Status</th>
@@ -906,7 +1068,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                             {item.lobCreatedAt ? new Date(item.lobCreatedAt).toLocaleDateString() : '—'}
                           </td>
                           <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
-                            {item.mailingAddressName || '—'}
+                            {item.applicationType || '—'}
+                          </td>
+                          <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
+                            {item.clientFullName || '—'}
                           </td>
                           <td className="tw-px-4 tw-py-3 tw-text-sm tw-text-gray-700">
                             ${(item.costCents / 100).toFixed(2)}
@@ -965,7 +1130,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               keyField="id"
               emptyMessage="No organization documents uploaded yet."
               searchPlaceholder="Search documents..."
-              searchFields={['filename', 'uploader', 'uploadDate']}
+              searchFields={['filename', 'uploaderName', 'uploader', 'uploadDate']}
               pageSize={10}
               defaultSortField="uploadDate"
               defaultSortDirection="desc"

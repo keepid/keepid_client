@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 type Props = {
   organizationName: string;
@@ -104,7 +105,7 @@ export default function OrganizationInfoSection({ organizationName }: Props) {
         {orgInfo.phone && (
           <div className="row tw-mb-2 tw-mt-1">
             <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
-            <div className="col-9 card-text tw-pt-2">{orgInfo.phone}</div>
+            <div className="col-9 card-text tw-pt-2">{formatPhoneForDisplay(orgInfo.phone)}</div>
           </div>
         )}
 

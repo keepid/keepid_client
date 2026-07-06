@@ -8,12 +8,18 @@ import {
   isValidPhoneNumber,
 } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import { formatPhoneForDisplay } from '../../utils/phone';
 import { birthDateStringFromIsoDateOnly } from '../SignUp/SignUp.util';
-import type { NameObj, ProfileData } from './ProfilePage';
+import type { AddressObj, NameObj, ProfileData } from './ProfilePage';
 
 type PhoneBookEntry = {
   label: string;
   phoneNumber: string;
+};
+
+type EditablePhoneBookEntry = PhoneBookEntry & {
+  originalPhoneNumber: string;
+  rowKey: string;
 };
 
 const PRIMARY_LABEL = 'primary';
@@ -35,6 +41,10 @@ function birthDateApiToIso(api: string | undefined): string {
   return `${m[3]}-${m[1]}-${m[2]}`;
 }
 
+function birthDateApiToDisplay(api: string | undefined): string {
+  return api?.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3') ?? '';
+}
+
 function initialNameFromProfile(profile: ProfileData): NameObj {
   return {
     first: profile.currentName?.first ?? profile.firstName ?? '',
@@ -51,12 +61,83 @@ function accountNameEqual(a: NameObj, b: NameObj): boolean {
     && (a.suffix || '') === (b.suffix || '');
 }
 
-function formatPhone(phone: string): string {
-  const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return phone;
+function initialAddressFromProfile(profile: ProfileData): AddressObj {
+  return {
+    line1: profile.mailAddress?.line1 ?? '',
+    line2: profile.mailAddress?.line2 ?? '',
+    city: profile.mailAddress?.city ?? '',
+    state: profile.mailAddress?.state ?? '',
+    zip: profile.mailAddress?.zip ?? '',
+    county: profile.mailAddress?.county ?? '',
+  };
+}
+
+function cleanAddress(address: AddressObj): AddressObj {
+  return {
+    line1: (address.line1 || '').trim(),
+    line2: (address.line2 || '').trim(),
+    city: (address.city || '').trim(),
+    state: (address.state || '').trim(),
+    zip: (address.zip || '').trim(),
+    county: (address.county || '').trim(),
+  };
+}
+
+function addressEqual(a: AddressObj, b: AddressObj): boolean {
+  const ca = cleanAddress(a);
+  const cb = cleanAddress(b);
+  return (ca.line1 || '') === (cb.line1 || '')
+    && (ca.line2 || '') === (cb.line2 || '')
+    && (ca.city || '') === (cb.city || '')
+    && (ca.state || '') === (cb.state || '')
+    && (ca.zip || '') === (cb.zip || '')
+    && (ca.county || '') === (cb.county || '');
+}
+
+function addressIsEmpty(address: AddressObj): boolean {
+  const cleaned = cleanAddress(address);
+  return !cleaned.line1 && !cleaned.line2 && !cleaned.city && !cleaned.state && !cleaned.zip && !cleaned.county;
+}
+
+function formatAddress(address: AddressObj | undefined): string {
+  if (!address) return '';
+  const street = [address.line1, address.line2].filter(Boolean).join(', ');
+  const cityStateZip = [address.city, address.state, address.zip].filter(Boolean).join(', ');
+  const county = address.county ? `${address.county} County` : '';
+  return [street, cityStateZip, county].filter(Boolean).join('\n');
+}
+
+function editablePhoneBookFrom(entries: PhoneBookEntry[]): EditablePhoneBookEntry[] {
+  return entries.map((entry, index) => ({
+    ...entry,
+    originalPhoneNumber: entry.phoneNumber,
+    rowKey: `${index}-${entry.label}-${entry.phoneNumber}`,
+  }));
+}
+
+function CopyButton({
+  label,
+  value,
+  hidden,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  hidden: boolean;
+  onCopy: (label: string, value: string) => void;
+}) {
+  if (!value.trim() || hidden) return null;
+  return (
+    <button
+      type="button"
+      className="tw-ml-2 tw-border-0 tw-bg-transparent tw-p-0 tw-text-gray-400 tw-opacity-0 tw-transition-opacity hover:tw-text-gray-600 group-hover:tw-opacity-100 focus:tw-opacity-100"
+      title={`Copy ${label}`}
+      aria-label={`Copy ${label}`}
+      onClick={() => onCopy(label, value)}
+    >
+      <i className="far fa-copy" aria-hidden="true" />
+    </button>
+  );
 }
 
 export default function EssentialAccountSection({
@@ -76,14 +157,17 @@ export default function EssentialAccountSection({
   } | null>(null);
   const [editName, setEditName] = useState<NameObj>(initialNameFromProfile(profile));
   const [editBirthIso, setEditBirthIso] = useState('');
+  const [editMailAddress, setEditMailAddress] = useState<AddressObj>(initialAddressFromProfile(profile));
 
   const initialEmail = profile.email || '';
   const [email, setEmail] = useState(initialEmail);
   const hasEmail = email.trim() !== '';
+  const initialExperiencingHomelessness = Boolean(profile.experiencingHomelessness);
+  const [experiencingHomelessness, setExperiencingHomelessness] = useState(initialExperiencingHomelessness);
 
   const [phoneBook, setPhoneBook] = useState<PhoneBookEntry[]>([]);
   const [phoneBookLoading, setPhoneBookLoading] = useState(true);
-  const [editedPhoneBook, setEditedPhoneBook] = useState<PhoneBookEntry[]>([]);
+  const [editedPhoneBook, setEditedPhoneBook] = useState<EditablePhoneBookEntry[]>([]);
   const [addLabel, setAddLabel] = useState('');
   const [addPhone, setAddPhone] = useState('');
   const [showAddRow, setShowAddRow] = useState(false);
@@ -109,7 +193,7 @@ export default function EssentialAccountSection({
       const json = await res.json();
       if (json.status === 'SUCCESS' && Array.isArray(json.phoneBook)) {
         setPhoneBook(json.phoneBook);
-        setEditedPhoneBook(json.phoneBook.map((e: PhoneBookEntry) => ({ ...e })));
+        setEditedPhoneBook(editablePhoneBookFrom(json.phoneBook));
       }
     } catch {
       // silent
@@ -121,12 +205,15 @@ export default function EssentialAccountSection({
   useEffect(() => { fetchPhoneBook(); }, [fetchPhoneBook]);
 
   const emailDirty = email !== initialEmail;
+  const homelessnessDirty = experiencingHomelessness !== initialExperiencingHomelessness;
 
   const phoneBookDirty = useMemo(() => {
     if (editedPhoneBook.length !== phoneBook.length) return true;
-    return editedPhoneBook.some((e, i) => {
-      const orig = phoneBook[i];
-      return e.label !== orig.label || e.phoneNumber !== orig.phoneNumber;
+    return editedPhoneBook.some((entry) => {
+      const orig = phoneBook.find((phoneBookEntry) => (
+        phoneBookEntry.phoneNumber === entry.originalPhoneNumber
+      ));
+      return !orig || entry.label !== orig.label || entry.phoneNumber !== orig.phoneNumber;
     });
   }, [editedPhoneBook, phoneBook]);
 
@@ -141,8 +228,12 @@ export default function EssentialAccountSection({
   }, [canEditBirthDate, identitySnapshot, editBirthIso]);
 
   const identityDirty = nameDirty || birthDirty;
+  const mailingAddressDirty = useMemo(
+    () => !addressEqual(editMailAddress, initialAddressFromProfile(profile)),
+    [editMailAddress, profile],
+  );
 
-  const isDirty = emailDirty || phoneBookDirty || showAddRow || identityDirty;
+  const isDirty = emailDirty || homelessnessDirty || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
 
   const name = useMemo(() => {
     const parts = [
@@ -187,8 +278,12 @@ export default function EssentialAccountSection({
     }
 
     const edits = editedPhoneBook
-      .map((edited, i) => ({ edited, orig: phoneBook[i] }))
-      .filter(({ edited, orig }) => {
+      .map((edited) => ({
+        edited,
+        orig: phoneBook.find((entry) => entry.phoneNumber === edited.originalPhoneNumber),
+      }))
+      .filter((change): change is { edited: EditablePhoneBookEntry; orig: PhoneBookEntry } => {
+        const { edited, orig } = change;
         if (!orig) return false;
         return edited.label !== orig.label || edited.phoneNumber !== orig.phoneNumber;
       });
@@ -215,9 +310,9 @@ export default function EssentialAccountSection({
       }
     }
 
-    const editedPhones = new Set(editedPhoneBook.map((e) => e.phoneNumber));
+    const editedOriginalPhones = new Set(editedPhoneBook.map((e) => e.originalPhoneNumber));
     const deletions = phoneBook.filter(
-      (orig) => !editedPhones.has(orig.phoneNumber) && orig.label.toLowerCase() !== PRIMARY_LABEL,
+      (orig) => !editedOriginalPhones.has(orig.phoneNumber) && orig.label.toLowerCase() !== PRIMARY_LABEL,
     );
 
     // eslint-disable-next-line no-restricted-syntax
@@ -283,6 +378,47 @@ export default function EssentialAccountSection({
     return true;
   }
 
+  async function saveMailingAddress(): Promise<boolean> {
+    if (!mailingAddressDirty) return true;
+    const cleaned = cleanAddress(editMailAddress);
+    const payload: Record<string, unknown> = {
+      mailAddress: addressIsEmpty(cleaned) ? {} : cleaned,
+    };
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save mailing address: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
+  async function saveHomelessness(): Promise<boolean> {
+    if (!homelessnessDirty) return true;
+    const payload: Record<string, unknown> = { experiencingHomelessness };
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save homelessness status: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
   async function saveEmail(): Promise<boolean> {
     if (!emailDirty) return true;
     const payload: Record<string, any> = { email };
@@ -307,6 +443,8 @@ export default function EssentialAccountSection({
     try {
       if (!(await saveIdentity())) return;
       if (!(await saveEmail())) return;
+      if (!(await saveMailingAddress())) return;
+      if (!(await saveHomelessness())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
       if (phoneBookDirty || hasNewEntry) {
@@ -320,6 +458,13 @@ export default function EssentialAccountSection({
       setAddLabel('');
       setAddPhone('');
       await fetchPhoneBook();
+      // Notify the App-level state holder that a profile changed.
+      // App listens, re-runs /authenticate, and updates App.state.name
+      // (the source for the sidebar Profile Title) if the actor's own
+      // name drifted. The handler is a no-op when nothing actually
+      // changed, so it's safe to fire on every save — including
+      // cross-user edits where the actor's own profile is unchanged.
+      window.dispatchEvent(new Event('keepid:profile-updated'));
       onSaved?.();
     } catch (e: any) {
       alert.show(`Failed to save: ${e?.message || String(e)}`, { type: 'error' });
@@ -357,7 +502,9 @@ export default function EssentialAccountSection({
 
   function beginEdit() {
     setEmail(initialEmail);
-    setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setExperiencingHomelessness(initialExperiencingHomelessness);
+    setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
+    setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
@@ -382,7 +529,9 @@ export default function EssentialAccountSection({
   function cancelEdit() {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return;
     setEmail(initialEmail);
-    setEditedPhoneBook(phoneBook.map((e) => ({ ...e })));
+    setExperiencingHomelessness(initialExperiencingHomelessness);
+    setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
+    setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
     setAddLabel('');
     setAddPhone('');
@@ -401,6 +550,23 @@ export default function EssentialAccountSection({
   function removeEditedEntry(index: number) {
     setEditedPhoneBook((prev) => prev.filter((_, i) => i !== index));
   }
+
+  function updateMailAddress(field: keyof AddressObj, value: string) {
+    setEditMailAddress((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function copyToClipboard(label: string, value: string) {
+    if (!value.trim()) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      alert.show(`${label} copied`);
+    } catch {
+      alert.show(`Could not copy ${label.toLowerCase()}.`, { type: 'error' });
+    }
+  }
+
+  const mailingAddressDisplay = formatAddress(profile.mailAddress);
+  const homelessStatus = profile.experiencingHomelessness ? 'Yes' : 'No';
 
   return (
     <div className="card mt-3 mb-3 pl-5 pr-5">
@@ -470,7 +636,10 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{name}</div>
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
+                <span>{name}</span>
+                <CopyButton label="Name" value={name} hidden={isEditing} onCopy={copyToClipboard} />
+              </div>
             )}
           </div>
         </div>
@@ -493,7 +662,15 @@ export default function EssentialAccountSection({
                 </div>
               </div>
             ) : (
-              <div className="tw-pt-2">{profile.birthDate || ''}</div>
+              <div className="tw-group tw-flex tw-items-center tw-pt-2">
+                <span>{birthDateApiToDisplay(profile.birthDate)}</span>
+                <CopyButton
+                  label="Birth date"
+                  value={birthDateApiToDisplay(profile.birthDate)}
+                  hidden={isEditing}
+                  onCopy={copyToClipboard}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -523,8 +700,9 @@ export default function EssentialAccountSection({
                 )}
               </div>
             ) : (
-              <div className="tw-flex tw-items-baseline">
+              <div className="tw-group tw-flex tw-items-baseline">
                 <div className="tw-pt-2">{email}</div>
+                <CopyButton label="Email" value={email} hidden={isEditing} onCopy={copyToClipboard} />
                 {targetUsername && hasEmail && (
                   <button
                     type="button"
@@ -536,6 +714,94 @@ export default function EssentialAccountSection({
                   </button>
                 )}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mailing Address */}
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Mailing Address</div>
+          <div className="col-9 card-text">
+            {isEditing ? (
+              <div className="tw-space-y-2 tw-pt-1">
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="Street address"
+                  value={editMailAddress.line1 || ''}
+                  onChange={(e) => updateMailAddress('line1', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="Apartment, suite, unit"
+                  value={editMailAddress.line2 || ''}
+                  onChange={(e) => updateMailAddress('line2', e.target.value)}
+                />
+                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-2">
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="City"
+                    value={editMailAddress.city || ''}
+                    onChange={(e) => updateMailAddress('city', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="State"
+                    value={editMailAddress.state || ''}
+                    onChange={(e) => updateMailAddress('state', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-control form-purple"
+                    placeholder="ZIP"
+                    value={editMailAddress.zip || ''}
+                    onChange={(e) => updateMailAddress('zip', e.target.value)}
+                  />
+                </div>
+                <input
+                  type="text"
+                  className="form-control form-purple"
+                  placeholder="County"
+                  value={editMailAddress.county || ''}
+                  onChange={(e) => updateMailAddress('county', e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="tw-group tw-flex tw-items-start tw-pt-2">
+                <span className="tw-whitespace-pre-line">
+                  {mailingAddressDisplay || 'No mailing address saved'}
+                </span>
+                <CopyButton
+                  label="Mailing address"
+                  value={mailingAddressDisplay}
+                  hidden={isEditing}
+                  onCopy={copyToClipboard}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Homelessness */}
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Experiencing Homelessness</div>
+          <div className="col-9 card-text">
+            {isEditing ? (
+              <label className="tw-inline-flex tw-items-center tw-gap-2 tw-pt-2 tw-text-sm tw-text-gray-700" htmlFor="experiencingHomelessness">
+                <input
+                  id="experiencingHomelessness"
+                  type="checkbox"
+                  className="tw-h-4 tw-w-4 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={experiencingHomelessness}
+                  onChange={(e) => setExperiencingHomelessness(e.target.checked)}
+                />
+                Experiencing homelessness
+              </label>
+            ) : (
+              <div className="tw-pt-2">{homelessStatus}</div>
             )}
           </div>
         </div>
@@ -552,7 +818,7 @@ export default function EssentialAccountSection({
                 {editedPhoneBook.map((entry, i) => {
                   const isPrimary = entry.label.toLowerCase() === PRIMARY_LABEL;
                   return (
-                    <div key={`${entry.phoneNumber}-${entry.label}`} className="tw-flex tw-items-center tw-gap-2">
+                    <div key={entry.rowKey} className="tw-flex tw-items-center tw-gap-2">
                       {isPrimary ? (
                         <span className="form-control form-purple tw-bg-gray-100 tw-text-gray-500" style={{ maxWidth: 160 }}>
                           {entry.label}
@@ -625,9 +891,15 @@ export default function EssentialAccountSection({
                   <div className="tw-pt-2 tw-text-gray-400">No phone numbers saved</div>
                 ) : (
                   phoneBook.map((entry) => (
-                    <div key={entry.phoneNumber} className="tw-pt-2 tw-flex tw-items-center tw-gap-2">
-                      <span>{formatPhone(entry.phoneNumber)}</span>
+                    <div key={entry.phoneNumber} className="tw-group tw-pt-2 tw-flex tw-items-center tw-gap-2">
+                      <span>{formatPhoneForDisplay(entry.phoneNumber)}</span>
                       <span className="tw-text-sm tw-text-gray-500">{entry.label}</span>
+                      <CopyButton
+                        label={`${entry.label} phone`}
+                        value={formatPhoneForDisplay(entry.phoneNumber)}
+                        hidden={isEditing}
+                        onCopy={copyToClipboard}
+                      />
                     </div>
                   ))
                 )}

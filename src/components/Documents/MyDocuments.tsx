@@ -10,6 +10,7 @@ import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { canUseApplications, canUseClientNotifications } from '../../utils/featureAccess';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import DocumentsInlineUpload from './DocumentsInlineUpload';
@@ -36,6 +37,7 @@ interface State {
   currentDocumentName: string | undefined;
   currentUploadDate: string | undefined;
   currentUploader: string | undefined;
+  currentUploaderName: string | undefined;
   currentUserRole: Role | undefined;
   currentDocumentFileType: FileType | undefined;
   currentDocumentTargetUser: string | undefined;
@@ -95,6 +97,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentName: undefined,
       currentUploadDate: undefined,
       currentUploader: undefined,
+      currentUploaderName: undefined,
       currentUserRole: undefined,
       currentDocumentFileType: undefined,
       currentDocumentTargetUser: undefined,
@@ -121,6 +124,7 @@ class MyDocuments extends Component<Props, State> {
     this.setState({
       currentDocumentId: undefined,
       currentDocumentName: undefined,
+      currentUploaderName: undefined,
       currentDocumentIdCategory: undefined,
       currentDocumentIdCategoryDisplay: undefined,
       currentDocumentCustomIdCategory: undefined,
@@ -277,6 +281,7 @@ class MyDocuments extends Component<Props, State> {
       currentDocumentName: filename,
       currentUploadDate: uploadDate,
       currentUploader: uploader,
+      currentUploaderName: MyDocuments.getUploaderDisplayName(row),
       currentDocumentFileType: fileType,
       currentDocumentTargetUser: targetUser,
       currentDocumentIdCategory: idCategory,
@@ -377,8 +382,13 @@ class MyDocuments extends Component<Props, State> {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      timeZone: 'UTC',
     });
+  }
+
+  static getUploaderDisplayName(row: any) {
+    const displayName = typeof row?.uploaderName === 'string' ? row.uploaderName.trim() : '';
+    if (displayName) return displayName;
+    return row?.uploader || '';
   }
 
   getDocumentData() {
@@ -489,7 +499,11 @@ class MyDocuments extends Component<Props, State> {
       });
     }
 
-    if (this.props.userRole === Role.Client && this.isStaffViewer()) {
+    if (
+      this.props.userRole === Role.Client
+      && this.isStaffViewer()
+      && canUseClientNotifications(this.props.viewerRole, this.props.organizationName)
+    ) {
       actions.push({
         label: 'Notify',
         icon: <MessageOutlinedIcon fontSize="small" />,
@@ -525,6 +539,7 @@ class MyDocuments extends Component<Props, State> {
       documentData,
       currentUploadDate,
       currentUploader,
+      currentUploaderName,
       currentDocumentTargetUser,
       currentDocumentFileType,
       currentDocumentIdCategory,
@@ -580,6 +595,7 @@ class MyDocuments extends Component<Props, State> {
         headerName: 'Uploaded By',
         align: 'center',
         width: '20%',
+        renderCell: (row: any) => MyDocuments.getUploaderDisplayName(row),
       },
       {
         field: 'actions',
@@ -618,7 +634,11 @@ class MyDocuments extends Component<Props, State> {
       },
     ];
     const mostRecentColumns: DataTableColumn[] = allDocumentsColumns.filter(
-      (column) => column.field !== 'uploadDate' && column.field !== 'uploader',
+      (column) => column.field !== 'uploader',
+    );
+    const canAccessApplications = canUseApplications(
+      this.props.viewerRole || this.props.userRole,
+      this.props.organizationName,
     );
 
     return (
@@ -628,10 +648,12 @@ class MyDocuments extends Component<Props, State> {
             <ViewDocument
               userRole={currentUserRole}
               viewerRole={this.props.viewerRole}
+              organizationName={this.props.organizationName}
               documentId={currentDocumentId}
               documentName={currentDocumentName}
               documentDate={currentUploadDate}
               documentUploader={currentUploader}
+              documentUploaderName={currentUploaderName}
               targetUser={currentDocumentTargetUser}
               fileType={currentDocumentFileType}
               idCategory={currentDocumentIdCategory}
@@ -654,7 +676,7 @@ class MyDocuments extends Component<Props, State> {
               resetDocumentId={this.resetDocumentId}
             />
           ) : (
-            <div className="container">
+            <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
             <Helmet>
               <title>{this.props.clientName ? `${this.props.clientName}'s Documents` : 'My Documents'}</title>
               <meta name="description" content="Keep.id" />
@@ -671,10 +693,25 @@ class MyDocuments extends Component<Props, State> {
                 {this.isStaffViewer() && (
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary mr-2"
                     onClick={() => this.props.history.push(`/profile/${username}`)}
                   >
                     Profile
+                  </button>
+                )}
+                {this.isStaffViewer() && canAccessApplications && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => this.props.history.push({
+                      pathname: '/applications',
+                      state: {
+                        clientUsername: username,
+                        clientName: this.props.clientName,
+                      },
+                    })}
+                  >
+                    Applications
                   </button>
                 )}
               </div>
@@ -690,6 +727,7 @@ class MyDocuments extends Component<Props, State> {
                     </h1>
                   )}
                   viewerUsername={this.isStaffViewer() ? this.props.viewerUsername : undefined}
+                  viewerRole={this.isStaffViewer() ? this.props.viewerRole : undefined}
                   viewerName={this.isStaffViewer() ? this.props.viewerName : undefined}
                   organizationName={this.isStaffViewer() ? this.props.organizationName : undefined}
                   clientName={this.props.clientName}

@@ -4,9 +4,10 @@ import './sign-and-download-viewer.css';
 
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { PDFDocument } from 'pdf-lib';
+// eslint-disable-next-line import/no-unresolved -- Vite ?url asset import
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useAlert } from 'react-alert';
-import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
@@ -21,10 +22,18 @@ import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import { buildOrgAttachmentAutofillAnswers } from './attachmentAutofill';
 import type { SignaturePlacement } from './types';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+// Vite-friendly pdf.js worker resolution. See the `?url` import above.
+//
+// `new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)` works in
+// `npm run dev` (Vite serves the worker from node_modules via the module
+// graph) but is brittle in `npm run build` — Vite's prod rollup does not
+// reliably emit the bare-specifier worker as an asset, so `workerSrc`
+// silently 404s in production. pdf.js then falls back to a "fake worker"
+// mode that can't render and produces no console error, surfacing only
+// as a blank PDF viewer. The `?url` import suffix tells Vite explicitly:
+// copy this file into the build output and give me its hashed asset URL.
+// Resolves identically in dev and prod.
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export interface SignAndDownloadViewerProps {
   fileUrl: string;
@@ -34,7 +43,6 @@ export interface SignAndDownloadViewerProps {
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
   onSaveSuccess?: () => void;
-  postRequirements?: string;
   showSaveButton?: boolean;
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
@@ -65,7 +73,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   formAnswers,
   clientUsername = '',
   onSaveSuccess,
-  postRequirements,
   showSaveButton = true,
   showPdfEditControls = false,
   pdfFormsReadOnly = false,
@@ -118,6 +125,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [isPdfEditMode, setIsPdfEditMode] = useState(startInEditMode);
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
+  const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
   const attachmentPdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
   const hydrationComposeInFlightRef = useRef(false);
@@ -137,15 +145,22 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setInlineSigRestoreUrl(restoreCurrentSignature ? currentSigRef.current : null);
   }, []);
 
+  const handleFrameRef = useCallback((node: HTMLDivElement | null) => {
+    frameRef.current = node;
+    setFrameElement(node);
+  }, []);
+
   useEffect(() => {
-    const el = frameRef.current;
+    const el = frameElement;
     if (!el) return undefined;
-    const updateWidth = () => setFrameWidth(el.clientWidth);
+    const updateWidth = () => {
+      if (el.clientWidth > 0) setFrameWidth(el.clientWidth);
+    };
     updateWidth();
     const ro = new ResizeObserver(updateWidth);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [frameElement]);
 
   useEffect(() => {
     const updateModalPadHeight = () => {
@@ -177,8 +192,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const pageDevicePixelRatio = typeof window === 'undefined'
     ? 2
     : Math.max(window.devicePixelRatio || 1, 2);
-  /** pdf.js HTML widgets whenever the document is editable; flushes via saveDocument on save/download/sign. */
-  const usePdfJsFormWidgets = !pdfFormsReadOnly;
+  const pdfWidgetsEditable = !pdfFormsReadOnly || (showPdfEditControls && isPdfEditMode);
+  const effectivePdfFormsReadOnly = !pdfWidgetsEditable;
+  /*
+   * Keep pdf.js in charge of AcroForm widget layout in both edit and
+   * read-only preview. The PDF's saved appearance streams can be stale or
+   * vertically clipped; pdf.js reads the current form values directly.
+   */
+  const renderPdfFormWidgets = true;
 
   const signedCount = embeddedBoxes.size;
   const allSigned = signaturePlacements.length === 0 || signedCount === signaturePlacements.length;
@@ -333,7 +354,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setApplying(true);
     try {
       let pdfBytes: ArrayBuffer | Uint8Array;
-      if (usePdfJsFormWidgets && pdfDocRef.current?.saveDocument) {
+      if (pdfWidgetsEditable && pdfDocRef.current?.saveDocument) {
         pdfBytes = await pdfDocRef.current.saveDocument();
       } else {
         pdfBytes = await fetch(livePdfUrl).then((r) => r.arrayBuffer());
@@ -384,7 +405,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setApplying(false);
     }
-  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, usePdfJsFormWidgets]);
+  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, pdfWidgetsEditable]);
 
   const toggleStagedDoc = useCallback((docId: string) => {
     setStagedDocs((prev) => {
@@ -439,36 +460,34 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 setPacketPersistenceAvailable(false);
               }
               attachmentFailures.push(id);
-              continue;
-            }
+            } else {
+              const attachedFileId = typeof attachData?.attachedFileId === 'string'
+                ? attachData.attachedFileId
+                : undefined;
+              if (!attachedFileId) {
+                attachmentFailures.push(id);
+              } else {
+                nextCloneMap.set(id, attachedFileId);
 
-            const attachedFileId = typeof attachData?.attachedFileId === 'string'
-              ? attachData.attachedFileId
-              : undefined;
-            if (!attachedFileId) {
-              attachmentFailures.push(id);
-              continue;
-            }
-            nextCloneMap.set(id, attachedFileId);
-
-            const hasAutofillAnswers = !!attachmentAutofillAnswers
-              && Object.keys(attachmentAutofillAnswers).length > 0;
-            if (!canResolveAutofill || !hasAutofillAnswers) {
-              attachedWithoutAutofill.push(id);
-              continue;
-            }
-
-            try {
-              /* eslint-disable-next-line no-await-in-loop */
-              const filledAttachmentBlob = await fillAttachmentPdfBlob(
-                attachedFileId,
-                attachmentAutofillAnswers,
-                clientUsername,
-              );
-              /* eslint-disable-next-line no-await-in-loop */
-              await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
-            } catch {
-              attachedWithoutAutofill.push(id);
+                const hasAutofillAnswers = !!attachmentAutofillAnswers
+                  && Object.keys(attachmentAutofillAnswers).length > 0;
+                if (!canResolveAutofill || !hasAutofillAnswers) {
+                  attachedWithoutAutofill.push(id);
+                } else {
+                  try {
+                    /* eslint-disable-next-line no-await-in-loop */
+                    const filledAttachmentBlob = await fillAttachmentPdfBlob(
+                      attachedFileId,
+                      attachmentAutofillAnswers,
+                      clientUsername,
+                    );
+                    /* eslint-disable-next-line no-await-in-loop */
+                    await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
+                  } catch {
+                    attachedWithoutAutofill.push(id);
+                  }
+                }
+              }
             }
           }
 
@@ -662,10 +681,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }, [combinedViewerDocs, pageNum]);
   const isViewingMainPdf = currentViewerPageMeta.doc.kind === 'main';
   const canEditCurrentAttachment =
-    currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !pdfFormsReadOnly;
+    currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !effectivePdfFormsReadOnly;
 
   const getMainPdfBytes = useCallback(async (): Promise<Uint8Array> => {
-    const shouldUseSaveDocument = usePdfJsFormWidgets && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
+    const shouldUseSaveDocument = pdfWidgetsEditable && !!pdfDocRef.current?.saveDocument && pageNum <= numPages;
     if (shouldUseSaveDocument && pdfDocRef.current?.saveDocument) {
       try {
         return await pdfDocRef.current.saveDocument();
@@ -676,7 +695,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     const res = await fetch(livePdfUrl);
     const buffer = await res.arrayBuffer();
     return new Uint8Array(buffer);
-  }, [livePdfUrl, numPages, pageNum, usePdfJsFormWidgets]);
+  }, [livePdfUrl, numPages, pageNum, pdfWidgetsEditable]);
 
   const getCurrentPdfBlob = useCallback(async (): Promise<Blob> => {
     const bytes = await getMainPdfBytes();
@@ -684,14 +703,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   }, [getMainPdfBytes]);
 
   const getCurrentAttachmentPdfBlob = useCallback(async (): Promise<Blob> => {
-    if (attachmentPdfDocRef.current?.saveDocument && usePdfJsFormWidgets) {
+    if (attachmentPdfDocRef.current?.saveDocument && canEditCurrentAttachment) {
       const bytes = await attachmentPdfDocRef.current.saveDocument();
       return toPdfBlob(bytes);
     }
     const response = await fetch(currentViewerPageMeta.doc.url);
     const bytes = await response.arrayBuffer();
     return new Blob([bytes], { type: 'application/pdf' });
-  }, [currentViewerPageMeta.doc.url, usePdfJsFormWidgets]);
+  }, [canEditCurrentAttachment, currentViewerPageMeta.doc.url]);
 
   /**
    * Builds the bytes that downstream viewers see on Print/Download by delegating the merge +
@@ -846,7 +865,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSaving(true);
     try {
       if (currentViewerPageMeta.doc.kind === 'attachment') {
-        if (!canEditAttachments || pdfFormsReadOnly) {
+        if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
         const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
@@ -885,7 +904,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     getCurrentAttachmentPdfBlob,
     getCurrentPdfBlob,
     onSaveSuccess,
-    pdfFormsReadOnly,
+    effectivePdfFormsReadOnly,
   ]);
 
   const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {
@@ -894,7 +913,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSavingPdfEdits(true);
     try {
       if (currentViewerPageMeta.doc.kind === 'attachment') {
-        if (!canEditAttachments || pdfFormsReadOnly) {
+        if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
         const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
@@ -945,7 +964,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     getCurrentAttachmentPdfBlob,
     getCurrentPdfBlob,
     livePdfUrl,
-    pdfFormsReadOnly,
+    effectivePdfFormsReadOnly,
   ]);
 
   const handleCancelPdfEdits = useCallback(() => {
@@ -1023,7 +1042,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   return (
     <div className={`tw-flex tw-flex-col tw-gap-8 tw-items-start tw-w-full tw-mx-auto ${FRAME_MAX_WIDTH_CLASS}`}>
       <div
-        className={`keepid-pdf-preview ${pdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${usePdfJsFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
+        className={`keepid-pdf-preview ${effectivePdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${renderPdfFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
       >
       {allSigned && signaturePlacements.length > 0 && (
         <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
@@ -1093,7 +1112,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       >
         <div className="tw-flex tw-flex-col tw-items-center tw-gap-1">
           <div
-            ref={frameRef}
+            ref={handleFrameRef}
             className={`tw-w-full ${FRAME_MAX_WIDTH_CLASS} tw-rounded-xl tw-border tw-border-gray-200 tw-bg-gray-200 tw-shadow-sm tw-overflow-hidden`}
           >
             <div className="tw-flex tw-items-center tw-justify-between tw-px-3 tw-pt-2 tw-pb-1 tw-text-sm tw-bg-gray-200">
@@ -1120,7 +1139,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 Attached pages appended: {totalAttachedPages}
               </div>
             )}
-            {!pdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (
+            {!effectivePdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (
               <div className="tw-px-3 tw-pb-2 tw-text-xs tw-text-amber-700 tw-font-medium">
                 Attachment pages are view-only. Edit fields on the main application pages.
               </div>
@@ -1135,10 +1154,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                   devicePixelRatio={pageDevicePixelRatio}
                   renderAnnotationLayer
                   renderTextLayer
-                  renderForms={usePdfJsFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
+                  renderForms={renderPdfFormWidgets && (isViewingMainPdf || canEditCurrentAttachment)}
                 />
               </div>
-              {pdfFormsReadOnly && (
+              {effectivePdfFormsReadOnly && (
                 <div
                   className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
                   title="PDF is read-only."
@@ -1294,16 +1313,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         </div>
       )}
 
-      {postRequirements && (
-        <div className="tw-bg-white tw-rounded-xl tw-border tw-border-gray-200 tw-p-6 tw-shadow-sm tw-mt-2">
-          <h3 className="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4 tw-pb-4 tw-border-b tw-border-gray-100">Post Application Instructions</h3>
-          <div className="tw-prose tw-prose-sm tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
-            <ReactMarkdown>{postRequirements}</ReactMarkdown>
-          </div>
-        </div>
-      )}
-
-      {orgDocs.length > 0 && !pdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
+      {orgDocs.length > 0 && !effectivePdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
           <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Attached Organization Documents</h4>
           {!allSigned ? (

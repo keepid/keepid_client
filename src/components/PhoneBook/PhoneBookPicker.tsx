@@ -3,6 +3,7 @@ import { useAlert } from 'react-alert';
 
 import { isValidPhoneNumber } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 export type PhoneBookEntry = {
   label: string;
@@ -131,7 +132,7 @@ export default function PhoneBookPicker({
           <option key={entry.phoneNumber} value={entry.phoneNumber}>
             {entry.label}
             {' — '}
-            {formatPhoneDisplay(entry.phoneNumber)}
+            {formatPhoneForDisplay(entry.phoneNumber)}
           </option>
         ))}
         <option value="__add__">+ Add a new number</option>
@@ -177,12 +178,4 @@ export default function PhoneBookPicker({
       )}
     </div>
   );
-}
-
-function formatPhoneDisplay(phone: string): string {
-  const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return phone;
 }

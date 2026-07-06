@@ -11,8 +11,8 @@ export default function useGetApplicationRegistry() {
 
   /**
    * Fetches the application registry to get the blankFormId for the selected
-   * application type/state/situation/person. Call this when entering the
-   * webForm step so the form component has an applicationId to use.
+   * generated applicationId. Call this when entering the webForm step so the
+   * form component has the registry row UUID to use.
    */
   const fetchRegistry = async (
     formData: ApplicationFormData,
@@ -54,7 +54,7 @@ export default function useGetApplicationRegistry() {
   };
 
   /**
-   * Calls /fill-pdf-2 with form answers and stores the resulting filled PDF
+   * Calls /fill-pdf with form answers and stores the resulting filled PDF
    * for the preview step.
    */
   const fillPdf = async (
@@ -68,7 +68,7 @@ export default function useGetApplicationRegistry() {
     formData.append('formAnswers', JSON.stringify(formAnswers));
 
     try {
-      const res = await fetch(`${getServerURL()}/fill-pdf-2`, {
+      const res = await fetch(`${getServerURL()}/fill-pdf`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

@@ -62,6 +62,7 @@ export default function AccountSetup(): JSX.Element {
           placeholder: 'Birth Date',
           name: 'birthDate',
           type: InputType.DATE,
+          required: true,
           validate: validators.validateBirthdate,
         },
       ],

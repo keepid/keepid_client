@@ -1,0 +1,100 @@
+name: Deploy to Cloud Run
+
+# Auto-deploys to keepid-prod on every push to master. The rest of the
+# workflow is branch-agnostic.
+#
+# Identity: short-lived creds via Workload Identity Federation. The WIF
+# provider in keepid_infra/terraform/ci.tf trusts this repo
+# (keepid/keepid_client) and lets it impersonate keepid-ci-deployer.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation OIDC token
+
+env:
+  PROJECT_ID: keepid-prod
+  REGION: us-east4
+  IMAGE: us-east4-docker.pkg.dev/keepid-prod/keepid/client
+  SERVICE: keepid-client
+  # Provisioned in keepid_infra/terraform/ci.tf — `terraform output
+  # ci_workload_identity_provider` and `ci_deployer_sa`.
+  WIF_PROVIDER: projects/781052795839/locations/global/workloadIdentityPools/github-actions/providers/github
+  DEPLOYER_SA: keepid-ci-deployer@keepid-prod.iam.gserviceaccount.com
+
+jobs:
+  deploy:
+    name: Build + push image, update Cloud Run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ubuntu-latest runners are amd64 so --platform is technically
+      # redundant, but pin it explicitly: any future move to a different
+      # runner (arm, self-hosted Mac) would otherwise silently produce
+      # an image Cloud Run can launch but whose binaries crash on first
+      # request.
+      - name: Build and push image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t ${{ env.IMAGE }}:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:${{ github.ref_name }} \
+            --push \
+            .
+
+      - name: Deploy revision to Cloud Run
+        run: |
+          gcloud run services update ${{ env.SERVICE }} \
+            --image=${{ env.IMAGE }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --quiet
+
+      - name: Smoke test
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE }} \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --format='value(status.url)')
+          echo "Service URL: $URL"
+          # Hit the SPA root, not /healthz: Google's frontend
+          # intercepts the literal path "/healthz" on *.run.app
+          # before it reaches the container (likely a reserved
+          # k8s-convention path at the GFE layer), so external
+          # probes there always 404 even though the container's
+          # nginx serves it for Cloud Run's own internal probes.
+          # `/` reaches the container and returns 200 for index.html.
+          # Allow up to 90s for the new revision to become serving.
+          for i in {1..18}; do
+            if curl -fsS "$URL/" > /dev/null; then
+              echo "root OK"
+              exit 0
+            fi
+            echo "waiting for new revision... ($i/18)"
+            sleep 5
+          done
+          echo "root probe did not pass within 90s" >&2
+          gcloud run services logs read ${{ env.SERVICE }} \
+            --region=${{ env.REGION }} --project=${{ env.PROJECT_ID }} \
+            --limit=50
+          exit 1

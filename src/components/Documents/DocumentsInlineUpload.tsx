@@ -7,14 +7,12 @@ import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
+import Role from '../../static/Role';
+import { canUseClientNotifications } from '../../utils/featureAccess';
 import {
-  buildClientDocumentsUrl,
-  buildPickupEmailBody,
-  buildPickupEmailSubject,
   buildPickupMessage,
   EMPTY_ORG_ADDRESS,
   formatIdLabel,
-  isValidEmail,
   isValidUSPhone,
   OrgAddress,
   toE164US,
@@ -50,8 +48,9 @@ export interface DocumentsInlineUploadProps {
    * client in the same gesture as uploading. These are optional because the
    * component is also used by clients uploading for themselves, in which case
    * no notification UI is appropriate.
-   */
+  */
   viewerUsername?: string;
+  viewerRole?: Role;
   viewerName?: string;
   organizationName?: string;
   /** Optional client display name, used to pre-fill the templated message. */
@@ -89,6 +88,7 @@ export default function DocumentsInlineUpload({
   alert,
   onUploadComplete,
   viewerUsername,
+  viewerRole,
   viewerName,
   organizationName,
   clientName: clientNameProp,
@@ -129,11 +129,12 @@ export default function DocumentsInlineUpload({
   const [uploading, setUploading] = useState(false);
 
   // Notify flow
-  const canNotify = !!viewerUsername && viewerUsername !== targetUser;
+  const canNotify = !!viewerUsername
+    && viewerUsername !== targetUser
+    && canUseClientNotifications(viewerRole, organizationName);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const [clientDisplayName, setClientDisplayName] = useState<string>(clientNameProp || '');
   const [clientPhone, setClientPhone] = useState<string>('');
-  const [clientEmail, setClientEmail] = useState<string>('');
   const [orgAddress, setOrgAddress] = useState<OrgAddress>(EMPTY_ORG_ADDRESS);
   const [notifyHydrated, setNotifyHydrated] = useState(false);
   const [sendingNotification, setSendingNotification] = useState(false);
@@ -270,7 +271,6 @@ export default function DocumentsInlineUpload({
               .trim();
             setClientDisplayName((prev) => prev || fetchedName);
             setClientPhone((prev) => prev || (data.phone || ''));
-            setClientEmail((prev) => prev || (data.email || ''));
           }
         }
 
@@ -318,24 +318,6 @@ export default function DocumentsInlineUpload({
     }),
     [clientDisplayName, viewerName, effectiveCategoryLabel, orgAddress],
   );
-
-  // Email channel is opt-in: only built when the client has a valid email on
-  // file. Subject/body shown in the confirm modal are the same strings sent to
-  // the backend so staff see exactly what the client will receive.
-  const emailPreview = useMemo(() => {
-    if (!isValidEmail(clientEmail)) return null;
-    const documentLink = buildClientDocumentsUrl();
-    const subject = buildPickupEmailSubject(effectiveCategoryLabel);
-    const { text, html } = buildPickupEmailBody({
-      clientName: clientDisplayName,
-      idCategory: effectiveCategoryLabel,
-      organizationName,
-      orgAddress,
-      clientEmail,
-      documentLink,
-    });
-    return { subject, text, html };
-  }, [clientDisplayName, clientEmail, effectiveCategoryLabel, orgAddress, organizationName]);
 
   const notifyDisabledReason = useMemo(() => {
     if (!canNotify) return '';
@@ -392,6 +374,7 @@ export default function DocumentsInlineUpload({
           targetUser,
           idCategory: category,
           customIdCategory: isOtherCategory ? trimmedCustomIdCategory : undefined,
+          clientOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
         }),
       });
       const json = await parseJsonResponseSafe(response);
@@ -552,23 +535,11 @@ export default function DocumentsInlineUpload({
             idToPickup: formatIdLabel(effectiveCategoryLabel),
             clientPhoneNumber: toE164US(clientPhone),
             message: previewMessage,
-            ...(emailPreview
-              ? {
-                clientEmail,
-                emailSubject: emailPreview.subject,
-                emailBody: emailPreview.text,
-                emailHtml: emailPreview.html,
-              }
-              : {}),
           }),
         });
         const data = await res.json().catch(() => ({} as any));
         if (res.ok && data?.status === 'SUCCESS') {
-          alert.show(
-            emailPreview
-              ? 'Document uploaded. SMS + email sent to client.'
-              : 'Document uploaded. Notification sent to client.',
-          );
+          alert.show('Document uploaded. Notification sent to client.');
         } else {
           // Upload still succeeded; surface the notify failure separately so
           // staff know the doc is saved and they can retry the SMS from the
@@ -604,10 +575,8 @@ export default function DocumentsInlineUpload({
     canNotify,
     category,
     canSendNotify,
-    clientEmail,
     clientPhone,
     effectiveCategoryLabel,
-    emailPreview,
     notifyDisabledReason,
     onUploadComplete,
     previewMessage,
@@ -997,7 +966,8 @@ export default function DocumentsInlineUpload({
               </div>
               <div className="modal-body">
                 <p className="mb-2">
-                  A text message was sent to your phone with a secure upload link.
+                  A text message was sent to {clientDisplayName || targetUser}
+                  {clientPhone ? ` at ${clientPhone}` : ''} with a secure upload link.
                 </p>
                 {phoneUploadExpiresAt ? (
                   <p className="small text-muted mb-3">
@@ -1093,28 +1063,6 @@ export default function DocumentsInlineUpload({
                 >
                   {previewMessage}
                 </div>
-                {emailPreview ? (
-                  <div className="mb-3">
-                    <p className="small text-muted mb-1">
-                      Will also email <strong>{clientEmail}</strong>
-                    </p>
-                    <div className="border rounded bg-light p-3">
-                      <p className="fw-semibold mb-2">{emailPreview.subject}</p>
-                      <p
-                        className="mb-0 small"
-                        style={{ whiteSpace: 'pre-wrap' }}
-                      >
-                        {emailPreview.text}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="small text-muted mb-3">
-                    {clientEmail
-                      ? `Email "${clientEmail}" looks invalid; only an SMS will be sent.`
-                      : 'No email on file for this client. Only an SMS will be sent.'}
-                  </p>
-                )}
                 <p className="small text-muted mb-0">
                   A copy is saved in this client&apos;s{' '}
                   <Link to={notifyPanelPath} onClick={() => setShowNotifyConfirm(false)}>

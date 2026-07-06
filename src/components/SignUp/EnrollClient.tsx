@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
+import { isTeamKeepOrganization } from '../../utils/featureAccess';
 import { enrollClient } from './SignUp.api';
 import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
 import {
@@ -21,10 +22,38 @@ interface EnrollClientFormValues {
   birthDate: string;
   email: string;
   phonenumber: string;
+  experiencingHomelessness: boolean;
+}
+
+const NAME_FIELD_NAMES = new Set(['firstname', 'middlename', 'lastname']);
+
+function titleCaseName(value: string): string {
+  return value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_, prefix: string, letter: string) => (
+    `${prefix}${letter.toUpperCase()}`
+  ));
+}
+
+function formatNameInput(name: string, value: string): string {
+  if (NAME_FIELD_NAMES.has(name)) return titleCaseName(value);
+  return value;
+}
+
+function defaultExperiencingHomelessnessForSession(): boolean {
+  try {
+    const raw = sessionStorage.getItem('mySessionStorageData');
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { organization?: string };
+    return isTeamKeepOrganization(parsed.organization);
+  } catch {
+    return false;
+  }
 }
 
 export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
+  const location = useLocation();
+  const initialPhone = new URLSearchParams(location.search).get('phone') || '';
+  const defaultExperiencingHomelessness = defaultExperiencingHomelessnessForSession();
   const [values, setValues] = useState<EnrollClientFormValues>({
     firstname: '',
     middlename: '',
@@ -32,7 +61,8 @@ export default function EnrollClientPage(): JSX.Element {
     suffix: '',
     birthDate: '',
     email: '',
-    phonenumber: '',
+    phonenumber: initialPhone,
+    experiencingHomelessness: defaultExperiencingHomelessness,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
@@ -42,8 +72,12 @@ export default function EnrollClientPage(): JSX.Element {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    const nextValue = type === 'checkbox' ? checked : value;
+    const formattedValue = typeof nextValue === 'string'
+      ? formatNameInput(name, nextValue)
+      : nextValue;
+    setValues((prev) => ({ ...prev, [name]: formattedValue }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -89,12 +123,34 @@ export default function EnrollClientPage(): JSX.Element {
       alert.error('Please enter a valid birth date.');
       return;
     }
+    const parsedBirthDate = localDateFromIsoDateOnly(values.birthDate);
+    const birthDateError = parsedBirthDate === undefined
+      ? 'Invalid birth date'
+      : validateBirthdate(parsedBirthDate);
+    if (birthDateError) {
+      setFieldErrors((prev) => ({ ...prev, birthDate: birthDateError }));
+      alert.error(birthDateError);
+      return;
+    }
 
     if (!eulaAgreed || !termsAccepted) {
       setAgreementError('You must agree to the EULA and Terms and Conditions before submitting.');
       return;
     }
     setAgreementError('');
+
+    const nameErrors: Record<string, string> = {
+      firstname: validateFirstname(values.firstname),
+      lastname: validateLastname(values.lastname),
+      middlename: values.middlename.trim() ? validateFirstname(values.middlename) : '',
+      suffix: values.suffix.trim() ? validateLastname(values.suffix) : '',
+    };
+    const hasNameErrors = Object.values(nameErrors).some(Boolean);
+    if (hasNameErrors) {
+      setFieldErrors((prev) => ({ ...prev, ...nameErrors }));
+      alert.error('Please enter valid name fields.');
+      return;
+    }
 
     const emailTrimmed = values.email.trim();
     if (emailTrimmed !== '') {
@@ -122,6 +178,7 @@ export default function EnrollClientPage(): JSX.Element {
         birthDate: birthDateString,
         email: emailTrimmed,
         phonenumber: values.phonenumber,
+        experiencingHomelessness: values.experiencingHomelessness,
       });
 
       if (response.status === 'ENROLL_SUCCESS') {
@@ -134,7 +191,9 @@ export default function EnrollClientPage(): JSX.Element {
       } else if (response.status === 'CLIENT_ENROLL_CLIENT') {
         alert.error('Only workers, admins, or directors can enroll clients.');
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
-        alert.error('Your session has expired. Please log in again.');
+        alert.error('Please sign in again to continue.');
+      } else if (response.status === 'INVALID_PARAMETER') {
+        alert.error(response.message || 'Please check the enrollment fields and try again.');
       } else {
         alert.error(`Enrollment failed: ${response.status}`);
       }
@@ -186,6 +245,7 @@ export default function EnrollClientPage(): JSX.Element {
                   birthDate: '',
                   email: '',
                   phonenumber: '',
+                  experiencingHomelessness: defaultExperiencingHomelessness,
                 });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
@@ -360,6 +420,20 @@ export default function EnrollClientPage(): JSX.Element {
                 {fieldErrors.phonenumber && (
                   <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
                 )}
+              </div>
+
+              <div className="tw-flex tw-items-start tw-rounded-md tw-border tw-border-gray-200 tw-bg-gray-50 tw-p-3">
+                <input
+                  type="checkbox"
+                  id="experiencingHomelessness"
+                  name="experiencingHomelessness"
+                  className="tw-h-4 tw-w-4 tw-mt-0.5 tw-text-blue-600 tw-border-gray-300 tw-rounded focus:tw-ring-blue-500"
+                  checked={values.experiencingHomelessness}
+                  onChange={onChange}
+                />
+                <label htmlFor="experiencingHomelessness" className="tw-ml-2 tw-text-sm tw-text-gray-700">
+                  Client is experiencing homelessness
+                </label>
               </div>
             </div>
 

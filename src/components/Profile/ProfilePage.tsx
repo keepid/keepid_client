@@ -10,13 +10,14 @@ import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
+import { canUseApplications, canUseCommunications } from '../../utils/featureAccess';
 import AccountSettingsSection from './AccountSettingsSection';
+import ClientTimelineSection from './ClientTimelineSection';
 import EssentialAccountSection from './EssentialAccountSection';
 import OrganizationInfoSection from './OrganizationInfoSection';
 import ProfileModal from './ProfileModal';
 import RecentActivity from './RecentActivity';
 import SavedApplicationInfoSection from './SavedApplicationInfoSection';
-import WorkerNotesSection from './WorkerNotesSection';
 
 type Props = {
   targetUsername?: string;
@@ -64,6 +65,7 @@ export type ProfileData = {
   motherName?: NameObj;
   fatherName?: NameObj;
   workerNotes?: string;
+  experiencingHomelessness?: boolean;
 };
 
 export default function ProfilePage({ targetUsername }: Props) {
@@ -77,15 +79,25 @@ export default function ProfilePage({ targetUsername }: Props) {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const currentUserRole = useMemo(() => {
+  const currentUserSession = useMemo(() => {
     try {
       const raw = sessionStorage.getItem('mySessionStorageData');
-      if (raw) return JSON.parse(raw).role as string;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          role: parsed.role as Role,
+          organization: parsed.organization as string,
+        };
+      }
     } catch { /* ignore */ }
-    return '';
+    return { role: '', organization: '' };
   }, []);
+  const currentUserRole = currentUserSession.role;
+  const currentUserOrganization = currentUserSession.organization;
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
+  const canAccessApplications = canUseApplications(currentUserRole, currentUserOrganization);
+  const canAccessCommunicationHistory = canUseCommunications(currentUserRole, currentUserOrganization);
 
   const canEditClientIdentityFields = useMemo(
     () =>
@@ -207,7 +219,7 @@ export default function ProfilePage({ targetUsername }: Props) {
     if (!targetUsername) return;
     setIsRemoving(true);
     try {
-      const res = await fetch(`${getServerURL()}/remove-organization-member`, {
+      const res = await fetch(`${getServerURL()}/remove-user`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -257,19 +269,21 @@ export default function ProfilePage({ targetUsername }: Props) {
           >
             Documents
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => history.push({
-              pathname: '/applications',
-              state: {
-                clientUsername: targetUsername,
-                clientName: displayName || undefined,
-              },
-            })}
-          >
-            Applications
-          </button>
+          {canAccessApplications && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => history.push({
+                pathname: '/applications',
+                state: {
+                  clientUsername: targetUsername,
+                  clientName: displayName || undefined,
+                },
+              })}
+            >
+              Applications
+            </button>
+          )}
         </div>
       )}
 
@@ -346,9 +360,11 @@ export default function ProfilePage({ targetUsername }: Props) {
           />
 
           {isWorkerView && profile.username && (
-            <WorkerNotesSection
+            <ClientTimelineSection
+              username={profile.username}
               workerNotes={profile.workerNotes}
-              targetUsername={targetUsername!}
+              showCommunicationHistory={canAccessCommunicationHistory}
+              onSaved={() => fetchProfile()}
             />
           )}
 
@@ -382,8 +398,9 @@ export default function ProfilePage({ targetUsername }: Props) {
               <div className="card-body">
                 <h5 className="card-title tw-text-red-700">Danger Zone</h5>
                 <p className="tw-text-sm tw-text-gray-600 tw-mb-3">
-                  Removing this client will permanently delete their account and all associated data
-                  including documents, applications, and activity history. This action cannot be undone.
+                  Removing this client deactivates their account and may remove client-owned contact
+                  information or documents. Applications completed for this client are retained in
+                  application history.
                 </p>
                 <button
                   type="button"
@@ -421,7 +438,8 @@ export default function ProfilePage({ targetUsername }: Props) {
                 <p className="tw-text-gray-600 tw-mb-4">
                   Are you sure you want to permanently remove{' '}
                   <span className="tw-font-semibold">{displayName}</span>?
-                  All of their documents, applications, and activity history will be deleted.
+                  Their account will be deactivated, but completed applications for this client will
+                  remain in application history and appear with the client marked as deleted.
                   This action cannot be undone.
                 </p>
                 <div className="tw-flex tw-justify-end tw-gap-3">

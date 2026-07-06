@@ -21,6 +21,7 @@ interface State {
   recaptchaPayload: string;
   showPassword: boolean;
   showManualLogin: boolean;
+  loginError: string;
 }
 
 const recaptchaRef: React.RefObject<ReCAPTCHA> = React.createRef();
@@ -36,8 +37,6 @@ interface Props {
   isLoggedIn: boolean;
   role: Role;
   alert: any;
-  autoLogout: boolean; // whether or not the user was logged out automatically
-  setAutoLogout: (boolean) => void; // stop showing the logged out automatically banner once user navigates away from the page
   embedded?: boolean;
 }
 
@@ -57,12 +56,8 @@ class LoginPage extends Component<Props, State> {
       recaptchaPayload: '',
       showPassword: false,
       showManualLogin: false,
+      loginError: '',
     };
-  }
-
-  componentWillUnmount() {
-    const { setAutoLogout } = this.props;
-    setAutoLogout(false);
   }
 
   // RECAPTCHA CODE
@@ -93,11 +88,11 @@ class LoginPage extends Component<Props, State> {
   };
 
   handleChangePassword = (event: any) => {
-    this.setState({ password: event.target.value });
+    this.setState({ password: event.target.value, loginError: '' });
   };
 
   handleChangeUsername = (event: any) => {
-    this.setState({ username: event.target.value });
+    this.setState({ username: event.target.value, loginError: '' });
   };
 
   handleLogin = (): void => {
@@ -108,7 +103,7 @@ class LoginPage extends Component<Props, State> {
       const { alert } = this.props;
       alert.show('Please enter your email or username and password');
       this.clearInput();
-      this.setState({ buttonState: '' });
+      this.setState({ buttonState: '', loginError: 'Please enter your email or username and password.' });
       this.resetRecaptcha();
     } else {
       fetch(`${getServerURL()}/login`, {
@@ -149,23 +144,24 @@ class LoginPage extends Component<Props, State> {
           } else if (status === 'AUTH_FAILURE') {
             alert.show('Incorrect email or password');
             this.clearInput();
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Incorrect email or password.' });
             this.resetRecaptcha();
           } else if (status === 'USER_NOT_FOUND') {
             alert.show('Incorrect email or password');
             this.clearInput();
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Incorrect email or password.' });
             this.resetRecaptcha();
           } else {
             alert.show('Server Failure: Please Try Again');
-            this.setState({ buttonState: '' });
+            this.setState({ buttonState: '', loginError: 'Server failure. Please try again.' });
             this.resetRecaptcha();
           }
         })
         .catch(() => {
-          const { alert } = this.props;
-          alert.show('Network Failure: Check Server Connection.');
-          this.setState({ buttonState: '' });
+          this.setState({
+            buttonState: '',
+            loginError: 'No internet connection. Please check your connection and try again.',
+          });
           this.resetRecaptcha();
         });
     }
@@ -269,11 +265,11 @@ class LoginPage extends Component<Props, State> {
       buttonState,
       showPassword,
       showManualLogin,
+      loginError,
     } = this.state;
 
     return (
       <div className="form-signin pt-2">
-        {embedded ? null : <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>}
         <GoogleLoginButton
           handleGoogleLoginSuccess={this.handleGoogleLoginSuccess}
           handleGoogleLoginError={this.handleGoogleLoginError}
@@ -288,7 +284,7 @@ class LoginPage extends Component<Props, State> {
             <button
               type="button"
               className="tw-bg-transparent tw-border-0 tw-p-0 tw-text-sm tw-text-gray-500 hover:tw-text-gray-700 tw-cursor-pointer tw-underline"
-              onClick={() => this.setState({ showManualLogin: true })}
+              onClick={() => this.setState({ showManualLogin: true, loginError: '' })}
             >
               Click here for email and password login
             </button>
@@ -318,10 +314,10 @@ class LoginPage extends Component<Props, State> {
                 className="w-100 pt-2 font-weight-bold"
               >
                 Password
-                <div className="pass-wrapper form-control form-purple mt-1">
+                <div className="tw-relative tw-mt-1 tw-mb-3.5 tw-flex tw-h-[46px] tw-items-stretch tw-overflow-hidden tw-rounded-[0.35rem] tw-border tw-border-solid tw-border-primary-theme tw-bg-white">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="pass-input"
+                    className="tw-min-w-0 tw-flex-1 tw-border-0 tw-p-2.5 tw-outline-none"
                     id="password"
                     placeholder="password"
                     value={password}
@@ -330,12 +326,12 @@ class LoginPage extends Component<Props, State> {
                   />
                   <button
                     type="button"
-                    className="pass-icon"
+                    className="tw-flex tw-w-11 tw-cursor-pointer tw-items-center tw-justify-center tw-self-stretch tw-rounded-none tw-border-0 tw-border-l tw-border-solid tw-border-primary-theme tw-bg-white tw-p-0"
                     onClick={this.togglePassword}
                   >
                     <img
                       src={showPassword ? SlashEye : EyeIcon}
-                      className="eye-size"
+                      className="tw-h-5 tw-w-5"
                       alt={showPassword ? 'Show' : 'Hide'}
                     />
                   </button>
@@ -359,6 +355,11 @@ class LoginPage extends Component<Props, State> {
                     <div className="ld ld-ring ld-spin" />
                   </Button>
                 </div>
+                {loginError && (
+                  <p className="tw-mt-1 tw-text-xs tw-font-medium tw-text-red-600" role="alert">
+                    {loginError}
+                  </p>
+                )}
               </div>
               <div className="pb-3">
                 <Link to="/forgot-password" className="text-decoration-none">
@@ -393,16 +394,11 @@ class LoginPage extends Component<Props, State> {
   };
 
   render() {
-    const { autoLogout, embedded = false } = this.props;
+    const { embedded = false } = this.props;
 
     if (embedded) {
       return (
         <div className="tw-w-full tw-max-w-lg tw-px-3 md:tw-px-4 tw-py-2">
-          {autoLogout ? (
-            <div className="alert alert-warning" role="alert">
-              You were automatically logged out and redirected to this page.
-            </div>
-          ) : null}
           {this.renderAuthCard(true)}
           <ReCAPTCHA
             theme="dark"
@@ -420,11 +416,6 @@ class LoginPage extends Component<Props, State> {
           <title>Login</title>
           <meta name="description" content="Keep.id" />
         </Helmet>
-        {autoLogout ? (
-          <div className="alert alert-warning" role="alert">
-            You were automatically logged out and redirected to this page.
-          </div>
-        ) : null}
         <div className="tw-container tw-mx-auto tw-max-w-5xl tw-px-4">
           <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-12 tw-py-12 lg:tw-py-20 tw-min-h-[70vh] tw-items-center">
             <div className="tw-hidden md:tw-flex tw-flex-col tw-items-center tw-justify-center">
