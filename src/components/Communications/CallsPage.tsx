@@ -6,7 +6,7 @@ import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import type { Call } from '@twilio/voice-sdk';
 import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import {
   addClientNote,
@@ -24,6 +24,11 @@ import {
 } from './communicationsApi';
 
 type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
+type CommunicationsLocationState = {
+  clientUsername?: string;
+  clientName?: string;
+  clientPhone?: string;
+};
 
 const CONVERSATION_POLL_MS = 25000;
 const THREAD_POLL_MS = 12000;
@@ -142,6 +147,7 @@ function openSelectedClient(conversation: Conversation, history: ReturnType<type
 
 export default function CallsPage() {
   const history = useHistory();
+  const location = useLocation<CommunicationsLocationState | undefined>();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUsername, setSelectedUsername] = useState('');
   const [items, setItems] = useState<MessageBoardItem[]>([]);
@@ -169,6 +175,11 @@ export default function CallsPage() {
   const voiceDeviceRef = React.useRef<Device | null>(null);
   const activeCallRef = React.useRef<Call | null>(null);
 
+  const requestedClientUsername = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return (params.get('client') || location.state?.clientUsername || '').trim();
+  }, [location.search, location.state]);
+
   const selected = useMemo(
     () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
     [conversations, selectedUsername],
@@ -186,8 +197,20 @@ export default function CallsPage() {
       }
       setConversations(data.conversations);
       setSelectedUsername((current) => {
+        const requestedConversation = requestedClientUsername
+          ? data.conversations.find((conversation) => (
+            conversation.username === requestedClientUsername
+            || conversationKey(conversation) === requestedClientUsername
+          ))
+          : undefined;
+        if (!current && requestedConversation) {
+          return conversationKey(requestedConversation);
+        }
         if (current && data.conversations.some((conversation) => conversationKey(conversation) === current)) {
           return current;
+        }
+        if (requestedConversation) {
+          return conversationKey(requestedConversation);
         }
         return conversationKey(data.conversations[0]);
       });
@@ -230,8 +253,11 @@ export default function CallsPage() {
   }
 
   useEffect(() => {
+    if (requestedClientUsername) {
+      setSelectedUsername('');
+    }
     loadConversations();
-  }, []);
+  }, [requestedClientUsername]);
 
   useEffect(() => {
     if (selected?.username || selected?.phone) {

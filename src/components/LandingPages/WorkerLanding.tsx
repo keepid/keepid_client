@@ -9,7 +9,7 @@ import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
-import { canUseApplications, canUseClientNotifications } from '../../utils/featureAccess';
+import { canUseApplications, canUseClientNotifications, canUseCommunications } from '../../utils/featureAccess';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
@@ -55,6 +55,12 @@ function creationTimeMs(client: TargetClient): number | null {
 
 function formatBirthDateForDisplay(value: string): string {
   return value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3');
+}
+
+function hasPhoneNumberOnRecord(value?: string): boolean {
+  const digits = (value || '').replace(/\D/g, '');
+  const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  return normalized.length === 10;
 }
 
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
@@ -107,8 +113,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [currentPage, setCurrentPage] = useState(1);
   const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
   const [isLoading, setIsLoading] = useState(true);
-  const { path, url } = useRouteMatch();
+  const { path } = useRouteMatch();
   const canAccessApplications = canUseApplications(role, organization);
+  const canAccessCommunications = canUseCommunications(role, organization);
   const canAccessNotifications = canUseClientNotifications(role, organization);
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
@@ -441,41 +448,44 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                 <div>
                   {sortedClients.length > 0 ? (
                     <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
-                      {currentPosts.map((client) => (
-                        <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
-                          <Link
-                            to={`/profile/${client.username}`}
-                            className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
-                          >
-                            <div className="tw-flex tw-items-center tw-mb-3">
-                              {client.photo ? (
-                                <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                              ) : (
-                                <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                              )}
-                            </div>
-                            <div className="tw-mb-1">
-                              <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
-                                {client.firstName} {client.lastName}
-                              </h5>
-                            </div>
-                            <div className="tw-mb-1">
-                              <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
-                                {formatPhoneForDisplay(client.phone)}
-                              </p>
-                            </div>
-                            <div className="tw-mb-1">
-                              <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
-                                Birth Date: {formatBirthDateForDisplay(client.birthDate)}
-                              </p>
-                            </div>
-                          </Link>
+                      {currentPosts.map((client) => {
+                        const clientName = `${client.firstName} ${client.lastName}`.trim();
+                        const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
+                        return (
+                          <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+                            <Link
+                              to={`/profile/${client.username}`}
+                              className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
+                            >
+                              <div className="tw-flex tw-items-center tw-mb-3">
+                                {client.photo ? (
+                                  <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                                ) : (
+                                  <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
+                                )}
+                              </div>
+                              <div className="tw-mb-1">
+                                <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
+                                  {client.firstName} {client.lastName}
+                                </h5>
+                              </div>
+                              <div className="tw-mb-1">
+                                <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
+                                  {formatPhoneForDisplay(client.phone)}
+                                </p>
+                              </div>
+                              <div className="tw-mb-1">
+                                <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
+                                  Birth Date: {formatBirthDateForDisplay(client.birthDate)}
+                                </p>
+                              </div>
+                            </Link>
 
-                          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
+                            <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
                               <Link
                                 to={{
                                   pathname: `/my-documents/${client.username}`,
-                                  state: { clientName: `${client.firstName} ${client.lastName}`.trim() },
+                                  state: { clientName },
                                 }}
                                 className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none"
                               >
@@ -483,31 +493,45 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                               </Link>
                               {canAccessApplications && (
                                 <Link
-                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName: `${client.firstName} ${client.lastName}`.trim() } }}
+                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
                                   className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
                                 >
-                                    Apply
+                                    Applications
                                 </Link>
                               )}
-                              {canAccessNotifications && (
+                              {canAccessCommunications && canOpenCommunications && (
                                 <Link
                                   to={{
-                                    pathname: `${url}/notify-client/${client.username}`,
+                                    pathname: '/communications',
+                                    search: `?client=${encodeURIComponent(client.username)}`,
                                     state: {
-                                      clientName: `${client.firstName} ${client.lastName}`.trim(),
+                                      clientUsername: client.username,
+                                      clientName,
                                       clientPhone: client.phone,
                                     },
                                   }}
                                   className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
                                 >
-                                    Notify
+                                    Communications
                                 </Link>
                               )}
-                          </div>
+                              {canAccessCommunications && !canOpenCommunications && (
+                                <button
+                                  type="button"
+                                  className="tw-inline-flex tw-items-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed"
+                                  disabled
+                                  title="Add a phone number before opening communications"
+                                  aria-label={`Communications unavailable for ${clientName || client.username}; no phone number on record`}
+                                >
+                                  Communications
+                                </button>
+                              )}
+                            </div>
 
-                          {showClientAuthModal && modalRender()}
-                        </div>
-                      ))}
+                            {showClientAuthModal && modalRender()}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="tw-text-center tw-py-12">

@@ -4,7 +4,15 @@ import {
   AccountInformationProperties,
   OrganizationInformationProperties,
 } from './SignUp.context';
-import { birthDateStringConverter, formatUrl } from './SignUp.util';
+import { birthDateStringConverter, formatUrl, isAtLeastAge } from './SignUp.util';
+
+const MIN_SIGNUP_AGE = 18;
+
+function validateSignupBirthDate(birthDate: Date | undefined): string {
+  if (!birthDate) return 'Please enter a valid birth date.';
+  if (!isAtLeastAge(birthDate, MIN_SIGNUP_AGE)) return 'Must be at least 18 years old';
+  return '';
+}
 
 export interface EnrollClientData {
   firstname: string;
@@ -20,6 +28,7 @@ export interface EnrollClientData {
 
 export interface EnrollClientResponse {
   status: string;
+  message?: string;
   username?: string;
   firstName?: string;
   lastName?: string;
@@ -50,7 +59,7 @@ export interface EnrollWorkerData {
 
 export async function enrollWorker(
   data: EnrollWorkerData,
-): Promise<{ status: string }> {
+): Promise<{ status: string; message?: string }> {
   return fetch(`${getServerURL()}/enroll-worker`, {
     method: 'POST',
     credentials: 'include',
@@ -130,7 +139,11 @@ async function _createUser({
   const { firstname, lastname, birthDate, username, password } =
     accountInformation;
 
-  const birthDateString = birthDateStringConverter(birthDate || new Date());
+  const birthDateError = validateSignupBirthDate(birthDate);
+  if (birthDateError) {
+    return { status: 'INVALID_PARAMETER', message: birthDateError };
+  }
+  const birthDateString = birthDateStringConverter(birthDate as Date);
 
   const payload: Record<string, unknown> = {
     firstname,
@@ -230,8 +243,11 @@ export async function signupOrganization({
     orgPhoneNumber: organizationPhoneNumber,
   } = organizationInformation;
 
-  // @ts-ignore
-  const birthDateString = birthDateStringConverter(birthDate);
+  const birthDateError = validateSignupBirthDate(birthDate);
+  if (birthDateError) {
+    return { status: 'INVALID_PARAMETER', message: birthDateError };
+  }
+  const birthDateString = birthDateStringConverter(birthDate as Date);
   const revisedURL = formatUrl(organizationWebsite);
 
   return fetch(`${getServerURL()}/organization-signup`, {

@@ -22,14 +22,15 @@ describe('feature access policy', () => {
     expect(canUseApplications(Role.LoggedOut, 'Team Keep')).toBe(false);
   });
 
-  it('allows communications only for Team Keep admins and directors', () => {
+  it('allows communications only for Team Keep staff', () => {
     expect(canUseCommunications(Role.Admin, 'Team Keep')).toBe(true);
     expect(canUseCommunications(Role.Director, 'Team Keep')).toBe(true);
-    expect(canUseCommunications(Role.Worker, 'Team Keep')).toBe(false);
+    expect(canUseCommunications(Role.Worker, 'Team Keep')).toBe(true);
+    expect(canUseCommunications(Role.Client, 'Team Keep')).toBe(false);
     expect(canUseCommunications(Role.Admin, 'Demo Org')).toBe(false);
   });
 
-  it('uses the communications policy for client notifications', () => {
+  it('keeps client notifications admin-only for Team Keep', () => {
     expect(canUseClientNotifications(Role.Admin, 'Team Keep')).toBe(true);
     expect(canUseClientNotifications(Role.Worker, 'Team Keep')).toBe(false);
   });

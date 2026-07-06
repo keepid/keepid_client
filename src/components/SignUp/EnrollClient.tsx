@@ -3,6 +3,7 @@ import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation } from 'react-router-dom';
 
+import { isTeamKeepOrganization } from '../../utils/featureAccess';
 import { enrollClient } from './SignUp.api';
 import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
 import {
@@ -37,10 +38,22 @@ function formatNameInput(name: string, value: string): string {
   return value;
 }
 
+function defaultExperiencingHomelessnessForSession(): boolean {
+  try {
+    const raw = sessionStorage.getItem('mySessionStorageData');
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { organization?: string };
+    return isTeamKeepOrganization(parsed.organization);
+  } catch {
+    return false;
+  }
+}
+
 export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
   const location = useLocation();
   const initialPhone = new URLSearchParams(location.search).get('phone') || '';
+  const defaultExperiencingHomelessness = defaultExperiencingHomelessnessForSession();
   const [values, setValues] = useState<EnrollClientFormValues>({
     firstname: '',
     middlename: '',
@@ -49,7 +62,7 @@ export default function EnrollClientPage(): JSX.Element {
     birthDate: '',
     email: '',
     phonenumber: initialPhone,
-    experiencingHomelessness: false,
+    experiencingHomelessness: defaultExperiencingHomelessness,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
@@ -108,6 +121,15 @@ export default function EnrollClientPage(): JSX.Element {
 
     if (!values.birthDate) {
       alert.error('Please enter a valid birth date.');
+      return;
+    }
+    const parsedBirthDate = localDateFromIsoDateOnly(values.birthDate);
+    const birthDateError = parsedBirthDate === undefined
+      ? 'Invalid birth date'
+      : validateBirthdate(parsedBirthDate);
+    if (birthDateError) {
+      setFieldErrors((prev) => ({ ...prev, birthDate: birthDateError }));
+      alert.error(birthDateError);
       return;
     }
 
@@ -170,6 +192,8 @@ export default function EnrollClientPage(): JSX.Element {
         alert.error('Only workers, admins, or directors can enroll clients.');
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
         alert.error('Please sign in again to continue.');
+      } else if (response.status === 'INVALID_PARAMETER') {
+        alert.error(response.message || 'Please check the enrollment fields and try again.');
       } else {
         alert.error(`Enrollment failed: ${response.status}`);
       }
@@ -221,7 +245,7 @@ export default function EnrollClientPage(): JSX.Element {
                   birthDate: '',
                   email: '',
                   phonenumber: '',
-                  experiencingHomelessness: false,
+                  experiencingHomelessness: defaultExperiencingHomelessness,
                 });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
@@ -408,7 +432,7 @@ export default function EnrollClientPage(): JSX.Element {
                   onChange={onChange}
                 />
                 <label htmlFor="experiencingHomelessness" className="tw-ml-2 tw-text-sm tw-text-gray-700">
-                  By clicking this box I verify that I am experiencing homelessness
+                  Client is experiencing homelessness
                 </label>
               </div>
             </div>

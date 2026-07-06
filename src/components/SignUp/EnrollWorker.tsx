@@ -91,6 +91,15 @@ export default function EnrollWorkerPage(): JSX.Element {
       alert.error('Please enter a valid birth date.');
       return;
     }
+    const parsedBirthDate = localDateFromIsoDateOnly(values.birthDate);
+    const birthDateError = parsedBirthDate === undefined
+      ? 'Invalid birth date'
+      : validateBirthdate(parsedBirthDate);
+    if (birthDateError) {
+      setFieldErrors((prev) => ({ ...prev, birthDate: birthDateError }));
+      alert.error(birthDateError);
+      return;
+    }
 
     if (!eulaAgreed || !termsAccepted) {
       setAgreementError('You must agree to the EULA and Terms and Conditions before submitting.');
@@ -127,7 +136,7 @@ export default function EnrollWorkerPage(): JSX.Element {
       } else if (response.status === 'SESSION_TOKEN_FAILURE') {
         alert.error('Please sign in again to continue.');
       } else if (response.status === 'INVALID_PARAMETER') {
-        alert.error('Invalid role selected. Please choose Worker or Admin.');
+        alert.error(response.message || 'Please check the enrollment fields and try again.');
       } else {
         alert.error(`Enrollment failed: ${response.status}`);
       }
