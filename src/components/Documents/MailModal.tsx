@@ -215,9 +215,17 @@ export const MailModal: React.FC<Props> = ({
       setEditingDestination(false);
       setDestinationPrefilled(false);
       setManualAddress({
-        index: 'DYNAMIC', nameForCheck: '', officeName: '', state: '',
-        street1: '', street2: '', city: '', zipcode: '',
-        description: '', name: '', checkAmount: '0',
+        index: 'DYNAMIC',
+        nameForCheck: '',
+        officeName: '',
+        state: '',
+        street1: '',
+        street2: '',
+        city: '',
+        zipcode: '',
+        description: '',
+        name: '',
+        checkAmount: '0',
       });
       setMailHistory([]);
       (async () => {

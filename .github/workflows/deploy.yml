@@ -1,8 +1,7 @@
 name: Deploy to Cloud Run
 
-# Auto-deploys to keepid-prod on every push to server-migration. When
-# server-migration merges to main, add `main` to the branches list (or
-# replace) — the rest of the workflow is branch-agnostic.
+# Auto-deploys to keepid-prod on every push to master. The rest of the
+# workflow is branch-agnostic.
 #
 # Identity: short-lived creds via Workload Identity Federation. The WIF
 # provider in keepid_infra/terraform/ci.tf trusts this repo
@@ -10,7 +9,7 @@ name: Deploy to Cloud Run
 
 on:
   push:
-    branches: [server-migration]
+    branches: [master]
   workflow_dispatch:
 
 permissions:
