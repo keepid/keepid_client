@@ -1,5 +1,5 @@
 import { Dialog } from '@headlessui/react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
@@ -55,6 +55,20 @@ const STATUS_COLORS: Record<string, string> = {
   FAILED: 'tw-bg-red-100 tw-text-red-700',
 };
 
+const EMPTY_MANUAL_ADDRESS: AddressData = {
+  index: 'DYNAMIC',
+  nameForCheck: '',
+  officeName: '',
+  state: '',
+  street1: '',
+  street2: '',
+  city: '',
+  zipcode: '',
+  description: '',
+  name: '',
+  checkAmount: '0',
+};
+
 export const MailModal: React.FC<Props> = ({
   alert,
   isVisible,
@@ -70,8 +84,10 @@ export const MailModal: React.FC<Props> = ({
 }) => {
   const { username, organization } = useContext(UserContext);
   const [destinationPrefilled, setDestinationPrefilled] = useState(false);
+  const [mailInfoLoading, setMailInfoLoading] = useState(false);
   const [mailHistory, setMailHistory] = useState<MailHistoryEntry[]>([]);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const mailLoadRequestId = useRef(0);
 
   const [returnAddressData, setReturnAddressData] = useState<AddressData>({
     index: '',
@@ -87,19 +103,7 @@ export const MailModal: React.FC<Props> = ({
     checkAmount: '',
   });
 
-  const [manualAddress, setManualAddress] = useState<AddressData>({
-    index: 'DYNAMIC',
-    nameForCheck: '',
-    officeName: '',
-    state: '',
-    street1: '',
-    street2: '',
-    city: '',
-    zipcode: '',
-    description: '',
-    name: '',
-    checkAmount: '0',
-  });
+  const [manualAddress, setManualAddress] = useState<AddressData>(EMPTY_MANUAL_ADDRESS);
 
   const [showInputError, setShowInputError] = useState(false);
   const [editingReturnAddress, setEditingReturnAddress] = useState(false);
@@ -140,7 +144,7 @@ export const MailModal: React.FC<Props> = ({
     }
   }, [organization]);
 
-  const fetchMailInfo = async () => {
+  const fetchMailInfo = async (requestId?: number) => {
     try {
       const response = await fetch(`${getServerURL()}/get-application-mail-info`, {
         method: 'POST',
@@ -150,6 +154,7 @@ export const MailModal: React.FC<Props> = ({
       });
       if (!response.ok) return;
       const data = await response.json();
+      if (requestId !== undefined && requestId !== mailLoadRequestId.current) return;
       if (data.mailDestinationName || data.mailDestinationOfficeName || data.mailDestinationStreet1) {
         setManualAddress({
           index: 'DYNAMIC',
@@ -173,7 +178,7 @@ export const MailModal: React.FC<Props> = ({
     }
   };
 
-  const fetchMailHistory = async () => {
+  const fetchMailHistory = async (requestId?: number) => {
     try {
       const response = await fetch(`${getServerURL()}/get-mail-history`, {
         method: 'POST',
@@ -183,6 +188,7 @@ export const MailModal: React.FC<Props> = ({
       });
       if (!response.ok) return;
       const data = await response.json();
+      if (requestId !== undefined && requestId !== mailLoadRequestId.current) return;
       setMailHistory(data);
     } catch (err: any) {
       console.error('Error fetching mail history:', err.message);
@@ -209,30 +215,28 @@ export const MailModal: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    if (isVisible) {
-      setShowInputError(false);
-      setEditingReturnAddress(false);
-      setEditingDestination(false);
-      setDestinationPrefilled(false);
-      setManualAddress({
-        index: 'DYNAMIC',
-        nameForCheck: '',
-        officeName: '',
-        state: '',
-        street1: '',
-        street2: '',
-        city: '',
-        zipcode: '',
-        description: '',
-        name: '',
-        checkAmount: '0',
-      });
-      setMailHistory([]);
-      (async () => {
-        await Promise.all([fetchMailInfo(), fetchMailHistory()]);
-      })();
+    const requestId = mailLoadRequestId.current + 1;
+    mailLoadRequestId.current = requestId;
+
+    if (!isVisible) {
+      setMailInfoLoading(false);
+      return;
     }
-  }, [isVisible]);
+
+    setShowInputError(false);
+    setEditingReturnAddress(false);
+    setEditingDestination(false);
+    setDestinationPrefilled(false);
+    setManualAddress(EMPTY_MANUAL_ADDRESS);
+    setMailHistory([]);
+    setMailInfoLoading(true);
+    (async () => {
+      await Promise.all([fetchMailInfo(requestId), fetchMailHistory(requestId)]);
+      if (requestId === mailLoadRequestId.current) {
+        setMailInfoLoading(false);
+      }
+    })();
+  }, [isVisible, documentId]);
 
   const handleCloseModal = () => {
     setIsVisible(false);
@@ -253,6 +257,7 @@ export const MailModal: React.FC<Props> = ({
   );
 
   const mailForm = async () => {
+    if (mailInfoLoading) return;
     const destination = manualAddress;
     const requiredDestFields: (keyof AddressData)[] = ['street1', 'city', 'state', 'zipcode'];
     const isDestValid = requiredDestFields.every((field) => manualAddress[field] !== '')
@@ -475,7 +480,7 @@ export const MailModal: React.FC<Props> = ({
                   <p className="tw-text-left tw-text-2xl tw-font-semibold">
                     {destinationPrefilled ? 'Mail Destination (from application)' : 'Mail destination'}
                   </p>
-                  {destinationPrefilled && (
+                  {destinationPrefilled && !mailInfoLoading && (
                     <button
                       type="button"
                       className="tw-shrink-0 tw-text-sm tw-text-blue-600 hover:tw-text-blue-800 tw-font-medium"
@@ -486,7 +491,15 @@ export const MailModal: React.FC<Props> = ({
                   )}
                 </div>
 
-                {!destinationPrefilled && (
+                {mailInfoLoading && (
+                  <div className="tw-bg-gray-50 tw-border tw-border-gray-200 tw-rounded-md tw-p-4 tw-mt-2 tw-mb-3">
+                    <p className="tw-text-gray-700 tw-text-sm tw-font-medium">
+                      Checking for a saved mail destination...
+                    </p>
+                  </div>
+                )}
+
+                {!mailInfoLoading && !destinationPrefilled && (
                   <div className="tw-bg-amber-50 tw-border tw-border-amber-300 tw-rounded-md tw-p-4 tw-mt-2 tw-mb-3">
                     <p className="tw-text-amber-800 tw-text-sm tw-font-medium">
                       This application cannot be submitted via mail through Keep.id. If you would like to mail it anyway to yourself or a partner for an 81 cent fee, enter the destination address below.
@@ -494,7 +507,7 @@ export const MailModal: React.FC<Props> = ({
                   </div>
                 )}
 
-                {destinationPrefilled && !editingDestination ? (
+                {!mailInfoLoading && destinationPrefilled && !editingDestination && (
                   <div className="tw-bg-blue-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-blue-200">
                     <h3 className="tw-text-lg tw-font-semibold tw-mb-2">
                       {`${manualAddress.name || manualAddress.officeName || 'Recipient'} — $${manualAddress.checkAmount}`}
@@ -510,7 +523,9 @@ export const MailModal: React.FC<Props> = ({
                       </p>
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {!mailInfoLoading && (!destinationPrefilled || editingDestination) && (
                   <div className="tw-mt-2">
                     {renderAddressFields(manualAddress, 'manual', true)}
                   </div>
