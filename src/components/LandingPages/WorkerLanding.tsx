@@ -107,7 +107,8 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
   return next;
 }
 
-const POSTS_PER_PAGE = 6;
+const CARD_CLIENTS_PER_PAGE = 6;
+const LIST_CLIENTS_PER_PAGE = 15;
 
 const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, logOut, alert }) => {
   const [clients, setClients] = useState<TargetClient[]>([]);
@@ -121,7 +122,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
-  const [viewMode, setViewMode] = useState<ClientViewMode>('cards');
+  const [viewMode, setViewMode] = useState<ClientViewMode>('list');
   const [isLoading, setIsLoading] = useState(true);
   const { path } = useRouteMatch();
   const canAccessApplications = canUseApplications(role, organization);
@@ -238,7 +239,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [sortMode]);
+  }, [sortMode, viewMode]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -292,12 +293,14 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   };
 
   const currentPosts = useMemo(() => {
-    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
-    const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
+    const clientsPerPage = viewMode === 'list' ? LIST_CLIENTS_PER_PAGE : CARD_CLIENTS_PER_PAGE;
+    const indexOfLastPost = currentPage * clientsPerPage;
+    const indexOfFirstPost = indexOfLastPost - clientsPerPage;
     return sortedClients.slice(indexOfFirstPost, indexOfLastPost);
-  }, [sortedClients, currentPage]);
+  }, [sortedClients, currentPage, viewMode]);
 
-  const lastPage = Math.max(Math.ceil(sortedClients.length / POSTS_PER_PAGE), 1);
+  const clientsPerPage = viewMode === 'list' ? LIST_CLIENTS_PER_PAGE : CARD_CLIENTS_PER_PAGE;
+  const lastPage = Math.max(Math.ceil(sortedClients.length / clientsPerPage), 1);
 
   const { pageNumbers, paginationClassName } = useMemo(() => {
     const pageNumbers: number[] = [];
@@ -456,7 +459,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
         <tbody className="tw-divide-y tw-divide-gray-100 tw-bg-white">
           {currentPosts.map((client) => (
             <tr key={client.username} className="hover:tw-bg-gray-50">
-              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3">
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left">
                 <Link
                   to={`/profile/${client.username}`}
                   className="tw-font-semibold tw-text-gray-900 hover:tw-text-twprimary hover:tw-no-underline"
@@ -464,13 +467,13 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                   {clientDisplayName(client)}
                 </Link>
               </td>
-              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-sm tw-font-medium tw-text-gray-700">
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatPhoneForDisplay(client.phone)}
               </td>
-              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-sm tw-font-medium tw-text-gray-700">
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatBirthDateForDisplay(client.birthDate)}
               </td>
-              <td className="tw-px-4 tw-py-3">
+              <td className="tw-px-4 tw-py-3 tw-text-right">
                 <div className="tw-flex tw-flex-wrap tw-justify-end tw-gap-2">
                   {renderClientActionButtons(client, true)}
                 </div>
