@@ -1,3 +1,7 @@
+import {
+  Squares2X2Icon,
+  TableCellsIcon,
+} from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
@@ -41,6 +45,7 @@ interface TargetClient {
 }
 
 type ClientSortMode = 'name-asc' | 'name-desc' | 'date-asc' | 'date-desc';
+type ClientViewMode = 'cards' | 'list';
 
 function displayNameSortKey(client: TargetClient): string {
   return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim().toLowerCase();
@@ -61,6 +66,10 @@ function hasPhoneNumberOnRecord(value?: string): boolean {
   const digits = (value || '').replace(/\D/g, '');
   const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
   return normalized.length === 10;
+}
+
+function clientDisplayName(client: TargetClient): string {
+  return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim() || client.username;
 }
 
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
@@ -112,6 +121,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [showClientAuthModal, setShowClientAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
+  const [viewMode, setViewMode] = useState<ClientViewMode>('cards');
   const [isLoading, setIsLoading] = useState(true);
   const { path } = useRouteMatch();
   const canAccessApplications = canUseApplications(role, organization);
@@ -313,6 +323,188 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
       : `${base} tw-bg-white hover:tw-bg-gray-100 tw-cursor-pointer`;
   };
 
+  const viewToggleClassName = (mode: ClientViewMode): string => {
+    const isActive = viewMode === mode;
+    const base = 'tw-inline-flex tw-h-10 tw-items-center tw-gap-2 tw-border-0 tw-px-3 tw-text-sm tw-font-semibold focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2';
+    return isActive
+      ? `${base} tw-bg-twprimary tw-text-white`
+      : `${base} tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50`;
+  };
+
+  const renderClientActionButtons = (client: TargetClient, compact = false) => {
+    const clientName = clientDisplayName(client);
+    const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
+    const primaryClasses = compact
+      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
+      : 'tw-inline-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none';
+    const secondaryClasses = compact
+      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
+      : 'tw-inline-flex tw-items-center tw-justify-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md';
+    const disabledClasses = compact
+      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
+      : 'tw-inline-flex tw-items-center tw-justify-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed';
+
+    return (
+      <>
+        <Link
+          to={{
+            pathname: `/my-documents/${client.username}`,
+            state: { clientName },
+          }}
+          className={primaryClasses}
+        >
+          Documents
+        </Link>
+        {canAccessApplications && (
+          <Link
+            to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
+            className={secondaryClasses}
+          >
+            Applications
+          </Link>
+        )}
+        {canAccessCommunications && canOpenCommunications && (
+          <Link
+            to={{
+              pathname: '/communications',
+              search: `?client=${encodeURIComponent(client.username)}`,
+              state: {
+                clientUsername: client.username,
+                clientName,
+                clientPhone: client.phone,
+              },
+            }}
+            className={secondaryClasses}
+          >
+            Communications
+          </Link>
+        )}
+        {canAccessCommunications && !canOpenCommunications && (
+          <button
+            type="button"
+            className={disabledClasses}
+            disabled
+            title="Add a phone number before opening communications"
+            aria-label={`Communications unavailable for ${clientName || client.username}; no phone number on record`}
+          >
+            Communications
+          </button>
+        )}
+      </>
+    );
+  };
+
+  const renderClientCards = () => (
+    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
+      {currentPosts.map((client) => (
+        <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
+          <Link
+            to={`/profile/${client.username}`}
+            className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
+          >
+            <div className="tw-flex tw-items-center tw-mb-3">
+              {client.photo ? (
+                <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
+              ) : (
+                <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
+              )}
+            </div>
+            <div className="tw-mb-1">
+              <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
+                {clientDisplayName(client)}
+              </h5>
+            </div>
+            <div className="tw-mb-1">
+              <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
+                {formatPhoneForDisplay(client.phone)}
+              </p>
+            </div>
+            <div className="tw-mb-1">
+              <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
+                Birth Date: {formatBirthDateForDisplay(client.birthDate)}
+              </p>
+            </div>
+          </Link>
+
+          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
+            {renderClientActionButtons(client)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderClientList = () => (
+    <div className="tw-overflow-x-auto tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-shadow-sm">
+      <table className="tw-min-w-[760px] tw-w-full tw-divide-y tw-divide-gray-200">
+        <thead className="tw-bg-gray-50">
+          <tr>
+            <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
+              Client
+            </th>
+            <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
+              Phone
+            </th>
+            <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
+              DOB
+            </th>
+            <th scope="col" className="tw-px-4 tw-py-3 tw-text-right tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
+              Direct actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="tw-divide-y tw-divide-gray-100 tw-bg-white">
+          {currentPosts.map((client) => (
+            <tr key={client.username} className="hover:tw-bg-gray-50">
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3">
+                <Link
+                  to={`/profile/${client.username}`}
+                  className="tw-font-semibold tw-text-gray-900 hover:tw-text-twprimary hover:tw-no-underline"
+                >
+                  {clientDisplayName(client)}
+                </Link>
+              </td>
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-sm tw-font-medium tw-text-gray-700">
+                {formatPhoneForDisplay(client.phone)}
+              </td>
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-sm tw-font-medium tw-text-gray-700">
+                {formatBirthDateForDisplay(client.birthDate)}
+              </td>
+              <td className="tw-px-4 tw-py-3">
+                <div className="tw-flex tw-flex-wrap tw-justify-end tw-gap-2">
+                  {renderClientActionButtons(client, true)}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderClientResults = () => {
+    if (sortedClients.length === 0) {
+      return (
+        <div className="tw-text-center tw-py-12">
+          <h3 className="tw-text-xl tw-text-gray-700">
+            No Clients! Click &apos;Enroll Client&apos; to get started!
+          </h3>
+          <img
+            className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
+            src={VisualizationSVG}
+            alt="Search for a client"
+          />
+        </div>
+      );
+    }
+
+    if (viewMode === 'cards') {
+      return renderClientCards();
+    }
+
+    return renderClientList();
+  };
+
   const modalRender = () => {
     if (!showClientAuthModal) return null;
 
@@ -435,6 +627,31 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                     <option value="date-desc">Account created (newest first)</option>
                   </select>
                 </div>
+                <div className="tw-flex tw-flex-col tw-w-full md:tw-w-auto">
+                  <span className="tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    View
+                  </span>
+                  <div className="tw-inline-flex tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-300 tw-bg-white" role="group" aria-label="Client result view">
+                    <button
+                      type="button"
+                      className={viewToggleClassName('cards')}
+                      onClick={() => setViewMode('cards')}
+                      aria-pressed={viewMode === 'cards'}
+                    >
+                      <Squares2X2Icon className="tw-h-4 tw-w-4" aria-hidden />
+                      Cards
+                    </button>
+                    <button
+                      type="button"
+                      className={viewToggleClassName('list')}
+                      onClick={() => setViewMode('list')}
+                      aria-pressed={viewMode === 'list'}
+                    >
+                      <TableCellsIcon className="tw-h-4 tw-w-4" aria-hidden />
+                      List
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -446,108 +663,11 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                 </div>
               ) : (
                 <div>
-                  {sortedClients.length > 0 ? (
-                    <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-4">
-                      {currentPosts.map((client) => {
-                        const clientName = `${client.firstName} ${client.lastName}`.trim();
-                        const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
-                        return (
-                          <div key={client.username} className="tw-bg-white tw-shadow-[0_-3px_10px_rgba(0,0,0,0.05),0_6px_16px_rgba(0,0,0,0.10)] tw-rounded-lg tw-p-8 tw-flex tw-flex-col hover:tw-border-1 hover:tw-bg-gray-50">
-                            <Link
-                              to={`/profile/${client.username}`}
-                              className="tw-flex-grow tw-block tw-text-inherit hover:tw-no-underline tw-cursor-pointer"
-                            >
-                              <div className="tw-flex tw-items-center tw-mb-3">
-                                {client.photo ? (
-                                  <img alt="client profile" src={client.photo} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                                ) : (
-                                  <img alt="a blank profile" src={GenericProfilePicture} className="tw-h-14 tw-w-14 tw-rounded-full" />
-                                )}
-                              </div>
-                              <div className="tw-mb-1">
-                                <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
-                                  {client.firstName} {client.lastName}
-                                </h5>
-                              </div>
-                              <div className="tw-mb-1">
-                                <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
-                                  {formatPhoneForDisplay(client.phone)}
-                                </p>
-                              </div>
-                              <div className="tw-mb-1">
-                                <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
-                                  Birth Date: {formatBirthDateForDisplay(client.birthDate)}
-                                </p>
-                              </div>
-                            </Link>
-
-                            <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
-                              <Link
-                                to={{
-                                  pathname: `/my-documents/${client.username}`,
-                                  state: { clientName },
-                                }}
-                                className="tw-inline-flex tw-items-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none"
-                              >
-                                Documents
-                              </Link>
-                              {canAccessApplications && (
-                                <Link
-                                  to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
-                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                                >
-                                    Applications
-                                </Link>
-                              )}
-                              {canAccessCommunications && canOpenCommunications && (
-                                <Link
-                                  to={{
-                                    pathname: '/communications',
-                                    search: `?client=${encodeURIComponent(client.username)}`,
-                                    state: {
-                                      clientUsername: client.username,
-                                      clientName,
-                                      clientPhone: client.phone,
-                                    },
-                                  }}
-                                  className="tw-inline-flex tw-items-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md"
-                                >
-                                    Communications
-                                </Link>
-                              )}
-                              {canAccessCommunications && !canOpenCommunications && (
-                                <button
-                                  type="button"
-                                  className="tw-inline-flex tw-items-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed"
-                                  disabled
-                                  title="Add a phone number before opening communications"
-                                  aria-label={`Communications unavailable for ${clientName || client.username}; no phone number on record`}
-                                >
-                                  Communications
-                                </button>
-                              )}
-                            </div>
-
-                            {showClientAuthModal && modalRender()}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="tw-text-center tw-py-12">
-                      <h3 className="tw-text-xl tw-text-gray-700">
-                        No Clients! Click &apos;Enroll Client&apos; to get started!
-                      </h3>
-                      <img
-                        className="tw-mt-8 tw-mx-auto tw-w-full tw-max-w-sm"
-                        src={VisualizationSVG}
-                        alt="Search for a client"
-                      />
-                    </div>
-                  )}
+                  {renderClientResults()}
                 </div>
               )}
             </div>
+            {showClientAuthModal && modalRender()}
 
             <div className="tw-container tw-mx-auto tw-px-4 tw-mt-6">
               <div className="tw-flex tw-items-center">
