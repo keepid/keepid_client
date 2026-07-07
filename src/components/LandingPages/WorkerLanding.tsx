@@ -38,6 +38,8 @@ interface TargetClient {
   assignedWorkerUsernames: string[];
   /** ISO or parseable date string from get-organization-members */
   creationDate?: string | null;
+  documentCount?: number;
+  applicationCount?: number;
 }
 
 type ClientSortMode = 'name-asc' | 'name-desc' | 'date-asc' | 'date-desc';
@@ -66,6 +68,15 @@ function hasPhoneNumberOnRecord(value?: string): boolean {
 
 function clientDisplayName(client: TargetClient): string {
   return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim() || client.username;
+}
+
+function countLabel(count: number | undefined, singular: string, fallback: string): string {
+  if (typeof count !== 'number' || !Number.isFinite(count)) {
+    return fallback;
+  }
+
+  const safeCount = count;
+  return `${safeCount} ${singular}${safeCount === 1 ? '' : 's'}`;
 }
 
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
@@ -333,6 +344,8 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const renderClientActionButtons = (client: TargetClient, compact = false) => {
     const clientName = clientDisplayName(client);
     const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
+    const documentsLabel = compact ? countLabel(client.documentCount, 'Document', 'Documents') : 'Documents';
+    const applicationsLabel = compact ? countLabel(client.applicationCount, 'Application', 'Applications') : 'Applications';
     const primaryClasses = compact
       ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none';
@@ -352,14 +365,14 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
           }}
           className={primaryClasses}
         >
-          Documents
+          {documentsLabel}
         </Link>
         {canAccessApplications && (
           <Link
             to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
             className={secondaryClasses}
           >
-            Applications
+            {applicationsLabel}
           </Link>
         )}
         {canAccessCommunications && canOpenCommunications && (
