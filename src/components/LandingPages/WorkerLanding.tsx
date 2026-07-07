@@ -1,7 +1,3 @@
-import {
-  Squares2X2Icon,
-  TableCellsIcon,
-} from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
@@ -328,7 +324,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
 
   const viewToggleClassName = (mode: ClientViewMode): string => {
     const isActive = viewMode === mode;
-    const base = 'tw-inline-flex tw-h-10 tw-items-center tw-gap-2 tw-border-0 tw-px-3 tw-text-sm tw-font-semibold focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2';
+    const base = 'tw-inline-flex tw-h-10 tw-items-center tw-border-0 tw-px-3 tw-text-sm tw-font-semibold focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2';
     return isActive
       ? `${base} tw-bg-twprimary tw-text-white`
       : `${base} tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50`;
@@ -452,7 +448,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
               DOB
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-right tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
-              Direct actions
+              Actions
             </th>
           </tr>
         </thead>
@@ -598,7 +594,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                 </div>
               </div>
 
-              <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-end tw-items-stretch tw-gap-4">
+              <div className="tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-items-stretch tw-gap-4">
                 <form
                   className="tw-flex tw-w-full md:tw-w-[28rem] tw-flex-shrink-0"
                   onSubmit={handleSearchSubmit}
@@ -614,15 +610,13 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                     Search
                   </button>
                 </form>
-                <div className="tw-flex tw-flex-col tw-w-full md:tw-w-64">
-                  <label htmlFor="worker-client-sort" className="tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                    Sort
-                  </label>
+                <div className="tw-flex tw-w-full md:tw-w-64">
                   <select
                     id="worker-client-sort"
                     className="tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md focus:tw-ring-blue-500 focus:tw-border-blue-500 tw-bg-white"
                     value={sortMode}
                     onChange={(e) => setSortMode(e.target.value as ClientSortMode)}
+                    aria-label="Sort clients"
                   >
                     <option value="name-asc">Name (A–Z)</option>
                     <option value="name-desc">Name (Z–A)</option>
@@ -630,10 +624,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                     <option value="date-desc">Account created (newest first)</option>
                   </select>
                 </div>
-                <div className="tw-flex tw-flex-col tw-w-full md:tw-w-auto">
-                  <span className="tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                    View
-                  </span>
+                <div className="tw-flex tw-w-full tw-justify-end md:tw-ml-auto md:tw-w-auto">
                   <div className="tw-inline-flex tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-300 tw-bg-white" role="group" aria-label="Client result view">
                     <button
                       type="button"
@@ -641,7 +632,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                       onClick={() => setViewMode('cards')}
                       aria-pressed={viewMode === 'cards'}
                     >
-                      <Squares2X2Icon className="tw-h-4 tw-w-4" aria-hidden />
                       Cards
                     </button>
                     <button
@@ -650,7 +640,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
                       onClick={() => setViewMode('list')}
                       aria-pressed={viewMode === 'list'}
                     >
-                      <TableCellsIcon className="tw-h-4 tw-w-4" aria-hidden />
                       List
                     </button>
                   </div>
