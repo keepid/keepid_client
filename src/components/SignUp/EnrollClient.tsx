@@ -33,66 +33,59 @@ const HOMELESSNESS_DEFINITION_SOURCE_URL =
 const HOMELESSNESS_DEFINITION_SECTIONS = [
   {
     title: 'Experiencing housing instability / unsheltered / or living in a shelter',
-    criteriaLabel: 'Criteria 1-3',
     criteria: [
       {
-        number: 1,
-        text: 'Lacks a fixed, regular, and adequate nighttime residence.',
+        text: 'The client does not have a fixed, regular, and adequate place to sleep at night.',
       },
       {
-        number: 2,
-        text: 'Has a primary nighttime residence that is a place not ordinarily used as a regular sleeping accommodation for human beings, including a car, park, abandoned building, bus or train station, airport, or camping ground.',
+        text: 'They are sleeping somewhere not normally used as housing, such as a car, park, abandoned building, bus or train station, airport, or campground.',
       },
       {
-        number: 3,
-        text: 'Is living in a supervised shelter designated to provide temporary living arrangements, including congregate shelters, transitional housing, and a hotel or motel paid for by a charitable organization or government program.',
+        text: 'They are staying in a supervised temporary shelter, transitional housing, or a hotel or motel paid for by a charitable organization or government program.',
       },
     ],
   },
   {
     title: 'Recently experienced homelessness or is at risk of homelessness soon',
-    criteriaLabel: 'Criteria 4-5',
     criteria: [
       {
-        number: 4,
-        text: 'Formerly resided in a shelter or place not meant for human habitation and is now exiting an institution where they temporarily resided.',
+        text: 'The client previously stayed in a shelter or place not meant for people to live, and is now leaving an institution where they were temporarily staying.',
       },
       {
-        number: 5,
-        text: 'Will imminently lose their housing, has no subsequent residence identified, and lacks the resources or support networks needed to obtain other permanent housing.',
-        detailLabel: 'Evidence of imminent loss includes:',
+        text: 'They will lose housing soon, do not have another place lined up, and do not have the resources or support network needed to get permanent housing.',
+        detailIntro: 'Imminent loss can include:',
         details: [
           'A court order evicting them within 14 days.',
-          'A hotel or motel room as their primary nighttime residence, but lacking the resources to stay there for more than 14 days.',
-          'Credible evidence that the owner or renter of their housing will not allow them to stay for more than 14 days.',
-          'Any credible oral statement from an applicant shall be sufficient evidence.',
+          'A hotel or motel room they cannot afford to keep for more than 14 days.',
+          'Credible evidence that the owner or renter will not allow them to stay for more than 14 days.',
+          'A credible oral statement from the applicant.',
         ],
       },
     ],
   },
   {
     title: 'Unaccompanied youth (24 and under) or family experiencing homelessness',
-    criteriaLabel: 'Criterion 6',
     criteria: [
       {
-        number: 6,
-        text: 'Is an unaccompanied youth or in a homeless family with children and youth.',
-        detailLabel: 'This includes youth or families with children and youth who:',
+        text: 'The client is an unaccompanied youth, or is part of a family with children or youth, and has not been able to live independently in permanent housing for a long period of time.',
+        detailIntro: 'This can apply when they have also:',
         details: [
-          'Have experienced a long-term period without living independently in permanent housing.',
-          'Have experienced persistent instability as measured by frequent moves over such period.',
-          'Expect to continue in such status for an extended period of time because of chronic disabilities, chronic physical or mental health conditions, addiction, domestic violence or childhood abuse, a child with a disability, or multiple barriers to employment.',
+          'Moved frequently during that period.',
+          'Expected the instability to continue because of chronic disabilities, chronic physical or mental health conditions, addiction, domestic violence or childhood abuse, a child with a disability, or multiple barriers to employment.',
         ],
       },
     ],
   },
   {
     title: 'Fleeing domestic violence or dangerous conditions',
-    criteriaLabel: 'Criterion 7',
     criteria: [
       {
-        number: 7,
-        text: 'Is fleeing, or attempting to flee, domestic or dating violence, sexual assault, stalking, or other dangerous or life-threatening conditions for them or that jeopardize children in their current housing situation, and has no other residence and lacks the resources or support networks to obtain other permanent housing.',
+        text: 'The client is fleeing, or trying to flee, domestic or dating violence, sexual assault, stalking, or another dangerous or life-threatening condition for them or for children in their current housing situation.',
+        detailIntro: 'This applies when they also:',
+        details: [
+          'Do not have another residence.',
+          'Do not have the resources or support network needed to obtain permanent housing.',
+        ],
       },
     ],
   },
@@ -146,11 +139,8 @@ function HomelessnessDefinitionModal({
                   className="tw-group tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white"
                 >
                   <summary className="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-px-4 tw-py-3 tw-text-sm tw-text-gray-900 [&::-webkit-details-marker]:tw-hidden">
-                    <span className="tw-flex tw-min-w-0 tw-flex-col tw-gap-1">
-                      <span className="tw-font-semibold tw-leading-5">{section.title}</span>
-                      <span className="tw-w-fit tw-rounded-full tw-bg-blue-50 tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-blue-700">
-                        {section.criteriaLabel}
-                      </span>
+                    <span className="tw-min-w-0 tw-font-semibold tw-leading-5">
+                      {section.title}
                     </span>
                     <ChevronDownIcon
                       className="tw-h-4 tw-w-4 tw-shrink-0 tw-text-gray-500 tw-transition-transform group-open:tw-rotate-180"
@@ -160,34 +150,28 @@ function HomelessnessDefinitionModal({
                   <div className="tw-space-y-3 tw-border-t tw-border-gray-100 tw-bg-gray-50 tw-px-4 tw-py-3">
                     {section.criteria.map((criterion) => (
                       <div
-                        key={criterion.number}
-                        className="tw-grid tw-grid-cols-[2rem_1fr] tw-gap-3"
+                        key={criterion.text}
+                        className="tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-ring-1 tw-ring-gray-200"
                       >
-                        <span className="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded-full tw-bg-blue-600 tw-text-sm tw-font-semibold tw-text-white">
-                          {criterion.number}
-                        </span>
-                        <div className="tw-min-w-0">
-                          <p className="tw-text-sm tw-leading-6 tw-text-gray-800">
-                            {criterion.text}
-                          </p>
-                          {criterion.details && (
-                            <div className="tw-mt-2 tw-space-y-1.5">
-                              {criterion.detailLabel && (
-                                <p className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">
-                                  {criterion.detailLabel}
-                                </p>
-                              )}
+                        <p className="tw-text-sm tw-leading-6 tw-text-gray-800">
+                          {criterion.text}
+                        </p>
+                        {criterion.details && (
+                          <div className="tw-mt-2 tw-rounded-md tw-bg-gray-50 tw-p-3">
+                            {criterion.detailIntro && (
+                              <p className="tw-mb-1.5 tw-text-sm tw-font-medium tw-text-gray-700">
+                                {criterion.detailIntro}
+                              </p>
+                            )}
+                            <div className="tw-space-y-1.5">
                               {criterion.details.map((detail) => (
-                                <div
-                                  key={detail}
-                                  className="tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-text-xs tw-leading-5 tw-text-gray-700 tw-ring-1 tw-ring-gray-200"
-                                >
+                                <p key={detail} className="tw-text-sm tw-leading-5 tw-text-gray-700">
                                   {detail}
-                                </div>
+                                </p>
                               ))}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
