@@ -147,33 +147,28 @@ function HomelessnessDefinitionModal({
                       aria-hidden="true"
                     />
                   </summary>
-                  <div className="tw-space-y-3 tw-border-t tw-border-gray-100 tw-bg-gray-50 tw-px-4 tw-py-3">
-                    {section.criteria.map((criterion) => (
-                      <div
-                        key={criterion.text}
-                        className="tw-rounded-md tw-bg-white tw-px-3 tw-py-2 tw-ring-1 tw-ring-gray-200"
-                      >
-                        <p className="tw-text-sm tw-leading-6 tw-text-gray-800">
-                          {criterion.text}
-                        </p>
-                        {criterion.details && (
-                          <div className="tw-mt-2 tw-rounded-md tw-bg-gray-50 tw-p-3">
-                            {criterion.detailIntro && (
-                              <p className="tw-mb-1.5 tw-text-sm tw-font-medium tw-text-gray-700">
-                                {criterion.detailIntro}
-                              </p>
-                            )}
-                            <div className="tw-space-y-1.5">
-                              {criterion.details.map((detail) => (
-                                <p key={detail} className="tw-text-sm tw-leading-5 tw-text-gray-700">
-                                  {detail}
+                  <div className="tw-border-t tw-border-gray-100 tw-bg-gray-50 tw-px-4 tw-py-3">
+                    <div className="tw-space-y-3 tw-rounded-md tw-bg-white tw-px-3 tw-py-3 tw-ring-1 tw-ring-gray-200">
+                      {section.criteria.map((criterion) => (
+                        <div key={criterion.text} className="tw-space-y-1.5">
+                          <p className="tw-text-sm tw-leading-6 tw-text-gray-800">
+                            {criterion.text}
+                          </p>
+                          {criterion.details && (
+                            <div className="tw-space-y-1">
+                              {criterion.detailIntro && (
+                                <p className="tw-text-sm tw-font-medium tw-text-gray-700">
+                                  {criterion.detailIntro}
                                 </p>
-                              ))}
+                              )}
+                              <p className="tw-text-sm tw-leading-6 tw-text-gray-700">
+                                {criterion.details.join(' ')}
+                              </p>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </details>
               ))}
