@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 import { PulseLoader } from 'react-spinners';
 
 import getServerURL from '../../serverOverride';
@@ -79,6 +79,10 @@ function countLabel(count: number | undefined, singular: string, fallback: strin
   return `${safeCount} ${singular}${safeCount === 1 ? '' : 's'}`;
 }
 
+function stopRowNavigation(event: React.SyntheticEvent): void {
+  event.stopPropagation();
+}
+
 function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[] {
   const next = list.slice();
   switch (mode) {
@@ -118,6 +122,7 @@ const CARD_CLIENTS_PER_PAGE = 6;
 const LIST_CLIENTS_PER_PAGE = 15;
 
 const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, logOut, alert }) => {
+  const history = useHistory();
   const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
   // --- UPDATED: State for submitted search ---
@@ -347,13 +352,13 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
     const documentsLabel = compact ? countLabel(client.documentCount, 'Document', 'Documents') : 'Documents';
     const applicationsLabel = compact ? countLabel(client.applicationCount, 'Application', 'Applications') : 'Applications';
     const primaryClasses = compact
-      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
+      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none';
     const secondaryClasses = compact
-      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
+      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md';
     const disabledClasses = compact
-      ? 'tw-inline-flex tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
+      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed';
 
     return (
@@ -455,10 +460,10 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
               Client
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
-              Phone
+              DOB
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
-              DOB
+              Phone
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-right tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
               Actions
@@ -467,23 +472,37 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
         </thead>
         <tbody className="tw-divide-y tw-divide-gray-100 tw-bg-white">
           {currentPosts.map((client) => (
-            <tr key={client.username} className="hover:tw-bg-gray-50">
+            <tr
+              key={client.username}
+              className="tw-cursor-pointer hover:tw-bg-gray-50 focus:tw-bg-blue-50 focus:tw-outline-none"
+              role="link"
+              tabIndex={0}
+              aria-label={`Open profile for ${clientDisplayName(client)}`}
+              onClick={() => history.push(`/profile/${client.username}`)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  history.push(`/profile/${client.username}`);
+                }
+              }}
+            >
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left">
-                <Link
-                  to={`/profile/${client.username}`}
-                  className="tw-font-semibold tw-text-gray-900 hover:tw-text-twprimary hover:tw-no-underline"
-                >
+                <span className="tw-font-semibold tw-text-gray-900">
                   {clientDisplayName(client)}
-                </Link>
-              </td>
-              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
-                {formatPhoneForDisplay(client.phone)}
+                </span>
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatBirthDateForDisplay(client.birthDate)}
               </td>
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
+                {formatPhoneForDisplay(client.phone)}
+              </td>
               <td className="tw-px-4 tw-py-3 tw-text-right">
-                <div className="tw-flex tw-flex-wrap tw-justify-end tw-gap-2">
+                <div
+                  className="tw-flex tw-flex-wrap tw-justify-end tw-gap-2"
+                  onClick={stopRowNavigation}
+                  onKeyDown={stopRowNavigation}
+                >
                   {renderClientActionButtons(client, true)}
                 </div>
               </td>
