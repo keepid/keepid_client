@@ -352,13 +352,13 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
     const documentsLabel = compact ? countLabel(client.documentCount, 'Document', 'Documents') : 'Documents';
     const applicationsLabel = compact ? countLabel(client.applicationCount, 'Application', 'Applications') : 'Applications';
     const primaryClasses = compact
-      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
+      ? 'tw-inline-flex tw-min-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-1.5 tw-px-3 tw-rounded-md tw-text-xs tw-border-none'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-bg-twprimary hover:tw-bg-blue-800 tw-text-white tw-font-bold tw-py-2 tw-px-3 tw-rounded-md tw-text-sm tw-border-none';
     const secondaryClasses = compact
-      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
+      ? 'tw-inline-flex tw-min-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md';
     const disabledClasses = compact
-      ? 'tw-inline-flex tw-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
+      ? 'tw-inline-flex tw-min-w-40 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed';
 
     return (
