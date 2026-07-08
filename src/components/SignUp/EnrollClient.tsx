@@ -1,3 +1,5 @@
+import { Dialog } from '@headlessui/react';
+import { InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
@@ -25,7 +27,122 @@ interface EnrollClientFormValues {
   experiencingHomelessness: boolean;
 }
 
+const HOMELESSNESS_DEFINITION_SOURCE_URL =
+  'https://www.pa.gov/content/dam/copapwp-pagov/en/penndot/documents/public/dvspubsforms/bdl/bdl-fact-sheets/fs-homelessid.pdf';
+
+const HOMELESSNESS_DEFINITION_SECTIONS = [
+  {
+    title: 'Experiencing housing instability / unsheltered / or living in a shelter',
+    start: 1,
+    items: [
+      'Lacks a fixed, regular, and adequate nighttime residence.',
+      'Has a primary nighttime residence that is a place not ordinarily used as a regular sleeping accommodation for human beings, including a car, park, abandoned building, bus or train station, airport, or camping ground.',
+      'Is living in a supervised shelter designated to provide temporary living arrangements, including congregate shelters, transitional housing, and a hotel or motel paid for by a charitable organization or government program.',
+    ],
+  },
+  {
+    title: 'Recently experienced homelessness or is at risk of homelessness soon',
+    start: 4,
+    items: [
+      'Formerly resided in a shelter or place not meant for human habitation and is now exiting an institution where they temporarily resided.',
+      'Will imminently lose their housing, has no subsequent residence identified, and lacks the resources or support networks needed to obtain other permanent housing. Evidence of imminent loss of housing includes: (i) a court order evicting them within 14 days; (ii) having a hotel or motel room as their primary nighttime residence but lacking the resources to stay there for more than 14 days; and (iii) credible evidence indicating that the owner or renter of their housing will not allow them to stay for more than 14 days; any credible oral statement from an applicant shall be sufficient evidence.',
+    ],
+  },
+  {
+    title: 'Unaccompanied youth (24 and under) or family experiencing homelessness',
+    start: 6,
+    items: [
+      'Is an unaccompanied youth or in a homeless family with children and youth who: (i) has experienced a long-term period without living independently in permanent housing, (ii) has experienced persistent instability as measured by frequent moves over such period, and (iii) expects to continue in such status for an extended period of time because of chronic disabilities, chronic physical or mental health conditions, addiction, domestic violence or childhood abuse, a child with a disability, or multiple barriers to employment.',
+    ],
+  },
+  {
+    title: 'Fleeing domestic violence or dangerous conditions',
+    start: 7,
+    items: [
+      'Is fleeing, or attempting to flee, domestic or dating violence, sexual assault, stalking, or other dangerous or life-threatening conditions for them or that jeopardize children in their current housing situation, and has no other residence and lacks the resources or support networks to obtain other permanent housing.',
+    ],
+  },
+];
+
 const NAME_FIELD_NAMES = new Set(['firstname', 'middlename', 'lastname']);
+
+function HomelessnessDefinitionModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}): JSX.Element {
+  return (
+    <Dialog open={isOpen} onClose={onClose} className="tw-relative tw-z-[100]">
+      <div className="tw-fixed tw-inset-0 tw-bg-black/40" aria-hidden="true" />
+      <div className="tw-fixed tw-inset-0 tw-overflow-y-auto tw-p-4">
+        <div className="tw-flex tw-min-h-full tw-items-center tw-justify-center">
+          <Dialog.Panel className="tw-flex tw-w-full tw-max-w-3xl tw-flex-col tw-overflow-hidden tw-rounded-lg tw-bg-white tw-shadow-xl">
+            <div className="tw-flex tw-items-start tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-px-5 tw-py-4">
+              <div>
+                <Dialog.Title className="tw-text-lg tw-font-semibold tw-text-gray-900">
+                  Homelessness definition
+                </Dialog.Title>
+              </div>
+              <button
+                type="button"
+                aria-label="Close homelessness definition"
+                className="tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-gray-500 hover:tw-bg-gray-100 hover:tw-text-gray-700"
+                onClick={onClose}
+              >
+                <XMarkIcon className="tw-h-5 tw-w-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="tw-max-h-[70vh] tw-space-y-3 tw-overflow-y-auto tw-p-5">
+              {HOMELESSNESS_DEFINITION_SECTIONS.map((section) => (
+                <details
+                  key={section.title}
+                  className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white"
+                >
+                  <summary className="tw-cursor-pointer tw-px-4 tw-py-3 tw-text-sm tw-font-semibold tw-text-gray-900">
+                    {section.title}
+                  </summary>
+                  <ol
+                    start={section.start}
+                    className="tw-list-decimal tw-space-y-2 tw-pb-4 tw-pl-8 tw-pr-4 tw-text-sm tw-leading-6 tw-text-gray-700"
+                  >
+                    {section.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ol>
+                </details>
+              ))}
+
+              <p className="tw-text-sm tw-leading-6 tw-text-gray-600">
+                Federal McKinney-Vento / Pennsylvania Definition of Homelessness:{' '}
+                <a
+                  href={HOMELESSNESS_DEFINITION_SOURCE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="tw-font-medium tw-text-blue-600 tw-underline"
+                >
+                  PennDOT fact sheet
+                </a>
+              </p>
+            </div>
+
+            <div className="tw-flex tw-justify-end tw-border-t tw-border-gray-200 tw-px-5 tw-py-4">
+              <button
+                type="button"
+                className="tw-rounded-md tw-border-0 tw-bg-twprimary tw-px-4 tw-py-2 tw-text-sm tw-font-semibold tw-text-white hover:tw-bg-blue-700"
+                onClick={onClose}
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
 
 function titleCaseName(value: string): string {
   return value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_, prefix: string, letter: string) => (
@@ -70,6 +187,7 @@ export default function EnrollClientPage(): JSX.Element {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [agreementError, setAgreementError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [homelessnessDefinitionOpen, setHomelessnessDefinitionOpen] = useState(false);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -275,6 +393,10 @@ export default function EnrollClientPage(): JSX.Element {
         <title>Enroll Client</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
+      <HomelessnessDefinitionModal
+        isOpen={homelessnessDefinitionOpen}
+        onClose={() => setHomelessnessDefinitionOpen(false)}
+      />
       <div className="tw-container tw-mx-auto tw-max-w-6xl tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-8">
         <div className="tw-w-full tw-max-w-5xl tw-mx-auto">
           <div className="tw-text-center tw-pb-4 tw-mb-2">
@@ -431,9 +553,20 @@ export default function EnrollClientPage(): JSX.Element {
                   checked={values.experiencingHomelessness}
                   onChange={onChange}
                 />
-                <label htmlFor="experiencingHomelessness" className="tw-ml-2 tw-text-sm tw-text-gray-700">
-                  Client is experiencing homelessness
-                </label>
+                <div className="tw-ml-2 tw-flex tw-items-start tw-gap-1.5">
+                  <label htmlFor="experiencingHomelessness" className="tw-text-sm tw-text-gray-700">
+                    Client is experiencing homelessness
+                  </label>
+                  <button
+                    type="button"
+                    title="View homelessness definition"
+                    aria-label="View homelessness definition"
+                    className="tw-mt-[-1px] tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 tw-text-blue-600 hover:tw-text-blue-700 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2"
+                    onClick={() => setHomelessnessDefinitionOpen(true)}
+                  >
+                    <InformationCircleIcon className="tw-h-5 tw-w-5" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </div>
 
