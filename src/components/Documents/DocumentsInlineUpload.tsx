@@ -81,6 +81,8 @@ export interface DocumentsInlineUploadProps {
    * (e.g. page title left, button right); the expanded upload panel stays below.
    */
   collapsibleHeaderStart?: React.ReactNode;
+  /** Called after a phone-token upload session is closed successfully. */
+  onPhoneUploadClosed?: () => void;
 }
 
 export default function DocumentsInlineUpload({
@@ -100,6 +102,7 @@ export default function DocumentsInlineUpload({
   lockedCategory = false,
   collapsible = false,
   collapsibleHeaderStart,
+  onPhoneUploadClosed,
 }: DocumentsInlineUploadProps) {
   const detectMobileScannerSupport = useCallback(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -340,17 +343,23 @@ export default function DocumentsInlineUpload({
   const closeTokenSession = useCallback(async () => {
     if (!phoneUploadToken) return;
     try {
-      await fetch(`${getServerURL()}/close-phone-upload-session`, {
+      const response = await fetch(`${getServerURL()}/close-phone-upload-session`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneUploadToken }),
       });
+      const json = await parseJsonResponseSafe(response);
+      if (!response.ok || (json?.status && json.status !== 'SUCCESS')) {
+        throw new Error(json?.message || 'Unable to close phone upload session.');
+      }
+      setFile(null);
       alert.show('Phone upload session closed.');
+      onPhoneUploadClosed?.();
     } catch (_err) {
       alert.show('Unable to close phone upload session.', { type: 'error' });
     }
-  }, [alert, phoneUploadToken]);
+  }, [alert, onPhoneUploadClosed, phoneUploadToken]);
 
   const createPhoneUploadSession = useCallback(async () => {
     if (!canNotify) return;

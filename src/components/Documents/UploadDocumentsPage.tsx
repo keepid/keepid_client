@@ -49,6 +49,7 @@ function UploadDocumentsPage({
   const returnLink = userRole === Role.Client ? `/my-documents/${username}` : '/my-documents/';
   const isQuickAccessUpload = !!returnTo && queryMode === 'choose';
   const [phoneUploadToken, setPhoneUploadToken] = useState<string | null>(null);
+  const [phoneUploadClosed, setPhoneUploadClosed] = useState(false);
   const [phoneUploadContext, setPhoneUploadContext] = useState<{
     targetUser: string;
     targetClientDisplayName?: string;
@@ -64,6 +65,7 @@ function UploadDocumentsPage({
     const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
     const token = hashParams.get('t');
     if (!token) return;
+    setPhoneUploadClosed(false);
     setPhoneUploadToken(token);
     if (typeof window !== 'undefined') {
       const cleanUrl = `${window.location.pathname}${window.location.search}`;
@@ -117,6 +119,12 @@ function UploadDocumentsPage({
     return queryMode === 'scan' ? 'scanning' : undefined;
   }, [phoneUploadContext, queryMode]);
 
+  const handlePhoneUploadClosed = () => {
+    setPhoneUploadClosed(true);
+    setPhoneUploadToken(null);
+    setPhoneUploadContext(null);
+  };
+
   if (resolvingToken) {
     return (
       <div className="container">
@@ -136,6 +144,25 @@ function UploadDocumentsPage({
           <p className="text-muted mb-0">
             Ask the case worker to generate a new Upload from phone link.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (phoneUploadClosed) {
+    return (
+      <div className="container">
+        <Helmet>
+          <title>Upload Complete</title>
+          <meta name="description" content="Keep.id" />
+        </Helmet>
+        <div className="jumbotron-fluid mt-5">
+          <div className="border rounded bg-light p-4 text-center">
+            <h1 className="display-6 mb-3">Phone upload session closed</h1>
+            <p className="text-muted mb-0">
+              The secure upload link is no longer active. You can close this browser tab.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -182,6 +209,7 @@ function UploadDocumentsPage({
           lockedCategory={(isQuickAccessUpload && !!initialCategory) || !!phoneUploadToken}
           forceScannerMode={!!phoneUploadToken}
           phoneUploadToken={phoneUploadToken || undefined}
+          onPhoneUploadClosed={handlePhoneUploadClosed}
         />
       </div>
     </div>

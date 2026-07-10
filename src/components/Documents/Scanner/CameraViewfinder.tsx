@@ -135,8 +135,9 @@ export default function CameraViewfinder({
 
   const redrawGuideOverlay = useCallback(() => {
     const overlay = overlayRef.current;
+    const video = videoRef.current;
     if (!overlay) return;
-    drawOverlay(overlay, preset);
+    drawOverlay(overlay, preset, video);
   }, [preset]);
 
   const handleVideoReady = useCallback(() => {
@@ -395,6 +396,7 @@ function loadFallbackImage(
 function drawOverlay(
   overlay: HTMLCanvasElement,
   preset: ScannerPreset,
+  video?: HTMLVideoElement | null,
 ) {
   const rect = overlay.getBoundingClientRect();
   if (overlay.width !== rect.width || overlay.height !== rect.height) {
@@ -409,45 +411,49 @@ function drawOverlay(
 
   // Guide rectangle at preset aspect ratio (skip for freeform)
   if (preset.kind !== 'freeform') {
-    drawGuideRectangle(ctx, overlay.width, overlay.height, preset);
+    const bounds = video?.videoWidth && video?.videoHeight
+      ? containFit(video.videoWidth, video.videoHeight, overlay.width, overlay.height)
+      : {
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        renderedW: overlay.width,
+        renderedH: overlay.height,
+      };
+    drawGuideRectangle(ctx, bounds, preset);
   }
 }
 
 function drawGuideRectangle(
   ctx: CanvasRenderingContext2D,
-  canvasW: number,
-  canvasH: number,
+  bounds: FitBounds,
   preset: ScannerPreset,
 ) {
-  const aspect =
-    preset.orientationHint === 'portrait' ? preset.aspectRatio : preset.aspectRatio;
-  let guideW: number;
-  let guideH: number;
-  const maxW = canvasW * (preset.kind === 'letter' ? 0.94 : 0.85);
-  const maxH = canvasH * (preset.kind === 'letter' ? 0.94 : 0.85);
-  if (preset.orientationHint === 'landscape') {
-    guideW = Math.min(maxW, maxH * aspect);
-    guideH = guideW / aspect;
-  } else {
-    guideH = Math.min(maxH, maxW / aspect);
-    guideW = guideH * aspect;
-  }
-  const x = (canvasW - guideW) / 2;
-  const y = (canvasH - guideH) / 2;
+  const guide = getGuideBounds(bounds.renderedW, bounds.renderedH, preset);
+  const x = bounds.offsetX + guide.x;
+  const y = bounds.offsetY + guide.y;
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.9)';
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 6]);
-  ctx.strokeRect(x, y, guideW, guideH);
+  ctx.strokeRect(x, y, guide.w, guide.h);
   ctx.restore();
 }
+
+type FitBounds = {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  renderedW: number;
+  renderedH: number;
+};
 
 function containFit(
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number,
-): { scaleX: number; scaleY: number; offsetX: number; offsetY: number } {
+): FitBounds {
   // Video is drawn with object-fit: contain, so mirror that math for overlay pts.
   const srcRatio = srcW / srcH;
   const dstRatio = dstW / dstH;
@@ -460,10 +466,11 @@ function containFit(
   const renderedW = srcW * scale;
   const renderedH = srcH * scale;
   return {
-    scaleX: scale,
-    scaleY: scale,
+    scale,
     offsetX: (dstW - renderedW) / 2,
     offsetY: (dstH - renderedH) / 2,
+    renderedW,
+    renderedH,
   };
 }
 
@@ -483,22 +490,28 @@ function buildGuideCorners(
   const overlayRect = overlay.getBoundingClientRect();
   const overlayW = overlayRect.width || overlay.width;
   const overlayH = overlayRect.height || overlay.height;
-  const guide = getGuideBounds(overlayW, overlayH, preset);
-  const { scaleX, scaleY, offsetX, offsetY } = containFit(
+  const fit = containFit(
     video.videoWidth,
     video.videoHeight,
     overlayW,
     overlayH,
   );
+  const guide = getGuideBounds(fit.renderedW, fit.renderedH, preset);
+  const sourceGuide = {
+    x: fit.offsetX + guide.x,
+    y: fit.offsetY + guide.y,
+    w: guide.w,
+    h: guide.h,
+  };
   const toSource = (x: number, y: number) => ({
-    x: clamp((x - offsetX) / scaleX, 0, video.videoWidth),
-    y: clamp((y - offsetY) / scaleY, 0, video.videoHeight),
+    x: clamp((x - fit.offsetX) / fit.scale, 0, video.videoWidth),
+    y: clamp((y - fit.offsetY) / fit.scale, 0, video.videoHeight),
   });
   return {
-    topLeft: toSource(guide.x, guide.y),
-    topRight: toSource(guide.x + guide.w, guide.y),
-    bottomRight: toSource(guide.x + guide.w, guide.y + guide.h),
-    bottomLeft: toSource(guide.x, guide.y + guide.h),
+    topLeft: toSource(sourceGuide.x, sourceGuide.y),
+    topRight: toSource(sourceGuide.x + sourceGuide.w, sourceGuide.y),
+    bottomRight: toSource(sourceGuide.x + sourceGuide.w, sourceGuide.y + sourceGuide.h),
+    bottomLeft: toSource(sourceGuide.x, sourceGuide.y + sourceGuide.h),
   };
 }
 

@@ -61,14 +61,20 @@ async function extractWithScanic(
   }
   const out = result.output;
   // Normalize the extracted quad to the preset's target pixel size so every scan
-  // of the same document type comes out at the same dimensions.
+  // of the same document type comes out at the same dimensions. Use contain
+  // sizing so imperfect corner geometry cannot stretch the photo.
   if (out.width === extractSize.w && out.height === extractSize.h) return out;
   const normalized = document.createElement('canvas');
   normalized.width = extractSize.w;
   normalized.height = extractSize.h;
   const ctx = normalized.getContext('2d');
   if (!ctx) throw new Error('2D canvas context unavailable');
-  ctx.drawImage(out, 0, 0, extractSize.w, extractSize.h);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, extractSize.w, extractSize.h);
+  const scale = Math.min(extractSize.w / out.width, extractSize.h / out.height);
+  const w = out.width * scale;
+  const h = out.height * scale;
+  ctx.drawImage(out, (extractSize.w - w) / 2, (extractSize.h - h) / 2, w, h);
   return normalized;
 }
 
