@@ -24,6 +24,7 @@ import { presetFor } from './Scanner/scannerPresets';
 
 const ACCEPT = 'application/pdf,image/jpeg,image/png,image/gif,image/webp';
 type Mode = 'picker' | 'scan-pick-category' | 'scanning' | 'upload-pick-file' | 'submit' | 'uploaded-view';
+type PhoneUploadRecipient = 'client' | 'worker';
 
 async function parseJsonResponseSafe(response: Response): Promise<any> {
   const raw = await response.text();
@@ -142,11 +143,14 @@ export default function DocumentsInlineUpload({
   const [notifyHydrated, setNotifyHydrated] = useState(false);
   const [sendingNotification, setSendingNotification] = useState(false);
   const [notifyPhoneError, setNotifyPhoneError] = useState('');
-  const [creatingPhoneUpload, setCreatingPhoneUpload] = useState(false);
+  const [creatingPhoneUploadRecipient, setCreatingPhoneUploadRecipient] =
+    useState<PhoneUploadRecipient | null>(null);
   const [phoneUploadModalOpen, setPhoneUploadModalOpen] = useState(false);
   const [phoneUploadUrl, setPhoneUploadUrl] = useState('');
   const [phoneUploadExpiresAt, setPhoneUploadExpiresAt] = useState<number | null>(null);
   const [phoneUploadError, setPhoneUploadError] = useState('');
+  const [phoneUploadRecipient, setPhoneUploadRecipient] = useState<PhoneUploadRecipient>('client');
+  const [phoneUploadSmsSent, setPhoneUploadSmsSent] = useState(false);
   const [phoneUploadStartSeenIds, setPhoneUploadStartSeenIds] = useState<Set<string>>(new Set());
   const [phoneUploadRefreshTick, setPhoneUploadRefreshTick] = useState(0);
   const notifyHydrateStarted = useRef(false);
@@ -361,7 +365,7 @@ export default function DocumentsInlineUpload({
     }
   }, [alert, onPhoneUploadClosed, phoneUploadToken]);
 
-  const createPhoneUploadSession = useCallback(async () => {
+  const createPhoneUploadSession = useCallback(async (recipient: PhoneUploadRecipient) => {
     if (!canNotify) return;
     if (!category) {
       alert.show('Choose a category first.');
@@ -371,7 +375,7 @@ export default function DocumentsInlineUpload({
       alert.show('Please specify a custom category for "Other: specify".');
       return;
     }
-    setCreatingPhoneUpload(true);
+    setCreatingPhoneUploadRecipient(recipient);
     setPhoneUploadError('');
     try {
       const baselineIds = await fetchCurrentDocumentIds();
@@ -384,6 +388,7 @@ export default function DocumentsInlineUpload({
           idCategory: category,
           customIdCategory: isOtherCategory ? trimmedCustomIdCategory : undefined,
           clientOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
+          recipient,
         }),
       });
       const json = await parseJsonResponseSafe(response);
@@ -394,11 +399,13 @@ export default function DocumentsInlineUpload({
       setPhoneUploadStartSeenIds(new Set(baselineIds));
       setPhoneUploadUrl(String(json.mobileUrl));
       setPhoneUploadExpiresAt(Number(json.expiresAt || 0));
+      setPhoneUploadRecipient(recipient);
+      setPhoneUploadSmsSent(Boolean(json.smsSent));
       setPhoneUploadModalOpen(true);
     } catch (err) {
       setPhoneUploadError(`Could not create phone upload session: ${err}`);
     } finally {
-      setCreatingPhoneUpload(false);
+      setCreatingPhoneUploadRecipient(null);
     }
   }, [
     alert,
@@ -617,6 +624,10 @@ export default function DocumentsInlineUpload({
   const inlinePanelClassName = mode === 'scanning'
     ? `w-100 bg-dark overflow-hidden${collapsible ? ' mt-3' : ''}`
     : `w-100 border rounded p-4 bg-light${collapsible ? ' mt-3' : ''}`;
+  const phoneUploadRecipientLabel = phoneUploadRecipient === 'worker'
+    ? viewerName || viewerUsername || 'the worker'
+    : clientDisplayName || targetUser;
+  const phoneUploadRecipientPhone = phoneUploadRecipient === 'client' ? clientPhone : '';
 
   return (
     <div
@@ -773,14 +784,24 @@ export default function DocumentsInlineUpload({
                     aria-label="Custom document type"
                   />
                 )}
-                <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={createPhoneUploadSession}
-                  disabled={creatingPhoneUpload || !category || (isOtherCategory && !trimmedCustomIdCategory)}
-                >
-                  {creatingPhoneUpload ? 'Creating link…' : 'Upload from phone'}
-                </button>
+                <div className="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary"
+                    onClick={() => createPhoneUploadSession('client')}
+                    disabled={!!creatingPhoneUploadRecipient || !category || (isOtherCategory && !trimmedCustomIdCategory)}
+                  >
+                    {creatingPhoneUploadRecipient === 'client' ? 'Sending…' : 'Send link to client'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => createPhoneUploadSession('worker')}
+                    disabled={!!creatingPhoneUploadRecipient || !category || (isOtherCategory && !trimmedCustomIdCategory)}
+                  >
+                    {creatingPhoneUploadRecipient === 'worker' ? 'Sending…' : 'Send link to worker'}
+                  </button>
+                </div>
                 {phoneUploadError ? <div className="text-danger small mt-2">{phoneUploadError}</div> : null}
               </div>
             )}
@@ -974,10 +995,18 @@ export default function DocumentsInlineUpload({
                 />
               </div>
               <div className="modal-body">
-                <p className="mb-2">
-                  A text message was sent to {clientDisplayName || targetUser}
-                  {clientPhone ? ` at ${clientPhone}` : ''} with a secure upload link.
-                </p>
+                {phoneUploadSmsSent ? (
+                  <p className="mb-2">
+                    A text message was sent to {phoneUploadRecipientLabel}
+                    {phoneUploadRecipientPhone ? ` at ${phoneUploadRecipientPhone}` : ''}
+                    {' '}
+                    with a secure upload link.
+                  </p>
+                ) : (
+                  <p className="mb-2">
+                    The secure upload link is ready. Copy it or scan the QR code to open it on a phone.
+                  </p>
+                )}
                 {phoneUploadExpiresAt ? (
                   <p className="small text-muted mb-3">
                     Expires in{' '}
