@@ -502,7 +502,11 @@ class MyDocuments extends Component<Props, State> {
     if (
       this.props.userRole === Role.Client
       && this.isStaffViewer()
-      && canUseClientNotifications(this.props.viewerRole, this.props.organizationName)
+      && canUseClientNotifications(
+        this.props.viewerRole,
+        this.props.organizationName,
+        this.props.viewerUsername,
+      )
     ) {
       actions.push({
         label: 'Notify',
@@ -639,6 +643,7 @@ class MyDocuments extends Component<Props, State> {
     const canAccessApplications = canUseApplications(
       this.props.viewerRole || this.props.userRole,
       this.props.organizationName,
+      this.props.viewerUsername || this.props.username,
     );
 
     return (
@@ -648,6 +653,7 @@ class MyDocuments extends Component<Props, State> {
             <ViewDocument
               userRole={currentUserRole}
               viewerRole={this.props.viewerRole}
+              viewerUsername={this.props.viewerUsername}
               organizationName={this.props.organizationName}
               documentId={currentDocumentId}
               documentName={currentDocumentName}

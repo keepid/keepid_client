@@ -209,8 +209,8 @@ class App extends React.Component<{}, State, {}> {
 
   render() {
     const { role, username, name, organization } = this.state;
-    const canAccessApplications = canUseApplications(role, organization);
-    const canAccessCommunications = canUseCommunications(role, organization);
+    const canAccessApplications = canUseApplications(role, organization, username);
+    const canAccessCommunications = canUseCommunications(role, organization, username);
     const renderHome = () => (
       <Home
         logIn={this.logIn}
@@ -236,6 +236,7 @@ class App extends React.Component<{}, State, {}> {
               logOut={this.logOut}
               role={role}
               organization={organization}
+              username={username}
             />
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
@@ -611,6 +612,7 @@ class App extends React.Component<{}, State, {}> {
                       <ProfilePage
                         viewerRole={role}
                         viewerOrganization={organization}
+                        viewerUsername={username}
                       />
                     );
                   }
@@ -645,6 +647,7 @@ class App extends React.Component<{}, State, {}> {
                         targetUsername={clientUsername}
                         viewerRole={role}
                         viewerOrganization={organization}
+                        viewerUsername={username}
                       />
                     );
                   }

@@ -20,17 +20,18 @@ interface Props {
   isLoggedIn: boolean;
   role: Role;
   organization: string;
+  username: string;
   alert: any;
 }
 
 interface State {}
 
 // We extend React.Component with Props & State
-function Header({ logIn, logOut, isLoggedIn, role, organization, alert }: Props) {
+function Header({ logIn, logOut, isLoggedIn, role, organization, username, alert }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const isStaffUser = role === Role.Admin || role === Role.Director || role === Role.Worker;
-  const showApplicationsLink = isStaffUser && canUseApplications(role, organization);
-  const showCommunicationsLink = canUseCommunications(role, organization);
+  const showApplicationsLink = isStaffUser && canUseApplications(role, organization, username);
+  const showCommunicationsLink = canUseCommunications(role, organization, username);
 
   // Updated NavLink
   const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
