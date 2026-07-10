@@ -296,7 +296,7 @@ export default function CameraViewfinder({
           muted
           onLoadedMetadata={handleVideoReady}
           className="w-100 h-100 position-absolute top-0 start-0"
-          style={{ objectFit: 'contain' }}
+          style={{ objectFit: 'cover' }}
         />
         <canvas
           ref={overlayRef}
@@ -419,51 +419,41 @@ function drawGuideRectangle(
   canvasH: number,
   preset: ScannerPreset,
 ) {
-  const aspect =
-    preset.orientationHint === 'portrait' ? preset.aspectRatio : preset.aspectRatio;
-  let guideW: number;
-  let guideH: number;
-  const maxW = canvasW * (preset.kind === 'letter' ? 0.94 : 0.85);
-  const maxH = canvasH * (preset.kind === 'letter' ? 0.94 : 0.85);
-  if (preset.orientationHint === 'landscape') {
-    guideW = Math.min(maxW, maxH * aspect);
-    guideH = guideW / aspect;
-  } else {
-    guideH = Math.min(maxH, maxW / aspect);
-    guideW = guideH * aspect;
-  }
-  const x = (canvasW - guideW) / 2;
-  const y = (canvasH - guideH) / 2;
+  const guide = getGuideBounds(canvasW, canvasH, preset);
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.9)';
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 6]);
-  ctx.strokeRect(x, y, guideW, guideH);
+  ctx.strokeRect(guide.x, guide.y, guide.w, guide.h);
   ctx.restore();
 }
 
-function containFit(
+type FitBounds = {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+};
+
+function coverFit(
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number,
-): { scaleX: number; scaleY: number; offsetX: number; offsetY: number } {
-  // Video is drawn with object-fit: contain, so mirror that math for overlay pts.
+): FitBounds {
+  // The live preview fills the scanner like a phone camera, so mirror
+  // object-fit: cover when translating guide points back into video pixels.
   const srcRatio = srcW / srcH;
   const dstRatio = dstW / dstH;
   let scale: number;
   if (srcRatio > dstRatio) {
-    scale = dstW / srcW;
-  } else {
     scale = dstH / srcH;
+  } else {
+    scale = dstW / srcW;
   }
-  const renderedW = srcW * scale;
-  const renderedH = srcH * scale;
   return {
-    scaleX: scale,
-    scaleY: scale,
-    offsetX: (dstW - renderedW) / 2,
-    offsetY: (dstH - renderedH) / 2,
+    scale,
+    offsetX: (dstW - srcW * scale) / 2,
+    offsetY: (dstH - srcH * scale) / 2,
   };
 }
 
@@ -472,33 +462,32 @@ function buildGuideCorners(
   overlay: HTMLCanvasElement,
   preset: ScannerPreset,
 ): CornerPoints {
-  if (preset.kind === 'freeform') {
-    return {
-      topLeft: { x: 0, y: 0 },
-      topRight: { x: video.videoWidth, y: 0 },
-      bottomRight: { x: video.videoWidth, y: video.videoHeight },
-      bottomLeft: { x: 0, y: video.videoHeight },
-    };
-  }
   const overlayRect = overlay.getBoundingClientRect();
   const overlayW = overlayRect.width || overlay.width;
   const overlayH = overlayRect.height || overlay.height;
-  const guide = getGuideBounds(overlayW, overlayH, preset);
-  const { scaleX, scaleY, offsetX, offsetY } = containFit(
+  const fit = coverFit(
     video.videoWidth,
     video.videoHeight,
     overlayW,
     overlayH,
   );
+  const overlayGuide = preset.kind === 'freeform'
+    ? {
+      x: 0,
+      y: 0,
+      w: overlayW,
+      h: overlayH,
+    }
+    : getGuideBounds(overlayW, overlayH, preset);
   const toSource = (x: number, y: number) => ({
-    x: clamp((x - offsetX) / scaleX, 0, video.videoWidth),
-    y: clamp((y - offsetY) / scaleY, 0, video.videoHeight),
+    x: clamp((x - fit.offsetX) / fit.scale, 0, video.videoWidth),
+    y: clamp((y - fit.offsetY) / fit.scale, 0, video.videoHeight),
   });
   return {
-    topLeft: toSource(guide.x, guide.y),
-    topRight: toSource(guide.x + guide.w, guide.y),
-    bottomRight: toSource(guide.x + guide.w, guide.y + guide.h),
-    bottomLeft: toSource(guide.x, guide.y + guide.h),
+    topLeft: toSource(overlayGuide.x, overlayGuide.y),
+    topRight: toSource(overlayGuide.x + overlayGuide.w, overlayGuide.y),
+    bottomRight: toSource(overlayGuide.x + overlayGuide.w, overlayGuide.y + overlayGuide.h),
+    bottomLeft: toSource(overlayGuide.x, overlayGuide.y + overlayGuide.h),
   };
 }
 
