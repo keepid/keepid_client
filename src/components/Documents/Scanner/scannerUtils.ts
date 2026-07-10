@@ -61,8 +61,8 @@ async function extractWithScanic(
   }
   const out = result.output;
   // Normalize the extracted quad to the preset's target pixel size so every scan
-  // of the same document type comes out at the same dimensions. Use contain
-  // sizing so imperfect corner geometry cannot stretch the photo.
+  // of the same document type comes out at the same dimensions. Preserve the
+  // extracted aspect ratio so imperfect corner geometry cannot stretch the photo.
   if (out.width === extractSize.w && out.height === extractSize.h) return out;
   const normalized = document.createElement('canvas');
   normalized.width = extractSize.w;
