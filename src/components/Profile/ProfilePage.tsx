@@ -23,6 +23,7 @@ type Props = {
   targetUsername?: string;
   viewerRole?: Role;
   viewerOrganization?: string;
+  viewerUsername?: string;
 };
 
 export type NameObj = {
@@ -74,6 +75,7 @@ export default function ProfilePage({
   targetUsername,
   viewerRole,
   viewerOrganization,
+  viewerUsername,
 }: Props) {
   const alert = useAlert();
   const history = useHistory();
@@ -93,17 +95,19 @@ export default function ProfilePage({
         return {
           role: parsed.role as Role,
           organization: parsed.organization as string,
+          username: parsed.username as string,
         };
       }
     } catch { /* ignore */ }
-    return { role: '', organization: '' };
+    return { role: '', organization: '', username: '' };
   }, []);
   const currentUserRole = viewerRole || currentUserSession.role;
   const currentUserOrganization = viewerOrganization || currentUserSession.organization;
+  const currentUsername = viewerUsername || currentUserSession.username;
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
-  const canAccessApplications = canUseApplications(currentUserRole, currentUserOrganization);
-  const canAccessCommunicationHistory = canUseCommunications(currentUserRole, currentUserOrganization);
+  const canAccessApplications = canUseApplications(currentUserRole, currentUserOrganization, currentUsername);
+  const canAccessCommunicationHistory = canUseCommunications(currentUserRole, currentUserOrganization, currentUsername);
 
   const canEditClientIdentityFields = useMemo(
     () =>

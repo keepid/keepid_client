@@ -135,7 +135,7 @@ export default function DocumentsInlineUpload({
   // Notify flow
   const canNotify = !!viewerUsername
     && viewerUsername !== targetUser
-    && canUseClientNotifications(viewerRole, organizationName);
+    && canUseClientNotifications(viewerRole, organizationName, viewerUsername);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const [clientDisplayName, setClientDisplayName] = useState<string>(clientNameProp || '');
   const [clientPhone, setClientPhone] = useState<string>('');

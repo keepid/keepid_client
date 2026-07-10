@@ -123,13 +123,15 @@ type CountLoadState =
 interface Props {
   role: Role;
   organization: string;
+  username: string;
 }
 
 export default function ClientDashboardSummaryCards({
   role,
   organization,
+  username,
 }: Props): React.ReactElement {
-  const canAccessApplications = canUseApplications(role, organization);
+  const canAccessApplications = canUseApplications(role, organization, username);
   const [documents, setDocuments] = useState<CountLoadState>({ status: 'loading' });
   const [applications, setApplications] = useState<CountLoadState>({
     status: 'loading',

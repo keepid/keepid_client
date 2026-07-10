@@ -33,6 +33,7 @@ function HeaderFixture({ isLoggedIn, role }: Props) {
       isLoggedIn={isLoggedIn}
       role={role}
       organization="Team Keep"
+      username="demo@keep.id"
       alert={alert}
     />
   );

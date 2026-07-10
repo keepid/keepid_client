@@ -137,9 +137,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [viewMode, setViewMode] = useState<ClientViewMode>('list');
   const [isLoading, setIsLoading] = useState(true);
   const { path } = useRouteMatch();
-  const canAccessApplications = canUseApplications(role, organization);
-  const canAccessCommunications = canUseCommunications(role, organization);
-  const canAccessNotifications = canUseClientNotifications(role, organization);
+  const canAccessApplications = canUseApplications(role, organization, username);
+  const canAccessCommunications = canUseCommunications(role, organization, username);
+  const canAccessNotifications = canUseClientNotifications(role, organization, username);
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
     const clientsWithPhoto = clientsArray.filter((client) => client.profilePhoto != null);
