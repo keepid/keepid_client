@@ -607,7 +607,12 @@ class App extends React.Component<{}, State, {}> {
                 exact
                 render={() => {
                   if (role !== Role.LoggedOut) {
-                    return <ProfilePage />;
+                    return (
+                      <ProfilePage
+                        viewerRole={role}
+                        viewerOrganization={organization}
+                      />
+                    );
                   }
                   return renderHome();
                 }}
@@ -635,7 +640,13 @@ class App extends React.Component<{}, State, {}> {
                 render={(props) => {
                   const clientUsername = props.match.params.username;
                   if (role !== Role.LoggedOut) {
-                    return <ProfilePage targetUsername={clientUsername} />;
+                    return (
+                      <ProfilePage
+                        targetUsername={clientUsername}
+                        viewerRole={role}
+                        viewerOrganization={organization}
+                      />
+                    );
                   }
                   return renderHome();
                 }}
