@@ -135,9 +135,8 @@ export default function CameraViewfinder({
 
   const redrawGuideOverlay = useCallback(() => {
     const overlay = overlayRef.current;
-    const video = videoRef.current;
     if (!overlay) return;
-    drawOverlay(overlay, preset, video);
+    drawOverlay(overlay, preset);
   }, [preset]);
 
   const handleVideoReady = useCallback(() => {
@@ -297,7 +296,7 @@ export default function CameraViewfinder({
           muted
           onLoadedMetadata={handleVideoReady}
           className="w-100 h-100 position-absolute top-0 start-0"
-          style={{ objectFit: 'contain' }}
+          style={{ objectFit: 'cover' }}
         />
         <canvas
           ref={overlayRef}
@@ -396,7 +395,6 @@ function loadFallbackImage(
 function drawOverlay(
   overlay: HTMLCanvasElement,
   preset: ScannerPreset,
-  video?: HTMLVideoElement | null,
 ) {
   const rect = overlay.getBoundingClientRect();
   if (overlay.width !== rect.width || overlay.height !== rect.height) {
@@ -411,32 +409,22 @@ function drawOverlay(
 
   // Guide rectangle at preset aspect ratio (skip for freeform)
   if (preset.kind !== 'freeform') {
-    const bounds = video?.videoWidth && video?.videoHeight
-      ? containFit(video.videoWidth, video.videoHeight, overlay.width, overlay.height)
-      : {
-        scale: 1,
-        offsetX: 0,
-        offsetY: 0,
-        renderedW: overlay.width,
-        renderedH: overlay.height,
-      };
-    drawGuideRectangle(ctx, bounds, preset);
+    drawGuideRectangle(ctx, overlay.width, overlay.height, preset);
   }
 }
 
 function drawGuideRectangle(
   ctx: CanvasRenderingContext2D,
-  bounds: FitBounds,
+  canvasW: number,
+  canvasH: number,
   preset: ScannerPreset,
 ) {
-  const guide = getGuideBounds(bounds.renderedW, bounds.renderedH, preset);
-  const x = bounds.offsetX + guide.x;
-  const y = bounds.offsetY + guide.y;
+  const guide = getGuideBounds(canvasW, canvasH, preset);
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.9)';
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 6]);
-  ctx.strokeRect(x, y, guide.w, guide.h);
+  ctx.strokeRect(guide.x, guide.y, guide.w, guide.h);
   ctx.restore();
 }
 
@@ -444,33 +432,28 @@ type FitBounds = {
   scale: number;
   offsetX: number;
   offsetY: number;
-  renderedW: number;
-  renderedH: number;
 };
 
-function containFit(
+function coverFit(
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number,
 ): FitBounds {
-  // Video is drawn with object-fit: contain, so mirror that math for overlay pts.
+  // The live preview fills the scanner like a phone camera, so mirror
+  // object-fit: cover when translating guide points back into video pixels.
   const srcRatio = srcW / srcH;
   const dstRatio = dstW / dstH;
   let scale: number;
   if (srcRatio > dstRatio) {
-    scale = dstW / srcW;
-  } else {
     scale = dstH / srcH;
+  } else {
+    scale = dstW / srcW;
   }
-  const renderedW = srcW * scale;
-  const renderedH = srcH * scale;
   return {
     scale,
-    offsetX: (dstW - renderedW) / 2,
-    offsetY: (dstH - renderedH) / 2,
-    renderedW,
-    renderedH,
+    offsetX: (dstW - srcW * scale) / 2,
+    offsetY: (dstH - srcH * scale) / 2,
   };
 }
 
@@ -479,39 +462,32 @@ function buildGuideCorners(
   overlay: HTMLCanvasElement,
   preset: ScannerPreset,
 ): CornerPoints {
-  if (preset.kind === 'freeform') {
-    return {
-      topLeft: { x: 0, y: 0 },
-      topRight: { x: video.videoWidth, y: 0 },
-      bottomRight: { x: video.videoWidth, y: video.videoHeight },
-      bottomLeft: { x: 0, y: video.videoHeight },
-    };
-  }
   const overlayRect = overlay.getBoundingClientRect();
   const overlayW = overlayRect.width || overlay.width;
   const overlayH = overlayRect.height || overlay.height;
-  const fit = containFit(
+  const fit = coverFit(
     video.videoWidth,
     video.videoHeight,
     overlayW,
     overlayH,
   );
-  const guide = getGuideBounds(fit.renderedW, fit.renderedH, preset);
-  const sourceGuide = {
-    x: fit.offsetX + guide.x,
-    y: fit.offsetY + guide.y,
-    w: guide.w,
-    h: guide.h,
-  };
+  const overlayGuide = preset.kind === 'freeform'
+    ? {
+      x: 0,
+      y: 0,
+      w: overlayW,
+      h: overlayH,
+    }
+    : getGuideBounds(overlayW, overlayH, preset);
   const toSource = (x: number, y: number) => ({
     x: clamp((x - fit.offsetX) / fit.scale, 0, video.videoWidth),
     y: clamp((y - fit.offsetY) / fit.scale, 0, video.videoHeight),
   });
   return {
-    topLeft: toSource(sourceGuide.x, sourceGuide.y),
-    topRight: toSource(sourceGuide.x + sourceGuide.w, sourceGuide.y),
-    bottomRight: toSource(sourceGuide.x + sourceGuide.w, sourceGuide.y + sourceGuide.h),
-    bottomLeft: toSource(sourceGuide.x, sourceGuide.y + sourceGuide.h),
+    topLeft: toSource(overlayGuide.x, overlayGuide.y),
+    topRight: toSource(overlayGuide.x + overlayGuide.w, overlayGuide.y),
+    bottomRight: toSource(overlayGuide.x + overlayGuide.w, overlayGuide.y + overlayGuide.h),
+    bottomLeft: toSource(overlayGuide.x, overlayGuide.y + overlayGuide.h),
   };
 }
 
