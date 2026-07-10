@@ -1,4 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
@@ -43,6 +48,7 @@ const ApplicationSelectorFlow = ({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const [isDraggingPdf, setIsDraggingPdf] = useState(false);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -271,6 +277,14 @@ const ApplicationSelectorFlow = ({
     setUploadError(null);
   };
 
+  const clearUploadFile = () => {
+    setUploadFile(null);
+    setUploadError(null);
+    if (pdfInputRef.current) {
+      pdfInputRef.current.value = '';
+    }
+  };
+
   const handlePdfDrop = (event: React.DragEvent<HTMLLabelElement>) => {
     event.preventDefault();
     setIsDraggingPdf(false);
@@ -294,34 +308,66 @@ const ApplicationSelectorFlow = ({
 
   const renderPdfDropBox = (selectedOutcome: ApplicationSelectorOutcome) => (
     <div className="tw-mt-6">
-      <label
-        htmlFor="application-selector-pdf-upload"
-        className={[
-          'tw-flex tw-min-h-44 tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-rounded-md tw-border-2 tw-border-dashed tw-p-6 tw-text-center tw-transition',
-          isDraggingPdf ? 'tw-border-blue-600 tw-bg-blue-100' : 'tw-border-blue-300 tw-bg-blue-50',
-        ].join(' ')}
-        onDragEnter={(event) => {
-          event.preventDefault();
-          setIsDraggingPdf(true);
-        }}
-        onDragOver={(event) => event.preventDefault()}
-        onDragLeave={() => setIsDraggingPdf(false)}
-        onDrop={handlePdfDrop}
-      >
-        <span className="tw-text-base tw-font-semibold tw-text-blue-950">
-          {uploadFile ? uploadFile.name : 'Drop PDF here'}
-        </span>
-        <span className="tw-mt-2 tw-text-sm tw-text-blue-900">
-          or choose a file
-        </span>
-        <input
-          id="application-selector-pdf-upload"
-          type="file"
-          accept="application/pdf,.pdf"
-          className="tw-sr-only"
-          onChange={(event) => handlePdfSelection(event.target.files?.[0])}
-        />
-      </label>
+      <div className="tw-relative">
+        <label
+          htmlFor="application-selector-pdf-upload"
+          className={[
+            'tw-flex tw-min-h-44 tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-rounded-md tw-border-2 tw-p-6 tw-text-center tw-transition',
+            uploadFile ? 'tw-border-solid tw-border-green-500 tw-bg-green-50' : 'tw-border-dashed',
+            isDraggingPdf
+              ? 'tw-border-blue-600 tw-bg-blue-100'
+              : !uploadFile && 'tw-border-blue-300 tw-bg-blue-50',
+          ].filter(Boolean).join(' ')}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            setIsDraggingPdf(true);
+          }}
+          onDragOver={(event) => event.preventDefault()}
+          onDragLeave={() => setIsDraggingPdf(false)}
+          onDrop={handlePdfDrop}
+        >
+          {uploadFile ? (
+            <>
+              <span className="tw-mb-3 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-green-100 tw-text-green-700">
+                <i className="fas fa-check" aria-hidden />
+              </span>
+              <span className="tw-max-w-full tw-break-words tw-text-base tw-font-semibold tw-text-green-950">
+                {uploadFile.name}
+              </span>
+              <span className="tw-mt-2 tw-text-sm tw-text-green-900">
+                PDF selected. Choose a different file to replace it.
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="tw-text-base tw-font-semibold tw-text-blue-950">
+                Drop PDF here
+              </span>
+              <span className="tw-mt-2 tw-text-sm tw-text-blue-900">
+                or choose a file
+              </span>
+            </>
+          )}
+          <input
+            ref={pdfInputRef}
+            id="application-selector-pdf-upload"
+            type="file"
+            accept="application/pdf,.pdf"
+            className="tw-sr-only"
+            onChange={(event) => handlePdfSelection(event.target.files?.[0])}
+          />
+        </label>
+        {uploadFile && (
+          <button
+            type="button"
+            className="tw-absolute tw-right-3 tw-top-3 tw-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-gray-300 tw-bg-white tw-text-sm tw-font-bold tw-text-gray-600 tw-shadow-sm hover:tw-bg-gray-100 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
+            onClick={clearUploadFile}
+            aria-label={`Remove ${uploadFile.name}`}
+          >
+            <span aria-hidden="true">x</span>
+          </button>
+        )}
+      </div>
       {uploadError && (
         <div className="alert alert-danger py-2 tw-mt-3">{uploadError}</div>
       )}

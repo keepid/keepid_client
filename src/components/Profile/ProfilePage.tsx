@@ -21,6 +21,8 @@ import SavedApplicationInfoSection from './SavedApplicationInfoSection';
 
 type Props = {
   targetUsername?: string;
+  viewerRole?: Role;
+  viewerOrganization?: string;
 };
 
 export type NameObj = {
@@ -68,7 +70,11 @@ export type ProfileData = {
   experiencingHomelessness?: boolean;
 };
 
-export default function ProfilePage({ targetUsername }: Props) {
+export default function ProfilePage({
+  targetUsername,
+  viewerRole,
+  viewerOrganization,
+}: Props) {
   const alert = useAlert();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(true);
@@ -92,8 +98,8 @@ export default function ProfilePage({ targetUsername }: Props) {
     } catch { /* ignore */ }
     return { role: '', organization: '' };
   }, []);
-  const currentUserRole = currentUserSession.role;
-  const currentUserOrganization = currentUserSession.organization;
+  const currentUserRole = viewerRole || currentUserSession.role;
+  const currentUserOrganization = viewerOrganization || currentUserSession.organization;
 
   const isAdmin = currentUserRole === Role.Admin || currentUserRole === Role.Director;
   const canAccessApplications = canUseApplications(currentUserRole, currentUserOrganization);
