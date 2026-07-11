@@ -888,7 +888,21 @@ export default function ApplicationForm({
                         />
                         {enrollFieldErrors.birthDate && <small className="tw-text-red-600">{enrollFieldErrors.birthDate}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientEmail">
+                      <Form.Group controlId="newClientPhone">
+                        <Form.Label>Phone (optional)</Form.Label>
+                        <Form.Control
+                          className={whoForInputClassName}
+                          name="phonenumber"
+                          value={enrollForm.phonenumber}
+                          onChange={handleEnrollFieldChange}
+                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
+                            ...prev,
+                            phonenumber: validateEnrollField('phonenumber', e.target.value),
+                          }))}
+                        />
+                        {enrollFieldErrors.phonenumber && <small className="tw-text-red-600">{enrollFieldErrors.phonenumber}</small>}
+                      </Form.Group>
+                      <Form.Group controlId="newClientEmail" className="md:tw-col-span-2">
                         <Form.Label>Email (optional)</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
@@ -903,22 +917,8 @@ export default function ApplicationForm({
                         />
                         {enrollFieldErrors.email && <small className="tw-text-red-600">{enrollFieldErrors.email}</small>}
                       </Form.Group>
-                      <Form.Group controlId="newClientPhone" className="md:tw-col-span-2">
-                        <Form.Label>Phone (optional)</Form.Label>
-                        <Form.Control
-                          className={whoForInputClassName}
-                          name="phonenumber"
-                          value={enrollForm.phonenumber}
-                          onChange={handleEnrollFieldChange}
-                          onBlur={(e) => setEnrollFieldErrors((prev) => ({
-                            ...prev,
-                            phonenumber: validateEnrollField('phonenumber', e.target.value),
-                          }))}
-                        />
-                        {enrollFieldErrors.phonenumber && <small className="tw-text-red-600">{enrollFieldErrors.phonenumber}</small>}
-                      </Form.Group>
                     </div>
-                    <div className="tw-mt-4 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
+                    <div className="tw-mt-4 tw-pt-1">
                       <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
                         Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-500">(optional)</span>
                       </h3>

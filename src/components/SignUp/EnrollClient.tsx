@@ -616,23 +616,43 @@ export default function EnrollClientPage(): JSX.Element {
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="birthDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                  Birth Date
-                </label>
-                <input
-                  id="birthDate"
-                  name="birthDate"
-                  type="date"
-                  className={inputClassName}
-                  value={values.birthDate}
-                  onChange={onChange}
-                  onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  required
-                />
-                {fieldErrors.birthDate && (
-                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.birthDate}</p>
-                )}
+              <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                <div>
+                  <label htmlFor="birthDate" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Birth Date
+                  </label>
+                  <input
+                    id="birthDate"
+                    name="birthDate"
+                    type="date"
+                    className={inputClassName}
+                    value={values.birthDate}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                    required
+                  />
+                  {fieldErrors.birthDate && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.birthDate}</p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="phonenumber" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                    Phone Number <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="phonenumber"
+                    name="phonenumber"
+                    type="tel"
+                    placeholder="Phone Number"
+                    className={inputClassName}
+                    value={values.phonenumber}
+                    onChange={onChange}
+                    onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  />
+                  {fieldErrors.phonenumber && (
+                    <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -654,26 +674,7 @@ export default function EnrollClientPage(): JSX.Element {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="phonenumber" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                  Phone Number <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
-                </label>
-                <input
-                  id="phonenumber"
-                  name="phonenumber"
-                  type="tel"
-                  placeholder="Phone Number"
-                  className={inputClassName}
-                  value={values.phonenumber}
-                  onChange={onChange}
-                  onBlur={(e) => validateField(e.target.name, e.target.value)}
-                />
-                {fieldErrors.phonenumber && (
-                  <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
-                )}
-              </div>
-
-              <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
+              <div className="tw-pt-2">
                 <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
                   Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-400">(optional)</span>
                 </h3>
