@@ -7,7 +7,35 @@ import type { ApplicationSelectorAnswers, ApplicationSelectorFlowDefinition } fr
 export const applicationSelectorFlowDefinition =
   applicationSelectorFlowData as ApplicationSelectorFlowDefinition;
 
-export const loadApplicationSelectorFlow = async (): Promise<ApplicationSelectorFlowDefinition> => applicationSelectorFlowDefinition;
+const isApplicationSelectorFlowDefinition = (
+  value: unknown,
+): value is ApplicationSelectorFlowDefinition => {
+  if (!value || typeof value !== 'object') return false;
+  const flow = value as Partial<ApplicationSelectorFlowDefinition>;
+  return typeof flow.id === 'string'
+    && typeof flow.title === 'string'
+    && Array.isArray(flow.questions)
+    && Array.isArray(flow.outcomes);
+};
+
+export const loadApplicationSelectorFlow = async (): Promise<ApplicationSelectorFlowDefinition> => {
+  try {
+    const response = await fetch(`${getServerURL()}/application-selector-flow`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return applicationSelectorFlowDefinition;
+
+    const remoteFlow = await response.json();
+    if (!isApplicationSelectorFlowDefinition(remoteFlow)) {
+      return applicationSelectorFlowDefinition;
+    }
+    return remoteFlow;
+  } catch {
+    return applicationSelectorFlowDefinition;
+  }
+};
 
 export const loadApplicationSelectorProfileAnswers = async (
   flow: ApplicationSelectorFlowDefinition,
