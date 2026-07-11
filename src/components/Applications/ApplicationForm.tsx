@@ -13,7 +13,18 @@ import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
 import type { BuilderState } from '../InteractiveForms/types';
-import { enrollClient } from '../SignUp/SignUp.api';
+import {
+  cleanMailingAddress,
+  EMPTY_MAILING_ADDRESS,
+  isMailingAddressEmpty,
+  MailingAddressField,
+  mailingAddressPayload,
+  validateMiddleName,
+} from '../SignUp/enrollmentFields';
+import {
+  enrollClient,
+  updateUserProfile,
+} from '../SignUp/SignUp.api';
 import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from '../SignUp/SignUp.util';
 import {
   validateBirthdate,
@@ -164,6 +175,8 @@ export default function ApplicationForm({
     birthDate: '',
     email: '',
     phonenumber: '',
+    mailAddress: { ...EMPTY_MAILING_ADDRESS },
+    hasNoMiddleName: false,
   });
   const [enrollFieldErrors, setEnrollFieldErrors] = useState<Record<string, string>>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -325,7 +338,11 @@ export default function ApplicationForm({
       case 'lastname':
         return validateLastname(value);
       case 'middlename':
-        if (value.trim() === '') return '';
+        {
+          const middleNameError = validateMiddleName(value, enrollForm.hasNoMiddleName);
+          if (middleNameError) return middleNameError;
+          if (enrollForm.hasNoMiddleName) return '';
+        }
         return validateFirstname(value);
       case 'suffix':
         if (value.trim() === '') return '';
@@ -346,7 +363,7 @@ export default function ApplicationForm({
       default:
         return '';
     }
-  }, []);
+  }, [enrollForm.hasNoMiddleName]);
 
   const tryAutoSelectNewlyCreatedClient = useCallback(async (
     firstname: string,
@@ -408,6 +425,28 @@ export default function ApplicationForm({
     if (enrollFieldErrors[name]) {
       setEnrollFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleEnrollMailingAddressChange = (field: MailingAddressField, value: string) => {
+    setEnrollForm((prev) => ({
+      ...prev,
+      mailAddress: {
+        ...prev.mailAddress,
+        [field]: field === 'state' ? value.toUpperCase() : value,
+      },
+    }));
+  };
+
+  const toggleEnrollNoMiddleName = () => {
+    setEnrollForm((prev) => ({
+      ...prev,
+      hasNoMiddleName: !prev.hasNoMiddleName,
+      middlename: !prev.hasNoMiddleName ? '' : prev.middlename,
+    }));
+    setEnrollFieldErrors((prev) => ({
+      ...prev,
+      middlename: '',
+    }));
   };
 
   const handleEnrollNewClient = useCallback(async () => {
@@ -472,6 +511,20 @@ export default function ApplicationForm({
         setWhoForMode('existing');
         setClientQuery(`${enrollForm.firstname} ${enrollForm.lastname}`.trim());
         return;
+      }
+
+      const cleanedMailingAddress = cleanMailingAddress(enrollForm.mailAddress);
+      if (!isMailingAddressEmpty(cleanedMailingAddress)) {
+        const profileResponse = await updateUserProfile({
+          username: createdUser.username,
+          mailAddress: mailingAddressPayload(cleanedMailingAddress),
+        });
+        if (profileResponse.status !== 'SUCCESS') {
+          setSubmitError('Client enrolled, but the mailing address could not be saved. Please update the client profile before continuing.');
+          selectExistingClient(createdUser);
+          setWhoForMode('existing');
+          return;
+        }
       }
 
       selectExistingClient(createdUser);
@@ -762,7 +815,7 @@ export default function ApplicationForm({
                         {enrollFieldErrors.firstname && <small className="tw-text-red-600">{enrollFieldErrors.firstname}</small>}
                       </Form.Group>
                       <Form.Group controlId="newClientMiddleName" className="tw-min-w-0">
-                        <Form.Label>Middle Name (optional)</Form.Label>
+                        <Form.Label>Middle Name</Form.Label>
                         <Form.Control
                           className={whoForInputClassName}
                           name="middlename"
@@ -772,7 +825,21 @@ export default function ApplicationForm({
                             ...prev,
                             middlename: validateEnrollField('middlename', e.target.value),
                           }))}
+                          disabled={enrollForm.hasNoMiddleName}
                         />
+                        <label
+                          htmlFor="newClientHasNoMiddleName"
+                          className="tw-mt-2 tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-normal tw-text-gray-600"
+                        >
+                          <input
+                            id="newClientHasNoMiddleName"
+                            type="checkbox"
+                            checked={enrollForm.hasNoMiddleName}
+                            onChange={toggleEnrollNoMiddleName}
+                            className="tw-h-4 tw-w-4 tw-rounded tw-border-gray-300 tw-text-gray-600 focus:tw-ring-gray-400"
+                          />
+                          <span>I do not have a middle name</span>
+                        </label>
                         {enrollFieldErrors.middlename && <small className="tw-text-red-600">{enrollFieldErrors.middlename}</small>}
                       </Form.Group>
                       <Form.Group controlId="newClientLastName" className="tw-min-w-0">
@@ -851,6 +918,70 @@ export default function ApplicationForm({
                         {enrollFieldErrors.phonenumber && <small className="tw-text-red-600">{enrollFieldErrors.phonenumber}</small>}
                       </Form.Group>
                     </div>
+                    <div className="tw-mt-4 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
+                      <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
+                        Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-500">(optional)</span>
+                      </h3>
+                      <div className="tw-space-y-3">
+                        <Form.Group controlId="newClientMailAddressLine1">
+                          <Form.Label>Street Address</Form.Label>
+                          <Form.Control
+                            className={whoForInputClassName}
+                            name="mailAddressLine1"
+                            value={enrollForm.mailAddress.line1}
+                            onChange={(e) => handleEnrollMailingAddressChange('line1', e.target.value)}
+                          />
+                        </Form.Group>
+                        <Form.Group controlId="newClientMailAddressLine2">
+                          <Form.Label>Apartment, Suite, Unit (optional)</Form.Label>
+                          <Form.Control
+                            className={whoForInputClassName}
+                            name="mailAddressLine2"
+                            value={enrollForm.mailAddress.line2}
+                            onChange={(e) => handleEnrollMailingAddressChange('line2', e.target.value)}
+                          />
+                        </Form.Group>
+                        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4">
+                          <Form.Group controlId="newClientMailAddressCity">
+                            <Form.Label>City</Form.Label>
+                            <Form.Control
+                              className={whoForInputClassName}
+                              name="mailAddressCity"
+                              value={enrollForm.mailAddress.city}
+                              onChange={(e) => handleEnrollMailingAddressChange('city', e.target.value)}
+                            />
+                          </Form.Group>
+                          <Form.Group controlId="newClientMailAddressState">
+                            <Form.Label>State</Form.Label>
+                            <Form.Control
+                              className={whoForInputClassName}
+                              name="mailAddressState"
+                              maxLength={2}
+                              value={enrollForm.mailAddress.state}
+                              onChange={(e) => handleEnrollMailingAddressChange('state', e.target.value)}
+                            />
+                          </Form.Group>
+                          <Form.Group controlId="newClientMailAddressZip">
+                            <Form.Label>ZIP</Form.Label>
+                            <Form.Control
+                              className={whoForInputClassName}
+                              name="mailAddressZip"
+                              value={enrollForm.mailAddress.zip}
+                              onChange={(e) => handleEnrollMailingAddressChange('zip', e.target.value)}
+                            />
+                          </Form.Group>
+                        </div>
+                        <Form.Group controlId="newClientMailAddressCounty">
+                          <Form.Label>County (optional)</Form.Label>
+                          <Form.Control
+                            className={whoForInputClassName}
+                            name="mailAddressCounty"
+                            value={enrollForm.mailAddress.county}
+                            onChange={(e) => handleEnrollMailingAddressChange('county', e.target.value)}
+                          />
+                        </Form.Group>
+                      </div>
+                    </div>
                     <div className="tw-mt-3">
                       <Form.Check
                         id="whoForEula"
@@ -893,6 +1024,11 @@ export default function ApplicationForm({
                 {targetClientResolved && (
                   <Alert variant="success" className="tw-mt-4 tw-mb-0">
                     Selected client: <strong>{targetClientName || targetClientUsername}</strong>
+                  </Alert>
+                )}
+                {submitError && isWhoForPage && (
+                  <Alert variant="danger" className="tw-mt-4 tw-mb-0" onClose={() => setSubmitError(null)} dismissible>
+                    {submitError}
                   </Alert>
                 )}
               </>

@@ -6,7 +6,18 @@ import { Helmet } from 'react-helmet';
 import { Link, useLocation } from 'react-router-dom';
 
 import { isTeamKeepOrganization } from '../../utils/featureAccess';
-import { enrollClient } from './SignUp.api';
+import {
+  cleanMailingAddress,
+  EMPTY_MAILING_ADDRESS,
+  isMailingAddressEmpty,
+  MailingAddressField,
+  mailingAddressPayload,
+  validateMiddleName,
+} from './enrollmentFields';
+import {
+  enrollClient,
+  updateUserProfile,
+} from './SignUp.api';
 import { birthDateStringFromIsoDateOnly, localDateFromIsoDateOnly } from './SignUp.util';
 import {
   validateBirthdate,
@@ -25,6 +36,8 @@ interface EnrollClientFormValues {
   email: string;
   phonenumber: string;
   experiencingHomelessness: boolean;
+  mailAddress: typeof EMPTY_MAILING_ADDRESS;
+  hasNoMiddleName: boolean;
 }
 
 const HOMELESSNESS_DEFINITION_SOURCE_URL =
@@ -238,6 +251,8 @@ export default function EnrollClientPage(): JSX.Element {
     email: '',
     phonenumber: initialPhone,
     experiencingHomelessness: defaultExperiencingHomelessness,
+    mailAddress: { ...EMPTY_MAILING_ADDRESS },
+    hasNoMiddleName: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
@@ -259,6 +274,25 @@ export default function EnrollClientPage(): JSX.Element {
     }
   };
 
+  const onMailingAddressChange = (field: MailingAddressField, value: string) => {
+    setValues((prev) => ({
+      ...prev,
+      mailAddress: {
+        ...prev.mailAddress,
+        [field]: field === 'state' ? value.toUpperCase() : value,
+      },
+    }));
+  };
+
+  const toggleNoMiddleName = () => {
+    setValues((prev) => ({
+      ...prev,
+      hasNoMiddleName: !prev.hasNoMiddleName,
+      middlename: !prev.hasNoMiddleName ? '' : prev.middlename,
+    }));
+    setFieldErrors((prev) => ({ ...prev, middlename: '' }));
+  };
+
   const validateField = (name: string, value: string) => {
     let error = '';
     switch (name) {
@@ -269,7 +303,8 @@ export default function EnrollClientPage(): JSX.Element {
         error = validateLastname(value);
         break;
       case 'middlename':
-        if (value.trim() !== '') error = validateFirstname(value);
+        error = validateMiddleName(value, values.hasNoMiddleName);
+        if (!error && value.trim() !== '') error = validateFirstname(value);
         break;
       case 'suffix':
         if (value.trim() !== '') error = validateLastname(value);
@@ -318,7 +353,8 @@ export default function EnrollClientPage(): JSX.Element {
     const nameErrors: Record<string, string> = {
       firstname: validateFirstname(values.firstname),
       lastname: validateLastname(values.lastname),
-      middlename: values.middlename.trim() ? validateFirstname(values.middlename) : '',
+      middlename: validateMiddleName(values.middlename, values.hasNoMiddleName)
+        || (values.middlename.trim() ? validateFirstname(values.middlename) : ''),
       suffix: values.suffix.trim() ? validateLastname(values.suffix) : '',
     };
     const hasNameErrors = Object.values(nameErrors).some(Boolean);
@@ -358,10 +394,29 @@ export default function EnrollClientPage(): JSX.Element {
       });
 
       if (response.status === 'ENROLL_SUCCESS') {
+        const cleanedMailingAddress = cleanMailingAddress(values.mailAddress);
+        let mailAddressSaved = true;
+        if (!isMailingAddressEmpty(cleanedMailingAddress)) {
+          if (!response.username) {
+            mailAddressSaved = false;
+          } else {
+            const profileResponse = await updateUserProfile({
+              username: response.username,
+              mailAddress: mailingAddressPayload(cleanedMailingAddress),
+            });
+            mailAddressSaved = profileResponse.status === 'SUCCESS';
+          }
+        }
         setEnrolled(true);
-        alert.success(
-          `${values.firstname} ${values.lastname} has been enrolled successfully.`,
-        );
+        if (mailAddressSaved) {
+          alert.success(
+            `${values.firstname} ${values.lastname} has been enrolled successfully.`,
+          );
+        } else {
+          alert.error(
+            `${values.firstname} ${values.lastname} was enrolled, but the mailing address could not be saved.`,
+          );
+        }
       } else if (response.status === 'EMAIL_ALREADY_EXISTS') {
         alert.error('A user with this email already exists.');
       } else if (response.status === 'CLIENT_ENROLL_CLIENT') {
@@ -422,6 +477,8 @@ export default function EnrollClientPage(): JSX.Element {
                   email: '',
                   phonenumber: '',
                   experiencingHomelessness: defaultExperiencingHomelessness,
+                  mailAddress: { ...EMPTY_MAILING_ADDRESS },
+                  hasNoMiddleName: false,
                 });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
@@ -490,7 +547,7 @@ export default function EnrollClientPage(): JSX.Element {
                 </div>
                 <div className="tw-min-w-0">
                   <label htmlFor="middlename" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                    Middle Name <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                    Middle Name
                   </label>
                   <input
                     id="middlename"
@@ -501,7 +558,21 @@ export default function EnrollClientPage(): JSX.Element {
                     value={values.middlename}
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
+                    disabled={values.hasNoMiddleName}
                   />
+                  <label
+                    htmlFor="hasNoMiddleName"
+                    className="tw-mt-2 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-normal tw-text-gray-600"
+                  >
+                    <input
+                      id="hasNoMiddleName"
+                      type="checkbox"
+                      checked={values.hasNoMiddleName}
+                      onChange={toggleNoMiddleName}
+                      className="tw-h-4 tw-w-4 tw-rounded tw-border-gray-300 tw-text-gray-600 focus:tw-ring-gray-400"
+                    />
+                    <span>I do not have a middle name</span>
+                  </label>
                   {fieldErrors.middlename && (
                     <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.middlename}</p>
                   )}
@@ -600,6 +671,95 @@ export default function EnrollClientPage(): JSX.Element {
                 {fieldErrors.phonenumber && (
                   <p className="tw-text-red-600 tw-text-xs tw-mt-1">{fieldErrors.phonenumber}</p>
                 )}
+              </div>
+
+              <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
+                <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
+                  Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-400">(optional)</span>
+                </h3>
+                <div className="tw-space-y-3">
+                  <div>
+                    <label htmlFor="mailAddressLine1" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                      Street Address
+                    </label>
+                    <input
+                      id="mailAddressLine1"
+                      type="text"
+                      placeholder="Street Address"
+                      className={inputClassName}
+                      value={values.mailAddress.line1}
+                      onChange={(e) => onMailingAddressChange('line1', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mailAddressLine2" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                      Apartment, Suite, Unit <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                    </label>
+                    <input
+                      id="mailAddressLine2"
+                      type="text"
+                      placeholder="Apartment, Suite, Unit"
+                      className={inputClassName}
+                      value={values.mailAddress.line2}
+                      onChange={(e) => onMailingAddressChange('line2', e.target.value)}
+                    />
+                  </div>
+                  <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-3">
+                    <div>
+                      <label htmlFor="mailAddressCity" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                        City
+                      </label>
+                      <input
+                        id="mailAddressCity"
+                        type="text"
+                        placeholder="City"
+                        className={inputClassName}
+                        value={values.mailAddress.city}
+                        onChange={(e) => onMailingAddressChange('city', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="mailAddressState" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                        State
+                      </label>
+                      <input
+                        id="mailAddressState"
+                        type="text"
+                        placeholder="State"
+                        maxLength={2}
+                        className={inputClassName}
+                        value={values.mailAddress.state}
+                        onChange={(e) => onMailingAddressChange('state', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="mailAddressZip" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                        ZIP
+                      </label>
+                      <input
+                        id="mailAddressZip"
+                        type="text"
+                        placeholder="ZIP"
+                        className={inputClassName}
+                        value={values.mailAddress.zip}
+                        onChange={(e) => onMailingAddressChange('zip', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="mailAddressCounty" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                      County <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                    </label>
+                    <input
+                      id="mailAddressCounty"
+                      type="text"
+                      placeholder="County"
+                      className={inputClassName}
+                      value={values.mailAddress.county}
+                      onChange={(e) => onMailingAddressChange('county', e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="tw-flex tw-items-start tw-rounded-md tw-border tw-border-gray-200 tw-bg-gray-50 tw-p-3">

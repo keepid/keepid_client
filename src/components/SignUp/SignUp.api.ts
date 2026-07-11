@@ -36,12 +36,40 @@ export interface EnrollClientResponse {
   birthDate?: string;
 }
 
+export interface UpdateUserProfileData {
+  username?: string;
+  mailAddress?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    county?: string;
+  };
+}
+
+export interface StatusResponse {
+  status: string;
+  message?: string;
+}
+
 export async function enrollClient(
   data: EnrollClientData,
 ): Promise<EnrollClientResponse> {
   return fetch(`${getServerURL()}/enroll-client`, {
     method: 'POST',
     credentials: 'include',
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+}
+
+export async function updateUserProfile(
+  data: UpdateUserProfileData,
+): Promise<StatusResponse> {
+  return fetch(`${getServerURL()}/update-user-profile`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   }).then((response) => response.json());
 }
