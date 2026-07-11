@@ -923,24 +923,26 @@ export default function ApplicationForm({
                         Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-500">(optional)</span>
                       </h3>
                       <div className="tw-space-y-3">
-                        <Form.Group controlId="newClientMailAddressLine1">
-                          <Form.Label>Street Address</Form.Label>
-                          <Form.Control
-                            className={whoForInputClassName}
-                            name="mailAddressLine1"
-                            value={enrollForm.mailAddress.line1}
-                            onChange={(e) => handleEnrollMailingAddressChange('line1', e.target.value)}
-                          />
-                        </Form.Group>
-                        <Form.Group controlId="newClientMailAddressLine2">
-                          <Form.Label>Apartment, Suite, Unit (optional)</Form.Label>
-                          <Form.Control
-                            className={whoForInputClassName}
-                            name="mailAddressLine2"
-                            value={enrollForm.mailAddress.line2}
-                            onChange={(e) => handleEnrollMailingAddressChange('line2', e.target.value)}
-                          />
-                        </Form.Group>
+                        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-10 tw-gap-4">
+                          <Form.Group controlId="newClientMailAddressLine1" className="md:tw-col-span-7">
+                            <Form.Label>Street Address</Form.Label>
+                            <Form.Control
+                              className={whoForInputClassName}
+                              name="mailAddressLine1"
+                              value={enrollForm.mailAddress.line1}
+                              onChange={(e) => handleEnrollMailingAddressChange('line1', e.target.value)}
+                            />
+                          </Form.Group>
+                          <Form.Group controlId="newClientMailAddressLine2" className="md:tw-col-span-3">
+                            <Form.Label>Apartment, Suite, Unit (optional)</Form.Label>
+                            <Form.Control
+                              className={whoForInputClassName}
+                              name="mailAddressLine2"
+                              value={enrollForm.mailAddress.line2}
+                              onChange={(e) => handleEnrollMailingAddressChange('line2', e.target.value)}
+                            />
+                          </Form.Group>
+                        </div>
                         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4">
                           <Form.Group controlId="newClientMailAddressCity">
                             <Form.Label>City</Form.Label>

@@ -679,31 +679,33 @@ export default function EnrollClientPage(): JSX.Element {
                   Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-400">(optional)</span>
                 </h3>
                 <div className="tw-space-y-3">
-                  <div>
-                    <label htmlFor="mailAddressLine1" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                      Street Address
-                    </label>
-                    <input
-                      id="mailAddressLine1"
-                      type="text"
-                      placeholder="Street Address"
-                      className={inputClassName}
-                      value={values.mailAddress.line1}
-                      onChange={(e) => onMailingAddressChange('line1', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="mailAddressLine2" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                      Apartment, Suite, Unit <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
-                    </label>
-                    <input
-                      id="mailAddressLine2"
-                      type="text"
-                      placeholder="Apartment, Suite, Unit"
-                      className={inputClassName}
-                      value={values.mailAddress.line2}
-                      onChange={(e) => onMailingAddressChange('line2', e.target.value)}
-                    />
+                  <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-10 tw-gap-3">
+                    <div className="md:tw-col-span-7">
+                      <label htmlFor="mailAddressLine1" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                        Street Address
+                      </label>
+                      <input
+                        id="mailAddressLine1"
+                        type="text"
+                        placeholder="Street Address"
+                        className={inputClassName}
+                        value={values.mailAddress.line1}
+                        onChange={(e) => onMailingAddressChange('line1', e.target.value)}
+                      />
+                    </div>
+                    <div className="md:tw-col-span-3">
+                      <label htmlFor="mailAddressLine2" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
+                        Apartment, Suite, Unit <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                      </label>
+                      <input
+                        id="mailAddressLine2"
+                        type="text"
+                        placeholder="Apartment, Suite, Unit"
+                        className={inputClassName}
+                        value={values.mailAddress.line2}
+                        onChange={(e) => onMailingAddressChange('line2', e.target.value)}
+                      />
+                    </div>
                   </div>
                   <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-3">
                     <div>
