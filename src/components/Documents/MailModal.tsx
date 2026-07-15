@@ -284,7 +284,7 @@ export const MailModal: React.FC<Props> = ({
           fileId: documentId,
           mailDestination: destination,
           returnAddress: {
-            name: returnAddressData.name || returnAddressData.officeName,
+            name: returnAddressData.name,
             officeName: returnAddressData.officeName,
             street1: returnAddressData.street1,
             street2: returnAddressData.street2,
@@ -393,14 +393,14 @@ export const MailModal: React.FC<Props> = ({
         </div>
       )}
       <div>
-        <label className="tw-block tw-mb-1 tw-font-semibold">Office Name</label>
+        <label className="tw-block tw-mb-1 tw-font-semibold">Company / Department</label>
         <input
           type="text"
           name="officeName"
           value={data.officeName}
           onChange={(e) => handleAddressChange(e, target)}
           className={`tw-w-full tw-p-2 tw-border ${showInputError && data.officeName === '' && target === 'return' ? 'tw-border-red-500' : 'tw-border-gray-300'} tw-rounded`}
-          placeholder="Enter office name"
+          placeholder="Enter company or department"
           readOnly={!editable}
         />
       </div>
