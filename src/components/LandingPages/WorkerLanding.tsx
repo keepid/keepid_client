@@ -60,12 +60,6 @@ function formatBirthDateForDisplay(value: string): string {
   return value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3');
 }
 
-function hasPhoneNumberOnRecord(value?: string): boolean {
-  const digits = (value || '').replace(/\D/g, '');
-  const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
-  return normalized.length === 10;
-}
-
 function clientDisplayName(client: TargetClient): string {
   return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim() || client.username;
 }
@@ -348,7 +342,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
 
   const renderClientActionButtons = (client: TargetClient, compact = false) => {
     const clientName = clientDisplayName(client);
-    const canOpenCommunications = hasPhoneNumberOnRecord(client.phone);
     const documentsLabel = compact ? countLabel(client.documentCount, 'Document', 'Documents') : 'Documents';
     const applicationsLabel = compact ? countLabel(client.applicationCount, 'Application', 'Applications') : 'Applications';
     const primaryClasses = compact
@@ -357,10 +350,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
     const secondaryClasses = compact
       ? 'tw-inline-flex tw-min-w-36 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-200 tw-rounded-md'
       : 'tw-inline-flex tw-items-center tw-justify-center tw-text-twprimary hover:tw-bg-blue-50 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-200 tw-rounded-md';
-    const disabledClasses = compact
-      ? 'tw-inline-flex tw-min-w-36 tw-items-center tw-justify-center tw-whitespace-nowrap tw-text-gray-400 tw-font-bold tw-py-1.5 tw-px-3 tw-text-xs tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed'
-      : 'tw-inline-flex tw-items-center tw-justify-center tw-text-gray-400 tw-font-bold tw-py-2 tw-px-3 tw-text-sm tw-bg-gray-100 tw-rounded-md tw-border-0 tw-cursor-not-allowed';
-
     return (
       <>
         <Link
@@ -380,7 +369,7 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
             {applicationsLabel}
           </Link>
         )}
-        {canAccessCommunications && canOpenCommunications && (
+        {canAccessCommunications && (
           <Link
             to={{
               pathname: '/communications',
@@ -395,17 +384,6 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
           >
             Communications
           </Link>
-        )}
-        {canAccessCommunications && !canOpenCommunications && (
-          <button
-            type="button"
-            className={disabledClasses}
-            disabled
-            title="Add a phone number before opening communications"
-            aria-label={`Communications unavailable for ${clientName || client.username}; no phone number on record`}
-          >
-            Communications
-          </button>
         )}
       </>
     );
