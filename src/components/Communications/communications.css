@@ -1323,3 +1323,363 @@ body:has(.communications-shell),
     position: static;
   }
 }
+
+.contact-type-filters {
+  display: flex;
+  gap: 6px;
+  padding: 0 18px 12px;
+  overflow-x: auto;
+}
+
+.contact-type-filters button,
+.composer-mode-toggle button {
+  border: 1px solid #bcccdc;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #fff;
+  color: #486581;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.contact-type-filters button.active,
+.composer-mode-toggle button.active {
+  border-color: #2f80ed;
+  background: #edf4ff;
+  color: #1f63b5;
+}
+
+.contact-avatar.cold {
+  background: #8a5a00;
+}
+
+.contact-avatar.shared {
+  background: #6b46c1;
+}
+
+.contact-main strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.contact-list-type,
+.contact-type-pill,
+.contact-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: #edf2f7;
+  color: #486581;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.contact-list-type.cold,
+.contact-type-pill.cold {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.contact-list-type.shared,
+.contact-type-pill.shared,
+.contact-badge.shared {
+  background: #eee8ff;
+  color: #5a36a3;
+}
+
+.contact-type-pill.person {
+  background: #e3f8ed;
+  color: #1f7a4d;
+}
+
+.chat-contact-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.chat-contact-title h2 {
+  margin: 0;
+}
+
+.contact-move-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #b8c9ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #edf4ff;
+  color: #243b53;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.contact-move-notice button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #486581;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.composer-mode-toggle {
+  display: flex;
+  gap: 7px;
+}
+
+.composer-phone-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #52616f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.composer-phone-select select {
+  min-width: 210px;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #fff;
+  color: #102a43;
+}
+
+.composer-help,
+.contact-form-help {
+  margin: 0;
+  color: #627d98;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.contact-sheet-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(16, 42, 67, 0.48);
+}
+
+.contact-sheet {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(520px, 100%);
+  height: 100%;
+  background: #f7fafc;
+  box-shadow: -16px 0 48px rgba(16, 42, 67, 0.22);
+}
+
+.contact-sheet-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #d9e2ec;
+  padding: 22px 24px 18px;
+  background: #fff;
+}
+
+.contact-sheet-header h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.contact-sheet-close {
+  align-self: flex-start;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #52616f;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.contact-sheet-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 24px 32px;
+}
+
+.contact-sheet-section {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #d9e2ec;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  padding: 16px;
+  background: #fff;
+}
+
+.contact-sheet-section h3 {
+  margin: 0;
+  color: #102a43;
+  font-size: 16px;
+}
+
+.contact-sheet-section label,
+.contact-create-modal label,
+.contact-phone-row label {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  color: #334e68;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.contact-sheet-section input,
+.contact-sheet-section select,
+.contact-create-modal input,
+.contact-phone-row input {
+  width: 100%;
+  border: 1px solid #bcccdc;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #102a43;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.contact-primary-button {
+  justify-self: start;
+  border: 1px solid #2f80ed;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #2f80ed;
+  color: #fff;
+  font-weight: 800;
+}
+
+.contact-primary-button:disabled {
+  opacity: 0.55;
+}
+
+.contact-phone-list {
+  display: grid;
+  gap: 10px;
+}
+
+.contact-phone-row {
+  display: grid;
+  gap: 9px;
+  border: 1px solid #e6eef5;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fbfdff;
+}
+
+.contact-phone-row-heading,
+.contact-phone-row-heading > div,
+.contact-phone-actions,
+.contact-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-phone-row-heading {
+  justify-content: space-between;
+}
+
+.contact-phone-actions button,
+.contact-inline-actions button,
+.contact-text-button,
+.contact-reference-row {
+  border: 1px solid #bcccdc;
+  border-radius: 7px;
+  padding: 6px 9px;
+  background: #fff;
+  color: #1f63b5;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.contact-text-button.danger {
+  border-color: transparent;
+  color: #b42318;
+}
+
+.contact-checkbox-label {
+  display: flex !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px !important;
+}
+
+.contact-checkbox-label input {
+  width: auto;
+}
+
+.contact-promotion-card {
+  border-color: #d9c8ff;
+  background: #faf8ff;
+}
+
+.contact-reference-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.contact-reference-row span:first-child {
+  color: #102a43;
+}
+
+.contact-form-error,
+.contact-form-notice {
+  border-radius: 8px;
+  margin: 0;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.contact-form-error {
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.contact-form-notice {
+  background: #e3f8ed;
+  color: #1f7a4d;
+}
+
+@media (max-width: 600px) {
+  .contact-sheet {
+    width: 100%;
+  }
+
+  .contact-sheet-header,
+  .contact-sheet-scroll {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .composer-phone-select {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .composer-phone-select select {
+    width: 100%;
+  }
+}

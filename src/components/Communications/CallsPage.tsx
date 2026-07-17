@@ -9,19 +9,22 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import {
-  addClientNote,
-  Conversation,
+  addCommunicationContactNote,
+  CommunicationContact,
   formatDuration,
   getCallRecordingPlaybackUrl,
-  getConversations,
-  getMessageBoard,
-  getMessageBoardByPhone,
+  getCommunicationContact,
+  getCommunicationContacts,
+  getCommunicationContactTimeline,
   getTwilioVoiceToken,
   MessageBoardItem,
-  scheduleMessage,
-  sendMessage,
-  updateClientNote,
+  PromoteSharedResponse,
+  scheduleCommunicationContactMessage,
+  sendCommunicationContactMessage,
+  updateCommunicationContactNote,
 } from './communicationsApi';
+import ContactEditorSheet from './ContactEditorSheet';
+import CreateContactModal from './CreateContactModal';
 
 type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
 type CommunicationsLocationState = {
@@ -84,20 +87,19 @@ function orderedItems(itemsToOrder: MessageBoardItem[]) {
   });
 }
 
-function conversationKey(conversation?: Conversation) {
+function conversationKey(conversation?: CommunicationContact) {
   if (!conversation) return '';
-  return conversation.username || conversation.clientId || conversation.phone || conversation.displayName;
+  return conversation.id;
 }
 
-function isUnknownCallerLabel(value?: string) {
-  return (value || '').trim().toLowerCase() === 'unknown caller';
-}
-
-function conversationLabel(conversation: Conversation) {
-  if (conversation.phone && (!conversation.username || isUnknownCallerLabel(conversation.displayName))) {
-    return phone(conversation.phone);
-  }
+function conversationLabel(conversation: CommunicationContact) {
   return conversation.displayName;
+}
+
+function contactTypeLabel(contact: CommunicationContact) {
+  if (contact.type === 'PERSON') return 'Client';
+  if (contact.type === 'COLD') return 'Unattached';
+  return 'Shared number';
 }
 
 function itemTitle(item: MessageBoardItem) {
@@ -113,7 +115,7 @@ function recordingPlaybackUrl(item: MessageBoardItem) {
   return getCallRecordingPlaybackUrl(item.sourceId);
 }
 
-function conversationInitial(conversation: Conversation) {
+function conversationInitial(conversation: CommunicationContact) {
   return conversationLabel(conversation).replace(/\W/g, '').charAt(0).toUpperCase() || '?';
 }
 
@@ -135,23 +137,26 @@ function callStatusText(status: BrowserCallStatus) {
   }
 }
 
-function openSelectedClient(conversation: Conversation, history: ReturnType<typeof useHistory>) {
+function openSelectedClient(conversation: CommunicationContact, history: ReturnType<typeof useHistory>) {
   if (conversation.username) {
     history.push(`/profile/${encodeURIComponent(conversation.username)}`);
     return;
   }
   const params = new URLSearchParams();
-  if (conversation.phone) params.set('phone', conversation.phone);
+  if (conversation.primaryPhone) params.set('phone', conversation.primaryPhone);
   history.push(`/enroll-client${params.toString() ? `?${params.toString()}` : ''}`);
 }
 
 export default function CallsPage() {
   const history = useHistory();
   const location = useLocation<CommunicationsLocationState | undefined>();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedUsername, setSelectedUsername] = useState('');
+  const [conversations, setConversations] = useState<CommunicationContact[]>([]);
+  const [selectedContactId, setSelectedContactId] = useState('');
   const [items, setItems] = useState<MessageBoardItem[]>([]);
   const [search, setSearch] = useState('');
+  const [contactType, setContactType] = useState('');
+  const [selectedPhone, setSelectedPhone] = useState('');
+  const [composerMode, setComposerMode] = useState<'message' | 'note'>('message');
   const [message, setMessage] = useState('');
   const [scheduleBody, setScheduleBody] = useState('');
   const [scheduleSendAt, setScheduleSendAt] = useState('');
@@ -171,6 +176,9 @@ export default function CallsPage() {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [conversationError, setConversationError] = useState('');
   const [threadError, setThreadError] = useState('');
+  const [contactNotice, setContactNotice] = useState('');
+  const [isCreateContactOpen, setIsCreateContactOpen] = useState(false);
+  const [isContactEditorOpen, setIsContactEditorOpen] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const voiceDeviceRef = React.useRef<Device | null>(null);
   const activeCallRef = React.useRef<Call | null>(null);
@@ -181,9 +189,15 @@ export default function CallsPage() {
   }, [location.search, location.state]);
 
   const selected = useMemo(
-    () => conversations.find((conversation) => conversationKey(conversation) === selectedUsername) || conversations[0],
-    [conversations, selectedUsername],
+    () => conversations.find((conversation) => conversation.id === selectedContactId) || conversations[0],
+    [conversations, selectedContactId],
   );
+
+  const sendablePhones = useMemo(() => {
+    const routingPhones = (selected?.phones || []).filter((contactPhone) => contactPhone.relationship === 'routing_owner');
+    if (routingPhones.length) return routingPhones;
+    return selected?.primaryPhone ? [{ id: selected.primaryPhone, phoneNumber: selected.primaryPhone }] : [];
+  }, [selected]);
 
   const visibleItems = useMemo(() => orderedItems(items).filter((item) => item.type !== 'scheduled'), [items]);
   const scheduledItems = useMemo(() => orderedItems(items).filter((item) => item.type === 'scheduled'), [items]);
@@ -191,14 +205,17 @@ export default function CallsPage() {
 
   async function loadConversations(options: { silent?: boolean } = {}) {
     try {
-      const data = await getConversations(search);
+      const data = await getCommunicationContacts(search, contactType);
       if (data.status !== 'SUCCESS') {
         throw new Error(data.message || data.status);
       }
-      setConversations(data.conversations);
-      setSelectedUsername((current) => {
+      setConversations((current) => data.contacts.map((contact) => {
+        const loaded = current.find((candidate) => candidate.id === contact.id);
+        return loaded?.phones.length ? { ...contact, phones: loaded.phones } : contact;
+      }));
+      setSelectedContactId((current) => {
         const requestedConversation = requestedClientUsername
-          ? data.conversations.find((conversation) => (
+          ? data.contacts.find((conversation) => (
             conversation.username === requestedClientUsername
             || conversationKey(conversation) === requestedClientUsername
           ))
@@ -206,34 +223,41 @@ export default function CallsPage() {
         if (!current && requestedConversation) {
           return conversationKey(requestedConversation);
         }
-        if (current && data.conversations.some((conversation) => conversationKey(conversation) === current)) {
+        if (current && data.contacts.some((conversation) => conversationKey(conversation) === current)) {
           return current;
         }
         if (requestedConversation) {
           return conversationKey(requestedConversation);
         }
-        return conversationKey(data.conversations[0]);
+        return conversationKey(data.contacts[0]);
       });
       setConversationError('');
     } catch (error) {
       if (!options.silent) {
         setConversations([]);
-        setSelectedUsername('');
+        setSelectedContactId('');
         setConversationError(error instanceof Error ? error.message : 'Could not load conversations.');
       }
     }
   }
 
-  async function loadThread(conversation: Conversation, options: { silent?: boolean } = {}) {
+  async function loadThread(conversation: CommunicationContact, options: { silent?: boolean } = {}) {
     if (!options.silent) setIsLoadingThread(true);
     try {
-      const data = conversation.username
-        ? await getMessageBoard(conversation.username)
-        : await getMessageBoardByPhone(conversation.phone || '');
+      const [data, contactResponse] = await Promise.all([
+        getCommunicationContactTimeline(conversation.id),
+        getCommunicationContact(conversation.id),
+      ]);
       if (data.status !== 'SUCCESS') {
         throw new Error(data.message || data.status);
       }
       setItems(data.items);
+      if (contactResponse.contact) {
+        const loadedContact = contactResponse.contact;
+        setConversations((current) => current.map((candidate) => (
+          candidate.id === loadedContact.id ? loadedContact : candidate
+        )));
+      }
       setThreadError('');
     } catch (error) {
       if (!options.silent) {
@@ -247,26 +271,26 @@ export default function CallsPage() {
 
   async function handleRefreshConversation() {
     await loadConversations();
-    if (selected?.username || selected?.phone) {
+    if (selected?.id) {
       await loadThread(selected);
     }
   }
 
   useEffect(() => {
     if (requestedClientUsername) {
-      setSelectedUsername('');
+      setSelectedContactId('');
     }
     loadConversations();
-  }, [requestedClientUsername]);
+  }, [requestedClientUsername, contactType]);
 
   useEffect(() => {
-    if (selected?.username || selected?.phone) {
+    if (selected?.id) {
       loadThread(selected);
     } else if (selected) {
       setItems([]);
       setThreadError('');
     }
-  }, [selected?.username, selected?.phone]);
+  }, [selected?.id]);
 
   useEffect(() => {
     let stopped = false;
@@ -279,7 +303,7 @@ export default function CallsPage() {
     async function refreshActiveThread() {
       if (stopped || document.hidden) return;
       const current = selected;
-      if (current?.username || current?.phone) {
+      if (current?.id) {
         await loadThread(current, { silent: true });
       }
     }
@@ -306,7 +330,7 @@ export default function CallsPage() {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [selected?.username, selected?.phone, search]);
+  }, [selected?.id, search, contactType]);
 
   useEffect(() => {
     if (isLoadingThread) return undefined;
@@ -324,7 +348,7 @@ export default function CallsPage() {
       conversationLabel(conversation).toLowerCase().includes(q)
       || conversation.displayName.toLowerCase().includes(q)
       || (conversation.username || '').toLowerCase().includes(q)
-      || conversation.phone?.toLowerCase().includes(q)
+      || conversation.primaryPhone?.toLowerCase().includes(q)
     ));
   }, [conversations, search]);
 
@@ -332,7 +356,14 @@ export default function CallsPage() {
     setIsScheduleModalOpen(false);
     setScheduleBody('');
     setScheduleSendAt('');
-  }, [selected?.username]);
+  }, [selected?.id]);
+
+  useEffect(() => {
+    const primary = sendablePhones.find((contactPhone) => (
+      'position' in contactPhone && contactPhone.position === 'primary'
+    ));
+    setSelectedPhone(primary?.phoneNumber || sendablePhones[0]?.phoneNumber || '');
+  }, [selected?.id, selected?.phones, selected?.primaryPhone]);
 
   useEffect(() => {
     if (browserCallStatus !== 'in-call' || !callStartedAt) return undefined;
@@ -364,21 +395,43 @@ export default function CallsPage() {
   }
 
   async function handleSend(schedule: boolean, scheduledBody = message, scheduledSendAt = '') {
-    if (!selected?.username || !scheduledBody.trim()) return;
-    if (schedule) {
-      await scheduleMessage(selected.username, scheduledBody, new Date(scheduledSendAt).toISOString(), selected.phone);
+    if (!selected?.id || !selectedPhone || !scheduledBody.trim()) return;
+    setThreadError('');
+    try {
+      if (schedule) {
+        await scheduleCommunicationContactMessage(
+          selected.id,
+          scheduledBody,
+          new Date(scheduledSendAt).toISOString(),
+          selectedPhone,
+        );
+      } else {
+        await sendCommunicationContactMessage(selected.id, message, selectedPhone);
+      }
       await loadThread(selected);
       await loadConversations();
-    } else {
-      await sendMessage(selected.username, message, selected.phone);
-      await loadThread(selected);
-      await loadConversations();
+      if (!schedule) setMessage('');
+    } catch (error) {
+      setThreadError(error instanceof Error ? error.message : 'Could not send this message.');
     }
-    if (!schedule) setMessage('');
+  }
+
+  async function handleAddNote() {
+    if (!selected?.id || !message.trim()) return;
+    setThreadError('');
+    try {
+      const data = await addCommunicationContactNote(selected.id, message.trim());
+      if (data.status !== 'SUCCESS') throw new Error(data.message || data.status);
+      setItems(data.items);
+      setMessage('');
+      await loadConversations();
+    } catch (error) {
+      setThreadError(error instanceof Error ? error.message : 'Could not save this note.');
+    }
   }
 
   function handleScheduleClick() {
-    if (!selected?.username) return;
+    if (!selected?.id || !selectedPhone) return;
     const body = scheduledItem?.body || message;
     if (!body?.trim()) return;
     setScheduleBody(body);
@@ -387,7 +440,7 @@ export default function CallsPage() {
   }
 
   async function handleSaveSchedule() {
-    if (!selected?.username || !scheduleBody.trim() || !scheduleSendAt) return;
+    if (!selected?.id || !selectedPhone || !scheduleBody.trim() || !scheduleSendAt) return;
     await handleSend(true, scheduleBody, scheduleSendAt);
     setMessage('');
     setScheduleBody('');
@@ -414,8 +467,8 @@ export default function CallsPage() {
   }
 
   async function saveCallNoteAndClose() {
-    if (!selected?.username) {
-      setCallNoteSaveError('Enroll or attach this phone number before saving notes.');
+    if (!selected?.id) {
+      setCallNoteSaveError('Select a communication contact before saving notes.');
       return;
     }
     const note = callNoteDraft.trim();
@@ -423,7 +476,7 @@ export default function CallsPage() {
     setCallNoteSaveError('');
     try {
       if (note) {
-        await addClientNote(selected.username, note, undefined, true);
+        await addCommunicationContactNote(selected.id, note, undefined, true);
         setCallNoteDraft('');
       }
       closeCallModal();
@@ -437,10 +490,10 @@ export default function CallsPage() {
   }
 
   async function handleSaveEditedNote() {
-    if (!selected?.username || !editingNoteId || !editNoteDraft.trim()) return;
+    if (!selected?.id || !editingNoteId || !editNoteDraft.trim()) return;
     setIsSavingEditedNote(true);
     try {
-      const data = await updateClientNote(selected.username, editingNoteId, editNoteDraft.trim());
+      const data = await updateCommunicationContactNote(selected.id, editingNoteId, editNoteDraft.trim());
       if (data.status !== 'SUCCESS') {
         throw new Error(data.message || data.status);
       }
@@ -454,14 +507,14 @@ export default function CallsPage() {
   }
 
   async function refreshSelectedConversation() {
-    if (selected?.username || selected?.phone) {
+    if (selected?.id) {
       await loadThread(selected);
       await loadConversations();
     }
   }
 
   async function startBrowserCall() {
-    if (!selected?.phone || browserCallStatus === 'connecting' || browserCallStatus === 'ringing' || browserCallStatus === 'in-call') return;
+    if (!selectedPhone || browserCallStatus === 'connecting' || browserCallStatus === 'ringing' || browserCallStatus === 'in-call') return;
     setBrowserCallError('');
     setBrowserCallStatus('connecting');
     setElapsedSeconds(0);
@@ -482,7 +535,7 @@ export default function CallsPage() {
         setBrowserCallStatus('error');
       });
       await device.register();
-      const call = await device.connect({ params: { To: selected.phone } });
+      const call = await device.connect({ params: { To: selectedPhone } });
       activeCallRef.current = call;
       setBrowserCallStatus('ringing');
       call.on('accept', () => {
@@ -551,16 +604,37 @@ export default function CallsPage() {
     setIsMuted(false);
   }
 
+  function updateContactInList(contact: CommunicationContact) {
+    setConversations((current) => {
+      const exists = current.some((candidate) => candidate.id === contact.id);
+      if (!exists) return [contact, ...current];
+      return current.map((candidate) => candidate.id === contact.id ? contact : candidate);
+    });
+  }
+
+  function handleContactPromotion(result: PromoteSharedResponse) {
+    if (!result.sharedContact) return;
+    updateContactInList(result.sharedContact);
+    setSelectedContactId(result.sharedContact.id);
+    setContactNotice(
+      `Shared thread created. Moved ${result.moved.messages} messages, ${result.moved.calls} calls, and ${result.moved.callNotes} call notes.`,
+    );
+    loadConversations({ silent: true });
+  }
+
   return (
     <main className="communications-shell">
       <aside className="conversation-list" aria-label="Conversation contacts">
         <div className="conversation-list-header">
-          <h1>Clients</h1>
+          <div>
+            <p className="communications-kicker">Communications</p>
+            <h1>Contacts</h1>
+          </div>
           <button
             type="button"
             className="conversation-add"
-            onClick={() => history.push('/enroll-client')}
-            aria-label="Enroll client"
+            onClick={() => setIsCreateContactOpen(true)}
+            aria-label="Create communication contact"
           >
             <AddIcon fontSize="small" />
           </button>
@@ -572,12 +646,32 @@ export default function CallsPage() {
           onKeyDown={(event) => {
             if (event.key === 'Enter') loadConversations();
           }}
-          placeholder="Search clients"
+          placeholder="Search names or phone numbers"
         />
+        <div className="contact-type-filters" aria-label="Filter communication contacts">
+          {[
+            { value: '', label: 'All' },
+            { value: 'PERSON', label: 'Clients' },
+            { value: 'COLD', label: 'Cold' },
+            { value: 'SHARED', label: 'Shared' },
+          ].map((filter) => (
+            <button
+              type="button"
+              key={filter.value || 'all'}
+              className={contactType === filter.value ? 'active' : ''}
+              onClick={() => {
+                setContactNotice('');
+                setContactType(filter.value);
+              }}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
         <div className="contact-scroll">
           {conversationError && <p className="communications-muted">{conversationError}</p>}
           {!conversationError && filtered.length === 0 && (
-            <p className="communications-muted">No clients found.</p>
+            <p className="communications-muted">No communication contacts found.</p>
           )}
           {filtered.map((conversation) => {
             const label = conversationLabel(conversation);
@@ -586,11 +680,23 @@ export default function CallsPage() {
                 type="button"
                 key={conversationKey(conversation)}
                 className={`contact-row ${conversationKey(selected) === conversationKey(conversation) ? 'active' : ''}`}
-                onClick={() => setSelectedUsername(conversationKey(conversation))}
+                onClick={() => {
+                  setContactNotice('');
+                  setComposerMode('message');
+                  setMessage('');
+                  setSelectedContactId(conversation.id);
+                }}
               >
-                <span className="contact-avatar">{conversationInitial(conversation)}</span>
+                <span className={`contact-avatar ${conversation.type.toLowerCase()}`}>{conversationInitial(conversation)}</span>
                 <span className="contact-main">
-                  <strong>{label}</strong>
+                  <strong>
+                    {label}
+                    {conversation.type !== 'PERSON' && (
+                      <span className={`contact-list-type ${conversation.type.toLowerCase()}`}>
+                        {conversation.type === 'SHARED' ? 'Shared' : 'Cold'}
+                      </span>
+                    )}
+                  </strong>
                   <small>{conversation.lastPreview || 'No recent activity'}</small>
                 </span>
                 <span className="contact-meta">
@@ -607,14 +713,25 @@ export default function CallsPage() {
           <>
             <header className="chat-header">
               <div>
-                <h2>{conversationLabel(selected)}</h2>
-                <p>{phone(selected.phone)} · {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes</p>
+                <div className="chat-contact-title">
+                  <h2>{conversationLabel(selected)}</h2>
+                  <span className={`contact-type-pill ${selected.type.toLowerCase()}`}>
+                    {contactTypeLabel(selected)}
+                  </span>
+                </div>
+                <p>
+                  {selected.primaryPhone ? `${phone(selected.primaryPhone)} · ` : ''}
+                  {selected.messageCount} messages · {selected.callCount} calls · {selected.noteCount} notes
+                </p>
               </div>
               <div className="chat-actions">
-                <button type="button" className="btn btn-outline-secondary" onClick={() => openSelectedClient(selected, history)}>
-                  {selected.username ? 'Profile' : 'Enroll'}
-                </button>
-                <button type="button" className="btn btn-primary" onClick={() => setIsCalling(true)}>Call</button>
+                {!selected.shared && (
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => openSelectedClient(selected, history)}>
+                    {selected.username ? 'Profile' : 'Enroll'}
+                  </button>
+                )}
+                <button type="button" className="btn btn-outline-secondary" onClick={() => setIsContactEditorOpen(true)}>Edit contact</button>
+                <button type="button" className="btn btn-primary" disabled={!selectedPhone} onClick={() => setIsCalling(true)}>Call</button>
                 <button
                   type="button"
                   className="chat-icon-action"
@@ -627,6 +744,12 @@ export default function CallsPage() {
             </header>
 
             <div className="chat-scroll" ref={chatScrollRef}>
+              {contactNotice && (
+                <div className="contact-move-notice">
+                  <span>{contactNotice}</span>
+                  <button type="button" onClick={() => setContactNotice('')} aria-label="Dismiss notice">×</button>
+                </div>
+              )}
               {isLoadingThread && <p className="communications-muted">Loading conversation...</p>}
               {threadError && <p className="communications-muted">{threadError}</p>}
               {!isLoadingThread && !threadError && visibleItems.length === 0 && (
@@ -643,7 +766,7 @@ export default function CallsPage() {
                         <strong>{title}</strong>
                         <span>
                           {formatTime(item.occurredAt)}
-                          {item.type === 'note' && selected.username && (
+                          {item.type === 'note' && (
                             <button
                               type="button"
                               className="timeline-edit-button"
@@ -706,7 +829,7 @@ export default function CallsPage() {
             </div>
 
             <footer className="chat-composer">
-              {scheduledItem && (
+              {composerMode === 'message' && scheduledItem && (
                 <div className="scheduled-stack">
                   <section className="scheduled-preview existing">
                     <div>
@@ -722,17 +845,55 @@ export default function CallsPage() {
                   </section>
                 </div>
               )}
+              <div className="composer-mode-toggle" aria-label="Choose communication type">
+                <button
+                  type="button"
+                  className={composerMode === 'message' ? 'active' : ''}
+                  onClick={() => setComposerMode('message')}
+                >
+                  SMS message
+                </button>
+                <button
+                  type="button"
+                  className={composerMode === 'note' ? 'active' : ''}
+                  onClick={() => setComposerMode('note')}
+                >
+                  Internal note
+                </button>
+              </div>
+              {composerMode === 'message' && sendablePhones.length > 1 && (
+                <label className="composer-phone-select">
+                  Send to
+                  <select value={selectedPhone} onChange={(event) => setSelectedPhone(event.target.value)}>
+                    {sendablePhones.map((contactPhone) => (
+                      <option key={contactPhone.id} value={contactPhone.phoneNumber}>
+                        {phone(contactPhone.phoneNumber)}
+                        {'label' in contactPhone && contactPhone.label ? ` · ${contactPhone.label}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {composerMode === 'message' && sendablePhones.length === 0 && (
+                <p className="composer-help">Add a routing phone number to send SMS. You can still save internal notes.</p>
+              )}
               <textarea
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
-                placeholder="Write a freeform message"
+                placeholder={composerMode === 'note' ? 'Write an internal note about this contact' : 'Write an SMS message'}
                 rows={2}
               />
               <div className="composer-row composer-actions">
-                <button type="button" disabled={!selected.username || !message.trim()} onClick={() => handleSend(false)}>Send</button>
-                <button type="button" disabled={!selected.username || (!message.trim() && !scheduledItem)} onClick={handleScheduleClick}>
-                  Schedule send
-                </button>
+                {composerMode === 'note' ? (
+                  <button type="button" disabled={!message.trim()} onClick={handleAddNote}>Save note</button>
+                ) : (
+                  <>
+                    <button type="button" disabled={!selectedPhone || !message.trim()} onClick={() => handleSend(false)}>Send SMS</button>
+                    <button type="button" disabled={!selectedPhone || (!message.trim() && !scheduledItem)} onClick={handleScheduleClick}>
+                      Schedule send
+                    </button>
+                  </>
+                )}
               </div>
             </footer>
 
@@ -792,7 +953,18 @@ export default function CallsPage() {
                   </div>
                   <label className="call-number-wrap">
                     Phone number
-                    <input className="call-number-input" value={phone(selected.phone)} readOnly />
+                    {sendablePhones.length > 1 ? (
+                      <select className="call-number-input" value={selectedPhone} onChange={(event) => setSelectedPhone(event.target.value)}>
+                        {sendablePhones.map((contactPhone) => (
+                          <option key={contactPhone.id} value={contactPhone.phoneNumber}>
+                            {phone(contactPhone.phoneNumber)}
+                            {'label' in contactPhone && contactPhone.label ? ` · ${contactPhone.label}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input className="call-number-input" value={phone(selectedPhone)} readOnly />
+                    )}
                   </label>
                   <label className="call-notes-wrap">
                     Notes
@@ -831,7 +1003,7 @@ export default function CallsPage() {
                     <button
                       type="button"
                       className={`call-start ${browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? 'danger' : ''}`}
-                      disabled={!selected.phone || browserCallStatus === 'connecting'}
+                      disabled={!selectedPhone || browserCallStatus === 'connecting'}
                       onClick={browserCallStatus === 'in-call' || browserCallStatus === 'ringing' ? hangUpCall : startBrowserCall}
                     >
                       <LocalPhoneOutlinedIcon fontSize="small" />
@@ -849,6 +1021,36 @@ export default function CallsPage() {
           </div>
         )}
       </section>
+
+      {isCreateContactOpen && (
+        <CreateContactModal
+          onClose={() => setIsCreateContactOpen(false)}
+          onCreated={(contact) => {
+            updateContactInList(contact);
+            setContactNotice('');
+            setComposerMode('message');
+            setSelectedContactId(contact.id);
+            setIsCreateContactOpen(false);
+          }}
+        />
+      )}
+
+      {isContactEditorOpen && selected && (
+        <ContactEditorSheet
+          contact={selected}
+          contacts={conversations}
+          onClose={() => setIsContactEditorOpen(false)}
+          onChanged={updateContactInList}
+          onSelectContact={(contactId) => {
+            setContactNotice('');
+            setComposerMode('message');
+            setMessage('');
+            setSelectedContactId(contactId);
+            setIsContactEditorOpen(false);
+          }}
+          onPromoted={handleContactPromotion}
+        />
+      )}
     </main>
   );
 }
