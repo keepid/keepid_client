@@ -38,6 +38,7 @@ body:has(.communications-shell),
 
 .conversation-list-header {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -69,6 +70,7 @@ body:has(.communications-shell),
 }
 
 .conversation-search {
+  flex: 0 0 auto;
   width: calc(100% - 36px);
   margin: 0 18px 14px;
   border: 1px solid #bcccdc;
@@ -1326,6 +1328,8 @@ body:has(.communications-shell),
 
 .contact-type-filters {
   display: flex;
+  flex: 0 0 auto;
+  align-items: center;
   gap: 6px;
   padding: 0 18px 12px;
   overflow-x: auto;
@@ -1333,6 +1337,7 @@ body:has(.communications-shell),
 
 .contact-type-filters button,
 .composer-mode-toggle button {
+  flex: 0 0 auto;
   border: 1px solid #bcccdc;
   border-radius: 999px;
   padding: 5px 10px;
@@ -1340,6 +1345,7 @@ body:has(.communications-shell),
   color: #486581;
   font-size: 12px;
   font-weight: 800;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
