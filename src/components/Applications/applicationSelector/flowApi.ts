@@ -1,62 +1,96 @@
 import getServerURL from '../../../serverOverride';
-import type { ResolvedProfiles } from '../../../utils/directives';
-import applicationSelectorFlowData from './applicationSelectorFlow.json';
-import { buildProfileAnswers } from './flowLogic';
-import type { ApplicationSelectorAnswers, ApplicationSelectorFlowDefinition } from './types';
+import type {
+  FulfillmentMode,
+  ResolvedOutcome,
+  SelectorFlow,
+  SelectorPathStep,
+  ServiceRecordResult,
+} from './types';
 
-export const applicationSelectorFlowDefinition =
-  applicationSelectorFlowData as ApplicationSelectorFlowDefinition;
+interface TraversalRequest {
+  clientUsername: string;
+  publishToken: string;
+  path: SelectorPathStep[];
+  responses: Record<string, string>;
+}
 
-const isApplicationSelectorFlowDefinition = (
-  value: unknown,
-): value is ApplicationSelectorFlowDefinition => {
-  if (!value || typeof value !== 'object') return false;
-  const flow = value as Partial<ApplicationSelectorFlowDefinition>;
-  return typeof flow.id === 'string'
-    && typeof flow.title === 'string'
-    && Array.isArray(flow.questions)
-    && Array.isArray(flow.outcomes);
-};
+export interface ManualServiceRequest {
+  clientUsername: string;
+  idempotencyKey: string;
+  serviceTitle: string;
+  manualReason: 'NO_MATCH' | 'UNSURE' | 'URGENT_BYPASS' | 'OTHER';
+  manualReasonDetail?: string;
+  clientInstructionsMarkdown: string;
+  workerInstructionsMarkdown?: string;
+  fulfillmentMode: FulfillmentMode;
+  registryEntryId?: string;
+  attemptedPath: SelectorPathStep[];
+  responses: Record<string, string>;
+}
 
-export const loadApplicationSelectorFlow = async (): Promise<ApplicationSelectorFlowDefinition> => {
-  try {
-    const response = await fetch(`${getServerURL()}/application-selector-flow`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) return applicationSelectorFlowDefinition;
-
-    const remoteFlow = await response.json();
-    if (!isApplicationSelectorFlowDefinition(remoteFlow)) {
-      return applicationSelectorFlowDefinition;
-    }
-    return remoteFlow;
-  } catch {
-    return applicationSelectorFlowDefinition;
-  }
-};
-
-export const loadApplicationSelectorProfileAnswers = async (
-  flow: ApplicationSelectorFlowDefinition,
-  clientUsername?: string,
-): Promise<ApplicationSelectorAnswers> => {
-  const hasProfileSource = flow.questions.some((question) => question.answerSource?.type === 'profile');
-  if (!hasProfileSource || !clientUsername) return {};
-
-  const response = await fetch(`${getServerURL()}/get-user-info`, {
-    method: 'POST',
+const requestJson = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
+  const response = await fetch(`${getServerURL()}${path}`, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: clientUsername }),
+    ...init,
+    headers: {
+      Accept: 'application/json',
+      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+      ...init.headers,
+    },
   });
-  if (!response.ok) return {};
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(body.message || 'The case selector request failed.');
+    Object.assign(error, { code: body.error, status: response.status });
+    throw error;
+  }
+  return body as T;
+};
 
-  const clientProfile = await response.json();
-  if (!clientProfile || clientProfile.status !== 'SUCCESS') return {};
+export const loadCaseSelector = (): Promise<SelectorFlow> =>
+  requestJson('/api/case-selector');
 
-  const profiles: ResolvedProfiles = {
-    client: clientProfile,
-  };
-  return buildProfileAnswers(flow, profiles);
+export const resolveCaseOutcome = (request: TraversalRequest): Promise<ResolvedOutcome> =>
+  requestJson('/api/case-selector/resolve', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+
+export const createClassifiedService = (
+  request: TraversalRequest & { idempotencyKey: string; confirmedEffectIds: string[] },
+): Promise<ServiceRecordResult> => requestJson('/api/service-records/from-selector', {
+  method: 'POST',
+  body: JSON.stringify(request),
+});
+
+export const previewManualService = (
+  request: Omit<ManualServiceRequest, 'idempotencyKey' | 'manualReason'>,
+): Promise<Pick<ResolvedOutcome, 'serviceTitle' | 'workerInstructionsMarkdown' | 'clientSheetMarkdown' | 'fulfillmentMode'>> =>
+  requestJson('/api/service-records/manual/preview', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+
+export const createManualService = (
+  request: ManualServiceRequest,
+): Promise<ServiceRecordResult> => requestJson('/api/service-records/manual', {
+  method: 'POST',
+  body: JSON.stringify(request),
+});
+
+export const uploadServicePdf = async (applicationId: string, file: File): Promise<void> => {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await fetch(
+    `${getServerURL()}/api/service-records/${encodeURIComponent(applicationId)}/primary-pdf`,
+    { method: 'POST', credentials: 'include', body: form },
+  );
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.message || 'Could not save the PDF.');
+};
+
+export const completeServiceRecord = async (applicationId: string): Promise<void> => {
+  await requestJson(`/api/service-records/${encodeURIComponent(applicationId)}/complete`, {
+    method: 'POST',
+  });
 };
