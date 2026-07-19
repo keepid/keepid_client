@@ -128,8 +128,10 @@ function getClientSearchDisplayName(client: ClientSearchResult): string {
 
 export default function ApplicationForm({
   selectorInstructionsMarkdown = '',
+  serviceRecordId,
 }: {
   selectorInstructionsMarkdown?: string;
+  serviceRecordId?: string;
 }) {
   const {
     formContent,
@@ -564,7 +566,12 @@ export default function ApplicationForm({
           existingApplicationIdsBeforeSave = null;
         }
         const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
-        const uploadResult = await uploadCompletedPdf(blob, blankFormId, formOutput, targetClientUsername);
+        const uploadResult = await uploadCompletedPdf(
+          blob,
+          serviceRecordId || blankFormId,
+          formOutput,
+          targetClientUsername,
+        );
         let persistedId = uploadResult.applicationId || uploadResult.fileId;
         if (!persistedId && existingApplicationIdsBeforeSave) {
           const applicationIdsAfterSave = await listApplicationPdfIds(targetClientUsername);
@@ -600,7 +607,7 @@ export default function ApplicationForm({
         setFillingPdf(false);
       }
     },
-    [blankFormId, targetClientUsername, handleNext],
+    [blankFormId, targetClientUsername, handleNext, serviceRecordId],
   );
 
   const handleSaveSuccess = useCallback(() => {

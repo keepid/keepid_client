@@ -18,6 +18,7 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
     };
     startAtReview?: boolean;
     selectorInstructionsMarkdown?: string;
+    serviceRecordId?: string;
   }>();
   const clientUsername = location.state?.clientUsername || '';
   const clientName = location.state?.clientName || '';
@@ -62,7 +63,10 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
           : undefined
       }
     >
-      <ApplicationForm selectorInstructionsMarkdown={selectorInstructionsMarkdown} />
+      <ApplicationForm
+        selectorInstructionsMarkdown={selectorInstructionsMarkdown}
+        serviceRecordId={location.state?.serviceRecordId}
+      />
     </ApplicationFormProvider>
   );
 }

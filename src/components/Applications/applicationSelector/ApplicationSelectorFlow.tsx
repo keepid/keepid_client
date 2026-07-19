@@ -7,473 +7,584 @@ import React, {
 import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
+import getServerURL from '../../../serverOverride';
 import {
-  applicationSelectorFlowDefinition,
-  loadApplicationSelectorFlow,
-  loadApplicationSelectorProfileAnswers,
+  completeServiceRecord,
+  createClassifiedService,
+  createManualService,
+  loadCaseSelector,
+  previewManualService,
+  resolveCaseOutcome,
+  uploadServicePdf,
 } from './flowApi';
-import {
-  getNextRenderableStepIndex,
-  getPreviousRenderableStepIndex,
-  getRenderableStepNumber,
-} from './flowLogic';
-import { resolveApplicationSelectorOutcome } from './outcomeResolver';
 import type {
-  ApplicationSelectorAnswers,
-  ApplicationSelectorFlowDefinition,
-  ApplicationSelectorOption,
-  ApplicationSelectorOutcome,
-  ApplicationSelectorQuestion,
+  FulfillmentMode,
+  ProposedAction,
   RegistryApplicationOption,
+  ResolvedOutcome,
+  SelectorFlow,
+  SelectorNode,
+  SelectorPathStep,
+  SelectorTransition,
+  ServiceRecordResult,
 } from './types';
 
 interface Props {
   availableApplications: RegistryApplicationOption[];
   clientUsername?: string;
   clientName?: string;
-  onUploadPdf: (file: File, outcome: ApplicationSelectorOutcome) => Promise<void>;
 }
+
+const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID
+  ? crypto.randomUUID()
+  : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+const errorMessage = (error: unknown) => (
+  error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+);
 
 const ApplicationSelectorFlow = ({
   availableApplications,
-  clientUsername,
-  clientName,
-  onUploadPdf,
+  clientUsername = '',
+  clientName = '',
 }: Props) => {
   const history = useHistory();
-  const [flow, setFlow] = useState<ApplicationSelectorFlowDefinition>(applicationSelectorFlowDefinition);
-  const [answers, setAnswers] = useState<ApplicationSelectorAnswers>({});
-  const [profileAnswers, setProfileAnswers] = useState<ApplicationSelectorAnswers>({});
-  const [stepIndex, setStepIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const pdfInputRef = useRef<HTMLInputElement | null>(null);
-  const [isDraggingPdf, setIsDraggingPdf] = useState(false);
-  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [flow, setFlow] = useState<SelectorFlow | null>(null);
+  const [nodeId, setNodeId] = useState('');
+  const [path, setPath] = useState<SelectorPathStep[]>([]);
+  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [fieldValue, setFieldValue] = useState('');
+  const [resolved, setResolved] = useState<ResolvedOutcome | null>(null);
+  const [record, setRecord] = useState<ServiceRecordResult | null>(null);
+  const [confirmedEffects, setConfirmedEffects] = useState<string[]>([]);
+  const [pdf, setPdf] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualPreview, setManualPreview] = useState<string | null>(null);
+  const [manual, setManual] = useState({
+    serviceTitle: '',
+    manualReason: 'NO_MATCH' as 'NO_MATCH' | 'UNSURE' | 'URGENT_BYPASS' | 'OTHER',
+    manualReasonDetail: '',
+    clientInstructionsMarkdown: '# Next steps\n\n',
+    workerInstructionsMarkdown: '',
+    fulfillmentMode: 'INSTRUCTIONS_ONLY' as FulfillmentMode,
+    registryEntryId: '',
+  });
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    let isActive = true;
-    const loadFlow = async () => {
-      const loadedFlow = await loadApplicationSelectorFlow();
-      const loadedProfileAnswers = await loadApplicationSelectorProfileAnswers(loadedFlow, clientUsername)
-        .catch(() => ({}));
-      if (!isActive) return;
-      setFlow(loadedFlow);
-      setProfileAnswers(loadedProfileAnswers);
-      setAnswers(loadedProfileAnswers);
-      setStepIndex(getNextRenderableStepIndex(loadedFlow, loadedProfileAnswers, 0, loadedProfileAnswers));
-      setLoadError(null);
-      setIsLoading(false);
-    };
-
-    loadFlow()
-      .catch(() => {
-        if (!isActive) return;
-        const fallbackAnswers: ApplicationSelectorAnswers = {};
-        setFlow(applicationSelectorFlowDefinition);
-        setProfileAnswers(fallbackAnswers);
-        setAnswers(fallbackAnswers);
-        setStepIndex(getNextRenderableStepIndex(
-          applicationSelectorFlowDefinition,
-          fallbackAnswers,
-          0,
-          fallbackAnswers,
-        ));
-        setLoadError('Could not load client profile answers.');
-        setIsLoading(false);
+    let active = true;
+    loadCaseSelector()
+      .then((loaded) => {
+        if (!active) return;
+        setFlow(loaded);
+        setNodeId(loaded.rootNodeId);
+      })
+      .catch((loadError) => {
+        if (active) setError(errorMessage(loadError));
       });
-    return () => {
-      isActive = false;
-    };
-  }, [clientUsername]);
+    return () => { active = false; };
+  }, []);
 
-  const currentQuestion = flow.questions[stepIndex];
-  const isOutcomeStep = stepIndex >= flow.questions.length;
-  const outcome = useMemo(
-    () => resolveApplicationSelectorOutcome(flow, answers),
-    [answers, flow],
+  const nodes = useMemo(
+    () => new Map((flow?.nodes || []).map((node) => [node.id, node])),
+    [flow],
   );
-  const currentStepNumber = getRenderableStepNumber(flow, answers, stepIndex, profileAnswers);
+  const currentNode = nodes.get(nodeId);
 
-  const goBackToApplications = () => {
-    history.push({
-      pathname: '/applications',
-      state: {
-        clientUsername: clientUsername || '',
-        clientName: clientName || '',
-      },
-    });
-  };
+  useEffect(() => {
+    if (!flow || currentNode?.type !== 'OUTCOME') return;
+    setBusy(true);
+    setError(null);
+    resolveCaseOutcome({
+      clientUsername,
+      publishToken: flow.publishToken,
+      path,
+      responses,
+    })
+      .then((outcome) => {
+        setResolved(outcome);
+        setConfirmedEffects(outcome.proposedActions.map((action) => action.effectId));
+      })
+      .catch((resolveError) => setError(errorMessage(resolveError)))
+      .finally(() => setBusy(false));
+  }, [clientUsername, currentNode?.id, currentNode?.type, flow, path, responses]);
 
-  const goToNextStep = (nextAnswers: ApplicationSelectorAnswers = answers) => {
-    setStepIndex(getNextRenderableStepIndex(flow, nextAnswers, stepIndex + 1, profileAnswers));
-  };
-
-  const handleAnswer = (question: ApplicationSelectorQuestion, option: ApplicationSelectorOption) => {
-    const nextAnswers = {
-      ...answers,
-      [question.id]: option.value,
-    };
-    setAnswers(nextAnswers);
-    setUploadFile(null);
-    setUploadError(null);
-    goToNextStep(nextAnswers);
-  };
-
-  const startOver = () => {
-    setAnswers(profileAnswers);
-    setStepIndex(getNextRenderableStepIndex(flow, profileAnswers, 0, profileAnswers));
-  };
-
-  const goToPreviousStep = () => {
-    const previousStepIndex = getPreviousRenderableStepIndex(
-      flow,
-      answers,
-      stepIndex >= flow.questions.length ? flow.questions.length - 1 : stepIndex - 1,
-      profileAnswers,
-    );
-    if (previousStepIndex === null) {
-      goBackToApplications();
+  useEffect(() => {
+    if (!currentNode?.responseKey) {
+      setFieldValue('');
       return;
     }
-    setStepIndex(previousStepIndex);
+    setFieldValue(responses[currentNode.responseKey] || '');
+  }, [currentNode?.id, currentNode?.responseKey, responses]);
+
+  const backToApplications = () => history.push({
+    pathname: '/applications',
+    state: { clientUsername, clientName },
+  });
+
+  const reset = () => {
+    if (!flow) return;
+    setNodeId(flow.rootNodeId);
+    setPath([]);
+    setResponses({});
+    setResolved(null);
+    setRecord(null);
+    setPdf(null);
+    setError(null);
+    setManualMode(false);
   };
 
-  const getPresetApplication = (selectedOutcome: ApplicationSelectorOutcome) => {
-    const registryMatch = availableApplications.find(
-      (application) => application.applicationId === selectedOutcome.applicationId,
-    );
-
-    return {
-      applicationId: selectedOutcome.applicationId || '',
-      label: registryMatch?.label || selectedOutcome.applicationLabel || selectedOutcome.title,
-      state: registryMatch?.state || '',
-      idType: registryMatch?.idType || '',
-      housingStatus: registryMatch?.housingStatus || '',
-    };
+  const follow = (transition: SelectorTransition, nextResponses = responses) => {
+    if (!currentNode) return;
+    setPath((steps) => [...steps, { nodeId: currentNode.id, transitionKey: transition.key }]);
+    setResponses(nextResponses);
+    setNodeId(transition.childNodeId);
+    setResolved(null);
+    setError(null);
   };
 
-  const startAnnotatedApplication = (selectedOutcome: ApplicationSelectorOutcome) => {
-    if (!selectedOutcome.applicationId) return;
+  const goBack = () => {
+    if (record) return;
+    const prior = path[path.length - 1];
+    if (!prior) {
+      backToApplications();
+      return;
+    }
+    const priorNode = nodes.get(prior.nodeId);
+    setPath((steps) => steps.slice(0, -1));
+    setNodeId(prior.nodeId);
+    setResolved(null);
+    if (priorNode?.responseKey) {
+      setResponses((values) => {
+        const next = { ...values };
+        delete next[priorNode.responseKey as string];
+        return next;
+      });
+    }
+  };
 
+  const submitInteraction = () => {
+    if (!currentNode) return;
+    const config = currentNode.componentConfig || {};
+    const isInformation = currentNode.componentKey === 'information';
+    const value = fieldValue.trim();
+    if (!isInformation && config.required !== false && !value) {
+      setError('Enter a value to continue.');
+      return;
+    }
+    if (currentNode.componentKey === 'penndot-number') {
+      const pattern = String(config.pattern || '^\\d{8}$');
+      if (value && !new RegExp(pattern).test(value)) {
+        setError(String(config.helpText || 'Enter a valid 8-digit PennDOT customer number.'));
+        return;
+      }
+    }
+    const transition = currentNode.transitions[0];
+    if (!transition) return;
+    const next = currentNode.responseKey && !isInformation
+      ? { ...responses, [currentNode.responseKey]: value }
+      : responses;
+    follow(transition, next);
+  };
+
+  const applicationOption = (registryEntryId?: string | null) => availableApplications.find(
+    (application) => application.applicationId === registryEntryId,
+  );
+
+  const startWebForm = (created: ServiceRecordResult) => {
+    const option = applicationOption(created.registryEntryId);
+    if (!created.registryEntryId) return;
     history.push({
       pathname: '/applications/createnew',
       state: {
-        clientUsername: clientUsername || '',
-        clientName: clientName || '',
-        presetApplication: getPresetApplication(selectedOutcome),
+        clientUsername,
+        clientName,
+        serviceRecordId: created.applicationId,
+        presetApplication: {
+          applicationId: created.registryEntryId,
+          label: option?.label || created.serviceTitle || 'Application',
+          state: option?.state || '',
+          idType: option?.idType || '',
+          housingStatus: option?.housingStatus || '',
+        },
         startAtReview: true,
-        selectorInstructionsMarkdown: selectedOutcome.instructionsMarkdown || '',
+        selectorInstructionsMarkdown: created.clientSheetMarkdown || resolved?.clientSheetMarkdown || '',
       },
     });
   };
 
-  const renderIncludedComponent = (componentName: string) => {
-    if (componentName === 'blueBox') {
-      return (
-        <div
-          key={componentName}
-          className="tw-h-36 tw-rounded-md tw-bg-blue-500"
-          aria-label="Blue placeholder box"
-        />
-      );
-    }
-
-    return (
-      <div
-        key={componentName}
-        className="tw-h-36 tw-rounded-md tw-bg-blue-500"
-        aria-label={`${componentName} placeholder box`}
-      />
-    );
-  };
-
-  const renderQuestion = (question: ApplicationSelectorQuestion) => {
-    if (question.type === 'componentPage') {
-      return (
-        <div>
-          <div className="tw-mb-5">
-            <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-900">{question.title}</h2>
-            {question.description && (
-              <p className="tw-mt-2 tw-text-sm tw-text-gray-600">{question.description}</p>
-            )}
-          </div>
-          <div className="tw-grid tw-gap-4">
-            {(question.includeComponents || []).map(renderIncludedComponent)}
-          </div>
-          <div className="tw-mt-6 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
-            <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-              Back
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => goToNextStep()}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <div className="tw-mb-5">
-          <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-900">{question.title}</h2>
-          {question.description && (
-            <p className="tw-mt-2 tw-text-sm tw-text-gray-600">{question.description}</p>
-          )}
-        </div>
-        <div className="tw-grid tw-gap-3 md:tw-grid-cols-3">
-          {(question.options || []).map((option) => {
-            const isSelected = answers[question.id] === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={[
-                  'tw-flex tw-h-full tw-min-h-52 tw-w-full tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-md tw-border tw-bg-white tw-p-5 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-400 hover:tw-bg-blue-50',
-                  isSelected ? 'tw-border-blue-500 tw-ring-2 tw-ring-blue-200' : 'tw-border-gray-200',
-                ].join(' ')}
-                onClick={() => handleAnswer(question, option)}
-              >
-                {option.imageUrl && (
-                  <img
-                    src={option.imageUrl}
-                    alt=""
-                    className="tw-h-28 tw-w-36 tw-max-w-full tw-shrink-0 tw-object-contain"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="tw-min-w-0">
-                  <span className="tw-block tw-text-base tw-font-semibold tw-text-gray-900">
-                    {option.label}
-                  </span>
-                  {option.description && (
-                    <span className="tw-mt-2 tw-block tw-text-sm tw-leading-6 tw-text-gray-600">
-                      {option.description}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="tw-mt-6 tw-flex tw-justify-between">
-          <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-            Back
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const handlePdfSelection = (file?: File | null) => {
-    if (!file) return;
-    setUploadFile(file);
-    setUploadError(null);
-  };
-
-  const clearUploadFile = () => {
-    setUploadFile(null);
-    setUploadError(null);
-    if (pdfInputRef.current) {
-      pdfInputRef.current.value = '';
+  const createOutcomeRecord = async () => {
+    if (!flow || !resolved) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createClassifiedService({
+        clientUsername,
+        publishToken: flow.publishToken,
+        path,
+        responses,
+        idempotencyKey: uuid(),
+        confirmedEffectIds: confirmedEffects,
+      });
+      setRecord(created);
+      if (created.fulfillmentMode === 'WEB_FORM') startWebForm(created);
+      if (created.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+        await completeServiceRecord(created.applicationId);
+      }
+    } catch (createError) {
+      setError(errorMessage(createError));
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handlePdfDrop = (event: React.DragEvent<HTMLLabelElement>) => {
-    event.preventDefault();
-    setIsDraggingPdf(false);
-    handlePdfSelection(event.dataTransfer.files?.[0]);
+  const finishPdf = async () => {
+    if (!record || !pdf) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await uploadServicePdf(record.applicationId, pdf);
+      await completeServiceRecord(record.applicationId);
+      backToApplications();
+    } catch (uploadError) {
+      setError(errorMessage(uploadError));
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const uploadOutcomePdf = async (selectedOutcome: ApplicationSelectorOutcome) => {
-    if (!uploadFile) {
-      setUploadError('Choose a PDF to upload.');
+  const createManualRecord = async () => {
+    if (!manual.serviceTitle.trim() || !manual.clientInstructionsMarkdown.trim()) {
+      setError('Add a service title and client instructions.');
       return;
     }
-    setIsUploadingPdf(true);
-    setUploadError(null);
+    if (manual.fulfillmentMode === 'WEB_FORM' && !manual.registryEntryId) {
+      setError('Choose an application for the web form.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
     try {
-      await onUploadPdf(uploadFile, selectedOutcome);
-    } catch (error) {
-      setUploadError(error instanceof Error ? error.message : 'Could not upload PDF.');
-      setIsUploadingPdf(false);
+      const created = await createManualService({
+        clientUsername,
+        idempotencyKey: uuid(),
+        ...manual,
+        attemptedPath: path,
+        responses,
+      });
+      setRecord(created);
+      if (created.fulfillmentMode === 'WEB_FORM') startWebForm(created);
+      if (created.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+        await completeServiceRecord(created.applicationId);
+      }
+    } catch (createError) {
+      setError(errorMessage(createError));
+    } finally {
+      setBusy(false);
     }
   };
 
-  const renderPdfDropBox = (selectedOutcome: ApplicationSelectorOutcome) => (
-    <div className="tw-mt-6">
-      <div className="tw-relative">
-        <label
-          htmlFor="application-selector-pdf-upload"
-          className={[
-            'tw-flex tw-min-h-44 tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-rounded-md tw-border-2 tw-p-6 tw-text-center tw-transition',
-            uploadFile ? 'tw-border-solid tw-border-green-500 tw-bg-green-50' : 'tw-border-dashed',
-            isDraggingPdf
-              ? 'tw-border-blue-600 tw-bg-blue-100'
-              : !uploadFile && 'tw-border-blue-300 tw-bg-blue-50',
-          ].filter(Boolean).join(' ')}
-          onDragEnter={(event) => {
-            event.preventDefault();
-            setIsDraggingPdf(true);
-          }}
-          onDragOver={(event) => event.preventDefault()}
-          onDragLeave={() => setIsDraggingPdf(false)}
-          onDrop={handlePdfDrop}
-        >
-          {uploadFile ? (
-            <>
-              <span className="tw-mb-3 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-green-100 tw-text-green-700">
-                <i className="fas fa-check" aria-hidden />
-              </span>
-              <span className="tw-max-w-full tw-break-words tw-text-base tw-font-semibold tw-text-green-950">
-                {uploadFile.name}
-              </span>
-              <span className="tw-mt-2 tw-text-sm tw-text-green-900">
-                PDF selected. Choose a different file to replace it.
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="tw-text-base tw-font-semibold tw-text-blue-950">
-                Drop PDF here
-              </span>
-              <span className="tw-mt-2 tw-text-sm tw-text-blue-900">
-                or choose a file
-              </span>
-            </>
-          )}
-          <input
-            ref={pdfInputRef}
-            id="application-selector-pdf-upload"
-            type="file"
-            accept="application/pdf,.pdf"
-            className="tw-sr-only"
-            onChange={(event) => handlePdfSelection(event.target.files?.[0])}
-          />
-        </label>
-        {uploadFile && (
-          <button
-            type="button"
-            className="tw-absolute tw-right-3 tw-top-3 tw-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-gray-300 tw-bg-white tw-text-sm tw-font-bold tw-text-gray-600 tw-shadow-sm hover:tw-bg-gray-100 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
-            onClick={clearUploadFile}
-            aria-label={`Remove ${uploadFile.name}`}
-          >
-            <span aria-hidden="true">x</span>
-          </button>
-        )}
-      </div>
-      {uploadError && (
-        <div className="alert alert-danger py-2 tw-mt-3">{uploadError}</div>
-      )}
-      <div className="tw-mt-4 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
-        <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-          Back
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => uploadOutcomePdf(selectedOutcome)}
-          disabled={isUploadingPdf || !uploadFile}
-        >
-          {isUploadingPdf ? 'Uploading...' : selectedOutcome.uploadLabel || 'Upload PDF'}
-        </button>
-      </div>
+  const toggleManualPreview = async () => {
+    if (manualPreview) {
+      setManualPreview(null);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const preview = await previewManualService({
+        clientUsername,
+        serviceTitle: manual.serviceTitle,
+        clientInstructionsMarkdown: manual.clientInstructionsMarkdown,
+        workerInstructionsMarkdown: manual.workerInstructionsMarkdown,
+        fulfillmentMode: manual.fulfillmentMode,
+        registryEntryId: manual.registryEntryId || undefined,
+        attemptedPath: path,
+        responses,
+      });
+      setManualPreview(preview.clientSheetMarkdown);
+    } catch (previewError) {
+      setError(errorMessage(previewError));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pdfUpload = (label = 'Completed application PDF') => (
+    <div className="tw-mt-5 tw-rounded-lg tw-border-2 tw-border-dashed tw-border-blue-300 tw-bg-blue-50 tw-p-5">
+      <label htmlFor="case-pdf" className="tw-block tw-font-semibold tw-text-blue-950">{label}</label>
+      <p className="tw-mt-1 tw-text-sm tw-text-blue-800">Save a PDF completed outside Keep.id to this same service record.</p>
+      <input
+        ref={fileInput}
+        id="case-pdf"
+        type="file"
+        accept="application/pdf,.pdf"
+        className="tw-mt-3 tw-block tw-w-full tw-text-sm"
+        onChange={(event) => setPdf(event.target.files?.[0] || null)}
+      />
+      {pdf && <p className="tw-mt-2 tw-text-sm tw-font-medium tw-text-green-800">Selected: {pdf.name}</p>}
     </div>
   );
 
+  const renderChoice = (node: SelectorNode) => (
+    <div>
+      <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
+        {node.transitions.map((transition) => (
+          <button
+            key={transition.id}
+            type="button"
+            className="tw-flex tw-min-h-48 tw-flex-col tw-items-stretch tw-justify-center tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-bg-blue-50 hover:tw-shadow-md"
+            onClick={() => follow(transition)}
+          >
+            {transition.assetId && (
+              <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
+                <img
+                  src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
+                  alt={transition.assetAltText || ''}
+                  className="tw-h-full tw-w-full tw-object-contain"
+                />
+              </span>
+            )}
+            <span className="tw-font-semibold tw-text-slate-950">{transition.label}</span>
+            {transition.description && <span className="tw-mt-2 tw-text-sm tw-text-gray-600">{transition.description}</span>}
+          </button>
+        ))}
+      </div>
+      <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
+    </div>
+  );
+
+  const renderInteraction = (node: SelectorNode) => {
+    const config = node.componentConfig || {};
+    const information = node.componentKey === 'information';
+    const type = node.componentKey === 'date-input' ? 'date' : 'text';
+    return (
+      <div className="tw-max-w-2xl">
+        {information ? (
+          <div className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
+            {String(config.helpText || node.description || 'Review this information before continuing.')}
+          </div>
+        ) : (
+          <label className="tw-block tw-font-medium tw-text-gray-900">
+            {String(config.label || node.question || 'Response')}
+            <input
+              type={type}
+              inputMode={node.componentKey === 'penndot-number' ? 'numeric' : undefined}
+              maxLength={Number(config.maxLength || 128)}
+              className="form-control tw-mt-2"
+              value={fieldValue}
+              onChange={(event) => setFieldValue(
+                node.componentKey === 'penndot-number'
+                  ? event.target.value.replace(/\D/g, '')
+                  : event.target.value,
+              )}
+            />
+            {config.helpText && <span className="tw-mt-2 tw-block tw-text-sm tw-text-gray-600">{String(config.helpText)}</span>}
+          </label>
+        )}
+        <div className="tw-mt-6 tw-flex tw-justify-between tw-gap-3">
+          <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
+          <button type="button" className="btn btn-primary" onClick={submitInteraction}>Continue</button>
+        </div>
+      </div>
+    );
+  };
+
+  const actionToggle = (action: ProposedAction) => (
+    <label key={action.effectId} className="tw-flex tw-gap-3 tw-rounded-lg tw-border tw-border-gray-200 tw-p-4">
+      <input
+        type="checkbox"
+        className="tw-mt-1"
+        checked={confirmedEffects.includes(action.effectId)}
+        onChange={(event) => setConfirmedEffects((selected) => (
+          event.target.checked
+            ? [...selected, action.effectId]
+            : selected.filter((id) => id !== action.effectId)
+        ))}
+      />
+      <span>
+        <span className="tw-block tw-font-semibold tw-text-gray-900">{action.label}</span>
+        <span className="tw-mt-1 tw-block tw-text-sm tw-text-gray-600">{action.bodyMarkdown}</span>
+      </span>
+    </label>
+  );
+
   const renderOutcome = () => {
-    if (!outcome) {
+    if (busy && !resolved) return <p className="tw-text-gray-600">Preparing the outcome…</p>;
+    if (!resolved) return null;
+    if (record?.fulfillmentMode === 'PDF_UPLOAD') {
       return (
-        <div className="tw-rounded-md tw-border tw-border-yellow-200 tw-bg-yellow-50 tw-p-4">
-          <h2 className="tw-text-xl tw-font-semibold tw-text-yellow-950">No matching outcome</h2>
-          <p className="tw-mt-2 tw-text-sm tw-text-yellow-900">
-            This answer combination is not listed in the selector flow.
-          </p>
-          <div className="tw-mt-4 tw-flex tw-flex-wrap tw-gap-3">
-            <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-              Back
-            </button>
-            <button type="button" className="btn btn-primary" onClick={startOver}>
-              Start over
+        <div>
+          <h2 className="tw-text-2xl tw-font-semibold">Service record created</h2>
+          <p className="tw-mt-2 tw-text-gray-600">The instruction sheet is already saved. Add the completed PDF when ready.</p>
+          {pdfUpload(String(resolved.components.find((item) => item.key === 'pdf-upload')?.config.label || 'Completed application PDF'))}
+          <div className="tw-mt-5 tw-flex tw-justify-end">
+            <button type="button" className="btn btn-primary" disabled={!pdf || busy} onClick={finishPdf}>
+              {busy ? 'Saving…' : 'Save PDF and finish'}
             </button>
           </div>
         </div>
       );
     }
-
+    if (record?.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+      return (
+        <div className="tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-p-6">
+          <h2 className="tw-text-2xl tw-font-semibold tw-text-green-950">Service recorded</h2>
+          <p className="tw-mt-2 tw-text-green-900">The client instruction sheet was saved to the service record.</p>
+          <button type="button" className="btn btn-primary tw-mt-5" onClick={backToApplications}>Return to applications</button>
+        </div>
+      );
+    }
+    let createLabel = 'Create service record';
+    if (busy) createLabel = 'Creating service record…';
+    else if (resolved.fulfillmentMode === 'WEB_FORM') createLabel = 'Create record and open form';
     return (
       <div>
-        <div className="tw-mb-5">
-          <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-900">{outcome.title}</h2>
+        <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5">
+          <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-950">{resolved.serviceTitle}</h2>
+          <div className="tw-mt-5 tw-grid tw-gap-5 lg:tw-grid-cols-2">
+            <section>
+              <h3 className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Worker instructions</h3>
+              <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.workerInstructionsMarkdown}</ReactMarkdown></div>
+            </section>
+            <section>
+              <h3 className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Client sheet</h3>
+              <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.clientSheetMarkdown}</ReactMarkdown></div>
+            </section>
+          </div>
         </div>
-        {outcome.instructionsMarkdown && (
-          <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4">
-            <div className="tw-prose tw-prose-sm tw-max-w-none tw-text-gray-700 tw-prose-headings:tw-text-gray-900 tw-prose-a:tw-text-blue-600">
-              <ReactMarkdown>{outcome.instructionsMarkdown}</ReactMarkdown>
+        {resolved.proposedActions.length > 0 && (
+          <div className="tw-mt-5 tw-grid tw-gap-3">
+            <h3 className="tw-font-semibold tw-text-gray-900">Confirm suggested case actions</h3>
+            {resolved.proposedActions.map(actionToggle)}
+          </div>
+        )}
+        <div className="tw-mt-6 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
+          <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={createOutcomeRecord}>
+            {createLabel}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderManual = () => {
+    if (record?.fulfillmentMode === 'PDF_UPLOAD') {
+      return (
+        <div>
+          <h2 className="tw-text-2xl tw-font-semibold">Manual service record created</h2>
+          {pdfUpload()}
+          <button type="button" className="btn btn-primary tw-mt-5" disabled={!pdf || busy} onClick={finishPdf}>Save PDF and finish</button>
+        </div>
+      );
+    }
+    if (record) {
+      return (
+        <div className="tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-p-6">
+          <h2 className="tw-text-2xl tw-font-semibold tw-text-green-950">Manual service recorded</h2>
+          <p className="tw-mt-2 tw-text-green-900">The authored instruction sheet is saved for {clientName || clientUsername}.</p>
+          <button type="button" className="btn btn-primary tw-mt-5" onClick={backToApplications}>Return to applications</button>
+        </div>
+      );
+    }
+    return (
+      <div className="tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-5 tw-shadow-sm">
+        <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
+          <div>
+            <h2 className="tw-text-2xl tw-font-semibold tw-text-slate-950">Record a case outside the tree</h2>
+            <p className="tw-mt-1 tw-text-sm tw-text-slate-600">This creates a reportable manual classification and preserves the path attempted so far.</p>
+          </div>
+          <button type="button" className="btn btn-outline-dark" onClick={() => setManualMode(false)}>Return to tree</button>
+        </div>
+        <div className="tw-mt-5 tw-grid tw-gap-4 md:tw-grid-cols-2">
+          <label className="tw-font-medium">Service title
+            <input className="form-control tw-mt-1" value={manual.serviceTitle} onChange={(event) => setManual({ ...manual, serviceTitle: event.target.value })} />
+          </label>
+          <label className="tw-font-medium">Why the tree did not fit
+            <select className="form-control tw-mt-1" value={manual.manualReason} onChange={(event) => setManual({ ...manual, manualReason: event.target.value as typeof manual.manualReason })}>
+              <option value="NO_MATCH">No matching case</option>
+              <option value="UNSURE">Worker was unsure</option>
+              <option value="URGENT_BYPASS">Urgent bypass</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
+          <label className="tw-font-medium md:tw-col-span-2">Additional context
+            <input className="form-control tw-mt-1" value={manual.manualReasonDetail} onChange={(event) => setManual({ ...manual, manualReasonDetail: event.target.value })} />
+          </label>
+          <label className="tw-font-medium">What happens next
+            <select className="form-control tw-mt-1" value={manual.fulfillmentMode} onChange={(event) => setManual({ ...manual, fulfillmentMode: event.target.value as FulfillmentMode })}>
+              <option value="INSTRUCTIONS_ONLY">Instructions only</option>
+              <option value="PDF_UPLOAD">Upload a completed PDF</option>
+              <option value="WEB_FORM">Continue to an application form</option>
+            </select>
+          </label>
+          {manual.fulfillmentMode === 'WEB_FORM' && (
+            <label className="tw-font-medium">Application
+              <select className="form-control tw-mt-1" value={manual.registryEntryId} onChange={(event) => setManual({ ...manual, registryEntryId: event.target.value })}>
+                <option value="">Choose an application</option>
+                {availableApplications.map((application) => <option key={application.applicationId} value={application.applicationId}>{application.label}</option>)}
+              </select>
+            </label>
+          )}
+          <label className="tw-font-medium md:tw-col-span-2">Client instruction Markdown
+            <textarea rows={8} className="form-control tw-mt-1 tw-font-mono" value={manual.clientInstructionsMarkdown} onChange={(event) => setManual({ ...manual, clientInstructionsMarkdown: event.target.value })} />
+          </label>
+          <label className="tw-font-medium md:tw-col-span-2">Worker instruction Markdown (optional)
+            <textarea rows={4} className="form-control tw-mt-1 tw-font-mono" value={manual.workerInstructionsMarkdown} onChange={(event) => setManual({ ...manual, workerInstructionsMarkdown: event.target.value })} />
+          </label>
+        </div>
+        <div className="tw-mt-4 tw-flex tw-items-center tw-justify-between tw-gap-3">
+          <button type="button" className="btn btn-outline-dark" onClick={toggleManualPreview}>{manualPreview ? 'Hide preview' : 'Preview sheet'}</button>
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={createManualRecord}>{busy ? 'Creating…' : 'Create manual service'}</button>
+        </div>
+        {manualPreview && (
+          <div className="tw-mt-5 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white">
+            <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-slate-200 tw-bg-slate-50 tw-px-5 tw-py-3">
+              <span className="tw-text-sm tw-font-semibold tw-text-slate-800">Client instruction sheet preview</span>
+              <span className="tw-rounded-full tw-bg-white tw-px-2.5 tw-py-1 tw-text-xs tw-font-medium tw-text-slate-500 tw-ring-1 tw-ring-slate-200">Print / PDF</span>
+            </div>
+            <div className="tw-prose tw-prose-sm tw-max-w-none tw-p-6">
+              <ReactMarkdown>{manualPreview}</ReactMarkdown>
             </div>
           </div>
-        )}
-        {(outcome.includeComponents || []).length > 0 && (
-          <div className="tw-mt-4 tw-grid tw-gap-4">
-            {outcome.includeComponents.map(renderIncludedComponent)}
-          </div>
-        )}
-        {outcome.applicationId ? (
-          <div className="tw-mt-6 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
-            <button type="button" className="btn btn-outline-dark" onClick={goToPreviousStep}>
-              Back
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => startAnnotatedApplication(outcome)}
-            >
-              Next
-            </button>
-          </div>
-        ) : (
-          renderPdfDropBox(outcome)
         )}
       </div>
     );
   };
 
   return (
-    <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
-      <div className="tw-mt-3 tw-mb-5 tw-flex tw-flex-wrap tw-items-center tw-gap-2">
-        <button type="button" className="btn btn-primary mr-2" onClick={goBackToApplications}>
-          <i className="fas fa-chevron-left tw-mr-1" aria-hidden />
-          Applications
-        </button>
-      </div>
-      <div className="tw-mb-6">
-        <h1 className="tw-text-4xl tw-font-semibold tw-text-gray-900">{flow.title}</h1>
-        {flow.description && (
-          <p className="tw-mt-2 tw-max-w-3xl tw-text-sm tw-leading-6 tw-text-gray-600">
-            {flow.description}
-          </p>
-        )}
-        {loadError && (
-          <div className="alert alert-warning py-2 tw-mt-3">{loadError}</div>
+    <div className="tw-mx-auto tw-w-full tw-max-w-5xl tw-px-4 tw-py-6">
+      <div className="tw-mb-6 tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-4">
+        <div>
+          <button type="button" className="btn btn-outline-dark tw-mb-4" onClick={backToApplications}>← Applications</button>
+          <h1 className="tw-text-4xl tw-font-semibold tw-text-gray-950">{flow?.title || 'Client case picker'}</h1>
+          {flow?.description && <p className="tw-mt-2 tw-max-w-3xl tw-text-gray-600">{flow.description}</p>}
+        </div>
+        {!record && !manualMode && (
+          <button type="button" className="btn btn-outline-primary" onClick={() => setManualMode(true)}>This case does not fit the tree</button>
         )}
       </div>
-      {isLoading ? (
-        <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-4 tw-text-sm tw-text-gray-600">
-          Loading selector...
+      {error && <div className="alert alert-danger tw-mb-5">{error}</div>}
+      {!flow && !error && <p className="tw-text-gray-600">Loading the published case tree…</p>}
+      {manualMode ? renderManual() : currentNode && (
+        <div>
+          {currentNode.type !== 'OUTCOME' && (
+            <div className="tw-mb-5">
+              <div className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Step {path.length + 1}</div>
+              <h2 className="tw-mt-2 tw-text-2xl tw-font-semibold tw-text-gray-950">{currentNode.question}</h2>
+              {currentNode.description && <p className="tw-mt-2 tw-text-gray-600">{currentNode.description}</p>}
+            </div>
+          )}
+          {currentNode.type === 'CHOICE' && renderChoice(currentNode)}
+          {currentNode.type === 'INTERACTION' && renderInteraction(currentNode)}
+          {currentNode.type === 'OUTCOME' && renderOutcome()}
         </div>
-      ) : (
-        <div className="tw-py-2">
-          <div className="tw-mb-3 tw-text-sm tw-font-semibold tw-uppercase tw-text-gray-500">
-            Step {currentStepNumber}
-          </div>
-          {isOutcomeStep ? renderOutcome() : currentQuestion && renderQuestion(currentQuestion)}
-        </div>
+      )}
+      {(path.length > 0 || record) && !manualMode && (
+        <button type="button" className="tw-mt-10 tw-text-sm tw-font-medium tw-text-blue-700 hover:tw-underline" onClick={reset}>Start over</button>
       )}
     </div>
   );

@@ -17,8 +17,6 @@ import {
 } from './api/interactiveForm';
 import ApplicationPdfPreview from './ApplicationPdfPreview';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
-import { applicationSelectorFlowDefinition } from './applicationSelector/flowApi';
-import type { ApplicationSelectorOutcome } from './applicationSelector/types';
 
 interface DocumentInformation {
   uploader: string,
@@ -872,24 +870,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
-  handleSelectorUploadApplication = (
-    file: File,
-    outcome: ApplicationSelectorOutcome,
-  ): Promise<void> => {
-    const { clientUsername, clientName } = this.state;
-    if (!clientUsername) {
-      return Promise.reject(new Error('Open the selector from a client application page.'));
-    }
-
-    const applicationName = outcome.title;
-    return createUploadedApplication(file, applicationName, clientUsername)
-      .then((result) => {
-        const applicationId = result.applicationId || result.fileId;
-        if (!applicationId) throw new Error('Server did not return an application id.');
-        this.navigateToCreatedApplication(applicationId, applicationName, clientUsername, clientName);
-      });
-  };
-
   getRowActions = (row: DocumentInformation): RowAction[] => {
     if (this.props.role === Role.Client) {
       return [
@@ -1161,10 +1141,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   >
                     <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
                       <img
-                        src={
-                          applicationSelectorFlowDefinition.listImageUrl
-                          || '/SelectApplicationForm/pennsylvania.svg'
-                        }
+                        src="/SelectApplicationForm/pennsylvania.svg"
                         alt=""
                         aria-hidden="true"
                         className="tw-h-10 tw-w-10 tw-shrink-0"
@@ -1360,7 +1337,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               availableApplications={availableApplications}
               clientUsername={clientUsername}
               clientName={clientName}
-              onUploadPdf={this.handleSelectorUploadApplication}
             />
           )}
         </Route>
