@@ -489,11 +489,11 @@ const ApplicationSelectorFlow = ({
       );
     }
     return (
-      <div className="tw-rounded-lg tw-border tw-border-amber-200 tw-bg-amber-50 tw-p-5">
+      <div className="tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-5">
         <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
           <div>
-            <h2 className="tw-text-2xl tw-font-semibold tw-text-amber-950">Record a case outside the tree</h2>
-            <p className="tw-mt-1 tw-text-sm tw-text-amber-900">This creates a reportable manual classification and preserves the path attempted so far.</p>
+            <h2 className="tw-text-2xl tw-font-semibold tw-text-slate-950">Record a case outside the tree</h2>
+            <p className="tw-mt-1 tw-text-sm tw-text-slate-600">This creates a reportable manual classification and preserves the path attempted so far.</p>
           </div>
           <button type="button" className="btn btn-outline-dark" onClick={() => setManualMode(false)}>Return to tree</button>
         </div>
