@@ -330,22 +330,24 @@ const ApplicationSelectorFlow = ({
 
   const renderChoice = (node: SelectorNode) => (
     <div>
-      <div className="tw-grid tw-gap-3 md:tw-grid-cols-3">
+      <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
         {node.transitions.map((transition) => (
           <button
             key={transition.id}
             type="button"
-            className="tw-flex tw-min-h-48 tw-flex-col tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5 tw-text-center tw-shadow-sm hover:tw-border-blue-500 hover:tw-bg-blue-50"
+            className="tw-flex tw-min-h-48 tw-flex-col tw-items-stretch tw-justify-center tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-bg-blue-50 hover:tw-shadow-md"
             onClick={() => follow(transition)}
           >
             {transition.assetId && (
-              <img
-                src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
-                alt={transition.assetAltText || ''}
-                className="tw-mb-4 tw-h-24 tw-w-32 tw-object-contain"
-              />
+              <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
+                <img
+                  src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
+                  alt={transition.assetAltText || ''}
+                  className="tw-h-full tw-w-full tw-object-contain"
+                />
+              </span>
             )}
-            <span className="tw-font-semibold tw-text-gray-950">{transition.label}</span>
+            <span className="tw-font-semibold tw-text-slate-950">{transition.label}</span>
             {transition.description && <span className="tw-mt-2 tw-text-sm tw-text-gray-600">{transition.description}</span>}
           </button>
         ))}
@@ -489,7 +491,7 @@ const ApplicationSelectorFlow = ({
       );
     }
     return (
-      <div className="tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-5">
+      <div className="tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-5 tw-shadow-sm">
         <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
           <div>
             <h2 className="tw-text-2xl tw-font-semibold tw-text-slate-950">Record a case outside the tree</h2>
@@ -539,8 +541,14 @@ const ApplicationSelectorFlow = ({
           <button type="button" className="btn btn-primary" disabled={busy} onClick={createManualRecord}>{busy ? 'Creating…' : 'Create manual service'}</button>
         </div>
         {manualPreview && (
-          <div className="tw-prose tw-prose-sm tw-mt-5 tw-max-w-none tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5">
-            <ReactMarkdown>{manualPreview}</ReactMarkdown>
+          <div className="tw-mt-5 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white">
+            <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-slate-200 tw-bg-slate-50 tw-px-5 tw-py-3">
+              <span className="tw-text-sm tw-font-semibold tw-text-slate-800">Client instruction sheet preview</span>
+              <span className="tw-rounded-full tw-bg-white tw-px-2.5 tw-py-1 tw-text-xs tw-font-medium tw-text-slate-500 tw-ring-1 tw-ring-slate-200">Print / PDF</span>
+            </div>
+            <div className="tw-prose tw-prose-sm tw-max-w-none tw-p-6">
+              <ReactMarkdown>{manualPreview}</ReactMarkdown>
+            </div>
           </div>
         )}
       </div>
