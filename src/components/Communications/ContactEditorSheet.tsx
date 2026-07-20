@@ -1,7 +1,9 @@
+import CellTowerOutlinedIcon from '@mui/icons-material/CellTowerOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   addCommunicationContactPhone,
+  checkCommunicationContactPhoneLineStatus,
   CommunicationContact,
   CommunicationContactPhone,
   deactivateCommunicationContactPhone,
@@ -40,6 +42,17 @@ function contactTypeLabel(contact: CommunicationContact) {
   return 'Shared number';
 }
 
+function lineStatusLabel(phone: CommunicationContactPhone) {
+  switch (phone.lineStatus) {
+    case 'reachable': return 'Reachable now';
+    case 'active': return 'Active mobile number';
+    case 'unreachable': return 'Temporarily unreachable';
+    case 'inactive': return 'Inactive number';
+    case 'unknown': return 'Status unknown';
+    default: return 'Status unavailable';
+  }
+}
+
 type PhoneRowProps = {
   contact: CommunicationContact;
   phone: CommunicationContactPhone;
@@ -51,6 +64,7 @@ type PhoneRowProps = {
 function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion }: PhoneRowProps) {
   const [label, setLabel] = useState(phone.label || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => setLabel(phone.label || ''), [phone.id, phone.label]);
@@ -85,6 +99,22 @@ function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion
     }
   }
 
+  async function checkLineStatus() {
+    setIsChecking(true);
+    setError('');
+    try {
+      const response = await checkCommunicationContactPhoneLineStatus(contact.id, phone.id);
+      if (!response.contact) throw new Error(response.message || response.status);
+      onChanged(response.contact);
+    } catch (requestError) {
+      setError(errorMessage(requestError));
+    } finally {
+      setIsChecking(false);
+    }
+  }
+
+  const isBusy = isSaving || isChecking;
+
   return (
     <article className="contact-phone-row">
       <div className="contact-phone-row-heading">
@@ -94,15 +124,23 @@ function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion
             {phone.relationship === 'shared_reference' ? 'Shared reference' : phone.position}
           </span>
         </div>
-        <button type="button" className="contact-text-button danger" disabled={isSaving} onClick={removePhone}>
+        <button type="button" className="contact-text-button danger" disabled={isBusy} onClick={removePhone}>
           Remove
         </button>
       </div>
+      {phone.lineStatusCheckedAt && (
+        <div className={`contact-line-status ${phone.lineStatus || 'unavailable'}`}>
+          <span>{lineStatusLabel(phone)}</span>
+          <time dateTime={phone.lineStatusCheckedAt}>
+            Checked {new Date(phone.lineStatusCheckedAt).toLocaleString()}
+          </time>
+        </div>
+      )}
       <label>
         Number label
         <input
           value={label}
-          disabled={isSaving}
+          disabled={isBusy}
           placeholder="Mobile, shelter, caseworker..."
           onChange={(event) => setLabel(event.target.value)}
           onBlur={() => {
@@ -112,12 +150,12 @@ function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion
       </label>
       <div className="contact-phone-actions">
         {phone.relationship === 'routing_owner' && phone.position !== 'primary' && (
-          <button type="button" disabled={isSaving} onClick={() => updatePhone({ position: 'primary' })}>
+          <button type="button" disabled={isBusy} onClick={() => updatePhone({ position: 'primary' })}>
             Make primary
           </button>
         )}
         {!contact.shared && phone.relationship === 'routing_owner' && (
-          <button type="button" disabled={isSaving} onClick={() => onStartPromotion(phone)}>
+          <button type="button" disabled={isBusy} onClick={() => onStartPromotion(phone)}>
             Mark as shared number
           </button>
         )}
@@ -126,6 +164,16 @@ function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion
             Open {phone.routingContactLabel || 'shared thread'}
           </button>
         )}
+        <button
+          type="button"
+          className="contact-line-status-button"
+          disabled={isBusy}
+          onClick={checkLineStatus}
+          title="Check this mobile number with Twilio Line Status"
+        >
+          <CellTowerOutlinedIcon fontSize="inherit" />
+          {isChecking ? 'Checking...' : 'Check status'}
+        </button>
       </div>
       {error && <p className="contact-form-error">{error}</p>}
     </article>

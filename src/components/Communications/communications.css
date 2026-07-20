@@ -1589,6 +1589,51 @@ body:has(.communications-shell),
   background: #fbfdff;
 }
 
+.contact-line-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  border-left: 3px solid #829ab1;
+  padding: 7px 9px;
+  background: #f0f4f8;
+  color: #334e68;
+  font-size: 12px;
+}
+
+.contact-line-status span {
+  font-weight: 800;
+}
+
+.contact-line-status time {
+  color: #627d98;
+}
+
+.contact-line-status.reachable {
+  border-color: #2f855a;
+  background: #e6ffed;
+  color: #1f6f46;
+}
+
+.contact-line-status.active {
+  border-color: #2f80ed;
+  background: #edf6ff;
+  color: #1f63b5;
+}
+
+.contact-line-status.unreachable {
+  border-color: #d69e2e;
+  background: #fff8dc;
+  color: #7c5200;
+}
+
+.contact-line-status.inactive {
+  border-color: #c53030;
+  background: #fff1f1;
+  color: #9b1c1c;
+}
+
 .contact-phone-row-heading,
 .contact-phone-row-heading > div,
 .contact-phone-actions,
@@ -1614,6 +1659,12 @@ body:has(.communications-shell),
   color: #1f63b5;
   font-size: 12px;
   font-weight: 800;
+}
+
+.contact-phone-actions .contact-line-status-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .contact-text-button.danger {
