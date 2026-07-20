@@ -53,6 +53,7 @@ export type Conversation = {
 };
 
 export type CommunicationContactType = 'PERSON' | 'COLD' | 'SHARED';
+export type CommunicationLineStatus = 'active' | 'reachable' | 'unreachable' | 'inactive' | 'unknown';
 
 export type CommunicationContactPhone = {
   id: string;
@@ -62,6 +63,9 @@ export type CommunicationContactPhone = {
   relationship: 'routing_owner' | 'shared_reference';
   routingContactId?: string;
   routingContactLabel?: string;
+  lineStatus?: CommunicationLineStatus;
+  lineStatusErrorCode?: number;
+  lineStatusCheckedAt?: string;
 };
 
 export type CommunicationContact = {
@@ -267,6 +271,13 @@ export function deactivateCommunicationContactPhone(contactId: string, phoneId: 
   return jsonFetch<CommunicationContactResponse>(
     `/api/communication-contacts/${encodeURIComponent(contactId)}/phones/${encodeURIComponent(phoneId)}`,
     { method: 'DELETE' },
+  );
+}
+
+export function checkCommunicationContactPhoneLineStatus(contactId: string, phoneId: string) {
+  return jsonFetch<CommunicationContactResponse>(
+    `/api/communication-contacts/${encodeURIComponent(contactId)}/phones/${encodeURIComponent(phoneId)}/line-status`,
+    { method: 'POST' },
   );
 }
 
