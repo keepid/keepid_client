@@ -299,6 +299,54 @@ body:has(.communications-shell),
   margin: 0 0 4px;
 }
 
+.call-transcript {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.call-transcript-turn {
+  display: grid;
+  gap: 3px;
+  width: min(82%, 560px);
+  border: 1px solid #b8d4ff;
+  border-radius: 12px;
+  padding: 9px 12px;
+  background: #eef5ff;
+  color: #102a43;
+  box-shadow: 0 1px 2px rgba(16, 42, 67, 0.06);
+}
+
+.call-transcript-turn.left {
+  justify-self: start;
+}
+
+.call-transcript-turn.right {
+  justify-self: end;
+  border-color: #2f80ed;
+  background: #2f80ed;
+  color: #fff;
+}
+
+.call-transcript-turn span {
+  color: #2f80ed;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.call-transcript-turn.right span {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.call-transcript-turn p,
+.timeline-entry .call-transcript-turn p {
+  margin: 0;
+  color: inherit;
+  white-space: pre-wrap;
+}
+
 .chat-composer textarea,
 .scheduled-preview input[type="datetime-local"] {
   width: 100%;
@@ -1284,6 +1332,10 @@ body:has(.communications-shell),
 
   .chat-bubble {
     max-width: 94%;
+  }
+
+  .call-transcript-turn {
+    width: 94%;
   }
 
   .scheduled-preview {
