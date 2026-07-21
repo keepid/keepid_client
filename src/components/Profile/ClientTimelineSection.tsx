@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
+import CallTranscript from '../Communications/CallTranscript';
 import {
   getCallRecordingPlaybackUrl,
   getMessageBoard,
@@ -28,9 +29,17 @@ type TimelineEntry = {
   workerNoteIndex?: number;
   communicationNoteId?: string;
   recordingUrl?: string;
+  type?: MessageBoardItem['type'];
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
+
+function TimelineEntryBody({ item }: { item: TimelineEntry }) {
+  if (item.type === 'call') {
+    return <CallTranscript transcript={item.body} />;
+  }
+  return <p>{item.body}</p>;
+}
 
 type WorkerNoteEntry = {
   id: string;
@@ -177,6 +186,7 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
     recordingUrl: item.recordingUrl && (item.type === 'call' || item.type === 'voicemail')
       ? getCallRecordingPlaybackUrl(item.sourceId)
       : undefined,
+    type: item.type,
   };
 }
 
@@ -427,9 +437,7 @@ export default function ClientTimelineSection({
                             </button>
                           </div>
                         </div>
-                      ) : (
-                        <p>{item.body}</p>
-                      )}
+                      ) : <TimelineEntryBody item={item} />}
                       {item.recordingUrl && (
                         <div className="recording-player">
                           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}

@@ -8,6 +8,7 @@ import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import CallTranscript from './CallTranscript';
 import {
   addCommunicationContactNote,
   CommunicationContact,
@@ -810,7 +811,11 @@ export default function CallsPage() {
                           </div>
                         </div>
                       ) : (
-                        item.body && <p>{item.body}</p>
+                        item.body && (
+                          item.type === 'call'
+                            ? <CallTranscript transcript={item.body} />
+                            : <p>{item.body}</p>
+                        )
                       )}
                       {recordingUrl && (
                         <div className="recording-player">

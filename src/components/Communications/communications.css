@@ -248,9 +248,9 @@ body:has(.communications-shell),
 }
 
 .chat-item.call .chat-bubble {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  border: 1px solid #d9e2ec;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 42, 67, 0.06);
   color: #486581;
 }
 
@@ -297,6 +297,43 @@ body:has(.communications-shell),
 
 .chat-bubble p {
   margin: 0 0 4px;
+}
+
+.call-transcript {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.call-transcript-turn {
+  display: grid;
+  gap: 3px;
+  width: min(82%, 560px);
+  color: #102a43;
+}
+
+.call-transcript-turn.left {
+  justify-self: start;
+}
+
+.call-transcript-turn.right {
+  justify-self: end;
+  text-align: right;
+}
+
+.call-transcript-turn span {
+  color: #2f80ed;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.call-transcript-turn p,
+.timeline-entry .call-transcript-turn p {
+  margin: 0;
+  color: inherit;
+  white-space: pre-wrap;
 }
 
 .chat-composer textarea,
@@ -1284,6 +1321,10 @@ body:has(.communications-shell),
 
   .chat-bubble {
     max-width: 94%;
+  }
+
+  .call-transcript-turn {
+    width: 94%;
   }
 
   .scheduled-preview {
