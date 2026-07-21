@@ -109,6 +109,14 @@ interface OrgDocument {
   uploaderName?: string;
 }
 
+interface OrganizationDocumentRole {
+  roleKey: string;
+  displayName: string;
+  description?: string | null;
+  documentId?: string | null;
+  documentFilename?: string | null;
+}
+
 interface MailSummaryEntry {
   id: string;
   mailStatus: string;
@@ -183,6 +191,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [documentRoles, setDocumentRoles] = useState<OrganizationDocumentRole[]>([]);
+  const [isLoadingDocumentRoles, setIsLoadingDocumentRoles] = useState(false);
+  const [savingDocumentRole, setSavingDocumentRole] = useState<string | null>(null);
 
   const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>();
   const [currentDocumentName, setCurrentDocumentName] = useState<string | undefined>();
@@ -196,6 +207,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
   const canManageMembers = role === Role.Director || role === Role.Admin;
   const canEditOrganization = role === Role.Admin;
+  const canManageDocumentRoles = role === Role.Director || role === Role.Admin;
 
   const adminMembers = useMemo(
     () => workers.filter((worker) => worker.privilegeLevel === 'Admin'),
@@ -322,10 +334,27 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   }, []);
 
+  const fetchDocumentRoles = useCallback(async () => {
+    setIsLoadingDocumentRoles(true);
+    try {
+      const res = await fetch(`${getServerURL()}/api/organization/document-roles`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      setDocumentRoles(await res.json());
+    } catch (error) {
+      console.error('Failed to load organization document labels', error);
+      setDocumentRoles([]);
+    } finally {
+      setIsLoadingDocumentRoles(false);
+    }
+  }, []);
+
   useEffect(() => { fetchOrgInfo(); }, [fetchOrgInfo]);
   useEffect(() => { fetchWorkers(); }, [fetchWorkers]);
   useEffect(() => { fetchMailSummary(); }, [fetchMailSummary]);
   useEffect(() => { fetchOrgDocs(); }, [fetchOrgDocs]);
+  useEffect(() => { fetchDocumentRoles(); }, [fetchDocumentRoles]);
 
   const handleSaveOrgInfo = async () => {
     try {
@@ -477,6 +506,29 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   };
 
+  const assignDocumentRole = async (roleKey: string, documentId: string) => {
+    setSavingDocumentRole(roleKey);
+    try {
+      const res = await fetch(
+        `${getServerURL()}/api/organization/document-roles/${encodeURIComponent(roleKey)}`,
+        {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId: documentId || null }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || `Server returned ${res.status}`);
+      await fetchDocumentRoles();
+      alert.show(documentId ? 'Application document label assigned.' : 'Application document label cleared.');
+    } catch (error) {
+      alert.show(`Failed to update document label: ${error instanceof Error ? error.message : error}`, { type: 'error' });
+    } finally {
+      setSavingDocumentRole(null);
+    }
+  };
+
   const closeDeleteModal = () => {
     setDeleteTargetDocument(null);
   };
@@ -496,6 +548,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         setCurrentDocumentId(undefined);
         setCurrentDocumentName(undefined);
         fetchOrgDocs();
+        fetchDocumentRoles();
       } else {
         alert.show(`Failed to delete document: ${data.message || data.status}`, { type: 'error' });
       }
@@ -1116,8 +1169,54 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           </div>
 
           <p className="tw-text-sm tw-text-gray-500 tw-mb-4">
-            These documents can be appended to application PDFs before saving. Only PDF files are supported.
+            Upload reusable PDFs, then choose which document should be used for each automatic application attachment.
           </p>
+
+          <div className="tw-mb-5 tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-4">
+            <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-2">
+              <div>
+                <h6 className="tw-mb-1 tw-font-semibold tw-text-slate-950">Automatic application attachments</h6>
+                <p className="tw-mb-0 tw-text-sm tw-text-slate-600">
+                  Each label can point to one organization document. Outcomes use these labels instead of file IDs.
+                </p>
+              </div>
+              {!canManageDocumentRoles && (
+                <span className="tw-rounded-full tw-bg-white tw-px-3 tw-py-1 tw-text-xs tw-text-slate-500 tw-ring-1 tw-ring-slate-200">
+                  Admin or director access required to change
+                </span>
+              )}
+            </div>
+            {isLoadingDocumentRoles && (
+              <p className="tw-mb-0 tw-mt-3 tw-text-sm tw-text-slate-500">Loading labels...</p>
+            )}
+            {!isLoadingDocumentRoles && documentRoles.length === 0 && (
+              <p className="tw-mb-0 tw-mt-3 tw-text-sm tw-text-slate-500">No automatic attachment labels have been authored yet.</p>
+            )}
+            {!isLoadingDocumentRoles && documentRoles.length > 0 && (
+              <div className="tw-mt-4 tw-grid tw-gap-3">
+                {documentRoles.map((documentRole) => (
+                  <label key={documentRole.roleKey} className="tw-grid tw-gap-2 tw-rounded-lg tw-border tw-border-slate-200 tw-bg-white tw-p-3 md:tw-grid-cols-[minmax(0,1fr)_minmax(16rem,1fr)] md:tw-items-center">
+                    <span>
+                      <span className="tw-block tw-font-medium tw-text-slate-950">{documentRole.displayName}</span>
+                      {documentRole.description && <span className="tw-mt-0.5 tw-block tw-text-xs tw-text-slate-500">{documentRole.description}</span>}
+                    </span>
+                    <select
+                      aria-label={`${documentRole.displayName} document`}
+                      value={documentRole.documentId || ''}
+                      disabled={!canManageDocumentRoles || savingDocumentRole === documentRole.roleKey}
+                      onChange={(event) => assignDocumentRole(documentRole.roleKey, event.target.value)}
+                      className="form-control tw-bg-white"
+                    >
+                      <option value="">Not assigned</option>
+                      {orgDocs.map((document) => (
+                        <option key={document.id} value={document.id}>{getDocDisplayFileName(document.filename)}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
 
           {isLoadingDocs && (
             <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading documents...</p>
