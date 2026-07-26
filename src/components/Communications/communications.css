@@ -642,6 +642,100 @@ body:has(.communications-shell),
   background: #fff5f5;
 }
 
+.call-recording-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.call-recording-consent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: flex-start;
+  color: #334e68;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.call-recording-consent input {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+}
+
+.call-record-button {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 7px;
+  border: 1px solid #c73535;
+  border-radius: 999px;
+  padding: 9px 14px;
+  background: #fff;
+  color: #b42318;
+  font-weight: 800;
+}
+
+.call-record-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.call-recording-panel.recording,
+.call-recording-panel.recording-only {
+  border-color: #f0b8b8;
+  background: #fff5f5;
+}
+
+.call-recording-active {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: flex-start;
+  color: #b42318;
+}
+
+.call-recording-active svg {
+  margin-top: 1px;
+  animation: call-recording-pulse 1.5s ease-in-out infinite;
+}
+
+.call-recording-active strong {
+  display: block;
+  font-size: 14px;
+}
+
+.call-recording-active p,
+.call-recording-error {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.call-recording-active p {
+  color: #7a271a;
+}
+
+.call-recording-error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+@keyframes call-recording-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
 .call-controls button,
 .call-controls a {
   border: 1px solid #bcccdc;
