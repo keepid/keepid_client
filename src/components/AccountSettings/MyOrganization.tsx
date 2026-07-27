@@ -534,9 +534,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || `Server returned ${res.status}`);
       await fetchDocumentRoles();
-      alert.show(documentId ? 'Application document label assigned.' : 'Application document label cleared.');
+      alert.show(documentId ? 'Automatic category assigned.' : 'Automatic category cleared.');
     } catch (error) {
-      alert.show(`Failed to update document label: ${error instanceof Error ? error.message : error}`, { type: 'error' });
+      alert.show(`Failed to update automatic category: ${error instanceof Error ? error.message : error}`, { type: 'error' });
     } finally {
       setSavingDocumentRole(null);
     }
@@ -651,6 +651,8 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     {
       field: 'filename',
       headerName: 'Name',
+      width: '34%',
+      mobileWidth: '35%',
       renderCell: (row: any) => (
         <span
           className="tw-font-medium tw-text-gray-900 tw-block"
@@ -663,6 +665,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     {
       field: 'uploader',
       headerName: 'Uploaded By',
+      hideOnMobile: true,
       renderCell: (row: OrgDocument) => getUploaderDisplayName(row),
     },
     {
@@ -670,13 +673,50 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
       headerName: 'Date Uploaded',
       sortable: true,
       sortType: 'date',
+      hideOnMobile: true,
       renderCell: (row: any) => formatDate(row.uploadDate),
+    },
+    {
+      field: 'automaticCategory',
+      headerName: 'Category',
+      width: '300px',
+      mobileWidth: '57%',
+      renderCell: (row: OrgDocument) => {
+        const assignedRole = documentRoles.find((documentRole) => documentRole.documentId === row.id);
+        return (
+          <select
+            aria-label={`Automatic category for ${getDocDisplayFileName(row.filename)}`}
+            value={assignedRole?.roleKey || ''}
+            disabled={!canManageDocumentRoles || isLoadingDocumentRoles || savingDocumentRole !== null}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+            onChange={(event) => {
+              event.stopPropagation();
+              const selectedRoleKey = event.target.value as OrganizationDocumentRoleKeyValue | '';
+              if (!selectedRoleKey && assignedRole) {
+                assignDocumentRole(assignedRole.roleKey, '');
+              } else if (selectedRoleKey && selectedRoleKey !== assignedRole?.roleKey) {
+                assignDocumentRole(selectedRoleKey, row.id);
+              }
+            }}
+            className="form-control tw-w-full tw-min-w-0 tw-bg-white tw-text-sm"
+          >
+            <option value="">{isLoadingDocumentRoles ? 'Loading categories...' : 'No category'}</option>
+            {documentRoles.map((documentRole) => (
+              <option key={documentRole.roleKey} value={documentRole.roleKey}>
+                {documentRole.displayName}
+              </option>
+            ))}
+          </select>
+        );
+      },
     },
     {
       field: 'actions',
       headerName: '',
       align: 'right',
       width: '48px',
+      mobileWidth: '32px',
       renderCell: (row: any) => <RowActionMenu actions={getRowActions(row)} />,
     },
   ];
@@ -1182,54 +1222,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           </div>
 
           <p className="tw-text-sm tw-text-gray-500 tw-mb-4">
-            Upload reusable PDFs, then choose which document should be used for each automatic application attachment.
+            Upload reusable PDFs and optionally assign an automatic-attachment category in the table.
+            {!canManageDocumentRoles && ' Admin or director access is required to change categories.'}
           </p>
-
-          <div className="tw-mb-5 tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-4">
-            <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-2">
-              <div>
-                <h6 className="tw-mb-1 tw-font-semibold tw-text-slate-950">Automatic application attachments</h6>
-                <p className="tw-mb-0 tw-text-sm tw-text-slate-600">
-                  Map each fixed application-document category to one reusable organization PDF.
-                </p>
-              </div>
-              {!canManageDocumentRoles && (
-                <span className="tw-rounded-full tw-bg-white tw-px-3 tw-py-1 tw-text-xs tw-text-slate-500 tw-ring-1 tw-ring-slate-200">
-                  Admin or director access required to change
-                </span>
-              )}
-            </div>
-            {isLoadingDocumentRoles && (
-              <p className="tw-mb-0 tw-mt-3 tw-text-sm tw-text-slate-500">Loading labels...</p>
-            )}
-            {!isLoadingDocumentRoles && documentRoles.length === 0 && (
-              <p className="tw-mb-0 tw-mt-3 tw-text-sm tw-text-slate-500">No automatic attachment labels have been authored yet.</p>
-            )}
-            {!isLoadingDocumentRoles && documentRoles.length > 0 && (
-              <div className="tw-mt-4 tw-grid tw-gap-3">
-                {documentRoles.map((documentRole) => (
-                  <label key={documentRole.roleKey} className="tw-grid tw-gap-2 tw-rounded-lg tw-border tw-border-slate-200 tw-bg-white tw-p-3 md:tw-grid-cols-[minmax(0,1fr)_minmax(16rem,1fr)] md:tw-items-center">
-                    <span>
-                      <span className="tw-block tw-font-medium tw-text-slate-950">{documentRole.displayName}</span>
-                      {documentRole.description && <span className="tw-mt-0.5 tw-block tw-text-xs tw-text-slate-500">{documentRole.description}</span>}
-                    </span>
-                    <select
-                      aria-label={`${documentRole.displayName} document`}
-                      value={documentRole.documentId || ''}
-                      disabled={!canManageDocumentRoles || savingDocumentRole === documentRole.roleKey}
-                      onChange={(event) => assignDocumentRole(documentRole.roleKey, event.target.value)}
-                      className="form-control tw-bg-white"
-                    >
-                      <option value="">Not assigned</option>
-                      {orgDocs.map((document) => (
-                        <option key={document.id} value={document.id}>{getDocDisplayFileName(document.filename)}</option>
-                      ))}
-                    </select>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
 
           {isLoadingDocs && (
             <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading documents...</p>
