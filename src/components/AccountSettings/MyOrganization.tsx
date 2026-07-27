@@ -109,8 +109,18 @@ interface OrgDocument {
   uploaderName?: string;
 }
 
+const OrganizationDocumentRoleKey = {
+  PaIdHomelessVerificationLetter: 'pa-id-homeless-verification-letter',
+  PaSscDireNeedLetter: 'pa-ssc-dire-need-letter',
+  DirectorPhotoId: 'director-photo-id',
+  PaBcHomelessVerificationLetter: 'pa-bc-homeless-verification-letter',
+} as const;
+
+type OrganizationDocumentRoleKeyValue =
+  typeof OrganizationDocumentRoleKey[keyof typeof OrganizationDocumentRoleKey];
+
 interface OrganizationDocumentRole {
-  roleKey: string;
+  roleKey: OrganizationDocumentRoleKeyValue;
   displayName: string;
   description?: string | null;
   documentId?: string | null;
@@ -506,7 +516,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   };
 
-  const assignDocumentRole = async (roleKey: string, documentId: string) => {
+  const assignDocumentRole = async (
+    roleKey: OrganizationDocumentRoleKeyValue,
+    documentId: string,
+  ) => {
     setSavingDocumentRole(roleKey);
     try {
       const res = await fetch(
@@ -1177,7 +1190,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               <div>
                 <h6 className="tw-mb-1 tw-font-semibold tw-text-slate-950">Automatic application attachments</h6>
                 <p className="tw-mb-0 tw-text-sm tw-text-slate-600">
-                  Each label can point to one organization document. Outcomes use these labels instead of file IDs.
+                  Map each fixed application-document category to one reusable organization PDF.
                 </p>
               </div>
               {!canManageDocumentRoles && (
