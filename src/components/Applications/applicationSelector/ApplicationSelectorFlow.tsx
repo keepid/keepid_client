@@ -165,8 +165,12 @@ const ApplicationSelectorFlow = ({
     }
   };
 
-  const submitInteraction = () => {
+  const selectAnswer = (transition: SelectorTransition) => {
     if (!currentNode) return;
+    if (!currentNode.componentKey) {
+      follow(transition);
+      return;
+    }
     const config = currentNode.componentConfig || {};
     const isInformation = currentNode.componentKey === 'information';
     const value = fieldValue.trim();
@@ -181,8 +185,6 @@ const ApplicationSelectorFlow = ({
         return;
       }
     }
-    const transition = currentNode.transitions[0];
-    if (!transition) return;
     const next = currentNode.responseKey && !isInformation
       ? { ...responses, [currentNode.responseKey]: value }
       : responses;
@@ -330,13 +332,40 @@ const ApplicationSelectorFlow = ({
 
   const renderChoice = (node: SelectorNode) => (
     <div>
+      {node.componentKey && (() => {
+        const config = node.componentConfig || {};
+        const information = node.componentKey === 'information';
+        const type = node.componentKey === 'date-input' ? 'date' : 'text';
+        return information ? (
+          <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
+            {String(config.helpText || 'Review this information before continuing.')}
+          </div>
+        ) : (
+          <label className="tw-mb-5 tw-block tw-max-w-2xl tw-font-medium tw-text-gray-900">
+            {String(config.label || 'Response')}
+            <input
+              type={type}
+              inputMode={node.componentKey === 'penndot-number' ? 'numeric' : undefined}
+              maxLength={Number(config.maxLength || 128)}
+              className="form-control tw-mt-2"
+              value={fieldValue}
+              onChange={(event) => setFieldValue(
+                node.componentKey === 'penndot-number'
+                  ? event.target.value.replace(/\D/g, '')
+                  : event.target.value,
+              )}
+            />
+            {config.helpText && <span className="tw-mt-2 tw-block tw-text-sm tw-text-gray-600">{String(config.helpText)}</span>}
+          </label>
+        );
+      })()}
       <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
         {node.transitions.map((transition) => (
           <button
             key={transition.id}
             type="button"
             className="tw-flex tw-min-h-48 tw-flex-col tw-items-stretch tw-justify-center tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-bg-blue-50 hover:tw-shadow-md"
-            onClick={() => follow(transition)}
+            onClick={() => selectAnswer(transition)}
           >
             {transition.assetId && (
               <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
@@ -355,42 +384,6 @@ const ApplicationSelectorFlow = ({
       <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
     </div>
   );
-
-  const renderInteraction = (node: SelectorNode) => {
-    const config = node.componentConfig || {};
-    const information = node.componentKey === 'information';
-    const type = node.componentKey === 'date-input' ? 'date' : 'text';
-    return (
-      <div className="tw-max-w-2xl">
-        {information ? (
-          <div className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
-            {String(config.helpText || node.description || 'Review this information before continuing.')}
-          </div>
-        ) : (
-          <label className="tw-block tw-font-medium tw-text-gray-900">
-            {String(config.label || node.question || 'Response')}
-            <input
-              type={type}
-              inputMode={node.componentKey === 'penndot-number' ? 'numeric' : undefined}
-              maxLength={Number(config.maxLength || 128)}
-              className="form-control tw-mt-2"
-              value={fieldValue}
-              onChange={(event) => setFieldValue(
-                node.componentKey === 'penndot-number'
-                  ? event.target.value.replace(/\D/g, '')
-                  : event.target.value,
-              )}
-            />
-            {config.helpText && <span className="tw-mt-2 tw-block tw-text-sm tw-text-gray-600">{String(config.helpText)}</span>}
-          </label>
-        )}
-        <div className="tw-mt-6 tw-flex tw-justify-between tw-gap-3">
-          <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
-          <button type="button" className="btn btn-primary" onClick={submitInteraction}>Continue</button>
-        </div>
-      </div>
-    );
-  };
 
   const actionToggle = (action: ProposedAction) => (
     <label key={action.effectId} className="tw-flex tw-gap-3 tw-rounded-lg tw-border tw-border-gray-200 tw-p-4">
@@ -575,11 +568,10 @@ const ApplicationSelectorFlow = ({
             <div className="tw-mb-5">
               <div className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Step {path.length + 1}</div>
               <h2 className="tw-mt-2 tw-text-2xl tw-font-semibold tw-text-gray-950">{currentNode.question}</h2>
-              {currentNode.description && <p className="tw-mt-2 tw-text-gray-600">{currentNode.description}</p>}
+              {currentNode.description && <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none tw-text-gray-600"><ReactMarkdown>{currentNode.description}</ReactMarkdown></div>}
             </div>
           )}
-          {currentNode.type === 'CHOICE' && renderChoice(currentNode)}
-          {currentNode.type === 'INTERACTION' && renderInteraction(currentNode)}
+          {(currentNode.type === 'CHOICE' || currentNode.type === 'INTERACTION') && renderChoice(currentNode)}
           {currentNode.type === 'OUTCOME' && renderOutcome()}
         </div>
       )}
