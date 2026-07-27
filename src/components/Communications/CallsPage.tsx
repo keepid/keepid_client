@@ -1,6 +1,7 @@
 import './communications.css';
 
 import AddIcon from '@mui/icons-material/Add';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import type { Call } from '@twilio/voice-sdk';
@@ -22,12 +23,14 @@ import {
   PromoteSharedResponse,
   scheduleCommunicationContactMessage,
   sendCommunicationContactMessage,
+  startTwilioVoiceRecording,
   updateCommunicationContactNote,
 } from './communicationsApi';
 import ContactEditorSheet from './ContactEditorSheet';
 import CreateContactModal from './CreateContactModal';
 
 type BrowserCallStatus = 'idle' | 'connecting' | 'ringing' | 'in-call' | 'ended' | 'error';
+type CallRecordingStatus = 'idle' | 'starting' | 'recording' | 'recording-only' | 'error';
 type CommunicationsLocationState = {
   clientUsername?: string;
   clientName?: string;
@@ -166,6 +169,10 @@ export default function CallsPage() {
   const [browserCallStatus, setBrowserCallStatus] = useState<BrowserCallStatus>('idle');
   const [browserCallError, setBrowserCallError] = useState('');
   const [isMuted, setIsMuted] = useState(false);
+  const [activeCallSid, setActiveCallSid] = useState('');
+  const [recordingConsentConfirmed, setRecordingConsentConfirmed] = useState(false);
+  const [callRecordingStatus, setCallRecordingStatus] = useState<CallRecordingStatus>('idle');
+  const [callRecordingMessage, setCallRecordingMessage] = useState('');
   const [callNoteDraft, setCallNoteDraft] = useState('');
   const [callNoteSaveError, setCallNoteSaveError] = useState('');
   const [isSavingCallNote, setIsSavingCallNote] = useState(false);
@@ -453,6 +460,10 @@ export default function CallsPage() {
     setBrowserCallStatus('idle');
     setBrowserCallError('');
     setIsMuted(false);
+    setActiveCallSid('');
+    setRecordingConsentConfirmed(false);
+    setCallRecordingStatus('idle');
+    setCallRecordingMessage('');
     setCallStartedAt(null);
     setElapsedSeconds(0);
   }
@@ -520,6 +531,10 @@ export default function CallsPage() {
     setBrowserCallStatus('connecting');
     setElapsedSeconds(0);
     setCallStartedAt(null);
+    setActiveCallSid('');
+    setRecordingConsentConfirmed(false);
+    setCallRecordingStatus('idle');
+    setCallRecordingMessage('');
     try {
       if (!Device.isSupported) {
         throw new Error('This browser does not support Twilio Voice calling.');
@@ -542,6 +557,7 @@ export default function CallsPage() {
       call.on('accept', () => {
         setBrowserCallStatus('in-call');
         setBrowserCallError('');
+        setActiveCallSid(call.parameters.CallSid || '');
         setCallStartedAt(Date.now());
         setElapsedSeconds(0);
       });
@@ -550,6 +566,7 @@ export default function CallsPage() {
         setBrowserCallStatus('ended');
         setCallStartedAt(null);
         setIsMuted(false);
+        setRecordingConsentConfirmed(false);
         refreshSelectedConversation();
       });
       call.on('cancel', () => {
@@ -557,12 +574,14 @@ export default function CallsPage() {
         setBrowserCallStatus('ended');
         setCallStartedAt(null);
         setIsMuted(false);
+        setRecordingConsentConfirmed(false);
       });
       call.on('reject', () => {
         activeCallRef.current = null;
         setBrowserCallStatus('ended');
         setCallStartedAt(null);
         setIsMuted(false);
+        setRecordingConsentConfirmed(false);
       });
       call.on('error', (error: Error) => {
         activeCallRef.current = null;
@@ -570,6 +589,7 @@ export default function CallsPage() {
         setBrowserCallStatus('error');
         setCallStartedAt(null);
         setIsMuted(false);
+        setRecordingConsentConfirmed(false);
       });
       call.on('reconnecting', () => {
         setBrowserCallStatus('connecting');
@@ -585,6 +605,37 @@ export default function CallsPage() {
       setBrowserCallStatus('error');
       setCallStartedAt(null);
       setIsMuted(false);
+      setRecordingConsentConfirmed(false);
+    }
+  }
+
+  async function startCallRecording() {
+    if (
+      browserCallStatus !== 'in-call'
+      || !activeCallSid
+      || !recordingConsentConfirmed
+      || callRecordingStatus === 'starting'
+      || callRecordingStatus === 'recording'
+      || callRecordingStatus === 'recording-only'
+    ) return;
+    setCallRecordingStatus('starting');
+    setCallRecordingMessage('');
+    try {
+      const response = await startTwilioVoiceRecording(activeCallSid, true);
+      if (response.status === 'SUCCESS' || response.status === 'ALREADY_RECORDING') {
+        setCallRecordingStatus('recording');
+        setCallRecordingMessage(response.message || 'Recording started. The transcript will appear after the call.');
+        return;
+      }
+      if (response.status === 'RECORDING_ONLY') {
+        setCallRecordingStatus('recording-only');
+        setCallRecordingMessage(response.message || 'Recording started, but transcription could not be started.');
+        return;
+      }
+      throw new Error(response.message || 'Could not start call recording.');
+    } catch (error) {
+      setCallRecordingStatus('error');
+      setCallRecordingMessage(error instanceof Error ? error.message : 'Could not start call recording.');
     }
   }
 
@@ -603,6 +654,7 @@ export default function CallsPage() {
     setBrowserCallStatus('ended');
     setCallStartedAt(null);
     setIsMuted(false);
+    setRecordingConsentConfirmed(false);
   }
 
   function updateContactInList(contact: CommunicationContact) {
@@ -989,6 +1041,52 @@ export default function CallsPage() {
                     {browserCallStatus === 'in-call' && <span>{formatDuration(elapsedSeconds)}</span>}
                     {browserCallError && <p>{browserCallError}</p>}
                   </div>
+                  <section className={`call-recording-panel ${callRecordingStatus}`}>
+                    {callRecordingStatus === 'recording' || callRecordingStatus === 'recording-only' ? (
+                      <div className="call-recording-active" role="status">
+                        <FiberManualRecordIcon fontSize="small" />
+                        <div>
+                          <strong>Recording</strong>
+                          <p>{callRecordingMessage}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <label className="call-recording-consent">
+                          <input
+                            type="checkbox"
+                            checked={recordingConsentConfirmed}
+                            disabled={browserCallStatus !== 'in-call' || callRecordingStatus === 'starting'}
+                            onChange={(event) => {
+                              setRecordingConsentConfirmed(event.target.checked);
+                              setCallRecordingMessage('');
+                              if (callRecordingStatus === 'error') setCallRecordingStatus('idle');
+                            }}
+                          />
+                          <span>
+                            I confirmed that everyone on the call verbally consented to recording and transcription.
+                          </span>
+                        </label>
+                        <button
+                          type="button"
+                          className="call-record-button"
+                          disabled={
+                            browserCallStatus !== 'in-call'
+                            || !activeCallSid
+                            || !recordingConsentConfirmed
+                            || callRecordingStatus === 'starting'
+                          }
+                          onClick={startCallRecording}
+                        >
+                          <FiberManualRecordIcon fontSize="small" />
+                          {callRecordingStatus === 'starting' ? 'Starting...' : 'Start recording'}
+                        </button>
+                        {callRecordingMessage && (
+                          <p className="call-recording-error" role="alert">{callRecordingMessage}</p>
+                        )}
+                      </>
+                    )}
+                  </section>
                   <div className="call-controls">
                     <button
                       type="button"

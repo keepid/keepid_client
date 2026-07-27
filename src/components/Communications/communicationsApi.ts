@@ -159,6 +159,13 @@ export type TwilioVoiceTokenResponse = {
   expiresInSeconds: number;
 };
 
+export type StartVoiceRecordingResponse = {
+  status: string;
+  message?: string;
+  recordingSid?: string;
+  transcriptionSid?: string;
+};
+
 export class CommunicationApiError extends Error {
   statusCode: number;
 
@@ -428,6 +435,16 @@ export function scheduleMessage(username: string, body: string, sendAt: string, 
 
 export function getTwilioVoiceToken() {
   return jsonFetch<TwilioVoiceTokenResponse>('/api/communications/voice/token');
+}
+
+export function startTwilioVoiceRecording(callSid: string, consentConfirmed: boolean) {
+  return jsonFetch<StartVoiceRecordingResponse>(
+    `/api/communications/voice/calls/${encodeURIComponent(callSid)}/recording`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ consentConfirmed }),
+    },
+  );
 }
 
 export function getCallRecordingPlaybackUrl(callId: string) {
