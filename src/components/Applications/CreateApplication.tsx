@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import Role from '../../static/Role';
 import ApplicationForm from './ApplicationForm';
+import type { SelectorCompletionContext } from './applicationSelector/types';
 import { ApplicationFormProvider, formContent } from './Hooks/ApplicationFormHook';
 
 export default function CreateApplication({ userRole }: { userRole: Role }) {
@@ -16,15 +17,14 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
       idType?: string;
       housingStatus?: string;
     };
-    startAtReview?: boolean;
-    selectorInstructionsMarkdown?: string;
+    startAtWebForm?: boolean;
+    selectorCompletion?: SelectorCompletionContext;
     serviceRecordId?: string;
   }>();
   const clientUsername = location.state?.clientUsername || '';
   const clientName = location.state?.clientName || '';
   const preset = location.state?.presetApplication;
-  const selectorInstructionsMarkdown = location.state?.selectorInstructionsMarkdown || '';
-  const startAtReview = Boolean(location.state?.startAtReview && preset?.applicationId);
+  const startAtWebForm = Boolean(location.state?.startAtWebForm && preset?.applicationId);
   const hasPresetClient = clientUsername.trim().length > 0;
   const shouldShowWhoForStep = userRole === Role.Worker
     || userRole === Role.Admin
@@ -32,11 +32,14 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
   const whoForPageIndex = formContent.findIndex((p) => p.pageName === 'whoFor');
   const typePageIndex = formContent.findIndex((p) => p.pageName === 'type');
   const reviewPageIndex = formContent.findIndex((p) => p.pageName === 'review');
+  const webFormPageIndex = formContent.findIndex((p) => p.pageName === 'webForm');
   const postWhoForPage = reviewPageIndex >= 0
     ? reviewPageIndex
     : typePageIndex;
   let initialPage = postWhoForPage;
-  if (!startAtReview || !hasPresetClient) {
+  if (startAtWebForm && hasPresetClient && webFormPageIndex >= 0) {
+    initialPage = webFormPageIndex;
+  } else {
     initialPage = shouldShowWhoForStep && whoForPageIndex >= 0
       ? whoForPageIndex
       : postWhoForPage;
@@ -49,7 +52,7 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
       clientName={clientName}
       initialPage={initialPage}
       whoForNextPage={postWhoForPage}
-      initialDirty={startAtReview}
+      initialDirty={startAtWebForm}
       initialDataOverride={
         preset
           ? {
@@ -64,7 +67,7 @@ export default function CreateApplication({ userRole }: { userRole: Role }) {
       }
     >
       <ApplicationForm
-        selectorInstructionsMarkdown={selectorInstructionsMarkdown}
+        selectorCompletion={location.state?.selectorCompletion}
         serviceRecordId={location.state?.serviceRecordId}
       />
     </ApplicationFormProvider>

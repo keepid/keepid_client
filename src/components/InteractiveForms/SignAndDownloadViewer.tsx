@@ -42,7 +42,7 @@ export interface SignAndDownloadViewerProps {
   applicationId: string;
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
-  onSaveSuccess?: () => void;
+  onSaveSuccess?: () => void | Promise<void>;
   showSaveButton?: boolean;
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
@@ -888,7 +888,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       }
       const blob = await getCurrentPdfBlob();
       await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
-      onSaveSuccess?.();
+      await onSaveSuccess?.();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save application');
     } finally {

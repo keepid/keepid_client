@@ -40,6 +40,7 @@ export interface SelectorOutcomeSummary {
   status: 'ACTIVE' | 'DEPRECATED';
   fulfillmentMode: FulfillmentMode;
   registryEntryId?: string | null;
+  registryApplicationId?: string | null;
   components: OutcomeComponent[];
 }
 
@@ -56,6 +57,14 @@ export interface SelectorFlow {
 export interface SelectorPathStep {
   nodeId: string;
   transitionKey: string;
+}
+
+export interface SelectorCompletionContext {
+  publishToken: string;
+  path: SelectorPathStep[];
+  responses: Record<string, string>;
+  idempotencyKey: string;
+  confirmedEffectIds: string[];
 }
 
 export interface ProposedAction {
@@ -83,6 +92,7 @@ export interface ServiceRecordResult extends Partial<ResolvedOutcome> {
   classificationStatus: 'CLASSIFIED' | 'MANUAL_UNCLASSIFIED';
   fulfillmentMode: FulfillmentMode;
   registryEntryId?: string | null;
+  registryApplicationId?: string | null;
 }
 
 export interface RegistryApplicationOption {

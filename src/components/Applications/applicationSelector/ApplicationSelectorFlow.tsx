@@ -22,6 +22,7 @@ import type {
   ProposedAction,
   RegistryApplicationOption,
   ResolvedOutcome,
+  SelectorCompletionContext,
   SelectorFlow,
   SelectorNode,
   SelectorPathStep,
@@ -191,28 +192,39 @@ const ApplicationSelectorFlow = ({
     follow(transition, next);
   };
 
-  const applicationOption = (registryEntryId?: string | null) => availableApplications.find(
-    (application) => application.applicationId === registryEntryId,
+  const applicationOption = (applicationId?: string | null) => availableApplications.find(
+    (application) => application.applicationId === applicationId,
   );
 
-  const startWebForm = (created: ServiceRecordResult) => {
-    const option = applicationOption(created.registryEntryId);
-    if (!created.registryEntryId) return;
+  const startWebForm = (created?: ServiceRecordResult) => {
+    const registryEntryId = created?.registryEntryId || resolved?.registryEntryId;
+    const registryApplicationId = created?.registryApplicationId || resolved?.registryApplicationId;
+    if (!registryEntryId || !registryApplicationId || (!created && (!flow || !resolved))) return;
+    const option = applicationOption(registryApplicationId);
+    const selectorCompletion: SelectorCompletionContext | undefined = !created && flow
+      ? {
+        publishToken: flow.publishToken,
+        path,
+        responses,
+        idempotencyKey: uuid(),
+        confirmedEffectIds: confirmedEffects,
+      }
+      : undefined;
     history.push({
       pathname: '/applications/createnew',
       state: {
         clientUsername,
         clientName,
-        serviceRecordId: created.applicationId,
+        serviceRecordId: created?.applicationId,
         presetApplication: {
-          applicationId: created.registryEntryId,
-          label: option?.label || created.serviceTitle || 'Application',
+          applicationId: registryApplicationId,
+          label: option?.label || created?.serviceTitle || resolved?.serviceTitle || 'Application',
           state: option?.state || '',
           idType: option?.idType || '',
           housingStatus: option?.housingStatus || '',
         },
-        startAtReview: true,
-        selectorInstructionsMarkdown: created.clientSheetMarkdown || resolved?.clientSheetMarkdown || '',
+        startAtWebForm: true,
+        selectorCompletion,
       },
     });
   };
@@ -231,7 +243,6 @@ const ApplicationSelectorFlow = ({
         confirmedEffectIds: confirmedEffects,
       });
       setRecord(created);
-      if (created.fulfillmentMode === 'WEB_FORM') startWebForm(created);
       if (created.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
         await completeServiceRecord(created.applicationId);
       }
@@ -430,23 +441,15 @@ const ApplicationSelectorFlow = ({
         </div>
       );
     }
-    let createLabel = 'Create service record';
+    let createLabel = 'Save service';
     if (busy) createLabel = 'Creating service record…';
-    else if (resolved.fulfillmentMode === 'WEB_FORM') createLabel = 'Create record and open form';
+    else if (resolved.fulfillmentMode === 'WEB_FORM') createLabel = 'Continue to application';
     return (
       <div>
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5">
           <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-950">{resolved.serviceTitle}</h2>
-          <div className="tw-mt-5 tw-grid tw-gap-5 lg:tw-grid-cols-2">
-            <section>
-              <h3 className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Worker instructions</h3>
-              <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.workerInstructionsMarkdown}</ReactMarkdown></div>
-            </section>
-            <section>
-              <h3 className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Client sheet</h3>
-              <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.clientSheetMarkdown}</ReactMarkdown></div>
-            </section>
-          </div>
+          <h3 className="tw-mt-5 tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Worker instructions</h3>
+          <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.workerInstructionsMarkdown}</ReactMarkdown></div>
         </div>
         {resolved.proposedActions.length > 0 && (
           <div className="tw-mt-5 tw-grid tw-gap-3">
@@ -456,7 +459,12 @@ const ApplicationSelectorFlow = ({
         )}
         <div className="tw-mt-6 tw-flex tw-flex-wrap tw-justify-between tw-gap-3">
           <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
-          <button type="button" className="btn btn-primary" disabled={busy} onClick={createOutcomeRecord}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={busy}
+            onClick={resolved.fulfillmentMode === 'WEB_FORM' ? () => startWebForm() : createOutcomeRecord}
+          >
             {createLabel}
           </button>
         </div>
@@ -554,10 +562,14 @@ const ApplicationSelectorFlow = ({
         <div>
           <button type="button" className="btn btn-outline-dark tw-mb-4" onClick={backToApplications}>← Applications</button>
           <h1 className="tw-text-4xl tw-font-semibold tw-text-gray-950">{flow?.title || 'Client case picker'}</h1>
-          {flow?.description && <p className="tw-mt-2 tw-max-w-3xl tw-text-gray-600">{flow.description}</p>}
         </div>
         {!record && !manualMode && (
-          <button type="button" className="btn btn-outline-primary" onClick={() => setManualMode(true)}>This case does not fit the tree</button>
+          <div className="tw-flex tw-flex-wrap tw-gap-2">
+            {path.length > 0 && (
+              <button type="button" className="btn btn-outline-secondary" onClick={reset}>Start over</button>
+            )}
+            <button type="button" className="btn btn-outline-primary" onClick={() => setManualMode(true)}>This case does not fit the tree</button>
+          </div>
         )}
       </div>
       {error && <div className="alert alert-danger tw-mb-5">{error}</div>}
@@ -566,17 +578,13 @@ const ApplicationSelectorFlow = ({
         <div>
           {currentNode.type !== 'OUTCOME' && (
             <div className="tw-mb-5">
-              <div className="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Step {path.length + 1}</div>
-              <h2 className="tw-mt-2 tw-text-2xl tw-font-semibold tw-text-gray-950">{currentNode.question}</h2>
+              <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-950">{currentNode.question}</h2>
               {currentNode.description && <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none tw-text-gray-600"><ReactMarkdown>{currentNode.description}</ReactMarkdown></div>}
             </div>
           )}
           {(currentNode.type === 'CHOICE' || currentNode.type === 'INTERACTION') && renderChoice(currentNode)}
           {currentNode.type === 'OUTCOME' && renderOutcome()}
         </div>
-      )}
-      {(path.length > 0 || record) && !manualMode && (
-        <button type="button" className="tw-mt-10 tw-text-sm tw-font-medium tw-text-blue-700 hover:tw-underline" onClick={reset}>Start over</button>
       )}
     </div>
   );
