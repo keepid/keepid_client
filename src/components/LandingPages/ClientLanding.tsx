@@ -11,11 +11,14 @@ import ClientDashboardSummaryCards from './ClientDashboardSummaryCards';
 interface Props extends RouteComponentProps {
   name: String;
   username: string;
+  email: string;
   role: Role;
   organization: string;
 }
 
-function ClientLanding({ role, organization, username }: Props): React.ReactElement {
+function ClientLanding({
+  role, organization, username, email,
+}: Props): React.ReactElement {
   return (
     <div id="Buttons" className="container pt-5">
       <Helmet>
@@ -25,7 +28,12 @@ function ClientLanding({ role, organization, username }: Props): React.ReactElem
       <div className="mb-3">
         <QuickAccessCards />
       </div>
-      <ClientDashboardSummaryCards role={role} organization={organization} username={username} />
+      <ClientDashboardSummaryCards
+        role={role}
+        organization={organization}
+        username={username}
+        email={email}
+      />
     </div>
   );
 }

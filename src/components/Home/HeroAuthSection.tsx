@@ -11,7 +11,8 @@ interface HeroAuthSectionProps {
     role: Role,
     username: string,
     organization: string,
-    name: string
+    name: string,
+    email?: string,
   ) => void;
   logOut?: () => void;
   role?: Role;

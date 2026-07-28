@@ -55,16 +55,19 @@ window.onload = () => {
 interface State {
   role: Role;
   username: string;
+  email: string;
   name: string;
   organization: string;
 }
 
 interface ContextInterface {
   username: string;
+  email: string;
   organization: string;
 }
 export const UserContext = React.createContext<ContextInterface>({
   username: '',
+  email: '',
   organization: '',
 });
 
@@ -79,6 +82,7 @@ class App extends React.Component<{}, State, {}> {
       this.state = {
         role: data.role,
         username: data.username,
+        email: data.email || '',
         name: data.name,
         organization: data.organization,
       };
@@ -86,6 +90,7 @@ class App extends React.Component<{}, State, {}> {
       this.state = {
         role: Role.LoggedOut,
         username: '',
+        email: '',
         name: '',
         organization: '',
       };
@@ -94,20 +99,30 @@ class App extends React.Component<{}, State, {}> {
     this.logOut = this.logOut.bind(this);
   }
 
-  logIn(role: Role, username: string, organization: string, name: string) {
-    this.setState({
+  logIn(role: Role, username: string, organization: string, name: string, email = '') {
+    this.setState((previousState) => ({
       role,
       username,
+      email: email || (previousState.username === username ? previousState.email : ''),
       name,
       organization,
+    }), () => {
+      const obj = {
+        role,
+        username,
+        email: this.state.email,
+        name,
+        organization,
+      };
+      sessionStorage.setItem('mySessionStorageData', JSON.stringify(obj));
+      this.hydrateCurrentUserEmail(username);
     });
-    const obj = { role, username, name, organization };
-    sessionStorage.setItem('mySessionStorageData', JSON.stringify(obj));
   }
 
   logOut() {
     this.setState({
       username: '',
+      email: '',
       name: '',
       organization: '',
       role: Role.LoggedOut,
@@ -119,6 +134,38 @@ class App extends React.Component<{}, State, {}> {
     });
     sessionStorage.clear();
   }
+
+  hydrateCurrentUserEmail = (expectedUsername: string) => {
+    fetch(`${getServerURL()}/get-user-info`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        const email = typeof responseJSON?.email === 'string' ? responseJSON.email.trim() : '';
+        if (
+          responseJSON?.status !== 'SUCCESS'
+          || responseJSON?.username !== expectedUsername
+          || this.state.username !== expectedUsername
+          || email === this.state.email
+        ) {
+          return;
+        }
+
+        this.setState({ email }, () => {
+          const jsonData = sessionStorage.getItem('mySessionStorageData');
+          if (!jsonData) return;
+          const data = JSON.parse(jsonData);
+          if (data.username !== expectedUsername) return;
+          sessionStorage.setItem('mySessionStorageData', JSON.stringify({ ...data, email }));
+        });
+      })
+      .catch(() => {
+        // Feature access can still fall back to the username when profile hydration fails.
+      });
+  };
 
   componentDidMount() {
     this.refreshAuthFromServer();
@@ -189,6 +236,8 @@ class App extends React.Component<{}, State, {}> {
               // the server's truth so the sidebar Profile Title reflects
               // the new name immediately.
               this.logIn(role(), username, organization, serverName);
+            } else {
+              this.hydrateCurrentUserEmail(username);
             }
           } else {
             // Server has a valid session but client has no local data.
@@ -208,9 +257,11 @@ class App extends React.Component<{}, State, {}> {
   };
 
   render() {
-    const { role, username, name, organization } = this.state;
-    const canAccessApplications = canUseApplications(role, organization, username);
-    const canAccessCommunications = canUseCommunications(role, organization, username);
+    const {
+      role, username, email, name, organization,
+    } = this.state;
+    const canAccessApplications = canUseApplications(role, organization, username, email);
+    const canAccessCommunications = canUseCommunications(role, organization, username, email);
     const renderHome = () => (
       <Home
         logIn={this.logIn}
@@ -220,7 +271,12 @@ class App extends React.Component<{}, State, {}> {
     );
     return (
       <Router>
-        <UserContext.Provider value={{ username: this.state.username, organization: this.state.organization }}>
+        <UserContext.Provider value={{
+          username: this.state.username,
+          email: this.state.email,
+          organization: this.state.organization,
+        }}
+        >
         <div className="App tw-flex tw-flex-col tw-min-h-screen">
           <div className="app tw-flex-1 tw-pb-12">
             <Helmet>
@@ -237,6 +293,7 @@ class App extends React.Component<{}, State, {}> {
               role={role}
               organization={organization}
               username={username}
+              email={email}
             />
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
@@ -306,6 +363,7 @@ class App extends React.Component<{}, State, {}> {
                         name={name}
                         organization={organization}
                         username={username}
+                        email={email}
                         role={role}
                         logOut={this.logOut}
                       />
@@ -316,6 +374,7 @@ class App extends React.Component<{}, State, {}> {
                       <ClientLanding
                         name={name}
                         username={username}
+                        email={email}
                         role={role}
                         organization={organization}
                       />
@@ -388,6 +447,7 @@ class App extends React.Component<{}, State, {}> {
                         username={clientUsername}
                         viewerRole={role}
                         viewerUsername={username}
+                        viewerEmail={email}
                         viewerName={name}
                         organizationName={organization}
                       />
@@ -415,6 +475,7 @@ class App extends React.Component<{}, State, {}> {
                         viewerRole={role}
                         username={username}
                         viewerUsername={username}
+                        viewerEmail={email}
                         viewerName={name}
                         organizationName={organization}
                       />
@@ -613,6 +674,7 @@ class App extends React.Component<{}, State, {}> {
                         viewerRole={role}
                         viewerOrganization={organization}
                         viewerUsername={username}
+                        viewerEmail={email}
                       />
                     );
                   }
@@ -648,6 +710,7 @@ class App extends React.Component<{}, State, {}> {
                         viewerRole={role}
                         viewerOrganization={organization}
                         viewerUsername={username}
+                        viewerEmail={email}
                       />
                     );
                   }

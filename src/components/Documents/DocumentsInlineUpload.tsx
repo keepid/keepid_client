@@ -51,6 +51,7 @@ export interface DocumentsInlineUploadProps {
    * no notification UI is appropriate.
   */
   viewerUsername?: string;
+  viewerEmail?: string;
   viewerRole?: Role;
   viewerName?: string;
   organizationName?: string;
@@ -91,6 +92,7 @@ export default function DocumentsInlineUpload({
   alert,
   onUploadComplete,
   viewerUsername,
+  viewerEmail,
   viewerRole,
   viewerName,
   organizationName,
@@ -135,7 +137,7 @@ export default function DocumentsInlineUpload({
   // Notify flow
   const canNotify = !!viewerUsername
     && viewerUsername !== targetUser
-    && canUseClientNotifications(viewerRole, organizationName, viewerUsername);
+    && canUseClientNotifications(viewerRole, organizationName, viewerUsername, viewerEmail);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const [clientDisplayName, setClientDisplayName] = useState<string>(clientNameProp || '');
   const [clientPhone, setClientPhone] = useState<string>('');

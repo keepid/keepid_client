@@ -124,14 +124,16 @@ interface Props {
   role: Role;
   organization: string;
   username: string;
+  email: string;
 }
 
 export default function ClientDashboardSummaryCards({
   role,
   organization,
   username,
+  email,
 }: Props): React.ReactElement {
-  const canAccessApplications = canUseApplications(role, organization, username);
+  const canAccessApplications = canUseApplications(role, organization, username, email);
   const [documents, setDocuments] = useState<CountLoadState>({ status: 'loading' });
   const [applications, setApplications] = useState<CountLoadState>({
     status: 'loading',

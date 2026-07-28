@@ -24,6 +24,7 @@ interface OwnProps {
   username: string;
   clientName?: string;
   viewerUsername?: string;
+  viewerEmail?: string;
   viewerName?: string;
   organizationName?: string;
 }
@@ -506,6 +507,7 @@ class MyDocuments extends Component<Props, State> {
         this.props.viewerRole,
         this.props.organizationName,
         this.props.viewerUsername,
+        this.props.viewerEmail,
       )
     ) {
       actions.push({
@@ -644,6 +646,7 @@ class MyDocuments extends Component<Props, State> {
       this.props.viewerRole || this.props.userRole,
       this.props.organizationName,
       this.props.viewerUsername || this.props.username,
+      this.props.viewerEmail,
     );
 
     return (
@@ -654,6 +657,7 @@ class MyDocuments extends Component<Props, State> {
               userRole={currentUserRole}
               viewerRole={this.props.viewerRole}
               viewerUsername={this.props.viewerUsername}
+              viewerEmail={this.props.viewerEmail}
               organizationName={this.props.organizationName}
               documentId={currentDocumentId}
               documentName={currentDocumentName}
@@ -733,6 +737,7 @@ class MyDocuments extends Component<Props, State> {
                     </h1>
                   )}
                   viewerUsername={this.isStaffViewer() ? this.props.viewerUsername : undefined}
+                  viewerEmail={this.isStaffViewer() ? this.props.viewerEmail : undefined}
                   viewerRole={this.isStaffViewer() ? this.props.viewerRole : undefined}
                   viewerName={this.isStaffViewer() ? this.props.viewerName : undefined}
                   organizationName={this.isStaffViewer() ? this.props.organizationName : undefined}
