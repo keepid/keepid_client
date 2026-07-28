@@ -26,6 +26,7 @@ interface Props {
   clientName?: string;
   viewerRole?: Role;
   viewerUsername?: string;
+  viewerEmail?: string;
   organizationName?: string;
   onDownloadCurrentDocument: () => void;
   onRequestDeleteCurrentDocument: () => void;
@@ -48,6 +49,7 @@ const ViewDocument: React.FC<Props> = ({
   clientName,
   viewerRole,
   viewerUsername,
+  viewerEmail,
   organizationName,
   onDownloadCurrentDocument,
   onRequestDeleteCurrentDocument,
@@ -103,7 +105,12 @@ const ViewDocument: React.FC<Props> = ({
   const isStaffViewer = viewerRole === Role.Worker
     || viewerRole === Role.Admin
     || viewerRole === Role.Director;
-  const canNotify = isStaffViewer && canUseClientNotifications(viewerRole, organizationName, viewerUsername);
+  const canNotify = isStaffViewer && canUseClientNotifications(
+    viewerRole,
+    organizationName,
+    viewerUsername,
+    viewerEmail,
+  );
 
   const uploadedAtLabel = (() => {
     if (!documentDate) return '';

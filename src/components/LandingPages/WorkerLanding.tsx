@@ -15,6 +15,7 @@ import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm'
 
 interface Props {
   username: string;
+  email: string;
   name: string;
   organization: string;
   role: Role;
@@ -115,7 +116,9 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
 const CARD_CLIENTS_PER_PAGE = 6;
 const LIST_CLIENTS_PER_PAGE = 15;
 
-const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, logOut, alert }) => {
+const WorkerLanding: React.FC<Props> = ({
+  username, email, name, organization, role, logOut, alert,
+}) => {
   const history = useHistory();
   const [clients, setClients] = useState<TargetClient[]>([]);
   const [searchName, setSearchName] = useState('');
@@ -131,9 +134,9 @@ const WorkerLanding: React.FC<Props> = ({ username, name, organization, role, lo
   const [viewMode, setViewMode] = useState<ClientViewMode>('list');
   const [isLoading, setIsLoading] = useState(true);
   const { path } = useRouteMatch();
-  const canAccessApplications = canUseApplications(role, organization, username);
-  const canAccessCommunications = canUseCommunications(role, organization, username);
-  const canAccessNotifications = canUseClientNotifications(role, organization, username);
+  const canAccessApplications = canUseApplications(role, organization, username, email);
+  const canAccessCommunications = canUseCommunications(role, organization, username, email);
+  const canAccessNotifications = canUseClientNotifications(role, organization, username, email);
 
   const loadProfilePhoto = useCallback(async (clientsArray: TargetClient[], signal: AbortSignal) => {
     const clientsWithPhoto = clientsArray.filter((client) => client.profilePhoto != null);

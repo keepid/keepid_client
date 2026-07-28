@@ -18,16 +18,20 @@ export function isTeamKeepOrganization(organization?: string | null): boolean {
   return FULL_FEATURE_ORG_NAMES.some((name) => normalizedOrganizationName(name) === normalized);
 }
 
-export function hasFullFeatureIdentityOverride(identity?: string | null): boolean {
-  const normalized = normalizedIdentity(identity);
-  return FULL_FEATURE_IDENTITY_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+export function hasFullFeatureIdentityOverride(
+  ...identities: Array<string | null | undefined>
+): boolean {
+  return identities.some((identity) => {
+    const normalized = normalizedIdentity(identity);
+    return FULL_FEATURE_IDENTITY_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+  });
 }
 
 function canUseFullFeatureOrganization(
   organization?: string | null,
-  identity?: string | null,
+  identities: Array<string | null | undefined> = [],
 ): boolean {
-  return isTeamKeepOrganization(organization) || hasFullFeatureIdentityOverride(identity);
+  return isTeamKeepOrganization(organization) || hasFullFeatureIdentityOverride(...identities);
 }
 
 export function isAdminRole(role: RoleLike): boolean {
@@ -45,23 +49,23 @@ function isSignedInRole(role: RoleLike): boolean {
 export function canUseApplications(
   role: RoleLike,
   organization?: string | null,
-  identity?: string | null,
+  ...identities: Array<string | null | undefined>
 ): boolean {
-  return isSignedInRole(role) && canUseFullFeatureOrganization(organization, identity);
+  return isSignedInRole(role) && canUseFullFeatureOrganization(organization, identities);
 }
 
 export function canUseCommunications(
   role: RoleLike,
   organization?: string | null,
-  identity?: string | null,
+  ...identities: Array<string | null | undefined>
 ): boolean {
-  return isStaffRole(role) && canUseFullFeatureOrganization(organization, identity);
+  return isStaffRole(role) && canUseFullFeatureOrganization(organization, identities);
 }
 
 export function canUseClientNotifications(
   role: RoleLike,
   organization?: string | null,
-  identity?: string | null,
+  ...identities: Array<string | null | undefined>
 ): boolean {
-  return isAdminRole(role) && canUseFullFeatureOrganization(organization, identity);
+  return isAdminRole(role) && canUseFullFeatureOrganization(organization, identities);
 }

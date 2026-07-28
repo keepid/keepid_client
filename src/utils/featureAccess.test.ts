@@ -20,6 +20,10 @@ describe('feature access policy', () => {
     expect(hasFullFeatureIdentityOverride('danieljoo@keep.id')).toBe(true);
     expect(hasFullFeatureIdentityOverride(' ConnorChong+dev@keep.id ')).toBe(true);
     expect(hasFullFeatureIdentityOverride('steffencornwell')).toBe(true);
+    expect(hasFullFeatureIdentityOverride(
+      'unrelated-internal-username',
+      'steffencornwell+demo@gmail.com',
+    )).toBe(true);
     expect(hasFullFeatureIdentityOverride('team.danieljoo@keep.id')).toBe(false);
   });
 
@@ -32,6 +36,12 @@ describe('feature access policy', () => {
 
   it('allows applications for approved full-feature identities outside Team Keep', () => {
     expect(canUseApplications(Role.Admin, 'Demo Org', 'danieljoo@keep.id')).toBe(true);
+    expect(canUseApplications(
+      Role.Admin,
+      'Demo Org',
+      'unrelated-internal-username',
+      'steffencornwell+applications@gmail.com',
+    )).toBe(true);
     expect(canUseApplications(Role.LoggedOut, 'Demo Org', 'danieljoo@keep.id')).toBe(false);
   });
 
@@ -45,6 +55,12 @@ describe('feature access policy', () => {
 
   it('allows communications for approved full-feature staff identities outside Team Keep', () => {
     expect(canUseCommunications(Role.Worker, 'Demo Org', 'connorchong@keep.id')).toBe(true);
+    expect(canUseCommunications(
+      Role.Worker,
+      'Demo Org',
+      'unrelated-internal-username',
+      'steffencornwell+communications@gmail.com',
+    )).toBe(true);
     expect(canUseCommunications(Role.Client, 'Demo Org', 'connorchong@keep.id')).toBe(false);
   });
 

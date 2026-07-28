@@ -31,7 +31,8 @@ interface Props {
     role: Role,
     username: string,
     organization: string,
-    name: string
+    name: string,
+    email?: string,
   ) => void;
   logOut: () => void;
   isLoggedIn: boolean;
@@ -140,7 +141,13 @@ class LoginPage extends Component<Props, State> {
                   return Role.LoggedOut;
               }
             };
-            logIn(role(), resolvedUsername || username, organization, `${firstName} ${lastName}`);
+            logIn(
+              role(),
+              resolvedUsername || username,
+              organization,
+              `${firstName} ${lastName}`,
+              username.includes('@') ? username : '',
+            );
           } else if (status === 'AUTH_FAILURE') {
             alert.show('Incorrect email or password');
             this.clearInput();
