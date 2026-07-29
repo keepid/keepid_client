@@ -25,7 +25,11 @@ interface DocumentInformation {
   uploadDate: string,
   createdDate?: string,
   filename: string,
-  applicationDisplayName?: string,
+  serviceName?: string,
+  serviceFullName?: string,
+  outcomePublicId?: string,
+  applicationName?: string,
+  applicationPublicId?: string,
   formattedUploadDate?: string,
   formattedCreatedDate?: string,
   status?: string,
@@ -150,15 +154,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     });
   };
 
-  getApplicationDisplayName = (row: DocumentInformation): string => {
-    const preferredName = row.applicationDisplayName?.trim();
-    if (preferredName) return preferredName;
-    if (!row.filename) return '';
-    return row.filename
-      .replace(/\.pdf$/i, '')
-      .replace(/[_-]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+  formatApplicationStatus = (status?: string): string => {
+    if (!status?.trim()) return '—';
+    return status
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   };
 
   getDeletedClientLabel = (name: string, row: DocumentInformation): string => {
@@ -572,8 +573,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       }
     });
 
-    // /list-applications returns a flat array of ApplicationListItemDto rows
-    // (id, state, title, client*, timestamps, attachmentCount).
+    // /list-applications returns one casework row with independently nullable
+    // service and application facets.
     // Authz lives in the handler: client sees own; same-org staff sees all.
     // The previous /get-files APPLICATION_PDF call returned [] by design
     // (FileService treats applications as not-files) — see slice 12 work.
@@ -592,10 +593,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       })
       .then((responseJSON) => {
         const items = Array.isArray(responseJSON) ? responseJSON : [];
-        // Map ApplicationListItemDto → DocumentInformation. The FE's table
-        // was originally written against /get-files documents; we map field
-        // names without touching the table itself so the rest of the page
-        // (download, delete, row actions) keeps working.
         const filteredItems = isWorkerView
           ? items.filter((item) => item && item.clientUsername === targetUsername)
           : items;
@@ -605,11 +602,15 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           organizationName: '',
           uploadDate: String(item.updatedAt || item.createdAt || ''),
           createdDate: String(item.createdAt || item.updatedAt || ''),
-          filename: `${String(item.title || 'Application')}.pdf`,
-          applicationDisplayName: String(item.title || 'Application'),
+          filename: `${String(item.applicationName || item.serviceName || item.title || 'Casework record')}.pdf`,
+          serviceName: String(item.serviceName || ''),
+          serviceFullName: String(item.serviceFullName || ''),
+          outcomePublicId: String(item.outcomePublicId || ''),
+          applicationName: String(item.applicationName || ''),
+          applicationPublicId: String(item.applicationPublicId || ''),
           applicationState: String(item.state || ''),
-          applicationStatus: String(item.state || ''),
-          status: String(item.state || ''),
+          applicationStatus: String(item.applicationStatus || ''),
+          status: String(item.applicationStatus || ''),
           clientFirstName: String(item.clientFirstName || ''),
           clientLastName: String(item.clientLastName || ''),
           clientDeleted: Boolean(item.clientDeleted),
@@ -893,11 +894,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         icon: <FileDownloadOutlinedIcon fontSize="small" />,
         onClick: () => this.handleDownloadApplication(row),
       },
-      {
+      ...(row.applicationName ? [{
         label: 'Rename',
         icon: <DriveFileRenameOutlineIcon fontSize="small" />,
         onClick: () => this.openRenameModal(row),
-      },
+      }] : []),
       {
         label: 'Delete',
         icon: <DeleteOutlineIcon fontSize="small" />,
@@ -992,7 +993,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       modalClientUsername,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
-    const pageTitle = isClientUser ? 'My Applications' : 'Applications';
+    const pageTitle = isClientUser ? 'My Casework' : 'Casework';
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
@@ -1000,32 +1001,87 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
 
     const columns: DataTableColumn<DocumentInformation>[] = [
       {
-        field: 'filename',
-        headerName: 'Application',
-        renderCell: (row) => this.getApplicationDisplayName(row),
+        field: 'serviceName',
+        headerName: 'Service',
+        sortable: true,
+        width: '25%',
+        mobileWidth: '44%',
+        renderCell: (row) => (
+          <span
+            title={row.serviceFullName || row.serviceName || undefined}
+            style={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
+              overflow: 'hidden',
+            }}
+          >
+            {row.serviceName || '—'}
+          </span>
+        ),
       },
-      ...(isClientUser ? [] : [{
+      {
+        field: 'outcomePublicId',
+        headerName: 'Outcome ID',
+        sortable: true,
+        width: '9%',
+        hideOnMobile: true,
+        nowrap: true,
+        renderCell: (row) => row.outcomePublicId
+          ? <code className="tw-text-sm">{row.outcomePublicId}</code>
+          : '—',
+      },
+      {
+        field: 'applicationName',
+        headerName: 'Application',
+        sortable: true,
+        width: '20%',
+        mobileWidth: '28%',
+        renderCell: (row) => row.applicationName || '—',
+      },
+      {
+        field: 'applicationPublicId',
+        headerName: 'Application ID',
+        sortable: true,
+        width: '10%',
+        hideOnMobile: true,
+        nowrap: true,
+        renderCell: (row) => row.applicationPublicId
+          ? <code className="tw-text-sm">{row.applicationPublicId}</code>
+          : '—',
+      },
+      {
+        field: 'applicationStatus',
+        headerName: 'Status',
+        sortable: true,
+        width: '13%',
+        mobileWidth: '14%',
+        nowrap: true,
+        renderCell: (row) => this.formatApplicationStatus(row.applicationStatus),
+      },
+      {
+        field: 'createdDate',
+        headerName: 'Date',
+        sortable: true,
+        sortType: 'date',
+        width: '12%',
+        mobileWidth: '14%',
+        nowrap: true,
+        renderCell: (row) => row.formattedCreatedDate || '-',
+      } as DataTableColumn<DocumentInformation>,
+      {
         field: 'clientName',
         headerName: 'Client',
         sortable: true,
-        width: '22%',
+        width: '15%',
         hideOnMobile: true,
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
-      } as DataTableColumn<DocumentInformation>]),
-      {
-        field: 'createdDate',
-        headerName: 'Created',
-        sortable: true,
-        sortType: 'date',
-        width: '18%',
-        nowrap: true,
-        renderCell: (row) => row.formattedCreatedDate || '-',
       } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',
         headerName: isClientUser ? 'Actions' : '',
         align: 'right',
-        width: isClientUser ? '26%' : '48px',
+        width: '48px',
         hideOnMobile: true,
         renderCell: (row) => (
           isClientUser ? (
@@ -1066,7 +1122,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     return (
       <Switch>
         <Route exact path="/applications">
-          <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
+          <div className="tw-w-full tw-max-w-7xl tw-mx-auto tw-px-4 tw-py-6">
             <Helmet>
               <title>{pageTitle}</title>
               <meta name="description" content="Keep.id" />
@@ -1106,7 +1162,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             </div>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div>
-                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : pageTitle}</h1>
+                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Casework` : pageTitle}</h1>
               </div>
             </div>
             <div>
@@ -1115,7 +1171,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 data={documents}
                 isLoading={isLoadingDocuments}
                 errorMessage={documentsError}
-                emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
+                emptyMessage={clientName || clientUsername ? `No casework for ${clientName || clientUsername}` : 'No casework found'}
                 showSearch={false}
                 pageSize={10}
                 defaultSortField="createdDate"

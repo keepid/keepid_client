@@ -122,7 +122,7 @@ function Header({
                   : 'Home'}
               </NavLink>
               {showApplicationsLink && (
-                <NavLink to="/applications?view=all">Applications</NavLink>
+                <NavLink to="/applications?view=all">Casework</NavLink>
               )}
               {showCommunicationsLink && (
                 <NavLink to="/communications">Communications</NavLink>
@@ -172,7 +172,7 @@ function Header({
               </li>
               {showApplicationsLink && (
                 <li>
-                  <NavLink to="/applications?view=all">Applications</NavLink>
+                  <NavLink to="/applications?view=all">Casework</NavLink>
                 </li>
               )}
               {showCommunicationsLink && (
