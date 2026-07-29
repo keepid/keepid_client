@@ -154,14 +154,6 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     });
   };
 
-  formatApplicationStatus = (status?: string): string => {
-    if (!status?.trim()) return '—';
-    return status
-      .toLowerCase()
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
-  };
-
   getDeletedClientLabel = (name: string, row: DocumentInformation): string => {
     if (!row.clientDeleted || name.endsWith(' (deleted)')) return name;
     return `${name} (deleted)`;
@@ -602,7 +594,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           organizationName: '',
           uploadDate: String(item.updatedAt || item.createdAt || ''),
           createdDate: String(item.createdAt || item.updatedAt || ''),
-          filename: `${String(item.applicationName || item.serviceName || item.title || 'Casework record')}.pdf`,
+          filename: `${String(item.applicationName || item.serviceName || item.title || 'Application record')}.pdf`,
           serviceName: String(item.serviceName || ''),
           serviceFullName: String(item.serviceFullName || ''),
           outcomePublicId: String(item.outcomePublicId || ''),
@@ -993,7 +985,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       modalClientUsername,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
-    const pageTitle = isClientUser ? 'My Casework' : 'Casework';
+    const pageTitle = isClientUser ? 'My Applications' : 'Applications';
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
@@ -1004,8 +996,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         field: 'serviceName',
         headerName: 'Service',
         sortable: true,
-        width: '25%',
-        mobileWidth: '44%',
+        width: '34%',
+        mobileWidth: '52%',
         renderCell: (row) => (
           <span
             title={row.serviceFullName || row.serviceName || undefined}
@@ -1021,51 +1013,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         ),
       },
       {
-        field: 'outcomePublicId',
-        headerName: 'Outcome ID',
-        sortable: true,
-        width: '9%',
-        hideOnMobile: true,
-        nowrap: true,
-        renderCell: (row) => row.outcomePublicId
-          ? <code className="tw-text-sm">{row.outcomePublicId}</code>
-          : '—',
-      },
-      {
         field: 'applicationName',
         headerName: 'Application',
         sortable: true,
-        width: '20%',
-        mobileWidth: '28%',
+        width: '31%',
+        mobileWidth: '32%',
         renderCell: (row) => row.applicationName || '—',
-      },
-      {
-        field: 'applicationPublicId',
-        headerName: 'Application ID',
-        sortable: true,
-        width: '10%',
-        hideOnMobile: true,
-        nowrap: true,
-        renderCell: (row) => row.applicationPublicId
-          ? <code className="tw-text-sm">{row.applicationPublicId}</code>
-          : '—',
-      },
-      {
-        field: 'applicationStatus',
-        headerName: 'Status',
-        sortable: true,
-        width: '13%',
-        mobileWidth: '14%',
-        nowrap: true,
-        renderCell: (row) => this.formatApplicationStatus(row.applicationStatus),
       },
       {
         field: 'createdDate',
         headerName: 'Date',
         sortable: true,
         sortType: 'date',
-        width: '12%',
-        mobileWidth: '14%',
+        width: '15%',
+        mobileWidth: '16%',
         nowrap: true,
         renderCell: (row) => row.formattedCreatedDate || '-',
       } as DataTableColumn<DocumentInformation>,
@@ -1073,7 +1034,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         field: 'clientName',
         headerName: 'Client',
         sortable: true,
-        width: '15%',
+        width: '20%',
         hideOnMobile: true,
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>,
@@ -1162,7 +1123,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             </div>
             <div className="jumbotron jumbotron-fluid bg-white pb-0">
               <div>
-                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Casework` : pageTitle}</h1>
+                <h1 className="display-4">{applicationsOwner ? `${applicationsOwner} Applications` : pageTitle}</h1>
               </div>
             </div>
             <div>
@@ -1171,7 +1132,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 data={documents}
                 isLoading={isLoadingDocuments}
                 errorMessage={documentsError}
-                emptyMessage={clientName || clientUsername ? `No casework for ${clientName || clientUsername}` : 'No casework found'}
+                emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
                 showSearch={false}
                 pageSize={10}
                 defaultSortField="createdDate"
