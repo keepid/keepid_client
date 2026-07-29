@@ -42,6 +42,8 @@ import {
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
+import { completeServiceRecord, createClassifiedService } from './applicationSelector/flowApi';
+import type { SelectorCompletionContext } from './applicationSelector/types';
 import { ApplicationFormData, ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 
@@ -127,10 +129,10 @@ function getClientSearchDisplayName(client: ClientSearchResult): string {
 }
 
 export default function ApplicationForm({
-  selectorInstructionsMarkdown = '',
+  selectorCompletion,
   serviceRecordId,
 }: {
-  selectorInstructionsMarkdown?: string;
+  selectorCompletion?: SelectorCompletionContext;
   serviceRecordId?: string;
 }) {
   const {
@@ -566,9 +568,17 @@ export default function ApplicationForm({
           existingApplicationIdsBeforeSave = null;
         }
         const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
+        let applicationId = serviceRecordId;
+        if (!applicationId && selectorCompletion) {
+          const created = await createClassifiedService({
+            clientUsername: targetClientUsername,
+            ...selectorCompletion,
+          });
+          applicationId = created.applicationId;
+        }
         const uploadResult = await uploadCompletedPdf(
           blob,
-          serviceRecordId || blankFormId,
+          applicationId || blankFormId,
           formOutput,
           targetClientUsername,
         );
@@ -607,10 +617,13 @@ export default function ApplicationForm({
         setFillingPdf(false);
       }
     },
-    [blankFormId, targetClientUsername, handleNext, serviceRecordId],
+    [blankFormId, targetClientUsername, handleNext, selectorCompletion, serviceRecordId],
   );
 
-  const handleSaveSuccess = useCallback(() => {
+  const handleSaveSuccess = useCallback(async () => {
+    if ((selectorCompletion || serviceRecordId) && persistedApplicationId) {
+      await completeServiceRecord(persistedApplicationId);
+    }
     if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
     setFilledPdfUrl(null);
     setPersistedApplicationId(null);
@@ -618,7 +631,7 @@ export default function ApplicationForm({
     setWizardFormData(null);
     disablePrompt();
     history.push('/applications');
-  }, [filledPdfUrl, history]);
+  }, [filledPdfUrl, history, persistedApplicationId, selectorCompletion, serviceRecordId]);
 
   useEffect(() => () => {
     if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
@@ -1111,7 +1124,6 @@ export default function ApplicationForm({
           <ApplicationReviewPage
             data={data}
             clientName={targetClientName || targetClientUsername}
-            instructionsMarkdownOverride={selectorInstructionsMarkdown}
           />
         )}
 
