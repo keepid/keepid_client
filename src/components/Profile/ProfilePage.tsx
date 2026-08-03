@@ -70,6 +70,7 @@ export type ProfileData = {
   fatherName?: NameObj;
   workerNotes?: string;
   experiencingHomelessness?: boolean;
+  penndotNumber?: string;
 };
 
 export default function ProfilePage({

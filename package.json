@@ -78,6 +78,7 @@
     "react-test-renderer": "^18.0.0",
     "react-text-mask": "^5.4.3",
     "react-uuid": "^1.0.2",
+    "remark-gfm": "^4.0.1",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "sass-embedded": "^1.89.2",
     "scanic": "^1.0.6",

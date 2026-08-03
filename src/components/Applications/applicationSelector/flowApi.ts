@@ -94,3 +94,44 @@ export const completeServiceRecord = async (applicationId: string): Promise<void
     method: 'POST',
   });
 };
+
+export interface ClientLoginDetails {
+  penndotNumber: string;
+  birthDate: string;
+}
+
+export const loadClientLoginDetails = async (username = ''): Promise<ClientLoginDetails> => {
+  const result = await requestJson<{
+    status?: string;
+    message?: string;
+    penndotNumber?: string;
+    birthDate?: string;
+  }>('/get-user-info', {
+    method: 'POST',
+    body: JSON.stringify(username ? { username } : {}),
+  });
+  if (result.status !== 'SUCCESS') {
+    throw new Error(result.message || 'Could not load the client login details.');
+  }
+  return {
+    penndotNumber: result.penndotNumber || '',
+    birthDate: result.birthDate || '',
+  };
+};
+
+export const loadPennDotNumber = async (username = ''): Promise<string> => (
+  (await loadClientLoginDetails(username)).penndotNumber
+);
+
+export const savePennDotNumber = async (username: string, penndotNumber: string): Promise<void> => {
+  const result = await requestJson<{ status?: string; message?: string }>('/update-user-profile', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...(username ? { username } : {}),
+      penndotNumber,
+    }),
+  });
+  if (result.status !== 'SUCCESS') {
+    throw new Error(result.message || 'Could not save the PennDOT number.');
+  }
+};

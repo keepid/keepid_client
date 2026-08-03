@@ -9,6 +9,8 @@ import {
 } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
 import { formatPhoneForDisplay } from '../../utils/phone';
+import { isValidPennDotNumber } from '../BaseComponents/pennDotNumber';
+import PennDotNumberField from '../BaseComponents/PennDotNumberField';
 import { birthDateStringFromIsoDateOnly } from '../SignUp/SignUp.util';
 import type { AddressObj, NameObj, ProfileData } from './ProfilePage';
 
@@ -164,6 +166,8 @@ export default function EssentialAccountSection({
   const hasEmail = email.trim() !== '';
   const initialExperiencingHomelessness = Boolean(profile.experiencingHomelessness);
   const [experiencingHomelessness, setExperiencingHomelessness] = useState(initialExperiencingHomelessness);
+  const initialPennDotNumber = profile.penndotNumber || '';
+  const [pennDotNumber, setPennDotNumber] = useState(initialPennDotNumber);
 
   const [phoneBook, setPhoneBook] = useState<PhoneBookEntry[]>([]);
   const [phoneBookLoading, setPhoneBookLoading] = useState(true);
@@ -206,6 +210,7 @@ export default function EssentialAccountSection({
 
   const emailDirty = email !== initialEmail;
   const homelessnessDirty = experiencingHomelessness !== initialExperiencingHomelessness;
+  const pennDotNumberDirty = pennDotNumber !== initialPennDotNumber;
 
   const phoneBookDirty = useMemo(() => {
     if (editedPhoneBook.length !== phoneBook.length) return true;
@@ -233,7 +238,8 @@ export default function EssentialAccountSection({
     [editMailAddress, profile],
   );
 
-  const isDirty = emailDirty || homelessnessDirty || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
+  const isDirty = emailDirty || homelessnessDirty || pennDotNumberDirty
+    || phoneBookDirty || showAddRow || identityDirty || mailingAddressDirty;
 
   const name = useMemo(() => {
     const parts = [
@@ -419,6 +425,29 @@ export default function EssentialAccountSection({
     return true;
   }
 
+  async function savePennDotNumber(): Promise<boolean> {
+    if (!pennDotNumberDirty) return true;
+    if (!isValidPennDotNumber(pennDotNumber)) {
+      alert.show('PennDOT customer number must be 8 digits.', { type: 'error' });
+      return false;
+    }
+    const payload: Record<string, unknown> = { penndotNumber: pennDotNumber };
+    if (targetUsername) payload.username = targetUsername;
+
+    const res = await fetch(`${getServerURL()}/update-user-profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json?.status !== 'SUCCESS') {
+      alert.show(`Failed to save PennDOT number: ${json?.message || json?.status || 'Unknown error'}`, { type: 'error' });
+      return false;
+    }
+    return true;
+  }
+
   async function saveEmail(): Promise<boolean> {
     if (!emailDirty) return true;
     const payload: Record<string, any> = { email };
@@ -445,6 +474,7 @@ export default function EssentialAccountSection({
       if (!(await saveEmail())) return;
       if (!(await saveMailingAddress())) return;
       if (!(await saveHomelessness())) return;
+      if (!(await savePennDotNumber())) return;
 
       const hasNewEntry = showAddRow && addPhone.trim() && (editedPhoneBook.length === 0 || addLabel.trim());
       if (phoneBookDirty || hasNewEntry) {
@@ -503,6 +533,7 @@ export default function EssentialAccountSection({
   function beginEdit() {
     setEmail(initialEmail);
     setExperiencingHomelessness(initialExperiencingHomelessness);
+    setPennDotNumber(initialPennDotNumber);
     setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
@@ -530,6 +561,7 @@ export default function EssentialAccountSection({
     if (isDirty && !window.confirm('Discard unsaved changes?')) return;
     setEmail(initialEmail);
     setExperiencingHomelessness(initialExperiencingHomelessness);
+    setPennDotNumber(initialPennDotNumber);
     setEditedPhoneBook(editablePhoneBookFrom(phoneBook));
     setEditMailAddress(initialAddressFromProfile(profile));
     setShowAddRow(false);
@@ -784,6 +816,33 @@ export default function EssentialAccountSection({
             )}
           </div>
         </div>
+
+        {profile.privilegeLevel === 'Client' && (
+          <div className="row tw-mb-2 tw-mt-1">
+            <div className="col-12 col-md-3 card-text mt-2 text-primary-theme">PennDOT Customer Number</div>
+            <div className="col-12 col-md-9 card-text">
+              {isEditing ? (
+                <PennDotNumberField
+                  id="penndotNumber"
+                  value={pennDotNumber}
+                  onChange={setPennDotNumber}
+                  label=""
+                  className="tw-block tw-max-w-sm tw-pt-1"
+                />
+              ) : (
+                <div className="tw-group tw-flex tw-items-center tw-pt-2">
+                  <span>{pennDotNumber || 'Not saved'}</span>
+                  <CopyButton
+                    label="PennDOT customer number"
+                    value={pennDotNumber}
+                    hidden={isEditing}
+                    onCopy={copyToClipboard}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Homelessness */}
         <div className="row tw-mb-2 tw-mt-1">
