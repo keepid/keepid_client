@@ -8,13 +8,17 @@ import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../../serverOverride';
+import { isValidPennDotNumber } from '../../BaseComponents/pennDotNumber';
+import PennDotNumberField from '../../BaseComponents/PennDotNumberField';
 import {
   completeServiceRecord,
   createClassifiedService,
   createManualService,
   loadCaseSelector,
+  loadPennDotNumber,
   previewManualService,
   resolveCaseOutcome,
+  savePennDotNumber,
   uploadServicePdf,
 } from './flowApi';
 import type {
@@ -120,6 +124,20 @@ const ApplicationSelectorFlow = ({
     setFieldValue(responses[currentNode.responseKey] || '');
   }, [currentNode?.id, currentNode?.responseKey, responses]);
 
+  useEffect(() => {
+    if (currentNode?.componentKey !== 'penndot-number' || !currentNode.responseKey) return undefined;
+    if (responses[currentNode.responseKey] !== undefined) return undefined;
+    let active = true;
+    loadPennDotNumber(clientUsername)
+      .then((value) => {
+        if (active) setFieldValue(value);
+      })
+      .catch((loadError) => {
+        if (active) setError(errorMessage(loadError));
+      });
+    return () => { active = false; };
+  }, [clientUsername, currentNode?.componentKey, currentNode?.id, currentNode?.responseKey, responses]);
+
   const backToApplications = () => history.push({
     pathname: '/applications',
     state: { clientUsername, clientName },
@@ -166,7 +184,7 @@ const ApplicationSelectorFlow = ({
     }
   };
 
-  const selectAnswer = (transition: SelectorTransition) => {
+  const selectAnswer = async (transition: SelectorTransition) => {
     if (!currentNode) return;
     if (!currentNode.componentKey) {
       follow(transition);
@@ -181,10 +199,20 @@ const ApplicationSelectorFlow = ({
     }
     if (currentNode.componentKey === 'penndot-number') {
       const pattern = String(config.pattern || '^\\d{8}$');
-      if (value && !new RegExp(pattern).test(value)) {
+      if ((value && !new RegExp(pattern).test(value)) || !isValidPennDotNumber(value)) {
         setError(String(config.helpText || 'Enter a valid 8-digit PennDOT customer number.'));
         return;
       }
+      setBusy(true);
+      setError(null);
+      try {
+        await savePennDotNumber(clientUsername, value);
+      } catch (saveError) {
+        setError(errorMessage(saveError));
+        setBusy(false);
+        return;
+      }
+      setBusy(false);
     }
     const next = currentNode.responseKey && !isInformation
       ? { ...responses, [currentNode.responseKey]: value }
@@ -347,6 +375,19 @@ const ApplicationSelectorFlow = ({
         const config = node.componentConfig || {};
         const information = node.componentKey === 'information';
         const type = node.componentKey === 'date-input' ? 'date' : 'text';
+        if (node.componentKey === 'penndot-number') {
+          return (
+            <PennDotNumberField
+              id={`penndot-number-${node.id}`}
+              value={fieldValue}
+              onChange={setFieldValue}
+              label={String(config.label || 'PennDOT customer number')}
+              helpText={String(config.helpText || 'Enter the 8-digit customer number shown on PennDOT records.')}
+              disabled={busy}
+              className="tw-mb-5 tw-block tw-max-w-2xl"
+            />
+          );
+        }
         return information ? (
           <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
             {String(config.helpText || 'Review this information before continuing.')}
@@ -375,6 +416,7 @@ const ApplicationSelectorFlow = ({
           <button
             key={transition.id}
             type="button"
+            disabled={busy}
             className="tw-flex tw-min-h-48 tw-flex-col tw-items-stretch tw-justify-center tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-bg-blue-50 hover:tw-shadow-md"
             onClick={() => selectAnswer(transition)}
           >
@@ -387,7 +429,9 @@ const ApplicationSelectorFlow = ({
                 />
               </span>
             )}
-            <span className="tw-font-semibold tw-text-slate-950">{transition.label}</span>
+            <span className="tw-font-semibold tw-text-slate-950">
+              {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
+            </span>
             {transition.description && <span className="tw-mt-2 tw-text-sm tw-text-gray-600">{transition.description}</span>}
           </button>
         ))}
