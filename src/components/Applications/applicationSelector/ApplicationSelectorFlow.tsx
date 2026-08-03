@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 
 import getServerURL from '../../../serverOverride';
+import HomelessnessDefinitionModal from '../../BaseComponents/HomelessnessDefinitionModal';
 import { isValidPennDotNumber } from '../../BaseComponents/pennDotNumber';
 import PennDotNumberField from '../../BaseComponents/PennDotNumberField';
 import {
@@ -67,6 +68,7 @@ const ApplicationSelectorFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
   const [manualPreview, setManualPreview] = useState<string | null>(null);
+  const [homelessnessDefinitionOpen, setHomelessnessDefinitionOpen] = useState(false);
   const [manual, setManual] = useState({
     serviceTitle: '',
     manualReason: 'NO_MATCH' as 'NO_MATCH' | 'UNSURE' | 'URGENT_BYPASS' | 'OTHER',
@@ -191,7 +193,7 @@ const ApplicationSelectorFlow = ({
       return;
     }
     const config = currentNode.componentConfig || {};
-    const isInformation = currentNode.componentKey === 'information';
+    const isInformation = ['information', 'homelessness-definition'].includes(currentNode.componentKey);
     const value = fieldValue.trim();
     if (!isInformation && config.required !== false && !value) {
       setError('Enter a value to continue.');
@@ -386,6 +388,17 @@ const ApplicationSelectorFlow = ({
               disabled={busy}
               className="tw-mb-5 tw-block tw-max-w-2xl"
             />
+          );
+        }
+        if (node.componentKey === 'homelessness-definition') {
+          return (
+            <button
+              type="button"
+              className="tw-mb-5 tw-rounded-md tw-border tw-border-blue-300 tw-bg-white tw-px-4 tw-py-2 tw-font-semibold tw-text-blue-700 hover:tw-bg-blue-50"
+              onClick={() => setHomelessnessDefinitionOpen(true)}
+            >
+              {String(config.label || 'Click here for definition of homelessness')}
+            </button>
           );
         }
         return information ? (
@@ -602,6 +615,10 @@ const ApplicationSelectorFlow = ({
 
   return (
     <div className="tw-mx-auto tw-w-full tw-max-w-5xl tw-px-4 tw-py-6">
+      <HomelessnessDefinitionModal
+        isOpen={homelessnessDefinitionOpen}
+        onClose={() => setHomelessnessDefinitionOpen(false)}
+      />
       <div className="tw-mb-6 tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-4">
         <div>
           <button type="button" className="btn btn-outline-dark tw-mb-4" onClick={backToApplications}>← Applications</button>
