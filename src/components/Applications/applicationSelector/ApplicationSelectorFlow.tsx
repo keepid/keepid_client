@@ -4,8 +4,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import { useHistory } from 'react-router-dom';
+import remarkGfm from 'remark-gfm';
 
 import getServerURL from '../../../serverOverride';
 import HomelessnessDefinitionModal from '../../BaseComponents/HomelessnessDefinitionModal';
@@ -16,6 +17,7 @@ import {
   createClassifiedService,
   createManualService,
   loadCaseSelector,
+  loadClientLoginDetails,
   loadPennDotNumber,
   previewManualService,
   resolveCaseOutcome,
@@ -49,6 +51,16 @@ const errorMessage = (error: unknown) => (
   error instanceof Error ? error.message : 'Something went wrong. Please try again.'
 );
 
+const displayBirthDate = (value: string) => (
+  value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3')
+);
+
+const descriptionMarkdownComponents: Components = {
+  a: ({ node: _node, children, ...props }) => (
+    <a {...props} target="_blank" rel="noreferrer">{children}</a>
+  ),
+};
+
 const ApplicationSelectorFlow = ({
   availableApplications,
   clientUsername = '',
@@ -69,6 +81,11 @@ const ApplicationSelectorFlow = ({
   const [manualMode, setManualMode] = useState(false);
   const [manualPreview, setManualPreview] = useState<string | null>(null);
   const [homelessnessDefinitionOpen, setHomelessnessDefinitionOpen] = useState(false);
+  const [clientLoginDetails, setClientLoginDetails] = useState({
+    penndotNumber: '',
+    birthDate: '',
+  });
+  const [clientLoginDetailsLoading, setClientLoginDetailsLoading] = useState(false);
   const [manual, setManual] = useState({
     serviceTitle: '',
     manualReason: 'NO_MATCH' as 'NO_MATCH' | 'UNSURE' | 'URGENT_BYPASS' | 'OTHER',
@@ -140,6 +157,23 @@ const ApplicationSelectorFlow = ({
     return () => { active = false; };
   }, [clientUsername, currentNode?.componentKey, currentNode?.id, currentNode?.responseKey, responses]);
 
+  useEffect(() => {
+    if (currentNode?.componentKey !== 'penndot-login-details') return undefined;
+    let active = true;
+    setClientLoginDetailsLoading(true);
+    loadClientLoginDetails(clientUsername)
+      .then((details) => {
+        if (active) setClientLoginDetails(details);
+      })
+      .catch((loadError) => {
+        if (active) setError(errorMessage(loadError));
+      })
+      .finally(() => {
+        if (active) setClientLoginDetailsLoading(false);
+      });
+    return () => { active = false; };
+  }, [clientUsername, currentNode?.componentKey, currentNode?.id]);
+
   const backToApplications = () => history.push({
     pathname: '/applications',
     state: { clientUsername, clientName },
@@ -193,7 +227,11 @@ const ApplicationSelectorFlow = ({
       return;
     }
     const config = currentNode.componentConfig || {};
-    const isInformation = ['information', 'homelessness-definition'].includes(currentNode.componentKey);
+    const isInformation = [
+      'information',
+      'homelessness-definition',
+      'penndot-login-details',
+    ].includes(currentNode.componentKey);
     const value = fieldValue.trim();
     if (!isInformation && config.required !== false && !value) {
       setError('Enter a value to continue.');
@@ -401,6 +439,19 @@ const ApplicationSelectorFlow = ({
             </button>
           );
         }
+        if (node.componentKey === 'penndot-login-details') {
+          return (
+            <div className="tw-mb-5 tw-max-w-2xl tw-rounded-lg tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-5 tw-text-slate-950">
+              <p className="tw-mb-3 tw-font-semibold">{String(config.label || 'Log in with')}</p>
+              <dl className="tw-grid tw-gap-2 sm:tw-grid-cols-[auto_1fr]">
+                <dt className="tw-font-medium">Photo ID number:</dt>
+                <dd className="tw-font-mono">{clientLoginDetailsLoading ? 'Loading…' : (clientLoginDetails.penndotNumber || 'Not saved')}</dd>
+                <dt className="tw-font-medium">Date of birth:</dt>
+                <dd>{clientLoginDetailsLoading ? 'Loading…' : (displayBirthDate(clientLoginDetails.birthDate) || 'Not saved')}</dd>
+              </dl>
+            </div>
+          );
+        }
         return information ? (
           <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
             {String(config.helpText || 'Review this information before continuing.')}
@@ -426,27 +477,37 @@ const ApplicationSelectorFlow = ({
       })()}
       <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
         {node.transitions.map((transition) => (
-          <button
+          <div
             key={transition.id}
-            type="button"
-            disabled={busy}
-            className="tw-flex tw-min-h-48 tw-flex-col tw-items-stretch tw-justify-center tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-bg-blue-50 hover:tw-shadow-md"
-            onClick={() => selectAnswer(transition)}
+            className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
           >
-            {transition.assetId && (
-              <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
-                <img
-                  src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
-                  alt={transition.assetAltText || ''}
-                  className="tw-h-full tw-w-full tw-object-contain"
-                />
+            <button
+              type="button"
+              disabled={busy}
+              className="tw-flex tw-flex-1 tw-flex-col tw-items-stretch tw-justify-center tw-bg-white tw-p-4 hover:tw-bg-blue-50"
+              onClick={() => selectAnswer(transition)}
+            >
+              {transition.assetId && (
+                <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
+                  <img
+                    src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
+                    alt={transition.assetAltText || ''}
+                    className="tw-h-full tw-w-full tw-object-contain"
+                  />
+                </span>
+              )}
+              <span className="tw-font-semibold tw-text-slate-950">
+                {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
               </span>
+            </button>
+            {transition.description && (
+              <div className="tw-prose tw-prose-sm tw-max-w-none tw-border-t tw-border-slate-100 tw-px-4 tw-py-3 tw-text-left tw-text-gray-600">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>
+                  {transition.description}
+                </ReactMarkdown>
+              </div>
             )}
-            <span className="tw-font-semibold tw-text-slate-950">
-              {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
-            </span>
-            {transition.description && <span className="tw-mt-2 tw-text-sm tw-text-gray-600">{transition.description}</span>}
-          </button>
+          </div>
         ))}
       </div>
       <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
@@ -640,7 +701,7 @@ const ApplicationSelectorFlow = ({
           {currentNode.type !== 'OUTCOME' && (
             <div className="tw-mb-5">
               <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-950">{currentNode.question}</h2>
-              {currentNode.description && <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none tw-text-gray-600"><ReactMarkdown>{currentNode.description}</ReactMarkdown></div>}
+              {currentNode.description && <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none tw-text-gray-600"><ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>{currentNode.description}</ReactMarkdown></div>}
             </div>
           )}
           {(currentNode.type === 'CHOICE' || currentNode.type === 'INTERACTION') && renderChoice(currentNode)}
