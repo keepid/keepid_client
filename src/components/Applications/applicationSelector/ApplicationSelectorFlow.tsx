@@ -435,14 +435,14 @@ const ApplicationSelectorFlow = ({
               className="tw-mb-5 tw-rounded-md tw-border tw-border-blue-300 tw-bg-white tw-px-4 tw-py-2 tw-font-semibold tw-text-blue-700 hover:tw-bg-blue-50"
               onClick={() => setHomelessnessDefinitionOpen(true)}
             >
-              {String(config.label || 'Click here for definition of homelessness')}
+              Click here for definition of homelessness
             </button>
           );
         }
         if (node.componentKey === 'penndot-login-details') {
           return (
             <div className="tw-mb-5 tw-max-w-2xl tw-rounded-lg tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-5 tw-text-slate-950">
-              <p className="tw-mb-3 tw-font-semibold">{String(config.label || 'Log in with')}</p>
+              <p className="tw-mb-3 tw-font-semibold">Log in with</p>
               <dl className="tw-grid tw-gap-2 sm:tw-grid-cols-[auto_1fr]">
                 <dt className="tw-font-medium">Photo ID number:</dt>
                 <dd className="tw-font-mono">{clientLoginDetailsLoading ? 'Loading…' : (clientLoginDetails.penndotNumber || 'Not saved')}</dd>
