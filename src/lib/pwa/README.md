@@ -48,7 +48,8 @@ feature. The matching UI lives in `src/components/InstallPrompt/`.
 | Nudge shows even though user dismissed it | `useDismissalMemory.ts` |
 | Nudge never re-appears after dismissal | `useDismissalMemory.ts` (currently uses sessionStorage on purpose) |
 | Need to change app name / icons / shortcuts | `vite.pwa.config.ts` (project root, NOT here) |
-| Service worker never registers | `vite.pwa.config.ts` and run `npm run build` (SW only registers in production builds by default) |
+| Service worker never registers | `registerServiceWorker.js`, `vite.pwa.config.ts`, and run `npm run build` (SW only registers in production builds by default) |
+| Different profiles show different releases | Confirm `registerServiceWorker.js` is reloading on activation and that the worker does not precache HTML / JS / CSS |
 
 ## Debugging tips
 
@@ -67,7 +68,9 @@ feature. The matching UI lives in `src/components/InstallPrompt/`.
 
 ## Privacy note
 
-The service worker (`vite.pwa.config.ts` → `workbox`) intentionally caches
-**only the static app shell** — JS, CSS, HTML, icons. We do **not** cache API
-responses or user documents. Caching PII would be a regression on Keep.ID's
-threat model. Do not add API runtime caching here without a security review.
+The service worker intentionally does **not** cache the application shell, API
+responses, or user documents. Browsers fetch the current HTML, JavaScript, and
+CSS from every deployment; only the manifest icons listed in
+`vite.pwa.config.ts` are precached. Caching PII would be a regression on
+Keep.ID's threat model. Do not add API runtime caching here without a security
+review.
