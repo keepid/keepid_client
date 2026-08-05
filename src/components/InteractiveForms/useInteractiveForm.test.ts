@@ -134,6 +134,13 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
+  it('preserves compound name casing for forms', () => {
+    expect(normalizeTextFieldValues(
+      { firstName: "mcpherson o'connor smith-jones children’s hospital" },
+      jsonSchema,
+    ).firstName).toBe("McPherson O'Connor Smith-Jones Children’s Hospital");
+  });
+
   it('sends title-cased free-text answers to PDF fill fields', () => {
     const uiSchema = {
       type: 'VerticalLayout',

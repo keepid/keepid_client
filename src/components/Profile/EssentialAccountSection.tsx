@@ -8,6 +8,7 @@ import {
   isValidPhoneNumber,
 } from '../../lib/Validations/Validations';
 import getServerURL from '../../serverOverride';
+import { formatAddress } from '../../utils/address';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import { isValidPennDotNumber } from '../BaseComponents/pennDotNumber';
 import PennDotNumberField from '../BaseComponents/PennDotNumberField';
@@ -99,14 +100,6 @@ function addressEqual(a: AddressObj, b: AddressObj): boolean {
 function addressIsEmpty(address: AddressObj): boolean {
   const cleaned = cleanAddress(address);
   return !cleaned.line1 && !cleaned.line2 && !cleaned.city && !cleaned.state && !cleaned.zip && !cleaned.county;
-}
-
-function formatAddress(address: AddressObj | undefined): string {
-  if (!address) return '';
-  const street = [address.line1, address.line2].filter(Boolean).join(', ');
-  const cityStateZip = [address.city, address.state, address.zip].filter(Boolean).join(', ');
-  const county = address.county ? `${address.county} County` : '';
-  return [street, cityStateZip, county].filter(Boolean).join('\n');
 }
 
 function editablePhoneBookFrom(entries: PhoneBookEntry[]): EditablePhoneBookEntry[] {
@@ -597,7 +590,7 @@ export default function EssentialAccountSection({
     }
   }
 
-  const mailingAddressDisplay = formatAddress(profile.mailAddress);
+  const mailingAddressDisplay = formatAddress(profile.mailAddress, { multiline: true, includeCounty: true });
   const homelessStatus = profile.experiencingHomelessness ? 'Yes' : 'No';
 
   return (
@@ -706,6 +699,17 @@ export default function EssentialAccountSection({
             )}
           </div>
         </div>
+
+        {profile.creationDate && (
+          <div className="row tw-mb-2">
+            <div className="col-3 card-text mt-2 text-primary-theme">Enrolled</div>
+            <div className="col-9 card-text tw-pt-2">
+              {new Date(profile.creationDate).toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric',
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Email */}
         <div className="row tw-mb-2 tw-mt-1">

@@ -71,6 +71,7 @@ export type ProfileData = {
   workerNotes?: string;
   experiencingHomelessness?: boolean;
   penndotNumber?: string;
+  creationDate?: string;
 };
 
 export default function ProfilePage({
@@ -302,6 +303,7 @@ export default function ProfilePage({
               className="btn btn-primary"
               onClick={() => history.push({
                 pathname: '/applications',
+                search: `?client=${encodeURIComponent(targetUsername || '')}`,
                 state: {
                   clientUsername: targetUsername,
                   clientName: displayName || undefined,
@@ -309,6 +311,17 @@ export default function ProfilePage({
               })}
             >
               Applications
+            </button>
+          )}
+          {canAccessCommunicationHistory && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => history.push(
+                `/communications?client=${encodeURIComponent(targetUsername || '')}`,
+              )}
+            >
+              Communications
             </button>
           )}
         </div>

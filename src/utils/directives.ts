@@ -113,8 +113,8 @@ export const DIRECTIVE_CATALOG_COLUMNS: DirectiveCatalogColumn[] = [
       { label: 'Father Name', items: ['client.fatherName.first', 'client.fatherName.middle', 'client.fatherName.last', 'client.fatherName.suffix', 'client.fatherName.maiden'].map((directive) => ({ directive })) },
       { label: 'Mother Name', items: ['client.motherName.first', 'client.motherName.middle', 'client.motherName.last', 'client.motherName.suffix', 'client.motherName.maiden'].map((directive) => ({ directive })) },
       { label: 'Basic Info', items: ['client.birthDate', 'client.email', 'client.sex', 'client.phoneBook.0.phoneNumber'].map((directive) => ({ directive })), defaultOpen: true },
-      { label: 'Personal Address', items: ['client.personalAddress.line1', 'client.personalAddress.line2', 'client.personalAddress.city', 'client.personalAddress.state', 'client.personalAddress.zip'].map((directive) => ({ directive })) },
-      { label: 'Mail Address', items: ['client.mailAddress.line1', 'client.mailAddress.city', 'client.mailAddress.state', 'client.mailAddress.zip'].map((directive) => ({ directive })) },
+      { label: 'Personal Address', items: ['client.personalAddress.line1', 'client.personalAddress.line2', 'client.personalAddress.city', 'client.personalAddress.state', 'client.personalAddress.zip', 'client.personalAddress.county'].map((directive) => ({ directive })) },
+      { label: 'Mail Address', items: ['client.mailAddress.line1', 'client.mailAddress.line2', 'client.mailAddress.city', 'client.mailAddress.state', 'client.mailAddress.zip', 'client.mailAddress.county'].map((directive) => ({ directive })) },
     ],
   },
   {

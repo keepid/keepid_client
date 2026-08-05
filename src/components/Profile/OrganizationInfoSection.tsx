@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import getServerURL from '../../serverOverride';
+import { formatAddress } from '../../utils/address';
 import { formatPhoneForDisplay } from '../../utils/phone';
 
 type Props = {
@@ -17,7 +18,7 @@ type OrgInfo = {
 function buildAddressString(data: any): string {
   if (data.orgAddress && typeof data.orgAddress === 'object') {
     const a = data.orgAddress;
-    return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
+    return formatAddress(a);
   }
   return data.address || '';
 }

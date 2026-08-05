@@ -36,6 +36,7 @@ const profiles: ResolvedProfiles = {
     },
     mailAddress: {
       line1: 'PO Box 42',
+      line2: 'Unit 7',
       city: 'Pittsburgh',
       state: 'PA',
       zip: '15213',
@@ -88,6 +89,7 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.fatherFirstName', profiles)).toBe('Lord');
     expect(resolveDirectiveFromProfiles('client.emailAddress', profiles)).toBe('ada@example.org');
     expect(resolveDirectiveFromProfiles('client.genderAssignedAtBirth', profiles)).toBe('F');
+    expect(resolveDirectiveFromProfiles('client.mailAddress.line2', profiles)).toBe('Unit 7');
     expect(resolveDirectiveFromProfiles('worker.currentName.last', profiles)).toBe('Hopper');
     expect(resolveDirectiveFromProfiles('director.email', profiles)).toBe('kj@example.org');
   });
@@ -199,7 +201,7 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.$fullPersonalAddress', profiles)).toBe(
       '12 Analytical Engine Way, Suite 34, Philadelphia, PA 19104',
     );
-    expect(resolveDirectiveFromProfiles('client.$fullMailAddress', profiles)).toBe('PO Box 42, Pittsburgh, PA 15213');
+    expect(resolveDirectiveFromProfiles('client.$fullMailAddress', profiles)).toBe('PO Box 42, Unit 7, Pittsburgh, PA 15213');
     expect(resolveDirectiveFromProfiles('org.$fullAddress', profiles)).toBe('100 Main St, Floor 2, Philadelphia, PA 19107');
     expect(resolveDirectiveFromProfiles('address.$line1+2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
     expect(resolveDirectiveFromProfiles('client.personalAddress.$line1And2', profiles)).toBe('12 Analytical Engine Way, Suite 34');

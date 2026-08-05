@@ -20,6 +20,7 @@ type ContactEditorSheetProps = {
   contacts: CommunicationContact[];
   onClose: () => void;
   onChanged: (contact: CommunicationContact) => void;
+  onArchived: (contactId: string) => void;
   onSelectContact: (contactId: string) => void;
   onPromoted: (result: PromoteSharedResponse) => void;
 };
@@ -185,6 +186,7 @@ export default function ContactEditorSheet({
   contacts,
   onClose,
   onChanged,
+  onArchived,
   onSelectContact,
   onPromoted,
 }: ContactEditorSheetProps) {
@@ -311,6 +313,22 @@ export default function ContactEditorSheet({
       );
       if (!response.sharedContact) throw new Error(response.message || response.status);
       onPromoted(response);
+      onClose();
+    } catch (requestError) {
+      setError(errorMessage(requestError));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function archiveContact() {
+    if (!window.confirm(`Archive ${contact.displayName}? Its history will be preserved and removed from the active conversation list.`)) return;
+    setIsSaving(true);
+    setError('');
+    try {
+      const response = await updateCommunicationContact(contact.id, { archived: true });
+      if (!response.contact) throw new Error(response.message || response.status);
+      onArchived(contact.id);
       onClose();
     } catch (requestError) {
       setError(errorMessage(requestError));
@@ -470,6 +488,21 @@ export default function ContactEditorSheet({
               ))}
             </section>
           )}
+
+          <section className="contact-sheet-section contact-archive-section">
+            <h3>Archive conversation</h3>
+            <p className="contact-form-help">
+              Preserve this history while removing the contact from the active conversation list.
+            </p>
+            <button
+              type="button"
+              className="contact-archive-button"
+              disabled={isSaving}
+              onClick={archiveContact}
+            >
+              {isSaving ? 'Archiving...' : 'Archive conversation'}
+            </button>
+          </section>
 
           {notice && <p className="contact-form-notice">{notice}</p>}
           {error && <p className="contact-form-error">{error}</p>}
