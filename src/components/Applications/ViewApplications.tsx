@@ -509,7 +509,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 idType: application.idType,
                 housingStatus: application.housingStatus,
               },
-              startAtReview: true,
+              startAtWebForm: true,
             },
           }}
           className="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-sm tw-no-underline last:tw-border-b-0 hover:tw-bg-blue-50"
