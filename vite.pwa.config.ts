@@ -3,7 +3,7 @@
  *
  * This file is the single source of truth for:
  *  - The Web App Manifest (name, icons, colors, shortcuts, display mode)
- *  - The Service Worker / Workbox precache + runtime caching strategy
+ *  - The Service Worker / Workbox caching strategy
  *
  * Edit this file when:
  *  - Changing the installed-app name, icon, or theme colors
@@ -11,17 +11,20 @@
  *  - Adjusting offline caching behavior
  *
  * IMPORTANT — privacy:
- *  The runtime cache is intentionally limited to the static app shell
- *  (HTML / JS / CSS / icons). We do NOT cache API responses or user
- *  documents in the service worker. Caching PII would be a regression
- *  on Keep.ID's threat model.
+ *  The service worker intentionally does not cache the application shell,
+ *  API responses, or user documents. Each visit must load the current HTML,
+ *  JavaScript, and CSS from the server so separate browser profiles cannot
+ *  remain on different releases. Caching PII would also be a regression on
+ *  Keep.ID's threat model.
  */
 
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
 export const pwaConfig: Partial<VitePWAOptions> = {
   registerType: 'autoUpdate',
-  injectRegister: 'auto',
+  // Registration is handled in src/lib/pwa/registerServiceWorker.js so the
+  // page reloads as soon as an updated worker takes control.
+  injectRegister: false,
   includeAssets: [
     'favicon.ico',
     'favicon-16x16.png',
@@ -83,21 +86,12 @@ export const pwaConfig: Partial<VitePWAOptions> = {
     ],
   },
   workbox: {
-    // Precache the built app shell. Keep this list narrow on purpose.
-    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-    // The main bundle is ~3.5 MB today (Bootstrap + jsonforms + react-pdf, etc.).
-    // Bump this if the bundle grows further; consider code-splitting instead.
-    maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-    // SPA fallback — any unknown route returns index.html so React Router can handle it offline.
-    navigateFallback: '/index.html',
-    navigateFallbackDenylist: [
-      // API + auth routes must hit the network, never the cache.
-      /^\/api\//,
-      /^\/login/,
-      /^\/logout/,
-      /^\/authenticate/,
-    ],
-    // No runtimeCaching for API/document responses — see privacy note above.
+    // Do not precache the app shell. The explicitly listed manifest icons
+    // above remain available to the installed PWA, while all UI code and
+    // styling are fetched from the current deployment.
+    globPatterns: [],
+    navigateFallback: null,
+    // No runtime caching for API/document responses or application assets.
     runtimeCaching: [],
     cleanupOutdatedCaches: true,
   },
