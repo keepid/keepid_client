@@ -176,6 +176,7 @@ const ApplicationSelectorFlow = ({
 
   const backToApplications = () => history.push({
     pathname: '/applications',
+    search: `?client=${encodeURIComponent(clientUsername)}`,
     state: { clientUsername, clientName },
   });
 

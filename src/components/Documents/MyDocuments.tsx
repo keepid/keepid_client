@@ -2,6 +2,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import React, { Component, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
@@ -32,8 +33,6 @@ interface OwnProps {
 type Props = OwnProps & RouteComponentProps;
 
 interface State {
-  pdfFiles: FileList | undefined;
-  buttonState: string;
   currentDocumentId: string | undefined;
   currentDocumentName: string | undefined;
   currentUploadDate: string | undefined;
@@ -89,11 +88,8 @@ class MyDocuments extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.handleFileDownload = this.handleFileDownload.bind(this);
-    this.handleChangeFilePrint = this.handleChangeFilePrint.bind(this);
     this.handleFilePrint = this.handleFilePrint.bind(this);
     this.state = {
-      pdfFiles: undefined,
-      buttonState: '',
       currentDocumentId: undefined,
       currentDocumentName: undefined,
       currentUploadDate: undefined,
@@ -187,26 +183,17 @@ class MyDocuments extends Component<Props, State> {
       });
   }
 
-  handleChangeFilePrint(event: any, rowIndex: number) {
-    event.preventDefault();
-    const { files } = event.target;
-
-    this.setState(
-      {
-        pdfFiles: files,
-      },
-      () => this.handleFilePrint(rowIndex),
-    );
-  }
-
-  handleFilePrint(rowIndex: number) {
+  handleFilePrint(row: any) {
     const { userRole, alert } = this.props;
-    const { documentData } = this.state;
-
-    const documentId = documentData[rowIndex].id;
-    const documentName = documentData[rowIndex].filename;
-
-    const targetUser = this.props.username;
+    const documentId = row.id;
+    const targetUser = userRole === Role.Client ? this.props.username : row.uploader;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert.show('Allow pop-ups to print this document.', { type: 'error' });
+      return;
+    }
+    printWindow.document.title = `Print ${row.filename || 'document'}`;
+    printWindow.document.body.textContent = 'Preparing document for printing...';
 
     let fileType;
     if (
@@ -231,13 +218,25 @@ class MyDocuments extends Component<Props, State> {
       }),
     })
       .then((response) => response.blob())
-      .then((response) => {
-        const pdfFile = new File([response], documentName, {
-          type: 'application/pdf',
-        });
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const frame = printWindow.document.createElement('iframe');
+        frame.style.position = 'fixed';
+        frame.style.inset = '0';
+        frame.style.width = '100%';
+        frame.style.height = '100%';
+        frame.style.border = '0';
+        frame.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+          window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+        };
+        frame.src = url;
+        printWindow.document.body.replaceChildren(frame);
       })
       .catch((_error) => {
-        alert.show('Error Fetching File');
+        printWindow.close();
+        alert.show('Error fetching file for print.', { type: 'error' });
       });
   }
 
@@ -490,6 +489,11 @@ class MyDocuments extends Component<Props, State> {
         icon: <FileDownloadOutlinedIcon fontSize="small" />,
         onClick: () => this.handleFileDownload(row),
       },
+      {
+        label: 'Print',
+        icon: <PrintOutlinedIcon fontSize="small" />,
+        onClick: () => this.handleFilePrint(row),
+      },
     ];
 
     if (this.isStaffViewer()) {
@@ -624,6 +628,16 @@ class MyDocuments extends Component<Props, State> {
               </button>
               <button
                 type="button"
+                className="btn btn-sm btn-outline-primary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.handleFilePrint(row);
+                }}
+              >
+                Print
+              </button>
+              <button
+                type="button"
                 className="btn btn-sm btn-outline-danger"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -715,6 +729,7 @@ class MyDocuments extends Component<Props, State> {
                     className="btn btn-primary"
                     onClick={() => this.props.history.push({
                       pathname: '/applications',
+                      search: `?client=${encodeURIComponent(username)}`,
                       state: {
                         clientUsername: username,
                         clientName: this.props.clientName,

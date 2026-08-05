@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
+import { formatAddress } from '../../utils/address';
 import type { AddressObj, NameObj, ProfileData } from './ProfilePage';
 
 type Props = {
@@ -27,8 +28,7 @@ function nameToDisplay(n?: NameObj): string {
 }
 
 function addressToDisplay(a?: AddressObj): string {
-  if (!a) return '';
-  return [a.line1, a.line2, a.city, a.state, a.zip, a.county].filter(Boolean).join(', ');
+  return formatAddress(a, { includeCounty: true });
 }
 
 function nameEqual(a: NameObj, b: NameObj): boolean {

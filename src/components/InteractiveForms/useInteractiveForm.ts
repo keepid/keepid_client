@@ -7,6 +7,7 @@ import {
   normalizeDateLikeValue,
   resolveDirectiveFromProfilesForTarget,
 } from '../../utils/directives';
+import { smartTitleCase } from '../../utils/textCase';
 import {
   type GetQuestionsV2Response,
   getInteractiveFormConfig,
@@ -111,13 +112,7 @@ function shouldSkipTitleCaseValue(value: string): boolean {
 
 export function titleCaseTextFieldValue(value: string): string {
   if (shouldSkipTitleCaseValue(value)) return value;
-  return value.replace(/\p{L}[\p{L}'-]*/gu, (word) => (
-    word
-      .toLocaleLowerCase()
-      .replace(/(^|['-])(\p{L})/gu, (_match, prefix: string, letter: string) => (
-        `${prefix}${letter.toLocaleUpperCase()}`
-      ))
-  ));
+  return smartTitleCase(value);
 }
 
 function formatTextValue(value: unknown, shouldTitleCase: boolean): unknown {

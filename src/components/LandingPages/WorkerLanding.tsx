@@ -61,6 +61,13 @@ function formatBirthDateForDisplay(value: string): string {
   return value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3');
 }
 
+function formatCreationDateForDisplay(value?: string | null): string {
+  if (!value) return 'Unknown';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Unknown';
+  return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function clientDisplayName(client: TargetClient): string {
   return `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim() || client.username;
 }
@@ -366,7 +373,11 @@ const WorkerLanding: React.FC<Props> = ({
         </Link>
         {canAccessApplications && (
           <Link
-            to={{ pathname: '/applications', state: { clientUsername: client.username, clientName } }}
+            to={{
+              pathname: '/applications',
+              search: `?client=${encodeURIComponent(client.username)}`,
+              state: { clientUsername: client.username, clientName },
+            }}
             className={secondaryClasses}
           >
             {applicationsLabel}
@@ -422,6 +433,11 @@ const WorkerLanding: React.FC<Props> = ({
                 Birth Date: {formatBirthDateForDisplay(client.birthDate)}
               </p>
             </div>
+            <div className="tw-mb-1">
+              <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
+                Enrolled: {formatCreationDateForDisplay(client.creationDate)}
+              </p>
+            </div>
           </Link>
 
           <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-4">
@@ -445,6 +461,9 @@ const WorkerLanding: React.FC<Props> = ({
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
               Phone
+            </th>
+            <th scope="col" className="tw-px-4 tw-py-3 tw-text-left tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
+              Enrolled
             </th>
             <th scope="col" className="tw-px-4 tw-py-3 tw-text-right tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-600">
               Actions
@@ -477,6 +496,9 @@ const WorkerLanding: React.FC<Props> = ({
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatPhoneForDisplay(client.phone)}
+              </td>
+              <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
+                {formatCreationDateForDisplay(client.creationDate)}
               </td>
               <td className="tw-px-4 tw-py-3 tw-text-right">
                 <div

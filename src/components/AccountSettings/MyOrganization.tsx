@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
+import { formatAddress as formatPostalAddress } from '../../utils/address';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
@@ -89,7 +90,7 @@ async function downloadOrgDocumentPdf(fileId: string, filename: string, alert: a
 }
 
 function formatAddress(a: OrgAddress): string {
-  return [a.line1, a.line2, a.city, a.state, a.zip].filter(Boolean).join(', ');
+  return formatPostalAddress(a);
 }
 
 // Format a Date as YYYY-MM-DD using local calendar fields. Avoids the UTC skew

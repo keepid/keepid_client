@@ -5,11 +5,11 @@ import { Helmet } from 'react-helmet';
 import { Link, useLocation } from 'react-router-dom';
 
 import { isTeamKeepOrganization } from '../../utils/featureAccess';
+import { smartTitleCase } from '../../utils/textCase';
 import HomelessnessDefinitionModal from '../BaseComponents/HomelessnessDefinitionModal';
+import { validateMailingAddress } from './addressValidation';
 import {
-  cleanMailingAddress,
   EMPTY_MAILING_ADDRESS,
-  isMailingAddressEmpty,
   MailingAddressField,
   mailingAddressPayload,
   validateMiddleName,
@@ -38,14 +38,13 @@ interface EnrollClientFormValues {
   experiencingHomelessness: boolean;
   mailAddress: typeof EMPTY_MAILING_ADDRESS;
   hasNoMiddleName: boolean;
+  hasNoMailAddressLine2: boolean;
 }
 
 const NAME_FIELD_NAMES = new Set(['firstname', 'middlename', 'lastname']);
 
 function titleCaseName(value: string): string {
-  return value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_, prefix: string, letter: string) => (
-    `${prefix}${letter.toUpperCase()}`
-  ));
+  return smartTitleCase(value);
 }
 
 function formatNameInput(name: string, value: string): string {
@@ -80,6 +79,7 @@ export default function EnrollClientPage(): JSX.Element {
     experiencingHomelessness: defaultExperiencingHomelessness,
     mailAddress: { ...EMPTY_MAILING_ADDRESS },
     hasNoMiddleName: false,
+    hasNoMailAddressLine2: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
@@ -104,9 +104,21 @@ export default function EnrollClientPage(): JSX.Element {
   const onMailingAddressChange = (field: MailingAddressField, value: string) => {
     setValues((prev) => ({
       ...prev,
+      hasNoMailAddressLine2: field === 'line2' && value ? false : prev.hasNoMailAddressLine2,
       mailAddress: {
         ...prev.mailAddress,
         [field]: field === 'state' ? value.toUpperCase() : value,
+      },
+    }));
+  };
+
+  const toggleNoMailAddressLine2 = () => {
+    setValues((prev) => ({
+      ...prev,
+      hasNoMailAddressLine2: !prev.hasNoMailAddressLine2,
+      mailAddress: {
+        ...prev.mailAddress,
+        line2: !prev.hasNoMailAddressLine2 ? '' : prev.mailAddress.line2,
       },
     }));
   };
@@ -208,6 +220,18 @@ export default function EnrollClientPage(): JSX.Element {
     }
 
     setSubmitting(true);
+    let validatedMailingAddress = values.mailAddress;
+    try {
+      validatedMailingAddress = await validateMailingAddress(
+        values.mailAddress,
+        values.hasNoMailAddressLine2,
+      );
+      setValues((prev) => ({ ...prev, mailAddress: validatedMailingAddress }));
+    } catch (error) {
+      alert.error(error instanceof Error ? error.message : 'Could not validate the mailing address.');
+      setSubmitting(false);
+      return;
+    }
     try {
       const response = await enrollClient({
         firstname: values.firstname,
@@ -221,18 +245,15 @@ export default function EnrollClientPage(): JSX.Element {
       });
 
       if (response.status === 'ENROLL_SUCCESS') {
-        const cleanedMailingAddress = cleanMailingAddress(values.mailAddress);
         let mailAddressSaved = true;
-        if (!isMailingAddressEmpty(cleanedMailingAddress)) {
-          if (!response.username) {
-            mailAddressSaved = false;
-          } else {
-            const profileResponse = await updateUserProfile({
-              username: response.username,
-              mailAddress: mailingAddressPayload(cleanedMailingAddress),
-            });
-            mailAddressSaved = profileResponse.status === 'SUCCESS';
-          }
+        if (!response.username) {
+          mailAddressSaved = false;
+        } else {
+          const profileResponse = await updateUserProfile({
+            username: response.username,
+            mailAddress: mailingAddressPayload(validatedMailingAddress),
+          });
+          mailAddressSaved = profileResponse.status === 'SUCCESS';
         }
         setEnrolled(true);
         if (mailAddressSaved) {
@@ -306,6 +327,7 @@ export default function EnrollClientPage(): JSX.Element {
                   experiencingHomelessness: defaultExperiencingHomelessness,
                   mailAddress: { ...EMPTY_MAILING_ADDRESS },
                   hasNoMiddleName: false,
+                  hasNoMailAddressLine2: false,
                 });
                 setEulaAgreed(false);
                 setTermsAccepted(false);
@@ -503,7 +525,7 @@ export default function EnrollClientPage(): JSX.Element {
 
               <div className="tw-pt-2">
                 <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
-                  Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-400">(optional)</span>
+                  Mailing Address
                 </h3>
                 <div className="tw-space-y-3">
                   <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-10 tw-gap-3">
@@ -518,11 +540,12 @@ export default function EnrollClientPage(): JSX.Element {
                         className={inputClassName}
                         value={values.mailAddress.line1}
                         onChange={(e) => onMailingAddressChange('line1', e.target.value)}
+                        required
                       />
                     </div>
                     <div className="md:tw-col-span-3">
                       <label htmlFor="mailAddressLine2" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                        Apartment, Suite, Unit <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
+                        Apartment, Suite, Unit
                       </label>
                       <input
                         id="mailAddressLine2"
@@ -531,7 +554,22 @@ export default function EnrollClientPage(): JSX.Element {
                         className={inputClassName}
                         value={values.mailAddress.line2}
                         onChange={(e) => onMailingAddressChange('line2', e.target.value)}
+                        disabled={values.hasNoMailAddressLine2}
+                        required={!values.hasNoMailAddressLine2}
                       />
+                      <label
+                        htmlFor="hasNoMailAddressLine2"
+                        className="tw-mt-2 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-normal tw-text-gray-600"
+                      >
+                        <input
+                          id="hasNoMailAddressLine2"
+                          type="checkbox"
+                          checked={values.hasNoMailAddressLine2}
+                          onChange={toggleNoMailAddressLine2}
+                          className="tw-h-4 tw-w-4 tw-rounded tw-border-gray-300"
+                        />
+                        <span>No apartment, suite, or unit</span>
+                      </label>
                     </div>
                   </div>
                   <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-3">
@@ -546,6 +584,7 @@ export default function EnrollClientPage(): JSX.Element {
                         className={inputClassName}
                         value={values.mailAddress.city}
                         onChange={(e) => onMailingAddressChange('city', e.target.value)}
+                        required
                       />
                     </div>
                     <div>
@@ -560,6 +599,7 @@ export default function EnrollClientPage(): JSX.Element {
                         className={inputClassName}
                         value={values.mailAddress.state}
                         onChange={(e) => onMailingAddressChange('state', e.target.value)}
+                        required
                       />
                     </div>
                     <div>
@@ -573,6 +613,7 @@ export default function EnrollClientPage(): JSX.Element {
                         className={inputClassName}
                         value={values.mailAddress.zip}
                         onChange={(e) => onMailingAddressChange('zip', e.target.value)}
+                        required
                       />
                     </div>
                   </div>

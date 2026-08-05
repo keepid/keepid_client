@@ -651,9 +651,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     }
 
     const state = location.state as LocationState | undefined;
-    const locationClientUsername = state?.clientUsername && state.clientUsername.trim().length > 0
-      ? state.clientUsername
-      : undefined;
+    const queryClientUsername = params.get('client')?.trim();
+    const locationClientUsername = queryClientUsername || (
+      state?.clientUsername && state.clientUsername.trim().length > 0
+        ? state.clientUsername
+        : undefined
+    );
     const locationClientName = state?.clientName;
     this.loadDocuments(locationClientUsername, locationClientName);
   };

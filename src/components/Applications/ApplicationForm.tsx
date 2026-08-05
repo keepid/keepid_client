@@ -9,14 +9,14 @@ import { useHistory } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
+import { smartTitleCase } from '../../utils/textCase';
 import PromptOnLeave from '../BaseComponents/PromptOnLeave';
 import InteractiveFormWizard from '../InteractiveForms/InteractiveFormWizard';
 import SignAndDownloadViewer from '../InteractiveForms/SignAndDownloadViewer';
 import type { BuilderState } from '../InteractiveForms/types';
+import { validateMailingAddress } from '../SignUp/addressValidation';
 import {
-  cleanMailingAddress,
   EMPTY_MAILING_ADDRESS,
-  isMailingAddressEmpty,
   MailingAddressField,
   mailingAddressPayload,
   validateMiddleName,
@@ -181,6 +181,7 @@ export default function ApplicationForm({
     phonenumber: '',
     mailAddress: { ...EMPTY_MAILING_ADDRESS },
     hasNoMiddleName: false,
+    hasNoMailAddressLine2: false,
   });
   const [enrollFieldErrors, setEnrollFieldErrors] = useState<Record<string, string>>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -425,7 +426,10 @@ export default function ApplicationForm({
 
   const handleEnrollFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setEnrollForm((prev) => ({ ...prev, [name]: value }));
+    const formattedValue = ['firstname', 'middlename', 'lastname'].includes(name)
+      ? smartTitleCase(value)
+      : value;
+    setEnrollForm((prev) => ({ ...prev, [name]: formattedValue }));
     if (enrollFieldErrors[name]) {
       setEnrollFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -434,9 +438,21 @@ export default function ApplicationForm({
   const handleEnrollMailingAddressChange = (field: MailingAddressField, value: string) => {
     setEnrollForm((prev) => ({
       ...prev,
+      hasNoMailAddressLine2: field === 'line2' && value ? false : prev.hasNoMailAddressLine2,
       mailAddress: {
         ...prev.mailAddress,
         [field]: field === 'state' ? value.toUpperCase() : value,
+      },
+    }));
+  };
+
+  const toggleEnrollNoMailAddressLine2 = () => {
+    setEnrollForm((prev) => ({
+      ...prev,
+      hasNoMailAddressLine2: !prev.hasNoMailAddressLine2,
+      mailAddress: {
+        ...prev.mailAddress,
+        line2: !prev.hasNoMailAddressLine2 ? '' : prev.mailAddress.line2,
       },
     }));
   };
@@ -478,6 +494,11 @@ export default function ApplicationForm({
     setEnrollSubmitting(true);
 
     try {
+      const validatedMailingAddress = await validateMailingAddress(
+        enrollForm.mailAddress,
+        enrollForm.hasNoMailAddressLine2,
+      );
+      setEnrollForm((prev) => ({ ...prev, mailAddress: validatedMailingAddress }));
       const response = await enrollClient({
         firstname: enrollForm.firstname,
         middlename: enrollForm.middlename.trim() || undefined,
@@ -517,26 +538,23 @@ export default function ApplicationForm({
         return;
       }
 
-      const cleanedMailingAddress = cleanMailingAddress(enrollForm.mailAddress);
-      if (!isMailingAddressEmpty(cleanedMailingAddress)) {
-        const profileResponse = await updateUserProfile({
-          username: createdUser.username,
-          mailAddress: mailingAddressPayload(cleanedMailingAddress),
-        });
-        if (profileResponse.status !== 'SUCCESS') {
-          setSubmitError('Client enrolled, but the mailing address could not be saved. Please update the client profile before continuing.');
-          selectExistingClient(createdUser);
-          setWhoForMode('existing');
-          return;
-        }
+      const profileResponse = await updateUserProfile({
+        username: createdUser.username,
+        mailAddress: mailingAddressPayload(validatedMailingAddress),
+      });
+      if (profileResponse.status !== 'SUCCESS') {
+        setSubmitError('Client enrolled, but the mailing address could not be saved. Please update the client profile before continuing.');
+        selectExistingClient(createdUser);
+        setWhoForMode('existing');
+        return;
       }
 
       selectExistingClient(createdUser);
       setSubmitError(null);
       setWhoForMode('existing');
       setPage(whoForNextPage);
-    } catch {
-      setSubmitError('Could not enroll client. Please try again.');
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Could not enroll client. Please try again.');
     } finally {
       setEnrollSubmitting(false);
     }
@@ -940,7 +958,7 @@ export default function ApplicationForm({
                     </div>
                     <div className="tw-mt-4 tw-pt-1">
                       <h3 className="tw-mb-3 tw-text-base tw-font-semibold tw-text-gray-800">
-                        Mailing Address <span className="tw-text-sm tw-font-normal tw-text-gray-500">(optional)</span>
+                        Mailing Address
                       </h3>
                       <div className="tw-space-y-3">
                         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-10 tw-gap-4">
@@ -951,15 +969,25 @@ export default function ApplicationForm({
                               name="mailAddressLine1"
                               value={enrollForm.mailAddress.line1}
                               onChange={(e) => handleEnrollMailingAddressChange('line1', e.target.value)}
+                              required
                             />
                           </Form.Group>
                           <Form.Group controlId="newClientMailAddressLine2" className="md:tw-col-span-3">
-                            <Form.Label>Apartment, Suite, Unit (optional)</Form.Label>
+                            <Form.Label>Apartment, Suite, Unit</Form.Label>
                             <Form.Control
                               className={whoForInputClassName}
                               name="mailAddressLine2"
                               value={enrollForm.mailAddress.line2}
                               onChange={(e) => handleEnrollMailingAddressChange('line2', e.target.value)}
+                              disabled={enrollForm.hasNoMailAddressLine2}
+                              required={!enrollForm.hasNoMailAddressLine2}
+                            />
+                            <Form.Check
+                              id="newClientHasNoMailAddressLine2"
+                              className="tw-mt-2 tw-text-sm"
+                              checked={enrollForm.hasNoMailAddressLine2}
+                              onChange={toggleEnrollNoMailAddressLine2}
+                              label="No apartment, suite, or unit"
                             />
                           </Form.Group>
                         </div>
@@ -971,6 +999,7 @@ export default function ApplicationForm({
                               name="mailAddressCity"
                               value={enrollForm.mailAddress.city}
                               onChange={(e) => handleEnrollMailingAddressChange('city', e.target.value)}
+                              required
                             />
                           </Form.Group>
                           <Form.Group controlId="newClientMailAddressState">
@@ -981,6 +1010,7 @@ export default function ApplicationForm({
                               maxLength={2}
                               value={enrollForm.mailAddress.state}
                               onChange={(e) => handleEnrollMailingAddressChange('state', e.target.value)}
+                              required
                             />
                           </Form.Group>
                           <Form.Group controlId="newClientMailAddressZip">
@@ -990,6 +1020,7 @@ export default function ApplicationForm({
                               name="mailAddressZip"
                               value={enrollForm.mailAddress.zip}
                               onChange={(e) => handleEnrollMailingAddressChange('zip', e.target.value)}
+                              required
                             />
                           </Form.Group>
                         </div>

@@ -647,6 +647,12 @@ export default function CallsPage() {
     setIsMuted(nextMuted);
   }
 
+  function sendKeypadDigit(digit: string) {
+    const call = activeCallRef.current;
+    if (!call || browserCallStatus !== 'in-call') return;
+    call.sendDigits(digit);
+  }
+
   function hangUpCall() {
     activeCallRef.current?.disconnect();
     activeCallRef.current = null;
@@ -1041,6 +1047,20 @@ export default function CallsPage() {
                     {browserCallStatus === 'in-call' && <span>{formatDuration(elapsedSeconds)}</span>}
                     {browserCallError && <p>{browserCallError}</p>}
                   </div>
+                  {browserCallStatus === 'in-call' && (
+                    <div className="call-keypad" aria-label="Call keypad">
+                      {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((digit) => (
+                        <button
+                          key={digit}
+                          type="button"
+                          onClick={() => sendKeypadDigit(digit)}
+                          aria-label={`Send ${digit}`}
+                        >
+                          {digit}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <section className={`call-recording-panel ${callRecordingStatus}`}>
                     {callRecordingStatus === 'recording' || callRecordingStatus === 'recording-only' ? (
                       <div className="call-recording-active" role="status">
@@ -1144,6 +1164,12 @@ export default function CallsPage() {
           contacts={conversations}
           onClose={() => setIsContactEditorOpen(false)}
           onChanged={updateContactInList}
+          onArchived={(contactId) => {
+            setConversations((current) => current.filter((contact) => contact.id !== contactId));
+            setSelectedContactId('');
+            setItems([]);
+            setContactNotice('Conversation archived.');
+          }}
           onSelectContact={(contactId) => {
             setContactNotice('');
             setComposerMode('message');
