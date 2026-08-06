@@ -617,19 +617,6 @@ export default function EnrollClientPage(): JSX.Element {
                       />
                     </div>
                   </div>
-                  <div>
-                    <label htmlFor="mailAddressCounty" className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 tw-mb-1">
-                      County <span className="tw-text-gray-400 tw-font-normal">(optional)</span>
-                    </label>
-                    <input
-                      id="mailAddressCounty"
-                      type="text"
-                      placeholder="County"
-                      className={inputClassName}
-                      value={values.mailAddress.county}
-                      onChange={(e) => onMailingAddressChange('county', e.target.value)}
-                    />
-                  </div>
                 </div>
               </div>
 

@@ -1024,15 +1024,6 @@ export default function ApplicationForm({
                             />
                           </Form.Group>
                         </div>
-                        <Form.Group controlId="newClientMailAddressCounty">
-                          <Form.Label>County (optional)</Form.Label>
-                          <Form.Control
-                            className={whoForInputClassName}
-                            name="mailAddressCounty"
-                            value={enrollForm.mailAddress.county}
-                            onChange={(e) => handleEnrollMailingAddressChange('county', e.target.value)}
-                          />
-                        </Form.Group>
                       </div>
                     </div>
                     <div className="tw-mt-3">
