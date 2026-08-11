@@ -43,6 +43,12 @@ interface TargetClient {
   applicationCount?: number;
 }
 
+interface OrganizationMembersResponse {
+  status: string;
+  people?: TargetClient[];
+  numPeople?: number;
+}
+
 type ClientSortMode = 'name-asc' | 'name-desc' | 'date-asc' | 'date-desc';
 type ClientViewMode = 'cards' | 'list';
 
@@ -122,6 +128,49 @@ function sortClients(list: TargetClient[], mode: ClientSortMode): TargetClient[]
 
 const CARD_CLIENTS_PER_PAGE = 6;
 const LIST_CLIENTS_PER_PAGE = 15;
+const CLIENT_FETCH_PAGE_SIZE = 500;
+
+async function fetchAllClientPages(
+  name: string,
+  role: Role,
+  signal: AbortSignal,
+): Promise<OrganizationMembersResponse[]> {
+  const fetchPage = async (offset: number): Promise<OrganizationMembersResponse> => {
+    const res = await fetch(`${getServerURL()}/get-organization-members`, {
+      signal,
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({
+        role,
+        listType: 'clients',
+        name,
+        limit: CLIENT_FETCH_PAGE_SIZE,
+        offset,
+      }),
+    });
+    return res.json();
+  };
+
+  const firstPage = await fetchPage(0);
+  if (firstPage.status !== 'SUCCESS' || !Array.isArray(firstPage.people)) {
+    return [firstPage];
+  }
+
+  const returnedCount = firstPage.people.length;
+  const totalCount = typeof firstPage.numPeople === 'number'
+    ? firstPage.numPeople
+    : returnedCount;
+  if (returnedCount === 0 || returnedCount >= totalCount) {
+    return [firstPage];
+  }
+
+  const remainingOffsets = Array.from(
+    { length: Math.ceil((totalCount - returnedCount) / returnedCount) },
+    (_, index) => returnedCount * (index + 1),
+  );
+  const remainingPages = await Promise.all(remainingOffsets.map(fetchPage));
+  return [firstPage, ...remainingPages];
+}
 
 const WorkerLanding: React.FC<Props> = ({
   username, email, name, organization, role, logOut, alert,
@@ -195,19 +244,9 @@ const WorkerLanding: React.FC<Props> = ({
 
       try {
         const searchQueries = getClientSearchCandidateQueries(submittedSearchName, true);
-        const responses = await Promise.all(searchQueries.map(async (name) => {
-          const res = await fetch(`${getServerURL()}/get-organization-members`, {
-            signal,
-            method: 'POST',
-            credentials: 'include',
-            body: JSON.stringify({
-              role,
-              listType: 'clients',
-              name,
-            }),
-          });
-          return res.json();
-        }));
+        const responses = (await Promise.all(
+          searchQueries.map((name) => fetchAllClientPages(name, role, signal)),
+        )).flat();
 
         if (responses.some((responseJSON) => responseJSON.status === 'AUTH_FAILURE')) {
           alert.show('Please sign in again to continue.');
